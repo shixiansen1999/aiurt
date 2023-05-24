@@ -27,7 +27,8 @@
         fkb.status,
         fkb.del_flag,
         fkb.tools,
-        fkb.fault_level_code
+        fkb.fault_level_code,
+        fkb.fault_phenomenon_code
         FROM fault_knowledge_base fkb
         left join sys_user su on su.username = fkb.create_by
         Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fkb.id
@@ -61,7 +62,8 @@
         fkb.status,
         fkb.del_flag,
         fkb.tools,
-        fkb.fault_level_code
+        fkb.fault_level_code,
+        fkb.fault_phenomenon_code
         FROM fault_knowledge_base fkb
         left join sys_user su on su.username = fkb.create_by
         Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fkb.id
@@ -99,7 +101,8 @@
         fkb.status,
         fkb.del_flag,
         fkb.tools,
-        fkb.fault_level_code
+        fkb.fault_level_code,
+        fkb.fault_phenomenon_code
         FROM fault_knowledge_base fkb
         left join sys_user su on su.username = fkb.create_by
         Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fkb.id
@@ -162,6 +165,9 @@
         </if>
         <if test="condition.knowledgeBaseTypeCode != null and  condition.knowledgeBaseTypeCode != ''">
             and a.knowledge_base_type_code = #{condition.knowledgeBaseTypeCode}
+        </if>
+        <if test="condition.faultPhenomenonCode != null and  condition.faultPhenomenonCode != ''">
+            and a.fault_phenomenon_code like concat('%',#{condition.faultPhenomenonCode},'%')
         </if>
         ORDER BY a.create_time DESC
     </select>

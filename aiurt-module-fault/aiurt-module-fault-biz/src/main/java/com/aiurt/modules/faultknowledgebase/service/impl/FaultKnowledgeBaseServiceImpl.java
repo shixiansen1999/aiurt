@@ -28,10 +28,6 @@ import com.aiurt.modules.faultcausesolution.dto.FaultCauseSolutionDTO;
 import com.aiurt.modules.faultcausesolution.dto.FaultSparePartDTO;
 import com.aiurt.modules.faultcausesolution.entity.FaultCauseSolution;
 import com.aiurt.modules.faultcausesolution.service.IFaultCauseSolutionService;
-import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
-import com.aiurt.modules.faultknowledgebase.dto.FaultKnowledgeBaseModel;
-import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
-import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
 import com.aiurt.modules.faultknowledgebase.dto.*;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
@@ -83,7 +79,7 @@ import java.util.stream.Collectors;
 /**
  * @Description: 故障知识库
  * @Author: aiurt
- * @Date:   2022-06-24
+ * @Date: 2022-06-24
  * @Version: V1.0
  */
 @Service
@@ -110,8 +106,6 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     private IFaultCauseSolutionService faultCauseSolutionService;
 
 
-
-
     @Override
     public IPage<FaultKnowledgeBase> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -123,9 +117,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             String substring = id.substring(0, id.length() - 1);
             faultKnowledgeBase.setId(substring);
         }
-        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,null,sysUser.getUsername());
+        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase, null, sysUser.getUsername());
         //解决不是审核人去除审核按钮
-        if(CollUtil.isNotEmpty(faultKnowledgeBases)){
+        if (CollUtil.isNotEmpty(faultKnowledgeBases)) {
             Set<String> deviceTypeCodeSet = faultKnowledgeBases.stream().map(FaultKnowledgeBase::getDeviceTypeCode).collect(Collectors.toSet());
             Map<String, DeviceType> deviceTypeMap = new HashMap<>();
             if (CollUtil.isNotEmpty(deviceTypeCodeSet)) {
@@ -156,9 +150,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     dealAuthButton(sysUser, knowledgeBase);
                 }
                 //当前登录人不是创建人，则为false
-                if(knowledgeBase.getCreateBy().equals(sysUser.getUsername())){
+                if (knowledgeBase.getCreateBy().equals(sysUser.getUsername())) {
                     knowledgeBase.setIsCreateUser(true);
-                }else{
+                } else {
                     knowledgeBase.setIsCreateUser(false);
                 }
                 String faultCodes = knowledgeBase.getFaultCodes();
@@ -192,12 +186,12 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     }
 
     private void dealAuthButton(LoginUser sysUser, FaultKnowledgeBase knowledgeBase) {
-        TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfoWithCache(knowledgeBase.getProcessInstanceId(), knowledgeBase.getTaskId(),sysUser.getUsername());
+        TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfoWithCache(knowledgeBase.getProcessInstanceId(), knowledgeBase.getTaskId(), sysUser.getUsername());
         List<ActOperationEntity> operationList = taskInfoDTO.getOperationList();
         //operationList为空，没有审核按钮
-        if(CollUtil.isNotEmpty(operationList)){
+        if (CollUtil.isNotEmpty(operationList)) {
             knowledgeBase.setHaveButton(true);
-        }else{
+        } else {
             knowledgeBase.setHaveButton(false);
         }
 
@@ -216,10 +210,10 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             faultKnowledgeBase.setId(substring);
         }
 
-        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.queryAll(faultKnowledgeBase,null,sysUser.getUsername());
+        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.queryAll(faultKnowledgeBase, null, sysUser.getUsername());
 
         GlobalThreadLocal.setDataFilter(b);
-        faultKnowledgeBases.forEach(f->{
+        faultKnowledgeBases.forEach(f -> {
             String faultCodes = f.getFaultCodes();
             if (StrUtil.isNotBlank(faultCodes)) {
                 String[] split = faultCodes.split(",");
@@ -232,7 +226,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     @Override
     public IPage<FaultDTO> getFault(Page<FaultDTO> page, FaultDTO faultDTO) {
-        List<FaultDTO> faults = faultMapper.getFault(page, faultDTO,null);
+        List<FaultDTO> faults = faultMapper.getFault(page, faultDTO, null);
         if (CollUtil.isNotEmpty(faults)) {
             for (FaultDTO fault : faults) {
                 LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
@@ -246,7 +240,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     @Override
     public Result<String> approval(String approvedRemark, Integer approvedResult, String id) {
-        if ( getRole()) {return Result.error("没有权限");}
+        if (getRole()) {
+            return Result.error("没有权限");
+        }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         FaultKnowledgeBase faultKnowledgeBase = new FaultKnowledgeBase();
         faultKnowledgeBase.setId(id);
@@ -279,7 +275,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             byId.setDelFlag(1);
             this.updateById(byId);
             QueryWrapper<FaultCauseSolution> wrapper = new QueryWrapper<>();
-            wrapper.lambda().eq(FaultCauseSolution::getKnowledgeBaseId,id);
+            wrapper.lambda().eq(FaultCauseSolution::getKnowledgeBaseId, id);
             faultCauseSolutionService.remove(wrapper);
         }
         return Result.OK("删除成功!");
@@ -312,8 +308,11 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 return Result.error("所选知识库中有已经被使用的知识库，不能删除");
             }
         }
-        faultCauseSolutionService.removeBatchByIds(ids);
-        return  Result.OK("批量删除成功!");
+        this.removeBatchByIds(ids);
+        QueryWrapper<FaultCauseSolution> wrapper = new QueryWrapper<>();
+        wrapper.lambda().in(FaultCauseSolution::getKnowledgeBaseId, ids);
+        faultCauseSolutionService.remove(wrapper);
+        return Result.OK("批量删除成功!");
     }
 
     @Override
@@ -323,7 +322,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         InputStream resourceAsStream = resource.getInputStream();
 
         //2.获取临时文件
-        File fileTemp= new File("/templates/knowledgeBase.xlsx");
+        File fileTemp = new File("/templates/knowledgeBase.xlsx");
         try {
             //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
             FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
@@ -334,7 +333,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         String path = fileTemp.getAbsolutePath();
         TemplateExportParams exportParams = new TemplateExportParams(path);
         Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
-        Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
 
         CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
 
@@ -373,7 +372,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         try {
             response.setHeader("Content-Disposition",
                     "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
-            response.setHeader("Content-Disposition", "attachment;filename="+"故障知识库导入模板.xlsx");
+            response.setHeader("Content-Disposition", "attachment;filename=" + "故障知识库导入模板.xlsx");
             BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
             workbook.write(bufferedOutPut);
             bufferedOutPut.flush();
@@ -422,7 +421,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     tipMessage = "导入失败，该文件为空。";
                     return imporReturnRes(errorLines, successLines, tipMessage, false, null);
                 }
-               //数据校验
+                //数据校验
                 for (FaultKnowledgeBaseModel model : list) {
                     if (ObjectUtil.isNotEmpty(model)) {
                         FaultKnowledgeBase em = new FaultKnowledgeBase();
@@ -433,7 +432,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                             // 截取字符
                             model.setDeviceMistake(stringBuilder.toString());
                             errorLines++;
-                        }else{
+                        } else {
                             faultKnowledgeBaseList.add(em);
                         }
                     }
@@ -453,7 +452,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     return imporReturnRes(errorLines, successLines, tipMessage, true, null);
                 }
 
-            }catch (Exception e) {
+            } catch (Exception e) {
                 String msg = e.getMessage();
                 log.error(msg, e);
                 if (msg != null && msg.contains("Duplicate entry")) {
@@ -461,7 +460,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 } else {
                     return Result.error("文件导入失败:" + e.getMessage());
                 }
-            }finally {
+            } finally {
                 try {
                     file.getInputStream().close();
                 } catch (IOException e) {
@@ -534,7 +533,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 faultCauseSolutionDTO.setFaultCause(key[0]);
                 faultCauseSolutionDTO.setSolution(key[1]);
             }
-            faultCauseSolutionDTO.setId(IdUtil.getSnowflake(2,2).nextIdStr());
+            faultCauseSolutionDTO.setId(IdUtil.getSnowflake(2, 2).nextIdStr());
             faultCauseSolutionDTO.setKnowledgeBaseId(id);
             faultCauseSolutionDTO.setSpareParts(faultSpareParts);
 
@@ -566,6 +565,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     /**
      * 维修建议
+     *
      * @param knowledgeId 知识库id
      * @return
      */
@@ -583,30 +583,30 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
         String majorCode = null;
         String systemCode = null;
-        if(StrUtil.isBlank(faultKnowledgeBaseModel.getMajorName())){
+        if (StrUtil.isBlank(faultKnowledgeBaseModel.getMajorName())) {
             stringBuilder.append("专业必填，");
-        }else {
+        } else {
             JSONObject csMajorByName = sysBaseApi.getCsMajorByName(faultKnowledgeBaseModel.getMajorName());
-            if (ObjectUtil.isNotNull(csMajorByName)){
+            if (ObjectUtil.isNotNull(csMajorByName)) {
                 majorCode = csMajorByName.getString("majorCode");
                 faultKnowledgeBase.setMajorCode(majorCode);
-            }else {
+            } else {
                 stringBuilder.append("系统中不存在该专业，");
             }
         }
 
-        if (StrUtil.isBlank(faultKnowledgeBaseModel.getSystemName())){
+        if (StrUtil.isBlank(faultKnowledgeBaseModel.getSystemName())) {
             stringBuilder.append("子系统必填，");
-        }else {
-            if(StrUtil.isNotBlank(majorCode)){
+        } else {
+            if (StrUtil.isNotBlank(majorCode)) {
                 JSONObject systemName = sysBaseApi.getSystemName(majorCode, faultKnowledgeBaseModel.getSystemName());
-                if (ObjectUtil.isNotNull(systemName)){
+                if (ObjectUtil.isNotNull(systemName)) {
                     systemCode = systemName.getString("systemCode");
                     faultKnowledgeBase.setSystemCode(systemCode);
-                }else {
+                } else {
                     stringBuilder.append("系统中该专业下不存在该子系统，");
                 }
-            }else {
+            } else {
                 stringBuilder.append("请正确填写专业后，在填写子系统，");
             }
 
@@ -614,62 +614,62 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
         if (StrUtil.isBlank(faultKnowledgeBaseModel.getKnowledgeBaseTypeName())) {
             stringBuilder.append("故障现象分类必填，");
-        }else {
-            if (StrUtil.isNotBlank(systemCode)){
+        } else {
+            if (StrUtil.isNotBlank(systemCode)) {
                 LambdaQueryWrapper<FaultKnowledgeBaseType> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-                lambdaQueryWrapper.eq(FaultKnowledgeBaseType::getName,faultKnowledgeBaseModel.getKnowledgeBaseTypeName())
-                                  .eq(FaultKnowledgeBaseType::getSystemCode,systemCode)
-                                  .eq(FaultKnowledgeBaseType::getDelFlag,0);
+                lambdaQueryWrapper.eq(FaultKnowledgeBaseType::getName, faultKnowledgeBaseModel.getKnowledgeBaseTypeName())
+                        .eq(FaultKnowledgeBaseType::getSystemCode, systemCode)
+                        .eq(FaultKnowledgeBaseType::getDelFlag, 0);
                 FaultKnowledgeBaseType faultKnowledgeBaseType = faultKnowledgeBaseTypeMapper.selectOne(lambdaQueryWrapper);
-                if (ObjectUtil.isNotNull(faultKnowledgeBaseType)){
+                if (ObjectUtil.isNotNull(faultKnowledgeBaseType)) {
                     faultKnowledgeBase.setKnowledgeBaseTypeCode(faultKnowledgeBaseType.getCode());
-                }else {
+                } else {
                     stringBuilder.append("系统中该子系统下不存在该故障现象分类，");
                 }
-            }else {
+            } else {
                 stringBuilder.append("请正确填写子系统后，在填写故障现象分类，");
             }
         }
 
-        if (StrUtil.isBlank(faultKnowledgeBaseModel.getDeviceTypeName())){
+        if (StrUtil.isBlank(faultKnowledgeBaseModel.getDeviceTypeName())) {
             stringBuilder.append("设备类型名称必填，");
-        }else {
+        } else {
             String deviceTypeName = faultKnowledgeBaseModel.getDeviceTypeName();
             List<DeviceType> deviceCodeByName = faultKnowledgeBaseMapper.getDeviceCodeByName(deviceTypeName);
-            if(CollUtil.isNotEmpty(deviceCodeByName)){
+            if (CollUtil.isNotEmpty(deviceCodeByName)) {
                 List<String> collect = deviceCodeByName.stream().map(DeviceType::getCode).collect(Collectors.toList());
-                if(CollUtil.isNotEmpty(collect)){
+                if (CollUtil.isNotEmpty(collect)) {
                     String deviceTypeCode = collect.get(0);
                     faultKnowledgeBase.setDeviceTypeCode(deviceTypeCode);
                 }
-            }else{
+            } else {
                 stringBuilder.append("系统中不存在该设备类型，");
             }
         }
 
-        if(StrUtil.isNotBlank(faultKnowledgeBaseModel.getMaterialName())){
+        if (StrUtil.isNotBlank(faultKnowledgeBaseModel.getMaterialName())) {
             String materialName = faultKnowledgeBaseModel.getMaterialName();
             List<DeviceAssemblyDTO> deviceAssemblyCode = faultKnowledgeBaseMapper.getDeviceAssemblyCode(materialName);
-            if(CollUtil.isNotEmpty(deviceAssemblyCode)){
+            if (CollUtil.isNotEmpty(deviceAssemblyCode)) {
                 List<String> collect = deviceAssemblyCode.stream().map(DeviceAssemblyDTO::getMaterialCode).collect(Collectors.toList());
-                if(CollUtil.isNotEmpty(collect)){
+                if (CollUtil.isNotEmpty(collect)) {
                     String deviceAssCode = collect.get(0);
                     faultKnowledgeBase.setMaterialCode(deviceAssCode);
                 }
-            }else{
+            } else {
                 stringBuilder.append("系统中不存在该设备组件，");
             }
         }
 
-        if(StrUtil.isBlank(faultKnowledgeBaseModel.getFaultPhenomenon())){
+        if (StrUtil.isBlank(faultKnowledgeBaseModel.getFaultPhenomenon())) {
             stringBuilder.append("故障现象必填，");
-        }else{
+        } else {
             faultKnowledgeBase.setFaultPhenomenon(faultKnowledgeBaseModel.getFaultPhenomenon());
         }
 
-        if(StrUtil.isBlank(faultKnowledgeBaseModel.getSolution())){
+        if (StrUtil.isBlank(faultKnowledgeBaseModel.getSolution())) {
             stringBuilder.append("解决方案必填，");
-        }else{
+        } else {
             faultKnowledgeBase.setSolution(faultKnowledgeBaseModel.getSolution());
         }
         //设置导入流程是工班长还是技术员
@@ -677,7 +677,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         List<String> roleList = StrUtil.splitTrim(roleCodes, ",");
         if (roleList.contains(RoleConstant.FOREMAN)) {
             faultKnowledgeBase.setProcessInitiator(0);
-        }else if (roleList.contains(RoleConstant.TECHNICIAN)) {
+        } else if (roleList.contains(RoleConstant.TECHNICIAN)) {
             faultKnowledgeBase.setProcessInitiator(1);
         } else {
             faultKnowledgeBase.setProcessInitiator(0);
@@ -736,7 +736,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         try {
             String fileName = "故障知识库导入错误清单" + "_" + System.currentTimeMillis() + "." + type;
             FileOutputStream out = new FileOutputStream(upLoadPath + File.separator + fileName);
-            url =fileName;
+            url = fileName;
             workbook.write(out);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -790,7 +790,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     }
 
     //下拉框
-    private void selectList(Workbook workbook,String name,int firstCol, int lastCol,List<DictModel> modelList){
+    private void selectList(Workbook workbook, String name, int firstCol, int lastCol, List<DictModel> modelList) {
         Sheet sheet = workbook.getSheetAt(0);
         if (CollectionUtil.isNotEmpty(modelList)) {
             //将新建的sheet页隐藏掉, 下拉值太多，需要创建隐藏页面
@@ -826,13 +826,13 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     public boolean getRole() {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> rolesByUsername = sysBaseApi.getRolesByUsername(sysUser.getUsername());
-        if (!rolesByUsername.contains(RoleConstant.ADMIN)&&!rolesByUsername.contains(RoleConstant.FOREMAN)&&!rolesByUsername.contains(RoleConstant.MAJOR_PEOPLE)) {
+        if (!rolesByUsername.contains(RoleConstant.ADMIN) && !rolesByUsername.contains(RoleConstant.FOREMAN) && !rolesByUsername.contains(RoleConstant.MAJOR_PEOPLE)) {
             return true;
         }
         return false;
     }
 
-    public String startProcess(FaultKnowledgeBase faultKnowledgeBase){
+    public String startProcess(FaultKnowledgeBase faultKnowledgeBase) {
         String id = faultKnowledgeBase.getId();
         if (StrUtil.isEmpty(id)) {
             //list转string
@@ -842,7 +842,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             faultKnowledgeBase.setFaultPhenomenonCode(faultPhenomenonCode);
             faultKnowledgeBase.setStatus(FaultConstant.PENDING);
             faultKnowledgeBase.setDelFlag(0);
-            if (StringUtils.isEmpty(faultKnowledgeBase.getDeviceTypeCode())|| StringUtils.isEmpty(faultKnowledgeBase.getMaterialCode())) {
+            if (StringUtils.isEmpty(faultKnowledgeBase.getDeviceTypeCode()) || StringUtils.isEmpty(faultKnowledgeBase.getMaterialCode())) {
                 Result<String> result = new Result<>();
                 result.error500("设备或组件不能为空");
             }
@@ -855,7 +855,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 for (FaultCauseSolutionDTO faultCauseSolution : faultCauseSolutions) {
                     List<FaultSparePartDTO> spareParts = faultCauseSolution.getSpareParts();
                     // 存在备件信息
-                    if(CollUtil.isNotEmpty(spareParts)){
+                    if (CollUtil.isNotEmpty(spareParts)) {
                         for (FaultSparePartDTO sparePart : spareParts) {
                             causeSolution = new FaultCauseSolution();
                             BeanUtils.copyProperties(faultCauseSolution, causeSolution);
@@ -877,23 +877,29 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             }
             String newId = faultKnowledgeBase.getId();
             return newId;
-        }else{
+        } else {
             getFaultCodeList(faultKnowledgeBase);
             faultKnowledgeBaseMapper.updateById(faultKnowledgeBase);
             // 修改故障原因和解决方案
             List<FaultCauseSolutionDTO> faultCauseSolutions = faultKnowledgeBase.getFaultCauseSolutions();
+            // 删除原先的数据
+            QueryWrapper<FaultCauseSolution> wrapper = new QueryWrapper<>();
+            wrapper.lambda().eq(FaultCauseSolution::getKnowledgeBaseId, id);
+            faultCauseSolutionService.remove(wrapper);
+            // 不为空添加数据
             if (CollUtil.isNotEmpty(faultCauseSolutions)) {
                 List<FaultCauseSolution> causeSolutions = new ArrayList<>();
                 FaultCauseSolution causeSolution = null;
                 for (FaultCauseSolutionDTO faultCauseSolution : faultCauseSolutions) {
                     List<FaultSparePartDTO> spareParts = faultCauseSolution.getSpareParts();
                     // 存在备件信息
-                    if(CollUtil.isNotEmpty(spareParts)){
+                    if (CollUtil.isNotEmpty(spareParts)) {
                         for (FaultSparePartDTO sparePart : spareParts) {
                             causeSolution = new FaultCauseSolution();
                             BeanUtils.copyProperties(faultCauseSolution, causeSolution);
                             causeSolution.setKnowledgeBaseId(faultKnowledgeBase.getId());
                             causeSolution.setSparePartCode(sparePart.getSparePartCode());
+                            causeSolution.setSpecification(sparePart.getSpecification());
                             causeSolution.setNumber(sparePart.getNumber());
                             causeSolutions.add(causeSolution);
                         }
@@ -923,7 +929,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         return code;
     }
 
-    /**list转string*/
+    /**
+     * list转string
+     */
     private void getFaultCodeList(FaultKnowledgeBase faultKnowledgeBase) {
         List<String> faultCodeList = faultKnowledgeBase.getFaultCodeList();
         if (CollectionUtils.isNotEmpty(faultCodeList)) {
@@ -933,8 +941,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 stringBuilder.append(",");
             }
             // 判断字符串长度是否有效
-            if (stringBuilder.length() > 0)
-            {
+            if (stringBuilder.length() > 0) {
                 // 截取字符
                 stringBuilder.deleteCharAt(stringBuilder.length() - 1);
             }
