@@ -20,20 +20,14 @@ import com.aiurt.modules.faultcausesolution.dto.FaultCauseSolutionDTO;
 import com.aiurt.modules.faultcausesolution.dto.FaultSparePartDTO;
 import com.aiurt.modules.faultcausesolution.entity.FaultCauseSolution;
 import com.aiurt.modules.faultcausesolution.service.IFaultCauseSolutionService;
-import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
-import com.aiurt.modules.faultknowledgebase.dto.FaultKnowledgeBaseDTO;
-import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
-import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
+import com.aiurt.modules.faultknowledgebase.dto.*;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -471,10 +465,31 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	}
 
 
+	/**
+	 * 查找故障现象模板
+	 * @param symptomReqDTO 请求参数
+	 * @return
+	 */
 	@GetMapping("/querySymptomTemplate")
 	@ApiOperation(value="查找故障现象模板", notes="查故障现象模板")
 	public Result<IPage<SymptomResDTO>> querySymptomTemplate(SymptomReqDTO symptomReqDTO) {
 		Page<SymptomResDTO> page = faultKnowledgeBaseService.querySymptomTemplate(symptomReqDTO);
 		return Result.OK(page);
+	}
+
+
+	/**
+	 *  维修建议
+	 * @param knowledgeId 知识库id
+	 * @return
+	 */
+	@GetMapping("/queryRepairSolRec")
+	@ApiOperation(value="维修建议", notes="维修建议")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "knowledgeId", value = "知识库id", required = true, paramType = "query", dataType = "String")
+	})
+	public Result<RepairSolRecDTO> queryRepairSolRecDTO(@RequestParam(value = "knowledgeId", required = false) String knowledgeId) {
+		RepairSolRecDTO repairSolRecDTO = faultKnowledgeBaseService.queryRepairSolRecDTO(knowledgeId);
+		return Result.OK(repairSolRecDTO);
 	}
  }

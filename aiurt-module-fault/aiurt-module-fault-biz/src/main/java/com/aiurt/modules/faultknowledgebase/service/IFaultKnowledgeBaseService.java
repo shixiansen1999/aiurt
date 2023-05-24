@@ -1,6 +1,7 @@
 package com.aiurt.modules.faultknowledgebase.service;
 
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
+import com.aiurt.modules.faultknowledgebase.dto.RepairSolRecDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
@@ -95,4 +96,11 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @return
      */
     Page<SymptomResDTO> querySymptomTemplate(SymptomReqDTO symptomReqDTO);
+
+    /**
+     * 维修建议
+     * @param knowledgeId 知识库id
+     * @return
+     */
+    RepairSolRecDTO queryRepairSolRecDTO(String knowledgeId);
 }
