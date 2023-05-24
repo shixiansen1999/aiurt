@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
@@ -10,6 +11,8 @@ import com.aiurt.boot.task.entity.PatrolSamplePerson;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.mapper.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -33,9 +36,11 @@ public class AppPatrolTaskThreadService implements Callable<PatrolTaskDTO> {
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
     private PatrolAccompanyMapper accompanyMapper;
     private PatrolSamplePersonMapper patrolSamplePersonMapper;
+    private ISysBaseAPI sysBaseApi;
 
 
-    public AppPatrolTaskThreadService(PatrolTaskDTO patrolTaskDTO, PatrolTaskMapper patrolTaskMapper, PatrolTaskStandardMapper patrolTaskStandardMapper, PatrolManager manager, PatrolTaskDeviceMapper patrolTaskDeviceMapper,PatrolAccompanyMapper accompanyMapper,PatrolSamplePersonMapper patrolSamplePersonMapper) {
+    public AppPatrolTaskThreadService(PatrolTaskDTO patrolTaskDTO, PatrolTaskMapper patrolTaskMapper, PatrolTaskStandardMapper patrolTaskStandardMapper, PatrolManager manager,
+                                      PatrolTaskDeviceMapper patrolTaskDeviceMapper,PatrolAccompanyMapper accompanyMapper,PatrolSamplePersonMapper patrolSamplePersonMapper, ISysBaseAPI sysBaseApi) {
         this.patrolTaskDTO = patrolTaskDTO;
         this.patrolTaskMapper = patrolTaskMapper;
         this.patrolTaskStandardMapper = patrolTaskStandardMapper;
@@ -43,6 +48,7 @@ public class AppPatrolTaskThreadService implements Callable<PatrolTaskDTO> {
         this.patrolTaskDeviceMapper = patrolTaskDeviceMapper;
         this.accompanyMapper = accompanyMapper;
         this.patrolSamplePersonMapper = patrolSamplePersonMapper;
+        this.sysBaseApi = sysBaseApi;
     }
 
     @Override
@@ -79,6 +85,12 @@ public class AppPatrolTaskThreadService implements Callable<PatrolTaskDTO> {
                 samplePersonList = samplePersonList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolSamplePerson::getUserId))), ArrayList::new));
                 String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining("；"));
                 patrolTaskDTO.setSamplePersonName(samplePersonName);
+            }
+            if(ObjectUtil.isNotEmpty(patrolTaskDTO.getEndUserId())){
+                LoginUser userById = sysBaseApi.getUserById(patrolTaskDTO.getEndUserId());
+                patrolTaskDTO.setEndUserName(userById.getRealname());
+            }else {
+                patrolTaskDTO.setEndUserName("-");
             }
             patrolTaskDTO.setStationName(manager.translateStation(stationName));
             patrolTaskDTO.setSysName(sysName);

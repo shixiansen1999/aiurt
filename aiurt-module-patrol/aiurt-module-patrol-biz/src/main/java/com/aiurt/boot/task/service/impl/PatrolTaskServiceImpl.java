@@ -827,7 +827,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 new LinkedBlockingQueue<Runnable>(), namedThreadFactory);
         List<Future<PatrolTaskDTO>> futureList = new ArrayList<>();
         taskList.stream().forEach(e -> {
-            Future<PatrolTaskDTO> submit = patrolTask.submit(new AppPatrolTaskThreadService(e,patrolTaskMapper,patrolTaskStandardMapper,manager,patrolTaskDeviceMapper,accompanyMapper,patrolSamplePersonMapper));
+            Future<PatrolTaskDTO> submit = patrolTask.submit(new AppPatrolTaskThreadService(e,patrolTaskMapper,patrolTaskStandardMapper,manager,patrolTaskDeviceMapper,accompanyMapper,patrolSamplePersonMapper,sysBaseApi));
             futureList.add(submit);
         });
         // 确认每个线程都执行完成

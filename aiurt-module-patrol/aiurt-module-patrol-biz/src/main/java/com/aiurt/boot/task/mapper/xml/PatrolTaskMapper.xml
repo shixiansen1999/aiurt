@@ -110,6 +110,7 @@
         t1.end_time,
         t1.type,
         t1.status,
+        t1.end_user_id,
 <!--        (select realname from sys_user where id = t1.end_user_id) as-->
 <!--        endUserName,-->
         concat(DATE_FORMAT(t1.start_time, '%H:%i'), "-", DATE_FORMAT(t1.end_time, '%H:%i')) as startEndTime
