@@ -311,9 +311,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 return Result.error("所选知识库中有已经被使用的知识库，不能删除");
             }
         }
-        this.lambdaUpdate().in(FaultKnowledgeBase::getId, ids)
-                .set(FaultKnowledgeBase::getDelFlag,1)
-                .update();
+        faultCauseSolutionService.removeBatchByIds(ids);
         return  Result.OK("批量删除成功!");
     }
 
@@ -849,6 +847,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                             BeanUtils.copyProperties(faultCauseSolution, causeSolution);
                             causeSolution.setKnowledgeBaseId(faultKnowledgeBase.getId());
                             causeSolution.setSparePartCode(sparePart.getSparePartCode());
+                            causeSolution.setSpecification(sparePart.getSpecification());
                             causeSolution.setNumber(sparePart.getNumber());
                             causeSolutions.add(causeSolution);
                         }

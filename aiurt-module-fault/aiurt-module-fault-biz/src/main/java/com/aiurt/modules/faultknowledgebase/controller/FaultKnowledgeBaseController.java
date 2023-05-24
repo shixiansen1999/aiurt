@@ -98,55 +98,55 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 		return Result.OK(faultKnowledgeBasePage);
 	}
 
-	/**
-	 * 添加
-	 *
-	 * @param faultKnowledgeBase
-	 * @return
-	 */
-	@AutoLog(value = "故障知识库-故障知识库分页列表-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/fault/faultKnowledgeBaseList")
-	@ApiOperation(value = "故障知识库-添加", notes = "故障知识库-添加")
-	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody FaultKnowledgeBase faultKnowledgeBase) {
-		//list转string
-		getFaultCodeList(faultKnowledgeBase);
-		faultKnowledgeBase.setStatus(FaultConstant.PENDING);
-		faultKnowledgeBase.setDelFlag(0);
-		if (org.apache.commons.lang.StringUtils.isEmpty(faultKnowledgeBase.getDeviceTypeCode())|| StringUtils.isEmpty(faultKnowledgeBase.getMaterialCode())) {
-			Result<String> result = new Result<>();
-			result.error500("设备或组件不能为空");
-		}
-		faultKnowledgeBaseMapper.insert(faultKnowledgeBase);
-		String id = faultKnowledgeBase.getId();
-		// 添加故障原因和解决方案
-		List<FaultCauseSolutionDTO> faultCauseSolutions = faultKnowledgeBase.getFaultCauseSolutions();
-		if (CollUtil.isNotEmpty(faultCauseSolutions)) {
-			List<FaultCauseSolution> causeSolutions = new ArrayList<>();
-			FaultCauseSolution causeSolution = null;
-			for (FaultCauseSolutionDTO faultCauseSolution : faultCauseSolutions) {
-				List<FaultSparePartDTO> spareParts = faultCauseSolution.getSpareParts();
-				// 存在备件信息
-				if(CollUtil.isNotEmpty(spareParts)){
-					for (FaultSparePartDTO sparePart : spareParts) {
-						causeSolution = new FaultCauseSolution();
-						BeanUtils.copyProperties(faultCauseSolution, causeSolution);
-						causeSolution.setKnowledgeBaseId(id);
-						causeSolution.setSparePartCode(sparePart.getSparePartCode());
-						causeSolution.setNumber(sparePart.getNumber());
-						causeSolutions.add(causeSolution);
-					}
-					continue;
-				}
-				// 备件信息为空
-				causeSolution = new FaultCauseSolution();
-				BeanUtils.copyProperties(faultCauseSolution, causeSolution);
-				causeSolution.setKnowledgeBaseId(id);
-				causeSolutions.add(causeSolution);
-			}
-			faultCauseSolutionService.saveBatch(causeSolutions);
-		}
-		return Result.OK("添加成功！");
-	}
+//	/**
+//	 * 添加
+//	 *
+//	 * @param faultKnowledgeBase
+//	 * @return
+//	 */
+//	@AutoLog(value = "故障知识库-故障知识库分页列表-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/fault/faultKnowledgeBaseList")
+//	@ApiOperation(value = "故障知识库-添加", notes = "故障知识库-添加")
+//	@PostMapping(value = "/add")
+//	public Result<String> add(@RequestBody FaultKnowledgeBase faultKnowledgeBase) {
+//		//list转string
+//		getFaultCodeList(faultKnowledgeBase);
+//		faultKnowledgeBase.setStatus(FaultConstant.PENDING);
+//		faultKnowledgeBase.setDelFlag(0);
+//		if (org.apache.commons.lang.StringUtils.isEmpty(faultKnowledgeBase.getDeviceTypeCode())|| StringUtils.isEmpty(faultKnowledgeBase.getMaterialCode())) {
+//			Result<String> result = new Result<>();
+//			result.error500("设备或组件不能为空");
+//		}
+//		faultKnowledgeBaseMapper.insert(faultKnowledgeBase);
+//		String id = faultKnowledgeBase.getId();
+//		// 添加故障原因和解决方案
+//		List<FaultCauseSolutionDTO> faultCauseSolutions = faultKnowledgeBase.getFaultCauseSolutions();
+//		if (CollUtil.isNotEmpty(faultCauseSolutions)) {
+//			List<FaultCauseSolution> causeSolutions = new ArrayList<>();
+//			FaultCauseSolution causeSolution = null;
+//			for (FaultCauseSolutionDTO faultCauseSolution : faultCauseSolutions) {
+//				List<FaultSparePartDTO> spareParts = faultCauseSolution.getSpareParts();
+//				// 存在备件信息
+//				if(CollUtil.isNotEmpty(spareParts)){
+//					for (FaultSparePartDTO sparePart : spareParts) {
+//						causeSolution = new FaultCauseSolution();
+//						BeanUtils.copyProperties(faultCauseSolution, causeSolution);
+//						causeSolution.setKnowledgeBaseId(id);
+//						causeSolution.setSparePartCode(sparePart.getSparePartCode());
+//						causeSolution.setNumber(sparePart.getNumber());
+//						causeSolutions.add(causeSolution);
+//					}
+//					continue;
+//				}
+//				// 备件信息为空
+//				causeSolution = new FaultCauseSolution();
+//				BeanUtils.copyProperties(faultCauseSolution, causeSolution);
+//				causeSolution.setKnowledgeBaseId(id);
+//				causeSolutions.add(causeSolution);
+//			}
+//			faultCauseSolutionService.saveBatch(causeSolutions);
+//		}
+//		return Result.OK("添加成功！");
+//	}
 
 	 /**
 	  *  审批
@@ -163,48 +163,48 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 									@RequestParam(name = "id") String id) {
 		 return faultKnowledgeBaseService.approval(approvedRemark, approvedResult, id);
 	 }
-	/**
-	 *  编辑
-	 *
-	 * @param faultKnowledgeBase
-	 * @return
-	 */
-	@AutoLog(value = "故障知识库-故障知识库分页列表-编辑", operateType =  3, operateTypeAlias = "修改-编辑", permissionUrl = "/fault/faultKnowledgeBaseList")
-	@ApiOperation(value="故障知识库-编辑", notes="故障知识库-编辑")
-	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody FaultKnowledgeBase faultKnowledgeBase) {
-		getFaultCodeList(faultKnowledgeBase);
-		faultKnowledgeBaseService.updateById(faultKnowledgeBase);
-		String id = faultKnowledgeBase.getId();
-		// 修改故障原因和解决方案
-		List<FaultCauseSolutionDTO> faultCauseSolutions = faultKnowledgeBase.getFaultCauseSolutions();
-		if (CollUtil.isNotEmpty(faultCauseSolutions)) {
-			List<FaultCauseSolution> causeSolutions = new ArrayList<>();
-			FaultCauseSolution causeSolution = null;
-			for (FaultCauseSolutionDTO faultCauseSolution : faultCauseSolutions) {
-				List<FaultSparePartDTO> spareParts = faultCauseSolution.getSpareParts();
-				// 存在备件信息
-				if(CollUtil.isNotEmpty(spareParts)){
-					for (FaultSparePartDTO sparePart : spareParts) {
-						causeSolution = new FaultCauseSolution();
-						BeanUtils.copyProperties(faultCauseSolution, causeSolution);
-						causeSolution.setKnowledgeBaseId(id);
-						causeSolution.setSparePartCode(sparePart.getSparePartCode());
-						causeSolution.setNumber(sparePart.getNumber());
-						causeSolutions.add(causeSolution);
-					}
-					continue;
-				}
-				// 备件信息为空
-				causeSolution = new FaultCauseSolution();
-				BeanUtils.copyProperties(faultCauseSolution, causeSolution);
-				causeSolution.setKnowledgeBaseId(id);
-				causeSolutions.add(causeSolution);
-			}
-			faultCauseSolutionService.updateBatchById(causeSolutions);
-		}
-		return Result.OK("编辑成功!");
-	}
+//	/**
+//	 *  编辑
+//	 *
+//	 * @param faultKnowledgeBase
+//	 * @return
+//	 */
+//	@AutoLog(value = "故障知识库-故障知识库分页列表-编辑", operateType =  3, operateTypeAlias = "修改-编辑", permissionUrl = "/fault/faultKnowledgeBaseList")
+//	@ApiOperation(value="故障知识库-编辑", notes="故障知识库-编辑")
+//	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+//	public Result<String> edit(@RequestBody FaultKnowledgeBase faultKnowledgeBase) {
+//		getFaultCodeList(faultKnowledgeBase);
+//		faultKnowledgeBaseService.updateById(faultKnowledgeBase);
+//		String id = faultKnowledgeBase.getId();
+//		// 修改故障原因和解决方案
+//		List<FaultCauseSolutionDTO> faultCauseSolutions = faultKnowledgeBase.getFaultCauseSolutions();
+//		if (CollUtil.isNotEmpty(faultCauseSolutions)) {
+//			List<FaultCauseSolution> causeSolutions = new ArrayList<>();
+//			FaultCauseSolution causeSolution = null;
+//			for (FaultCauseSolutionDTO faultCauseSolution : faultCauseSolutions) {
+//				List<FaultSparePartDTO> spareParts = faultCauseSolution.getSpareParts();
+//				// 存在备件信息
+//				if(CollUtil.isNotEmpty(spareParts)){
+//					for (FaultSparePartDTO sparePart : spareParts) {
+//						causeSolution = new FaultCauseSolution();
+//						BeanUtils.copyProperties(faultCauseSolution, causeSolution);
+//						causeSolution.setKnowledgeBaseId(id);
+//						causeSolution.setSparePartCode(sparePart.getSparePartCode());
+//						causeSolution.setNumber(sparePart.getNumber());
+//						causeSolutions.add(causeSolution);
+//					}
+//					continue;
+//				}
+//				// 备件信息为空
+//				causeSolution = new FaultCauseSolution();
+//				BeanUtils.copyProperties(faultCauseSolution, causeSolution);
+//				causeSolution.setKnowledgeBaseId(id);
+//				causeSolutions.add(causeSolution);
+//			}
+//			faultCauseSolutionService.updateBatchById(causeSolutions);
+//		}
+//		return Result.OK("编辑成功!");
+//	}
 
 	 /**list转string*/
 	 private void getFaultCodeList(FaultKnowledgeBase faultKnowledgeBase) {
