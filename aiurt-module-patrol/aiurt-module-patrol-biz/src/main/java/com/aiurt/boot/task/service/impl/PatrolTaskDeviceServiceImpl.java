@@ -330,9 +330,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                                 updateWrapper.set(PatrolTask::getMacStatus, 0);
                                 break;
                             }
-                            //wifi地址管理该地址为空算正常
-                        } else if (CollUtil.isEmpty(wifiMac)){
-                            updateWrapper.set(PatrolTask::getMacStatus, 1);
                         }else {
                             updateWrapper.set(PatrolTask::getMacStatus, 0);
                             break;
