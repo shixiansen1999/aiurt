@@ -32,6 +32,7 @@ import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.dto.FaultKnowledgeBaseModel;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
+import com.aiurt.modules.faultknowledgebase.dto.*;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
@@ -554,7 +555,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     /**
      * 查找故障现象模板
      *
-     * @param symptomReqDTO
+     * @param symptomReqDTO 请求参数
      * @return
      */
     @Override
@@ -563,6 +564,19 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         List<SymptomResDTO> symptomResDTOS = baseMapper.querySymptomTemplate(page, symptomReqDTO);
         page.setRecords(symptomResDTOS);
         return page;
+    }
+
+    /**
+     * 维修建议
+     * @param knowledgeId 知识库id
+     * @return
+     */
+    @Override
+    public RepairSolRecDTO queryRepairSolRecDTO(String knowledgeId) {
+        // 查询故障知识库
+
+        // 查询故障原因及解决方案
+        return null;
     }
 
     private void examine(FaultKnowledgeBaseModel faultKnowledgeBaseModel, FaultKnowledgeBase faultKnowledgeBase, StringBuilder stringBuilder, List<FaultKnowledgeBaseModel> list) {

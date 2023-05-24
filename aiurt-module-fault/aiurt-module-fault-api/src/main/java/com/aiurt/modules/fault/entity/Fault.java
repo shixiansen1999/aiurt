@@ -109,7 +109,7 @@ public class Fault extends DictEntity implements Serializable {
 
 	/**故障现象*/
 	@Excel(name = "故障现象分类", width = 15)
-    @ApiModelProperty(value = "故障现象分类",  required = true)
+    @ApiModelProperty(value = "故障现象分类编码",  required = true)
     @NotBlank(message = "故障现象分类!")
     @Dict(dictTable = "fault_knowledge_base_type", dicCode = "code", dicText = "name")
     private String faultPhenomenon;
@@ -248,11 +248,7 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty("故障设备类表")
 	private List<FaultDevice> faultDeviceList;
 
-	@ApiModelProperty("推荐使用的故障知识库id, 逗号隔开")
-	private String knowledgeBaseIds;
 
-	@ApiModelProperty("使用的解决方案ID")
-	private String knowledgeId;
 
 	@ApiModelProperty(value = "yn, 是否委外 1:是,0否", required = true)
     @Dict(dicCode = "yn")
@@ -364,6 +360,16 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "故障现象")
     private String symptoms;
 
+    @ApiModelProperty("推荐使用的故障知识库id, 逗号隔开")
+    @Deprecated
+    private String knowledgeBaseIds;
+
+    @ApiModelProperty("故障现象id，从故障想象模板接口回填")
+    private String knowledgeId;
+
+    @ApiModelProperty(value = "故障描述")
+    private String faultMark;
+
     @ApiModelProperty(value = "故障详细位置")
     private String detailLocation;
     @ApiModelProperty(value = "是否是自己的故障任务")
@@ -372,15 +378,4 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "是否是调度列表的故障下发")
     @TableField(exist = false)
     private Boolean isFaultExternal;
-    public static void main(String[] args) {
-        Fault fault = new Fault();
-
-        if (fault instanceof BaseEntity) {
-            System.out.println("1111111");
-        }
-
-        if (fault instanceof  DictEntity) {
-            System.out.println("2222222");
-        }
-    }
 }
