@@ -1,18 +1,28 @@
 package com.aiurt.modules.sysfile.controller;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.sysfile.entity.SysFile;
+import com.aiurt.modules.sysfile.entity.SysFileInfo;
+import com.aiurt.modules.sysfile.param.SysFileInfoParam;
 import com.aiurt.modules.sysfile.param.SysFileParam;
 import com.aiurt.modules.sysfile.param.SysFileWebParam;
 import com.aiurt.modules.sysfile.service.ISysFileManageService;
+import com.aiurt.modules.sysfile.vo.SysFileDetailVO;
 import com.aiurt.modules.sysfile.vo.SysFileManageVO;
-import com.aiurt.modules.sysfile.vo.SysFileVO;
+import com.aiurt.modules.sysfile.vo.TypeNameVO;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -20,6 +30,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -37,15 +48,15 @@ public class SysFileManageController {
     private ISysFileManageService sysFileManageService;
 
     /**
-     * 获取文档分页列表查询
+     * 查询文档分页列表
      *
      * @param sysFile
      * @param pageNo
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "文档表-分页列表查询")
-    @ApiOperation(value = "文档表-分页列表查询", notes = "文档表-分页列表查询")
+    @AutoLog(value = "查询文档分页列表")
+    @ApiOperation(value = "查询文档分页列表", notes = "查询文档分页列表")
     @GetMapping(value = "/list")
     public Result<IPage<SysFileManageVO>> getFilePageList(SysFileWebParam sysFile,
                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -63,8 +74,8 @@ public class SysFileManageController {
      * @param files 待添加的文件信息集合
      * @return 添加结果，包含SysFile对象
      */
-    @AutoLog(value = "文档表-添加")
-    @ApiOperation(value = "文档表-添加", notes = "文档表-添加")
+    @AutoLog(value = "添加文件")
+    @ApiOperation(value = "添加文件", notes = "添加文件")
     @PostMapping(value = "/add")
     public Result<SysFile> addFile(HttpServletRequest req, @RequestBody @Validated List<SysFileParam> files) {
         Result<SysFile> result = sysFileManageService.addFile(files);
@@ -74,26 +85,26 @@ public class SysFileManageController {
     /**
      * 编辑文件
      *
-     * @param req     HttpServletRequest对象，用于获取请求相关信息
+     * @param req          HttpServletRequest对象，用于获取请求相关信息
      * @param sysFileParam SysFileParam对象，待编辑的文件信息
      * @return 编辑结果，包含SysFile对象
      */
-    @AutoLog(value = "文档表-编辑")
-    @ApiOperation(value = "文档表-编辑", notes = "文档表-编辑")
+    @AutoLog(value = "编辑文件")
+    @ApiOperation(value = "编辑文件", notes = "编辑文件")
     @PutMapping(value = "/edit")
     public Result<SysFile> editFile(HttpServletRequest req, @RequestBody SysFileParam sysFileParam) {
-        int result = sysFileManageService.editFile(sysFileParam);
-        return result > 0 ? Result.OK("编辑文档成功") : Result.error("编辑文档失败");
+        sysFileManageService.editFile(sysFileParam);
+        return Result.OK("编辑文档成功");
     }
 
     /**
-     * 通过id删除文件
+     * 通过文件id删除文件
      *
      * @param id 文件ID，待删除的文件的唯一标识符
      * @return 删除结果，表示文件删除成功与否的通用结果对象
      */
-    @AutoLog(value = "文档表-通过id删除", operateType = 4, permissionUrl = "/document/documentManage")
-    @ApiOperation(value = "文档表-通过id删除", notes = "文档表-通过id删除")
+    @AutoLog(value = "通过文件id删除文件", operateType = 4, permissionUrl = "/document/documentManage")
+    @ApiOperation(value = "通过文件id删除文件", notes = "通过文件id删除文件")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         int result = sysFileManageService.removeById(id);
@@ -101,16 +112,16 @@ public class SysFileManageController {
     }
 
     /**
-     * 通过id查询
+     * 通过id查询文件
      *
      * @param id 文件ID，待查询的文件的唯一标识符
      * @return 查询文件结果
      */
-    @AutoLog(value = "文档表-通过id查询")
-    @ApiOperation(value = "文档表-通过id查询", notes = "文档表-通过id查询")
+    @AutoLog(value = "通过id查询文件")
+    @ApiOperation(value = "通过id查询文件", notes = "通过id查询文件")
     @GetMapping(value = "/queryById")
-    public Result<SysFileVO> queryById(@RequestParam(name = "id", required = true) String id) {
-        SysFileVO result = sysFileManageService.getById(id);
+    public Result<SysFileDetailVO> queryById(@RequestParam(name = "id", required = true) String id) {
+        SysFileDetailVO result = sysFileManageService.queryById(id);
         return Result.OK(result);
     }
 
@@ -129,20 +140,19 @@ public class SysFileManageController {
     }
 
     /**
-     * 导出下载报告列表
+     * 通过文件夹id查询该文件夹下的文件的类型
      *
-     * @param request  HttpServletRequest对象，用于获取请求相关信息
-     * @param response HttpServletResponse对象，用于设置响应相关信息
-     * @param fileId   文件ID，指定要导出下载的报告列表的文件的唯一标识符
-     * @return ModelAndView对象，用于渲染导出下载报告列表的视图
+     * @param request 请求
+     * @param typeId  id类型
+     * @return {@code Result<List<TypeNameVO>>}
      */
-    @AutoLog(value = "文档表-下载记录导出")
-    @ApiOperation(value = "文档表-下载记录导出", notes = "文档表-下载记录导出")
-    @RequestMapping(value = "/reportExportDownloadList")
-    public ModelAndView reportExportDownloadList(HttpServletRequest request,
-                                                 HttpServletResponse response,
-                                                 @RequestParam(value = "fileId", required = true) Long fileId) {
-        ModelAndView mv = sysFileManageService.reportExportDownloadList(fileId);
-        return mv;
+    @AutoLog(value = "通过文件夹id查询该文件夹下的文件的类型")
+    @ApiOperation(value = "通过文件夹id查询该文件夹下的文件的类型", notes = "通过文件夹id查询该文件夹下的文件的类型")
+    @GetMapping(value = "/queryByTypeId")
+    public Result<List<TypeNameVO>> queryByTypeId(HttpServletRequest request,
+                                                  @RequestParam(value = "typeId", required = false) Long typeId) {
+        return null;
     }
+
+
 }

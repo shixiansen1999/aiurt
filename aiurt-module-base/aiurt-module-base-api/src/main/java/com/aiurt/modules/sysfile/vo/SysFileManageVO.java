@@ -26,8 +26,8 @@ public class SysFileManageVO implements Serializable {
     @ApiModelProperty(value = "主键id")
     private Long id;
 
-    @ApiModelProperty(value = "所属文件夹名称")
-    private String typeName;
+    @ApiModelProperty(value = "所属文件夹id")
+    private String typeId;
 
     @ApiModelProperty(value = "文件名称")
     private String name;
@@ -53,13 +53,6 @@ public class SysFileManageVO implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
     private Date updateTime;
-    /**
-     * 是否为创建人,有全体控制按钮
-     */
-    private Integer allFlag;
-
-    @ApiModelProperty(value = "上传人名称")
-    private String createByName;
 
     @ApiModelProperty(value = "权限（1允许查看，2允许下载、3允许在线编辑、4允许删除、5允许编辑、6可管理权限）")
     private Integer permissions;

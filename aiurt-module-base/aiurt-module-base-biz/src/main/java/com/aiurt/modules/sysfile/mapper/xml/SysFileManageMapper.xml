@@ -2,21 +2,71 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.sysfile.mapper.SysFileManageMapper">
 
-<select id="selectFilePage" resultType="com.aiurt.modules.sysfile.entity.SysFile">
-	select * from sys_file
-		<where>
-			    del_flag = 0
-			<if test="typeId != null and typeId.size() != 0">
-				and type_id in
-				<foreach collection="typeId" index="index" open="(" separator="," close=")" item="item">
-					#{item}
-				</foreach>
-			</if>
-			<if test="fileName != null">
-				and `name` LIKE CONCAT ('%', #{fileName}, '%')
-			</if>
-		</where>
-	   order by create_time desc
-	<!--limit #{no},#{size}-->
-	</select>
+    <select id="selectFilePage" resultType="com.aiurt.modules.sysfile.entity.SysFile">
+        select * from sys_file
+        <where>
+            del_flag = 0
+            <if test="typeId != null and typeId.size() != 0">
+                and type_id in
+                <foreach collection="typeId" index="index" open="(" separator="," close=")" item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="fileName != null">
+                and `name` LIKE CONCAT ('%', #{fileName}, '%')
+            </if>
+        </where>
+        order by create_time desc
+        <!--limit #{no},#{size}-->
+    </select>
+    <select id="getFilePageList" resultType="com.aiurt.modules.sysfile.vo.SysFileManageVO">
+        SELECT
+        sf.id,
+        sf.NAME,
+        sf.create_time,
+        sf.create_by,
+        sf.type_id,
+        sf.type,
+        MAX( sffp1.permission ) AS permission
+        FROM
+        sys_file sf
+        LEFT JOIN sys_folder_file_permission sffp1 ON ( sffp1.file_id = sf.id AND sffp1.del_flag = 0 )
+        WHERE
+        sf.id IN (
+        SELECT
+        sffp.file_id
+        FROM
+        sys_folder_file_permission sffp
+        WHERE
+        sffp.del_flag = 0
+        AND ( sffp.user_id = #{currLoginUserId} OR sffp.org_code = #{currLoginOrgCode})
+        GROUP BY
+        sffp.file_id
+        )
+        AND sf.del_flag = 0
+        AND ( sffp1.user_id = #{currLoginUserId} OR sffp1.org_code = #{currLoginOrgCode})
+        <if test="sysFileWebParam.typeId !='' and sysFileWebParam.typeId!=null">
+            AND sf.type_id = #{sysFileWebParam.typeId}
+        </if>
+        <if test="sysFileWebParam.name !='' and sysFileWebParam.name!=null">
+            AND sf.name  LIKE CONCAT ('%', #{sysFileWebParam.name}, '%')
+        </if>
+        <if test="sysFileWebParam.type !='' and sysFileWebParam.type!=null">
+            AND sf.type = #{sysFileWebParam.type}
+        </if>
+        <if test="sysFileWebParam.type !='' and sysFileWebParam.type!=null">
+            AND sf.type = #{sysFileWebParam.type}
+        </if>
+        <if test="sysFileWebParam.startTime !=null and sysFileWebParam.endTime!=null">
+            AND sf.create_time between #{sysFileWebParam.startTime} and #{sysFileWebParam.endTime}
+        </if>
+        <if test="userNames!=null and userNames.size>0">
+            AND sf.create_by in
+            <foreach collection="userNames" item="username" open="(" close=")" separator=",">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY
+        sf.id
+    </select>
 </mapper>

@@ -41,9 +41,6 @@ public class SysFolderFilePermission {
     @ApiModelProperty(value = "权限（1允许查看，2允许下载、3允许在线编辑、4允许删除、5允许编辑、6可管理权限）")
     private Integer permission;
 
-    @ApiModelProperty(value = "是否是继承父级的权限，（0否1是）")
-    private Boolean isExtends;
-
     @ApiModelProperty(value = "删除状态")
     private Boolean delFlag;
 

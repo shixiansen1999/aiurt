@@ -12,14 +12,19 @@ import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
 import com.aiurt.modules.sysfile.entity.SysFolderFilePermission;
+import com.aiurt.modules.sysfile.mapper.SysFileMapper;
 import com.aiurt.modules.sysfile.mapper.SysFolderMapper;
+import com.aiurt.modules.sysfile.param.SysFolderFilePermissionParam;
 import com.aiurt.modules.sysfile.param.SysFolderParam;
+import com.aiurt.modules.sysfile.service.ISysFileService;
 import com.aiurt.modules.sysfile.service.ISysFolderFilePermissionService;
 import com.aiurt.modules.sysfile.service.ISysFolderService;
+import com.aiurt.modules.sysfile.utils.FileNameUtils;
 import com.aiurt.modules.sysfile.vo.*;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import liquibase.pro.packaged.S;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -46,6 +51,8 @@ import java.util.stream.Collectors;
 public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileType> implements ISysFolderService {
 
     @Resource
+    private ISysFileService sysFileService;
+    @Resource
     private SysFolderMapper sysFolderMapper;
     @Resource
     private ISysFolderFilePermissionService sysFolderFilePermissionService;
@@ -64,7 +71,7 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
 
         checkDuplicateFolder(param);
 
-        validateFolderName(param.getName().trim());
+        FileNameUtils.validateFolderName(param.getName().trim());
 
         setFolderParameters(type, param, loginUser.getUsername());
 
@@ -98,35 +105,23 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
         if (ObjectUtil.isEmpty(sysFileType)) {
             throw new AiurtBootException("未查询到此项数据");
         }
+        try {
+            FileNameUtils.validateFolderName(param.getName().trim());
 
-        validateFolderName(param.getName().trim());
+            // 修改文件夹基本信息
+            boolean isUpdateSuccess = updateFileType(sysFileType, param);
 
-        // 修改文件夹
-        sysFileType
-                .setParentId(param.getParentId())
-                .setGrade(param.getGrade())
-                .setName(param.getName().trim());
-        boolean result = this.updateById(sysFileType);
+            // 删除原来的权限信息
+            boolean isDeleteSuccess = deleteOriginalPermissions(sysFileType);
 
-        if (result) {
-            if (CollUtil.isNotEmpty(param.getAddSysFolderFilePermissionList())) {
-                Date currDate = new Date();
-                List<SysFolderFilePermission> sysFolderFilePermissions = param.getAddSysFolderFilePermissionList().stream()
-                        .map(p -> {
-                            p.setIsExtends(false);
-                            p.setFolderId(sysFileType.getId());
-                            p.setCreateTime(currDate);
-                            return p;
-                        }).collect(Collectors.toList());
-                sysFolderFilePermissionService.saveBatch(sysFolderFilePermissions, 500);
+            // 新增权限信息
+            if (isUpdateSuccess && isDeleteSuccess) {
+                sysFolderFilePermissionService.updateFolderFilePermission(sysFileType.getId(), null, param.getSysFolderFilePermissionParams());
             }
-
-            if (CollUtil.isNotEmpty(param.getDeleteSysFolderFilePermissionParams())) {
-                List<String> deleteSysFolderFilePermissionIds = param.getDeleteSysFolderFilePermissionParams().stream().map(SysFolderFilePermission::getId).collect(Collectors.toList());
-                sysFolderFilePermissionService.removeBatchByIds(deleteSysFolderFilePermissionIds, 500);
-            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new AiurtBootException("编辑失败");
         }
-
     }
 
     @Override
@@ -153,59 +148,32 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
                         .eq(SysFolderFilePermission::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         if (CollUtil.isNotEmpty(sysFolderFilePermissions)) {
-            // 获取文件夹的用户ID列表，并去重
-            String[] userIdArray = sysFolderFilePermissions.stream()
-                    .map(SysFolderFilePermission::getUserId)
-                    .distinct()
-                    .toArray(String[]::new);
-
-            // 查询所有用户信息，并根据用户ID列表进行过滤和转换
-            List<SimpUserVO> simpUserList = Optional.ofNullable(sysBaseApi.queryAllUserByIds(userIdArray))
-                    .orElse(Collections.emptyList())
-                    .stream()
-                    .filter(user -> user.getId() != null)
-                    .map(user -> new SimpUserVO().setUserId(user.getId()).setUserName(user.getRealname()))
-                    .collect(Collectors.toList());
-
-            // 获取文件夹的组织机构代码列表，并去重
-            String orgCodeStr = sysFolderFilePermissions.stream()
-                    .map(SysFolderFilePermission::getOrgCode)
-                    .distinct()
-                    .collect(Collectors.joining(","));
-
-            // 查询所有组织机构信息，并根据组织机构代码列表进行过滤和转换
-            List<FolderFilePermissionDepartVO> folderFilePermissionDepartList = Optional.ofNullable(sysBaseApi.queryDepartsByOrgcodes(orgCodeStr))
-                    .orElse(Collections.emptyList())
-                    .stream()
-                    .filter(depart -> depart.get("orgCode") != null && depart.get("departName") != null)
-                    .map(depart -> new FolderFilePermissionDepartVO().setOrgCode(String.valueOf(depart.get("orgCode"))).setDepartName(String.valueOf(depart.get("departName"))))
-                    .collect(Collectors.toList());
-
-            // 构建权限详情列表
-            List<SysFolderFilePermissionVO> sysFolderFilePermissionList = buildPermissionDetails(sysFolderFilePermissions, simpUserList, folderFilePermissionDepartList);
-
+            List<SysFolderFilePermissionVO> sysFolderFilePermissionList = getPermissionDetails(sysFolderFilePermissions);
             result.setSysFolderFilePermissionList(sysFolderFilePermissionList);
         }
+
         return result;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteFolder(HttpServletRequest req, List<Long> ids) {
         LambdaQueryWrapper<SysFileType> lam = new LambdaQueryWrapper();
-        List<Long> folderIds = this.list(lam).stream().map(SysFileType::getId).collect(Collectors.toList());
-//        SysFileType one = this.sysFileTypeService.lambdaQuery().in(SysFileType::getParentId, ids).last("limit 1").one();
-//        if (one!=null){
-//            throw new AiurtBootException("此目录下有文件夹,无法被直接删除");
-//        }
-//
-//        if (!this.sysFileTypeService.removeByIds(ids)){
-//            return Result.error("删除失败!");
-//        }
-//        //为了清空文件和权限所作操作,并不一定有数据,不做判断
-//        this.sysFileService.lambdaUpdate().in(SysFile::getTypeId,ids).remove();
-//        this.sysFileRoleService.lambdaUpdate().in(SysFileRole::getTypeId, ids).remove();
+        lam.in(SysFileType::getParentId, ids).last("limit 1");
+        long count = this.count(lam);
 
-//        return Result.ok("删除成功!");
+        if (count > 0) {
+            throw new AiurtBootException("此目录下有文件夹,无法被直接删除");
+        }
+
+        boolean isDeleteSuccess = this.removeBatchByIds(ids, 500);
+        if (!isDeleteSuccess) {
+            throw new AiurtBootException("删除失败!");
+        }
+
+        // 为了清空文件和权限所作操作,并不一定有数据,不做判断
+        sysFileService.lambdaUpdate().in(SysFile::getTypeId, ids).remove();
+        sysFolderFilePermissionService.lambdaUpdate().in(SysFolderFilePermission::getFolderId, ids).remove();
     }
 
     /**
@@ -237,7 +205,6 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
             if (CollUtil.isNotEmpty(folderPermission)) {
                 folderPermission.forEach(p -> {
                     p.setFolderId(type.getId());
-                    p.setIsExtends(true);
                 });
             }
         } else {
@@ -245,7 +212,6 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
             sysFolderFilePermission.setFolderId(type.getId());
             sysFolderFilePermission.setUserId(loginUser.getId());
             sysFolderFilePermission.setPermission(SysFileConstant.PERMISSION_MANAGE);
-            sysFolderFilePermission.setIsExtends(false);
             folderPermission.add(sysFolderFilePermission);
         }
 
@@ -288,22 +254,6 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
         generateFolderCode(type, parentId);
     }
 
-    /**
-     * 校验文件夹名称是否包含特殊字符
-     *
-     * @param folderName 文件夹名称
-     * @return true表示文件夹名称不包含特殊字符，false表示文件夹名称包含特殊字符
-     */
-    public void validateFolderName(String folderName) {
-        // 定义特殊字符的正则表达式
-        String specialChars = "[!@#$%^&*()_+\\[\\]{};':\"|<>?/.,]";
-
-        // 使用正则表达式匹配文件夹名称
-        boolean hasSpecialChars = folderName.matches("." + specialChars + ".");
-        if (!hasSpecialChars) {
-            throw new AiurtBootException("名称不得包含" + specialChars);
-        }
-    }
 
     /**
      * 生成文件夹编码并设置Code和CodeCc字段
@@ -369,6 +319,88 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
                 sysFolderFilePermissionList.add(sysFolderFilePermissionVO);
             }
         });
+
+        return sysFolderFilePermissionList;
+    }
+
+    /**
+     * 删除原来的权限信息
+     *
+     * @param sysFileType 文件类型对象
+     */
+    public boolean deleteOriginalPermissions(SysFileType sysFileType) {
+        // 构造查询条件
+        LambdaQueryWrapper<SysFolderFilePermission> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.select(SysFolderFilePermission::getId);
+        lambdaQueryWrapper.eq(SysFolderFilePermission::getFolderId, sysFileType.getId());
+
+        // 查询需要删除的权限信息
+        List<SysFolderFilePermission> sysFolderFilePermissions = sysFolderFilePermissionService.list(lambdaQueryWrapper);
+
+        // 提取权限ID列表
+        List<String> permissionIds = Optional.ofNullable(sysFolderFilePermissions)
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(SysFolderFilePermission::getId)
+                .collect(Collectors.toList());
+
+        // 批量删除权限信息
+        return sysFolderFilePermissionService.removeBatchByIds(permissionIds, 500);
+    }
+
+    /**
+     * 更新文件类型信息
+     *
+     * @param sysFileType 文件类型对象
+     * @param param       更新参数对象
+     * @return true表示更新成功，false表示更新失败
+     */
+    public boolean updateFileType(SysFileType sysFileType, SysFolderParam param) {
+        sysFileType.setParentId(param.getParentId());
+        sysFileType.setGrade(param.getGrade());
+        sysFileType.setName(param.getName().trim());
+
+        return this.updateById(sysFileType);
+    }
+
+    /**
+     * 获取文件夹的权限详情列表
+     *
+     * @param sysFolderFilePermissions 文件夹文件权限列表
+     * @return 权限详情列表
+     */
+    @Override
+    public List<SysFolderFilePermissionVO> getPermissionDetails(List<SysFolderFilePermission> sysFolderFilePermissions) {
+        // 获取文件夹的用户ID列表，并去重
+        String[] userIdArray = sysFolderFilePermissions.stream()
+                .map(SysFolderFilePermission::getUserId)
+                .distinct()
+                .toArray(String[]::new);
+
+        // 查询所有用户信息，并根据用户ID列表进行过滤和转换
+        List<SimpUserVO> simpUserList = Optional.ofNullable(sysBaseApi.queryAllUserByIds(userIdArray))
+                .orElse(Collections.emptyList())
+                .stream()
+                .filter(user -> user.getId() != null)
+                .map(user -> new SimpUserVO().setUserId(user.getId()).setUserName(user.getRealname()))
+                .collect(Collectors.toList());
+
+        // 获取文件夹的组织机构代码列表，并去重
+        String orgCodeStr = sysFolderFilePermissions.stream()
+                .map(SysFolderFilePermission::getOrgCode)
+                .distinct()
+                .collect(Collectors.joining(","));
+
+        // 查询所有组织机构信息，并根据组织机构代码列表进行过滤和转换
+        List<FolderFilePermissionDepartVO> folderFilePermissionDepartList = Optional.ofNullable(sysBaseApi.queryDepartsByOrgcodes(orgCodeStr))
+                .orElse(Collections.emptyList())
+                .stream()
+                .filter(depart -> depart.get("orgCode") != null && depart.get("departName") != null)
+                .map(depart -> new FolderFilePermissionDepartVO().setOrgCode(String.valueOf(depart.get("orgCode"))).setDepartName(String.valueOf(depart.get("departName"))))
+                .collect(Collectors.toList());
+
+        // 构建权限详情列表
+        List<SysFolderFilePermissionVO> sysFolderFilePermissionList = buildPermissionDetails(sysFolderFilePermissions, simpUserList, folderFilePermissionDepartList);
 
         return sysFolderFilePermissionList;
     }
