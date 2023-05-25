@@ -3,6 +3,8 @@ package com.aiurt.boot.wificonnect.service;
 import com.aiurt.boot.wificonnect.entity.WifiConnect;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.Date;
+
 /**
  * @Description: wifi_connect
  * @Author: jeecg-boot
@@ -16,4 +18,13 @@ public interface IWifiConnectService extends IService<WifiConnect> {
      * @param wifiConnect
      */
     void saveOne(WifiConnect wifiConnect);
+
+
+    /**
+     * 根据站点code和连接开始时间查询连接信息
+     * @param stationCode
+     * @param connectTimeBegin
+     * @return
+     */
+    WifiConnect getRecentConnect(String stationCode, Date connectTimeBegin);
 }
