@@ -40,8 +40,8 @@ public class SysFolderController {
      * @param parentId 文件夹父级id，用于筛选符合id的文件夹
      * @return 查询结果，包含SysFolderTreeVO对象列表
      */
-    @AutoLog(value = "文档类型表-获取文件夹数")
-    @ApiOperation(value = "文档类型表-获取文件夹数", notes = "文档类型表-获取文件夹数")
+    @AutoLog(value = "查询文件夹树形结构列表")
+    @ApiOperation(value = "查询文件夹树形结构列表", notes = "查询文件夹树形结构列表")
     @GetMapping(value = "/tree")
     public Result<List<SysFolderTreeVO>> queryFolderTree(HttpServletRequest req, String name, Long parentId) {
         List<SysFolderTreeVO> result = sysFolderService.queryFolderTree(name, parentId);
@@ -69,12 +69,12 @@ public class SysFolderController {
      * @param param SysFolderParam对象，包含要编辑的系统文件夹参数信息
      * @return Result对象，表示编辑操作的结果
      */
-    @AutoLog(value = "文档类型表-修改分类文档")
-    @ApiOperation(value = "文档类型表-修改分类文档", notes = "文档类型表-修改分类文档")
+    @AutoLog(value = "编辑文件夹")
+    @ApiOperation(value = "编辑文件夹", notes = "编辑文件夹")
     @PostMapping(value = "/edit")
     public Result<?> edit(HttpServletRequest req, @RequestBody @Validated SysFolderParam param) {
         sysFolderService.edit(req, param);
-        return Result.ok("修改成功！");
+        return Result.ok("编辑成功！");
     }
 
     /**

@@ -1,8 +1,10 @@
 package com.aiurt.modules.sysfile.service;
 
 import com.aiurt.modules.sysfile.entity.SysFileType;
+import com.aiurt.modules.sysfile.entity.SysFolderFilePermission;
 import com.aiurt.modules.sysfile.param.SysFolderParam;
 import com.aiurt.modules.sysfile.vo.SysFolderDetailVO;
+import com.aiurt.modules.sysfile.vo.SysFolderFilePermissionVO;
 import com.aiurt.modules.sysfile.vo.SysFolderTreeVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -28,7 +30,7 @@ public interface ISysFolderService extends IService<SysFileType> {
     /**
      * 查询文件夹树形结构列表
      *
-     * @param name 文件夹名称，用于筛选符合名称的文件夹
+     * @param name     文件夹名称，用于筛选符合名称的文件夹
      * @param parentId 文件夹父级id，用于筛选符合id的文件夹
      * @return 查询结果，包含SysFolderTreeVO对象列表
      */
@@ -59,4 +61,13 @@ public interface ISysFolderService extends IService<SysFileType> {
      * @param ids 系统文件夹ID列表
      */
     void deleteFolder(HttpServletRequest req, List<Long> ids);
+
+    /**
+     * 获取文件夹的权限详情列表
+     *
+     * @param sysFolderFilePermissions 文件夹文件权限列表
+     * @return 权限详情列表
+     */
+    List<SysFolderFilePermissionVO> getPermissionDetails(List<SysFolderFilePermission> sysFolderFilePermissions);
 }
+

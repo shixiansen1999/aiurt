@@ -53,4 +53,14 @@ public class SysFileConstant {
      * 可管理权限
      */
     public static final Integer PERMISSION_MANAGE = 6;
+
+    /**
+     * 数据字典，代表下载状态
+     */
+    public static final String DOWNLOAD_STATUS = "download_status";
+
+    /**
+     * 下载记录导出的字段
+     */
+    public static final String DOWNLOAD_RECORD_EXPORT_FIELD = "userName,downloadTime,fileName,size,downloadStatusName,downloadDuration";
 }

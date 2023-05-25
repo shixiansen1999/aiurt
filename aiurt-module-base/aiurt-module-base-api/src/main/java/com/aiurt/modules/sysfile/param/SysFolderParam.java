@@ -39,10 +39,4 @@ public class SysFolderParam implements Serializable {
 
     @ApiModelProperty("权限信息")
     private List<SysFolderFilePermissionParam> sysFolderFilePermissionParams;
-
-    @ApiModelProperty("新增的权限信息集合")
-    private List<SysFolderFilePermission> addSysFolderFilePermissionList;
-
-    @ApiModelProperty("删除的权限信息集合")
-    private List<SysFolderFilePermission> deleteSysFolderFilePermissionParams;
 }

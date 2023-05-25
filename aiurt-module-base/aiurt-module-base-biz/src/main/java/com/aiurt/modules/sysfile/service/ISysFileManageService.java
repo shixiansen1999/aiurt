@@ -1,8 +1,10 @@
 package com.aiurt.modules.sysfile.service;
 
 import com.aiurt.modules.sysfile.entity.SysFile;
+import com.aiurt.modules.sysfile.entity.SysFileInfo;
 import com.aiurt.modules.sysfile.param.SysFileParam;
 import com.aiurt.modules.sysfile.param.SysFileWebParam;
+import com.aiurt.modules.sysfile.vo.SysFileDetailVO;
 import com.aiurt.modules.sysfile.vo.SysFileManageVO;
 import com.aiurt.modules.sysfile.vo.SysFileVO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -28,8 +30,6 @@ public interface ISysFileManageService extends IService<SysFile> {
      */
     Page<SysFileManageVO> getFilePageList(Page<SysFileManageVO> page, SysFileWebParam sysFile);
 
-
-
     /**
      * 添加文档
      *
@@ -44,7 +44,7 @@ public interface ISysFileManageService extends IService<SysFile> {
      * @param sysFileParam SysFileParam对象，待添加的文件信息
      * @return 编辑结果，表示文件编辑成功与否的整数值。大于0表示成功，等于0表示失败。
      */
-    int editFile(SysFileParam sysFileParam);
+    void editFile(SysFileParam sysFileParam);
 
     /**
      * 删除文件
@@ -60,15 +60,10 @@ public interface ISysFileManageService extends IService<SysFile> {
      * @param id 文件ID，待查询的文件的唯一标识符
      * @return 查询文件结果
      */
-    SysFileVO getById(String id);
+    SysFileDetailVO queryById(String id);
 
-    /**
-     * 导出下载报告列表
-     *
-     * @param fileId 文件ID，指定要导出下载的报告列表的文件的唯一标识符
-     * @return ModelAndView对象，用于渲染导出下载报告列表的视图
-     */
-    ModelAndView reportExportDownloadList(Long fileId);
+
+
     /**
      * 增加下载次数
      *
@@ -76,4 +71,12 @@ public interface ISysFileManageService extends IService<SysFile> {
      * @return 增加计数是否成功的布尔值，成功返回true，否则返回false
      */
     boolean addCount(Long id);
+
+    /**
+     * 添加下载记录
+     *
+     * @param sysFileInfo 待添加的下载记录信息
+     * @return 添加后的下载记录信息
+     */
+    SysFileInfo addDownload(SysFileInfo sysFileInfo);
 }
