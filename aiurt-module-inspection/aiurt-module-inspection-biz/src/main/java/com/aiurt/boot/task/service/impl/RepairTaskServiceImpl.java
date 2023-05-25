@@ -1568,7 +1568,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LoginUser user = sysBaseApi.getUserById(sysUser.getId());
-        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_SUBMIT_SIGNATURE);
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_SUBMIT_SIGNATURE);
         boolean value = "1".equals(paramModel.getValue());
         if (InspectionConstant.IS_CONFIRM_1.equals(repairTask.getIsConfirm())) {
             //修改检修任务状态
@@ -2473,6 +2473,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 sampling.setUserId(userId);
                 sampling.setRealName(ObjectUtil.isNotEmpty(sysBaseApi.getUserById(userId)) ? sysBaseApi.getUserById(userId).getRealname() : "");
                 sampling.setRepairTaskDeviceCode(repairTaskDeviceRel.getCode());
+                sampling.setDelFlag(0);
                 repairTaskSamplingMapper.insert(sampling);
             });
         }
