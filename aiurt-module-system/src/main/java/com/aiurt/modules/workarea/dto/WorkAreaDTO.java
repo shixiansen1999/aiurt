@@ -38,6 +38,10 @@ public class WorkAreaDTO extends DictEntity{
     @ApiModelProperty(value = "工区类型：1运行工区、2检修工区")
     @Dict(dicCode = "work_area_type")
     private Integer type;
+    /**工区站点code*/
+    @Excel(name = "工区站点code", width = 15)
+    @ApiModelProperty(value = "工区站点code")
+    private String stationCode;
     /**工区地点*/
     @Excel(name = "工区地点", width = 15)
     @ApiModelProperty(value = "工区地点")
