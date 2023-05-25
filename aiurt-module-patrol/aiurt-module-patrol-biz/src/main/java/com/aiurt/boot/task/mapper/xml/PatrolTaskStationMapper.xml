@@ -64,4 +64,13 @@
         AND cs.del_flag = 0
         AND pts.task_code = #{taskCode}
     </select>
+
+    <select id="getStationCodeByTaskCode" resultType="java.lang.String">
+        SELECT pts.station_code
+        FROM
+        patrol_task_station pts
+        WHERE
+        pts.del_flag = 0
+        AND pts.task_code = #{taskCode}
+    </select>
 </mapper>
