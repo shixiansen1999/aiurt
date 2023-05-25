@@ -32,9 +32,12 @@ public class SymptomResDTO implements Serializable {
     @Dict(dicCode = "code",dictTable = "device_type", dicText = "name")
     private String deviceTypeCode;
 
-    @ApiModelProperty(value = "组件编码, 字典值")
+    @ApiModelProperty(value = "物料主数据 字典值")
     @Dict(dicCode = "code",dictTable = "material_base", dicText = "name")
     private String materialCode;
+
+    @ApiModelProperty(value = "组件-部位")
+    private String materialName;
 
     @ApiModelProperty(value = "故障现象")
     private String faultPhenomenon;
@@ -46,5 +49,8 @@ public class SymptomResDTO implements Serializable {
     @ApiModelProperty(value = "故障等级编码，字典值")
     @Dict(dicCode = "code",dictTable = "fault_level", dicText = "name")
     private String faultLevelCode;
+
+
+    private String baseTypeName;
 
 }

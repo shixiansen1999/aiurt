@@ -1,9 +1,6 @@
 package com.aiurt.modules.device.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -55,6 +52,15 @@ public class DeviceCompose implements Serializable {
 	@Excel(name = "物资分类", width = 15)
     @ApiModelProperty(value = "物资分类")
     private String baseTypeCode;
+
+	@ApiModelProperty(value = "物资分类名称")
+    @TableField(exist = false)
+	private String baseTyeName;
+
+    @ApiModelProperty(value = "物资分类Id")
+    @TableField(exist = false)
+	private String baseTypeId;
+
 	/**数量*/
 	@Excel(name = "数量", width = 15)
     @ApiModelProperty(value = "数量")
