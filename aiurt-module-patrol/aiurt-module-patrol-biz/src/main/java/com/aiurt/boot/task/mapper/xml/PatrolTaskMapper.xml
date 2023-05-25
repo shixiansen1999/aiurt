@@ -111,6 +111,10 @@
         t1.type,
         t1.status,
         t1.end_user_id,
+        t1.submit_time,
+        t1.source,
+        t1.period,
+        t1.sign_url,
 <!--        (select realname from sys_user where id = t1.end_user_id) as-->
 <!--        endUserName,-->
         concat(DATE_FORMAT(t1.start_time, '%H:%i'), "-", DATE_FORMAT(t1.end_time, '%H:%i')) as startEndTime
