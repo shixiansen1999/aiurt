@@ -1270,6 +1270,37 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
 
             }
+
+            //获取mac地址
+            List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(patrolTask.getId());
+            List<IndexStationDTO> stationInfo = patrolTaskStationMapper.getStationInfo(patrolTask.getCode());
+            List<String> list = Optional.ofNullable(stationInfo)
+                    .map(Collection::stream)
+                    .orElseGet(Stream::empty)
+                    .map(IndexStationDTO::getStationCode)
+                    .collect(Collectors.toList());
+            List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(list);
+
+            if (CollUtil.isNotEmpty(mac)) {
+                for (PatrolTaskDeviceDTO patrolTaskDeviceDTO : mac) {
+                    if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && CollUtil.isNotEmpty(wifiMac)) {
+                        //忽略大小写全匹配
+                        String mac1 = patrolTaskDeviceDTO.getMac();
+                        String join = CollUtil.join(wifiMac, ",");
+                        if (join.toLowerCase().contains(mac1.toLowerCase())) {
+                            updateWrapper.set(PatrolTask::getMacStatus, 1);
+                        } else {
+                            updateWrapper.set(PatrolTask::getMacStatus, 0);
+                            break;
+                        }
+                    }else {
+                        updateWrapper.set(PatrolTask::getMacStatus, 0);
+                        break;
+                    }
+                }
+            } else {
+                updateWrapper.set(PatrolTask::getMacStatus, 0);
+            }
             patrolTaskMapper.update(new PatrolTask(), updateWrapper);
             // 提交任务如果需要审核则发送一条审核待办消息
             try {
