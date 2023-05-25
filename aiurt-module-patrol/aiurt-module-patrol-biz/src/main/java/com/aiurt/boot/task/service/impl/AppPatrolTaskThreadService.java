@@ -59,7 +59,7 @@ public class AppPatrolTaskThreadService implements Callable<PatrolTaskDTO> {
             String userName = patrolTaskMapper.getUserName(patrolTaskDTO.getBackId());
             List<PatrolTaskStandardDTO> patrolTaskStandard = patrolTaskStandardMapper.getMajorSystemName(patrolTaskDTO.getId());
             String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).distinct().collect(Collectors.joining("；"));
-            String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).distinct().collect(Collectors.joining("；"));
+            String sysName = patrolTaskStandard.stream().filter(e->ObjectUtil.isNotEmpty(e.getSysName())).map(PatrolTaskStandardDTO::getSysName).distinct().collect(Collectors.joining("；"));
             List<String> orgCodes = patrolTaskMapper.getOrgCode(patrolTaskDTO.getCode());
             patrolTaskDTO.setOrganizationName(manager.translateOrg(orgCodes));
             List<StationDTO> stationName = patrolTaskMapper.getStationName(patrolTaskDTO.getCode());
@@ -93,7 +93,7 @@ public class AppPatrolTaskThreadService implements Callable<PatrolTaskDTO> {
                 patrolTaskDTO.setEndUserName("-");
             }
             patrolTaskDTO.setStationName(manager.translateStation(stationName));
-            patrolTaskDTO.setSysName(sysName);
+            patrolTaskDTO.setSysName(ObjectUtil.isNotEmpty(sysName)?sysName:"-");
             patrolTaskDTO.setMajorName(majorName);
             patrolTaskDTO.setOrgCodeList(orgCodes);
             patrolTaskDTO.setPatrolUserName(manager.spliceUsername(patrolTaskDTO.getCode()));
