@@ -28,4 +28,11 @@ public interface IPatrolTaskStationService extends IService<PatrolTaskStation> {
      * @return
      */
     List<SelectTableDTO> getStationTree();
+
+    /**
+     * 根据taskCode获取站点code
+     * @param taskCode
+     * @return
+     */
+    List<String> getStationCodeByTaskCode(String taskCode);
 }

@@ -5,6 +5,8 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -27,6 +29,8 @@ import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.*;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.boot.utils.PdfUtil;
+import com.aiurt.boot.wificonnect.entity.WifiConnect;
+import com.aiurt.boot.wificonnect.service.IWifiConnectService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
@@ -113,6 +117,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private IPatrolTaskStandardService patrolTaskStandardService;
     @Autowired
     private PatrolTaskStandardMapper patrolTaskStandardMapper;
+    @Autowired
+    private IWifiConnectService wifiConnectService;
 
     @Autowired
     private PatrolPlanMapper patrolPlanMapper;
@@ -1270,37 +1276,30 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
 
             }
-
-            //获取mac地址
-            List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(patrolTask.getId());
-            List<IndexStationDTO> stationInfo = patrolTaskStationMapper.getStationInfo(patrolTask.getCode());
-            List<String> list = Optional.ofNullable(stationInfo)
-                    .map(Collection::stream)
-                    .orElseGet(Stream::empty)
-                    .map(IndexStationDTO::getStationCode)
-                    .collect(Collectors.toList());
-            List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(list);
-
-            if (CollUtil.isNotEmpty(mac)) {
-                for (PatrolTaskDeviceDTO patrolTaskDeviceDTO : mac) {
-                    if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && CollUtil.isNotEmpty(wifiMac)) {
-                        //忽略大小写全匹配
-                        String mac1 = patrolTaskDeviceDTO.getMac();
-                        String join = CollUtil.join(wifiMac, ",");
-                        if (join.toLowerCase().contains(mac1.toLowerCase())) {
-                            updateWrapper.set(PatrolTask::getMacStatus, 1);
-                        } else {
-                            updateWrapper.set(PatrolTask::getMacStatus, 0);
-                            break;
-                        }
-                    }else {
-                        updateWrapper.set(PatrolTask::getMacStatus, 0);
-                        break;
-                    }
-                }
+            // 无论任务是否要审核，都要更新巡视工时
+            // 根据id获取task
+            PatrolTask task = this.getById(patrolTaskDTO.getId());
+            // 查询出任务所在的站点，需求说一个任务不可能有多个站点，所以就取第一个
+            List<String> stationCodeList =  patrolTaskStationService.getStationCodeByTaskCode(task.getCode());
+            String stationCode = stationCodeList.get(0);
+            // 查看站点是否是工区
+            // TODO 查看任务的站点是否是工区的方法要改
+            boolean isWorkArea = false;
+            // 巡视标准时长，单位：分钟
+            Integer standardDuration = task.getStandardDuration();
+            if (isWorkArea) {
+                // 工区，巡视时长等于上限时长。
+                updateWrapper.set(PatrolTask::getDuration, standardDuration);
             } else {
-                updateWrapper.set(PatrolTask::getMacStatus, 0);
+                // 非工区，当巡视时长大于大于上限时长时，巡视时长等于上限时长。不然就是wifi最近连接巡视站点时间减提交时间
+                // 查询wifi最近连接时，可以把连接时间大于 提交时间-上限时长。因为大于这个范围的，巡视时长直接等于上限时长(保险再加10分钟)
+                DateTime dateTime = DateUtil.offsetMinute(new Date(), -(standardDuration + 10));
+                WifiConnect wifiConnect = wifiConnectService.getRecentConnect(stationCode, dateTime);
+                Date connectTime = wifiConnect.getConnectTime();
+                int duration = (int) DateUtil.between(connectTime, new Date(), DateUnit.MINUTE);
+                updateWrapper.set(PatrolTask::getDuration, duration >= standardDuration ? standardDuration: duration);
             }
+
             patrolTaskMapper.update(new PatrolTask(), updateWrapper);
             // 提交任务如果需要审核则发送一条审核待办消息
             try {
@@ -1393,6 +1392,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         patrolTask.setStartTime(patrolTaskManualDTO.getStartTime());
         patrolTask.setEndTime(patrolTaskManualDTO.getEndTime());
         patrolTask.setAuditor(patrolTaskManualDTO.getAuditor());
+        patrolTask.setStandardDuration(patrolTaskManualDTO.getStandardDuration());
         patrolTaskMapper.insert(patrolTask);
         //保存组织信息
         String taskCode = patrolTask.getCode();
@@ -2154,5 +2154,22 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             macDto.setErrorMac(errorMac);*/
         }
         return macDto;
+    }
+
+    @Override
+    public void spotCheck(PatrolTaskDTO patrolTaskDTO) {
+        PatrolTask patrolTask = this.getById(patrolTaskDTO.getId());
+        if (ObjectUtil.isEmpty(patrolTask)) {
+            throw new AiurtBootException("未找到此条数据");
+        }
+        if (PatrolConstant.SPOT_CHECK_STATUS_0.equals(patrolTaskDTO.getSpotCheckStatus()) && StrUtil.isEmpty(patrolTaskDTO.getSpotCheckRemark())) {
+            throw new AiurtBootException("抽查情况为未确认时：必须填写抽查备注");
+        }
+        // 设置抽查信息
+        patrolTask.setSpotCheckStatus(patrolTaskDTO.getSpotCheckStatus())
+                .setSpotCheckTime(patrolTaskDTO.getSpotCheckTime())
+                .setSpotCheckUserId(patrolTaskDTO.getSpotCheckUserId())
+                .setSpotCheckRemark(patrolTaskDTO.getSpotCheckRemark());
+        this.updateById(patrolTask);
     }
 }
