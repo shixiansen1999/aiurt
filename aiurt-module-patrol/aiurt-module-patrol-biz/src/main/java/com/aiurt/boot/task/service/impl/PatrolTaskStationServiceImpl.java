@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.standard.dto.LineDTO;
 import com.aiurt.boot.standard.dto.SelectTableDTO;
 import com.aiurt.boot.standard.dto.StationDTO;
@@ -77,4 +78,10 @@ public class PatrolTaskStationServiceImpl extends ServiceImpl<PatrolTaskStationM
         });
         return  list;
     }
+
+    @Override
+    public List<String> getStationCodeByTaskCode(String taskCode) {
+        return patrolTaskStationMapper.getStationCodeByTaskCode(taskCode);
+    }
+
 }
