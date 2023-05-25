@@ -1,6 +1,7 @@
-package com.aiurt.modules.faultcausesolution.entity;
+package com.aiurt.modules.faultsparepart.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -16,17 +17,17 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * @Description: fault_cause_solution
+ * @Description: fault_spare_part
  * @Author: aiurt
  * @Date: 2022-06-24
  * @Version: V1.0
  */
 @Data
-@TableName("fault_cause_solution")
+@TableName("fault_spare_part")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value = "故障原因解决方案对象", description = "故障原因解决方案对象")
-public class FaultCauseSolution implements Serializable {
+@ApiModel(value = "故障知识库备件信息", description = "故障知识库备件信息")
+public class FaultSparePart implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
      * 主键id
@@ -35,52 +36,35 @@ public class FaultCauseSolution implements Serializable {
     @ApiModelProperty(value = "主键id")
     private String id;
     /**
-     * 故障知识库ID
+     * 故障原因及解决方案表ID
      */
-    @ApiModelProperty(value = "故障知识库ID")
-    private String knowledgeBaseId;
+    @ApiModelProperty(value = "故障原因及解决方案表ID")
+    private String causeSolutionId;
     /**
-     * 故障原因
+     * 备件编码
      */
-    @Excel(name = "故障原因", width = 15)
-    @ApiModelProperty(value = "故障原因")
-    private String faultCause;
+    @Excel(name = "备件编码", width = 15)
+    @ApiModelProperty(value = "备件编码")
+    private String sparePartCode;
     /**
-     * 解决方案
+     * 备件名称
      */
-    @Excel(name = "解决方案", width = 15)
-    @ApiModelProperty(value = "解决方案")
-    private String solution;
+    @Excel(name = "备件名称", width = 15)
+    @TableField(exist = false)
+    @ApiModelProperty(value = "备件名称")
+    private String sparePartName;
     /**
-     * 维修视频url
+     * 规格型号
      */
-    @Excel(name = "维修视频url", width = 15)
-    @ApiModelProperty(value = "维修视频url")
-    private String videoUrl;
-//    /**
-//     * 备件编码
-//     */
-//    @Excel(name = "备件编码", width = 15)
-//    @ApiModelProperty(value = "备件编码")
-//    private String sparePartCode;
-//    /**
-//     * 数量
-//     */
-//    @Excel(name = "数量", width = 15)
-//    @ApiModelProperty(value = "数量")
-//    private Integer number;
-//    /**
-//     * 规格型号
-//     */
-//    @Excel(name = "规格型号", width = 15)
-//    @ApiModelProperty(value = "规格型号")
-//    private String specification;
+    @Excel(name = "规格型号", width = 15)
+    @ApiModelProperty(value = "规格型号")
+    private String specification;
     /**
-     * 所属部门
+     * 数量
      */
-    @Excel(name = "所属部门", width = 15)
-    @ApiModelProperty(value = "所属部门")
-    private String sysOrgCode;
+    @Excel(name = "数量", width = 15)
+    @ApiModelProperty(value = "数量")
+    private Integer number;
     /**
      * 删除状态：0.未删除 1已删除
      */

@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultcausesolution.dto;
 
+import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -16,9 +17,9 @@ import java.util.List;
 public class FaultCauseSolutionDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
-     * 虚拟ID
+     * 主键ID
      */
-    @ApiModelProperty(value = "虚拟ID")
+    @ApiModelProperty(value = "主键ID")
     private String id;
     /**
      * 故障知识库ID
@@ -38,8 +39,14 @@ public class FaultCauseSolutionDTO implements Serializable {
     @ApiModelProperty(value = "解决方案")
     private String solution;
     /**
+     * 维修视频url
+     */
+    @Excel(name = "维修视频url", width = 15)
+    @ApiModelProperty(value = "维修视频url")
+    private String videoUrl;
+    /**
      * 备件信息
      */
     @ApiModelProperty(value = "备件信息")
-    private List<FaultSparePartDTO> spareParts;
+    private List<FaultSparePart> spareParts;
 }
