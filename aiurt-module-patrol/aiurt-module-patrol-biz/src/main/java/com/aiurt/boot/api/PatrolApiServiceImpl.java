@@ -234,10 +234,13 @@ public class PatrolApiServiceImpl implements PatrolApi {
             List<ScreenDurationTask> screenDuration = patrolTaskUserMapper.getScreenDuration(startTime, endTime, userList);
             // 获取同行人在指定时间范围内的每一个任务的任务时长(单位秒)
             List<ScreenDurationTask> screentPeerDuration = patrolTaskUserMapper.getScreentPeerDuration(startTime, endTime, userList);
-
-            List<String> collect = screenDuration.stream().map(ScreenDurationTask::getTaskId).collect(Collectors.toList());
-            //若同行人和指派人同属一个班组，则该班组只取一次工时，不能累加
-            List<ScreenDurationTask> dtos = screentPeerDuration.stream().filter(t -> !collect.contains(t.getTaskId())).collect(Collectors.toList());
+            // 通信5期，班组的巡视工时改为同行人累加，需要把所有的人都加起来
+            // List<String> collect = screenDuration.stream().map(ScreenDurationTask::getTaskId).collect(Collectors.toList());
+            // //若同行人和指派人同属一个班组，则该班组只取一次工时，不能累加
+            // List<ScreenDurationTask> dtos = screentPeerDuration.stream().filter(t -> !collect.contains(t.getTaskId())).collect(Collectors.toList());
+            // dtos.addAll(screenDuration);
+            List<ScreenDurationTask> dtos = new ArrayList<>();
+            dtos.addAll(screentPeerDuration);
             dtos.addAll(screenDuration);
             BigDecimal sum = new BigDecimal("0.00");
             for (ScreenDurationTask dto : dtos) {
@@ -416,9 +419,14 @@ public class PatrolApiServiceImpl implements PatrolApi {
             //计算指派实际巡检数、同行人的实际巡检数
             List<UserTeamPatrolDTO> userNowNumber = new ArrayList<>();
             List<UserTeamPatrolDTO> peopleNowNumber = new ArrayList<>();
+            // 通信5期，班组的巡视工时改为同行人累加，需要把所有的人都加起来
+            List<UserTeamPatrolDTO> allNowNumber = new ArrayList<>();
             if (CollUtil.isNotEmpty(useIds)) {
                 userNowNumber.addAll(patrolTaskMapper.getUserNowNumber(useIds, userTeamParameter.getStartDate(), userTeamParameter.getEndDate()));
                 peopleNowNumber.addAll(patrolTaskMapper.getPeopleNowNumber(useIds, userTeamParameter.getStartDate(), userTeamParameter.getEndDate()));
+                // 通信5期，班组的巡视工时改为同行人累加，需要把所有的人都加起来
+                allNowNumber.addAll(userNowNumber);
+                allNowNumber.addAll(peopleNowNumber);
             }
             //过滤实际数不是同一任务的班组
             List<String> nowTaskIds = userNowNumber.stream().map(UserTeamPatrolDTO::getTaskId).collect(Collectors.toList());
@@ -440,7 +448,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
             }
             //计算工时
             if (ObjectUtil.isNotEmpty(dto.getWorkHours())) {
-                List<UserTeamPatrolDTO> dtos = userNowNumber.stream().filter(e -> e.getWorkHours() != null).collect(Collectors.toList());
+                // 通信5期，班组的巡视工时改为同行人累加
+                List<UserTeamPatrolDTO> dtos = allNowNumber.stream().filter(e -> e.getWorkHours() != null).collect(Collectors.toList());
                 BigDecimal planTotalWorkTime = dtos.stream().map(UserTeamPatrolDTO::getWorkHours).reduce(BigDecimal.ZERO, BigDecimal::add);
                 BigDecimal scale = NumberUtil.div(planTotalWorkTime, 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
                 dto.setWorkHours(scale);
