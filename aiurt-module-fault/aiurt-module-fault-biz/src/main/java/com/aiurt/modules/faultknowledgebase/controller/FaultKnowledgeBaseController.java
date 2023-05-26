@@ -78,12 +78,12 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库-分页列表查询", notes="故障知识库-分页列表查询")
 	@GetMapping(value = "/list")
 	@PermissionData(pageComponent = "fault/FaultKnowledgeBaseListChange")
-	public Result<IPage<FaultKnowledgeBase>> queryPageList(FaultKnowledgeBase faultKnowledgeBase,
+	public Result<IPage<FaultKnowledgeBaseBuildDTO>> queryPageList(FaultKnowledgeBase faultKnowledgeBase,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 		Page<FaultKnowledgeBase> page = new Page<FaultKnowledgeBase>(pageNo, pageSize);
-		IPage<FaultKnowledgeBase> faultKnowledgeBasePage = faultKnowledgeBaseService.readAll(page, faultKnowledgeBase);
+		IPage<FaultKnowledgeBaseBuildDTO> faultKnowledgeBasePage = faultKnowledgeBaseService.readAll(page, faultKnowledgeBase);
 		return Result.OK(faultKnowledgeBasePage);
 	}
 

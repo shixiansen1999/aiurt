@@ -1,6 +1,7 @@
 package com.aiurt.modules.faultknowledgebase.service;
 
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
+import com.aiurt.modules.faultknowledgebase.dto.FaultKnowledgeBaseBuildDTO;
 import com.aiurt.modules.faultknowledgebase.dto.RepairSolRecDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
@@ -28,7 +29,7 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @param faultKnowledgeBase
      * @return IPage<faultKnowledgeBase>
      */
-    IPage<FaultKnowledgeBase> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase);
+    IPage<FaultKnowledgeBaseBuildDTO> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase);
 
 
     /**
