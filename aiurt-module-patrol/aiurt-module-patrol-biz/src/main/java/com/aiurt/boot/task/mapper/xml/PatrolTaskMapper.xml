@@ -1371,7 +1371,7 @@
         </if>
     </select>
     <select id="getUserNowNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
-        SELECT IFNULL(pt.duration,'0') * 60 as workHours,
+        SELECT SUM(IFNULL(pt.duration,'0') * 60) as workHours,
         sd.id as orgId,
         pt.id AS taskId
         FROM
@@ -1393,7 +1393,7 @@
         GROUP BY pt.id
     </select>
     <select id="getPeopleNowNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
-        SELECT IFNULL(pt.duration,'0') * 60 as workHours,
+        SELECT SUM(IFNULL(pt.duration,'0') * 60) as workHours,
         sd.id as orgId,
         pt.id AS taskId
         FROM
