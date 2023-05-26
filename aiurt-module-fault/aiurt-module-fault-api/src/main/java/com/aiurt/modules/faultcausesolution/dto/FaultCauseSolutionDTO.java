@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 故障原因解决方案对象
+ * @author 故障原因解决方案对象
  */
 @ApiModel(value = "故障原因解决方案对象", description = "故障原因解决方案对象")
 @Data
@@ -44,6 +44,12 @@ public class FaultCauseSolutionDTO implements Serializable {
     @Excel(name = "维修视频url", width = 15)
     @ApiModelProperty(value = "维修视频url")
     private String videoUrl;
+    /**
+     * 原因出现率百分比
+     */
+    @Excel(name = "原因出现率百分比", width = 15)
+    @ApiModelProperty(value = "原因出现率百分比")
+    private String happenRate;
     /**
      * 备件信息
      */

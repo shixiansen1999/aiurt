@@ -192,6 +192,16 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {
                 List<FaultCauseSolution> list = CollUtil.isEmpty(faultCauseSolutionMap.get(knowledgeBase.getId())) ? new ArrayList<>() : faultCauseSolutionMap.get(knowledgeBase.getId());
                 List<FaultCauseSolutionDTO> faultCauseSolutionList = this.buildCauseSolutions(list, spareParts);
+//                String causes = faultCauseSolutionList.stream()
+//                        .map(FaultCauseSolutionDTO::getFaultCause)
+//                        .collect(Collectors.joining(","));
+//                String solutions = faultCauseSolutionList.stream()
+//                        .map(FaultCauseSolutionDTO::getSolution)
+//                        .collect(Collectors.joining(","));
+//                knowledgeBase.setCauses(causes);
+//                knowledgeBase.setSolutions(solutions);
+                // todo 故障发生率计算
+//                faultCauseSolutionList
                 knowledgeBase.setFaultCauseSolutions(faultCauseSolutionList);
             }
         }
@@ -541,19 +551,32 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 .eq(FaultSparePart::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .in(FaultSparePart::getCauseSolutionId, causeSolutionIds)
                 .list();
+
+        Map<String, String> sparePartCodeMap = null;
         if (CollUtil.isNotEmpty(spareParts)) {
             // 备件编码获取备件名
             List<String> sparePartCodes = spareParts.stream()
                     .map(FaultSparePart::getSparePartCode)
                     .distinct()
                     .collect(Collectors.toList());
-            Map<String, String> sparePartCodeMap = CollUtil.isEmpty(sparePartCodes) ? Collections.emptyMap() : sysBaseApi.getMaterialNameByCode(sparePartCodes);
+            sparePartCodeMap = CollUtil.isEmpty(sparePartCodes) ? Collections.emptyMap() : sysBaseApi.getMaterialNameByCode(sparePartCodes);
             for (FaultSparePart sparePart : spareParts) {
                 sparePart.setSparePartName(sparePartCodeMap.get(sparePart.getSparePartCode()));
             }
-            List<FaultCauseSolutionDTO> faultCauseSolutionList = this.buildCauseSolutions(faultCauseSolutions, spareParts);
-            faultKnowledgeBase.setFaultCauseSolutions(faultCauseSolutionList);
         }
+
+        List<FaultCauseSolutionDTO> faultCauseSolutionList = this.buildCauseSolutions(faultCauseSolutions, spareParts);
+//        String causes = faultCauseSolutionList.stream()
+//                .map(FaultCauseSolutionDTO::getFaultCause)
+//                .collect(Collectors.joining(","));
+//        String solutions = faultCauseSolutionList.stream()
+//                .map(FaultCauseSolutionDTO::getSolution)
+//                .collect(Collectors.joining(","));
+//        faultKnowledgeBase.setCauses(causes);
+//        faultKnowledgeBase.setSolutions(solutions);
+        // todo 故障发生率计算
+//        faultCauseSolutionList.forEach();
+        faultKnowledgeBase.setFaultCauseSolutions(faultCauseSolutionList);
         return faultKnowledgeBase;
     }
 

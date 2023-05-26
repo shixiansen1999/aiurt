@@ -244,17 +244,17 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     @ApiModelProperty(value = "故障原因及解决方案数据集")
     @TableField(exist = false)
     private List<FaultCauseSolutionDTO> faultCauseSolutions;
-    /**
-     * 故障原因数据
-     */
-    @ApiModelProperty(value = "故障原因数据")
-    @TableField(exist = false)
-    private String causes;
-    /**
-     * 解决方案数据
-     */
-    @ApiModelProperty(value = "解决方案数据")
-    @TableField(exist = false)
-    private String solutions;
+//    /**
+//     * 故障原因数据
+//     */
+//    @ApiModelProperty(value = "故障原因数据")
+//    @TableField(exist = false)
+//    private String causes;
+//    /**
+//     * 解决方案数据
+//     */
+//    @ApiModelProperty(value = "解决方案数据")
+//    @TableField(exist = false)
+//    private String solutions;
 
 }
