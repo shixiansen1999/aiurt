@@ -1,6 +1,8 @@
 package com.aiurt.modules.sysfile.mapper;
 
 import com.aiurt.modules.sysfile.entity.SysFile;
+import com.aiurt.modules.sysfile.vo.FileAppVO;
+import com.aiurt.modules.sysfile.vo.SysFileManageVO;
 import com.aiurt.modules.sysfile.param.SysFileWebParam;
 import com.aiurt.modules.sysfile.vo.SysFileManageVO;
 import com.aiurt.modules.sysfile.vo.TypeNameVO;
@@ -42,4 +44,27 @@ public interface SysFileManageMapper extends BaseMapper<SysFile> {
      * @return
      */
     List<TypeNameVO> queryTypeByFolderCode(@Param("folderCodeCc") String folderCodeCc, @Param("currLoginUserId")String currLoginUserId,@Param("currLoginOrgCode") String currLoginOrgCode);
+
+    /**
+     * app查询父节点
+     *
+     * @param page
+     * @param fileName
+     * @param username
+     * @param orgCode
+     * @return
+     */
+    Page<FileAppVO> listPrent(Page<FileAppVO> page, @Param("fileName") String fileName, @Param("username") String username, @Param("orgCode") String orgCode);
+
+    /**
+     * 查询当前节点下有权限的文件于文件夹
+     *
+     * @param page
+     * @param parentId
+     * @param fileName
+     * @param username
+     * @param orgCode
+     * @return
+     */
+    Page<FileAppVO> listPage(Page<FileAppVO> page, @Param("parentId") Long parentId, @Param("fileName") String fileName, @Param("username") String username, @Param("orgCode") String orgCode);
 }

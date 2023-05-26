@@ -31,6 +31,7 @@ import com.aiurt.modules.sysfile.vo.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -252,6 +253,18 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
         SysFileType sysFileType = sysFolderService.getById(typeId);
         List<TypeNameVO> result  = sysFileManageMapper.queryTypeByFolderCode(sysFileType.getFolderCodeCc(),currLoginUserId,currLoginOrgCode);
         return result;
+    }
+
+    @Override
+    public Page<FileAppVO> getAppPageList(Page<FileAppVO> page, Long parentId, String fileName) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Page<FileAppVO> listPage;
+        if (ObjectUtil.isEmpty(parentId)){
+            listPage = baseMapper.listPrent(page,fileName,loginUser.getUsername(),loginUser.getOrgCode());
+            return listPage;
+        }
+        listPage = baseMapper.listPage(page,parentId,fileName,loginUser.getUsername(),loginUser.getOrgCode());
+        return null;
     }
 
     /**

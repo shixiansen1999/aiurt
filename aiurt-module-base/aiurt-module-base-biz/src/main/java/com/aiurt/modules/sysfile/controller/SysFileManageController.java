@@ -5,6 +5,7 @@ import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.param.SysFileParam;
 import com.aiurt.modules.sysfile.param.SysFileWebParam;
 import com.aiurt.modules.sysfile.service.ISysFileManageService;
+import com.aiurt.modules.sysfile.vo.FileAppVO;
 import com.aiurt.modules.sysfile.vo.SysFileDetailVO;
 import com.aiurt.modules.sysfile.vo.SysFileManageVO;
 import com.aiurt.modules.sysfile.vo.TypeNameVO;
@@ -54,7 +55,25 @@ public class SysFileManageController {
         page = sysFileManageService.getFilePageList(page, sysFile);
         return Result.OK(page);
     }
-
+    /**
+     * 查询app文档分页列表
+     *
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
+    @AutoLog(value = "查询文档分页列表")
+    @ApiOperation(value = "查询文档分页列表", notes = "查询文档分页列表")
+    @GetMapping(value = "/getAppPageList")
+    public Result<IPage<FileAppVO>> getAppPageList( @RequestParam(name = "parentId", required = false) Long parentId,
+                                                   @RequestParam(name = "fileName",required = false) String fileName,
+                                                   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                   HttpServletRequest request) {
+        Page<FileAppVO> page = new Page<>(pageNo, pageSize);
+        page = sysFileManageService.getAppPageList(page, parentId,fileName);
+        return Result.OK(page);
+    }
     /**
      * 添加文件
      *

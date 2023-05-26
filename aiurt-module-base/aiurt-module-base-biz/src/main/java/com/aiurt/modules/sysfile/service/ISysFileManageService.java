@@ -4,10 +4,7 @@ import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.entity.SysFileInfo;
 import com.aiurt.modules.sysfile.param.SysFileParam;
 import com.aiurt.modules.sysfile.param.SysFileWebParam;
-import com.aiurt.modules.sysfile.vo.SysFileDetailVO;
-import com.aiurt.modules.sysfile.vo.SysFileManageVO;
-import com.aiurt.modules.sysfile.vo.SysFileVO;
-import com.aiurt.modules.sysfile.vo.TypeNameVO;
+import com.aiurt.modules.sysfile.vo.*;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
@@ -87,4 +84,13 @@ public interface ISysFileManageService extends IService<SysFile> {
      * @return {@code Result<List<TypeNameVO>>}
      */
     List<TypeNameVO> queryByTypeId(Long typeId);
+
+    /**
+     * app分页
+     * @param page
+     * @param parentId
+     * @param fileName
+     * @return
+     */
+    Page<FileAppVO> getAppPageList(Page<FileAppVO> page, Long parentId, String fileName);
 }
