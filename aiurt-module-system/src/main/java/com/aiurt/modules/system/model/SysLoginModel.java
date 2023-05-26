@@ -20,6 +20,12 @@ public class SysLoginModel {
 	@ApiModelProperty(value = "验证码key")
     private String checkKey;
 
+	@ApiModelProperty(value = "客户端版本")
+	private String clientVersion;
+
+	@ApiModelProperty(value = "客户端mac")
+	private String clientMac;
+
     public String getUsername() {
         return username;
     }
@@ -52,4 +58,20 @@ public class SysLoginModel {
 		this.checkKey = checkKey;
 	}
 
+
+    public String getClientVersion() {
+        return clientVersion;
+    }
+
+    public void setClientVersion(String clientVersion) {
+        this.clientVersion = clientVersion;
+    }
+
+    public String getClientMac() {
+        return clientMac;
+    }
+
+    public void setClientMac(String clientMac) {
+        this.clientMac = clientMac;
+    }
 }
