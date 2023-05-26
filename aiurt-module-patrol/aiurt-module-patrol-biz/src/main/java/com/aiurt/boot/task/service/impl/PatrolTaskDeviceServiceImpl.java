@@ -18,6 +18,7 @@ import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
+import com.aiurt.boot.task.service.IPatrolTaskStationService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
@@ -89,7 +90,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     private ISTodoBaseAPI todoBaseApi;
     @Autowired
     private ISysParamAPI sysParamApi;
-
+    @Autowired
+    private IPatrolTaskStationService patrolTaskStationService;
 
     @Override
     public IPage<PatrolTaskDeviceParam> selectBillInfo(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam) {
@@ -317,6 +319,32 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                                 .set(PatrolTask::getAbnormalState, 1)
                                 .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                                 .eq(PatrolTask::getId, task.getId());
+                    }
+
+                }
+
+                // 无论任务是否要审核，都要更新巡视工时
+                // 根据id获取task
+                PatrolTask queryTask = patrolTaskMapper.selectById(task.getId());
+                // 查询出任务所在的站点，需求说一个任务不可能有多个站点，所以就取第一个
+                List<String> stationCodeList =  patrolTaskStationService.getStationCodeByTaskCode(queryTask.getCode());
+                String stationCode = stationCodeList.get(0);
+                // 查看站点是否是工区->提交人所在的班组的工区站点，是否就是任务的站点
+                List<String> WorkAreaStationCodeList = sysBaseApi.getWorkAreaStationCodeByUserId(sysUser.getId());
+                boolean isWorkArea = WorkAreaStationCodeList.contains(stationCode);
+                // 巡视标准时长，单位：分钟
+                Integer standardDuration = queryTask.getStandardDuration();
+                if (isWorkArea) {
+                    // 工区，巡视时长等于上限时长。
+                    updateWrapper.set(PatrolTask::getDuration, standardDuration);
+                } else {
+                    // 非工区，当巡视时长大于大于上限时长时，巡视时长等于上限时长。不然就是wifi最近连接巡视站点时间减提交时间
+                    Date recentConnectTime = sysBaseApi.getRecentConnectTimeByStationCode(stationCode);
+                    if (ObjectUtil.isNull(recentConnectTime)) {
+                        updateWrapper.set(PatrolTask::getDuration, standardDuration);
+                    }else {
+                        int duration = (int) DateUtil.between(recentConnectTime, new Date(), DateUnit.MINUTE);
+                        updateWrapper.set(PatrolTask::getDuration, duration >= standardDuration ? standardDuration: duration);
                     }
 
                 }
