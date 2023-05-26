@@ -20,6 +20,7 @@ import java.util.concurrent.*;
 
 /**
  * 每日2点系统记录传感器的温湿度
+ * 更新为：记录每天每个整点时刻的温湿度数据
  */
 @Slf4j
 @Component
