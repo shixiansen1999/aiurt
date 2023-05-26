@@ -203,5 +203,10 @@ public class PatrolTaskDTO extends DictEntity implements Serializable
      */
     @ApiModelProperty(value = "巡视抽查备注")
     private String spotCheckRemark;
+    /**
+     * 标准工时
+     */
+    @ApiModelProperty(value = "标准工时：单位分钟")
+    private Integer standardDuration;
 }
 

@@ -382,7 +382,8 @@
         <!--pt.discard_status,-->
         <!--pt.discard_reason,-->
         <!--pt.`rebuild`,-->
-        pt.remark
+        pt.remark,
+        pt.standard_duration
         FROM patrol_task pt
         left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
         left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
@@ -1476,14 +1477,24 @@
     <select id="getTemAndHum" resultType="com.aiurt.boot.task.dto.TemperatureHumidityDTO">
         SELECT t.*, s.line_code, s.line_name, s.station_code, s.station_name
         from `temperature_humidity` t
-        left join sensor_information s on t.station_code = s.station_code
-        where s.del_flag = 0 and  t.create_time between DATE_SUB(now(), INTERVAL 30 DAY) and now()
-          AND
-            DATE_FORMAT(t.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{date}
-          AND
-            s.line_code = #{lineCode}
-          AND
-            s.station_code = #{stationCode}
+        left join sensor_information s on t.ip = s.station_ip
+        where s.del_flag = 0
+            AND s.line_code = #{condition.lineCode}
+            AND s.station_code = #{condition.stationCode}
+            <if test="condition.mode != null and condition.mode == 0">
+                AND DATE_FORMAT(t.create_time, '%Y-%m-%d %H') = DATE_FORMAT(#{condition.date}, '%Y-%m-%d %H')
+            </if>
+            <if test="condition.mode != null and condition.mode == 1">
+                AND DATE_FORMAT(t.create_time, '%Y-%m-%d') = DATE_FORMAT(#{condition.date}, '%Y-%m-%d')
+            </if>
+            <if test="condition.mode != null and condition.mode == 2">
+                AND t.create_time between DATE_SUB(#{condition.date}, INTERVAL #{condition.interval} DAY) AND #{condition.date}
+                AND DATE_FORMAT(t.create_time, '%H') = #{condition.hour}
+            </if>
+            <if test="condition.mode != null and condition.mode == 3">
+                AND t.create_time between DATE_SUB(#{condition.date}, INTERVAL #{condition.interval} DAY) AND #{condition.date}
+                AND DATE_FORMAT(t.create_time, '%H') = #{condition.hour}
+            </if>
         order by create_time desc
     </select>
 
