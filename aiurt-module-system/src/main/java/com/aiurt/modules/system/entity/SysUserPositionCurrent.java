@@ -19,11 +19,11 @@ import java.util.Date;
  * @author hlq
  */
 @Data
-@TableName("sys_user_position")
+@TableName("sys_user_position_current")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value = "sys_user_position对象", description = "GPS、wifi定位数据上报")
-public class SysUserPosition {
+@ApiModel(value = "sys_user_position_current对象", description = "用户连接站点wifi的当前位置表")
+public class SysUserPositionCurrent {
 
     /**
      * id
@@ -42,7 +42,7 @@ public class SysUserPosition {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
-    private java.util.Date createTime;
+    private Date createTime;
     /**
      * 修改人
      */
@@ -54,7 +54,7 @@ public class SysUserPosition {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
-    private java.util.Date updateTime;
+    private Date updateTime;
     /**
      * 当前登录人所属部门
      */
@@ -92,4 +92,9 @@ public class SysUserPosition {
      */
     @ApiModelProperty(value = "当前用户(app)所在的车站编号")
     private String stationCode;
+    /**
+     * 当前用户(app)所在的位置是否异常，1-异常，0-正常
+     */
+    @ApiModelProperty(value = "当前用户(app)所在的位置是否异常，1-异常，0-正常")
+    private String isPositionError;
 }

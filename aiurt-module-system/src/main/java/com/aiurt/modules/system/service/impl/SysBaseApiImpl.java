@@ -3207,5 +3207,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return new ArrayList<>();
     }
 
-
+    @Override
+    public String getStationCodeByMac(String mac) {
+        return mac == null ? null : csPositionWifiMapper.getStationCodeByMac(mac);
+    }
 }
