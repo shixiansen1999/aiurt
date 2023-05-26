@@ -779,6 +779,6 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @PostMapping(value = "/spotCheck")
     public Result spotCheck(@RequestBody PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         patrolTaskService.spotCheck(patrolTaskDTO);
-        return Result.ok();
+        return Result.ok("抽巡成功");
     }
 }

@@ -1806,6 +1806,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         updateWrapper.set(PatrolTask::getRemark, patrolTaskManualDTO.getRemark()).set(PatrolTask::getAuditor, patrolTaskManualDTO.getAuditor())
                 .set(PatrolTask::getStartTime, patrolTaskManualDTO.getStartTime()).set(PatrolTask::getEndTime, patrolTaskManualDTO.getEndTime())
                 .set(PatrolTask::getType, patrolTaskManualDTO.getType())
+                .set(PatrolTask::getStandardDuration, patrolTaskManualDTO.getStandardDuration())
                 .set(PatrolTask::getName, patrolTaskManualDTO.getName()).set(PatrolTask::getPatrolDate, patrolTaskManualDTO.getPatrolDate()).eq(PatrolTask::getId, patrolTaskManualDTO.getId());
         patrolTaskMapper.update(new PatrolTask(), updateWrapper);
         //删除、保存站点、组织
