@@ -33,10 +33,10 @@ public class ScreenTran {
      * 组织机构编号
      */
     private List<String> orgCodes;
-//    /**
-//     * 线路编号
-//     */
-//    private List<String> lines;
+    /**
+     * 线路编号
+     */
+    private String lineCode;
 //    /**
 //     * 专业编号
 //     */

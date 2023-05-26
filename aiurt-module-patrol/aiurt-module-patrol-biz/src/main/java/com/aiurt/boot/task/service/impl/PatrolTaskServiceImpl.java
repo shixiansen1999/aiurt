@@ -827,7 +827,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 new LinkedBlockingQueue<Runnable>(), namedThreadFactory);
         List<Future<PatrolTaskDTO>> futureList = new ArrayList<>();
         taskList.stream().forEach(e -> {
-            Future<PatrolTaskDTO> submit = patrolTask.submit(new AppPatrolTaskThreadService(e,patrolTaskMapper,patrolTaskStandardMapper,manager,patrolTaskDeviceMapper,accompanyMapper,patrolSamplePersonMapper));
+            Future<PatrolTaskDTO> submit = patrolTask.submit(new AppPatrolTaskThreadService(e,patrolTaskMapper,patrolTaskStandardMapper,manager,patrolTaskDeviceMapper,accompanyMapper,patrolSamplePersonMapper,sysBaseApi));
             futureList.add(submit);
         });
         // 确认每个线程都执行完成
@@ -1228,6 +1228,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         LoginUser user = sysBaseApi.getUserById(sysUser.getId());
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDTO.getId());
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_SUBMIT_SIGNATURE);
+        boolean value = "1".equals(paramModel.getValue());
         if (manager.checkTaskUser(patrolTask.getCode()) == false && !admin) {
             throw new AiurtBootException("只有该任务的巡检人才可以提交任务");
         } else {
@@ -1238,14 +1240,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 if (CollUtil.isNotEmpty(errDeviceList)) {
                     updateWrapper.set(PatrolTask::getStatus, 6)
                             .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, user.getSignatureUrl())
+                            .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
                             .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                             .set(PatrolTask::getAbnormalState, 0)
                             .eq(PatrolTask::getId, patrolTaskDTO.getId());
                 } else {
                     updateWrapper.set(PatrolTask::getStatus, 6)
                             .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, user.getSignatureUrl())
+                            .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
                             .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                             .set(PatrolTask::getAbnormalState, 1)
                             .eq(PatrolTask::getId, patrolTaskDTO.getId());
@@ -1254,19 +1256,50 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 if (CollUtil.isNotEmpty(errDeviceList)) {
                     updateWrapper.set(PatrolTask::getStatus, 7)
                             .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, user.getSignatureUrl())
+                            .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
                             .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                             .set(PatrolTask::getAbnormalState, 0)
                             .eq(PatrolTask::getId, patrolTaskDTO.getId());
                 } else {
                     updateWrapper.set(PatrolTask::getStatus, 7)
                             .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, user.getSignatureUrl())
+                            .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
                             .set(PatrolTask::getAbnormalState, 1)
                             .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                             .eq(PatrolTask::getId, patrolTaskDTO.getId());
                 }
 
+            }
+
+            //获取mac地址
+            List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(patrolTask.getId());
+            List<IndexStationDTO> stationInfo = patrolTaskStationMapper.getStationInfo(patrolTask.getCode());
+            List<String> list = Optional.ofNullable(stationInfo)
+                    .map(Collection::stream)
+                    .orElseGet(Stream::empty)
+                    .map(IndexStationDTO::getStationCode)
+                    .collect(Collectors.toList());
+            List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(list);
+
+            if (CollUtil.isNotEmpty(mac)) {
+                for (PatrolTaskDeviceDTO patrolTaskDeviceDTO : mac) {
+                    if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && CollUtil.isNotEmpty(wifiMac)) {
+                        //忽略大小写全匹配
+                        String mac1 = patrolTaskDeviceDTO.getMac();
+                        String join = CollUtil.join(wifiMac, ",");
+                        if (join.toLowerCase().contains(mac1.toLowerCase())) {
+                            updateWrapper.set(PatrolTask::getMacStatus, 1);
+                        } else {
+                            updateWrapper.set(PatrolTask::getMacStatus, 0);
+                            break;
+                        }
+                    }else {
+                        updateWrapper.set(PatrolTask::getMacStatus, 0);
+                        break;
+                    }
+                }
+            } else {
+                updateWrapper.set(PatrolTask::getMacStatus, 0);
             }
             patrolTaskMapper.update(new PatrolTask(), updateWrapper);
             // 提交任务如果需要审核则发送一条审核待办消息

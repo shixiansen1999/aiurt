@@ -126,11 +126,6 @@ public class PatrolScreenController {
         return Result.ok(list);
     }
 
-
-    public void getStations() {
-
-    }
-
     /**
      * 大屏巡视模块-温湿度
      *

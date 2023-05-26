@@ -82,7 +82,7 @@ public class PatrolScreenService {
         module.setOrgCodes(orgCodes);
         module.setStartTime(startTime);
         module.setEndTime(endTime);
-
+        module.setLineCode(lineCode);
         List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
 
         String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
@@ -127,6 +127,7 @@ public class PatrolScreenService {
         module.setOrgCodes(orgCodes);
         module.setStartTime(startTime);
         module.setEndTime(endTime);
+        module.setLineCode(lineCode);
         List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
 
         String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
@@ -145,6 +146,7 @@ public class PatrolScreenService {
             todayModule.setStartTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 00:00:00")));
             todayModule.setEndTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 23:59:59")));
             todayModule.setOrgCodes(orgCodes);
+            todayModule.setLineCode(lineCode);
             todayList = patrolTaskMapper.getScreenDataCount(todayModule);
         }
         long planNum = list.stream().count();
@@ -191,6 +193,7 @@ public class PatrolScreenService {
         tran.setStartTime(startTime);
         tran.setEndTime(endTime);
         tran.setOrgCodes(orgCodes);
+        tran.setLineCode(lineCode);
 
         IPage<ScreenStatisticsTask> list = patrolTaskMapper.getScreenTask(page,tran);
 
@@ -332,7 +335,7 @@ public class PatrolScreenService {
         tran.setStartTime(startTime);
         tran.setEndTime(endTime);
         tran.setOrgCodes(orgCodes);
-
+        tran.setLineCode(lineCode);
         List<ScreenStatisticsGraph> list = patrolTaskMapper.getScreenGraph(tran);
         for (ScreenStatisticsGraph graph : list) {
             Long total = graph.getTotal();
@@ -370,7 +373,7 @@ public class PatrolScreenService {
         ScreenModule moduleType = new ScreenModule();
         moduleType.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
         moduleType.setOrgCodes(orgCodes);
-
+        moduleType.setLineCode(lineCode);
         String dateTime = ScreenDateUtil.getDateTime(timeType);
         String[] split = dateTime.split(ScreenConstant.TIME_SEPARATOR);
         Date startTime = DateUtil.parse(split[0]);

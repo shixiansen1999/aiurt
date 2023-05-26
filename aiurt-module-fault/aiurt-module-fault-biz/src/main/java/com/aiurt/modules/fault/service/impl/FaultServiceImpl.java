@@ -1418,8 +1418,15 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         fault.setKnowledgeId(repairRecordDTO.getKnowledgeId());
 
         one.setKnowledgeId(repairRecordDTO.getKnowledgeId());
-        LoginUser user = sysBaseAPI.getUserById(loginUser.getId());
-        one.setSignPath(user.getSignatureUrl());
+        //是否需要自动提交签名（通信需要、站台门不需要）
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_SUBMIT_SIGNATURE);
+        boolean value = "1".equals(paramModel.getValue());
+        if(value){
+            LoginUser user = sysBaseAPI.getUserById(loginUser.getId());
+            one.setSignPath(user.getSignatureUrl());
+        }else {
+            one.setSignPath(repairRecordDTO.getSignPath());
+        }
 
 
         repairRecordService.updateById(one);
@@ -1976,9 +1983,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             return "";
         }
         List<String> result = baseMapper.selectUserNameByComplex(roleCode, majorCode, subSystemCode, stationCode,sysOrgCode);
-        if (CollUtil.isEmpty(result)) {
+        /*if (CollUtil.isEmpty(result)) {
             result = baseMapper.selectUserNameByComplex(roleCode, null, null, null,null);
-        }
+        }*/
         return CollUtil.isNotEmpty(result) ? StrUtil.join(",", result) : "";
     }
 
