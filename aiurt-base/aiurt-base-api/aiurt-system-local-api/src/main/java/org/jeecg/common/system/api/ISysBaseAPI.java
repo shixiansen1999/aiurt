@@ -1151,5 +1151,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<String> getWifiMacByStationCode(List<String> stationCodes);
+
+    /**
+     * 根据mac地址获取站点code
+     * @param mac
+     * @return
+     */
+    String getStationCodeByMac(String mac);
 }
 
