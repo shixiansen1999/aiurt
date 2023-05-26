@@ -127,4 +127,12 @@ where cm.major_code = #{majorCode} and cs.del_flag = 0 and cm.del_flag=0
     select wa.id,wa.name,wa.code from work_area wa left join work_area_station was on was.work_area_code = wa.code
     where was.station_code = #{stationCode} and was.del_flag = 0 and wa.del_flag = 0
     </select>
+    <select id="getWorkAreaStationCodeByUserId" resultType="java.lang.String">
+        SELECT station_code
+        FROM work_area wa
+        JOIN work_area_org wao ON wao.work_area_code = wa.code
+        JOIN sys_depart sd ON sd.org_code = wao.org_code
+        JOIN sys_user_depart sud ON sd.id=sud.dep_id
+        WHERE sud.id = #{userId} AND wa.del_flag = 0
+    </select>
 </mapper>

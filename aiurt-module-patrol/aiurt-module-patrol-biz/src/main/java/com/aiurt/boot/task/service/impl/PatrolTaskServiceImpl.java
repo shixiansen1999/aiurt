@@ -1282,9 +1282,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             // 查询出任务所在的站点，需求说一个任务不可能有多个站点，所以就取第一个
             List<String> stationCodeList =  patrolTaskStationService.getStationCodeByTaskCode(task.getCode());
             String stationCode = stationCodeList.get(0);
-            // 查看站点是否是工区
-            // TODO 查看任务的站点是否是工区的方法要改
-            boolean isWorkArea = false;
+            // 查看站点是否是工区->提交人所在的班组的工区站点，是否就是任务的站点
+            List<String> WorkAreaStationCodeList = sysBaseApi.getWorkAreaStationCodeByUserId(sysUser.getId());
+            boolean isWorkArea = WorkAreaStationCodeList.contains(stationCode);
             // 巡视标准时长，单位：分钟
             Integer standardDuration = task.getStandardDuration();
             if (isWorkArea) {
