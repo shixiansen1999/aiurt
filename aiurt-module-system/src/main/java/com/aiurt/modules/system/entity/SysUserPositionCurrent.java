@@ -1,8 +1,6 @@
 package com.aiurt.modules.system.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -88,9 +86,10 @@ public class SysUserPositionCurrent {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date uploadTime;
     /**
-     * 当前用户(app)所在的车站编号
+     * 当前用户(app)所在的车站编号，为null值时站点code更新为null，并设置为异常
      */
     @ApiModelProperty(value = "当前用户(app)所在的车站编号")
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private String stationCode;
     /**
      * 当前用户(app)所在的位置是否异常，1-异常，0-正常
