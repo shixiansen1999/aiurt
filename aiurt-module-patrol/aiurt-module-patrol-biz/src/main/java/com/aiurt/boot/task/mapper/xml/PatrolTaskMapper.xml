@@ -230,7 +230,8 @@
         pt.discard_status,
         <!--pt.discard_reason,-->
         pt.`rebuild`,
-        pt.remark
+        pt.remark,
+        pt.spot_check_status
         from patrol_task pt
         left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
         left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
