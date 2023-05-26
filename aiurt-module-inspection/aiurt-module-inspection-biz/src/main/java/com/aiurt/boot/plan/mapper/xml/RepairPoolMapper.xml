@@ -307,4 +307,68 @@
         GROUP BY rp.id
         ORDER BY rp.start_time ASC, rp.type ASC, rp.create_time DESC
     </select>
+     <select id="queryPlanStationList" resultType="com.aiurt.boot.plan.dto.StationPlanDTO">
+       select cs.station_code as stationCode ,cs.station_name as stationName,cs.line_code as lineCode,cs.line_name as lineName
+    from cs_user_station cus
+    left join cs_station cs on cs.id = cus.station_id
+    left join cs_line cl on cs.line_code = cl.line_code and cl.del_flag = 0
+    where cs.del_flag = 0
+    <if test="userId != null and userId != ''">
+        and cus.user_id = #{userId}
+    </if>
+    order by cl.sort,cl.line_code,cs.sort,cs.station_code
+<!--      SELECT-->
+<!--        cs.station_code,-->
+<!--        cs.station_name,-->
+<!--        cs.line_code,-->
+<!--        cs.line_name-->
+<!--    FROM-->
+<!--        cs_station cs-->
+<!--        LEFT JOIN cs_line cl ON cs.line_code = cl.line_code-->
+<!--        AND cl.del_flag = 0-->
+<!--    WHERE-->
+<!--        cs.del_flag = 0-->
+    </select>
+    <select id="queryPlanOrgList" resultType="com.aiurt.boot.plan.entity.RepairPool">
+        SELECT
+        rp.id,
+        rp.`status`,
+        rp.`name`,
+        rp.`code`,
+        rp.weeks,
+        rp.type,
+        rp.inspection_str_code,
+        rp.start_time,
+        rp.end_time
+        FROM
+            repair_pool rp
+        LEFT JOIN repair_pool_rel AS rpr ON rpr.repair_pool_code = rp.`code`
+        LEFT JOIN repair_pool_code AS rpc ON rpc.id = rpr.repair_pool_sta_id
+        LEFT JOIN repair_pool_station_rel AS rpsr ON rpsr.repair_pool_code = rp.`code`
+        LEFT JOIN repair_pool_org_rel AS rpor ON rpor.repair_pool_code = rp.`code`
+        <where>
+            rp.del_flag = 0
+            <if test="selectPlanReq.startTime != null and selectPlanReq.endTime != null">
+                AND rp.start_time &gt;= #{selectPlanReq.startTime}
+                AND rp.start_time &lt;= #{selectPlanReq.endTime}
+            </if>
+            <if test="selectPlanReq.code != null and selectPlanReq.code != ''">
+                AND rp.code =#{selectPlanReq.code}
+            </if>
+            <if test="selectPlanReq.type != null">
+                AND rp.type =#{selectPlanReq.type}
+            </if>
+            <if test="selectPlanReq.isManual != null">
+                AND rp.is_manual = #{selectPlanReq.isManual}
+            </if>
+            <if test="selectPlanReq.lineCode != null and selectPlanReq.lineCode != ''">
+                AND rpsr.line_code = #{selectPlanReq.lineCode}
+            </if>
+            <if test="selectPlanReq.stationCode != null and selectPlanReq.stationCode != ''">
+                AND rpsr.station_code = #{selectPlanReq.stationCode}
+            </if>
+        </where>
+        GROUP BY rp.id
+        ORDER BY rp.start_time ASC, rp.type ASC, rp.create_time DESC
+    </select>
 </mapper>

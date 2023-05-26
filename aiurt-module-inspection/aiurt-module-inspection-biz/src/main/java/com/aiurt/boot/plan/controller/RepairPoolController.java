@@ -15,6 +15,7 @@ import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
@@ -52,7 +53,22 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
         IPage<RepairPool> pageList = repairPoolService.queryList(selectPlanReq);
         return Result.OK(pageList);
     }
-
+    /**
+     * 检修计划站所信息
+     * @param selectPlanReq 传参
+     * @return pageList
+     */
+    @AutoLog(value = "检修管理-检修计划-检修计划站所信息", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/overhaul/RepairPoolList")
+    @ApiOperation(value = "检修计划站所信息", notes = "检修计划站所信息")
+    @GetMapping(value = "/queryPlanStationList")
+    @PermissionData(appComponent = "Repair/RepairByStation/index")
+    public Result<IPage<StationPlanDTO>> queryPlanStationList(SelectPlanReq selectPlanReq,
+                                                                @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        Page<StationPlanDTO> page = new Page<>(pageNo, pageSize);
+        IPage<StationPlanDTO> pageList = repairPoolService.queryPlanStationList(page,selectPlanReq);
+        return Result.OK(pageList);
+    }
 
     /**
      * 通过检修计划id查看检修标准详情
