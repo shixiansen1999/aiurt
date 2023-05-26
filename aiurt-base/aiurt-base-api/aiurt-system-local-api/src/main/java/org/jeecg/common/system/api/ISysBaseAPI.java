@@ -773,6 +773,15 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     List<CsWorkAreaModel> getWorkAreaInfo();
 
+
+    /**
+     * 根据用户userId获取用户所属的班组的工区的工区地点站点。
+     * 注：这个工区地点站点不是工区的关联线路。是工区地点。一个工区只有一个工区地点
+     * @param userId
+     * @return
+     */
+    List<String> getWorkAreaStationCodeByUserId(String userId);
+
     /**
      * 根据站点名称和线路id获取站点信息
      * 施工计划导入模块使用，其余慎用！
