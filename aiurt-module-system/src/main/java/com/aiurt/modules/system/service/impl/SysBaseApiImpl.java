@@ -2290,6 +2290,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
+    public List<String> getWorkAreaStationCodeByUserId(String userId) {
+        return workAreaMapper.getWorkAreaStationCodeByUserId(userId);
+    }
+
+    @Override
     public List<CsStation> getStationInfoByNameAndLineId(String cellText, String line) {
         QueryWrapper<CsLine> lineWrapper = new QueryWrapper<>();
         lineWrapper.lambda().eq(CsLine::getId, line).last("limit 1");
