@@ -3,9 +3,7 @@ package com.aiurt.boot.task.dto;
 import com.aiurt.modules.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,10 +19,8 @@ import java.io.Serializable;
  * @Date : 2023/5/16 12:28
  */
 @Data
-@TableName("temperature_humidity")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="temperature_humidity对象", description="temperature_humidity")
 public class TemperatureHumidityDTO extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
