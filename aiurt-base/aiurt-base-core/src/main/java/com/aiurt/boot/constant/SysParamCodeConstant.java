@@ -37,6 +37,10 @@ public interface SysParamCodeConstant {
      */
     String FAULT_SUBMIT_SIGNATURE = "fault_submit_signature";
     /**
+     * 故障是否需要审核
+     */
+    String FAULT_AUDIT = "fault_audit";
+    /**
      * 工作日志上报是否需要在指定时间点内编辑
      */
     String WORKLOG_EDIT = "worklog_edit";
