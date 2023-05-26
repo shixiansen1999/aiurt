@@ -60,11 +60,13 @@ public class SysFileManageController {
     }
 
     /**
-     * 查询app文档分页列表
+     * 根据条件查询app文档分页列表
      *
-     * @param pageNo
-     * @param pageSize
-     * @return
+     * @param parentId 父级ID（可选）
+     * @param fileName 文件名（可选）
+     * @param pageNo   当前页码，默认为1
+     * @param pageSize 每页显示的记录数，默认为10
+     * @return 文件应用分页列表
      */
     @AutoLog(value = "查询app文档分页列表")
     @ApiOperation(value = "查询app文档分页列表", notes = "查询app文档分页列表")

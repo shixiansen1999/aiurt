@@ -94,9 +94,15 @@
             sft.id,
             sft.name as fileName,
             1 as status,
-            sft.parent_id as parentId
+            sft.parent_id as parentId,
+            MAX( sffp1.permission ) AS permission,
+            sft.create_by,
+            sft.update_by,
+            sft.create_time,
+            sft.update_time
         FROM
             sys_file_type sft
+        LEFT JOIN sys_folder_file_permission sffp1 ON ( sffp1.folder_id = sft.id AND sffp1.del_flag = 0 )
         WHERE
             sft.parent_id = '0'
 
@@ -126,7 +132,12 @@
             sft1.id,
             sft1.name as fileName,
             1 as status,
-            sft1.parent_id as parentId
+            sft1.parent_id as parentId,
+            MAX( sffp1.permission ) AS permission,
+            sft1.create_by,
+            sft1.update_by,
+            sft1.create_time,
+            sft1.update_time
         FROM
             sys_file_type sft1
                 LEFT JOIN sys_folder_file_permission sffp1 ON (
@@ -163,14 +174,28 @@
             sf.id,
             sf.name,
             sf.type,
-            sf.status
+            sf.status,
+            sf.url,
+            sf.permission,
+            sf.parentId,
+            sf.create_by,
+            sf.update_by,
+            sf.create_time,
+            sf.update_time
         FROM
             (
                 SELECT
                     sft.id AS id,
                     sft.name AS name,
                     null AS type,
-                    1 as  status
+                    null AS url,
+                    1 as  status,
+                    MAX( sffp.permission ) AS permission,
+                    sft.parent_id AS parentId,
+                    sft.create_by,
+                    sft.update_by,
+                    sft.create_time,
+                    sft.update_time
                 FROM
                     sys_file_type sft
                         LEFT JOIN sys_folder_file_permission sffp ON sft.id = sffp.folder_id
@@ -189,7 +214,14 @@
                     sf.id AS id,
                     sf.name AS name,
                     sf.type AS type,
-                    0 as status
+                    sf.url AS url,
+                    0 as status,
+                    MAX( sffp.permission ) AS permission,
+                    sf.type_id AS parentId,
+                    sft.create_by,
+                    sft.update_by,
+                    sft.create_time,
+                    sft.update_time
                 FROM
                     sys_file sf
                     JOIN sys_file_type sft ON sf.type_id = sft.id

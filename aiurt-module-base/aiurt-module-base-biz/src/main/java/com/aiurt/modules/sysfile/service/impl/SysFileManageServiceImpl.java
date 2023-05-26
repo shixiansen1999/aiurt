@@ -203,7 +203,7 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
 
     @Override
     public Page<FileAppVO> getAppPageList(Page<FileAppVO> page, Long parentId, String fileName) {
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        LoginUser loginUser = getLoginUser();
         Page<FileAppVO> listPage;
         if (ObjectUtil.isEmpty(parentId)) {
             listPage = baseMapper.listPrent(page, fileName, loginUser.getUsername(), loginUser.getOrgCode());
@@ -420,6 +420,8 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
      */
     public boolean updateFile(SysFile sysFile, SysFileParam param) {
         sysFile.setName(param.getName().trim());
+        sysFile.setUpdateTime(new Date());
+        sysFile.setUpdateBy(getLoginUser().getUsername());
         return this.updateById(sysFile);
     }
 
@@ -497,6 +499,8 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
         BeanUtils.copyProperties(file, sysFile);
         processFileNameAndType(sysFile, file);
         processFileSize(sysFile, file);
+        sysFile.setCreateBy(getLoginUser().getUsername());
+        sysFile.setCreateTime(new Date());
         return sysFile;
     }
 

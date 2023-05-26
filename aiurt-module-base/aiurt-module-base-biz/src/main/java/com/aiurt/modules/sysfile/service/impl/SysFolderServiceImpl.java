@@ -333,6 +333,8 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
         sysFileType.setParentId(param.getParentId());
         sysFileType.setGrade(param.getGrade());
         sysFileType.setName(param.getName().trim());
+        sysFileType.setUpdateTime(new Date());
+        sysFileType.setUpdateBy(getLoginUser().getUsername());
 
         return this.updateById(sysFileType);
     }

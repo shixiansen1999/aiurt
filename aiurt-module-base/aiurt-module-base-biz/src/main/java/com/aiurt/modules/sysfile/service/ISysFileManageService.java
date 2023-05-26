@@ -75,6 +75,7 @@ public interface ISysFileManageService extends IService<SysFile> {
      * @return {@code Result<List<TypeNameVO>>}
      */
     List<TypeNameVO> queryByTypeId(Long typeId);
+
     /**
      * 构建数据，新版知识库表结构变动
      * @return
