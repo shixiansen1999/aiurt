@@ -245,4 +245,8 @@ public interface SysParamCodeConstant {
      * 根据配置决定工作日志是否需要自动签名
      */
     String AUTO_SIGNATURE = "auto_signature";
+    /**
+     * 根据配置决定是否需要把工单数量作为任务数量
+     */
+    String PATROL_TASK_DEVICE_NUM = "patrol_task_device_num";
 }

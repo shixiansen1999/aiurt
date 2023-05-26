@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,32 +46,7 @@ public class SysUserPositionController {
     @ApiOperation(value = "GPS、wifi定位数据上报", notes = "GPS、wifi定位数据上报")
     @PostMapping(value = "/add")
     public Result<SysUserPosition> add(@RequestBody SysUserPosition sysUserPosition) {
-        Result<SysUserPosition> result = new Result<SysUserPosition>();
-        try {
-            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            sysUserPosition.setUploadTime(new Date());
-            sysUserPosition.setSysOrgCode(sysUser.getOrgCode());
-            log.info("转换前的参数：{}", JSON.toJSONString(sysUserPosition));
-            // 坐标转换
-            // 纬度
-            BigDecimal latitude = sysUserPosition.getLatitude();
-            // 经度
-            BigDecimal longitude = sysUserPosition.getLongitude();
-            if (Objects.nonNull(latitude) && Objects.nonNull(longitude)) {
-                double[] bd09 = CoordinateTransformUtil.wgs84tobd09(longitude.doubleValue(), latitude.doubleValue());
-                if (Objects.nonNull(bd09)) {
-                    sysUserPosition.setLongitude(BigDecimal.valueOf(bd09[0]));
-                    sysUserPosition.setLatitude(BigDecimal.valueOf(bd09[1]));
-                }
-            }
-            log.info("转换前的参数：{}", JSON.toJSONString(sysUserPosition));
-            sysUserPositionService.save(sysUserPosition);
-            result.success("添加成功！");
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            result.error500("操作失败");
-        }
-        return result;
+        return sysUserPositionService.saveOne(sysUserPosition);
     }
 
 }

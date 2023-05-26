@@ -2441,6 +2441,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 rel.setUserId(userId);
                 rel.setRealName(ObjectUtil.isNotEmpty(sysBaseApi.getUserById(userId)) ? sysBaseApi.getUserById(userId).getRealname() : "");
                 rel.setRepairTaskDeviceCode(repairTaskDeviceRel.getCode());
+                rel.setDelFlag(0);
                 repairTaskPeerRelMapper.insert(rel);
             });
         }

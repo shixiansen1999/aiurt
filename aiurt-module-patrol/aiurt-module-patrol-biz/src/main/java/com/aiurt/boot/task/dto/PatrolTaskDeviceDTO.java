@@ -198,4 +198,10 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "wifi mac地址", width = 15)
     @ApiModelProperty(value = "wifi mac地址")
     private String mac;
+    /**
+     * mac匹配；0异常；1正常
+     */
+    @Excel(name = "mac匹配；0异常；1正常", width = 15)
+    @ApiModelProperty(value = "mac匹配；0异常；1正常")
+    private java.lang.Integer macStatus;
 }

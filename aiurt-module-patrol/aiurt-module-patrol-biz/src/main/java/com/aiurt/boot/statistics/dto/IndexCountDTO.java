@@ -45,6 +45,19 @@ public class IndexCountDTO {
      * 任务已作废状态
      */
     private Integer discardStatus = PatrolConstant.TASK_DISCARD;
+    /**
+     * 工单检查结果异常状态
+     */
+    private Integer checkResult = PatrolConstant.RESULT_EXCEPTION;
+    /**
+     * 工单检查mac地址匹配异常状态
+     */
+    private Integer macStatus = PatrolConstant.MAC_MATCH_EXCEPTION;
+
+    /**
+     * 工单任务完成状态
+     */
+    private Integer checkStatus = PatrolConstant.BILL_COMPLETE;
 
     public IndexCountDTO(Date startDate, Date endDate, String jointSQL) {
         this.startDate = startDate;
