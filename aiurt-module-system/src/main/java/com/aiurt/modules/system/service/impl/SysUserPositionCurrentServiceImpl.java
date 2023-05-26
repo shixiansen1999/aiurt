@@ -1,0 +1,46 @@
+package com.aiurt.modules.system.service.impl;
+
+import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.system.entity.SysUserPositionCurrent;
+import com.aiurt.modules.system.mapper.SysUserPositionCurrentMapper;
+import com.aiurt.modules.system.service.ISysUserPositionCurrentService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+/**
+ * 用户连接站点wifi的当前位置
+ * @author
+ */
+@Service
+@Slf4j
+public class SysUserPositionCurrentServiceImpl extends ServiceImpl<SysUserPositionCurrentMapper, SysUserPositionCurrent> implements ISysUserPositionCurrentService{
+
+    @Override
+    public void saveOrUpdateOne(SysUserPositionCurrent sysUserPositionCurrent) {
+        // 根据create_by查询是否已存在
+        LambdaQueryWrapper<SysUserPositionCurrent> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysUserPositionCurrent::getCreateBy, sysUserPositionCurrent.getCreateBy());
+        SysUserPositionCurrent one;
+        try{
+            one = this.getOne(queryWrapper);
+        }catch (Exception e){
+            throw new AiurtBootException("用户连接wifi当前位置表中用户:" + sysUserPositionCurrent.getCreateBy() +" 不唯一");
+        }
+        if (ObjectUtil.isNull(one)) {
+            // 不存在，添加
+            this.save(sysUserPositionCurrent);
+        }else {
+            // 已存在，更新
+            sysUserPositionCurrent.setId(one.getId());
+            if (one.getStationCode().equals(sysUserPositionCurrent.getStationCode())){
+                // 同站点，不更新upload_time
+                sysUserPositionCurrent.setUploadTime(null);
+            }
+            this.updateById(sysUserPositionCurrent);
+        }
+
+    }
+}
