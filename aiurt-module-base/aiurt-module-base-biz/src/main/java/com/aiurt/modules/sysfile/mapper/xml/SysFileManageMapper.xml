@@ -89,4 +89,123 @@
                 sffp.file_id
         )
     </select>
+
+    <select id="listPrent" resultType="com.aiurt.modules.sysfile.vo.FileAppVO">
+        SELECT
+            sft.id,
+            sft.name as fileName,
+            1 as status,
+            sft.parent_id as parentId
+        FROM
+            sys_file_type sft
+        WHERE
+            sft.parent_id = '0'
+
+          AND EXISTS (
+            SELECT
+                1
+            FROM
+                sys_file sf
+                    JOIN sys_folder_file_permission sffp ON sf.id = sffp.file_id
+                    AND (sffp.user_id = #{username} OR sffp.org_code = #{orgCode})
+            WHERE
+                sffp.permission IS NOT NULL
+              AND sf.del_flag = 0
+              AND (sf.type_id = sft.id OR sf.type_id IN (
+                SELECT
+                    sft_child.id
+                FROM
+                    sys_file_type sft_child
+                WHERE
+                    sft_child.parent_id = sft.id
+            ))
+        )
+
+        UNION ALL
+
+        SELECT
+            sft1.id,
+            sft1.name as fileName,
+            1 as status,
+            sft1.parent_id as parentId
+        FROM
+            sys_file_type sft1
+                LEFT JOIN sys_folder_file_permission sffp1 ON (
+                        sft1.id = sffp1.folder_id
+                    AND ( sffp1.user_id = #{username} OR sffp1.org_code = #{orgCode} ))
+        WHERE
+            EXISTS (
+                SELECT
+                    1
+                FROM
+                    sys_folder_file_permission sffp
+                WHERE
+                    sffp.del_flag = '0'
+                  AND ( sffp.user_id = #{username} OR sffp.org_code = #{orgCode} )
+                  AND sffp.folder_id IN (
+                    SELECT
+                        s1.id
+                    FROM
+                        sys_file_type s1
+                    WHERE
+                        s1.folder_code IS NOT NULL
+                      AND s1.folder_code != ''
+	AND s1.folder_code_cc LIKE CONCAT( sft1.folder_code_cc, '%' ))
+            )
+          AND sft1.folder_code_cc != ''
+	AND sft1.folder_code_cc IS NOT NULL
+	AND sft1.parent_id = '0'
+        GROUP BY
+            sft1.id
+    </select>
+
+    <select id="listPage" resultType="com.aiurt.modules.sysfile.vo.FileAppVO">
+        SELECT
+            sf.id,
+            sf.name,
+            sf.type,
+            sf.status
+        FROM
+            (
+                SELECT
+                    sft.id AS id,
+                    sft.name AS name,
+                    null AS type,
+                    1 as  status
+                FROM
+                    sys_file_type sft
+                        LEFT JOIN sys_folder_file_permission sffp ON sft.id = sffp.folder_id
+                        AND (sffp.user_id = 'admin' OR sffp.org_code = 'ace')
+                WHERE
+                    sffp.permission IS NOT NULL
+                  AND sft.del_flag = 0
+                  AND sft.folder_code_cc != ''
+	          AND sft.folder_code_cc IS NOT NULL
+            AND   (sft.parent_id = '120'
+            )
+                GROUP BY sft.id
+
+                UNION ALL
+                SELECT
+                    sf.id AS id,
+                    sf.name AS name,
+                    sf.type AS type,
+                    0 as status
+                FROM
+                    sys_file sf
+                    JOIN sys_file_type sft ON sf.type_id = sft.id
+                    LEFT JOIN sys_folder_file_permission sffp ON sf.id = sffp.file_id
+                    AND (sffp.user_id = 'admin' OR sffp.org_code = 'ace')
+                WHERE
+                    sffp.permission IS NOT NULL
+                  AND sf.del_flag = 0
+                  AND (
+                    sf.type_id = '120'
+                    )
+                GROUP BY sf.id
+            ) AS sf
+
+        ORDER BY
+            sf.name DESC;
+    </select>
 </mapper>
