@@ -1,5 +1,4 @@
 package com.aiurt.modules.device.service.impl;
-import com.google.common.collect.Lists;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
@@ -7,10 +6,8 @@ import com.aiurt.modules.device.dto.DeviceComposeTreeDTO;
 import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.mapper.DeviceComposeMapper;
 import com.aiurt.modules.device.service.IDeviceComposeService;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -52,10 +49,13 @@ public class DeviceComposeServiceImpl extends ServiceImpl<DeviceComposeMapper, D
             }
             DeviceComposeTreeDTO dto = new DeviceComposeTreeDTO();
             dto.setId(deviceCompose.getBaseTypeId());
+            dto.setKey(deviceCompose.getBaseTypeId());
+            dto.setLabel(deviceCompose.getBaseTyeName());
             dto.setPid("0");
             dto.setValue(deviceCompose.getBaseTypeCode());
             dto.setTitle(deviceCompose.getBaseTyeName());
             dto.setIsLeaf(false);
+            dto.setChildren(Collections.emptyList());
             if (CollUtil.isNotEmpty(list)) {
                 List<DeviceComposeTreeDTO> dtoList = list.stream().map(compose -> {
                     DeviceComposeTreeDTO chilren = new DeviceComposeTreeDTO();
@@ -64,6 +64,9 @@ public class DeviceComposeServiceImpl extends ServiceImpl<DeviceComposeMapper, D
                     chilren.setValue(compose.getMaterialCode());
                     chilren.setTitle(compose.getMaterialName());
                     chilren.setIsLeaf(true);
+                    chilren.setChildren(Collections.emptyList());
+                    chilren.setLabel(compose.getMaterialName());
+                    chilren.setKey(compose.getId());
                     return chilren;
                 }).collect(Collectors.toList());
 

@@ -33,5 +33,9 @@ public class BaseTreeDTO implements Serializable {
     @ApiModelProperty(value = "是否叶子结点  布尔值")
     private Boolean isLeaf;
 
+    private String key;
+
+    private String label;
+
 
 }
