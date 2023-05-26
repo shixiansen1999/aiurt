@@ -16,5 +16,4 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = false)
 public class TypeNameVO implements Serializable {
 	private String name;
-
 }

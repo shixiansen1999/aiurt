@@ -6,6 +6,7 @@ import com.aiurt.modules.sysfile.param.SysFileParam;
 import com.aiurt.modules.sysfile.param.SysFileWebParam;
 import com.aiurt.modules.sysfile.service.ISysFileManageService;
 import com.aiurt.modules.sysfile.vo.FileAppVO;
+import com.aiurt.modules.sysfile.service.ISysFolderFilePermissionService;
 import com.aiurt.modules.sysfile.vo.SysFileDetailVO;
 import com.aiurt.modules.sysfile.vo.SysFileManageVO;
 import com.aiurt.modules.sysfile.vo.TypeNameVO;
@@ -28,13 +29,15 @@ import java.util.List;
  * @Description:
  */
 @Slf4j
-@Api(tags = "文档表")
+@Api(tags = "文件表")
 @RestController
 @RequestMapping("/sys/file")
 public class SysFileManageController {
 
     @Resource
     private ISysFileManageService sysFileManageService;
+    @Resource
+    private ISysFolderFilePermissionService sysFolderFilePermissionService;
 
     /**
      * 查询文档分页列表
@@ -55,6 +58,7 @@ public class SysFileManageController {
         page = sysFileManageService.getFilePageList(page, sysFile);
         return Result.OK(page);
     }
+
     /**
      * 查询app文档分页列表
      *
@@ -62,18 +66,18 @@ public class SysFileManageController {
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "查询文档分页列表")
-    @ApiOperation(value = "查询文档分页列表", notes = "查询文档分页列表")
+    @AutoLog(value = "查询app文档分页列表")
+    @ApiOperation(value = "查询app文档分页列表", notes = "查询app文档分页列表")
     @GetMapping(value = "/getAppPageList")
-    public Result<IPage<FileAppVO>> getAppPageList( @RequestParam(name = "parentId", required = false) Long parentId,
-                                                   @RequestParam(name = "fileName",required = false) String fileName,
+    public Result<IPage<FileAppVO>> getAppPageList(@RequestParam(name = "parentId", required = false) Long parentId,
+                                                   @RequestParam(name = "fileName", required = false) String fileName,
                                                    @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                   HttpServletRequest request) {
+                                                   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
         Page<FileAppVO> page = new Page<>(pageNo, pageSize);
-        page = sysFileManageService.getAppPageList(page, parentId,fileName);
+        page = sysFileManageService.getAppPageList(page, parentId, fileName);
         return Result.OK(page);
     }
+
     /**
      * 添加文件
      *
@@ -160,5 +164,26 @@ public class SysFileManageController {
         return Result.OK(result);
     }
 
+    /**
+     * 构建数据，新版知识库表结构变动
+     *
+     * @return
+     */
+    @PostMapping(value = "/builddata")
+    public Result<?> buildData() {
+        sysFileManageService.buildData();
+        return Result.ok("编辑成功！");
+    }
+
+    /**
+     * 初始化sys_folder_file_permission表数据
+     *
+     * @return
+     */
+    @PostMapping(value = "/saveSysFolderFilePermission")
+    public Result<?> saveSysFolderFilePermission() {
+        sysFolderFilePermissionService.saveSysFolderFilePermission();
+        return Result.ok("编辑成功！");
+    }
 
 }

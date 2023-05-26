@@ -91,9 +91,7 @@ public class SysFileInfoServiceImpl extends ServiceImpl<SysFileInfoMapper, SysFi
 
         Map<String, String> downloadStatusDictListMap = getDownloadStatusDictListMap();
 
-        page.getRecords().forEach(e -> {
-            processDownloadRecord(e, downloadStatusDictListMap);
-        });
+        page.getRecords().forEach(sysFileInfo -> processDownloadRecord(sysFileInfo, downloadStatusDictListMap));
 
         return page;
     }
@@ -111,15 +109,13 @@ public class SysFileInfoServiceImpl extends ServiceImpl<SysFileInfoMapper, SysFi
         lambdaQueryWrapper.eq(SysFileInfo::getDelFlag, CommonConstant.DEL_FLAG_0);
         lambdaQueryWrapper.orderByDesc(SysFileInfo::getCreateTime);
 
-        List<SysFileInfo> list = this.list(lambdaQueryWrapper);
+        List<SysFileInfo> sysFileInfoList = this.list(lambdaQueryWrapper);
 
         Map<String, String> downloadStatusDictListMap = getDownloadStatusDictListMap();
 
-        list.forEach(e -> {
-            processDownloadRecord(e, downloadStatusDictListMap);
-        });
+        sysFileInfoList.forEach(sysFileInfo -> processDownloadRecord(sysFileInfo, downloadStatusDictListMap));
 
-        if (CollUtil.isNotEmpty(list)) {
+        if (CollUtil.isNotEmpty(sysFileInfoList)) {
             //导出文件名称
             mv.addObject(NormalExcelConstants.FILE_NAME, "下载记录报表");
             //excel注解对象Class
@@ -129,7 +125,7 @@ public class SysFileInfoServiceImpl extends ServiceImpl<SysFileInfoMapper, SysFi
             //自定义表格参数
             mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("下载记录报表", "下载记录报表"));
             //导出数据列表
-            mv.addObject(NormalExcelConstants.DATA_LIST, list);
+            mv.addObject(NormalExcelConstants.DATA_LIST, sysFileInfoList);
         }
         return mv;
 
