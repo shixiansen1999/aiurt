@@ -413,26 +413,57 @@
 
     <select id="querySymptomTemplate" resultType="com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO">
         select
-            id,major_code,system_code,knowledge_base_type_code,device_type_code,fault_level_code,material_code,fault_phenomenon
-        from fault_knowledge_base
-        where del_flag = 0
+        t1.id,
+        t1.major_code,
+        t1.system_code,
+        t1.knowledge_base_type_code,
+        t1.device_type_code,
+        t1.fault_level_code,
+        t1.material_code,
+        t1.fault_phenomenon,
+        t2.name as material_name,
+        t3.base_type_name
+        from fault_knowledge_base t1
+        Left join material_base t2 ON (t1.material_code = t2.code and t2.del_flag = 0)
+        Left join material_base_type t3 ON (t2.base_type_code = t3.base_type_code and t3.del_flag = 0)
+        where t1.del_flag = 0
         <if test="condition.majorCode != null and condition.majorCode != ''">
-            and major_code = #{condition.majorCode}
+            and t1.major_code = #{condition.majorCode}
         </if>
         <if test="condition.systemCode != null and condition.systemCode != ''">
-            and system_code = #{condition.systemCode}
+            and t1.system_code = #{condition.systemCode}
         </if>
         <if test="condition.deviceTypeCode != null and condition.deviceTypeCode != ''">
-            and device_type_code = #{condition.deviceTypeCode}
+            and t1.device_type_code = #{condition.deviceTypeCode}
         </if>
         <if test="condition.faultLevelCode != null and condition.faultLevelCode != ''">
-            and fault_level_code = #{condition.faultLevelCode}
+            and t1.fault_level_code = #{condition.faultLevelCode}
         </if>
         <if test="condition.materialCode != null and condition.materialCode != ''">
-            and material_code = #{condition.materialCode}
+            and t1.material_code = #{condition.materialCode}
         </if>
         <if test="condition.faultPhenomenon != null and condition.faultPhenomenon != ''">
-            and fault_phenomenon = #{condition.faultPhenomenon}
+            and t1.fault_phenomenon = #{condition.faultPhenomenon}
         </if>
+        order by t1.major_code, t1.system_code , t1.device_type_code, t1.material_code , t1.fault_level_code
+    </select>
+
+    <select id="countFaultCauseByIdSet" resultType="com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO">
+        SELECT
+                count(t1.id) num,
+                t1.id,
+                t1.fault_cause,
+                t1.knowledge_base_id
+        FROM
+                fault_cause_solution t1
+        LEFT JOIN fault_cause_usage_records t2 ON ( t1.id = t2.fault_cause_solution_id AND t2.del_flag = 0 )
+        WHERE
+                EXISTS (SELECT 1 FROM fault_knowledge_base WHERE 1=1 and id IN
+                        <foreach collection="idList" item="item" separator="," open="(" close=")" >
+                            #{item}
+                        </foreach>
+                        AND id = t1.knowledge_base_id)
+        GROUP BY
+                t1.id
     </select>
 </mapper>

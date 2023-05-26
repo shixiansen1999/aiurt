@@ -487,4 +487,18 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 		RepairSolRecDTO repairSolRecDTO = faultKnowledgeBaseService.queryRepairSolRecDTO(knowledgeId);
 		return Result.OK(repairSolRecDTO);
 	}
+
+
+
+	/**
+	 * 查找故障现象模板
+	 * @param symptomReqDTO 请求参数
+	 * @return
+	 */
+	@GetMapping("/queryRepairSolution")
+	@ApiOperation(value="查找维修方案", notes="查找维修方案")
+	public Result<IPage<SymptomResDTO>> queryRepairSolution(SymptomReqDTO symptomReqDTO) {
+		Page<SymptomResDTO> page = faultKnowledgeBaseService.querySymptomTemplate(symptomReqDTO);
+		return Result.OK(page);
+	}
  }

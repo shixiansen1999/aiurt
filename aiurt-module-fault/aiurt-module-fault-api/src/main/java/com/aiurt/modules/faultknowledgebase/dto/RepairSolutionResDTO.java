@@ -1,21 +1,17 @@
 package com.aiurt.modules.faultknowledgebase.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
-import io.swagger.annotations.ApiModel;
+import com.aiurt.modules.basic.entity.DictEntity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
-import java.io.Serializable;
-import java.util.List;
 
 /**
  * @author fgw
  */
 @Data
-@ApiModel(value = "查询故障现象模板实体类")
-public class SymptomResDTO implements Serializable {
+public class RepairSolutionResDTO extends DictEntity {
 
-    private static final long serialVersionUID = 2214680771943628031L;
+    private static final long serialVersionUID = 5203688984744542169L;
 
     @ApiModelProperty(value = "主键id")
     private String id;
@@ -53,8 +49,4 @@ public class SymptomResDTO implements Serializable {
 
 
     private String baseTypeName;
-
-    @ApiModelProperty(value = "故障原因")
-    private List<AnalyzeFaultCauseResDTO> analyzeFaultCauseResDTOList;
-
 }

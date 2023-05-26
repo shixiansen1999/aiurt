@@ -2,12 +2,14 @@ package com.aiurt.modules.faultknowledgebase.mapper;
 
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.ApiModelProperty;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -92,4 +94,11 @@ public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase>
      */
     List<SymptomResDTO> querySymptomTemplate(@Param("pageList") Page<SymptomResDTO> pageList, @Param("condition") SymptomReqDTO symptomReqDTO);
 
+
+    /**
+     * 统计故障原因的数量
+     * @param idList
+     * @return
+     */
+    List<AnalyzeFaultCauseResDTO> countFaultCauseByIdSet(@Param("idList") List<String> idList);
 }

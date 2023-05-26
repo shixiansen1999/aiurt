@@ -8,6 +8,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.RoleConstant;
@@ -72,6 +73,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -611,6 +613,39 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     public Page<SymptomResDTO> querySymptomTemplate(SymptomReqDTO symptomReqDTO) {
         Page<SymptomResDTO> page = new Page<>(symptomReqDTO.getPageNo(), symptomReqDTO.getPageSize());
         List<SymptomResDTO> symptomResDTOS = baseMapper.querySymptomTemplate(page, symptomReqDTO);
+        // app 需要每个故障原因的比例
+        Set<String> idSet = symptomResDTOS.stream().map(SymptomResDTO::getId).collect(Collectors.toSet());
+
+        // 查询故障记录使用的记录数
+        Map<String, List<AnalyzeFaultCauseResDTO>> dataMap = new HashMap<>();
+        if (CollUtil.isNotEmpty(idSet)) {
+            List<AnalyzeFaultCauseResDTO> causeResDTOList = baseMapper.countFaultCauseByIdSet(new ArrayList<>(idSet));
+            if (CollUtil.isNotEmpty(causeResDTOList)) {
+                Map<String, List<AnalyzeFaultCauseResDTO>> map = causeResDTOList.stream().collect(Collectors.groupingBy(AnalyzeFaultCauseResDTO::getKnowledgeBaseId));
+                map.forEach((knowledgeId, resList)->{
+                    Long sum = resList.stream().filter(Objects::nonNull).map(AnalyzeFaultCauseResDTO::getNum).reduce(0L, Long::sum);
+                    resList.stream().forEach(re->{
+                        if (sum != 0L) {
+                            re.setPercentage(NumberUtil.div((float) re.getNum(),(float)sum, 2)*100 +"%");
+                        }else {
+                            re.setPercentage("0%");
+                        }
+                    });
+                    dataMap.put(knowledgeId, resList);
+                });
+            }
+        }
+        // 拼接
+        symptomResDTOS.stream().forEach(symptomResDTO -> {
+            String materialName = symptomResDTO.getMaterialName();
+            String baseTypeName = symptomResDTO.getBaseTypeName();
+            if (StrUtil.isNotBlank(baseTypeName)) {
+                symptomResDTO.setMaterialName(baseTypeName + "-" + materialName);
+            }
+            symptomResDTO.setAnalyzeFaultCauseResDTOList(dataMap.getOrDefault(symptomResDTO.getId(), Collections.emptyList()));
+        });
+
+        // 统计总和，以及所有比例
         page.setRecords(symptomResDTOS);
         return page;
     }
@@ -629,6 +664,13 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         return null;
     }
 
+    /**
+     * 导入数据校验
+     * @param faultKnowledgeBaseModel
+     * @param faultKnowledgeBase
+     * @param stringBuilder
+     * @param list
+     */
     private void examine(FaultKnowledgeBaseModel faultKnowledgeBaseModel, FaultKnowledgeBase faultKnowledgeBase, StringBuilder stringBuilder, List<FaultKnowledgeBaseModel> list) {
         BeanUtils.copyProperties(faultKnowledgeBaseModel, faultKnowledgeBase);
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
