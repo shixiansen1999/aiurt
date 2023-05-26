@@ -231,4 +231,11 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @return
      */
     void spotCheck(PatrolTaskDTO patrolTaskDTO);
+
+    /**
+     * 返回
+     * @param ids
+     * @return
+     */
+    String printPatrolTask(String ids);
 }

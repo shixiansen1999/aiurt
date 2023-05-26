@@ -752,7 +752,21 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         List<PrintPatrolTaskDTO> printPatrolTaskDTOS = patrolTaskService.printPatrolTaskById(ids);
         return Result.OK(printPatrolTaskDTOS);
     }
+    /**
 
+     *
+     * @param ids
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "巡检任务表-打印巡视详情")
+    @ApiOperation(value = "巡检任务表-打印巡视详情", notes = "巡检任务表-打印巡视详情")
+    @GetMapping(value = "/printPatrolTask")
+    public Result<?> printPatrolTask(@RequestParam(name="ids",required=true) String ids,
+                                                                HttpServletRequest req) {
+        String printPatrolTaskDTOS = patrolTaskService.printPatrolTask(ids);
+        return Result.OK("成功",printPatrolTaskDTOS);
+    }
     /**
      *获取mac地址
      *

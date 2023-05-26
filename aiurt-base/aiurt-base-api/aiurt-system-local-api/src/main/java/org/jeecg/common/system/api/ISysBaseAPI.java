@@ -1166,5 +1166,11 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     Date getRecentConnectTimeByStationCode(String stationCode);
+
+    /**
+     * 保存
+     * @param sysAttachment
+     */
+    void saveSysAttachment(SysAttachment sysAttachment);
 }
 

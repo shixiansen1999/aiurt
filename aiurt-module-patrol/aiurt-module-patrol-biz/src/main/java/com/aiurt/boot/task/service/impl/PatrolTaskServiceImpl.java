@@ -23,6 +23,7 @@ import com.aiurt.boot.statistics.dto.IndexStationDTO;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
+import com.aiurt.boot.task.param.CustomCellMergeHandler;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.*;
@@ -36,12 +37,20 @@ import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.ArchiveUtils;
 import com.aiurt.common.util.AsyncThreadPoolExecutorUtil;
+import com.aiurt.common.util.MinioUtil;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
+import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.util.MapUtils;
+import com.alibaba.excel.write.merge.LoopMergeStrategy;
+import com.alibaba.excel.write.metadata.WriteSheet;
+import com.alibaba.excel.write.metadata.fill.FillWrapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
@@ -1271,32 +1280,37 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
 
             }
-            // 无论任务是否要审核，都要更新巡视工时
-            // 根据id获取task
-            PatrolTask task = this.getById(patrolTaskDTO.getId());
-            // 查询出任务所在的站点，需求说一个任务不可能有多个站点，所以就取第一个
-            List<String> stationCodeList =  patrolTaskStationService.getStationCodeByTaskCode(task.getCode());
-            String stationCode = stationCodeList.get(0);
-            // 查看站点是否是工区->提交人所在的班组的工区站点，是否就是任务的站点
-            List<String> WorkAreaStationCodeList = sysBaseApi.getWorkAreaStationCodeByUserId(sysUser.getId());
-            boolean isWorkArea = WorkAreaStationCodeList.contains(stationCode);
-            // 巡视标准时长，单位：分钟
-            Integer standardDuration = task.getStandardDuration();
-            if (isWorkArea) {
-                // 工区，巡视时长等于上限时长。
-                updateWrapper.set(PatrolTask::getDuration, standardDuration);
-            } else {
-                // 非工区，当巡视时长大于大于上限时长时，巡视时长等于上限时长。不然就是wifi最近连接巡视站点时间减提交时间
-                Date recentConnectTime = sysBaseApi.getRecentConnectTimeByStationCode(stationCode);
-                if (ObjectUtil.isNull(recentConnectTime)) {
-                    updateWrapper.set(PatrolTask::getDuration, standardDuration);
-                }else {
-                    int duration = (int) DateUtil.between(recentConnectTime, new Date(), DateUnit.MINUTE);
-                    updateWrapper.set(PatrolTask::getDuration, duration >= standardDuration ? standardDuration: duration);
+
+            //获取mac地址
+            List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(patrolTask.getId());
+            List<IndexStationDTO> stationInfo = patrolTaskStationMapper.getStationInfo(patrolTask.getCode());
+            List<String> list = Optional.ofNullable(stationInfo)
+                    .map(Collection::stream)
+                    .orElseGet(Stream::empty)
+                    .map(IndexStationDTO::getStationCode)
+                    .collect(Collectors.toList());
+            List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(list);
+
+            if (CollUtil.isNotEmpty(mac)) {
+                for (PatrolTaskDeviceDTO patrolTaskDeviceDTO : mac) {
+                    if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && CollUtil.isNotEmpty(wifiMac)) {
+                        //忽略大小写全匹配
+                        String mac1 = patrolTaskDeviceDTO.getMac();
+                        String join = CollUtil.join(wifiMac, ",");
+                        if (join.toLowerCase().contains(mac1.toLowerCase())) {
+                            updateWrapper.set(PatrolTask::getMacStatus, 1);
+                        } else {
+                            updateWrapper.set(PatrolTask::getMacStatus, 0);
+                            break;
+                        }
+                    }else {
+                        updateWrapper.set(PatrolTask::getMacStatus, 0);
+                        break;
+                    }
                 }
-
+            } else {
+                updateWrapper.set(PatrolTask::getMacStatus, 0);
             }
-
             patrolTaskMapper.update(new PatrolTask(), updateWrapper);
             // 提交任务如果需要审核则发送一条审核待办消息
             try {
@@ -1389,7 +1403,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         patrolTask.setStartTime(patrolTaskManualDTO.getStartTime());
         patrolTask.setEndTime(patrolTaskManualDTO.getEndTime());
         patrolTask.setAuditor(patrolTaskManualDTO.getAuditor());
-        patrolTask.setStandardDuration(patrolTaskManualDTO.getStandardDuration());
         patrolTaskMapper.insert(patrolTask);
         //保存组织信息
         String taskCode = patrolTask.getCode();
@@ -1806,7 +1819,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         updateWrapper.set(PatrolTask::getRemark, patrolTaskManualDTO.getRemark()).set(PatrolTask::getAuditor, patrolTaskManualDTO.getAuditor())
                 .set(PatrolTask::getStartTime, patrolTaskManualDTO.getStartTime()).set(PatrolTask::getEndTime, patrolTaskManualDTO.getEndTime())
                 .set(PatrolTask::getType, patrolTaskManualDTO.getType())
-                .set(PatrolTask::getStandardDuration, patrolTaskManualDTO.getStandardDuration())
                 .set(PatrolTask::getName, patrolTaskManualDTO.getName()).set(PatrolTask::getPatrolDate, patrolTaskManualDTO.getPatrolDate()).eq(PatrolTask::getId, patrolTaskManualDTO.getId());
         patrolTaskMapper.update(new PatrolTask(), updateWrapper);
         //删除、保存站点、组织
@@ -2168,5 +2180,92 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 .setSpotCheckUserId(patrolTaskDTO.getSpotCheckUserId())
                 .setSpotCheckRemark(patrolTaskDTO.getSpotCheckRemark());
         this.updateById(patrolTask);
+    }
+
+    @Override
+    public String printPatrolTask(String id) {
+        // 模板注意 用{} 来表示你要用的变量 如果本来就有"{","}" 特殊字符 用"\{","\}"代替
+        // 填充list 的时候还要注意 模板中{.} 多了个点 表示list
+        // 如果填充list的对象是map,必须包涵所有list的key,哪怕数据为null，必须使用map.put(key,null)
+        String templateFileName = "patrol" +"/" + "template" + "/" + "listPatrol.xlsx";
+        InputStream minioFile = MinioUtil.getMinioFile("platform",templateFileName);
+        // 方案1 一下子全部放到内存里面 并填充
+        String fileName = "通信专业控制中心PIS系统巡检表" + System.currentTimeMillis() + ".xlsx";
+        String relatiePath =   "patrol" + "/" + "print" + "/" + fileName;
+        String filePath = this.getClass().getClassLoader().getResource("").getPath() + fileName;
+        // 这里 会填充到第一个sheet， 然后文件流会自动关闭
+        // 查询头部数据
+        PrintPatrolTaskDTO taskDTO = new PrintPatrolTaskDTO();
+        PatrolTask patrolTask = patrolTaskMapper.selectById(id);
+        Assert.notNull(patrolTask, "未找到对应记录！");
+        taskDTO.setId(patrolTask.getId());
+        taskDTO.setTitle(patrolTask.getName());
+        // 站点信息
+        List<PatrolTaskStationDTO> stationInfo = patrolTaskStationMapper.selectStationByTaskCode(patrolTask.getCode());
+        taskDTO.setStationNames(stationInfo.stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.joining()));
+        if (StrUtil.isNotEmpty(patrolTask.getEndUserId())) {
+            taskDTO.setUserName(patrolTaskMapper.getUsername(patrolTask.getEndUserId()));
+        }
+        taskDTO.setSignUrl(patrolTask.getSignUrl());
+        Map<String, Object> map = MapUtils.newHashMap();
+        map.put("patrolStation", taskDTO.getStationNames());
+        map.put("patrolPerson", taskDTO.getUserName());
+        map.put("patrolDate", DateUtil.format(patrolTask.getSubmitTime(),"yyyy-MM-dd"));
+        map.put("patrolTime", DateUtil.format(patrolTask.getSubmitTime(),"HH:mm"));
+        //查询巡视标准详情
+        List<PrintDTO> patrolData = getPrint(id);
+        // EasyExcel.write(filePath).withTemplate(templateFileName).sheet().doFill(patrolData);
+        try (ExcelWriter excelWriter = EasyExcel.write(filePath).withTemplate(minioFile).build()) {
+            int[] mergeColumnIndex = {0,1};
+            CustomCellMergeHandler customCellMergeStrategy = new CustomCellMergeHandler(1,mergeColumnIndex);
+            WriteSheet writeSheet = EasyExcel.writerSheet().registerWriteHandler(customCellMergeStrategy).build();
+            excelWriter.fill(new FillWrapper("list",patrolData), writeSheet);
+            excelWriter.fill(map, writeSheet);
+            excelWriter.finish();
+            String url = MinioUtil.upload(new FileInputStream(filePath),relatiePath);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        SysAttachment sysAttachment = new SysAttachment();
+        sysAttachment.setFileName(fileName);
+        sysAttachment.setFilePath(relatiePath);
+        sysAttachment.setType("minio");
+        sysBaseApi.saveSysAttachment(sysAttachment);
+        return sysAttachment.getId()+"?fileName="+sysAttachment.getFileName();
+    }
+
+    private List<PrintDTO> getPrint(String id) {
+        List<PrintDTO> getPrint = new ArrayList<>();
+        List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
+        for (PatrolStationDTO dto : billGangedInfo) {
+            //获取检修项
+            List<PatrolBillDTO> billInfo = dto.getBillInfo();
+            if (CollUtil.isNotEmpty(billInfo)) {
+                for (PatrolBillDTO patrolBillDTO : billInfo) {
+                    //根据检修单号查询检修项
+                    String billCode = patrolBillDTO.getBillCode();
+                    if (StrUtil.isNotEmpty(billCode)) {
+                        PatrolTaskDeviceParam taskDeviceParam = patrolTaskDeviceMapper.getIdAndSystemName(billCode);
+                        List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceId(taskDeviceParam.getId());
+                        for (PatrolCheckResultDTO c : checkResultList) {
+                            PrintDTO printDTO = new PrintDTO();
+                            printDTO.setStandard(
+                                    Optional.ofNullable(c.getQualityStandard())
+                                            .map(qs -> c.getContent() + ":" + qs)
+                                            .orElse(c.getContent())
+                            );
+                            printDTO.setEquipment(taskDeviceParam.getDeviceName());
+                            printDTO.setResult(Convert.toStr(c.getCheckResult()));
+                            printDTO.setRemark(c.getRemark());
+                            printDTO.setLocation(dto.getStationName());
+                            printDTO.setSubSystem(taskDeviceParam.getSubsystemName());
+                            getPrint.add(printDTO);
+                        }
+
+                    }
+                }
+            }
+        }
+        return getPrint;
     }
 }

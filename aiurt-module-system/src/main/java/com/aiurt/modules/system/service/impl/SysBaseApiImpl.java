@@ -3219,6 +3219,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<SysUserPositionCurrent> list = sysUserPositionCurrentService.list(queryWrapper);
         return CollUtil.isEmpty(list) ? null : list.get(0).getUploadTime();
     }
+    @Override
+    public void saveSysAttachment(SysAttachment sysAttachment) {
+        sysAttachmentService.save(sysAttachment);
+    }
+
 
     @Override
     public String getStationCodeByMac(String mac) {
