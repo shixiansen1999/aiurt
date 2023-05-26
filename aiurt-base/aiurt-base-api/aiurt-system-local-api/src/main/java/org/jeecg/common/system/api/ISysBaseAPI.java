@@ -16,6 +16,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.system.vo.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1158,5 +1159,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getStationCodeByMac(String mac);
+
+    /**
+     * 根据stationCode查询sys_user_position_current表，获取站点最近一次的连接时间
+     * @param stationCode
+     * @return
+     */
+    Date getRecentConnectTimeByStationCode(String stationCode);
 }
 
