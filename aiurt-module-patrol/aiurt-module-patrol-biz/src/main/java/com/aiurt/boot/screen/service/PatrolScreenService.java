@@ -6,9 +6,11 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.constant.PatrolDictCode;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.*;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
+import com.aiurt.boot.statistics.model.PatrolSituation;
 import com.aiurt.boot.task.dto.TemperatureHumidityDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.TemperatureHumidity;
@@ -23,6 +25,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecg.common.util.DateUtils;
 import org.snmp4j.CommunityTarget;
 import org.snmp4j.PDU;
@@ -84,21 +87,30 @@ public class PatrolScreenService {
         module.setStartTime(startTime);
         module.setEndTime(endTime);
         module.setLineCode(lineCode);
-        List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
-
-        String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
-        String omitEndTime = this.getOmitDateScope(endTime).split(ScreenConstant.TIME_SEPARATOR)[1];
-        module.setStartTime(DateUtil.parse(omitStartTime));
-        module.setEndTime(DateUtil.parse(omitEndTime));
         module.setOmit(PatrolConstant.OMIT_STATUS);
-
-        long planNum = list.stream().count();
-        long finishNum = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
-        long omitNum = patrolTaskMapper.getScreenDataCount(module).stream().count();
+        module.setCheckStatus(PatrolConstant.BILL_COMPLETE);
         ScreenImportantData data = new ScreenImportantData();
-        data.setPatrolNumber(planNum);
-        data.setFinishNumber(finishNum);
-        data.setOmitNumber(omitNum);
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            PatrolSituation taskDeviceCount = patrolTaskMapper.getTaskDeviceCount(module);
+            data.setPatrolNumber(taskDeviceCount.getSum());
+            data.setFinishNumber(taskDeviceCount.getFinish());
+            data.setOmitNumber(taskDeviceCount.getOmit());
+        } else {
+            List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
+            String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
+            String omitEndTime = this.getOmitDateScope(endTime).split(ScreenConstant.TIME_SEPARATOR)[1];
+            module.setStartTime(DateUtil.parse(omitStartTime));
+            module.setEndTime(DateUtil.parse(omitEndTime));
+            long planNum = list.stream().count();
+            long finishNum = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
+            long omitNum = patrolTaskMapper.getScreenDataCount(module).stream().count();
+            data.setPatrolNumber(planNum);
+            data.setFinishNumber(finishNum);
+            data.setOmitNumber(omitNum);
+        }
         return data;
     }
 
