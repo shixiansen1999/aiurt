@@ -1,36 +1,24 @@
 package com.aiurt.modules.sysfile.controller;
 
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.sysfile.entity.SysFile;
-import com.aiurt.modules.sysfile.entity.SysFileInfo;
-import com.aiurt.modules.sysfile.param.SysFileInfoParam;
 import com.aiurt.modules.sysfile.param.SysFileParam;
 import com.aiurt.modules.sysfile.param.SysFileWebParam;
 import com.aiurt.modules.sysfile.service.ISysFileManageService;
 import com.aiurt.modules.sysfile.vo.SysFileDetailVO;
 import com.aiurt.modules.sysfile.vo.SysFileManageVO;
 import com.aiurt.modules.sysfile.vo.TypeNameVO;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -142,16 +130,15 @@ public class SysFileManageController {
     /**
      * 通过文件夹id查询该文件夹下的文件的类型
      *
-     * @param request 请求
-     * @param typeId  id类型
+     * @param typeId id类型
      * @return {@code Result<List<TypeNameVO>>}
      */
     @AutoLog(value = "通过文件夹id查询该文件夹下的文件的类型")
     @ApiOperation(value = "通过文件夹id查询该文件夹下的文件的类型", notes = "通过文件夹id查询该文件夹下的文件的类型")
     @GetMapping(value = "/queryByTypeId")
-    public Result<List<TypeNameVO>> queryByTypeId(HttpServletRequest request,
-                                                  @RequestParam(value = "typeId", required = false) Long typeId) {
-        return null;
+    public Result<List<TypeNameVO>> queryByTypeId(@RequestParam(value = "typeId", required = false) Long typeId) {
+        List<TypeNameVO> result = sysFileManageService.queryByTypeId(typeId);
+        return Result.OK(result);
     }
 
 

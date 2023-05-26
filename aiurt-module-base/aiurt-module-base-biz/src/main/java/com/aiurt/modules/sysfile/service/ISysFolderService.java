@@ -69,5 +69,11 @@ public interface ISysFolderService extends IService<SysFileType> {
      * @return 权限详情列表
      */
     List<SysFolderFilePermissionVO> getPermissionDetails(List<SysFolderFilePermission> sysFolderFilePermissions);
+
+    /**
+     * 构建数据
+     */
+    void buildData();
+
 }
 

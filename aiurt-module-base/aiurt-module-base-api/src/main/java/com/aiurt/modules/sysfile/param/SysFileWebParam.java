@@ -20,40 +20,45 @@ import java.time.LocalDate;
 @EqualsAndHashCode(callSuper = false)
 public class SysFileWebParam implements Serializable {
 
-	/**
-	 * 创建人
-	 */
-	@ApiModelProperty(value = "创建人")
-	private String createByName;
+    /**
+     * 创建人
+     */
+    @ApiModelProperty(value = "创建人")
+    private String createByName;
 
-	/**
-	 * 文件名称
-	 */
-	@ApiModelProperty(value = "文件名称")
-	private String name;
-	/**
-	 * 类型id
-	 */
-	@ApiModelProperty(value = "类型id")
-	private Long typeId;
-	/**
-	 * 文档格式
-	 */
-	@ApiModelProperty(value = "文档格式")
-	private String type;
-	/**
-	 * 创建时间
-	 */
-	@JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
-	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	@ApiModelProperty(value = "创建时间")
-	private LocalDate startTime;
+    /**
+     * 文件名称
+     */
+    @ApiModelProperty(value = "文件名称")
+    private String name;
+    /**
+     * 类型id
+     */
+    @ApiModelProperty(value = "类型id")
+    private Long typeId;
+    /**
+     * 文件夹code层级编码
+     */
+    @ApiModelProperty(value = "文件夹code层级编码")
+    private String folderCodeCc;
+    /**
+     * 文档格式
+     */
+    @ApiModelProperty(value = "文档格式")
+    private String type;
+    /**
+     * 创建时间
+     */
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "创建时间")
+    private LocalDate startTime;
 
-	/**
-	 * 创建时间
-	 */
-	@JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
-	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	@ApiModelProperty(value = "创建时间")
-	private LocalDate endTime;
+    /**
+     * 创建时间
+     */
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "创建时间")
+    private LocalDate endTime;
 }

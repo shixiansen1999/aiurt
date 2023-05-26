@@ -109,4 +109,10 @@ public class SysFolderController {
     }
 
 
+
+    @PostMapping(value = "/builddata")
+    public Result<?> buildData() {
+        sysFolderService.buildData();
+        return Result.ok("编辑成功！");
+    }
 }
