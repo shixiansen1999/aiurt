@@ -113,4 +113,12 @@ public interface WorkAreaMapper extends BaseMapper<WorkArea> {
      * @return
      */
     List<WorkArea> selectWorkAreaList(String stationCode);
+
+    /**
+     * 根据用户userId获取用户所属的班组的工区的工区地点站点。
+     * 注：这个工区地点站点不是工区的关联线路。是工区地点。一个工区只有一个工区地点
+     * @param userId
+     * @return
+     */
+    List<String> getWorkAreaStationCodeByUserId(String userId);
 }
