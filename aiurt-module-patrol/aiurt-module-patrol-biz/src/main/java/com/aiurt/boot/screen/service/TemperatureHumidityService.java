@@ -96,7 +96,6 @@ public class TemperatureHumidityService implements Callable<TemperatureHumidity>
                 float temperature = (float) tem / 10;
                 float humidity = (float) hum / 10;
                 th.setIp(sensor.getStationIp());
-                th.setStationCode(sensor.getStationCode());
                 th.setTemperature(temperature);
                 th.setHumidity(humidity);
                 Date time = new Date(System.currentTimeMillis());

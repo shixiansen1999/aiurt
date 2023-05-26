@@ -168,6 +168,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         patrolPlan.setOutsource(patrolPlanDto.getOutsource());
         patrolPlan.setConfirm(patrolPlanDto.getConfirm());
         patrolPlan.setPeriod(patrolPlanDto.getPeriod());
+        patrolPlan.setStandardDuration(patrolPlanDto.getStandardDuration());
         patrolPlan.setStatus(0);
         baseMapper.insert(patrolPlan);
         PatrolPlan id = baseMapper.selectByCode(patrolPlanDto.getCode());
