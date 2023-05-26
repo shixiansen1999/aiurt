@@ -2,9 +2,12 @@ package com.aiurt.modules.sysfile.service;
 
 import com.aiurt.modules.sysfile.entity.SysFileInfo;
 import com.aiurt.modules.sysfile.param.SysFileInfoParam;
+import com.aiurt.modules.sysfile.vo.TypeNameVO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.util.List;
 
 
 /**
@@ -36,5 +39,6 @@ public interface ISysFileInfoService extends IService<SysFileInfo> {
      * @return ModelAndView对象，用于渲染导出下载报告列表的视图
      */
     ModelAndView reportExportDownloadList(Long fileId);
+
 
 }

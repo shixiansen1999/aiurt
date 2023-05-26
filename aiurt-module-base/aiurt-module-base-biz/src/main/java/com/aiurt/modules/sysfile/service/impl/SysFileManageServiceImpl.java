@@ -27,14 +27,12 @@ import com.aiurt.modules.sysfile.service.ISysFileManageService;
 import com.aiurt.modules.sysfile.service.ISysFolderFilePermissionService;
 import com.aiurt.modules.sysfile.service.ISysFolderService;
 import com.aiurt.modules.sysfile.utils.FileNameUtils;
-import com.aiurt.modules.sysfile.vo.SysFileDetailVO;
-import com.aiurt.modules.sysfile.vo.SysFileManageVO;
-import com.aiurt.modules.sysfile.vo.SysFileVO;
-import com.aiurt.modules.sysfile.vo.SysFolderFilePermissionVO;
+import com.aiurt.modules.sysfile.vo.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.elasticsearch.action.index.IndexResponse;
@@ -91,6 +89,9 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
         String currLoginOrgCode = loginUser.getOrgCode();
 
         List<String> userNames = getUserNames(sysFileWebParam);
+
+        // 为了查询上级文件夹时把他子级所有文件夹的文件也查出来，所以利用folderCodeCc文件夹编码右模糊匹配
+        setFolderCode(sysFileWebParam);
 
         List<SysFileManageVO> result = sysFileManageMapper.getFilePageList(page, sysFileWebParam, currLoginUserId, currLoginOrgCode, userNames);
 
@@ -222,7 +223,6 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
     }
 
 
-
     @Override
     public synchronized boolean addCount(Long id) {
         SysFile sysFile = getById(id);
@@ -237,6 +237,21 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
     @Override
     public SysFileInfo addDownload(SysFileInfo sysFileInfo) {
         return sysFileInfoService.addDownload(sysFileInfo);
+    }
+
+    @Override
+    public List<TypeNameVO> queryByTypeId(Long typeId) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("请重新登录");
+        }
+
+        String currLoginUserId = loginUser.getId();
+        String currLoginOrgCode = loginUser.getOrgCode();
+
+        SysFileType sysFileType = sysFolderService.getById(typeId);
+        List<TypeNameVO> result  = sysFileManageMapper.queryTypeByFolderCode(sysFileType.getFolderCodeCc(),currLoginUserId,currLoginOrgCode);
+        return result;
     }
 
     /**
@@ -460,4 +475,20 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
         // 批量删除权限信息
         return sysFolderFilePermissionService.removeBatchByIds(permissionIds, 500);
     }
+
+    /**
+     * 设置文件夹编码到SysFileWebParam对象中
+     * 根据传入的类型ID获取对应的文件夹编码，并将其设置到SysFileWebParam对象中
+     *
+     * @param sysFileWebParam SysFileWebParam对象，用于设置文件夹编码
+     */
+    private void setFolderCode(SysFileWebParam sysFileWebParam) {
+        if (sysFileWebParam.getTypeId() != null) {
+            SysFileType sysFileType = sysFolderService.getById(sysFileWebParam.getTypeId());
+            if (ObjectUtil.isNotEmpty(sysFileType)) {
+                sysFileWebParam.setFolderCodeCc(sysFileType.getFolderCodeCc());
+            }
+        }
+    }
+
 }

@@ -33,6 +33,6 @@
         </if>
         GROUP BY
         sft1.id
-        ORDER BY sft.create_time desc
+        ORDER BY sft1.create_time desc
     </select>
 </mapper>

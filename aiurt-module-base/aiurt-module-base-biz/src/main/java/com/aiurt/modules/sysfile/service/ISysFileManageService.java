@@ -7,6 +7,7 @@ import com.aiurt.modules.sysfile.param.SysFileWebParam;
 import com.aiurt.modules.sysfile.vo.SysFileDetailVO;
 import com.aiurt.modules.sysfile.vo.SysFileManageVO;
 import com.aiurt.modules.sysfile.vo.SysFileVO;
+import com.aiurt.modules.sysfile.vo.TypeNameVO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
@@ -79,4 +80,11 @@ public interface ISysFileManageService extends IService<SysFile> {
      * @return 添加后的下载记录信息
      */
     SysFileInfo addDownload(SysFileInfo sysFileInfo);
+    /**
+     * 通过文件夹id查询该文件夹下的文件的类型
+     *
+     * @param typeId id类型
+     * @return {@code Result<List<TypeNameVO>>}
+     */
+    List<TypeNameVO> queryByTypeId(Long typeId);
 }

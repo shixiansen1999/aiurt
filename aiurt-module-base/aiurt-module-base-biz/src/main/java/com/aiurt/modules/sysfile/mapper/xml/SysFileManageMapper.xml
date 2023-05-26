@@ -46,7 +46,7 @@
         AND sf.del_flag = 0
         AND ( sffp1.user_id = #{currLoginUserId} OR sffp1.org_code = #{currLoginOrgCode})
         <if test="sysFileWebParam.typeId !='' and sysFileWebParam.typeId!=null">
-            AND sf.type_id = #{sysFileWebParam.typeId}
+            AND sf.folder_code_cc LIKE CONCAT (#{sysFileWebParam.folderCode}, '%')
         </if>
         <if test="sysFileWebParam.name !='' and sysFileWebParam.name!=null">
             AND sf.name  LIKE CONCAT ('%', #{sysFileWebParam.name}, '%')
@@ -68,5 +68,25 @@
         </if>
         GROUP BY
         sf.id
+    </select>
+    <select id="queryTypeByFolderCode" resultType="com.aiurt.modules.sysfile.vo.TypeNameVO">
+        SELECT DISTINCT
+            sf.type
+        FROM
+            sys_file sf
+        WHERE
+                sf.type_id IN ( SELECT sft.id FROM sys_file_type sft WHERE sft.folder_code_cc LIKE CONCAT (#{folderCodeCc}, '%' ) )
+          AND sf.id IN (
+            SELECT
+                sffp.file_id
+            FROM
+                sys_folder_file_permission sffp
+            WHERE
+                sffp.del_flag = 0
+              AND (
+                sffp.user_id = #{currLoginUserId} OR sffp.org_code = #{currLoginOrgCode})
+            GROUP BY
+                sffp.file_id
+        )
     </select>
 </mapper>

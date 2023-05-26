@@ -266,10 +266,10 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
         formData.put("parentId", parentId);
 
         // 执行填充规则，生成编码数组
-        String[] codeArray = (String[]) FillRuleUtil.executeRule(FillRuleConstant.DEPART, formData);
+        String[] codeArray = (String[]) FillRuleUtil.executeRule(FillRuleConstant.FOLDER_NUM_CODE, formData);
         type.setFolderCode(codeArray[0]);
 
-        if (parentId == null) {
+        if (SysFileConstant.NUM_LONG_0.equals(parentId)) {
             // 如果上级文件夹为空，则设置CodeCc为"/" + Code + "/"
             type.setFolderCodeCc("/" + type.getFolderCode() + "/");
         } else {
@@ -403,5 +403,40 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
         List<SysFolderFilePermissionVO> sysFolderFilePermissionList = buildPermissionDetails(sysFolderFilePermissions, simpUserList, folderFilePermissionDepartList);
 
         return sysFolderFilePermissionList;
+    }
+
+    @Override
+    public void buildData() {
+        List<SysFileType> sysFileTypes = sysFolderMapper.selectList(null);
+        for (SysFileType fileType : sysFileTypes) {
+            Long parentId = fileType.getParentId();
+            int grade = findGrade(sysFileTypes, parentId, 1);
+            fileType.setGrade(grade);
+            sysFolderMapper.updateById(fileType);
+        }
+    }
+
+    /**
+     * 递归查找父级对象的层级次数
+     *
+     * @param sysFileTypes 文件类型列表
+     * @param parentId     父级对象的 ID
+     * @param level        当前层级次数
+     * @return 父级对象的层级次数
+     */
+    private int findGrade(List<SysFileType> sysFileTypes, Long parentId, int level) {
+        if (parentId == 0) {
+            return 1;
+        }
+        for (SysFileType fileType : sysFileTypes) {
+            if (fileType.getId().equals(parentId)) {
+                Long pid = fileType.getParentId();
+                if (SysFileConstant.NUM_LONG_0.equals(pid)) {
+                    return level;
+                }
+                return findGrade(sysFileTypes, pid, level + 1);
+            }
+        }
+        return 1;
     }
 }
