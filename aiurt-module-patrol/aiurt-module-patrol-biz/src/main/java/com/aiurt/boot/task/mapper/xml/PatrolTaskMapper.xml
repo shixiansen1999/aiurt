@@ -594,6 +594,12 @@
 <!--        <if test="condition.jointSQL != null and condition.jointSQL != ''">-->
 <!--            and ${condition.jointSQL}-->
 <!--        </if>-->
+        <if test="condition.exceptionType != null and condition.exceptionType == 0">
+            and pt.abnormal_state = 0
+        </if>
+        <if test="condition.exceptionType != null and condition.exceptionType == 0">
+            and pt.mac_status = 0
+        </if>
         GROUP BY pt.`code`
     </select>
     <select id="getScheduleList" resultType="com.aiurt.boot.statistics.model.ScheduleTask">
@@ -1533,5 +1539,19 @@
         (
         <include refid="OverviewInfo"/>
         ) statistics
+    </select>
+
+    <select id="getTaskDeviceOverviewInfoCount" resultType="com.aiurt.boot.statistics.model.PatrolSituation">
+        SELECT
+        COUNT( 1 ) `sum`,
+        SUM( #{condition.checkStatus} = ptd.`status` ) `finish`,
+        SUM( #{condition.status} != ptd.`status` ) `unfinish`,
+        SUM( #{condition.checkResult} = ptd.check_result or #{condition.macStatus} = ptd.mac_status ) `abnormal`,
+        SUM( #{condition.omitStatus} = statistics.omit_status and #{condition.status} != ptd.`status`) omit
+        FROM
+        (
+        <include refid="OverviewInfo"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id
     </select>
 </mapper>

@@ -516,4 +516,10 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 //    PatrolSituation getOverviewInfoCount(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("jointSQL") String filterConditions);
     PatrolSituation getOverviewInfoCount(@Param("condition") IndexCountDTO indexCountDTO);
 
+    /**
+     * 首页统计巡视任务下的工单数量(巡视总数、已巡视、未巡视、异常数)
+     */
+    PatrolSituation getTaskDeviceOverviewInfoCount(@Param("condition") IndexCountDTO indexCountDTO);
+
+
 }
