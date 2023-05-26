@@ -1366,9 +1366,7 @@
         </if>
     </select>
     <select id="getUserNowNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
-        SELECT SUM(IF(pt.STATUS = 7,
-        TIMESTAMPDIFF(SECOND, pt.begin_time, IF(1 = pt.auditor, pt.auditor_time, pt.submit_time)),
-        0)) as workHours,
+        SELECT IFNULL(pt.duration,'0') * 60 as workHours,
         sd.id as orgId,
         pt.id AS taskId
         FROM
@@ -1390,9 +1388,7 @@
         GROUP BY pt.id
     </select>
     <select id="getPeopleNowNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
-        SELECT SUM(IF(pt.STATUS = 7,
-        TIMESTAMPDIFF(SECOND, pt.begin_time, IF(1 = pt.auditor, pt.auditor_time, pt.submit_time)),
-        0)) as workHours,
+        SELECT IFNULL(pt.duration,'0') * 60 as workHours,
         sd.id as orgId,
         pt.id AS taskId
         FROM
