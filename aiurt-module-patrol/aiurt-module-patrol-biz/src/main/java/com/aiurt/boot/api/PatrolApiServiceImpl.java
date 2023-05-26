@@ -7,6 +7,7 @@ import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.dto.UserTeamParameter;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
 import com.aiurt.boot.screen.constant.ScreenConstant;
@@ -15,6 +16,8 @@ import com.aiurt.boot.screen.model.ScreenModule;
 import com.aiurt.boot.screen.service.PatrolScreenService;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
+import com.aiurt.boot.statistics.dto.IndexCountDTO;
+import com.aiurt.boot.statistics.model.PatrolSituation;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.mapper.*;
@@ -25,8 +28,10 @@ import com.aiurt.config.datafilter.utils.SqlBuilderUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -63,6 +68,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
     private PatrolScreenService screenService;
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
+    @Autowired
+    private ISysParamAPI sysParamApi;
     /**
      * 首页-统计日程的巡视完成数
      *
@@ -71,7 +78,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
      * @return
      */
     @Override
-    public Map<String, Integer> getPatrolFinishNumber(int year, int month) {
+    public Map<String, Integer> getPatrolFinishNumber(int year, int month,HttpServletRequest request) {
         Map<String, Integer> map = new HashMap<>(16);
         Calendar instance = Calendar.getInstance();
         instance.set(year, month - 1, 1);
@@ -81,13 +88,28 @@ public class PatrolApiServiceImpl implements PatrolApi {
         // 所在月的最后一天
         Date lastDay = DateUtil.parse(DateUtil.format(instance.getTime(), "yyyy-MM-dd 23:59:59"));
 
-        List<PatrolTask> taskList = patrolTaskMapper.selectpatrolTaskList(firstDay,lastDay,PatrolConstant.TASK_COMPLETE);
+        // 获取权限数据
+        String filterConditions = this.getPermissionSQL(request);
+        IndexCountDTO indexCountDTO = new IndexCountDTO(firstDay, lastDay, filterConditions);
+        List<PatrolSituation> overviewInfoCount = new ArrayList<>();
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            overviewInfoCount = patrolTaskMapper.getTaskDeviceCountONMonth(indexCountDTO);
+        } else {
+            overviewInfoCount = patrolTaskMapper.getCountONMonth(indexCountDTO);
+        }
 
         instance.set(year, month - 1, 1);
         while (instance.get(Calendar.MONTH) == month - 1) {
             String date = DateUtil.format(instance.getTime(), "yyyy/MM/dd");
-            int count = (int) taskList.stream().filter(l -> date.equals(DateUtil.format(l.getPatrolDate(), "yyyy/MM/dd"))).count();
-            map.put(date, count);
+            if (CollUtil.isNotEmpty(overviewInfoCount)) {
+                PatrolSituation patrolSituation = overviewInfoCount.stream().filter(l -> date.equals(DateUtil.format(l.getPatrolDate(), "yyyy/MM/dd"))).findFirst().orElse(new PatrolSituation());
+                map.put(date, ObjectUtil.isNotEmpty(patrolSituation) && patrolSituation.getFinish() != null ? patrolSituation.getFinish().intValue() : 0);
+            } else {
+                map.put(date, 0);
+            }
             instance.add(Calendar.DATE, 1);
         }
         return map;

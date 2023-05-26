@@ -522,5 +522,18 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      */
     PatrolSituation getTaskDeviceOverviewInfoCount(@Param("condition") IndexCountDTO indexCountDTO);
 
+    /**
+     * 首页统计巡视数量(巡视总数、已巡视、未巡视、异常数)
+     */
+    List<PatrolSituation>  getCountONMonth(@Param("condition") IndexCountDTO indexCountDTO);
 
+    /**
+     * 首页统计巡视任务下的工单数量(巡视总数、已巡视、未巡视、异常数)
+     */
+    List<PatrolSituation>  getTaskDeviceCountONMonth(@Param("condition") IndexCountDTO indexCountDTO);
+
+    /**
+     * 大屏统计巡视任务下的工单数量(巡视总数、已巡视、未巡视、异常数)
+     */
+    PatrolSituation getTaskDeviceCount(@Param("condition") ScreenModule module);
 }

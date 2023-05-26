@@ -30,6 +30,10 @@ public class ScreenModule {
      */
     private Integer status;
     /**
+     * 工单任务完成状态
+     */
+    private Integer checkStatus;
+    /**
      * 漏检状态
      */
     private Integer omit;
