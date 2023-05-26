@@ -5,7 +5,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -29,8 +28,6 @@ import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.*;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.boot.utils.PdfUtil;
-import com.aiurt.boot.wificonnect.entity.WifiConnect;
-import com.aiurt.boot.wificonnect.service.IWifiConnectService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
@@ -117,8 +114,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private IPatrolTaskStandardService patrolTaskStandardService;
     @Autowired
     private PatrolTaskStandardMapper patrolTaskStandardMapper;
-    @Autowired
-    private IWifiConnectService wifiConnectService;
 
     @Autowired
     private PatrolPlanMapper patrolPlanMapper;
@@ -1292,12 +1287,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 updateWrapper.set(PatrolTask::getDuration, standardDuration);
             } else {
                 // 非工区，当巡视时长大于大于上限时长时，巡视时长等于上限时长。不然就是wifi最近连接巡视站点时间减提交时间
-                // 查询wifi最近连接时，可以把连接时间大于 提交时间-上限时长。因为大于这个范围的，巡视时长直接等于上限时长(保险再加10分钟)
-                DateTime dateTime = DateUtil.offsetMinute(new Date(), -(standardDuration + 10));
-                WifiConnect wifiConnect = wifiConnectService.getRecentConnect(stationCode, dateTime);
-                Date connectTime = wifiConnect.getConnectTime();
-                int duration = (int) DateUtil.between(connectTime, new Date(), DateUnit.MINUTE);
-                updateWrapper.set(PatrolTask::getDuration, duration >= standardDuration ? standardDuration: duration);
+                Date recentConnectTime = sysBaseApi.getRecentConnectTimeByStationCode(stationCode);
+                if (ObjectUtil.isNull(recentConnectTime)) {
+                    updateWrapper.set(PatrolTask::getDuration, standardDuration);
+                }else {
+                    int duration = (int) DateUtil.between(recentConnectTime, new Date(), DateUnit.MINUTE);
+                    updateWrapper.set(PatrolTask::getDuration, duration >= standardDuration ? standardDuration: duration);
+                }
+
             }
 
             //获取mac地址

@@ -223,6 +223,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private CsSafetyAttentionMapper csSafetyAttentionMapper;
 
     @Autowired
+    private ISysUserPositionCurrentService sysUserPositionCurrentService;
+
+    @Autowired
     @Lazy
     private PatrolStandardItemsServiceImpl patrolStandardItemsService;
 
@@ -3205,6 +3208,16 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             return mac;
         }
         return new ArrayList<>();
+    }
+
+    @Override
+    public Date getRecentConnectTimeByStationCode(String stationCode) {
+        LambdaQueryWrapper<SysUserPositionCurrent> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysUserPositionCurrent::getStationCode, stationCode);
+        queryWrapper.orderByDesc(SysUserPositionCurrent::getUploadTime);
+        queryWrapper.last("limit 1");
+        List<SysUserPositionCurrent> list = sysUserPositionCurrentService.list(queryWrapper);
+        return CollUtil.isEmpty(list) ? null : list.get(0).getUploadTime();
     }
 
     @Override
