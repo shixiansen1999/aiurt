@@ -38,33 +38,33 @@ public interface SysFileManageMapper extends BaseMapper<SysFile> {
     /**
      * 根据文件夹编码查询所有子级文件夹下的文件的文件的类型
      *
-     * @param folderCodeCc 文件夹编码层级
-     * @param currLoginUserId 用户id
+     * @param folderCodeCc     文件夹编码层级
+     * @param currLoginUserId  用户id
      * @param currLoginOrgCode 用户部门code
      * @return
      */
-    List<TypeNameVO> queryTypeByFolderCode(@Param("folderCodeCc") String folderCodeCc, @Param("currLoginUserId")String currLoginUserId,@Param("currLoginOrgCode") String currLoginOrgCode);
+    List<TypeNameVO> queryTypeByFolderCode(@Param("folderCodeCc") String folderCodeCc, @Param("currLoginUserId") String currLoginUserId, @Param("currLoginOrgCode") String currLoginOrgCode);
 
     /**
      * app查询父节点
      *
-     * @param page
-     * @param fileName
-     * @param username
-     * @param orgCode
-     * @return
+     * @param page     分页对象
+     * @param fileName 文件名
+     * @param username 用户名
+     * @param orgCode  组织机构编码
+     * @return 文件应用的分页列表
      */
     Page<FileAppVO> listPrent(Page<FileAppVO> page, @Param("fileName") String fileName, @Param("username") String username, @Param("orgCode") String orgCode);
 
     /**
-     * 查询当前节点下有权限的文件于文件夹
+     * 查询当前节点下有权限的文件和文件夹
      *
-     * @param page
-     * @param parentId
-     * @param fileName
-     * @param username
-     * @param orgCode
-     * @return
+     * @param page     分页对象
+     * @param parentId 父级ID
+     * @param fileName 文件名
+     * @param username 用户名
+     * @param orgCode  组织机构编码
+     * @return 文件应用的分页列表
      */
     Page<FileAppVO> listPage(Page<FileAppVO> page, @Param("parentId") Long parentId, @Param("fileName") String fileName, @Param("username") String username, @Param("orgCode") String orgCode);
 }

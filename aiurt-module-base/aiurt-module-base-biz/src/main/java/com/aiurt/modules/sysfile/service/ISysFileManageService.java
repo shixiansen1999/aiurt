@@ -60,8 +60,6 @@ public interface ISysFileManageService extends IService<SysFile> {
      */
     SysFileDetailVO queryById(String id);
 
-
-
     /**
      * 增加下载次数
      *
@@ -71,26 +69,24 @@ public interface ISysFileManageService extends IService<SysFile> {
     boolean addCount(Long id);
 
     /**
-     * 添加下载记录
-     *
-     * @param sysFileInfo 待添加的下载记录信息
-     * @return 添加后的下载记录信息
-     */
-    SysFileInfo addDownload(SysFileInfo sysFileInfo);
-    /**
      * 通过文件夹id查询该文件夹下的文件的类型
      *
      * @param typeId id类型
      * @return {@code Result<List<TypeNameVO>>}
      */
     List<TypeNameVO> queryByTypeId(Long typeId);
+    /**
+     * 构建数据，新版知识库表结构变动
+     * @return
+     */
+    void buildData();
 
     /**
-     * app分页
-     * @param page
-     * @param parentId
-     * @param fileName
-     * @return
+     * 查询app文档分页列表
+     * @param page      分页对象
+     * @param parentId  父级ID
+     * @param fileName  文件名
+     * @return 文件应用的分页列表
      */
     Page<FileAppVO> getAppPageList(Page<FileAppVO> page, Long parentId, String fileName);
 }

@@ -22,4 +22,10 @@ public interface ISysFolderFilePermissionService extends IService<SysFolderFileP
      * @param sysFolderFilePermissionParams 文件夹权限参数列表
      */
     void updateFolderFilePermission(Long folderId, Long fileId, List<SysFolderFilePermissionParam> sysFolderFilePermissionParams);
+
+    /**
+     * 初始化sys_folder_file_permission表数据
+     */
+    void saveSysFolderFilePermission();
+
 }

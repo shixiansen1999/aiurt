@@ -37,14 +37,14 @@ public class SysFolderController {
      *
      * @param req      HttpServletRequest对象，用于获取请求相关信息
      * @param name     文件夹名称，用于筛选符合名称的文件夹
-     * @param parentId 文件夹父级id，用于筛选符合id的文件夹
+     * @param pid 文件夹父级id，用于筛选符合id的文件夹
      * @return 查询结果，包含SysFolderTreeVO对象列表
      */
     @AutoLog(value = "查询文件夹树形结构列表")
     @ApiOperation(value = "查询文件夹树形结构列表", notes = "查询文件夹树形结构列表")
     @GetMapping(value = "/tree")
-    public Result<List<SysFolderTreeVO>> queryFolderTree(HttpServletRequest req, String name, Long parentId) {
-        List<SysFolderTreeVO> result = sysFolderService.queryFolderTree(name, parentId);
+    public Result<List<SysFolderTreeVO>> queryFolderTree(HttpServletRequest req, String name, Long pid) {
+        List<SysFolderTreeVO> result = sysFolderService.queryFolderTree(name, pid);
         return Result.OK(result);
     }
 
@@ -108,8 +108,10 @@ public class SysFolderController {
         return Result.ok("删除成功!");
     }
 
-
-
+    /**
+     * 构建数据，新版知识库表结构变动
+     * @return
+     */
     @PostMapping(value = "/builddata")
     public Result<?> buildData() {
         sysFolderService.buildData();

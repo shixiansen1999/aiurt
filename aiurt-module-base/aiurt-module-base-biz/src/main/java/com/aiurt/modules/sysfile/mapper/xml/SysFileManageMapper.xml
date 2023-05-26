@@ -22,11 +22,12 @@
     <select id="getFilePageList" resultType="com.aiurt.modules.sysfile.vo.SysFileManageVO">
         SELECT
         sf.id,
-        sf.NAME,
+        sf.name,
         sf.create_time,
         sf.create_by,
         sf.type_id,
         sf.type,
+        sf.update_time,
         MAX( sffp1.permission ) AS permission
         FROM
         sys_file sf
@@ -46,13 +47,10 @@
         AND sf.del_flag = 0
         AND ( sffp1.user_id = #{currLoginUserId} OR sffp1.org_code = #{currLoginOrgCode})
         <if test="sysFileWebParam.typeId !='' and sysFileWebParam.typeId!=null">
-            AND sf.folder_code_cc LIKE CONCAT (#{sysFileWebParam.folderCode}, '%')
+            AND sf.code_cc LIKE CONCAT (#{sysFileWebParam.folderCodeCc}, '%')
         </if>
         <if test="sysFileWebParam.name !='' and sysFileWebParam.name!=null">
             AND sf.name  LIKE CONCAT ('%', #{sysFileWebParam.name}, '%')
-        </if>
-        <if test="sysFileWebParam.type !='' and sysFileWebParam.type!=null">
-            AND sf.type = #{sysFileWebParam.type}
         </if>
         <if test="sysFileWebParam.type !='' and sysFileWebParam.type!=null">
             AND sf.type = #{sysFileWebParam.type}
@@ -75,8 +73,9 @@
         FROM
             sys_file sf
         WHERE
-                sf.type_id IN ( SELECT sft.id FROM sys_file_type sft WHERE sft.folder_code_cc LIKE CONCAT (#{folderCodeCc}, '%' ) )
-          AND sf.id IN (
+         sf.del_flag = 0
+         AND sf.type_id IN ( SELECT sft.id FROM sys_file_type sft WHERE sft.folder_code_cc LIKE CONCAT (#{folderCodeCc}, '%' ) )
+         AND sf.id IN (
             SELECT
                 sffp.file_id
             FROM
@@ -175,13 +174,13 @@
                 FROM
                     sys_file_type sft
                         LEFT JOIN sys_folder_file_permission sffp ON sft.id = sffp.folder_id
-                        AND (sffp.user_id = 'admin' OR sffp.org_code = 'ace')
+                        AND (sffp.user_id = ${username} OR sffp.org_code = ${orgCode})
                 WHERE
                     sffp.permission IS NOT NULL
                   AND sft.del_flag = 0
                   AND sft.folder_code_cc != ''
 	          AND sft.folder_code_cc IS NOT NULL
-            AND   (sft.parent_id = '120'
+            AND   (sft.parent_id = #{parentId}
             )
                 GROUP BY sft.id
 
@@ -195,16 +194,20 @@
                     sys_file sf
                     JOIN sys_file_type sft ON sf.type_id = sft.id
                     LEFT JOIN sys_folder_file_permission sffp ON sf.id = sffp.file_id
-                    AND (sffp.user_id = 'admin' OR sffp.org_code = 'ace')
+                    AND (sffp.user_id = ${username} OR sffp.org_code = ${orgCode})
                 WHERE
                     sffp.permission IS NOT NULL
                   AND sf.del_flag = 0
                   AND (
-                    sf.type_id = '120'
+                    sf.type_id = #{parentId}
                     )
                 GROUP BY sf.id
             ) AS sf
-
+        <where>
+            <if test="fileName!=null and fileName!=''">
+                AND sf.name LIKE CONCAT ('%', #{fileName}, '%')
+            </if>
+        </where>
         ORDER BY
             sf.name DESC;
     </select>

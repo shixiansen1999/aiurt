@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: 文件夹接口
@@ -31,10 +32,10 @@ public interface ISysFolderService extends IService<SysFileType> {
      * 查询文件夹树形结构列表
      *
      * @param name     文件夹名称，用于筛选符合名称的文件夹
-     * @param parentId 文件夹父级id，用于筛选符合id的文件夹
+     * @param pid 文件夹父级id，用于筛选符合id的文件夹
      * @return 查询结果，包含SysFolderTreeVO对象列表
      */
-    List<SysFolderTreeVO> queryFolderTree(String name, Long parentId);
+    List<SysFolderTreeVO> queryFolderTree(String name, Long pid);
 
     /**
      * 编辑文件夹
@@ -69,6 +70,14 @@ public interface ISysFolderService extends IService<SysFileType> {
      * @return 权限详情列表
      */
     List<SysFolderFilePermissionVO> getPermissionDetails(List<SysFolderFilePermission> sysFolderFilePermissions);
+
+    /**
+     * 根据文件夹ID集合获取文件的权限列表
+     *
+     * @param ids 文件夹ID集合
+     * @return 文件夹权限列表，以文件夹ID为键，权限列表为值的映射
+     */
+    Map<Long, List<SysFolderFilePermission>> getPermissionByFolderId(List<Long> ids);
 
     /**
      * 构建数据

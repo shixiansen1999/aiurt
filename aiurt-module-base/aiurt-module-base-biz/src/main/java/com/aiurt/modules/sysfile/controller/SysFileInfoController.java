@@ -1,9 +1,14 @@
 package com.aiurt.modules.sysfile.controller;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.sysfile.entity.SysFileInfo;
 import com.aiurt.modules.sysfile.param.SysFileInfoParam;
 import com.aiurt.modules.sysfile.service.ISysFileInfoService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -68,7 +73,7 @@ public class SysFileInfoController {
      */
     @AutoLog(value = "文档表-下载记录导出")
     @ApiOperation(value = "文档表-下载记录导出", notes = "文档表-下载记录导出")
-    @RequestMapping(value = "/reportExportDownloadList")
+    @GetMapping(value = "/reportExportDownloadList")
     public ModelAndView reportExportDownloadList(@RequestParam(value = "fileId", required = true) Long fileId) {
         ModelAndView mv = sysFileInfoService.reportExportDownloadList(fileId);
         return mv;

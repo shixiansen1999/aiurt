@@ -1,7 +1,7 @@
 package com.aiurt.modules.sysfile.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -21,7 +21,6 @@ import com.aiurt.modules.sysfile.entity.SysFolderFilePermission;
 import com.aiurt.modules.sysfile.mapper.SysFileManageMapper;
 import com.aiurt.modules.sysfile.param.SysFileParam;
 import com.aiurt.modules.sysfile.param.SysFileWebParam;
-import com.aiurt.modules.sysfile.param.SysFolderParam;
 import com.aiurt.modules.sysfile.service.ISysFileInfoService;
 import com.aiurt.modules.sysfile.service.ISysFileManageService;
 import com.aiurt.modules.sysfile.service.ISysFolderFilePermissionService;
@@ -33,21 +32,17 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.elasticsearch.action.index.IndexResponse;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StreamUtils;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import java.io.*;
@@ -73,32 +68,21 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
     private EsFileAPI esFileApi;
     @Resource
     private ISysFolderService sysFolderService;
-    @Resource
-    private ISysFileInfoService sysFileInfoService;
     @Value("${jeecg.path.upload}")
     private String uploadPath;
 
     @Override
     public Page<SysFileManageVO> getFilePageList(Page<SysFileManageVO> page, SysFileWebParam sysFileWebParam) {
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (ObjectUtil.isEmpty(loginUser)) {
-            throw new AiurtBootException("请重新登录");
-        }
-
-        String currLoginUserId = loginUser.getId();
-
-        String currLoginOrgCode = loginUser.getOrgCode();
-
+        LoginUser loginUser = getLoginUser();
         List<String> userNames = getUserNames(sysFileWebParam);
 
-        // 为了查询上级文件夹时把他子级所有文件夹的文件也查出来，所以利用folderCodeCc文件夹编码右模糊匹配
+        // 为了查询文件夹时把他子级所有文件夹的文件也查出来，所以利用folderCodeCc文件夹编码右模糊匹配
         setFolderCode(sysFileWebParam);
 
-        List<SysFileManageVO> result = sysFileManageMapper.getFilePageList(page, sysFileWebParam, currLoginUserId, currLoginOrgCode, userNames);
+        List<SysFileManageVO> result = sysFileManageMapper.getFilePageList(page, sysFileWebParam, loginUser.getId(), loginUser.getOrgCode(), userNames);
 
         return page.setRecords(result);
     }
-
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -107,42 +91,21 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
             throw new AiurtBootException("参数不能为空");
         }
 
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (ObjectUtil.isEmpty(loginUser)) {
-            throw new AiurtBootException("请重新登录");
-        }
-
+        getLoginUser();
         Result<SysFile> result = new Result<>();
-        SysFile sysFile = null;
 
-
-        for (SysFileParam file : files) {
-
-            sysFile = new SysFile();
-            BeanUtils.copyProperties(file, sysFile);
-
-            // 处理文件名和类型
-            processFileNameAndType(sysFile, file);
-
-            // 处理文件大小
-            processFileSize(sysFile, file);
-
-            try {
-                // 保存sysFile
+        Map<Long, List<SysFolderFilePermission>> permissionByFolderId = sysFolderService.getPermissionByFolderId(files.stream().map(SysFileParam::getTypeId).collect(Collectors.toList()));
+        try {
+            for (SysFileParam file : files) {
+                SysFile sysFile = createSysFile(file);
                 save(sysFile);
-
-                // 创建并保存SysFolderFilePermission
-                saveSysFolderFilePermission(sysFile);
-
-                // ES更新规范规程知识库的文件数据
-                SysFile finalSysFile = sysFile;
-                new Thread(() -> this.saveEsDate(finalSysFile)).start();
-
-                result.success("添加成功！");
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-                result.error500("添加失败");
+                saveSysFolderFilePermission(sysFile, permissionByFolderId);
+                saveEsDataAsync(sysFile);
             }
+            result.success("添加成功！");
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            result.error500("添加失败");
         }
         return result;
     }
@@ -182,10 +145,7 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
             throw new AiurtBootException("未查询到此项数据");
         }
 
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (ObjectUtil.isEmpty(loginUser)) {
-            throw new AiurtBootException("请重新登录");
-        }
+        LoginUser loginUser = getLoginUser();
 
         checkDeletePermission(sysFile, loginUser);
 
@@ -223,35 +183,21 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
         return result;
     }
 
-
     @Override
     public synchronized boolean addCount(Long id) {
         SysFile sysFile = getById(id);
         if (ObjectUtil.isEmpty(sysFile)) {
             throw new AiurtBootException("未找到相关数据");
         }
-        sysFile.setDownSize(sysFile.getDownSize() == null ? 1 : sysFile.getDownSize() + 1);
-        boolean result = updateById(sysFile);
-        return result;
-    }
-
-    @Override
-    public SysFileInfo addDownload(SysFileInfo sysFileInfo) {
-        return sysFileInfoService.addDownload(sysFileInfo);
+        sysFile.setDownSize(ObjectUtil.defaultIfNull(sysFile.getDownSize(), 0) + 1);
+        return updateById(sysFile);
     }
 
     @Override
     public List<TypeNameVO> queryByTypeId(Long typeId) {
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (ObjectUtil.isEmpty(loginUser)) {
-            throw new AiurtBootException("请重新登录");
-        }
-
-        String currLoginUserId = loginUser.getId();
-        String currLoginOrgCode = loginUser.getOrgCode();
-
+        LoginUser loginUser = getLoginUser();
         SysFileType sysFileType = sysFolderService.getById(typeId);
-        List<TypeNameVO> result  = sysFileManageMapper.queryTypeByFolderCode(sysFileType.getFolderCodeCc(),currLoginUserId,currLoginOrgCode);
+        List<TypeNameVO> result = sysFileManageMapper.queryTypeByFolderCode(sysFileType.getFolderCodeCc(), loginUser.getId(), loginUser.getOrgCode());
         return result;
     }
 
@@ -259,12 +205,26 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
     public Page<FileAppVO> getAppPageList(Page<FileAppVO> page, Long parentId, String fileName) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Page<FileAppVO> listPage;
-        if (ObjectUtil.isEmpty(parentId)){
-            listPage = baseMapper.listPrent(page,fileName,loginUser.getUsername(),loginUser.getOrgCode());
+        if (ObjectUtil.isEmpty(parentId)) {
+            listPage = baseMapper.listPrent(page, fileName, loginUser.getUsername(), loginUser.getOrgCode());
             return listPage;
         }
-        listPage = baseMapper.listPage(page,parentId,fileName,loginUser.getUsername(),loginUser.getOrgCode());
-        return null;
+        listPage = baseMapper.listPage(page, parentId, fileName, loginUser.getUsername(), loginUser.getOrgCode());
+        return listPage;
+    }
+
+    @Override
+    public void buildData() {
+        List<SysFile> sysFiles = sysFileManageMapper.selectList(null);
+        if (CollUtil.isNotEmpty(sysFiles)) {
+            for (SysFile sysFile : sysFiles) {
+                SysFileType sysFileType = sysFolderService.getById(sysFile.getTypeId());
+                if (ObjectUtil.isNotEmpty(sysFileType)) {
+                    sysFile.setCodeCc(sysFileType.getFolderCodeCc());
+                    sysFileManageMapper.updateById(sysFile);
+                }
+            }
+        }
     }
 
     /**
@@ -316,21 +276,20 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
     /**
      * 保存SysFolderFilePermission
      *
-     * @param sysFile SysFile对象，包含文件信息
+     * @param sysFile     SysFile对象，包含文件信息
+     * @param permissions 文件夹权限列表，以文件夹ID为键，权限列表为值的映射
      */
-    private void saveSysFolderFilePermission(SysFile sysFile) {
-        SysFolderFilePermission sysFolderFilePermission = new SysFolderFilePermission();
-        sysFolderFilePermission.setFileId(sysFile.getId());
+    private void saveSysFolderFilePermission(SysFile sysFile, Map<Long, List<SysFolderFilePermission>> permissions) {
+        if (ObjectUtil.isEmpty(sysFile) || MapUtil.isEmpty(permissions)) {
+            return;
+        }
 
         // 继承文件夹的权限
-        LambdaQueryWrapper<SysFolderFilePermission> lam = new LambdaQueryWrapper<>();
-        lam.select(SysFolderFilePermission::getUserId);
-        lam.select(SysFolderFilePermission::getOrgCode);
-        lam.select(SysFolderFilePermission::getFolderId);
-        lam.select(SysFolderFilePermission::getPermission);
-        lam.eq(SysFolderFilePermission::getFolderId, sysFile.getTypeId());
-        List<SysFolderFilePermission> sysFolderFilePermissions = sysFolderFilePermissionService.list(lam);
-        sysFolderFilePermissionService.saveBatch(sysFolderFilePermissions, 500);
+        List<SysFolderFilePermission> sysFolderFilePermissions = permissions.get(sysFile.getTypeId());
+        if (CollUtil.isNotEmpty(sysFolderFilePermissions)) {
+            List<SysFolderFilePermission> saveData = sysFolderFilePermissions.stream().map(permission -> permission.setFileId(sysFile.getId())).collect(Collectors.toList());
+            sysFolderFilePermissionService.saveBatch(saveData, 500);
+        }
     }
 
     /**
@@ -353,7 +312,7 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
      * @param sysFile 文件信息对象
      * @return Elasticsearch 索引响应
      */
-    private IndexResponse saveEsDate(SysFile sysFile) {
+    private IndexResponse saveEsData(SysFile sysFile) {
         IndexResponse response = null;
         try {
             // 根据文件地址获取文件
@@ -502,6 +461,43 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
                 sysFileWebParam.setFolderCodeCc(sysFileType.getFolderCodeCc());
             }
         }
+    }
+
+    /**
+     * 异步保存 ES 数据
+     *
+     * @param sysFile 要保存的 SysFile 对象
+     */
+    private void saveEsDataAsync(SysFile sysFile) {
+        new Thread(() -> saveEsData(sysFile)).start();
+    }
+
+    /**
+     * 获取当前登录用户
+     *
+     * @return 当前登录用户
+     * @throws AiurtBootException 当用户未登录时抛出异常
+     */
+    private LoginUser getLoginUser() throws AiurtBootException {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("请重新登录");
+        }
+        return loginUser;
+    }
+
+    /**
+     * 创建 SysFile 对象
+     *
+     * @param file 文件参数
+     * @return 创建的 SysFile 对象
+     */
+    private SysFile createSysFile(SysFileParam file) {
+        SysFile sysFile = new SysFile();
+        BeanUtils.copyProperties(file, sysFile);
+        processFileNameAndType(sysFile, file);
+        processFileSize(sysFile, file);
+        return sysFile;
     }
 
 }
