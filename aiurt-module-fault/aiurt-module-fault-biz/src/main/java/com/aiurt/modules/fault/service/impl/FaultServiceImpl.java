@@ -1444,8 +1444,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         sparePartBaseApi.updateSparePartMalfunction(malfunctionList);*/
 
-
-        saveLog(loginUser, "填写维修记录", faultCode, FaultStatusEnum.REPAIR.getStatus(), null);
+        if(submitValue){
+            saveLog(loginUser, "填写维修记录", faultCode, FaultStatusEnum.REPAIR.getStatus(), null);
+        }
 
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_DEAL.getType(), faultCode, loginUser.getUsername(), "1");
 
