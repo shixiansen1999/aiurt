@@ -171,4 +171,12 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @param id 检修计划id
      */
     List<OrgDTO> queryUserDownList(String id);
+
+    /**
+     * app-检修计划站所信息
+     * @param page 分页
+     * @param selectPlanReq 传参
+     * @return IPage<StationPlanDTO> 结果对象，包含分页后的检修任务列表及分页信息
+     */
+    IPage<StationPlanDTO> queryPlanStationList(Page<StationPlanDTO> page,SelectPlanReq selectPlanReq);
 }
