@@ -29,15 +29,15 @@ public class SysUserPositionCurrentServiceImpl extends ServiceImpl<SysUserPositi
         }catch (Exception e){
             throw new AiurtBootException("用户连接wifi当前位置表中用户:" + sysUserPositionCurrent.getCreateBy() +" 不唯一");
         }
+        if (sysUserPositionCurrent.getStationCode() == null) {
+            // 站点为空时，设置为异常
+            sysUserPositionCurrent.setIsPositionError("1");
+        }
         if (ObjectUtil.isNull(one)) {
             // 不存在，添加
             this.save(sysUserPositionCurrent);
         }else {
             // 已存在，更新
-            if (sysUserPositionCurrent.getStationCode() == null) {
-                // 站点为空时，设置为异常
-                sysUserPositionCurrent.setIsPositionError("1");
-            }
             if (one.getStationCode().equals(sysUserPositionCurrent.getStationCode())){
                 // 同站点，不更新upload_time
                 sysUserPositionCurrent.setUploadTime(null);
