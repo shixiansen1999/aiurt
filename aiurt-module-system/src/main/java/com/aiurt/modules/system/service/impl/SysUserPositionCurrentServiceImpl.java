@@ -1,6 +1,7 @@
 package com.aiurt.modules.system.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.system.entity.SysUserPositionCurrent;
 import com.aiurt.modules.system.mapper.SysUserPositionCurrentMapper;
@@ -38,8 +39,8 @@ public class SysUserPositionCurrentServiceImpl extends ServiceImpl<SysUserPositi
             this.save(sysUserPositionCurrent);
         }else {
             // 已存在，更新
-            if (one.getStationCode().equals(sysUserPositionCurrent.getStationCode())){
-                // 同站点，不更新upload_time
+            if (StrUtil.equals(one.getStationCode(), sysUserPositionCurrent.getStationCode())) {
+                // 同站点，或者都是null，不更新upload_time
                 sysUserPositionCurrent.setUploadTime(null);
             }
             sysUserPositionCurrent.setId(one.getId());
