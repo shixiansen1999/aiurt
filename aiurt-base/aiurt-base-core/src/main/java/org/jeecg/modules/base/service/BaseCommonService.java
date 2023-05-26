@@ -32,4 +32,9 @@ public interface BaseCommonService {
      */
     void addLog(String logContent, Integer logType, Integer operateType);
 
+    /**
+     * 保存日志,
+     */
+    void addLog(String logContent, Integer logType, Integer operateType, String mac, String version);
+
 }
