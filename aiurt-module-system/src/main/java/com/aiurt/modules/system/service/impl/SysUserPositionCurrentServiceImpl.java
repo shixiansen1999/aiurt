@@ -34,11 +34,15 @@ public class SysUserPositionCurrentServiceImpl extends ServiceImpl<SysUserPositi
             this.save(sysUserPositionCurrent);
         }else {
             // 已存在，更新
-            sysUserPositionCurrent.setId(one.getId());
+            if (sysUserPositionCurrent.getStationCode() == null) {
+                // 站点为空时，设置为异常
+                sysUserPositionCurrent.setIsPositionError("1");
+            }
             if (one.getStationCode().equals(sysUserPositionCurrent.getStationCode())){
                 // 同站点，不更新upload_time
                 sysUserPositionCurrent.setUploadTime(null);
             }
+            sysUserPositionCurrent.setId(one.getId());
             this.updateById(sysUserPositionCurrent);
         }
 
