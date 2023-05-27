@@ -1,5 +1,6 @@
 package com.aiurt.boot.screen.service;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -87,13 +88,12 @@ public class PatrolScreenService {
         module.setStartTime(startTime);
         module.setEndTime(endTime);
         module.setLineCode(lineCode);
-        module.setOmit(PatrolConstant.OMIT_STATUS);
-        module.setCheckStatus(PatrolConstant.BILL_COMPLETE);
         ScreenImportantData data = new ScreenImportantData();
         //根据配置决定是否需要把工单数量作为任务数量
         SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
         boolean value = "1".equals(paramModel.getValue());
         if (value) {
+            module.setOmit(PatrolConstant.OMIT_STATUS);
             PatrolSituation taskDeviceCount = patrolTaskMapper.getTaskDeviceCount(module);
             data.setPatrolNumber(taskDeviceCount.getSum());
             data.setFinishNumber(taskDeviceCount.getFinish());
@@ -104,6 +104,7 @@ public class PatrolScreenService {
             String omitEndTime = this.getOmitDateScope(endTime).split(ScreenConstant.TIME_SEPARATOR)[1];
             module.setStartTime(DateUtil.parse(omitStartTime));
             module.setEndTime(DateUtil.parse(omitEndTime));
+            module.setOmit(PatrolConstant.OMIT_STATUS);
             long planNum = list.stream().count();
             long finishNum = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
             long omitNum = patrolTaskMapper.getScreenDataCount(module).stream().count();
@@ -135,47 +136,66 @@ public class PatrolScreenService {
         if (CollectionUtil.isEmpty(orgCodes)) {
             return new ScreenStatistics(0L, 0L, 0L, 0L, 0L, 0L);
         }
+        ScreenStatistics data = new ScreenStatistics();
         ScreenModule module = new ScreenModule();
         module.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
         module.setOrgCodes(orgCodes);
         module.setStartTime(startTime);
         module.setEndTime(endTime);
         module.setLineCode(lineCode);
-        List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
+        //今日时间
+        Date today = new Date();
 
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            //指定时间范围数量
+            module.setOmit(PatrolConstant.OMIT_STATUS);
+            PatrolSituation taskDeviceCount = patrolTaskMapper.getTaskDeviceCount(module);
+            data.setPlanNum(taskDeviceCount.getSum());
+            data.setFinishNum(taskDeviceCount.getFinish());
+            data.setOmitNum(taskDeviceCount.getOmit());
+            data.setAbnormalNum(taskDeviceCount.getAbnormal());
+            //今日数量构造条件对象
+            module.setStartTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 00:00:00")));
+            module.setEndTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 23:59:59")));
+            PatrolSituation taskDeviceCountToday = patrolTaskMapper.getTaskDeviceCount(module);
+            data.setTodayNum(taskDeviceCountToday.getSum());
+            data.setTodayFinishNum(taskDeviceCountToday.getFinish());
+
+        }else {
+        List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
+        List<PatrolTask> todayList = list.stream()
+                .filter(l -> DateUtil.format(today, "yyyy-MM-dd").equals(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd")))
+                .collect(Collectors.toList());
+        if (!ScreenConstant.THIS_WEEK.equals(timeType) && !ScreenConstant.THIS_MONTH.equals(timeType)) {
+            //今日数量构造条件对象
+            module.setStartTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 00:00:00")));
+            module.setEndTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 23:59:59")));
+            todayList = patrolTaskMapper.getScreenDataCount(module);
+        }
+        long planNum = list.stream().count();
+        long finishNum = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
+        //漏巡条件构建
         String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
         String omitEndTime = this.getOmitDateScope(endTime).split(ScreenConstant.TIME_SEPARATOR)[1];
         module.setStartTime(DateUtil.parse(omitStartTime));
         module.setEndTime(DateUtil.parse(omitEndTime));
         module.setOmit(PatrolConstant.OMIT_STATUS);
-
-        Date today = new Date();
-        List<PatrolTask> todayList = list.stream()
-                .filter(l -> DateUtil.format(today, "yyyy-MM-dd").equals(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd")))
-                .collect(Collectors.toList());
-        if (!ScreenConstant.THIS_WEEK.equals(timeType) && !ScreenConstant.THIS_MONTH.equals(timeType)) {
-            ScreenModule todayModule = new ScreenModule();
-            todayModule.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
-            todayModule.setStartTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 00:00:00")));
-            todayModule.setEndTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 23:59:59")));
-            todayModule.setOrgCodes(orgCodes);
-            todayModule.setLineCode(lineCode);
-            todayList = patrolTaskMapper.getScreenDataCount(todayModule);
-        }
-        long planNum = list.stream().count();
-        long finishNum = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
         long omitNum = patrolTaskMapper.getScreenDataCount(module).stream().count();
+
         long abnormalNum = list.stream().filter(l -> PatrolConstant.TASK_ABNORMAL.equals(l.getAbnormalState())).count();
         long todayNum = todayList.stream().count();
         long todayFinishNum = todayList.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
 
-        ScreenStatistics data = new ScreenStatistics();
         data.setPlanNum(planNum);
         data.setFinishNum(finishNum);
         data.setOmitNum(omitNum);
         data.setAbnormalNum(abnormalNum);
         data.setTodayNum(todayNum);
         data.setTodayFinishNum(todayFinishNum);
+        }
         return data;
     }
 
@@ -359,21 +379,52 @@ public class PatrolScreenService {
         if (CollectionUtil.isEmpty(orgCodes)) {
             return new ArrayList<>();
         }
-        ScreenTran tran = new ScreenTran();
-        tran.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
-        tran.setStartTime(startTime);
-        tran.setEndTime(endTime);
-        tran.setOrgCodes(orgCodes);
-        tran.setLineCode(lineCode);
-        List<ScreenStatisticsGraph> list = patrolTaskMapper.getScreenGraph(tran);
-        for (ScreenStatisticsGraph graph : list) {
-            Long total = graph.getTotal();
-            String finishRate = String.format("%.1f", (1.0 * graph.getFinish() / total) * 100);
-            String unfinishRate = String.format("%.1f", (1.0 * graph.getUnfinish() / total) * 100);
-            graph.setFinishRate(finishRate + "%");
-            graph.setUnfinishRate(unfinishRate + "%");
+
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            List<ScreenStatisticsGraph> list = new ArrayList<>();
+
+            ScreenModule module = new ScreenModule();
+            module.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
+            module.setStartTime(startTime);
+            module.setEndTime(endTime);
+            module.setLineCode(lineCode);
+            module.setOmit(PatrolConstant.OMIT_STATUS);
+
+            for (String orgCode : orgCodes) {
+                module.setOrgCodes(CollUtil.newArrayList(orgCode));
+                PatrolSituation taskDeviceCount = patrolTaskMapper.getTaskDeviceCount(module);
+                if (ObjectUtil.isNotEmpty(taskDeviceCount)) {
+                    ScreenStatisticsGraph graph = new ScreenStatisticsGraph();
+                    Long sum = taskDeviceCount.getSum();
+                    String finishRate = String.format("%.1f", (1.0 * taskDeviceCount.getFinish() / sum) * 100);
+                    String unfinishRate = String.format("%.1f", (1.0 * taskDeviceCount.getUnfinish() / sum) * 100);
+                    graph.setFinishRate(finishRate + "%");
+                    graph.setUnfinishRate(unfinishRate + "%");
+                    list.add(graph);
+                }
+            }
+            return list;
+        } else {
+            ScreenTran tran = new ScreenTran();
+            tran.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
+            tran.setStartTime(startTime);
+            tran.setEndTime(endTime);
+            tran.setOrgCodes(orgCodes);
+            tran.setLineCode(lineCode);
+
+            List<ScreenStatisticsGraph> list = patrolTaskMapper.getScreenGraph(tran);
+            for (ScreenStatisticsGraph graph : list) {
+                Long total = graph.getTotal();
+                String finishRate = String.format("%.1f", (1.0 * graph.getFinish() / total) * 100);
+                String unfinishRate = String.format("%.1f", (1.0 * graph.getUnfinish() / total) * 100);
+                graph.setFinishRate(finishRate + "%");
+                graph.setUnfinishRate(unfinishRate + "%");
+            }
+            return list;
         }
-        return list;
     }
 
     /**

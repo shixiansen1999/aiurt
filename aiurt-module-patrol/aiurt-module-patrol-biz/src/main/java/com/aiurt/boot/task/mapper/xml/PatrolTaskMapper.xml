@@ -1637,6 +1637,7 @@
         SELECT
         IFNULL(COUNT( 1 ), 0) `sum`,
         IFNULL(SUM( #{condition.checkStatus} = ptd.`status` ), 0) `finish`,
+        IFNULL(SUM( #{condition.checkResult} = ptd.check_result or #{condition.macStatus} = ptd.mac_status ), 0) `abnormal`,
         IFNULL(SUM( #{condition.omit} = statistics.omit_status and #{condition.checkStatus} != ptd.`status`), 0) omit,
         statistics.patrolDate
         FROM
