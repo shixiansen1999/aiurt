@@ -600,6 +600,12 @@
 <!--        <if test="condition.jointSQL != null and condition.jointSQL != ''">-->
 <!--            and ${condition.jointSQL}-->
 <!--        </if>-->
+        <if test="condition.exceptionType != null and condition.exceptionType == 0">
+            and pt.abnormal_state = 0
+        </if>
+        <if test="condition.exceptionType != null and condition.exceptionType == 1">
+            and pt.mac_status = 0
+        </if>
         GROUP BY pt.`code`
     </select>
     <select id="getScheduleList" resultType="com.aiurt.boot.statistics.model.ScheduleTask">
@@ -1516,7 +1522,8 @@
         pt.id,
         pt.`status`,
         pt.abnormal_state,
-        pt.omit_status
+        pt.omit_status,
+        date_format(pt.patrol_date, '%Y-%m-%d') as patrolDate
         FROM patrol_task pt
         left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
         left join patrol_task_standard ptsd on pt.id = ptsd.task_id and ptsd.del_flag = 0
@@ -1536,14 +1543,108 @@
 
     <select id="getOverviewInfoCount" resultType="com.aiurt.boot.statistics.model.PatrolSituation">
         SELECT
-        COUNT( 1 ) `sum`,
-        SUM( #{condition.status} = statistics.`status` ) `finish`,
-        SUM( #{condition.status} != statistics.`status` ) `unfinish`,
-        SUM( #{condition.abnormal} = statistics.abnormal_state ) `abnormal`,
-        SUM( #{condition.omitStatus} = statistics.omit_status ) omit
+        IFNULL(COUNT( 1 ), 0) `sum`,
+        IFNULL(SUM( #{condition.status} = statistics.`status` ) , 0) `finish`,
+        IFNULL(SUM( #{condition.status} != statistics.`status` ) , 0)`unfinish`,
+        IFNULL(SUM( #{condition.abnormal} = statistics.abnormal_state ), 0) `abnormal`,
+        IFNULL(SUM( #{condition.omitStatus} = statistics.omit_status ), 0) omit
         FROM
         (
         <include refid="OverviewInfo"/>
         ) statistics
+    </select>
+
+    <select id="getTaskDeviceOverviewInfoCount" resultType="com.aiurt.boot.statistics.model.PatrolSituation">
+        SELECT
+        IFNULL(COUNT( 1 ), 0) `sum`,
+        IFNULL(SUM( #{condition.checkStatus} = ptd.`status` ), 0) `finish`,
+        IFNULL(SUM( #{condition.checkStatus} != ptd.`status` ) , 0)`unfinish`,
+        IFNULL(SUM( #{condition.checkResult} = ptd.check_result or #{condition.macStatus} = ptd.mac_status ), 0) `abnormal`,
+        IFNULL(SUM( #{condition.omitStatus} = statistics.omit_status and #{condition.checkStatus} != ptd.`status`), 0) omit
+        FROM
+        (
+        <include refid="OverviewInfo"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id
+    </select>
+
+    <select id="getCountONMonth" resultType="com.aiurt.boot.statistics.model.PatrolSituation">
+        SELECT
+        IFNULL(COUNT( 1 ), 0) `sum`,
+        IFNULL(SUM( #{condition.status} = statistics.`status` ) , 0) `finish`,
+        IFNULL(SUM( #{condition.status} != statistics.`status` ) , 0)`unfinish`,
+        IFNULL(SUM( #{condition.abnormal} = statistics.abnormal_state ), 0) `abnormal`,
+        IFNULL(SUM( #{condition.omitStatus} = statistics.omit_status ), 0) omit,
+        statistics.patrolDate
+        FROM
+        (
+        <include refid="OverviewInfo"/>
+        ) statistics
+        group by statistics.patrolDate
+    </select>
+
+    <select id="getTaskDeviceCountONMonth" resultType="com.aiurt.boot.statistics.model.PatrolSituation">
+        SELECT
+        IFNULL(COUNT( 1 ), 0) `sum`,
+        IFNULL(SUM( #{condition.checkStatus} = ptd.`status` ), 0) `finish`,
+        IFNULL(SUM( #{condition.checkStatus} != ptd.`status` ) , 0)`unfinish`,
+        IFNULL(SUM( #{condition.checkResult} = ptd.check_result or #{condition.macStatus} = ptd.mac_status ), 0) `abnormal`,
+        IFNULL(SUM( #{condition.omitStatus} = statistics.omit_status and #{condition.checkStatus} != ptd.`status`), 0) omit,
+        statistics.patrolDate
+        FROM
+        (
+        <include refid="OverviewInfo"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id
+        group by statistics.patrolDate
+    </select>
+
+
+    <sql id="ImportantData">
+        select
+        pt.id,
+        pt.`status`,
+        pt.abnormal_state,
+        pt.omit_status,
+        date_format(pt.patrol_date, '%Y-%m-%d') as patrolDate
+        from patrol_task pt
+        LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code AND pts.del_flag = 0
+        JOIN cs_station cs ON pts.station_code = cs.station_code AND cs.del_flag = 0
+        where  pt.del_flag = 0
+        <if test="condition.startTime != null and condition.endTime != null">
+            AND  pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
+        </if>
+        <if test="condition.discardStatus != null">
+            AND  pt.discard_status = #{condition.discardStatus}
+        </if>
+        <if test="condition.lineCode != null and condition.lineCode != ''">
+            AND  cs.line_code = #{condition.lineCode}
+        </if>
+        <if test="condition.orgCodes != null and condition.orgCodes.size > 0">
+            AND  pt.`code` IN(
+            select distinct task_code
+            from patrol_task_organization where del_flag = 0
+            and org_code in
+            <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            )
+        </if>
+        group by pt.code
+    </sql>
+
+    <select id="getTaskDeviceCount" resultType="com.aiurt.boot.statistics.model.PatrolSituation">
+        SELECT
+        IFNULL(COUNT( 1 ), 0) `sum`,
+        IFNULL(SUM( #{condition.checkStatus} = ptd.`status` ), 0) `finish`,
+        IFNULL(SUM( #{condition.checkStatus} != ptd.`status` ) , 0)`unfinish`,
+        IFNULL(SUM( #{condition.checkResult} = ptd.check_result or #{condition.macStatus} = ptd.mac_status ), 0) `abnormal`,
+        IFNULL(SUM( #{condition.omit} = statistics.omit_status and #{condition.checkStatus} != ptd.`status`), 0) omit,
+        statistics.patrolDate
+        FROM
+        (
+        <include refid="ImportantData"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id
     </select>
 </mapper>

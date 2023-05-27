@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateTime;
 import com.aiurt.boot.dto.UserTeamParameter;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
 
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +19,7 @@ public interface PatrolApi {
      * @param month
      * @return
      */
-    Map<String, Integer> getPatrolFinishNumber(int year, int month);
+    Map<String, Integer> getPatrolFinishNumber(int year, int month, HttpServletRequest request);
 
     /**
      *  查看当前用户班组的时间范围内的的巡检的工单

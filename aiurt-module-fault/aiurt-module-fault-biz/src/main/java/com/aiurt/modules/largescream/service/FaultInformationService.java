@@ -315,8 +315,8 @@ public class FaultInformationService {
             if (faultLargeLineInfoDTO.getSum() <= 0 || faultLargeLineInfoDTO.getSolve() <= 0) {
                 faultLargeLineInfoDTO.setSolveRate("0");
             } else {
-                Integer d = new BigDecimal((Integer) faultLargeLineInfoDTO.getSolve() * 100 / faultLargeLineInfoDTO.getSum()).setScale(1, BigDecimal.ROUND_HALF_UP).intValue();
-                faultLargeLineInfoDTO.setSolveRate(d + "%");
+                int d = new BigDecimal((Integer) faultLargeLineInfoDTO.getSolve() * 100 / faultLargeLineInfoDTO.getSum()).setScale(1, BigDecimal.ROUND_HALF_UP).intValue();
+                faultLargeLineInfoDTO.setSolveRate(Integer.toString(d));
             }
             largeLineInfoDtos.add(faultLargeLineInfoDTO);
         }

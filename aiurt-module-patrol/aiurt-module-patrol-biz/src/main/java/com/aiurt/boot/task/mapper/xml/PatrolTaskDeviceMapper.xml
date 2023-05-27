@@ -321,6 +321,7 @@
                 ptd.id,
                 ptd.patrol_number,
                 ptd.mac,
+                ptd.mac_status,
                 ptd.station_code
         FROM
                 patrol_task_device ptd
