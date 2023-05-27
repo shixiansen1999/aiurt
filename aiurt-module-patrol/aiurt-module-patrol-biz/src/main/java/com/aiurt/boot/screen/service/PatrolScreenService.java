@@ -395,10 +395,14 @@ public class PatrolScreenService {
 
             for (String orgCode : orgCodes) {
                 module.setOrgCodes(CollUtil.newArrayList(orgCode));
+                String departName = sysBaseApi.getDepartNameByOrgCode(orgCode);
                 PatrolSituation taskDeviceCount = patrolTaskMapper.getTaskDeviceCount(module);
                 if (ObjectUtil.isNotEmpty(taskDeviceCount)) {
                     ScreenStatisticsGraph graph = new ScreenStatisticsGraph();
+                    graph.setOrgName(departName);
                     Long sum = taskDeviceCount.getSum();
+                    graph.setFinish(taskDeviceCount.getFinish());
+                    graph.setUnfinish(taskDeviceCount.getUnfinish());
                     String finishRate = String.format("%.1f", (1.0 * taskDeviceCount.getFinish() / sum) * 100);
                     String unfinishRate = String.format("%.1f", (1.0 * taskDeviceCount.getUnfinish() / sum) * 100);
                     graph.setFinishRate(finishRate + "%");

@@ -603,7 +603,7 @@
         <if test="condition.exceptionType != null and condition.exceptionType == 0">
             and pt.abnormal_state = 0
         </if>
-        <if test="condition.exceptionType != null and condition.exceptionType == 0">
+        <if test="condition.exceptionType != null and condition.exceptionType == 1">
             and pt.mac_status = 0
         </if>
         GROUP BY pt.`code`
@@ -1637,6 +1637,7 @@
         SELECT
         IFNULL(COUNT( 1 ), 0) `sum`,
         IFNULL(SUM( #{condition.checkStatus} = ptd.`status` ), 0) `finish`,
+        IFNULL(SUM( #{condition.checkStatus} != ptd.`status` ) , 0)`unfinish`,
         IFNULL(SUM( #{condition.checkResult} = ptd.check_result or #{condition.macStatus} = ptd.mac_status ), 0) `abnormal`,
         IFNULL(SUM( #{condition.omit} = statistics.omit_status and #{condition.checkStatus} != ptd.`status`), 0) omit,
         statistics.patrolDate
