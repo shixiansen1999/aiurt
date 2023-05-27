@@ -97,6 +97,9 @@ import java.util.stream.Stream;
 @Service
 public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolTask> implements IPatrolTaskService {
 
+    @Value("${jeecg.path.upload:/opt/upFiles}")
+    private String path;
+
     @Autowired
     private PatrolTaskMapper patrolTaskMapper;
     @Autowired
@@ -2191,8 +2194,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         InputStream minioFile = MinioUtil.getMinioFile("platform",templateFileName);
         // 方案1 一下子全部放到内存里面 并填充
         String fileName = "通信专业控制中心PIS系统巡检表" + System.currentTimeMillis() + ".xlsx";
-        String relatiePath =   "patrol" + "/" + "print" + "/" + fileName;
-        String filePath = this.getClass().getClassLoader().getResource("").getPath() + fileName;
+        String relatiePath = "/" + "patrol" + "/" + "print" + "/" + fileName;
+        String filePath = path + fileName;
         // 这里 会填充到第一个sheet， 然后文件流会自动关闭
         // 查询头部数据
         PrintPatrolTaskDTO taskDTO = new PrintPatrolTaskDTO();
@@ -2255,7 +2258,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                                             .orElse(c.getContent())
                             );
                             printDTO.setEquipment(taskDeviceParam.getDeviceName());
-                            printDTO.setResult(Convert.toStr(c.getCheckResult()));
+                            printDTO.setResult(c.getCheckResult()==0?"☐正常 ☑异常":"☑正常 ☐异常");
                             printDTO.setRemark(c.getRemark());
                             printDTO.setLocation(dto.getStationName());
                             printDTO.setSubSystem(taskDeviceParam.getSubsystemName());
