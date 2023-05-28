@@ -23,6 +23,10 @@ public class TemperatureHumidity {
     @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private java.lang.String id;
+    /**站点code*/
+    @Excel(name = "站点code", width = 15)
+    @ApiModelProperty(value = "站点code")
+    private java.lang.String stationCode;
     /**站点ip*/
     @Excel(name = "站点ip", width = 15)
     @ApiModelProperty(value = "站点ip")
