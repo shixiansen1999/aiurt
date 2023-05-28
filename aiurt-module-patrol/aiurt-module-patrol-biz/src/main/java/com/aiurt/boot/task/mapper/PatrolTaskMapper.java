@@ -19,7 +19,6 @@ import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.param.PatrolTaskParam;
-import com.aiurt.boot.task.param.TemHumParam;
 import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
@@ -500,7 +499,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      */
     List<GeneralReturn> getOrgCodeName(@Param("orgCodes")List<String> orgCodes);
 
-    List<TemperatureHumidityDTO> getTemAndHum(@Param("condition")TemHumParam temHumParam);
+    List<TemperatureHumidityDTO> getTemAndHum(@Param("date")String date,@Param("lineCode") String lineCode, @Param("stationCode") String stationCode);
 
     @DataPermission({
             @DataColumn(key = "deptName",value = "t2.org_code"),
