@@ -37,6 +37,10 @@ public interface SysParamCodeConstant {
      */
     String FAULT_SUBMIT_SIGNATURE = "fault_submit_signature";
     /**
+     * 故障是否需要审核
+     */
+    String FAULT_AUDIT = "fault_audit";
+    /**
      * 工作日志上报是否需要在指定时间点内编辑
      */
     String WORKLOG_EDIT = "worklog_edit";
@@ -245,4 +249,13 @@ public interface SysParamCodeConstant {
      * 根据配置决定工作日志是否需要自动签名
      */
     String AUTO_SIGNATURE = "auto_signature";
+    /**
+     * 根据配置决定是否需要把工单数量作为任务数量
+     */
+    String PATROL_TASK_DEVICE_NUM = "patrol_task_device_num";
+
+    /**
+     * 更加配置获取更新upload_time时间间隔
+     */
+    String WIFI_UPDATE_INTERVAL = "wifi_update_interval";
 }
