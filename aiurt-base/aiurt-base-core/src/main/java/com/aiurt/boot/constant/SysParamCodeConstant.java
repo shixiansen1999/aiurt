@@ -253,4 +253,9 @@ public interface SysParamCodeConstant {
      * 根据配置决定是否需要把工单数量作为任务数量
      */
     String PATROL_TASK_DEVICE_NUM = "patrol_task_device_num";
+
+    /**
+     * 更加配置获取更新upload_time时间间隔
+     */
+    String WIFI_UPDATE_INTERVAL = "wifi_update_interval";
 }
