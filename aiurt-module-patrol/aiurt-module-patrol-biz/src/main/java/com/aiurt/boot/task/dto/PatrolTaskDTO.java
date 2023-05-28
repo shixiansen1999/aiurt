@@ -183,5 +183,30 @@ public class PatrolTaskDTO extends DictEntity implements Serializable
      * 任务编号集合
      */
     private List<String> taskCodes;
+    /**
+     * 巡视抽查状态：0未确认，1已确认
+     */
+    @ApiModelProperty(value = "巡视抽查状态：0未确认，1已确认")
+    private Integer spotCheckStatus;
+    /**
+     * 巡视抽查时间
+     */
+    @ApiModelProperty(value = "巡视抽查时间")
+    private String spotCheckTime;
+    /**
+     * 巡视抽查人id
+     */
+    @ApiModelProperty(value = "巡视抽查人id")
+    private String spotCheckUserId;
+    /**
+     * 巡视抽查备注
+     */
+    @ApiModelProperty(value = "巡视抽查备注")
+    private String spotCheckRemark;
+    /**
+     * 标准工时
+     */
+    @ApiModelProperty(value = "标准工时：单位分钟")
+    private Integer standardDuration;
 }
 
