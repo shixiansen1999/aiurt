@@ -21,8 +21,10 @@ public class PrintDTO {
     private String equipment;
     @ApiModelProperty(value = "巡检标准")
     private String standard;
-    @ApiModelProperty(value = "巡检结果")
-    private String result;
+    @ApiModelProperty(value = "巡检结果正常")
+    private String resultTrue;
+    @ApiModelProperty(value = "巡检结果异常")
+    private String resultFalse;
     @ApiModelProperty(value = "备注")
     private String remark;
 }

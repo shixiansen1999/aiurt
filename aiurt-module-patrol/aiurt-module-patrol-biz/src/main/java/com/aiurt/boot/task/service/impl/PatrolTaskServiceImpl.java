@@ -5,7 +5,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -24,6 +23,7 @@ import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.CustomCellMergeHandler;
+import com.aiurt.boot.task.param.ImageDemoData;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.*;
@@ -47,8 +47,12 @@ import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.metadata.data.ImageData;
+import com.alibaba.excel.metadata.data.WriteCellData;
+import com.alibaba.excel.util.FileUtils;
 import com.alibaba.excel.util.MapUtils;
 import com.alibaba.excel.write.metadata.WriteSheet;
+import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.alibaba.excel.write.metadata.fill.FillWrapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -62,6 +66,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -1282,48 +1288,37 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
 
             }
-            // 无论任务是否要审核，都要更新巡视工时
-            // 根据id获取task
-            PatrolTask task = this.getById(patrolTaskDTO.getId());
-            // 查询出任务所在的站点，需求说一个任务不可能有多个站点，所以就取第一个
-            List<String> stationCodeList =  patrolTaskStationService.getStationCodeByTaskCode(task.getCode());
-            String stationCode = stationCodeList.get(0);
-            // 查看站点是否是工区->提交人所在的班组的工区站点，是否就是任务的站点
-            List<String> WorkAreaStationCodeList = sysBaseApi.getWorkAreaStationCodeByUserId(sysUser.getId());
-            boolean isWorkArea = WorkAreaStationCodeList.contains(stationCode);
-            // 巡视标准时长，单位：分钟
-            Integer standardDuration = task.getStandardDuration();
-            if (isWorkArea) {
-                // 工区，巡视时长等于上限时长。
-                updateWrapper.set(PatrolTask::getDuration, standardDuration);
-            } else {
-                // 非工区，当巡视时长大于大于上限时长时，巡视时长等于上限时长。不然就是wifi最近连接巡视站点时间减提交时间
-                Date recentConnectTime = sysBaseApi.getRecentConnectTimeByStationCode(stationCode);
-                if (ObjectUtil.isNull(recentConnectTime)) {
-                    updateWrapper.set(PatrolTask::getDuration, standardDuration);
-                }else {
-                    int duration = (int) DateUtil.between(recentConnectTime, new Date(), DateUnit.MINUTE);
-                    // 上限时长(标准工时)判空
-                    Integer realDuration = Optional.ofNullable(standardDuration).filter(s -> duration >= s).orElseGet(() -> duration);
-                    updateWrapper.set(PatrolTask::getDuration, realDuration);
-                }
-
-            }
 
             //获取mac地址
-            List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(task.getId());
+            List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(patrolTask.getId());
+            List<IndexStationDTO> stationInfo = patrolTaskStationMapper.getStationInfo(patrolTask.getCode());
+            List<String> list = Optional.ofNullable(stationInfo)
+                    .map(Collection::stream)
+                    .orElseGet(Stream::empty)
+                    .map(IndexStationDTO::getStationCode)
+                    .collect(Collectors.toList());
+            List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(list);
 
             if (CollUtil.isNotEmpty(mac)) {
-                long l = mac.stream().filter(m -> m.getMacStatus().equals(PatrolConstant.MAC_STATUS_EXCEPTION) || ObjectUtil.isEmpty(m.getMacStatus())).count();
-                if (l == 0L) {
-                    updateWrapper.set(PatrolTask::getMacStatus, 1);
-                }else {
-                    updateWrapper.set(PatrolTask::getMacStatus, 0);
+                for (PatrolTaskDeviceDTO patrolTaskDeviceDTO : mac) {
+                    if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && CollUtil.isNotEmpty(wifiMac)) {
+                        //忽略大小写全匹配
+                        String mac1 = patrolTaskDeviceDTO.getMac();
+                        String join = CollUtil.join(wifiMac, ",");
+                        if (join.toLowerCase().contains(mac1.toLowerCase())) {
+                            updateWrapper.set(PatrolTask::getMacStatus, 1);
+                        } else {
+                            updateWrapper.set(PatrolTask::getMacStatus, 0);
+                            break;
+                        }
+                    }else {
+                        updateWrapper.set(PatrolTask::getMacStatus, 0);
+                        break;
+                    }
                 }
             } else {
                 updateWrapper.set(PatrolTask::getMacStatus, 0);
             }
-
             patrolTaskMapper.update(new PatrolTask(), updateWrapper);
             // 提交任务如果需要审核则发送一条审核待办消息
             try {
@@ -1416,7 +1411,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         patrolTask.setStartTime(patrolTaskManualDTO.getStartTime());
         patrolTask.setEndTime(patrolTaskManualDTO.getEndTime());
         patrolTask.setAuditor(patrolTaskManualDTO.getAuditor());
-        patrolTask.setStandardDuration(patrolTaskManualDTO.getStandardDuration());
         patrolTaskMapper.insert(patrolTask);
         //保存组织信息
         String taskCode = patrolTask.getCode();
@@ -1833,7 +1827,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         updateWrapper.set(PatrolTask::getRemark, patrolTaskManualDTO.getRemark()).set(PatrolTask::getAuditor, patrolTaskManualDTO.getAuditor())
                 .set(PatrolTask::getStartTime, patrolTaskManualDTO.getStartTime()).set(PatrolTask::getEndTime, patrolTaskManualDTO.getEndTime())
                 .set(PatrolTask::getType, patrolTaskManualDTO.getType())
-                .set(PatrolTask::getStandardDuration, patrolTaskManualDTO.getStandardDuration())
                 .set(PatrolTask::getName, patrolTaskManualDTO.getName()).set(PatrolTask::getPatrolDate, patrolTaskManualDTO.getPatrolDate()).eq(PatrolTask::getId, patrolTaskManualDTO.getId());
         patrolTaskMapper.update(new PatrolTask(), updateWrapper);
         //删除、保存站点、组织
@@ -2198,20 +2191,21 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
-    public String printPatrolTask(String id) {
+    public String printPatrolTask(String id){
         // 模板注意 用{} 来表示你要用的变量 如果本来就有"{","}" 特殊字符 用"\{","\}"代替
         // 填充list 的时候还要注意 模板中{.} 多了个点 表示list
         // 如果填充list的对象是map,必须包涵所有list的key,哪怕数据为null，必须使用map.put(key,null)
         String templateFileName = "patrol" +"/" + "template" + "/" + "listPatrol.xlsx";
         InputStream minioFile = MinioUtil.getMinioFile("platform",templateFileName);
         // 方案1 一下子全部放到内存里面 并填充
-        String fileName = "通信专业控制中心PIS系统巡检表" + System.currentTimeMillis() + ".xlsx";
+        PatrolTask patrolTask = patrolTaskMapper.selectById(id);
+        String fileName = patrolTask.getName() + System.currentTimeMillis() + ".xlsx";
         String relatiePath = "/" + "patrol" + "/" + "print" + "/" + fileName;
         String filePath = path + fileName;
         // 这里 会填充到第一个sheet， 然后文件流会自动关闭
         // 查询头部数据
         PrintPatrolTaskDTO taskDTO = new PrintPatrolTaskDTO();
-        PatrolTask patrolTask = patrolTaskMapper.selectById(id);
+
         Assert.notNull(patrolTask, "未找到对应记录！");
         taskDTO.setId(patrolTask.getId());
         taskDTO.setTitle(patrolTask.getName());
@@ -2223,21 +2217,75 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         taskDTO.setSignUrl(patrolTask.getSignUrl());
         Map<String, Object> map = MapUtils.newHashMap();
+        map.put("title",patrolTask.getName());
         map.put("patrolStation", taskDTO.getStationNames());
         map.put("patrolPerson", taskDTO.getUserName());
         map.put("patrolDate", DateUtil.format(patrolTask.getSubmitTime(),"yyyy-MM-dd"));
         map.put("patrolTime", DateUtil.format(patrolTask.getSubmitTime(),"HH:mm"));
+        Map<String, Object> imageMap = MapUtils.newHashMap();
+        if(StrUtil.isNotEmpty(taskDTO.getSignUrl())){
+            int index =  taskDTO.getSignUrl().indexOf("?");
+            SysAttachment sysAttachment = sysBaseApi.getFilePath(taskDTO.getSignUrl().substring(0, index));
+            InputStream inputStream = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
+            try {
+                byte[] convert = convert(inputStream);
+                WriteCellData writeImageData = writeCellImageData(convert);
+                imageMap.put("signImage",writeImageData);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }else{
+            imageMap.put("signImage",null);
+        }
+
+//        String imagePath = "C:\\Users\\14719\\Desktop\\1685182072119.jpg";
+//        // 设置图片数据
+//        File[] files = {new File(imagePath)};
+
+
         //查询巡视标准详情
         List<PrintDTO> patrolData = getPrint(id);
-        // EasyExcel.write(filePath).withTemplate(templateFileName).sheet().doFill(patrolData);
         try (ExcelWriter excelWriter = EasyExcel.write(filePath).withTemplate(minioFile).build()) {
-            int[] mergeColumnIndex = {0,1};
-            CustomCellMergeHandler customCellMergeStrategy = new CustomCellMergeHandler(1,mergeColumnIndex);
+            int[] mergeColumnIndex = {0,1,2};
+            CustomCellMergeHandler customCellMergeStrategy = new CustomCellMergeHandler(3,mergeColumnIndex);
             WriteSheet writeSheet = EasyExcel.writerSheet().registerWriteHandler(customCellMergeStrategy).build();
-            excelWriter.fill(new FillWrapper("list",patrolData), writeSheet);
+            FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
+            //填充列表数据
+            excelWriter.fill(new FillWrapper("list",patrolData),fillConfig, writeSheet);
+            //填充表头
             excelWriter.fill(map, writeSheet);
+            //填充图片
+            excelWriter.fill(imageMap, writeSheet);
             excelWriter.finish();
-            String url = MinioUtil.upload(new FileInputStream(filePath),relatiePath);
+            int startRow = 3;
+            int endRow = startRow;
+            if (CollUtil.isNotEmpty(patrolData)){
+                endRow = startRow+patrolData.size()-1;
+            }
+
+            try (InputStream inputStream = new FileInputStream(filePath);
+                Workbook workbook = WorkbookFactory.create(inputStream)) {
+                Sheet sheet = workbook.getSheetAt(0);
+                sheet.setMargin(Sheet.TopMargin, 0.5); // 上边距
+                sheet.setMargin(Sheet.BottomMargin, 0.5); // 下边距
+                sheet.setMargin(Sheet.LeftMargin, 2); // 左边距
+                sheet.setMargin(Sheet.RightMargin, 2); // 右边距
+
+                //自动换行
+                setWrapText(workbook,10,startRow,endRow,0,2);
+                //合并指定范围行的单元格
+                mergeCellsInColumnRange(workbook,25,startRow,endRow,3,10);
+                // 保存修改后的Excel文件
+                try (OutputStream outputStream = new FileOutputStream(filePath)) {
+                    workbook.write(outputStream);
+                }
+            }
+
+
+
+
+
+            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -2261,20 +2309,29 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     String billCode = patrolBillDTO.getBillCode();
                     if (StrUtil.isNotEmpty(billCode)) {
                         PatrolTaskDeviceParam taskDeviceParam = patrolTaskDeviceMapper.getIdAndSystemName(billCode);
-                        List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceId(taskDeviceParam.getId());
+                        List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceIdAndParent(taskDeviceParam.getId());
                         for (PatrolCheckResultDTO c : checkResultList) {
-                            PrintDTO printDTO = new PrintDTO();
-                            printDTO.setStandard(
-                                    Optional.ofNullable(c.getQualityStandard())
-                                            .map(qs -> c.getContent() + ":" + qs)
-                                            .orElse(c.getContent())
-                            );
-                            printDTO.setEquipment(taskDeviceParam.getDeviceName());
-                            printDTO.setResult(c.getCheckResult()==0?"☐正常 ☑异常":"☑正常 ☐异常");
-                            printDTO.setRemark(c.getRemark());
-                            printDTO.setLocation(dto.getStationName());
-                            printDTO.setSubSystem(taskDeviceParam.getSubsystemName());
-                            getPrint.add(printDTO);
+                            List<PatrolCheckResultDTO> list = patrolCheckResultMapper.getQualityStandard(taskDeviceParam.getId(),c.getOldId());
+                            for (PatrolCheckResultDTO t :list){
+                                PrintDTO printDTO = new PrintDTO();
+                                printDTO.setStandard(t.getQualityStandard());
+                                printDTO.setEquipment(c.getContent());
+                                if(ObjectUtil.isEmpty(t.getCheckResult())){
+                                    printDTO.setResultTrue("☐正常");
+                                    printDTO.setResultFalse("☐异常");
+                                }else {
+                                    printDTO.setResultTrue(t.getCheckResult()==0?"☐正常":"☑正常");
+                                    printDTO.setResultFalse(t.getCheckResult()==0?"☑异常":"☐异常");
+                                }
+                                printDTO.setRemark(t.getRemark());
+                                printDTO.setLocation(dto.getStationName());
+                                printDTO.setSubSystem(taskDeviceParam.getSubsystemName());
+                                if (ObjectUtil.isNotEmpty(printDTO.getStandard())){
+                                    getPrint.add(printDTO);
+                                }
+
+                            }
+
                         }
 
                     }
@@ -2282,5 +2339,127 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             }
         }
         return getPrint;
+    }
+
+    /**
+     * 设置图片属性
+     * @param fileByte
+     * @return
+     * @throws IOException
+     */
+    private WriteCellData<Void> writeCellImageData(byte[] fileByte)  {
+        if (fileByte == null) {
+            return null;
+        }
+
+        WriteCellData<Void> writeCellData = new WriteCellData<>();
+        // 这里可以设置为 EMPTY 则代表不需要其他数据了
+        //writeCellData.setType(CellDataTypeEnum.EMPTY);
+
+        List<ImageData> imageDataList = new ArrayList<>();
+        writeCellData.setImageDataList(imageDataList);
+
+        ImageData imageData = new ImageData();
+        imageDataList.add(imageData);
+        // 设置图片
+        imageData.setImage(fileByte);
+        // 图片类型
+        //imageData.setImageType(ImageData.ImageType.PICTURE_TYPE_PNG);
+        // 上 右 下 左 需要留空设置，类似于 css 的 margin
+        imageData.setTop(10);
+//        imageData.setRight(1);
+        imageData.setBottom(10);
+        imageData.setLeft(100);
+
+        // 设置图片的位置：Relative表示相对于当前的单元格index，first是左上点，last是对角线的右下点，这样确定一个图片的位置和大小。
+//      imageData.setRelativeFirstRowIndex(0);
+        imageData.setRelativeFirstColumnIndex(0);
+//      imageData.setRelativeLastRowIndex(0);
+        imageData.setRelativeLastColumnIndex(1);
+
+        return writeCellData;
+    }
+    private void setWrapText(Workbook workbook,int returnRowMaxLength, int startRow, int endRow,int startColumn, int endColumn){
+        Sheet sheet = workbook.getSheetAt(0);
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setBorderTop(BorderStyle.THIN);
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        cellStyle.setWrapText(true);//设置自动换行
+        for (int row = startRow; row <= endRow; row++) {
+            for (int col = startColumn; col <= endColumn; col++) {
+                Row currentRow = sheet.getRow(row);
+                Cell cell = currentRow.getCell(col);
+                if (cell == null) {
+                    cell = currentRow.createCell(col);
+                }
+                cell.setCellStyle(cellStyle);
+                String cellValue = cell.getStringCellValue();
+                if (Objects.nonNull(cellValue) && cellValue.length() >= returnRowMaxLength) {
+                    //当字符数大于30的时候，长度除以30+1 就是倍数，默认高度乘倍数即可计算出高度
+                    int foldRowNum = (cellValue.length() / returnRowMaxLength) + 1;
+                    currentRow.setHeightInPoints((short) (15 * foldRowNum));
+                }
+
+            }
+        }
+
+    }
+    /**
+     * 合并多行范围的单元格
+     * @param returnRowMaxLength
+     * @param startRow
+     * @param endRow
+     * @param startColumn
+     * @param endColumn
+     */
+    private void mergeCellsInColumnRange(Workbook workbook,int returnRowMaxLength, int startRow, int endRow, int startColumn, int endColumn) {
+        // 获取要操作的Sheet对象
+        Sheet sheet = workbook.getSheetAt(0);
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setBorderTop(BorderStyle.THIN);
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
+        cellStyle.setWrapText(true);//设置自动换行
+
+        for (int row = startRow; row <= endRow; row++) {
+            CellRangeAddress cellRangeAddress = new CellRangeAddress(row, row, startColumn, endColumn);
+            sheet.addMergedRegion(cellRangeAddress);
+
+            // 给合并的区域设置框线
+            for (int col = startColumn; col <= endColumn; col++) {
+                Row currentRow = sheet.getRow(row);
+                Cell cell = currentRow.getCell(col);
+                if (cell == null) {
+                    cell = currentRow.createCell(col);
+                }
+                cell.setCellStyle(cellStyle);
+                String cellValue = cell.getStringCellValue();
+                if (Objects.nonNull(cellValue)&&cellValue.length() >= returnRowMaxLength ){
+                    //当字符数大于30的时候，长度除以30+1 就是倍数，默认高度乘倍数即可计算出高度
+                    int foldRowNum = (cellValue.length() / returnRowMaxLength) + 1;
+                    currentRow.setHeightInPoints((short) (15 * foldRowNum));
+                }
+
+            }
+
+        }
+
+    }
+    public static byte[] convert(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            byteOutput.write(buffer, 0, bytesRead);
+        }
+
+        byteOutput.close();
+        return byteOutput.toByteArray();
     }
 }

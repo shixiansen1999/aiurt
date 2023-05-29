@@ -73,6 +73,44 @@
         <if test="taskDeviceId != null and taskDeviceId !=''">
             and task_device_id = #{taskDeviceId}
         </if>
-        order by pcr.order
+        order by pcr.content,pcr.order
+    </select>
+    <select id="getCheckByTaskDeviceIdAndParent" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
+        SELECT
+        pcr.old_id,
+        pcr.user_id,
+        pcr.content,
+        pcr.quality_standard,
+        pcr.check_result,
+        pcr.remark
+        FROM
+        patrol_check_result pcr
+        WHERE
+        pcr.del_flag =0
+        and pcr.`check` = 0
+        <if test="taskDeviceId != null and taskDeviceId !=''">
+            and task_device_id = #{taskDeviceId}
+        </if>
+        order by pcr.content,pcr.order
+    </select>
+    <select id="getQualityStandard" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
+        SELECT
+        pcr.user_id,
+        pcr.content,
+        pcr.quality_standard,
+        pcr.check_result,
+        pcr.remark
+        FROM
+        patrol_check_result pcr
+        WHERE
+        pcr.del_flag =0
+        and pcr.`check` = 1
+        <if test="taskDeviceId != null and taskDeviceId !=''">
+            and task_device_id = #{taskDeviceId}
+        </if>
+        <if test="parentId != null and parentId !=''">
+            and parent_id = #{parentId}
+        </if>
+        order by pcr.content,pcr.order
     </select>
 </mapper>
