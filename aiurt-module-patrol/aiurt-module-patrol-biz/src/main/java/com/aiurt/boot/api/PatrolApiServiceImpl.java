@@ -291,9 +291,11 @@ public class PatrolApiServiceImpl implements PatrolApi {
                         nowNumber = userPatrol.getActualFinishTaskNumber() + peoplePatrol.getActualFinishTaskNumber();
                         workHour = NumberUtil.add(userPatrol.getWorkHours(), peoplePatrol.getWorkHours()).doubleValue();
                         //计算工时
-                        if (workHour != 0) {
-                            workHours = new BigDecimal(workHour / 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
-                        }
+                    }else{
+                        workHour = NumberUtil.add(userPatrol.getWorkHours(), workHour).doubleValue();
+                    }
+                    if (workHour != 0) {
+                        workHours = new BigDecimal(workHour / 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
                     }
                 }
             } else {
@@ -315,6 +317,13 @@ public class PatrolApiServiceImpl implements PatrolApi {
         }
         //额外人员
         List<UserTeamPatrolDTO> extraList = peoplePlanTaskNumber.stream().filter(p -> !userPlanTaskNumber.contains(p)).collect(Collectors.toList());
+        // 额外人员的工时也要转化成小时
+        extraList.forEach(extra -> {
+            double extraWorkHour = NumberUtil.add(extra.getWorkHours(), 0).doubleValue();
+            if (extraWorkHour != 0) {
+                extra.setWorkHours(new BigDecimal(extraWorkHour / 3600).setScale(2, BigDecimal.ROUND_HALF_UP));
+            }
+        });
         userPlanTaskNumber.addAll(extraList);
         //计算计划完成率
         for (UserTeamPatrolDTO userPatrol : userPlanTaskNumber) {
