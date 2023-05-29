@@ -1,5 +1,6 @@
 package com.aiurt.boot.screen.service;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -14,6 +15,7 @@ import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.TemperatureHumidity;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
 import com.aiurt.boot.task.mapper.TemperatureHumidityMapper;
+import com.aiurt.boot.task.param.TemHumParam;
 import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -217,13 +219,40 @@ public class PatrolScreenService {
 
 
 
-    public List<TemperatureHumidityDTO> getTemAndHum(String date, String lineCode, String stationCode){
-        if (date!=null && StrUtil.isNotEmpty(lineCode) && StrUtil.isNotEmpty(stationCode)) {
-            List<TemperatureHumidityDTO> temAndHum = patrolTaskMapper.getTemAndHum(date, lineCode, stationCode);
-            return temAndHum;
-        }else {
+    public ScreenTemHum getTemAndHum(TemHumParam temHumParam){
+        boolean b = ObjectUtil.isEmpty(temHumParam.getMode()) || StrUtil.isEmpty(temHumParam.getLineCode()) || StrUtil.isEmpty(temHumParam.getStationCode());
+        if (b) {
+            throw new AiurtBootException("获取模式、线路和站点code不能为空");
         }
-        return null;
+        Date date = DateUtil.date();
+        ScreenTemHum screenTemHum = new ScreenTemHum();
+
+        // 获取当前整点时刻的温湿度
+        TemHumParam current = new TemHumParam();
+        current.setDate(date).setLineCode(temHumParam.getLineCode()).setStationCode(temHumParam.getStationCode()).setMode(ScreenConstant.MODE_0);
+        List<TemperatureHumidityDTO> currentTemHumList = patrolTaskMapper.getTemAndHum(current);
+        if (CollUtil.isNotEmpty(currentTemHumList)) {
+            TemperatureHumidityDTO currentTemHun = currentTemHumList.get(0);
+            screenTemHum.setCurrentTemHum(currentTemHun);
+        }
+
+        // 获取今日/近一周/近30天温湿度
+        temHumParam.setDate(date).setLineCode(temHumParam.getLineCode()).setStationCode(temHumParam.getStationCode());
+        switch (temHumParam.getMode()) {
+            case ScreenConstant.MODE_1:
+                break;
+            case ScreenConstant.MODE_2:
+                temHumParam.setInterval(ScreenConstant.INTERVAL_7).setHour(ScreenConstant.HOUR_14);
+                break;
+            case ScreenConstant.MODE_3:
+                temHumParam.setInterval(ScreenConstant.INTERVAL_30).setHour(ScreenConstant.HOUR_14);
+                break;
+            default:
+                return screenTemHum;
+        }
+        List<TemperatureHumidityDTO> temAndHumList = patrolTaskMapper.getTemAndHum(temHumParam);
+        screenTemHum.setTemHumList(temAndHumList);
+        return screenTemHum;
     }
 
     public List<TemperatureHumidity> getTemAndHumTest(String date){
