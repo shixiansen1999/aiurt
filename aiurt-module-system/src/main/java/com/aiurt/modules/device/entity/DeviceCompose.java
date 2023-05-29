@@ -55,7 +55,7 @@ public class DeviceCompose implements Serializable {
 
 	@ApiModelProperty(value = "物资分类名称")
     @TableField(exist = false)
-	private String baseTyeName;
+	private String baseTypeName;
 
     @ApiModelProperty(value = "物资分类Id")
     @TableField(exist = false)

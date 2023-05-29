@@ -50,10 +50,10 @@ public class DeviceComposeServiceImpl extends ServiceImpl<DeviceComposeMapper, D
             DeviceComposeTreeDTO dto = new DeviceComposeTreeDTO();
             dto.setId(deviceCompose.getBaseTypeId());
             dto.setKey(deviceCompose.getBaseTypeId());
-            dto.setLabel(deviceCompose.getBaseTyeName());
+            dto.setLabel(deviceCompose.getBaseTypeName());
             dto.setPid("0");
             dto.setValue(deviceCompose.getBaseTypeCode());
-            dto.setTitle(deviceCompose.getBaseTyeName());
+            dto.setTitle(deviceCompose.getBaseTypeName());
             dto.setIsLeaf(false);
             dto.setChildren(Collections.emptyList());
             if (CollUtil.isNotEmpty(list)) {
