@@ -1303,7 +1303,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     updateWrapper.set(PatrolTask::getDuration, standardDuration);
                 }else {
                     int duration = (int) DateUtil.between(recentConnectTime, new Date(), DateUnit.MINUTE);
-                    updateWrapper.set(PatrolTask::getDuration, duration >= standardDuration ? standardDuration: duration);
+                    // 上限时长(标准工时)判空
+                    Integer realDuration = Optional.ofNullable(standardDuration).filter(s -> duration >= s).orElseGet(() -> duration);
+                    updateWrapper.set(PatrolTask::getDuration, realDuration);
                 }
 
             }
