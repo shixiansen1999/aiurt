@@ -1711,4 +1711,106 @@
         LEFT JOIN fault f on ptf.fault_code = f.`code` and f.`status` = 12
         group by statistics.org_code
     </select>
+    <select id="getFilterFailureReport" resultType="com.aiurt.boot.report.model.FailureReport">
+      SELECT
+        a.id,
+        a.system_name,
+        a.system_code as code,
+        count(c.id AND c.end_time is NOT NULL and c.status = 12 OR not null) AS resolvedNum
+        FROM cs_subsystem a
+        LEFT JOIN fault c ON a.system_code = c.sub_system_code and c.`status` > 2
+        <if test="startTime != null and endTime != null">
+            and DATE_FORMAT(c.happen_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+            AND DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+        </if>
+        <if test="lineCode != null">
+            AND c.line_code = #{lineCode}
+        </if>
+        <if test="stationCode != null and stationCode.size > 0">
+            AND c.station_code IN
+            <foreach collection="stationCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        where a.del_flag = 0
+         and not EXISTS (select 1 from operation_process where fault_code = c.code and  process_code = 10)
+        <if test="id != null">
+            AND a.id in (select system_id from cs_user_subsystem where user_id = #{id})
+        </if>
+        group by a.id
+</select>
+<select id="selectFaultWorkTime" resultType="java.lang.Integer">
+ select ifnull((TIME_TO_SEC(abc.time) / 60), 0) as times from
+        (SELECT timediff(c.end_time, IFNULL(c.recevice_time, c.assign_time)) as time
+        FROM
+        fault a
+        LEFT JOIN fault_repair_record c
+        ON a.`code` = c.fault_code
+        WHERE
+        a.`status`
+        >0
+        and not EXISTS (select 1 from operation_process where fault_code = a.code and  process_code = 10)
+        <if test="code != null">
+            and a.sub_system_code = #{code}
+        </if>
+        <if test="orgCode != null">
+            and a.sys_org_code = #{orgCode}
+        </if>
+        <if test="startTime != null and endTime != null">
+            and DATE_FORMAT( a.happen_time
+            , '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{startTime}
+            , '%Y-%m-%d' )
+            AND DATE_FORMAT( #{endTime}
+            , '%Y-%m-%d' )
+        </if>
+        <if test="lineCode != null">
+            AND a.line_code = #{lineCode}
+        </if>
+        <if test="stationCode != null and stationCode.size > 0">
+            AND a.station_code IN
+            <foreach collection="stationCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        and (a.end_time
+        or not NULL) ) as abc
+        where 1 = 1
+</select>
+<select id="getFilterOrgReport" resultType="com.aiurt.boot.report.model.FailureOrgReport">
+  SELECT
+        a.id,
+        a.depart_name as orgName,
+        a.org_code,
+        count(c.id AND c.end_time is NOT NULL and c.status = 12 OR not null) AS resolvedNum
+        FROM sys_depart a
+        LEFT JOIN fault c ON a.org_code = c.sys_org_code and c.`status` > 2
+        <if test="startTime != null and endTime != null">
+            and DATE_FORMAT(c.happen_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+            AND DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+        </if>
+        <if test="lineCode != null">
+            AND c.line_code = #{lineCode}
+        </if>
+        <if test="stationCode != null and stationCode.size > 0">
+            AND c.station_code IN
+            <foreach collection="stationCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="systemCode != null and systemCode.size > 0">
+            AND c.sub_system_code IN
+            <foreach collection="systemCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        WHERE a.del_flag = 0
+        and not EXISTS (select 1 from operation_process where fault_code = c.code and  process_code = 10)
+        <if test="ids != null and ids.size > 0">
+            AND a.id IN
+            <foreach collection="ids" item="ids" open="(" separator="," close=")">
+                #{ids}
+            </foreach>
+        </if>
+        GROUP BY a.depart_name, a.org_code
+</select>
 </mapper>
