@@ -9,6 +9,8 @@ import com.aiurt.modules.schedule.service.IScheduleRuleService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +31,10 @@ public class ScheduleRuleServiceImpl extends ServiceImpl<ScheduleRuleMapper, Sch
     @Override
     public List<ScheduleRule> getAllDetailRules() {
         LambdaQueryWrapper<ScheduleRule> wrapper = new LambdaQueryWrapper<>();
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         wrapper.eq(ScheduleRule::getDelFlag, 0);
+        //只能看到自己创建的规则
+        wrapper.eq(ScheduleRule::getCreateBy, user.getUsername());
         List<ScheduleRule> rules = this.baseMapper.selectList(wrapper);
         rules.forEach(rule -> {
             List<ScheduleRuleItem> detailRuleItems = scheduleRuleItemService.getDetailRuleItems(rule.getId());
