@@ -161,7 +161,10 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
 
     @Override
     public SysFileDetailVO queryById(String id) {
-        SysFile sysFile = this.getById(id);
+        LambdaQueryWrapper<SysFile> lam= new LambdaQueryWrapper<>();
+        lam.eq(SysFile::getId,id);
+        lam.eq(SysFile::getDelFlag,CommonConstant.DEL_FLAG_0);
+        SysFile sysFile = this.getOne(lam);
         if (ObjectUtil.isEmpty(sysFile)) {
             throw new AiurtBootException("未查询到此项数据");
         }
