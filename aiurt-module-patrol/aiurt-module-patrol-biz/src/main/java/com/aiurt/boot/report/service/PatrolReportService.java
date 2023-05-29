@@ -597,4 +597,141 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         }
         return list;
     }
+
+    public Page<PatrolReport> getDeviceTaskDate(Page<PatrolReport> pageList, PatrolReportModel report) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<String> orgCodes = sysBaseApi.getDepartByUser(1);
+        List<String> orgIdList = sysBaseApi.getDepartByUser(0);
+        if(ObjectUtil.isNotEmpty(report.getOrgCode())) {
+            SysDepartModel departByOrgCode = sysBaseApi.getDepartByOrgCode(report.getOrgCode());
+            orgCodes = orgCodes.stream().filter(u->report.getOrgCode().contains(u)).collect(Collectors.toList());
+            orgIdList = orgIdList.stream().filter(u->departByOrgCode.getId().contains(u)).collect(Collectors.toList());
+        }
+        if(CollUtil.isEmpty(orgCodes)&&(!user.getRoleCodes().contains("admin")||!user.getRoleCodes().contains("director"))) {
+            return  pageList.setRecords(new ArrayList<>());
+        }
+        report.setOrgCodeList(orgCodes);
+        PatrolReportModel omitModel = new PatrolReportModel();
+        PatrolReportModel omitModelWeek = new PatrolReportModel();
+        PatrolReportModel omitModelMonth = new PatrolReportModel();
+        BeanUtils.copyProperties(report, omitModel);
+        BeanUtils.copyProperties(report, omitModelWeek);
+        BeanUtils.copyProperties(report, omitModelMonth);
+        //是否默认查本周
+        boolean isNullDate = false;
+        if (ObjectUtil.isEmpty(report.getStartDate())) {
+            isNullDate = true;
+            //本周的周一和周日
+            String thisWeek = getThisWeek(new Date());
+            report.setStartDate(thisWeek.split("~")[0]);
+            report.setEndDate(thisWeek.split("~")[1]);
+            //推算漏检日期范围
+            Date startDate = DateUtil.parse(thisWeek.split("~")[0]);
+            Date endDate = DateUtil.parse(thisWeek.split("~")[1]);
+            List<Date> startList = statisticsService.getOmitDateScope(startDate);
+            List<Date> endList = statisticsService.getOmitDateScope(endDate);
+            Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
+            Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
+            omitModel.setStartDate(DateUtil.formatDate(startTime));
+            omitModel.setEndDate(DateUtil.formatDate(endTime));
+        } else {
+            boolean isNowWeek = isNowWeekDate(report.getStartDate(), report.getEndDate());
+            isNullDate = isNowWeek;
+            List<Date> startList = statisticsService.getOmitDateScope(DateUtil.parse(report.getStartDate()));
+            List<Date> endList = statisticsService.getOmitDateScope(DateUtil.parse(report.getEndDate()));
+            Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
+            Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
+            omitModel.setStartDate(DateUtil.formatDate(startTime));
+            omitModel.setEndDate(DateUtil.formatDate(endTime));
+        }
+
+        //只查组织机构，做主数据返回，为了条件查询不影响组织机构显示
+        List<PatrolReport> orgIdNameList = patrolTaskMapper.getReportTaskList(pageList,orgIdList);
+
+        //先计算指定部门的工单数
+        List<PatrolReport> patrolReportList = patrolTaskMapper.getReportTaskDeviceCount(report);
+
+        //获取漏检数
+        List<PatrolReport> patrolReportList2 = patrolTaskMapper.getReportTaskDeviceCount(omitModel);
+
+        //获取故障数
+        List<PatrolReport> patrolReportList3 = patrolTaskMapper.getFaultList(report);
+
+        //获取周漏检数和月漏巡数
+        List<PatrolReport> userOmitTasksWeek = new ArrayList<>();
+        List<PatrolReport> userOmitTasksMonth = new ArrayList<>();
+        if (!isNullDate)
+        {
+            //计算平均每周漏检数
+            String dateWeek = PatrolDateUtils.startEndDateWeek(report.getStartDate(), report.getEndDate());
+            //获取这个时间范围内的漏检数
+            omitModelWeek.setStartDate(dateWeek.split("~")[0]);
+            omitModelWeek.setEndDate(dateWeek.split("~")[1]);
+            userOmitTasksWeek = patrolTaskMapper.getReportTaskDeviceCount(omitModelWeek);
+
+            //计算平均每每月漏检数
+            String dateMonth = PatrolDateUtils.startEndDateWeek(report.getStartDate(), report.getEndDate());
+            //获取这个时间范围内的漏检数
+            omitModelMonth.setStartDate(dateMonth.split("~")[0]);
+            omitModelMonth.setEndDate(dateMonth.split("~")[1]);
+            userOmitTasksMonth = patrolTaskMapper.getReportTaskDeviceCount(omitModelMonth);
+        }
+
+        //设定初始值
+        for (PatrolReport patrolReport : orgIdNameList) {
+            patrolReport.setTaskTotal(0);
+            patrolReport.setCompletionRate(new BigDecimal(0));
+            patrolReport.setAbnormalNumber(0);
+            patrolReport.setMissInspectedNumber(0);
+            patrolReport.setAwmPatrolNumber(new BigDecimal(0));
+            patrolReport.setAmmPatrolNumber(new BigDecimal(0));
+            patrolReport.setFaultNumber(0);
+            patrolReport.setInspectedNumber(0);
+            patrolReport.setNotInspectedNumber(0);
+
+            PatrolReport reportTask = Optional.ofNullable(patrolReportList).orElse(Collections.emptyList()).stream().filter(p -> p.getOrgCode().equals(patrolReport.getOrgCode())).findFirst().orElse(null);
+            PatrolReport reportOmit = Optional.ofNullable(patrolReportList2).orElse(Collections.emptyList()).stream().filter(p -> p.getOrgCode().equals(patrolReport.getOrgCode())).findFirst().orElse(null);
+            PatrolReport reportfault = Optional.ofNullable(patrolReportList3).orElse(Collections.emptyList()).stream().filter(p -> p.getOrgCode().equals(patrolReport.getOrgCode())).findFirst().orElse(null);
+            PatrolReport reportOmitWeek = Optional.ofNullable(userOmitTasksWeek).orElse(Collections.emptyList()).stream().filter(p -> p.getOrgCode().equals(patrolReport.getOrgCode())).findFirst().orElse(null);
+            PatrolReport reportOmitsMonth = Optional.ofNullable(userOmitTasksMonth).orElse(Collections.emptyList()).stream().filter(p -> p.getOrgCode().equals(patrolReport.getOrgCode())).findFirst().orElse(null);
+
+            //计算巡检总数(到组织)
+            if (ObjectUtil.isNotNull(reportTask)) {
+                patrolReport.setTaskTotal(reportTask.getTaskTotal());
+                patrolReport.setNotInspectedNumber(reportTask.getNotInspectedNumber());
+                patrolReport.setInspectedNumber(reportTask.getInspectedNumber());
+                //完成率
+                BigDecimal b = BigDecimal.valueOf(1.0 * (reportTask.getInspectedNumber()) / reportTask.getTaskTotal() * 100).setScale(2, BigDecimal.ROUND_HALF_UP);
+                patrolReport.setCompletionRate(b);
+                //计算异常数量
+                patrolReport.setAbnormalNumber(reportTask.getAbnormalNumber());
+
+            }
+            if (ObjectUtil.isNotNull(reportOmit)) {
+                patrolReport.setMissInspectedNumber(reportOmit.getMissInspectedNumber());
+            }
+            //计算平均每周漏检数
+            if (ObjectUtil.isNotNull(reportOmitWeek)) {
+                long weekNumber = getWeekNumber(report.getStartDate(), report.getEndDate());
+                if (weekNumber != 0) {
+                    BigDecimal avgMissNumber = NumberUtil.div(BigDecimal.valueOf(reportOmitWeek.getMissInspectedNumber()), new BigDecimal(weekNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    patrolReport.setAwmPatrolNumber(avgMissNumber);
+                }
+            }
+            //计算平均每每月漏检数
+            if (ObjectUtil.isNotNull(reportOmitsMonth)) {
+                long monthNumber = getMonthNumber(report.getStartDate(), report.getEndDate());
+                if (monthNumber != 0) {
+                    BigDecimal avgMissNumber = NumberUtil.div(BigDecimal.valueOf(reportOmitsMonth.getMissInspectedNumber()), new BigDecimal(monthNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    patrolReport.setAmmPatrolNumber(avgMissNumber);
+                }
+            }
+            //计算故障数量
+            if (ObjectUtil.isNotNull(reportfault)) {
+                patrolReport.setFaultNumber(reportfault.getFaultNumber());
+            }
+        }
+
+        return pageList.setRecords(orgIdNameList);
+    }
 }
