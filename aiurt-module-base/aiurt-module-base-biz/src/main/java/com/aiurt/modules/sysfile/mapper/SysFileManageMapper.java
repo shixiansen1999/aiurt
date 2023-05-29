@@ -1,11 +1,9 @@
 package com.aiurt.modules.sysfile.mapper;
 
 import com.aiurt.modules.sysfile.entity.SysFile;
-import com.aiurt.modules.sysfile.vo.FileAppVO;
-import com.aiurt.modules.sysfile.vo.SysFileManageVO;
+import com.aiurt.modules.sysfile.vo.*;
 import com.aiurt.modules.sysfile.param.SysFileWebParam;
 import com.aiurt.modules.sysfile.vo.SysFileManageVO;
-import com.aiurt.modules.sysfile.vo.TypeNameVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -46,25 +44,26 @@ public interface SysFileManageMapper extends BaseMapper<SysFile> {
     List<TypeNameVO> queryTypeByFolderCode(@Param("folderCodeCc") String folderCodeCc, @Param("currLoginUserId") String currLoginUserId, @Param("currLoginOrgCode") String currLoginOrgCode);
 
     /**
-     * app查询父节点
-     *
-     * @param page     分页对象
-     * @param fileName 文件名
-     * @param username 用户名
-     * @param orgCode  组织机构编码
-     * @return 文件应用的分页列表
-     */
-    Page<FileAppVO> listPrent(Page<FileAppVO> page, @Param("fileName") String fileName, @Param("username") String username, @Param("orgCode") String orgCode);
-
-    /**
-     * 查询当前节点下有权限的文件和文件夹
+     * 分页查询顶级文件夹列表
      *
      * @param page     分页对象
      * @param parentId 父级ID
      * @param fileName 文件名
-     * @param username 用户名
+     * @param userId   用户id
      * @param orgCode  组织机构编码
-     * @return 文件应用的分页列表
+     * @return 分页结果
      */
-    Page<FileAppVO> listPage(Page<FileAppVO> page, @Param("parentId") Long parentId, @Param("fileName") String fileName, @Param("username") String username, @Param("orgCode") String orgCode);
+    Page<SysFileManageAppVO> listTopLevelFolders(Page<SysFileManageAppVO> page,@Param("parentId") Long parentId, @Param("fileName") String fileName, @Param("userId") String userId, @Param("orgCode") String orgCode);
+
+    /**
+     * 分页查询指定父文件夹下的子文件和子文件夹列表
+     *
+     * @param page     分页对象
+     * @param parentId 父级ID
+     * @param fileName 文件名
+     * @param userId 用户名id
+     * @param orgCode  组织机构编码
+     * @return 分页结果
+     */
+    Page<SysFileManageAppVO> listChildNodesByParentId(Page<SysFileManageAppVO> page, @Param("parentId") Long parentId, @Param("fileName") String fileName, @Param("userId") String userId, @Param("orgCode") String orgCode);
 }

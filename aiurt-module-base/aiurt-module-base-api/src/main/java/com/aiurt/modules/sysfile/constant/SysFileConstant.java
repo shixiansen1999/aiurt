@@ -63,4 +63,19 @@ public class SysFileConstant {
      * 下载记录导出的字段
      */
     public static final String DOWNLOAD_RECORD_EXPORT_FIELD = "userName,downloadTime,fileName,size,downloadStatusName,downloadDuration";
+
+    /**
+     * 字节单位：B
+     */
+    public static final String B = "B";
+
+    /**
+     * 千字节单位：KB
+     */
+    public static final String KB = "KB";
+
+    /**
+     * 兆字节单位：MB
+     */
+    public static final String MB = "MB";
 }

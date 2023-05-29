@@ -8,8 +8,9 @@
         sft1.parent_id AS parentId,
         sft1.`name` AS title,
         sft1.id AS value,
-        MAX(sffp1.permission) AS permission,
-        IF(sft2.id IS NULL, 1, 0) AS isLeaf
+        IFNULL(MAX(sffp1.permission), 0) AS permission,
+        IF(sft2.id IS NULL, 1, 0) AS isLeaf,
+        sft1.grade AS grade
         FROM sys_file_type sft1
         LEFT JOIN
         sys_file_type sft2 ON sft1.id = sft2.parent_id
