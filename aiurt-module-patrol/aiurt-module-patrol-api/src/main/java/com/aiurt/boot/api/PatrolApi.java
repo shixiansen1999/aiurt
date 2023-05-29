@@ -65,7 +65,7 @@ public interface PatrolApi {
      */
     Map<String, UserTeamPatrolDTO> getUserTeamParameterDevice(UserTeamParameter userTeamParameter);
     /**
-     * 统计报表-人员班组巡检参数接口返回（按工单数）
+     * 统计报表-人员维度巡检参数接口返回（按工单数）
      * @param userTeamParameter
      * @return
      */

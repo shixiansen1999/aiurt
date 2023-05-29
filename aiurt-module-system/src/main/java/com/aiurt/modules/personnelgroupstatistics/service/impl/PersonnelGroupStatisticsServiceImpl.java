@@ -265,7 +265,15 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         userTeamParameter.setStartDate(DateUtil.formatDateTime(lastYear));
         userTeamParameter.setEndDate(DateUtil.formatDateTime(end));
         userTeamParameter.setOrgId(departId);
-        Map<String, UserTeamPatrolDTO> teamParameter = patrolApi.getUserTeamParameter(userTeamParameter);
+        Map<String, UserTeamPatrolDTO> teamParameter = new HashMap<>();
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            teamParameter  = patrolApi.getUserTeamParameterDevice(userTeamParameter);
+        } else {
+            teamParameter  = patrolApi.getUserTeamParameter(userTeamParameter);
+        }
         //获取当前班组维修参数数据
         Map<String, FaultReportDTO> faultOrgReport = dailyFaultApi.getFaultOrgReport(departIds, DateUtil.formatDateTime(lastYear), DateUtil.formatDateTime(end));
         ///获取当前班组检修参数数据
@@ -389,7 +397,15 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         userTeamParameter.setStartDate(DateUtil.formatDateTime(lastYear));
         userTeamParameter.setEndDate(DateUtil.formatDateTime(end));
         userTeamParameter.setUserId(userId);
-        Map<String, UserTeamPatrolDTO> userParameter = patrolApi.getUserParameter(userTeamParameter);
+        Map<String, UserTeamPatrolDTO> userParameter = new HashMap<>();
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            userParameter = patrolApi.getUserParameterDevice(userTeamParameter);
+        } else {
+            userParameter = patrolApi.getUserParameter(userTeamParameter);
+        }
         //获取人员维修参数数据
         Map<String, FaultReportDTO> faultUserReport = dailyFaultApi.getFaultUserReport(null, DateUtil.formatDateTime(lastYear), DateUtil.formatDateTime(end), userId);
         //获取人员检修参数数据
