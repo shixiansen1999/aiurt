@@ -5,8 +5,9 @@ import com.aiurt.boot.screen.model.ScreenStatistics;
 import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
 import com.aiurt.boot.screen.model.ScreenStatisticsTask;
 import com.aiurt.boot.screen.service.PatrolScreenService;
-import com.aiurt.boot.task.dto.TemperatureHumidityDTO;
+import com.aiurt.boot.screen.model.ScreenTemHum;
 import com.aiurt.boot.task.entity.TemperatureHumidity;
+import com.aiurt.boot.task.param.TemHumParam;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -134,11 +135,9 @@ public class PatrolScreenController {
     @AutoLog(value = "大屏巡视模块-温湿度", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "大屏巡视模块-温湿度", notes = "大屏巡视模块-温湿度")
     @RequestMapping(value = "/temAndHum", method = {RequestMethod.GET})
-    public Result<List<TemperatureHumidityDTO>> getTemAndHum(@ApiParam(name = "date", value = "当天时间") String date,
-                                                             @ApiParam(name = "lineCode", value = "线路code") String lineCode,
-                                                             @ApiParam(name = "stationCode", value = "站点code") String stationCode) {
-        List<TemperatureHumidityDTO> list = screenService.getTemAndHum(date, lineCode, stationCode);
-        return Result.ok(list);
+    public Result<ScreenTemHum> getTemAndHum(TemHumParam temHumParam) {
+        ScreenTemHum temHumScreenDTO = screenService.getTemAndHum(temHumParam);
+        return Result.ok(temHumScreenDTO);
     }
 
     @AutoLog(value = "大屏巡视模块-温湿度", operateType = 1, operateTypeAlias = "查询")
