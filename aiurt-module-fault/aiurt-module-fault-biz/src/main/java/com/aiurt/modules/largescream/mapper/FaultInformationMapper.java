@@ -348,4 +348,85 @@ public interface FaultInformationMapper {
      * @param workTime
      */
     void insertSystemReliability(@Param("workTime") ReliabilityWorkTime workTime);
+
+    /**
+     *大屏详细个人总工时-维修负责人-过滤有挂起的工单
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<FaultDurationTask> getFilterFaultUserDuration(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
+
+    /**
+     * 屏详细个人总工时-参与人-过滤有挂起的工单
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<FaultDurationTask> getFilterFaultParticipantsDuration(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
+
+    /**
+     * 大屏维修总时-维修负责人-过滤有挂起的工单，不计工时
+     * @param startTime
+     * @param endTime
+     * @param userList
+     * @return
+     */
+    List<FaultDurationTask> getFilterFaultByIdDuration(@Param("startTime")Date startTime, @Param("endTime")Date endTime,@Param("userList")List<LoginUser> userList);
+
+    /**
+     * 大屏维修总时-参与人-过滤有挂起的工单，不计工时
+     * @param startTime
+     * @param endTime
+     * @param userList
+     * @return
+     */
+    List<FaultDurationTask> getFilterParticipantsDuration(@Param("startTime")Date startTime, @Param("endTime")Date endTime,@Param("userList")List<LoginUser> userList);
+
+    /**
+     * 统计报表-人员班组-班组-统计故障数
+     * @param startTime
+     * @param endTime
+     * @param orgId
+     * @return
+     */
+    FaultReportDTO getFilterFaultOrgReport(@Param("startTime") String startTime,@Param("endTime") String endTime,@Param("orgId") String orgId);
+
+    /**
+     * 统计报表-人员班组-班组-维修负责人-统计维修工时
+     * @param orgId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<UserTimeDTO> getFilterUserTime(@Param("orgId") String orgId,@Param("startTime") String startTime,@Param("endTime")String endTime);
+
+    /**
+     * 统计报表-人员班组-班组-参与人-统计维修工时
+     * @param orgId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<UserTimeDTO> getFilterAccompanyTime(@Param("orgId") String orgId,@Param("startTime") String startTime,@Param("endTime") String endTime);
+
+    /**
+     * 统计报表-故障列表-维修负责人统计工时（过滤已挂起）
+     * @param teamId
+     * @param startTime
+     * @param endTime
+     * @param orgCodes
+     * @param userId
+     * @return
+     */
+    FaultReportDTO getFilterFaultUserReport(@Param("teamId") List<String> teamId,@Param("startTime") String startTime,@Param("endTime") String endTime, @Param("orgCodes")List<String> orgCodes,@Param("userId") String userId);
+
+    /**
+     * 统计报表-故障列表-参与人统计工时（过滤已挂起）
+     * @param userId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    Long getFilterUserTimes(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime") String endTime);
 }
