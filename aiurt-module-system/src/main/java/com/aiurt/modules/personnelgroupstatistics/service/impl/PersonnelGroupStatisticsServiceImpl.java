@@ -9,6 +9,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.api.OverhaulApi;
 import com.aiurt.boot.api.PatrolApi;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.dto.UserTeamParameter;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
 import com.aiurt.boot.index.dto.TeamWorkAreaDTO;
@@ -26,9 +27,11 @@ import com.aiurt.modules.personnelgroupstatistics.service.PersonnelGroupStatisti
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -57,7 +60,8 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
     private DailyFaultApi dailyFaultApi;
     @Autowired
     private OverhaulApi overhaulApi;
-
+    @Autowired
+    private ISysParamAPI sysParamApi;
     @Override
     public Page<GroupModel> queryGroupPageList(List<String> departIds, String startTime, String endTime, Page<GroupModel> page) {
         //获取当前登录用户管辖的班组
@@ -69,8 +73,15 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             userTeamParameter.setStartDate(startTime);
             userTeamParameter.setEndDate(endTime);
             userTeamParameter.setOrgIdList(ids);
-            Map<String, UserTeamPatrolDTO> teamParameter = patrolApi.getUserTeamParameter(userTeamParameter);
-
+            Map<String, UserTeamPatrolDTO> teamParameter = new HashMap<>();
+            //根据配置决定是否需要把工单数量作为任务数量
+            SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+            boolean value = "1".equals(paramModel.getValue());
+            if (value) {
+                teamParameter  = patrolApi.getUserTeamParameterDevice(userTeamParameter);
+            } else {
+                teamParameter  = patrolApi.getUserTeamParameter(userTeamParameter);
+            }
             //获取所有班组维修参数数据
             Map<String, FaultReportDTO> faultOrgReport = dailyFaultApi.getFaultOrgReport(ids, startTime, endTime);
             ///获取所有班组检修参数数据
@@ -148,7 +159,17 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             userTeamParameter.setStartDate(startTime);
             userTeamParameter.setEndDate(endTime);
             userTeamParameter.setOrgIdList(ids);
-            Map<String, UserTeamPatrolDTO> userParameter = patrolApi.getUserParameter(userTeamParameter);
+
+            Map<String, UserTeamPatrolDTO> userParameter = new HashMap<>();
+            //根据配置决定是否需要把工单数量作为任务数量
+            SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+            boolean value = "1".equals(paramModel.getValue());
+            if (value) {
+                userParameter = patrolApi.getUserParameterDevice(userTeamParameter);
+            } else {
+                userParameter = patrolApi.getUserParameter(userTeamParameter);
+            }
+
             //获取所有人员维修参数数据
             Map<String, FaultReportDTO> faultUserReport = dailyFaultApi.getFaultUserReport(ids, startTime, endTime, null);
             //获取所有人员检修参数数据
