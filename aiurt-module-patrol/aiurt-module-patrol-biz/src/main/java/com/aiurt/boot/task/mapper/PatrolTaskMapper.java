@@ -536,4 +536,12 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * 大屏统计巡视任务下的工单数量(巡视总数、已巡视、未巡视、异常数)
      */
     PatrolSituation getTaskDeviceCount(@Param("condition") ScreenModule module);
+    /**
+     * 统计报表中巡视任务下的工单数量(巡视总数、已巡视、未巡视、异常数)
+     */
+    List<PatrolReport> getReportTaskDeviceCount(@Param("condition") PatrolReportModel report);
+    /**
+     * 统计报表中巡视任务下的故障数
+     */
+    List<PatrolReport> getFaultList(@Param("condition") PatrolReportModel report);
 }
