@@ -41,11 +41,21 @@ public class PatrolReport {
      */
 
     private String orgId;
+
     /**
      * 班组code
      */
 
     private String orgCode;
+    /**
+     * 人员id
+     */
+
+    private String userId;
+    /**
+     * 巡视工时
+     */
+    private BigDecimal workHours;
     /**
      * 巡视任务总数
      */

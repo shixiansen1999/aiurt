@@ -1641,10 +1641,12 @@
     <sql id="ReportTaskDeviceData">
         select
         pt.id,
+        pt.code,
         pt.`status`,
         pt.abnormal_state,
         pt.omit_status,
-        pto.org_code
+        pto.org_code,
+        IFNULL(pt.duration,'0') * 60 workHours
         from patrol_task pt
         LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code AND pts.del_flag = 0
         JOIN cs_station cs ON pts.station_code = cs.station_code AND cs.del_flag = 0
@@ -1803,4 +1805,40 @@
         </if>
         GROUP BY a.depart_name, a.org_code
 </select>
+
+    <select id="getReportTaskUserCount" resultType="com.aiurt.boot.report.model.PatrolReport">
+        SELECT
+        IFNULL(COUNT( 1 ), 0) `taskTotal`,
+        IFNULL(SUM( #{condition.checkStatus} = ptd.`status` ), 0) `inspectedNumber`,
+        IFNULL(SUM( #{condition.checkStatus} != ptd.`status` ) , 0)`notInspectedNumber`,
+        IFNULL(SUM( #{condition.checkResult} = ptd.check_result or #{condition.macStatus} = ptd.mac_status ), 0) `abnormalNumber`,
+        IFNULL(SUM( #{condition.omit} = statistics.omit_status and #{condition.checkStatus} != ptd.`status`), 0) missInspectedNumber,
+        ptu.user_id,
+        SUM(statistics.workHours) as workHours
+        FROM
+        (
+        <include refid="ReportTaskDeviceData"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id and ptd.del_flag = 0
+        left join patrol_task_user ptu on ptu.task_code = statistics.code and ptu.del_flag = 0
+        group by ptu.user_id
+    </select>
+
+    <select id="getReportTaskAccompanyCount" resultType="com.aiurt.boot.report.model.PatrolReport">
+        SELECT
+        IFNULL(COUNT( 1 ), 0) `taskTotal`,
+        IFNULL(SUM( #{condition.checkStatus} = ptd.`status` ), 0) `inspectedNumber`,
+        IFNULL(SUM( #{condition.checkStatus} != ptd.`status` ) , 0)`notInspectedNumber`,
+        IFNULL(SUM( #{condition.checkResult} = ptd.check_result or #{condition.macStatus} = ptd.mac_status ), 0) `abnormalNumber`,
+        IFNULL(SUM( #{condition.omit} = statistics.omit_status and #{condition.checkStatus} != ptd.`status`), 0) missInspectedNumber,
+        pa.user_id,
+        SUM(statistics.workHours) as workHours
+        FROM
+        (
+        <include refid="ReportTaskDeviceData"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id and ptd.del_flag = 0
+        left join patrol_accompany pa on pa.task_device_code = ptd.patrol_number and pa.del_flag = 0
+        group by pa.user_id
+    </select>
 </mapper>

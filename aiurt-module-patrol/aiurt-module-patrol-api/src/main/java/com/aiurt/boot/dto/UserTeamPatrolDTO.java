@@ -19,6 +19,8 @@ public class UserTeamPatrolDTO {
     private String taskId;
     @ApiModelProperty(value = "班组Id")
     private String orgId;
+    @ApiModelProperty(value = "班组Id")
+    private String orgCode;
     @ApiModelProperty(value = "巡视工时")
     private BigDecimal workHours;
     @ApiModelProperty(value = "计划任务数")

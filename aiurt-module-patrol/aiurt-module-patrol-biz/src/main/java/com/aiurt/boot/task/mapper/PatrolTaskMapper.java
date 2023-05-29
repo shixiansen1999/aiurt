@@ -580,4 +580,12 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<FailureOrgReport> getFilterOrgReport(Page<FailureOrgReport> page, @Param("ids")List<String> ids, @Param("lineCode") String lineCode, @Param("stationCode") List<String> stationCode, @Param("startTime") String startTime, @Param("endTime")String endTime, @Param("systemCode")  List<String> systemCode);
+    /**
+     * 统计报表中巡视任务下的维修人工单数量(人员维度)
+     */
+    List<PatrolReport> getReportTaskUserCount(@Param("condition") PatrolReportModel report);
+    /**
+     * 统计报表中巡视任务下的同行人工单数量(人员维度)
+     */
+    List<PatrolReport> getReportTaskAccompanyCount(@Param("condition") PatrolReportModel report);
 }
