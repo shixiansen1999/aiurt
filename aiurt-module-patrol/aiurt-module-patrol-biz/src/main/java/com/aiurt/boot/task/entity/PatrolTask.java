@@ -319,6 +319,8 @@ public class PatrolTask extends DictEntity implements Serializable {
     /**
      * 巡视抽查时间
      */
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "巡视抽查时间")
     private String spotCheckTime;
     /**
