@@ -638,8 +638,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
         List<PatrolReport> patrolReportAccompanyOmitList = patrolTaskMapper.getReportTaskAccompanyCount(report);
 
         for (UserTeamPatrolDTO dto : userBaseList) {
-            PatrolReport report1 = Optional.ofNullable(patrolReportList).orElse(Collections.emptyList()).stream().filter(p -> p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
-            PatrolReport report2 = Optional.ofNullable(patrolReportAccompanyList).orElse(Collections.emptyList()).stream().filter(p -> p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
+            PatrolReport report1 = Optional.ofNullable(patrolReportList).orElse(Collections.emptyList()).stream().filter(p ->StrUtil.isNotEmpty(p.getUserId()) && p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
+            PatrolReport report2 = Optional.ofNullable(patrolReportAccompanyList).orElse(Collections.emptyList()).stream().filter(p ->StrUtil.isNotEmpty(p.getUserId()) && p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
             if (ObjectUtil.isNotNull(report1)) {
                 dto.setPlanTaskNumber(report1.getTaskTotal());
                 dto.setActualFinishTaskNumber(report1.getInspectedNumber());
@@ -662,8 +662,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
                 dto.setPlanFinishRate(new BigDecimal(0));
             }
 
-            PatrolReport report3 = Optional.ofNullable(patrolReportOmitList).orElse(Collections.emptyList()).stream().filter(p -> p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
-            PatrolReport report4 = Optional.ofNullable(patrolReportAccompanyOmitList).orElse(Collections.emptyList()).stream().filter(p -> p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
+            PatrolReport report3 = Optional.ofNullable(patrolReportOmitList).orElse(Collections.emptyList()).stream().filter(p ->StrUtil.isNotEmpty(p.getUserId()) && p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
+            PatrolReport report4 = Optional.ofNullable(patrolReportAccompanyOmitList).orElse(Collections.emptyList()).stream().filter(p ->StrUtil.isNotEmpty(p.getUserId()) && p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
             if (ObjectUtil.isNotNull(report3)) {
                 dto.setMissPatrolNumber((int) report3.getMissInspectedNumber());
             }

@@ -384,6 +384,7 @@ public class PatrolScreenService {
                     ScreenStatisticsGraph graph = new ScreenStatisticsGraph();
                     graph.setOrgName(departName);
                     Long sum = taskDeviceCount.getSum();
+                    graph.setTotal(sum);
                     graph.setFinish(taskDeviceCount.getFinish());
                     graph.setUnfinish(taskDeviceCount.getUnfinish());
                     String finishRate = String.format("%.1f", (1.0 * taskDeviceCount.getFinish() / sum) * 100);
