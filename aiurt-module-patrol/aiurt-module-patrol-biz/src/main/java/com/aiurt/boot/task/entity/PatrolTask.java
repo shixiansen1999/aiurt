@@ -16,6 +16,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -322,7 +323,7 @@ public class PatrolTask extends DictEntity implements Serializable {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "巡视抽查时间")
-    private String spotCheckTime;
+    private Date spotCheckTime;
     /**
      * 巡视抽查人id
      */
