@@ -212,6 +212,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
      */
     private List<FaultKnowledgeBase> setFaultCauseSolution(List<FaultKnowledgeBase> faultKnowledgeBases) {
         List<String> baseIds = faultKnowledgeBases.stream().map(FaultKnowledgeBase::getId).collect(Collectors.toList());
+        if (CollUtil.isEmpty(baseIds)) {
+            return faultKnowledgeBases;
+        }
         List<FaultCauseSolution> faultCauseSolutions = faultCauseSolutionService.lambdaQuery()
                 .eq(FaultCauseSolution::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .in(FaultCauseSolution::getKnowledgeBaseId, baseIds)
@@ -246,9 +249,20 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             }
         }
 
+        Map<String, Map<String, String>> dataMap = this.buildCauseNumberMap(baseIds);
         for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {
-            List<FaultCauseSolution> list = CollUtil.isEmpty(faultCauseSolutionMap.get(knowledgeBase.getId())) ? new ArrayList<>() : faultCauseSolutionMap.get(knowledgeBase.getId());
+            String id = knowledgeBase.getId();
+            List<FaultCauseSolution> list = CollUtil.isEmpty(faultCauseSolutionMap.get(id)) ? new ArrayList<>() : faultCauseSolutionMap.get(id);
             List<FaultCauseSolutionDTO> faultCauseSolutionList = this.buildCauseSolutions(list, spareParts);
+            // 原因出现率百分比
+            Map<String, String> happenRateMap = CollUtil.isEmpty(dataMap.get(id)) ? Collections.emptyMap() : dataMap.get(id);
+            for (FaultCauseSolutionDTO faultCauseSolutionDTO : faultCauseSolutionList) {
+                String happenRate = happenRateMap.get(faultCauseSolutionDTO.getId());
+                if (ObjectUtil.isEmpty(happenRate)) {
+                    happenRate = "0%";
+                }
+                faultCauseSolutionDTO.setHappenRate(happenRate);
+            }
             knowledgeBase.setFaultCauseSolutions(faultCauseSolutionList);
         }
         return faultKnowledgeBases;
@@ -611,15 +625,22 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         }
 
         List<FaultCauseSolutionDTO> faultCauseSolutionList = this.buildCauseSolutions(faultCauseSolutions, spareParts);
-        // todo 原因出现率百分比
-//        List<String> solutionIds = faultCauseSolutionList.stream()
-//                .map(FaultCauseSolutionDTO::getId)
-//                .distinct()
-//                .collect(Collectors.toList());
-//        if (CollUtil.isNotEmpty(solutionIds)) {
-//            Map<String, List<AnalyzeFaultCauseResDTO>> dataMap = this.buildCauseNumberMap(solutionIds);
-//
-//        }
+        // 原因出现率百分比
+        List<String> knowledgeBaseIds = faultCauseSolutionList.stream()
+                .map(FaultCauseSolutionDTO::getKnowledgeBaseId)
+                .distinct()
+                .collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(knowledgeBaseIds)) {
+            Map<String, Map<String, String>> dataMap = this.buildCauseNumberMap(knowledgeBaseIds);
+            Map<String, String> happenRateMap = CollUtil.isEmpty(dataMap.get(id)) ? Collections.emptyMap() : dataMap.get(id);
+            for (FaultCauseSolutionDTO faultCauseSolutionDTO : faultCauseSolutionList) {
+                String happenRate = happenRateMap.get(faultCauseSolutionDTO.getId());
+                if (ObjectUtil.isEmpty(happenRate)) {
+                    happenRate = "0%";
+                }
+                faultCauseSolutionDTO.setHappenRate(happenRate);
+            }
+        }
         faultKnowledgeBase.setFaultCauseSolutions(faultCauseSolutionList);
         return faultKnowledgeBase;
     }
@@ -627,29 +648,36 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     /**
      * 构造故障原因数量Map
      *
-     * @param solutionIds 解决方案ID
-     * @return
+     * @param knowledgeBaseIds 知识库ID
+     * @return Map<knowledgeBaseId, < causeSolutionId, 百分比>>
      */
-    private Map<String, List<AnalyzeFaultCauseResDTO>> buildCauseNumberMap(List<String> solutionIds) {
-        if (CollUtil.isEmpty(solutionIds)) {
+    private Map<String, Map<String, String>> buildCauseNumberMap(List<String> knowledgeBaseIds) {
+        if (CollUtil.isEmpty(knowledgeBaseIds)) {
             return Collections.emptyMap();
         }
-        Map<String, List<AnalyzeFaultCauseResDTO>> dataMap = new HashMap<>(16);
-        List<AnalyzeFaultCauseResDTO> analyzeFaultCauses = baseMapper.countFaultCauseByIdSet(solutionIds);
+        Map<String, Map<String, String>> dataMap = new HashMap<>(16);
+        List<AnalyzeFaultCauseResDTO> analyzeFaultCauses = baseMapper.countFaultCauseByIdSet(knowledgeBaseIds);
         if (CollUtil.isNotEmpty(analyzeFaultCauses)) {
-            Map<String, List<AnalyzeFaultCauseResDTO>> map = analyzeFaultCauses.stream()
+            Map<String, List<AnalyzeFaultCauseResDTO>> baseIdMap = analyzeFaultCauses.stream()
                     .collect(Collectors.groupingBy(AnalyzeFaultCauseResDTO::getKnowledgeBaseId));
-            map.forEach((knowledgeId, resList) -> {
-                Long sum = resList.stream().filter(Objects::nonNull).map(AnalyzeFaultCauseResDTO::getNum).reduce(0L, Long::sum);
-                resList.stream().forEach(re -> {
-                    if (sum != 0L) {
-                        re.setPercentage(NumberUtil.div((float) re.getNum(), (float) sum, 2) * 100 + "%");
-                    } else {
-                        re.setPercentage("0%");
+            for (Map.Entry<String, List<AnalyzeFaultCauseResDTO>> entry : baseIdMap.entrySet()) {
+                List<AnalyzeFaultCauseResDTO> value = entry.getValue();
+                // 同一知识库下方案的总数
+                final int total = value.size();
+                Map<String, List<AnalyzeFaultCauseResDTO>> causeSolutionIdMap = value.stream()
+                        .collect(Collectors.groupingBy(AnalyzeFaultCauseResDTO::getId));
+                Map<String, String> hashMap = new HashMap<>(16);
+                causeSolutionIdMap.forEach((k, v) -> {
+                    double size = v.size();
+                    if (CollUtil.isEmpty(v)) {
+                        size = 0;
                     }
+                    double number = size / total * 100;
+                    String percentage = String.format("%.2f", number) + "%";
+                    hashMap.put(k, percentage);
                 });
-                dataMap.put(knowledgeId, resList);
-            });
+                dataMap.put(entry.getKey(), hashMap);
+            }
         }
         return dataMap;
     }
@@ -695,12 +723,12 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             List<AnalyzeFaultCauseResDTO> causeResDTOList = baseMapper.countFaultCauseByIdSet(new ArrayList<>(idSet));
             if (CollUtil.isNotEmpty(causeResDTOList)) {
                 Map<String, List<AnalyzeFaultCauseResDTO>> map = causeResDTOList.stream().collect(Collectors.groupingBy(AnalyzeFaultCauseResDTO::getKnowledgeBaseId));
-                map.forEach((knowledgeId, resList)->{
+                map.forEach((knowledgeId, resList) -> {
                     Long sum = resList.stream().filter(Objects::nonNull).map(AnalyzeFaultCauseResDTO::getNum).reduce(0L, Long::sum);
-                    resList.stream().forEach(re->{
+                    resList.stream().forEach(re -> {
                         if (sum != 0L) {
-                            re.setPercentage(NumberUtil.div((float) re.getNum(),(float)sum, 2)*100 +"%");
-                        }else {
+                            re.setPercentage(NumberUtil.div((float) re.getNum(), (float) sum, 2) * 100 + "%");
+                        } else {
                             re.setPercentage("0%");
                         }
                     });
@@ -739,6 +767,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     /**
      * 导入数据校验
+     *
      * @param faultKnowledgeBaseModel
      * @param faultKnowledgeBase
      * @param stringBuilder
