@@ -199,10 +199,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                     Boolean isSkipWeekend = schedule.getIsSkipWeekend();
                     Date time = start.getTime();
                     Week week = DateUtil.dayOfWeekEnum(time);
-                    if (("星期日".equals(week.toChinese()) || "星期六".equals(week.toChinese())) && isSkipWeekend) {
-                        start.add(Calendar.DAY_OF_YEAR, 1);
-                        continue;
-                    }
+
                     int index = (i % itemSize == 0 ? itemSize : i % itemSize);
                     Integer ruleItemId = scheduleRuleItemMap.get(index);
                     ScheduleItem scheduleItem = ItemService.getById(ruleItemId);
@@ -221,6 +218,17 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                                 .color(scheduleItem.getColor())
                                 .delFlag(0)
                                 .build();
+                        //跳过周末则周末安排休息班次
+                        if (("星期日".equals(week.toChinese()) || "星期六".equals(week.toChinese())) && isSkipWeekend) {
+                            LambdaQueryWrapper<ScheduleItem> queryWrapper = new LambdaQueryWrapper<>();
+                            queryWrapper.eq(ScheduleItem::getName, "休息").eq(ScheduleItem::getDelFlag, 0);
+                            List<ScheduleItem> scheduleItems = ItemService.getBaseMapper().selectList(queryWrapper);
+                            if (CollUtil.isNotEmpty(scheduleItems)) {
+                                record.setItemId(scheduleItems.get(0).getId());
+                            }
+                            record.setItemName("休息");
+                        }
+
                         //  如果需要跳过节假日，并且当天和指定班次一样，则变更班次
                         List<String> allHolidays = iSysBaseApi.getAllHolidays();
                         Date date = start.getTime();
