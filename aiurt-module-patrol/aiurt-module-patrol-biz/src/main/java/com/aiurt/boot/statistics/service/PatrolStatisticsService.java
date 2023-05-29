@@ -123,14 +123,30 @@ public class PatrolStatisticsService {
 
         //  ******数据库统计实现方法-Begin********
         IndexCountDTO indexCountDTO = new IndexCountDTO(newStartDate, newEndDate, filterConditions);
-        PatrolSituation overviewInfoCount = patrolTaskMapper.getOverviewInfoCount(indexCountDTO);
+        PatrolSituation overviewInfoCount = new PatrolSituation();
+
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            overviewInfoCount = patrolTaskMapper.getTaskDeviceOverviewInfoCount(indexCountDTO);
+        } else {
+            overviewInfoCount = patrolTaskMapper.getOverviewInfoCount(indexCountDTO);
+        }
+
         // 漏巡数统计
         List<Date> startList = this.getOmitDateScope(startDate);
         List<Date> endList = this.getOmitDateScope(endDate);
         Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
         Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
         IndexCountDTO indexCountOmitDTO = new IndexCountDTO(startTime, endTime, filterConditions);
-        PatrolSituation overviewInfoOmitCount = patrolTaskMapper.getOverviewInfoCount(indexCountOmitDTO);
+        PatrolSituation overviewInfoOmitCount = new PatrolSituation();
+        //根据配置决定是否需要把工单数量作为任务数量
+        if (value) {
+            overviewInfoOmitCount = patrolTaskMapper.getTaskDeviceOverviewInfoCount(indexCountOmitDTO);
+        }else {
+            overviewInfoOmitCount = patrolTaskMapper.getOverviewInfoCount(indexCountOmitDTO);
+        }
 
         Long sum = ObjectUtil.isEmpty(overviewInfoCount.getSum()) ? 0 : overviewInfoCount.getSum();
         Long finish = ObjectUtil.isEmpty(overviewInfoCount.getFinish()) ? 0 : overviewInfoCount.getFinish();

@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.system.entity.SysUserPosition;
 import com.aiurt.modules.system.entity.SysUserPositionCurrent;
 import com.aiurt.modules.system.mapper.SysUserPositionMapper;
@@ -59,6 +60,9 @@ public class SysUserPositionServiceImpl extends ServiceImpl<SysUserPositionMappe
             log.info("转换前的参数：{}", JSON.toJSONString(sysUserPosition));
             // 通过mac地址获取stationCode
             sysUserPosition.setStationCode(sysBaseApi.getStationCodeByMac(sysUserPosition.getBssid()));
+            if (StrUtil.isNotBlank(sysUserPosition.getClientMac())) {
+                sysUserPosition.setClientMac(sysUserPosition.getClientMac().toLowerCase());
+            }
             this.save(sysUserPosition);
             // 添加或者更新sys_user_position_current表
             SysUserPositionCurrent sysUserPositionCurrent = new SysUserPositionCurrent();

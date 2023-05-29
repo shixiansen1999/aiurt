@@ -19,6 +19,7 @@ import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.param.PatrolTaskParam;
+import com.aiurt.boot.task.param.TemHumParam;
 import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
@@ -499,7 +500,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      */
     List<GeneralReturn> getOrgCodeName(@Param("orgCodes")List<String> orgCodes);
 
-    List<TemperatureHumidityDTO> getTemAndHum(@Param("date")String date,@Param("lineCode") String lineCode, @Param("stationCode") String stationCode);
+    List<TemperatureHumidityDTO> getTemAndHum(@Param("condition")TemHumParam temHumParam);
 
     @DataPermission({
             @DataColumn(key = "deptName",value = "t2.org_code"),
@@ -516,4 +517,76 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 //    PatrolSituation getOverviewInfoCount(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("jointSQL") String filterConditions);
     PatrolSituation getOverviewInfoCount(@Param("condition") IndexCountDTO indexCountDTO);
 
+    /**
+     * 首页统计巡视任务下的工单数量(巡视总数、已巡视、未巡视、异常数)
+     */
+    PatrolSituation getTaskDeviceOverviewInfoCount(@Param("condition") IndexCountDTO indexCountDTO);
+
+    /**
+     * 首页统计巡视数量(巡视总数、已巡视、未巡视、异常数)
+     */
+    List<PatrolSituation>  getCountONMonth(@Param("condition") IndexCountDTO indexCountDTO);
+
+    /**
+     * 首页统计巡视任务下的工单数量(巡视总数、已巡视、未巡视、异常数)
+     */
+    List<PatrolSituation>  getTaskDeviceCountONMonth(@Param("condition") IndexCountDTO indexCountDTO);
+
+    /**
+     * 大屏统计巡视任务下的工单数量(巡视总数、已巡视、未巡视、异常数)
+     */
+    PatrolSituation getTaskDeviceCount(@Param("condition") ScreenModule module);
+    /**
+     * 统计报表中巡视任务下的工单数量(巡视总数、已巡视、未巡视、异常数)
+     */
+    List<PatrolReport> getReportTaskDeviceCount(@Param("condition") PatrolReportModel report);
+    /**
+     * 统计报表中巡视任务下的故障数
+     */
+    List<PatrolReport> getFaultList(@Param("condition") PatrolReportModel report);
+
+    /**
+     * 统计报表-故障-统计各个子系统故障已解决数（过滤挂起的）
+     * @param page
+     * @param id
+     * @param lineCode
+     * @param stationCode
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<FailureReport> getFilterFailureReport(Page<FailureReport>page,@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
+
+    /**
+     * 统计报表-故障-统计子系统发生故障时间（过滤挂起的）
+     * @param code
+     * @param orgCode
+     * @param lineCode
+     * @param stationCode
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<Integer> selectFaultWorkTime(@Param("code") String code,@Param("orgCode")String orgCode,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
+
+    /**
+     * 统计报表-故障-统计各个部门故障已解决数（过滤挂起的）
+     * @param page
+     * @param ids
+     * @param lineCode
+     * @param stationCode
+     * @param startTime
+     * @param endTime
+     * @param systemCode
+     * @return
+     */
+    List<FailureOrgReport> getFilterOrgReport(Page<FailureOrgReport> page, @Param("ids")List<String> ids, @Param("lineCode") String lineCode, @Param("stationCode") List<String> stationCode, @Param("startTime") String startTime, @Param("endTime")String endTime, @Param("systemCode")  List<String> systemCode);
+    /**
+     * 统计报表中巡视任务下的维修人工单数量(人员维度)
+     */
+    List<PatrolReport> getReportTaskUserCount(@Param("condition") PatrolReportModel report);
+    /**
+     * 统计报表中巡视任务下的同行人工单数量(人员维度)
+     */
+    List<PatrolReport> getReportTaskAccompanyCount(@Param("condition") PatrolReportModel report);
 }

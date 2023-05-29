@@ -65,6 +65,15 @@ public class LogDTO implements Serializable {
      */
     private String permissionUrl;
 
+    private String clientVersion;
+
+    private String clientMac;
+
+    /**
+     * 1 app, 2 pc
+     */
+    private String clientType;
+
     public LogDTO(){
 
     }

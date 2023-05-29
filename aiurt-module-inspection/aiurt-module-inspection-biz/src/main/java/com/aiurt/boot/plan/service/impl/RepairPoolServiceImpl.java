@@ -1816,5 +1816,28 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             repairTaskOrgRelMapper.batchInsert(repairTaskOrgRelList);
         }
     }
+    @Override
+    public IPage<StationPlanDTO> queryPlanStationList(Page<StationPlanDTO> page,SelectPlanReq selectPlanReq) {
+        //根据数据权限，查询站所信息
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        selectPlanReq.setIsManual(InspectionConstant.IS_MANUAL_0);
+        List<StationPlanDTO> csStationList =baseMapper.queryPlanStationList(page,user.getId());
+        if(CollUtil.isNotEmpty(csStationList)){
+            //循环站点信息
+            for (StationPlanDTO stationPlanDTO : csStationList) {
+                //部门-站点统计数目
+                selectPlanReq.setStationCode(stationPlanDTO.getStationCode());
+                List<RepairPool> repairPools = baseMapper.queryPlanOrgList(selectPlanReq);
+                //计划数
+                stationPlanDTO.setPlanNum(CollUtil.isNotEmpty(repairPools) ? repairPools.size() : 0L);
+                // 已完成(计划状态：6，7，8)
+                stationPlanDTO.setPlanFinishNum(CollUtil.isNotEmpty(repairPools) ? repairPools.stream().filter(re -> InspectionConstant.COMPLETED.equals(re.getStatus())||
+                        InspectionConstant.PENDING_REVIEW.equals(re.getStatus())||InspectionConstant.PENDING_RECEIPT.equals(re.getStatus())).count() : 0L);
+                // 未完成
+                stationPlanDTO.setUnPlanFinishNum(CollUtil.isNotEmpty(repairPools) ? stationPlanDTO.getPlanNum()-stationPlanDTO.getPlanFinishNum() : 0L);
+            }
 
+        }
+        return page.setRecords(csStationList);
+    }
 }

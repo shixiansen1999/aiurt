@@ -288,7 +288,7 @@ public class IndexPlanService {
      * @param month 月份
      * @return
      */
-    public List<DayTodoDTO> getUserSchedule(Integer year, Integer month) {
+    public List<DayTodoDTO> getUserSchedule(Integer year, Integer month,HttpServletRequest request) {
         List<DayTodoDTO> result = new ArrayList<>();
         if (ObjectUtil.isEmpty(year) || ObjectUtil.isEmpty(month)) {
             return result;
@@ -303,7 +303,7 @@ public class IndexPlanService {
         // 检修(key是日期，value是数量)
         Map<String, Integer> inspectionMap = MapUtil.isNotEmpty(this.inspectionNumByDay(beginDate, dayNum)) ? this.inspectionNumByDay(beginDate, dayNum) : new HashMap<>(32);
         // 巡检
-        Map<String, Integer> patrolMap = CollUtil.isNotEmpty(patrolApi.getPatrolFinishNumber(year, month)) ? patrolApi.getPatrolFinishNumber(year, month) : new HashMap<>(32);
+        Map<String, Integer> patrolMap = CollUtil.isNotEmpty(patrolApi.getPatrolFinishNumber(year, month, request)) ? patrolApi.getPatrolFinishNumber(year, month,request) : new HashMap<>(32);
         // 故障
         Map<String, Integer> faultMap = CollUtil.isNotEmpty(dailyFaultApi.getDailyFaultNum(year, month)) ? dailyFaultApi.getDailyFaultNum(year, month) : new HashMap<>(32);
         // 施工

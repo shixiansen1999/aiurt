@@ -1299,6 +1299,20 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
             }
 
+            //获取mac地址
+            List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(task.getId());
+
+            if (CollUtil.isNotEmpty(mac)) {
+                long l = mac.stream().filter(m -> m.getMacStatus().equals(PatrolConstant.MAC_STATUS_EXCEPTION) || ObjectUtil.isEmpty(m.getMacStatus())).count();
+                if (l == 0L) {
+                    updateWrapper.set(PatrolTask::getMacStatus, 1);
+                }else {
+                    updateWrapper.set(PatrolTask::getMacStatus, 0);
+                }
+            } else {
+                updateWrapper.set(PatrolTask::getMacStatus, 0);
+            }
+
             patrolTaskMapper.update(new PatrolTask(), updateWrapper);
             // 提交任务如果需要审核则发送一条审核待办消息
             try {

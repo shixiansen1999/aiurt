@@ -37,7 +37,6 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -402,8 +401,8 @@ public class ScheduleController {
         return result;
     }
 
-    @AutoLog(value = "获取本人创建的所有规则")
-    @ApiOperation(value = "获取本人创建的所有规则", notes = "获取本人创建的所有规则")
+    @AutoLog(value = "获取所有规则")
+    @ApiOperation(value = "获取所有规则", notes = "获取所有规则")
     @RequestMapping(value = "selectScheduleRule", method = RequestMethod.GET)
     public Result<List<ScheduleRule>> selectScheduleRule() {
 
@@ -447,18 +446,7 @@ public class ScheduleController {
     @ApiOperation(value = "下载模板", notes = "下载模板")
     @RequestMapping(value = "/downloadScheduleExcel", method = RequestMethod.GET)
     public void downloadScheduleExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
-        //获取输入流，原始模板位置
-        ClassPathResource classPathResource =  new ClassPathResource("templates/schedule.xlsx");
-        InputStream bis = classPathResource.getInputStream();
-        //设置发送到客户端的响应的内容类型
-        response.setContentType("tapplication/vnd.ms-excel;charset=utf-8");
-        BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
-        int len = 0;
-        while ((len = bis.read()) != -1) {
-            out.write(len);
-            out.flush();
-        }
-        out.close();
+        scheduleService.exportTemplateXls(response);
     }
 
     @RequestMapping(value = "/importHolidayExcel", method = RequestMethod.POST)

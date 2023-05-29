@@ -1,5 +1,6 @@
 package com.aiurt.boot.report.controller;
 
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.report.model.FailureOrgReport;
 import com.aiurt.boot.report.model.FailureReport;
 import com.aiurt.boot.report.model.PatrolReport;
@@ -14,6 +15,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -34,6 +37,8 @@ import java.util.List;
 public class PatrolReportController {
     @Autowired
     private PatrolReportService reportService;
+    @Autowired
+    private ISysParamAPI sysParamApi;
     /**
      * 统计报表-巡视数据统计
      * @param report
@@ -46,8 +51,15 @@ public class PatrolReportController {
                                                          @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                                          @RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {
         Page<PatrolReport> pageList = new Page<>(pageNo, pageSize);
-        pageList = reportService.getTaskDate(pageList, report);
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            pageList = reportService.getDeviceTaskDate(pageList, report);
 
+        } else {
+            pageList = reportService.getTaskDate(pageList, report);
+        }
         return Result.ok(pageList);
     }
     /**

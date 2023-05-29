@@ -41,6 +41,10 @@ public interface SysParamCodeConstant {
      */
     String FAULT_AUDIT = "fault_audit";
     /**
+     * 工时统计,是否过滤掉有挂起记录的故障单
+     */
+    String FAULT_FILTER = "fault_filter";
+    /**
      * 工作日志上报是否需要在指定时间点内编辑
      */
     String WORKLOG_EDIT = "worklog_edit";
