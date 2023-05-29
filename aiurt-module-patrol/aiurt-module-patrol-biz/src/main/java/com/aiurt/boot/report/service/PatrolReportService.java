@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.report.mapper.ReportMapper;
 import com.aiurt.boot.report.model.FailureOrgReport;
 import com.aiurt.boot.report.model.FailureReport;
@@ -23,9 +24,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -60,6 +63,8 @@ public class PatrolReportService {
     private PatrolStatisticsService statisticsService;
     @Autowired
     private ReportMapper reportMapper;
+    @Autowired
+    private ISysParamAPI sysParamApi;
     public Page<PatrolReport> getTaskDate(Page<PatrolReport> pageList, PatrolReportModel report) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> orgCodes = sysBaseApi.getDepartByUser(1);
@@ -385,10 +390,19 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             stationCode = this.selectStation(null).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }
         IPage<FailureReport> failureReportIpage = patrolTaskMapper.getFailureReport(page,sysUser.getId(), lineCode, stationCode, startTime, endTime);
-        String finalStartTime = startTime;
+        //子系统拿到已解决数（去掉挂起的的数据）
+         SysParamModel filterParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_FILTER);
+         boolean filterValue = "1".equals(filterParamModel.getValue());
+         Map<String,Integer> systemCodeResolveMap = new HashMap<>(8);
+         if(filterValue){
+             List<FailureReport>filterFailureReportList = patrolTaskMapper.getFilterFailureReport(page,sysUser.getId(), lineCode, stationCode, startTime, endTime);
+             systemCodeResolveMap = filterFailureReportList.stream().collect(Collectors.toMap(FailureReport::getCode, FailureReport::getResolvedNum));
+         }
+         String finalStartTime = startTime;
         String finalEndTime = endTime;
         List<String> finalStationCode = stationCode;
-        failureReportIpage.getRecords().forEach(f -> {
+         Map<String, Integer> finalSystemCodeResolveMap = systemCodeResolveMap;
+         failureReportIpage.getRecords().forEach(f -> {
             if (f.getLastMonthNum() != 0) {
                 double sub = NumberUtil.sub(f.getMonthNum(), f.getLastMonthNum());
                 BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastMonthNum(), 2));
@@ -407,10 +421,19 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             int s = num.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
             f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
             f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
-            List<Integer> num1 = patrolTaskMapper.selectNum1(f.getCode(), null, lineCode, finalStationCode, finalStartTime, finalEndTime);
-            int s1 = num1.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
-            f.setAverageResolution(f.getResolvedNum() == 0 ? 0 : s1 / f.getResolvedNum());
-        });
+            List<Integer> faultWortTime =  new ArrayList<>(0);
+             if(filterValue){
+                 Integer resolveNum = finalSystemCodeResolveMap.get(f.getCode());
+                 if(ObjectUtil.isNotEmpty(resolveNum)){
+                     f.setResolvedNum(resolveNum);
+                 }
+                 faultWortTime = patrolTaskMapper.selectFaultWorkTime(f.getCode(), null, lineCode, finalStationCode, finalStartTime, finalEndTime);
+             }else {
+                 faultWortTime = patrolTaskMapper.selectNum1(f.getCode(), null, lineCode, finalStationCode, finalStartTime, finalEndTime);
+             }
+             int s1 = faultWortTime.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
+             f.setAverageResolution(f.getResolvedNum() == 0 ? 0 : s1 / f.getResolvedNum());
+         });
         return failureReportIpage;
     }
 
@@ -462,10 +485,18 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         if ( CollectionUtil.isEmpty(systemCode)){
             systemCode = this.selectSystem().stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }
+        SysParamModel filterParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_FILTER);
+        boolean filterValue = "1".equals(filterParamModel.getValue());
         IPage<FailureOrgReport> orgReport = patrolTaskMapper.getOrgReport(page,ids,lineCode,stationCode,startTime,endTime,systemCode);
+        List<FailureOrgReport> filterOrgReport = patrolTaskMapper.getFilterOrgReport(page,ids,lineCode,stationCode,startTime,endTime,systemCode);
+        Map<String, Integer> orgResolveMap = new HashMap<>();
+        if(filterValue){
+            orgResolveMap = filterOrgReport.stream().collect(Collectors.toMap(FailureOrgReport::getOrgCode, FailureOrgReport::getResolvedNum));
+        }
         String finalStartTime = startTime;
         String finalEndTime = endTime;
         List<String> finalStationCode = stationCode;
+        Map<String, Integer> finalOrgResolveMap = orgResolveMap;
         orgReport.getRecords().forEach(f -> {
             if (f.getLastMonthNum() != 0) {
                 double sub = NumberUtil.sub(f.getMonthNum(), f.getLastMonthNum());
@@ -485,8 +516,17 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             int s = num.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
             f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
             f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
-            List<Integer> num1 = patrolTaskMapper.selectNum1(null, f.getOrgCode(), lineCode, finalStationCode, finalStartTime, finalEndTime);
-            int s1 = num1.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
+            List<Integer> faultWortTime =  new ArrayList<>(0);
+            if(filterValue){
+                Integer resolveNum = finalOrgResolveMap.get(f.getOrgCode());
+                if(ObjectUtil.isNotEmpty(resolveNum)){
+                    f.setResolvedNum(resolveNum);
+                }
+                faultWortTime = patrolTaskMapper.selectFaultWorkTime(null, f.getOrgCode(), lineCode, finalStationCode, finalStartTime, finalEndTime);
+            }else {
+                faultWortTime = patrolTaskMapper.selectNum1(null, f.getOrgCode(), lineCode, finalStationCode, finalStartTime, finalEndTime);
+            }
+            int s1 = faultWortTime.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
             f.setAverageResolution(f.getResolvedNum() == 0 ? 0 : s1 / f.getResolvedNum());
         });
                   return orgReport;

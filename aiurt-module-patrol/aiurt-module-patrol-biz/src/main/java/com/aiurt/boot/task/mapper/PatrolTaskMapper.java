@@ -544,4 +544,41 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * 统计报表中巡视任务下的故障数
      */
     List<PatrolReport> getFaultList(@Param("condition") PatrolReportModel report);
+
+    /**
+     * 统计报表-故障-统计各个子系统故障已解决数（过滤挂起的）
+     * @param page
+     * @param id
+     * @param lineCode
+     * @param stationCode
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<FailureReport> getFilterFailureReport(Page<FailureReport>page,@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
+
+    /**
+     * 统计报表-故障-统计子系统发生故障时间（过滤挂起的）
+     * @param code
+     * @param orgCode
+     * @param lineCode
+     * @param stationCode
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<Integer> selectFaultWorkTime(@Param("code") String code,@Param("orgCode")String orgCode,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
+
+    /**
+     * 统计报表-故障-统计各个部门故障已解决数（过滤挂起的）
+     * @param page
+     * @param ids
+     * @param lineCode
+     * @param stationCode
+     * @param startTime
+     * @param endTime
+     * @param systemCode
+     * @return
+     */
+    List<FailureOrgReport> getFilterOrgReport(Page<FailureOrgReport> page, @Param("ids")List<String> ids, @Param("lineCode") String lineCode, @Param("stationCode") List<String> stationCode, @Param("startTime") String startTime, @Param("endTime")String endTime, @Param("systemCode")  List<String> systemCode);
 }
