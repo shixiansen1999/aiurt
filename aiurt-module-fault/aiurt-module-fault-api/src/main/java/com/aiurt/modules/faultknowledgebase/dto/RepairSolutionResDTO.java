@@ -49,4 +49,10 @@ public class RepairSolutionResDTO extends DictEntity {
 
 
     private String baseTypeName;
+
+    private Integer memberNumber;
+
+    private Boolean isFirst;
+
+    private Integer group;
 }

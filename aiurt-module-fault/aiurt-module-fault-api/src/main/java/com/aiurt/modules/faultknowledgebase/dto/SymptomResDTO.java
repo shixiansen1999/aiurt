@@ -1,11 +1,14 @@
 package com.aiurt.modules.faultknowledgebase.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -56,5 +59,9 @@ public class SymptomResDTO implements Serializable {
 
     @ApiModelProperty(value = "故障原因")
     private List<AnalyzeFaultCauseResDTO> analyzeFaultCauseResDTOList;
+
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private Date createTime;
 
 }

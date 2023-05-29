@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.system.vo.LoginUser;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -174,4 +175,14 @@ public interface IFaultService extends IService<Fault> {
      * @param fault
      */
     void saveResult(Fault fault);
+
+    /**
+     * 分页查询
+     * @param fault
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    IPage<Fault> queryPageList(Fault fault, Integer pageNo, Integer pageSize, HttpServletRequest req);
 }

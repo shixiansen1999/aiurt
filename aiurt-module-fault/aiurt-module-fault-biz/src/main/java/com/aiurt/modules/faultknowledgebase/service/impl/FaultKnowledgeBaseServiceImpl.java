@@ -727,9 +727,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     Long sum = resList.stream().filter(Objects::nonNull).map(AnalyzeFaultCauseResDTO::getNum).reduce(0L, Long::sum);
                     resList.stream().forEach(re -> {
                         if (sum != 0L) {
-                            re.setPercentage(NumberUtil.div((float) re.getNum(), (float) sum, 2) * 100 + "%");
+                            re.setPercentage(NumberUtil.div((float) re.getNum(), (float) sum, 2) * 100+"");
                         } else {
-                            re.setPercentage("0%");
+                            re.setPercentage("0");
                         }
                     });
                     dataMap.put(knowledgeId, resList);

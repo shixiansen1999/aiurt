@@ -19,6 +19,7 @@ import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.base.PageOrderGenerator;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.fault.dto.*;
@@ -27,8 +28,11 @@ import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.fault.service.*;
+import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
+import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
 import com.aiurt.modules.faultexternal.mapper.FaultExternalMapper;
 import com.aiurt.modules.faultexternal.service.IFaultExternalService;
+import com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
@@ -39,9 +43,12 @@ import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +60,7 @@ import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISparePartBaseApi;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +68,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -130,6 +140,15 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Autowired
     private IFaultExternalService faultExternalService;
 
+    @Autowired
+    private IFaultAnalysisReportService faultAnalysisReportService;
+
+    @Autowired
+    private IFaultRepairRecordService faultRepairRecordService;
+
+    @Autowired
+    private IFaultCauseDetailService faultCauseDetailService;
+
 
     /**
      * 故障上报
@@ -151,8 +170,18 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         builder.append(majorCode).append(DateUtil.format(new Date(), "yyyyMMddHHmmss"));
         fault.setCode(builder.toString());
 
-        // 接报人
-        fault.setReceiveTime(new Date());
+        // 接报时间
+        Date receiveTime = fault.getReceiveTime();
+        if (Objects.isNull(receiveTime)) {
+            receiveTime = new Date();
+            fault.setReceiveTime(receiveTime);
+        }
+        Date happenTime = fault.getHappenTime();
+        if (Objects.isNull(happenTime)) {
+            happenTime = receiveTime;
+            fault.setHappenTime(happenTime);
+        }
+        // 发生时间为空时怎默认无接收时间
         fault.setReceiveUserName(user.getUsername());
 
         String faultModeCode = fault.getFaultModeCode();
@@ -168,7 +197,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             fault.setAppointUserName(user.getUsername());
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
             // 方便统计
-            fault.setApprovalPassTime(fault.getReceiveTime());
+            fault.setApprovalPassTime(receiveTime);
             // 创建维修记录
             FaultRepairRecord record = FaultRepairRecord.builder()
                     // 做类型
@@ -202,6 +231,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 设置故障设备
         dealDevice(fault, fault.getFaultDeviceList());
+
+        // 记录使用的故障模板的解决原因
+        List<AnalyzeFaultCauseResDTO> analyzeFaultCauseResDTOList = fault.getAnalyzeFaultCauseResDTOList();
+        if (CollUtil.isNotEmpty(analyzeFaultCauseResDTOList)) {
+            List<FaultCauseDetail> causeDetailList = analyzeFaultCauseResDTOList.stream().map(analyzeFaultCauseResDTO -> {
+                FaultCauseDetail causeDetail = BeanUtil.copyProperties(analyzeFaultCauseResDTO, FaultCauseDetail.class, "id");
+                return causeDetail;
+            }).collect(Collectors.toList());
+            faultCauseDetailService.saveBatch(causeDetailList);
+        }
 
 
         // 记录日志
@@ -1844,6 +1883,160 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         saveLog(loginUser, "修改故障工单", fault.getCode(), FaultStatusEnum.APPROVAL_REJECT.getStatus(), null);
 
 
+    }
+
+    /**
+     * 分页查询
+     *
+     * @param fault
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    @Override
+    public IPage<Fault> queryPageList(Fault fault, Integer pageNo, Integer pageSize, HttpServletRequest req) {
+        String stationCode = fault.getStationCode();
+        if (StrUtil.isNotBlank(stationCode)) {
+            fault.setStationCode(null);
+        }
+        String faultPhenomenon = fault.getFaultPhenomenon();
+        if (StrUtil.isNotBlank(faultPhenomenon)) {
+            fault.setFaultPhenomenon(null);
+        }
+        String appointUserName = fault.getAppointUserName();
+        if (StrUtil.isNotBlank(appointUserName)) {
+            fault.setAppointUserName(null);
+        }
+        String statusCondition = fault.getStatusCondition();
+        if (StrUtil.isNotBlank(statusCondition)) {
+            fault.setStatusCondition(null);
+        }
+        // 专业查询
+        String subSystemCode = fault.getSubSystemCode();
+        if (StrUtil.isNotBlank(subSystemCode)) {
+            JSONObject csMajor = sysBaseAPI.getCsMajorByCode(subSystemCode);
+            if (Objects.nonNull(csMajor)) {
+                fault.setMajorCode(subSystemCode);
+                fault.setSubSystemCode(null);
+            }
+        }
+
+        // 故障等级处理， 不能模糊查询
+        String f = fault.getFaultLevel();
+        if (StrUtil.isNotBlank(f)) {
+            fault.setFaultLevel(null);
+        }
+
+        //获取app输入故障现象查询内容，转换为code
+        LambdaQueryWrapper<FaultKnowledgeBaseType> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(FaultKnowledgeBaseType::getName, faultPhenomenon).eq(FaultKnowledgeBaseType::getDelFlag, 0);
+        List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeService.getBaseMapper().selectList(wrapper);
+        List<String> faultPhenomenonCodes = new ArrayList<>();
+        if (CollUtil.isNotEmpty(faultKnowledgeBaseTypes)) {
+            faultPhenomenonCodes = faultKnowledgeBaseTypes.stream().map(FaultKnowledgeBaseType::getCode).collect(Collectors.toList());
+        }
+
+        QueryWrapper<Fault> queryWrapper = QueryGenerator.initQueryWrapper(fault, req.getParameterMap());
+        Page<Fault> page = new Page<>(pageNo, pageSize);
+        PageOrderGenerator.initPage(page, fault, fault);
+        //修改查询条件
+        if (CollUtil.isNotEmpty(faultPhenomenonCodes)) {
+            queryWrapper.in("fault_phenomenon", faultPhenomenonCodes);
+            queryWrapper.or().like("code", faultPhenomenon);
+        } else {
+            if (StrUtil.isNotBlank(faultPhenomenon)) {
+                queryWrapper.like("code", faultPhenomenon);
+            }
+        }
+        queryWrapper.apply(StrUtil.isNotBlank(stationCode), "(line_code = {0} or station_code = {0} or station_position_code = {0})", stationCode);
+        queryWrapper.apply(StrUtil.isNotBlank(fault.getDevicesIds()), "(code in (select fault_code from fault_device where device_code like  concat('%', {0}, '%')))", fault.getDevicesIds());
+        // 负责人查询
+        queryWrapper.apply(StrUtil.isNotBlank(appointUserName), "( appoint_user_name in (select username from sys_user where (username like concat('%', {0}, '%') or realname like concat('%', {0}, '%'))))", appointUserName);
+        queryWrapper.orderByDesc("create_time");
+        if (StrUtil.isNotBlank(statusCondition)) {
+            queryWrapper.in("status", StrUtil.split(statusCondition, ','));
+        }
+
+        // 故障等级
+        queryWrapper.eq(StrUtil.isNotBlank(f), "fault_level", f);
+        IPage<Fault> pageList = this.page(page, queryWrapper);
+
+        List<Fault> records = pageList.getRecords();
+        dealResult(records);
+        return pageList;
+    }
+
+    /**
+     *
+     * @param records
+     */
+    private void dealResult(List<Fault> records) {
+
+        if (CollUtil.isEmpty(records)) {
+            return;
+        }
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+        // 查询故障设备列表
+        Map<String, List<FaultDevice>> faultDeviceMap = faultDeviceService.list(new LambdaQueryWrapper<FaultDevice>()
+                .in(FaultDevice::getDeviceCode,records.stream().map(Fault::getCode).collect(Collectors.toList())))
+                .stream().collect(Collectors.groupingBy(FaultDevice::getFaultCode));
+        Map<String, Integer> weightMap = new HashMap<>();
+        List<String> faultLevelList = records.stream().map(Fault::getFaultLevel).filter(StrUtil::isNotBlank).distinct().collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(faultLevelList)) {
+            weightMap = faultLevelService.getBaseMapper().selectList(Wrappers.lambdaQuery(FaultLevel.class)
+                    .in(FaultLevel::getCode, faultLevelList))
+                    .stream().collect(Collectors.toMap(FaultLevel::getCode, faultLevel -> {
+                        try {
+                            return Integer.parseInt(faultLevel.getWeight());
+                        } catch (NumberFormatException e) {
+                            return 0;
+                        }
+                    }));
+        }
+
+
+        Map<String, FaultAnalysisReport> reportMap = faultAnalysisReportService.getBaseMapper().selectList(Wrappers.lambdaQuery(FaultAnalysisReport.class)
+                .in(FaultAnalysisReport::getFaultCode, records.stream().map(Fault::getCode).distinct().collect(Collectors.toList()))
+                .eq(FaultAnalysisReport::getDelFlag, 0))
+                .stream().collect(Collectors.toMap(FaultAnalysisReport::getFaultCode, Function.identity()));
+
+        Map<String, Integer> finalWeightMap = weightMap;
+        records.parallelStream().forEach(fault1 -> {
+
+            if(StrUtil.equalsIgnoreCase(user.getUsername(), fault1.getAppointUserName())){
+                fault1.setIsFault(true);
+            }else {
+                fault1.setIsFault(false);
+            }
+
+            // 权重登记
+            if (StrUtil.isNotBlank(fault1.getFaultLevel())) {
+                fault1.setWeight(finalWeightMap.get(fault1.getFaultLevel()));
+            }else {
+                fault1.setWeight(0);
+            }
+
+            // 是否重新指派
+            LambdaQueryWrapper<FaultRepairRecord> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(FaultRepairRecord::getFaultCode, fault1.getCode());
+            Long count = faultRepairRecordService.getBaseMapper().selectCount(lambdaQueryWrapper);
+            fault1.setSignAgainFlag(count>0?1:0);
+
+
+            //如果存在故障分析则返回true
+            if (ObjectUtil.isNotNull(reportMap.get(fault1.getCode()))) {
+                fault1.setIsFaultAnalysisReport(true);
+            }
+
+            List<FaultDevice> faultDeviceList = faultDeviceMap.get(fault1.getCode());
+            fault1.setFaultDeviceList(faultDeviceList);
+            if (CollUtil.isNotEmpty(faultDeviceList)) {
+                List<String> collect = faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.toList());
+                fault1.setDeviceName(CollUtil.join(collect,","));
+            }
+        });
     }
 
     /**
