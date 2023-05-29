@@ -139,7 +139,8 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
     }
 
     @Override
-    public int removeById(String id) {
+    @Transactional(rollbackFor = Exception.class)
+    public boolean removeById(String id) {
         SysFile sysFile = this.getById(id);
         if (ObjectUtil.isEmpty(sysFile)) {
             throw new AiurtBootException("未查询到此项数据");
@@ -149,7 +150,13 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
 
         checkDeletePermission(sysFile, loginUser);
 
-        return this.removeById(id);
+        sysFile.setDelFlag(CommonConstant.DEL_FLAG_1);
+        boolean result = this.updateById(sysFile);
+        if (result) {
+            sysFolderFilePermissionService.lambdaUpdate().eq(SysFolderFilePermission::getFileId, sysFile.getId()).remove();
+        }
+
+        return result;
     }
 
     @Override
@@ -170,8 +177,7 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
         // 查询文件夹权限
         List<SysFolderFilePermission> sysFolderFilePermissions = sysFolderFilePermissionService.list(
                 new LambdaQueryWrapper<SysFolderFilePermission>()
-                        .select(SysFolderFilePermission::getOrgCode)
-                        .select(SysFolderFilePermission::getUserId)
+                        .select(SysFolderFilePermission::getOrgCode, SysFolderFilePermission::getUserId, SysFolderFilePermission::getPermission)
                         .eq(SysFolderFilePermission::getFileId, id)
                         .eq(SysFolderFilePermission::getDelFlag, CommonConstant.DEL_FLAG_0));
 
@@ -197,19 +203,27 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
     public List<TypeNameVO> queryByTypeId(Long typeId) {
         LoginUser loginUser = getLoginUser();
         SysFileType sysFileType = sysFolderService.getById(typeId);
+        if (ObjectUtil.isEmpty(sysFileType)) {
+            return CollUtil.newArrayList();
+        }
         List<TypeNameVO> result = sysFileManageMapper.queryTypeByFolderCode(sysFileType.getFolderCodeCc(), loginUser.getId(), loginUser.getOrgCode());
         return result;
     }
 
     @Override
-    public Page<FileAppVO> getAppPageList(Page<FileAppVO> page, Long parentId, String fileName) {
+    public Page<SysFileManageAppVO> getAppPageList(Page<SysFileManageAppVO> page, Long parentId, String fileName) {
         LoginUser loginUser = getLoginUser();
-        Page<FileAppVO> listPage;
-        if (ObjectUtil.isEmpty(parentId)) {
-            listPage = baseMapper.listPrent(page, fileName, loginUser.getUsername(), loginUser.getOrgCode());
-            return listPage;
+        if (parentId == null) {
+            parentId = SysFileConstant.NUM_LONG_0;
         }
-        listPage = baseMapper.listPage(page, parentId, fileName, loginUser.getUsername(), loginUser.getOrgCode());
+
+        Page<SysFileManageAppVO> listPage;
+        if (SysFileConstant.NUM_LONG_0.equals(parentId)) {
+            listPage = baseMapper.listTopLevelFolders(page, parentId, fileName, loginUser.getId(), loginUser.getOrgCode());
+        } else {
+            listPage = baseMapper.listChildNodesByParentId(page, parentId, fileName, loginUser.getId(), loginUser.getOrgCode());
+        }
+
         return listPage;
     }
 
@@ -234,16 +248,19 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
      * @param sysFileParam sysFileParam对象，包含文件信息
      */
     private void processFileNameAndType(SysFile sysFile, SysFileParam sysFileParam) {
-        if (StringUtils.isNotBlank(sysFileParam.getName())) {
+        if (StrUtil.isNotBlank(sysFileParam.getName())) {
             String name = sysFileParam.getName();
-            String prefix = name.substring(0, name.indexOf(SymbolConstant.SPOT));
-            sysFile.setName(StringUtils.isNotBlank(prefix) ? prefix : "未知文件名");
+            String prefix = "";
+            int dotIndex = name.lastIndexOf(SymbolConstant.SPOT);
+            if (dotIndex != -1) {
+                prefix = name.substring(0, dotIndex);
+            }
+            sysFile.setName(StrUtil.isNotBlank(prefix) ? prefix : "未知文件名");
 
-            String substring = name.substring(name.lastIndexOf(PatrolConstant.NO_SPL));
-            if (StringUtils.isNotBlank(substring)) {
-                String suffix = substring.replaceFirst(PatrolConstant.NO_SPL, "");
-                if (StringUtils.isNotBlank(suffix)) {
-                    sysFile.setType(suffix.toUpperCase());
+            if (dotIndex != -1 && dotIndex < name.length() - 1) {
+                String suffix = name.substring(dotIndex + 1).toUpperCase();
+                if (StrUtil.isNotBlank(suffix)) {
+                    sysFile.setType(suffix);
                 }
             } else {
                 sysFile.setType("未知类型");
@@ -259,16 +276,20 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
      */
     private void processFileSize(SysFile sysFile, SysFileParam file) {
         if (StrUtil.isNotBlank(file.getFileSize())) {
+            if (!NumberUtil.isNumber(file.getFileSize())) {
+                throw new AiurtBootException("Invalid fileSize: " + file.getFileSize());
+            }
+
             int fileSizeInBytes = Integer.parseInt(file.getFileSize());
             BigDecimal fileSizeInKB = NumberUtil.div(String.valueOf(fileSizeInBytes), String.valueOf(SysFileConstant.BYTES_IN_KB), 1);
             BigDecimal fileSizeInMB = NumberUtil.div(String.valueOf(fileSizeInBytes), String.valueOf(SysFileConstant.BYTES_IN_MB), 1);
 
             if (fileSizeInBytes >= 0 && fileSizeInBytes < SysFileConstant.BYTES_IN_KB) {
-                sysFile.setFileSize(fileSizeInBytes + "B");
+                sysFile.setFileSize(fileSizeInBytes + SysFileConstant.B);
             } else if (fileSizeInBytes >= SysFileConstant.BYTES_IN_KB && fileSizeInBytes < SysFileConstant.BYTES_IN_MB) {
-                sysFile.setFileSize(fileSizeInKB.stripTrailingZeros().toPlainString() + "KB");
+                sysFile.setFileSize(fileSizeInKB.stripTrailingZeros().toPlainString() + SysFileConstant.KB);
             } else if (fileSizeInBytes >= SysFileConstant.BYTES_IN_MB) {
-                sysFile.setFileSize(fileSizeInMB.stripTrailingZeros().toPlainString() + "MB");
+                sysFile.setFileSize(fileSizeInMB.stripTrailingZeros().toPlainString() + SysFileConstant.MB);
             }
         }
     }
@@ -287,7 +308,14 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
         // 继承文件夹的权限
         List<SysFolderFilePermission> sysFolderFilePermissions = permissions.get(sysFile.getTypeId());
         if (CollUtil.isNotEmpty(sysFolderFilePermissions)) {
-            List<SysFolderFilePermission> saveData = sysFolderFilePermissions.stream().map(permission -> permission.setFileId(sysFile.getId())).collect(Collectors.toList());
+            List<SysFolderFilePermission> saveData = sysFolderFilePermissions.stream().map(permission -> {
+                permission.setFileId(sysFile.getId());
+                permission.setFolderId(null);
+                permission.setId(null);
+                permission.setCreateTime(new Date());
+                permission.setCreateBy(getLoginUser().getUsername());
+                return permission;
+            }).collect(Collectors.toList());
             sysFolderFilePermissionService.saveBatch(saveData, 500);
         }
     }

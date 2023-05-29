@@ -50,7 +50,7 @@ public interface ISysFileManageService extends IService<SysFile> {
      * @param id 文件ID，待删除的文件的唯一标识符
      * @return 删除结果，表示文件删除成功与否的通用结果对象
      */
-    int removeById(String id);
+    boolean removeById(String id);
 
     /**
      * 通过id查询
@@ -89,5 +89,5 @@ public interface ISysFileManageService extends IService<SysFile> {
      * @param fileName  文件名
      * @return 文件应用的分页列表
      */
-    Page<FileAppVO> getAppPageList(Page<FileAppVO> page, Long parentId, String fileName);
+    Page<SysFileManageAppVO> getAppPageList(Page<SysFileManageAppVO> page, Long parentId, String fileName);
 }

@@ -55,5 +55,5 @@ public class SysFileManageVO implements Serializable {
     private Date updateTime;
 
     @ApiModelProperty(value = "权限（1允许查看，2允许下载、3允许在线编辑、4允许删除、5允许编辑、6可管理权限）")
-    private Integer permissions;
+    private Integer permission;
 }

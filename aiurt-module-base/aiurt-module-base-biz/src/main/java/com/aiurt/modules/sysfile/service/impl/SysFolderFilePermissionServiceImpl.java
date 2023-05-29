@@ -48,10 +48,9 @@ public class SysFolderFilePermissionServiceImpl extends ServiceImpl<SysFolderFil
         }
 
         List<SysFolderFilePermission> result = new ArrayList<>();
-        SysFolderFilePermission sysFolderFilePermission = null;
 
         for (SysFolderFilePermissionParam sysFolderFilePermissionParam : sysFolderFilePermissionParams) {
-            if (ObjectUtil.isEmpty(sysFolderFilePermission)) {
+            if (ObjectUtil.isEmpty(sysFolderFilePermissionParam)) {
                 continue;
             }
 

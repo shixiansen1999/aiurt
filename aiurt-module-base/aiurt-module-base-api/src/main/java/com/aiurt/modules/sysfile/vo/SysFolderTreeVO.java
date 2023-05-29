@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
 
 import java.io.Serializable;
 import java.util.List;
@@ -45,6 +46,9 @@ public class SysFolderTreeVO implements Serializable {
 
 	@ApiModelProperty(value = "父级id")
 	private Long parentId;
+
+	@ApiModelProperty(value = "等级")
+	private Integer grade;
 
 
 }

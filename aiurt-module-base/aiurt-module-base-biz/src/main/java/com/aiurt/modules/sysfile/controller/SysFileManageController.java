@@ -5,11 +5,8 @@ import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.param.SysFileParam;
 import com.aiurt.modules.sysfile.param.SysFileWebParam;
 import com.aiurt.modules.sysfile.service.ISysFileManageService;
-import com.aiurt.modules.sysfile.vo.FileAppVO;
+import com.aiurt.modules.sysfile.vo.*;
 import com.aiurt.modules.sysfile.service.ISysFolderFilePermissionService;
-import com.aiurt.modules.sysfile.vo.SysFileDetailVO;
-import com.aiurt.modules.sysfile.vo.SysFileManageVO;
-import com.aiurt.modules.sysfile.vo.TypeNameVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -71,11 +68,11 @@ public class SysFileManageController {
     @AutoLog(value = "查询app文档分页列表")
     @ApiOperation(value = "查询app文档分页列表", notes = "查询app文档分页列表")
     @GetMapping(value = "/getAppPageList")
-    public Result<IPage<FileAppVO>> getAppPageList(@RequestParam(name = "parentId", required = false) Long parentId,
-                                                   @RequestParam(name = "fileName", required = false) String fileName,
-                                                   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
-        Page<FileAppVO> page = new Page<>(pageNo, pageSize);
+    public Result<IPage<SysFileManageAppVO>> getAppPageList(@RequestParam(name = "parentId", required = false) Long parentId,
+                                                            @RequestParam(name = "fileName", required = false) String fileName,
+                                                            @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                            @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        Page<SysFileManageAppVO> page = new Page<>(pageNo, pageSize);
         page = sysFileManageService.getAppPageList(page, parentId, fileName);
         return Result.OK(page);
     }
@@ -105,7 +102,7 @@ public class SysFileManageController {
     @AutoLog(value = "编辑文件")
     @ApiOperation(value = "编辑文件", notes = "编辑文件")
     @PutMapping(value = "/edit")
-    public Result<SysFile> editFile(HttpServletRequest req, @RequestBody SysFileParam sysFileParam) {
+    public Result<SysFile> editFile(HttpServletRequest req, @RequestBody @Validated SysFileParam sysFileParam) {
         sysFileManageService.editFile(sysFileParam);
         return Result.OK("编辑文档成功");
     }
@@ -120,8 +117,8 @@ public class SysFileManageController {
     @ApiOperation(value = "通过文件id删除文件", notes = "通过文件id删除文件")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
-        int result = sysFileManageService.removeById(id);
-        return result > 0 ? Result.OK("删除文档成功") : Result.error("删除文档失败");
+        boolean result = sysFileManageService.removeById(id);
+        return result ? Result.OK("删除文档成功") : Result.error("删除文档失败");
     }
 
     /**

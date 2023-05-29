@@ -10,12 +10,9 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.FillRuleUtil;
 import com.aiurt.modules.sysfile.constant.SysFileConstant;
 import com.aiurt.modules.sysfile.entity.SysFile;
-import com.aiurt.modules.sysfile.entity.SysFileRole;
 import com.aiurt.modules.sysfile.entity.SysFileType;
 import com.aiurt.modules.sysfile.entity.SysFolderFilePermission;
-import com.aiurt.modules.sysfile.mapper.SysFileMapper;
 import com.aiurt.modules.sysfile.mapper.SysFolderMapper;
-import com.aiurt.modules.sysfile.param.SysFolderFilePermissionParam;
 import com.aiurt.modules.sysfile.param.SysFolderParam;
 import com.aiurt.modules.sysfile.service.ISysFileService;
 import com.aiurt.modules.sysfile.service.ISysFolderFilePermissionService;
@@ -24,12 +21,9 @@ import com.aiurt.modules.sysfile.utils.FileNameUtils;
 import com.aiurt.modules.sysfile.vo.*;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import liquibase.pro.packaged.S;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
@@ -39,7 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -140,7 +133,11 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
         result.setCreateUserName(ObjectUtil.isNotEmpty(createUser) ? createUser.getRealname() : "");
 
         // 查询文件夹权限
-        List<SysFolderFilePermission> sysFolderFilePermissions = sysFolderFilePermissionService.list(new LambdaQueryWrapper<SysFolderFilePermission>().select(SysFolderFilePermission::getOrgCode).select(SysFolderFilePermission::getUserId).eq(SysFolderFilePermission::getFolderId, sysFileType.getId()).eq(SysFolderFilePermission::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<SysFolderFilePermission> sysFolderFilePermissions = sysFolderFilePermissionService.list(
+                new LambdaQueryWrapper<SysFolderFilePermission>()
+                        .select(SysFolderFilePermission::getOrgCode,SysFolderFilePermission::getUserId,SysFolderFilePermission::getPermission)
+                        .eq(SysFolderFilePermission::getFolderId, sysFileType.getId())
+                        .eq(SysFolderFilePermission::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         if (CollUtil.isNotEmpty(sysFolderFilePermissions)) {
             List<SysFolderFilePermissionVO> sysFolderFilePermissionList = getPermissionDetails(sysFolderFilePermissions);
@@ -184,11 +181,7 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
         if (type.getParentId() != null && !SysFileConstant.NUM_LONG_0.equals(type.getParentId())) {
             // 获取父节点的文件权限
             LambdaQueryWrapper<SysFolderFilePermission> queryWrapper = new LambdaQueryWrapper<SysFolderFilePermission>()
-                    .select(SysFolderFilePermission::getFolderId)
-                    .select(SysFolderFilePermission::getOrgCode)
-                    .select(SysFolderFilePermission::getUserId)
-                    .select(SysFolderFilePermission::getDelFlag)
-                    .select(SysFolderFilePermission::getPermission)
+                    .select(SysFolderFilePermission::getFolderId, SysFolderFilePermission::getOrgCode, SysFolderFilePermission::getUserId, SysFolderFilePermission::getDelFlag, SysFolderFilePermission::getPermission)
                     .eq(SysFolderFilePermission::getFolderId, type.getParentId())
                     .eq(SysFolderFilePermission::getDelFlag, CommonConstant.DEL_FLAG_0);
 
@@ -230,7 +223,12 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
      */
     private void setFolderParameters(SysFileType type, SysFolderParam param, String username) {
         Long parentId = param.getParentId() != null ? param.getParentId() : SysFileConstant.NUM_LONG_0;
-        type.setGrade(param.getGrade()).setName(param.getName()).setDelFlag(CommonConstant.DEL_FLAG_0).setParentId(parentId).setCreateTime(new Date()).setCreateBy(username);
+        type.setGrade(param.getGrade())
+                .setName(param.getName())
+                .setDelFlag(CommonConstant.DEL_FLAG_0)
+                .setParentId(parentId)
+                .setCreateTime(new Date())
+                .setCreateBy(username);
 
         // 生成编码并设置层级结构
         generateFolderCode(type, parentId);
@@ -387,10 +385,7 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
 
         // 继承文件夹的权限
         LambdaQueryWrapper<SysFolderFilePermission> lam = new LambdaQueryWrapper<>();
-        lam.select(SysFolderFilePermission::getUserId);
-        lam.select(SysFolderFilePermission::getOrgCode);
-        lam.select(SysFolderFilePermission::getFolderId);
-        lam.select(SysFolderFilePermission::getPermission);
+        lam.select(SysFolderFilePermission::getUserId, SysFolderFilePermission::getOrgCode, SysFolderFilePermission::getFolderId, SysFolderFilePermission::getPermission);
         lam.in(SysFolderFilePermission::getFolderId, ids);
         List<SysFolderFilePermission> sysFolderFilePermissions = sysFolderFilePermissionService.list(lam);
 

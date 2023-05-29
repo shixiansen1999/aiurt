@@ -26,6 +26,7 @@ public class SysFileParam implements Serializable {
     private Long id;
 
     @ApiModelProperty(value = "文件名称")
+    @NotBlank(message = "文件名称不能为空")
     private String name;
 
     @ApiModelProperty(value = "大小")
@@ -39,8 +40,8 @@ public class SysFileParam implements Serializable {
     @NotNull(message = "文件夹id不能为空")
     private Long typeId;
 
-    @NotEmpty(message = "上传人员不能为空")
-    private String uploadUserId;
+//    @NotEmpty(message = "上传人员不能为空")
+//    private String uploadUserId;
 
     @ApiModelProperty("权限信息")
     private List<SysFolderFilePermissionParam> sysFolderFilePermissionParams;
