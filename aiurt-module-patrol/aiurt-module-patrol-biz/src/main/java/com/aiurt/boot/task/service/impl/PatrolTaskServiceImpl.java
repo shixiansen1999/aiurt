@@ -2179,8 +2179,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (ObjectUtil.isEmpty(patrolTask)) {
             throw new AiurtBootException("未找到此条数据");
         }
-        if (PatrolConstant.SPOT_CHECK_STATUS_0.equals(patrolTaskDTO.getSpotCheckStatus()) && StrUtil.isEmpty(patrolTaskDTO.getSpotCheckRemark())) {
-            throw new AiurtBootException("抽查情况为未确认时：必须填写抽查备注");
+        if (ObjectUtil.isEmpty(patrolTaskDTO.getSpotCheckStatus())) {
+            throw new AiurtBootException("抽查状态不能为空");
         }
         // 设置抽查信息
         patrolTask.setSpotCheckStatus(patrolTaskDTO.getSpotCheckStatus())
