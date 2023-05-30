@@ -254,7 +254,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     .set(PatrolTaskDevice::getMac, patrolTaskDevice.getMac())
                     .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
             //mac地址匹配
-            List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(Collections.singletonList(patrolTaskDevice.getStationCode()));
+            List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(Collections.singletonList(taskDevice.getStationCode()));
             if (CollUtil.isNotEmpty(wifiMac) && StrUtil.isNotEmpty(patrolTaskDevice.getMac())) {
                 //忽略大小写全匹配
                 String mac1 = patrolTaskDevice.getMac();
