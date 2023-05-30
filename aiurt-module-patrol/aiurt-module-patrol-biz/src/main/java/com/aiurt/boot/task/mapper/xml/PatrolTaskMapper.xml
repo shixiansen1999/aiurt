@@ -1737,7 +1737,7 @@
 </select>
 <select id="selectFaultWorkTime" resultType="java.lang.Integer">
  select ifnull((TIME_TO_SEC(abc.time) / 60), 0) as times from
-        (SELECT timediff(c.end_time, IFNULL(c.recevice_time, c.assign_time)) as time
+        (SELECT timediff(c.end_time,IFNULL( IFNULL( c.recevice_time, c.assign_time ),c.start_time)) AS time
         FROM
         fault a
         LEFT JOIN fault_repair_record c
