@@ -416,10 +416,16 @@ public class PatrolScreenService {
                     graph.setTotal(sum);
                     graph.setFinish(taskDeviceCount.getFinish());
                     graph.setUnfinish(taskDeviceCount.getUnfinish());
-                    String finishRate = String.format("%.1f", (1.0 * taskDeviceCount.getFinish() / sum) * 100);
-                    String unfinishRate = String.format("%.1f", (1.0 * taskDeviceCount.getUnfinish() / sum) * 100);
-                    graph.setFinishRate(finishRate + "%");
-                    graph.setUnfinishRate(unfinishRate + "%");
+                    if (sum != 0) {
+                        String finishRate = String.format("%.1f", (1.0 * taskDeviceCount.getFinish() / sum) * 100);
+                        String unfinishRate = String.format("%.1f", (1.0 * taskDeviceCount.getUnfinish() / sum) * 100);
+                        graph.setFinishRate(finishRate + "%");
+                        graph.setUnfinishRate(unfinishRate + "%");
+                    } else {
+                        graph.setFinishRate("0%");
+                        graph.setUnfinishRate("0%");
+                    }
+
                     list.add(graph);
                 }
             }
