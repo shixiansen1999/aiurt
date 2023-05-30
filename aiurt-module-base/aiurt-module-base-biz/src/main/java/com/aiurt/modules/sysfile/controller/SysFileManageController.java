@@ -144,7 +144,7 @@ public class SysFileManageController {
     @AutoLog(value = "增加文件下载次数")
     @ApiOperation(value = "增加文件下载次数", notes = "增加文件下载次数")
     @PostMapping(value = "/addCount")
-    public Result<?> addCount(@RequestParam("id") Long id) {
+    public Result<?> addCount(@RequestParam("id") String id) {
         boolean result = sysFileManageService.addCount(id);
         return result ? Result.OK("更改次数成功") : Result.error("更改次数失败");
     }

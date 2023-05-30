@@ -66,7 +66,7 @@ public interface ISysFileManageService extends IService<SysFile> {
      * @param id 文件id
      * @return 增加计数是否成功的布尔值，成功返回true，否则返回false
      */
-    boolean addCount(Long id);
+    boolean addCount(String id);
 
     /**
      * 通过文件夹id查询该文件夹下的文件的类型
