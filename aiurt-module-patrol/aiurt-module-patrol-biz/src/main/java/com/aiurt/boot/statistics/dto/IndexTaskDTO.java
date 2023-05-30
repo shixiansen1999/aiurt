@@ -83,6 +83,13 @@ public class IndexTaskDTO implements Serializable {
      */
     @ApiModelProperty(value = "条件筛选的任务状态")
     private Integer taskStatus;
+
+    /**
+     * 条件筛选的任务状态
+     */
+    @ApiModelProperty(value = "条件筛选的任务状态")
+    private Integer[] taskDeviceStatus;
+
     /**
      * 漏巡状态,0未漏检，1已漏检
      */
@@ -105,8 +112,8 @@ public class IndexTaskDTO implements Serializable {
     @ApiModelProperty(value = "异常类型：0结果异常；1mac地址匹配异常")
     private Integer exceptionType;
 
-//    /**
-//     * 拼接SQL
-//     */
-//    private String jointSQL;
+    /**
+     * 自定义SQL
+     */
+    private String jointSQL;
 }

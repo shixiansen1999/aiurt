@@ -53,6 +53,7 @@ public class IndexTaskInfo implements Serializable {
     private java.lang.String code;
     /**
      * 任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成
+     * 工单状态：0未开始、1进行中、2已提交
      */
     @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
     private java.lang.Integer status;

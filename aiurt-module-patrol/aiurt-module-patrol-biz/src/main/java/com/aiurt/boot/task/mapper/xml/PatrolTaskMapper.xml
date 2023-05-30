@@ -1846,51 +1846,84 @@
         group by pa.user_id
     </select>
 
-    <select id="getIndexTaskDeviceList" resultType="com.aiurt.boot.statistics.model.IndexTaskInfo">
-        SELECT pt.id,pt.`name`, pt.abnormal_state, pt.`code`, pt.`status`, pt.submit_time,pt.mac_status
+    <sql id="IndexTaskDevice">
+        SELECT
+        pt.id,
+        pt.`code`
         FROM patrol_task pt
         left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
         left join patrol_task_standard ptsd on pt.id = ptsd.task_id and ptsd.del_flag = 0
         left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
-        WHERE pt.del_flag = 0
+        left join patrol_task_user ptu on pt.code = ptu.task_code and ptu.del_flag = 0
+        WHERE pt.del_flag = 0 AND pt.discard_status != 1
+        <if test="condition.jointSQL != null and condition.jointSQL != ''">
+            and ${condition.jointSQL}
+        </if>
         <if test="condition.startDate != null and condition.endDate != null">
             AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')
             BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
             AND DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
         </if>
-        <if test="condition.state != null">
-            AND(pt.abnormal_state = #{condition.state} or pt.mac_status = #{condition.state})
-        </if>
-        <if test="condition.stationCode != null and condition.stationCode != ''">
-            AND pts.station_code = #{condition.stationCode}
-        </if>
-        <if test="condition.status != null and condition.status.length > 0">
-            AND pt.`status` IN
-            <foreach collection="condition.status" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-        </if>
-        <if test="condition.taskStatus != null">
-            AND pt.`status` = #{condition.taskStatus}
-        </if>
+<!--        <if test="condition.status != null and condition.status.length > 0">-->
+<!--            AND pt.`status` IN-->
+<!--            <foreach collection="condition.status" item="item" open="(" separator="," close=")">-->
+<!--                #{item}-->
+<!--            </foreach>-->
+<!--        </if>-->
         <if test="condition.omitStatus != null">
             AND pt.omit_status = #{condition.omitStatus}
         </if>
         <if test="condition.username != null and condition.username != ''">
-            AND pt.`code` IN (SELECT task_code
-            FROM patrol_task_user
-            WHERE user_name
-            LIKE CONCAT('%', #{condition.username}, '%'))
+            and  ptu.user_name
+            LIKE CONCAT('%', #{condition.username}, '%')
         </if>
         <if test="condition.orgCode != null and condition.orgCode != ''">
-            AND pt.`code` IN (SELECT task_code FROM patrol_task_organization WHERE org_code = #{condition.orgCode})
-        </if>
-        <if test="condition.exceptionType != null and condition.exceptionType == 0">
-            and pt.abnormal_state = 0
-        </if>
-        <if test="condition.exceptionType != null and condition.exceptionType == 1">
-            and pt.mac_status = 0
+            AND pto.org_code = #{condition.orgCode}
         </if>
         GROUP BY pt.`code`
+    </sql>
+
+    <select id="getIndexTaskDeviceList" resultType="com.aiurt.boot.statistics.model.IndexTaskInfo">
+        SELECT
+        ptd.id,
+        ps.`name`,
+        ptd.check_result as abnormalState ,
+        statistics.`code`,
+        ptd.`status`,
+        ptd.check_time as submitTime,
+        ptd.mac_status
+        FROM
+        (
+        <include refid="IndexTaskDevice"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id and ptd.del_flag = 0
+        left join patrol_accompany pa on pa.task_device_code = ptd.patrol_number and pa.del_flag = 0
+        left join patrol_task_standard ptss on ptd.task_standard_id = ptss.id and ptss.del_flag = 0
+        left join patrol_standard ps on ps.id = ptss.standard_id and ps.del_flag = 0
+        where 1=1
+        <if test="condition.taskStatus != null">
+            AND ptd.`status` = #{condition.taskStatus}
+        </if>
+        <if test="condition.taskDeviceStatus != null">
+            AND ptd.`status` in
+            <foreach collection="condition.taskDeviceStatus" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="condition.state != null">
+            AND (ptd.check_result = #{condition.state} or ptd.mac_status = #{condition.state})
+        </if>
+        <if test="condition.exceptionType != null and condition.exceptionType == 0">
+            and ptd.check_result = 0
+        </if>
+        <if test="condition.exceptionType != null and condition.exceptionType == 1">
+            and ptd.mac_status = 0
+        </if>
+        <if test="condition.stationCode != null and condition.stationCode != ''">
+            AND ptd.station_code = #{condition.stationCode}
+        </if>
+        GROUP BY ptd.id
     </select>
+
+
 </mapper>
