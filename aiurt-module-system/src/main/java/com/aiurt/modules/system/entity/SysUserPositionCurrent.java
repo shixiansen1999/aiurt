@@ -92,6 +92,19 @@ public class SysUserPositionCurrent {
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private String stationCode;
     /**
+     * 用户所在的上一个车站的连接时间
+     */
+    @ApiModelProperty(value = "用户所在的上一个车站的连接时间")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date lastUploadTime;
+    /**
+     * 当用户所在的上一个车站编号
+     */
+    @ApiModelProperty(value = "用户所在的上一个车站编号")
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
+    private String lastStationCode;
+    /**
      * 当前用户(app)所在的位置是否异常，1-异常，0-正常
      */
     @ApiModelProperty(value = "当前用户(app)所在的位置是否异常，1-异常，0-正常")
