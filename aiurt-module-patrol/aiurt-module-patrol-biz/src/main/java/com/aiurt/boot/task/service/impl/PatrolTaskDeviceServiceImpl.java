@@ -212,7 +212,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             }
             e.setOrgList(patrolTaskMapper.getOrgCode(patrolTask.getCode()));
             List<PatrolAccompanyDTO> accompanyDTOList = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
-            String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining("；"));
+            String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining(";"));
             e.setUserName(userName);
             e.setAccompanyName(accompanyDTOList);
             // 设置抽检人信息
