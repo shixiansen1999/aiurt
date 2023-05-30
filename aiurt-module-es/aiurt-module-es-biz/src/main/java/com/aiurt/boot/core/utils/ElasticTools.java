@@ -3,6 +3,7 @@ package com.aiurt.boot.core.utils;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.annotation.ElasticId;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.HighlightField;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -105,5 +106,27 @@ public class ElasticTools {
             }
         }
         return map;
+    }
+
+    /**
+     * 返回实体类中存在@HighlightField注解标注的高亮名称
+     *
+     * @param clazz
+     * @return
+     */
+    public static List<String> getHighlightField(Class<?> clazz) {
+        Field[] fields = clazz.getDeclaredFields();
+        List<String> highlightFields = new ArrayList<>();
+        for (Field field : fields) {
+            field.setAccessible(true);
+            HighlightField annotation = field.getAnnotation(HighlightField.class);
+            if (ObjectUtil.isNotEmpty(annotation)) {
+                String name = annotation.name();
+                if (ObjectUtil.isNotEmpty(name)) {
+                    highlightFields.add(name);
+                }
+            }
+        }
+        return highlightFields;
     }
 }

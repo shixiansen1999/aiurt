@@ -1,13 +1,17 @@
 package com.aiurt.modules.knowledge.dto;
 
+import com.aiurt.modules.knowledge.entity.CauseSolution;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author
@@ -49,6 +53,20 @@ public class KnowledgeBaseResDTO implements Serializable {
     private String majorName;
 
     /**
+     * 子系统编号
+     */
+    @Field(type = FieldType.Keyword)
+    @ApiModelProperty(value = "子系统编号")
+    private String systemCode;
+
+    /**
+     * 子系统名称
+     */
+    @Field(type = FieldType.Text)
+    @ApiModelProperty(value = "子系统名称")
+    private String systemName;
+
+    /**
      * 组件部位编号
      */
     @ApiModelProperty(value = "组件部位编号")
@@ -76,7 +94,7 @@ public class KnowledgeBaseResDTO implements Serializable {
      * 故障原因
      */
     @ApiModelProperty(value = "故障原因")
-    private String faultReason;
+    private List<CauseSolution> reasonSolutions;
 
     /**
      * 故障等级编号
@@ -94,13 +112,13 @@ public class KnowledgeBaseResDTO implements Serializable {
      * 浏览数
      */
     @ApiModelProperty(value = "浏览数")
-    private String scanNum;
+    private Integer scanNum;
 
     /**
      * 采用数
      */
     @ApiModelProperty(value = "采用数")
-    private String use;
+    private Integer use;
 
     /**
      * 创建时间
