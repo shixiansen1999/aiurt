@@ -98,7 +98,13 @@ public class PatrolScreenService {
             PatrolSituation taskDeviceCount = patrolTaskMapper.getTaskDeviceCount(module);
             data.setPatrolNumber(taskDeviceCount.getSum());
             data.setFinishNumber(taskDeviceCount.getFinish());
-            data.setOmitNumber(taskDeviceCount.getOmit());
+            //漏巡
+            String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
+            String omitEndTime = this.getOmitDateScope(endTime).split(ScreenConstant.TIME_SEPARATOR)[1];
+            module.setStartTime(DateUtil.parse(omitStartTime));
+            module.setEndTime(DateUtil.parse(omitEndTime));
+            PatrolSituation taskDeviceCount2 = patrolTaskMapper.getTaskDeviceCount(module);
+            data.setOmitNumber(taskDeviceCount2.getOmit());
         } else {
             List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
             String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
@@ -416,10 +422,16 @@ public class PatrolScreenService {
                     graph.setTotal(sum);
                     graph.setFinish(taskDeviceCount.getFinish());
                     graph.setUnfinish(taskDeviceCount.getUnfinish());
-                    String finishRate = String.format("%.1f", (1.0 * taskDeviceCount.getFinish() / sum) * 100);
-                    String unfinishRate = String.format("%.1f", (1.0 * taskDeviceCount.getUnfinish() / sum) * 100);
-                    graph.setFinishRate(finishRate + "%");
-                    graph.setUnfinishRate(unfinishRate + "%");
+                    if (sum != 0) {
+                        String finishRate = String.format("%.1f", (1.0 * taskDeviceCount.getFinish() / sum) * 100);
+                        String unfinishRate = String.format("%.1f", (1.0 * taskDeviceCount.getUnfinish() / sum) * 100);
+                        graph.setFinishRate(finishRate + "%");
+                        graph.setUnfinishRate(unfinishRate + "%");
+                    } else {
+                        graph.setFinishRate("0%");
+                        graph.setUnfinishRate("0%");
+                    }
+
                     list.add(graph);
                 }
             }

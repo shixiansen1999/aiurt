@@ -212,7 +212,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             }
             e.setOrgList(patrolTaskMapper.getOrgCode(patrolTask.getCode()));
             List<PatrolAccompanyDTO> accompanyDTOList = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
-            String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining("；"));
+            String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining(";"));
             e.setUserName(userName);
             e.setAccompanyName(accompanyDTOList);
             // 设置抽检人信息
@@ -254,7 +254,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     .set(PatrolTaskDevice::getMac, patrolTaskDevice.getMac())
                     .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
             //mac地址匹配
-            List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(Collections.singletonList(patrolTaskDevice.getStationCode()));
+            List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(Collections.singletonList(taskDevice.getStationCode()));
             if (CollUtil.isNotEmpty(wifiMac) && StrUtil.isNotEmpty(patrolTaskDevice.getMac())) {
                 //忽略大小写全匹配
                 String mac1 = patrolTaskDevice.getMac();

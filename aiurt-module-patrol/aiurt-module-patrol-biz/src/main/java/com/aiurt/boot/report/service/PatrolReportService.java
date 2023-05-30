@@ -741,8 +741,13 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 patrolReport.setNotInspectedNumber(reportTask.getNotInspectedNumber());
                 patrolReport.setInspectedNumber(reportTask.getInspectedNumber());
                 //完成率
-                BigDecimal b = BigDecimal.valueOf(1.0 * (reportTask.getInspectedNumber()) / reportTask.getTaskTotal() * 100).setScale(2, BigDecimal.ROUND_HALF_UP);
-                patrolReport.setCompletionRate(b);
+                if (reportTask.getTaskTotal() != 0) {
+                    BigDecimal b = BigDecimal.valueOf(1.0 * (reportTask.getInspectedNumber()) / reportTask.getTaskTotal() * 100).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    patrolReport.setCompletionRate(b);
+                } else {
+                    patrolReport.setCompletionRate(new BigDecimal(0));
+                }
+
                 //计算异常数量
                 patrolReport.setAbnormalNumber(reportTask.getAbnormalNumber());
 
