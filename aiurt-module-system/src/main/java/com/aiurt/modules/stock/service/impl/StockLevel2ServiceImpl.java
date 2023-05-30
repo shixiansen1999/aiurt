@@ -2,6 +2,7 @@ package com.aiurt.modules.stock.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.mapper.MaterialBaseTypeMapper;
 import com.aiurt.modules.stock.entity.StockLevel2;
@@ -80,7 +81,9 @@ public class StockLevel2ServiceImpl extends ServiceImpl<StockLevel2Mapper, Stock
                 baseTypeCodeCcName += materialBaseType==null?"":materialBaseType.getBaseTypeName()+"/";
             }
         }else{
+            boolean filter = GlobalThreadLocal.setDataFilter(false);
             MaterialBaseType materialBaseType = materialBaseTypeMapper.selectOne(new QueryWrapper<MaterialBaseType>().eq("base_type_code",baseTypeCodeCc));
+            GlobalThreadLocal.setDataFilter(filter);
             baseTypeCodeCcName = materialBaseType==null?"":materialBaseType.getBaseTypeName()+CommonConstant.SYSTEM_SPLIT_STR;
         }
         if(baseTypeCodeCcName.contains(CommonConstant.SYSTEM_SPLIT_STR)){
