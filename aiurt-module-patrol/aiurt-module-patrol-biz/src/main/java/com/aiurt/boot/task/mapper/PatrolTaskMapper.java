@@ -589,4 +589,19 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * 统计报表中巡视任务下的同行人工单数量(人员维度)
      */
     List<PatrolReport> getReportTaskAccompanyCount(@Param("condition") PatrolReportModel report);
+
+    /**
+     * 获取首页巡视列表下的任务列表
+     * @param page
+     * @param condition
+     * @return
+     */
+    @DataPermission({
+            @DataColumn(key = "deptName", value = "pto.org_code"),
+            @DataColumn(key = "majorName", value = "ptsd.major_code"),
+            @DataColumn(key = "systemName", value = "ptsd.system_code"),
+            @DataColumn(key = "lineName", value = "pts.line_code"),
+            @DataColumn(key = "stationName", value = "pts.station_code")
+    })
+    IPage<IndexTaskInfo> getIndexTaskDeviceList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition);
 }

@@ -366,8 +366,15 @@ public class PatrolStatisticsService {
 //        // 获取权限数据
 //        String filterConditions = this.getPermissionSQL(request);
 //        indexTaskDTO.setJointSQL(filterConditions);
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            pageList = patrolTaskMapper.getIndexTaskDeviceList(page, indexTaskDTO);
+        } else {
+            pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO);
+        }
 
-        pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO);
 
         boolean b1 = GlobalThreadLocal.setDataFilter(false);
 
