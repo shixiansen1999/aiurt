@@ -101,5 +101,12 @@ public interface ISysFolderService extends IService<SysFileType> {
      */
     void validateSysFolderFilePermissionParams(List<SysFolderFilePermissionParam> sysFolderFilePermissionParams);
 
+    /**
+     * 重命名文件夹
+     *
+     * @param id   文件夹id
+     * @param name 文件夹名称
+     */
+    void renameFolder(Long id, String name);
 }
 

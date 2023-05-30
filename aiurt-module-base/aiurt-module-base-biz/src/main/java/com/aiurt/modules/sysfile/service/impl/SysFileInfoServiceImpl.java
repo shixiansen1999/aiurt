@@ -52,7 +52,7 @@ public class SysFileInfoServiceImpl extends ServiceImpl<SysFileInfoMapper, SysFi
         if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("请重新登录");
         }
-
+        sysFileInfo.setId(null);
         sysFileInfo.setUserName(loginUser.getRealname());
         sysFileInfo.setDepartmentCode(loginUser.getOrgCode());
         sysFileInfo.setDownloadTime(new Date());

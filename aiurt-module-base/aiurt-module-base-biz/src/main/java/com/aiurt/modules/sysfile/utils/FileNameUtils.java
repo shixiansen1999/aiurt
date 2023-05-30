@@ -1,6 +1,9 @@
 package com.aiurt.modules.sysfile.utils;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
+
+import java.util.regex.Pattern;
 
 /**
  * @author:wgp
@@ -16,13 +19,10 @@ public class FileNameUtils {
      * @return true表示文件夹名称包含特殊字符，false表示文件夹名称不包含特殊字符
      */
     public static void validateFolderName(String folderName) {
-        // 定义特殊字符的正则表达式
-        String specialChars = "[!@#$%^&*()_+\\[\\]{};':\"|<>?/.,]";
-
-        // 使用正则表达式匹配文件夹名称
-        boolean hasSpecialChars = folderName.matches("." + specialChars + ".");
-        if (hasSpecialChars) {
-            throw new AiurtBootException("名称不得包含" + specialChars);
+        String regex = ".*[!@#$%^&*()+\\-=\\[\\]{};':\"\\\\|,.<>/?].*";
+        boolean result = Pattern.matches(regex, folderName);
+        if (result) {
+            throw new AiurtBootException("名称不得包含" + regex);
         }
     }
 }
