@@ -58,8 +58,8 @@ public class ElasticApiImpl implements ElasticAPI {
             for (String field : highlightField) {
                 highlightBuilder.field(field);
             }
-            List<HighlightBuilder.Field> fields = highlightBuilder.fields();
-            log.info("{}", fields);
+//            List<HighlightBuilder.Field> fields = highlightBuilder.fields();
+//            log.info("{}", fields);
             highLight.setHighlightBuilder(highlightBuilder);
         }
         // 排序

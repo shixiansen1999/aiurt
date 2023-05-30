@@ -1,5 +1,7 @@
 package com.aiurt.boot.core.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -28,6 +30,7 @@ import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
@@ -36,6 +39,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -44,6 +48,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -166,6 +171,7 @@ public class ElasticServiceImpl<T, M> implements ElasticService<T, M> {
             for (String highLightField : highLight.getHighLightList()) {
                 // You can set fragment_size to 0 to never split any sentence.
                 // 不对高亮结果进行拆分
+                // highlightBuilder.field(highLightField, 0);
                 highlightBuilder.field(highLightField);
                 searchSourceBuilder.highlighter(highlightBuilder);
             }
@@ -216,8 +222,32 @@ public class ElasticServiceImpl<T, M> implements ElasticService<T, M> {
         SearchHits hits = searchResponse.getHits();
         SearchHit[] searchHits = hits.getHits();
         // todo 处理高亮字段
+        List<String> fieldList = ElasticTools.getHighlightField(clazz);
+        List<Map<String, Object>> replaceList = new ArrayList<>();
         for (SearchHit hit : searchHits) {
-            T t = JSON.parseObject(hit.getSourceAsString(), clazz);
+            Map<String, HighlightField> highlightFields = hit.getHighlightFields();
+            // 原来的结果
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            fieldList.forEach(field -> {
+                HighlightField highlightField = highlightFields.get(field);
+                // 将原来的字段替换为高亮字段即可
+                if (ObjectUtil.isNotEmpty(highlightField)) {
+                    Text[] fragments = highlightField.fragments();
+                    String newTitle = "";
+                    for (Text text : fragments) {
+                        newTitle += text;
+                    }
+                    // 替换掉原来的内容
+                    sourceAsMap.put(field, newTitle);
+                }
+            });
+            replaceList.add(sourceAsMap);
+        }
+
+        for (SearchHit hit : searchHits) {
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            T t = BeanUtil.mapToBean(sourceAsMap, clazz, CopyOptions.create());
+//            T t = JSON.parseObject(hit.getSourceAsString(), clazz);
             list.add(t);
         }
         pageList.setRecords(list);
