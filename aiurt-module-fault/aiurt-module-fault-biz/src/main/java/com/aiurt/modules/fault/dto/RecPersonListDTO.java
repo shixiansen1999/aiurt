@@ -32,7 +32,7 @@ public class RecPersonListDTO implements Serializable {
     @ApiModelProperty(value = "角色编码")
     private String roleCode;
 
-    @ApiModelProperty(value = "排版情况")
+    @ApiModelProperty(value = "排班情况")
     private String scheduleStatus;
 
     @ApiModelProperty(value = "是否处理相同的故障")

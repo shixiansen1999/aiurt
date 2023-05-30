@@ -486,7 +486,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query"),
     })
-    public Result<RecPersonDTO> queryRecommendationPerson(@RequestParam(value = "faultCode", required = false) String faultCode) {
+    public Result<List<RecPersonDTO>> queryRecommendationPerson(@RequestParam(value = "faultCode", required = false) String faultCode) {
         return Result.OK();
     }
 

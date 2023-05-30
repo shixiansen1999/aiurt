@@ -2,7 +2,6 @@ package com.aiurt.modules.fault.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.checkerframework.checker.units.qual.A;
 
 import java.io.Serializable;
 
@@ -21,4 +20,10 @@ public class RecPersonDTO implements Serializable {
     private String userName;
 
     private String realName;
+
+    private String key;
+
+    private String value;
+
+    private String label;
 }
