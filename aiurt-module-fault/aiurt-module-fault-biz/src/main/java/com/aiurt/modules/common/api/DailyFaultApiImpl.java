@@ -261,10 +261,9 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                 accompanyFaultList =faultInformationMapper.getAccompanyTime(f.getOrgId(),startTime,endTime);
             }
             f.setConstructorsNum(faultInformationMapper.getConstructorsNum(startTime,endTime,orgId));
-            List<String> collect = accompanyFaultList.stream().map(UserTimeDTO::getFrrId).collect(Collectors.toList());
+            List<String> collect = userFaultList.stream().map(UserTimeDTO::getFrrId).collect(Collectors.toList());
             accompanyFaultList = accompanyFaultList.stream().parallel().filter(a -> !collect.contains(a.getFrrId())).collect(Collectors.toList());
-            userFaultList.addAll(accompanyFaultList);
-            Long sum = userFaultList
+            Long sum = accompanyFaultList
                     .stream().filter(w-> w.getDuration() !=null)
                     .mapToLong(w -> w.getDuration())
                     .sum();
