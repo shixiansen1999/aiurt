@@ -68,8 +68,6 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
 
         checkDuplicateFolder(param);
 
-        FileNameUtils.validateFolderName(param.getName().trim());
-
         setFolderParameters(type, param, loginUser.getUsername());
 
         if (!this.save(type)) {
@@ -98,8 +96,6 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
         if (ObjectUtil.isEmpty(sysFileType)) {
             throw new AiurtBootException("未查询到此项数据");
         }
-
-        FileNameUtils.validateFolderName(param.getName().trim());
 
         this.validateSysFolderFilePermissionParams(param.getSysFolderFilePermissionParams());
 
@@ -227,7 +223,7 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
     private void setFolderParameters(SysFileType type, SysFolderParam param, String username) {
         Long parentId = param.getParentId() != null ? param.getParentId() : SysFileConstant.NUM_LONG_0;
         type.setGrade(param.getGrade())
-                .setName(param.getName())
+                .setName(param.getName().trim())
                 .setDelFlag(CommonConstant.DEL_FLAG_0)
                 .setParentId(parentId)
                 .setCreateTime(new Date())
@@ -535,8 +531,7 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
             throw new AiurtBootException("文件夹名称不能为空");
         }
 
-        FileNameUtils.validateFolderName(name.trim());
-        sysFileType.setName(name);
+        sysFileType.setName(name.trim());
         sysFolderMapper.updateById(sysFileType);
     }
 
