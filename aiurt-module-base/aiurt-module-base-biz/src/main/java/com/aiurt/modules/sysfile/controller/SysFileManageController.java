@@ -102,7 +102,7 @@ public class SysFileManageController {
     @AutoLog(value = "编辑文件")
     @ApiOperation(value = "编辑文件", notes = "编辑文件")
     @PutMapping(value = "/edit")
-    public Result<SysFile> editFile(HttpServletRequest req, @RequestBody @Validated SysFileParam sysFileParam) {
+    public Result<SysFile> editFile(HttpServletRequest req, @RequestBody  SysFileParam sysFileParam) {
         sysFileManageService.editFile(sysFileParam);
         return Result.OK("编辑文档成功");
     }

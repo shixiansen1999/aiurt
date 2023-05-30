@@ -73,7 +73,7 @@ public class SysFolderController {
     @AutoLog(value = "编辑文件夹")
     @ApiOperation(value = "编辑文件夹", notes = "编辑文件夹")
     @PostMapping(value = "/edit")
-    public Result<?> edit(HttpServletRequest req, @RequestBody @Validated SysFolderParam param) {
+    public Result<?> edit(HttpServletRequest req, @RequestBody SysFolderParam param) {
         sysFolderService.edit(req, param);
         return Result.OK("编辑成功！");
     }
