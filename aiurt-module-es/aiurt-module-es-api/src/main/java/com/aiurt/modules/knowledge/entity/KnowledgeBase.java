@@ -38,6 +38,7 @@ public class KnowledgeBase {
     /**
      * 故障现象
      */
+    @HighlightField(name = "faultPhenomenon")
     @Field(type = FieldType.Text, analyzer = "ik_max_word", searchAnalyzer = "ik_smart")
     @CompletionField(analyzer = "ik_max_word")
     @ApiModelProperty(value = "故障现象")
@@ -53,6 +54,7 @@ public class KnowledgeBase {
     /**
      * 专业名称
      */
+    @HighlightField(name = "majorName")
     @Field(type = FieldType.Text)
     @ApiModelProperty(value = "专业名称")
     private String majorName;
@@ -66,6 +68,7 @@ public class KnowledgeBase {
     /**
      * 子系统名称
      */
+    @HighlightField(name = "systemName")
     @Field(type = FieldType.Text)
     @ApiModelProperty(value = "子系统名称")
     private String systemName;
@@ -80,6 +83,7 @@ public class KnowledgeBase {
     /**
      * 组件部位名称
      */
+    @HighlightField(name = "materialName")
     @Field(type = FieldType.Text)
     @ApiModelProperty(value = "组件部位名称")
     private String materialName;
@@ -94,6 +98,7 @@ public class KnowledgeBase {
     /**
      * 设备类型名称
      */
+    @HighlightField(name = "deviceTypeName")
     @Field(type = FieldType.Text)
     @ApiModelProperty(value = "设备类型名称")
     private String deviceTypeName;

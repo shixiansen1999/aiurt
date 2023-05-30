@@ -35,6 +35,8 @@ import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
+import com.aiurt.modules.faultlevel.entity.FaultLevel;
+import com.aiurt.modules.faultlevel.service.IFaultLevelService;
 import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.aiurt.modules.faultsparepart.service.IFaultSparePartService;
 import com.aiurt.modules.flow.api.FlowBaseApi;
@@ -67,6 +69,8 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.SpringContextUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -93,6 +97,7 @@ import java.util.stream.Collectors;
 @Service
 public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBaseMapper, FaultKnowledgeBase> implements IFaultKnowledgeBaseService, IFlowableBaseUpdateStatusService {
 
+    private static final Logger log1 = LoggerFactory.getLogger(FaultKnowledgeBaseServiceImpl.class);
     @Autowired
     private FaultKnowledgeBaseMapper faultKnowledgeBaseMapper;
     @Resource
@@ -115,6 +120,12 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     @Autowired
     private IFaultSparePartService faultSparePartService;
+
+    @Autowired
+    private IFaultLevelService faultLevelService;
+
+    @Autowired
+    private ElasticAPI elasticApi;
 
 
     @Override
@@ -1186,18 +1197,38 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     @Override
     public IPage<KnowledgeBaseResDTO> search(Page<KnowledgeBaseResDTO> page, KnowledgeBaseReqDTO knowledgeBaseReqDTO) {
-        page.setRecords(new ArrayList<>());
-        return page;
+        IPage<KnowledgeBaseResDTO> pageList = null;
+        try {
+            pageList = elasticApi.search(page, knowledgeBaseReqDTO);
+        } catch (Exception e) {
+            log1.info("高级搜索分页查询异常：{}", e.getMessage());
+            throw new AiurtBootException("搜索异常！");
+        }
+        return pageList;
     }
-
-    @Autowired
-    private ElasticAPI elasticApi;
 
     @Override
     public void synchrodata(HttpServletRequest request, HttpServletResponse response) {
         List<KnowledgeBase> knowledgeBases = faultKnowledgeBaseMapper.synchrodata();
         if (CollUtil.isEmpty(knowledgeBases)) {
             return;
+        }
+        List<String> levelCodes = knowledgeBases.stream()
+                .filter(l -> ObjectUtil.isNotEmpty(l.getFaultLevelCode()))
+                .map(KnowledgeBase::getFaultLevelCode)
+                .distinct()
+                .collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(levelCodes)) {
+            // 故障等级翻译
+            List<FaultLevel> levels = faultLevelService.lambdaQuery()
+                    .eq(FaultLevel::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .in(FaultLevel::getCode, levelCodes)
+                    .select(FaultLevel::getCode, FaultLevel::getName)
+                    .list();
+            final Map<String, String> levelMap = levels.stream()
+                    .filter(l -> ObjectUtil.isNotEmpty(l.getCode()))
+                    .collect(Collectors.toMap(k -> k.getCode(), v -> v.getName()));
+            knowledgeBases.forEach(knowledgeBase -> knowledgeBase.setFaultLevelName(levelMap.get(knowledgeBase.getFaultLevelCode())));
         }
         List<String> knowledgeBaseIds = knowledgeBases.stream()
                 .map(KnowledgeBase::getId)

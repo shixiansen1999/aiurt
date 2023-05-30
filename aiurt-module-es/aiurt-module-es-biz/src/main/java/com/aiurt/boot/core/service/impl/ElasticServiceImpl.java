@@ -145,9 +145,6 @@ public class ElasticServiceImpl<T, M> implements ElasticService<T, M> {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(queryBuilder);
 
-        boolean highLightFlag = false;
-        boolean idSortFlag = false;
-
         // 分页
         if (ObjectUtil.isNotEmpty(page)) {
             int currentPage = (pageNo - 1) * pageSize;
@@ -155,12 +152,10 @@ public class ElasticServiceImpl<T, M> implements ElasticService<T, M> {
             searchSourceBuilder.size(pageSize);
         }
 
-        // TODO: 2023/5/16  高亮和排序效果待优化
         // 高亮
         //https://www.elastic.co/guide/en/elasticsearch/reference/7.12/highlighting.html
         //https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.12/java-rest-high-search.html#java-rest-high-search-request-highlighting
         if (ObjectUtil.isNotEmpty(highLight) && ObjectUtil.isNotEmpty(highLight.getHighlightBuilder())) {
-            highLightFlag = true;
             searchSourceBuilder.highlighter(highLight.getHighlightBuilder());
         } else if (ObjectUtil.isNotEmpty(highLight) && CollUtil.isNotEmpty(highLight.getHighLightList())) {
             HighlightBuilder highlightBuilder = new HighlightBuilder();
@@ -168,23 +163,19 @@ public class ElasticServiceImpl<T, M> implements ElasticService<T, M> {
                 highlightBuilder.preTags(highLight.getPreTag());
                 highlightBuilder.postTags(highLight.getPostTag());
             }
-            for (int i = 0; i < highLight.getHighLightList().size(); i++) {
-                highLightFlag = true;
+            for (String highLightField : highLight.getHighLightList()) {
                 // You can set fragment_size to 0 to never split any sentence.
                 // 不对高亮结果进行拆分
-                highlightBuilder.field(highLight.getHighLightList().get(i), 0);
+                highlightBuilder.field(highLightField);
+                searchSourceBuilder.highlighter(highlightBuilder);
             }
-            searchSourceBuilder.highlighter(highlightBuilder);
         }
 
         // 排序
         if (ObjectUtil.isNotEmpty(sort)) {
             List<Sort.Order> orders = sort.listOrders();
-            for (int i = 0; i < orders.size(); i++) {
-                if ("_id".equals(orders.get(i).getProperty())) {
-                    idSortFlag = true;
-                }
-                searchSourceBuilder.sort(new FieldSortBuilder(orders.get(i).getProperty()).order(orders.get(i).getDirection()));
+            for (Sort.Order order : orders) {
+                searchSourceBuilder.sort(new FieldSortBuilder(order.getProperty()).order(order.getDirection()));
             }
         }
 //        //设定searchAfter
@@ -224,6 +215,7 @@ public class ElasticServiceImpl<T, M> implements ElasticService<T, M> {
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
         SearchHits hits = searchResponse.getHits();
         SearchHit[] searchHits = hits.getHits();
+        // todo 处理高亮字段
         for (SearchHit hit : searchHits) {
             T t = JSON.parseObject(hit.getSourceAsString(), clazz);
             list.add(t);
