@@ -185,4 +185,17 @@ public class SysFileManageController {
         return Result.OK("编辑成功！");
     }
 
+    /**
+     * 重命名文件
+     *
+     * @return 重命名结果
+     */
+    @AutoLog(value = "重命名文件")
+    @ApiOperation(value = "重命名文件", notes = "重命名文件")
+    @PutMapping(value = "/renameFile")
+    public Result<SysFile> renameFile(@RequestParam(value = "id") Long id,
+                                      @RequestParam(value = "name") String name) {
+        sysFileManageService.renameFile(id, name);
+        return Result.OK("重命名文件成功");
+    }
 }

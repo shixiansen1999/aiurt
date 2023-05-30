@@ -23,11 +23,9 @@ import com.aiurt.modules.sysfile.vo.*;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import liquibase.pro.packaged.L;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -527,11 +525,26 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
         }
     }
 
+    @Override
+    public void renameFolder(Long id, String name) {
+        SysFileType sysFileType = this.getById(id);
+        if (ObjectUtil.isEmpty(sysFileType)) {
+            throw new AiurtBootException("未查询到此项数据");
+        }
+        if (StrUtil.isEmpty(name)) {
+            throw new AiurtBootException("文件夹名称不能为空");
+        }
+
+        FileNameUtils.validateFolderName(name.trim());
+        sysFileType.setName(name);
+        sysFolderMapper.updateById(sysFileType);
+    }
+
     /**
-     * 检查 SysFolderFilePermissionParam 对象是否具有权限为 6，并且用户ID列表或部门编码列表至少有一个非空。
+     * 检查 SysFolderFilePermissionParam 对象是否具有权限为 6(可管理权限)，并且用户ID列表或部门编码列表至少有一个非空。
      *
      * @param param SysFolderFilePermissionParam 对象
-     * @return true 如果权限为 6 并且用户ID列表或部门代码列表至少有一个非空，否则返回 false
+     * @return true 如果权限为 6(可管理权限) 并且用户ID列表或部门代码列表至少有一个非空，否则返回 false
      */
     public boolean hasPermissionSix(SysFolderFilePermissionParam param) {
         return ObjectUtil.isNotEmpty(param)

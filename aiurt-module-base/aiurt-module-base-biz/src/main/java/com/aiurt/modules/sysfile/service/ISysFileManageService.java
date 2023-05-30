@@ -90,4 +90,11 @@ public interface ISysFileManageService extends IService<SysFile> {
      * @return 文件应用的分页列表
      */
     Page<SysFileManageAppVO> getAppPageList(Page<SysFileManageAppVO> page, Long parentId, String fileName);
+
+    /**
+     * 重命名文件
+     * @param id 文件id
+     * @param name 文件名称
+     */
+    void renameFile(Long id, String name);
 }

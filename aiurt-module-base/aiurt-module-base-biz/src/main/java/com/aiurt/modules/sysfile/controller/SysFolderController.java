@@ -1,6 +1,7 @@
 package com.aiurt.modules.sysfile.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.param.SysFolderParam;
 import com.aiurt.modules.sysfile.service.ISysFolderService;
 import com.aiurt.modules.sysfile.vo.SysFolderDetailVO;
@@ -117,5 +118,19 @@ public class SysFolderController {
     public Result<?> buildData() {
         sysFolderService.buildData();
         return Result.OK("编辑成功！");
+    }
+
+    /**
+     * 重命名文件夹
+     *
+     * @return 重命名结果
+     */
+    @AutoLog(value = "重命名文件")
+    @ApiOperation(value = "重命名文件", notes = "重命名文件")
+    @PutMapping(value = "/renameFolder")
+    public Result<SysFile> renameFolder(@RequestParam(value = "id") Long id,
+                                      @RequestParam(value = "name") String name) {
+        sysFolderService.renameFolder(id, name);
+        return Result.OK("重命名文件成功");
     }
 }

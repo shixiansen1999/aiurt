@@ -239,6 +239,20 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
     }
 
     @Override
+    public void renameFile(Long id, String name) {
+        SysFile sysFile = this.getById(id);
+        if (ObjectUtil.isEmpty(sysFile)) {
+            throw new AiurtBootException("未查询到此项数据");
+        }
+        if (StrUtil.isEmpty(name)) {
+            throw new AiurtBootException("文件名称不能为空");
+        }
+        FileNameUtils.validateFolderName(name.trim());
+        sysFile.setName(name);
+        sysFileManageMapper.updateById(sysFile);
+    }
+
+    @Override
     public void buildData() {
         List<SysFile> sysFiles = sysFileManageMapper.selectList(null);
         if (CollUtil.isNotEmpty(sysFiles)) {
