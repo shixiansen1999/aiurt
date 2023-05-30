@@ -185,4 +185,11 @@ public interface IFaultService extends IService<Fault> {
      * @return
      */
     IPage<Fault> queryPageList(Fault fault, Integer pageNo, Integer pageSize, HttpServletRequest req);
+
+    /**
+     * 查询推荐人员列表
+     * @param faultCode
+     * @return
+     */
+    List<RecPersonListDTO> queryRecPersonList(String faultCode);
 }

@@ -481,4 +481,23 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return hitchDrillingDTOList;
     }
 
+    @ApiOperation(value = "查询推荐人员", notes = "查询推荐人员")
+    @GetMapping(value = "/queryRecommendationPerson")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query"),
+    })
+    public Result<RecPersonDTO> queryRecommendationPerson(@RequestParam(value = "faultCode", required = false) String faultCode) {
+        return Result.OK();
+    }
+
+    @ApiOperation(value = "查询推荐人员列表", notes = "查询推荐人员列表")
+    @GetMapping(value = "/queryRecPersonList")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query"),
+    })
+    public Result<List<RecPersonListDTO>> queryRecPersonList(@RequestParam(value = "faultCode", required = false) String faultCode) {
+
+        List<RecPersonListDTO> list = faultService.queryRecPersonList(faultCode);
+        return Result.OK(list);
+    }
 }

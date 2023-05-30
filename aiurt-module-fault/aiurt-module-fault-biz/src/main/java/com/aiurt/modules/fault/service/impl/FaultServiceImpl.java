@@ -1967,6 +1967,18 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         return pageList;
     }
 
+
+    /**
+     * 查询推荐人员列表
+     *
+     * @param faultCode
+     * @return
+     */
+    @Override
+    public List<RecPersonListDTO> queryRecPersonList(String faultCode) {
+        return null;
+    }
+
     /**
      *
      * @param records
