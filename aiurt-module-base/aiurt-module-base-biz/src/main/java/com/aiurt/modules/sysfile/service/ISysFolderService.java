@@ -31,8 +31,8 @@ public interface ISysFolderService extends IService<SysFileType> {
     /**
      * 查询文件夹树形结构列表
      *
-     * @param name     文件夹名称，用于筛选符合名称的文件夹
-     * @param pid 文件夹父级id，用于筛选符合id的文件夹
+     * @param name 文件夹名称，用于筛选符合名称的文件夹
+     * @param pid  文件夹父级id，用于筛选符合id的文件夹
      * @return 查询结果，包含SysFolderTreeVO对象列表
      */
     List<SysFolderTreeVO> queryFolderTree(String name, Long pid);
@@ -80,9 +80,16 @@ public interface ISysFolderService extends IService<SysFileType> {
     Map<Long, List<SysFolderFilePermission>> getPermissionByFolderId(List<Long> ids);
 
     /**
-     * 构建数据
+     * 构建文件夹的等级和编码和编码层级数据，兼容历史数据
      */
     void buildData();
 
+    /**
+     * 根据文件夹ID列表获取文件夹层级路径编码的映射关系。
+     *
+     * @param folderList 文件夹ID列表
+     * @return 文件夹ID与层级路径编码的映射关系
+     */
+    Map<Long, String> getFolderCodeCcByFolderId(List<Long> folderList);
 }
 

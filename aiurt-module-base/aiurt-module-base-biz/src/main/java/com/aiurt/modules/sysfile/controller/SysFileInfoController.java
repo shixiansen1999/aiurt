@@ -10,6 +10,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -40,7 +41,7 @@ public class SysFileInfoController {
     @AutoLog(value = "保存下载记录")
     @ApiOperation(value = "保存下载记录", notes = "保存下载记录")
     @PostMapping(value = "/addDownload")
-    public Result<SysFileInfo> addDownload(HttpServletRequest req, @RequestBody SysFileInfo sysFileInfo) {
+    public Result<SysFileInfo> addDownload(HttpServletRequest req, @RequestBody @Validated SysFileInfo sysFileInfo) {
         SysFileInfo addSysFileInfo = sysFileInfoService.addDownload(sysFileInfo);
         return Result.OK(addSysFileInfo);
     }

@@ -12,16 +12,13 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.MinioUtil;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.search.dto.FileDataDTO;
-import com.aiurt.modules.sysfile.constant.PatrolConstant;
 import com.aiurt.modules.sysfile.constant.SysFileConstant;
 import com.aiurt.modules.sysfile.entity.SysFile;
-import com.aiurt.modules.sysfile.entity.SysFileInfo;
 import com.aiurt.modules.sysfile.entity.SysFileType;
 import com.aiurt.modules.sysfile.entity.SysFolderFilePermission;
 import com.aiurt.modules.sysfile.mapper.SysFileManageMapper;
 import com.aiurt.modules.sysfile.param.SysFileParam;
 import com.aiurt.modules.sysfile.param.SysFileWebParam;
-import com.aiurt.modules.sysfile.service.ISysFileInfoService;
 import com.aiurt.modules.sysfile.service.ISysFileManageService;
 import com.aiurt.modules.sysfile.service.ISysFolderFilePermissionService;
 import com.aiurt.modules.sysfile.service.ISysFolderService;
@@ -30,7 +27,6 @@ import com.aiurt.modules.sysfile.vo.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -94,10 +90,14 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
         getLoginUser();
         Result<SysFile> result = new Result<>();
 
-        Map<Long, List<SysFolderFilePermission>> permissionByFolderId = sysFolderService.getPermissionByFolderId(files.stream().map(SysFileParam::getTypeId).collect(Collectors.toList()));
+
         try {
+            List<Long> folderList = files.stream().map(SysFileParam::getTypeId).collect(Collectors.toList());
+            Map<Long, List<SysFolderFilePermission>> permissionByFolderId = sysFolderService.getPermissionByFolderId(folderList);
+            Map<Long, String> folderCodeCcMap = sysFolderService.getFolderCodeCcByFolderId(folderList);
+
             for (SysFileParam file : files) {
-                SysFile sysFile = createSysFile(file);
+                SysFile sysFile = createSysFile(file,folderCodeCcMap);
                 save(sysFile);
                 saveSysFolderFilePermission(sysFile, permissionByFolderId);
                 saveEsDataAsync(sysFile);
@@ -161,9 +161,9 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
 
     @Override
     public SysFileDetailVO queryById(String id) {
-        LambdaQueryWrapper<SysFile> lam= new LambdaQueryWrapper<>();
-        lam.eq(SysFile::getId,id);
-        lam.eq(SysFile::getDelFlag,CommonConstant.DEL_FLAG_0);
+        LambdaQueryWrapper<SysFile> lam = new LambdaQueryWrapper<>();
+        lam.eq(SysFile::getId, id);
+        lam.eq(SysFile::getDelFlag, CommonConstant.DEL_FLAG_0);
         SysFile sysFile = this.getOne(lam);
         if (ObjectUtil.isEmpty(sysFile)) {
             throw new AiurtBootException("未查询到此项数据");
@@ -523,11 +523,13 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
      * 创建 SysFile 对象
      *
      * @param file 文件参数
+     * @param folderCodeCcMap
      * @return 创建的 SysFile 对象
      */
-    private SysFile createSysFile(SysFileParam file) {
+    private SysFile createSysFile(SysFileParam file, Map<Long, String> folderCodeCcMap) {
         SysFile sysFile = new SysFile();
         BeanUtils.copyProperties(file, sysFile);
+        sysFile.setCodeCc(folderCodeCcMap.get(sysFile.getTypeId()));
         processFileNameAndType(sysFile, file);
         processFileSize(sysFile, file);
         sysFile.setCreateBy(getLoginUser().getUsername());

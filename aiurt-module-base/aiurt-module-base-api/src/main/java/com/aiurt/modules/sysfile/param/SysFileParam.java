@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
@@ -27,6 +28,7 @@ public class SysFileParam implements Serializable {
 
     @ApiModelProperty(value = "文件名称")
     @NotBlank(message = "文件名称不能为空")
+    @Length(min = 1, max = 255, message = "文件名称长度必须是1-255个字符")
     private String name;
 
     @ApiModelProperty(value = "大小")
@@ -39,9 +41,6 @@ public class SysFileParam implements Serializable {
     @ApiModelProperty("文件夹id")
     @NotNull(message = "文件夹id不能为空")
     private Long typeId;
-
-//    @NotEmpty(message = "上传人员不能为空")
-//    private String uploadUserId;
 
     @ApiModelProperty("权限信息")
     private List<SysFolderFilePermissionParam> sysFolderFilePermissionParams;
