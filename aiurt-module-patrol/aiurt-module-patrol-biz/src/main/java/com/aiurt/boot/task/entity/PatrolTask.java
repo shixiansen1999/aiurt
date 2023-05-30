@@ -2,10 +2,7 @@ package com.aiurt.boot.task.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -330,6 +327,7 @@ public class PatrolTask extends DictEntity implements Serializable {
     /**
      * 巡视抽查备注
      */
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "巡视抽查备注")
     private String spotCheckRemark;
     /**
