@@ -97,7 +97,7 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
             Map<Long, String> folderCodeCcMap = sysFolderService.getFolderCodeCcByFolderId(folderList);
 
             for (SysFileParam file : files) {
-                SysFile sysFile = createSysFile(file,folderCodeCcMap);
+                SysFile sysFile = createSysFile(file, folderCodeCcMap);
                 save(sysFile);
                 saveSysFolderFilePermission(sysFile, permissionByFolderId);
                 saveEsDataAsync(sysFile);
@@ -121,15 +121,17 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
 
         FileNameUtils.validateFolderName(sysFileParam.getName().trim());
 
+        sysFolderService.validateSysFolderFilePermissionParams(sysFileParam.getSysFolderFilePermissionParams());
+
         try {
-            // 修改文件夹基本信息
-            boolean isUpdateSuccess = updateFile(sysFile, sysFileParam);
+            // 修改文件基本信息
+            updateFile(sysFile, sysFileParam);
 
             // 删除原来的权限信息
             boolean isDeleteSuccess = deleteOriginalPermissions(sysFile);
 
             // 新增权限信息
-            if (isUpdateSuccess && isDeleteSuccess) {
+            if (isDeleteSuccess) {
                 sysFolderFilePermissionService.updateFolderFilePermission(null, sysFile.getId(), sysFileParam.getSysFolderFilePermissionParams());
             }
         } catch (Exception e) {
@@ -193,7 +195,7 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
     }
 
     @Override
-    public synchronized boolean addCount(Long id) {
+    public synchronized boolean addCount(String id) {
         SysFile sysFile = getById(id);
         if (ObjectUtil.isEmpty(sysFile)) {
             throw new AiurtBootException("未找到相关数据");
@@ -205,11 +207,17 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
     @Override
     public List<TypeNameVO> queryByTypeId(Long typeId) {
         LoginUser loginUser = getLoginUser();
-        SysFileType sysFileType = sysFolderService.getById(typeId);
-        if (ObjectUtil.isEmpty(sysFileType)) {
-            return CollUtil.newArrayList();
+        String folderCodeCc = null;
+
+        if (typeId != null) {
+            SysFileType sysFileType = sysFolderService.getById(typeId);
+            if (ObjectUtil.isEmpty(sysFileType)) {
+                return CollUtil.newArrayList();
+            }
+            folderCodeCc = sysFileType.getFolderCodeCc();
         }
-        List<TypeNameVO> result = sysFileManageMapper.queryTypeByFolderCode(sysFileType.getFolderCodeCc(), loginUser.getId(), loginUser.getOrgCode());
+
+        List<TypeNameVO> result = sysFileManageMapper.queryTypeByFolderCode(folderCodeCc, loginUser.getId(), loginUser.getOrgCode());
         return result;
     }
 
@@ -522,7 +530,7 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
     /**
      * 创建 SysFile 对象
      *
-     * @param file 文件参数
+     * @param file            文件参数
      * @param folderCodeCcMap
      * @return 创建的 SysFile 对象
      */

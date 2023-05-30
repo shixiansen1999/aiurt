@@ -2,6 +2,7 @@ package com.aiurt.modules.sysfile.service;
 
 import com.aiurt.modules.sysfile.entity.SysFileType;
 import com.aiurt.modules.sysfile.entity.SysFolderFilePermission;
+import com.aiurt.modules.sysfile.param.SysFolderFilePermissionParam;
 import com.aiurt.modules.sysfile.param.SysFolderParam;
 import com.aiurt.modules.sysfile.vo.SysFolderDetailVO;
 import com.aiurt.modules.sysfile.vo.SysFolderFilePermissionVO;
@@ -91,5 +92,14 @@ public interface ISysFolderService extends IService<SysFileType> {
      * @return 文件夹ID与层级路径编码的映射关系
      */
     Map<Long, String> getFolderCodeCcByFolderId(List<Long> folderList);
+
+    /**
+     * 校验 SysFolderFilePermissionParam 参数列表的有效性。
+     * 参数列表不能为空，并且必须至少包含一个权限为 6(可管理权限) 的项，以及至少有一个非空的用户ID列表或部门列表。
+     *
+     * @param sysFolderFilePermissionParams SysFolderFilePermissionParam 参数列表
+     */
+    void validateSysFolderFilePermissionParams(List<SysFolderFilePermissionParam> sysFolderFilePermissionParams);
+
 }
 

@@ -13,6 +13,7 @@ import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.entity.SysFileType;
 import com.aiurt.modules.sysfile.entity.SysFolderFilePermission;
 import com.aiurt.modules.sysfile.mapper.SysFolderMapper;
+import com.aiurt.modules.sysfile.param.SysFolderFilePermissionParam;
 import com.aiurt.modules.sysfile.param.SysFolderParam;
 import com.aiurt.modules.sysfile.service.ISysFileService;
 import com.aiurt.modules.sysfile.service.ISysFolderFilePermissionService;
@@ -100,17 +101,19 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
             throw new AiurtBootException("未查询到此项数据");
         }
 
-        try {
-            FileNameUtils.validateFolderName(param.getName().trim());
+        FileNameUtils.validateFolderName(param.getName().trim());
 
+        this.validateSysFolderFilePermissionParams(param.getSysFolderFilePermissionParams());
+
+        try {
             // 修改文件夹基本信息
-            boolean isUpdateSuccess = updateFileType(sysFileType, param);
+            updateFileType(sysFileType, param);
 
             // 删除原来的权限信息
             boolean isDeleteSuccess = deleteOriginalPermissions(sysFileType);
 
             // 新增权限信息
-            if (isUpdateSuccess && isDeleteSuccess) {
+            if (isDeleteSuccess) {
                 sysFolderFilePermissionService.updateFolderFilePermission(sysFileType.getId(), null, param.getSysFolderFilePermissionParams());
             }
         } catch (Exception e) {
@@ -500,4 +503,40 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
         }
         return loginUser;
     }
+
+    /**
+     * 校验 SysFolderFilePermissionParam 参数列表的有效性。
+     * 参数列表不能为空，并且必须至少包含一个权限为 6(可管理权限) 的项，以及至少有一个非空的用户ID列表或部门列表。
+     *
+     * @param sysFolderFilePermissionParams SysFolderFilePermissionParam 参数列表
+     * @throws AiurtBootException 如果参数列表为空，或者不符合校验条件，则抛出异常
+     */
+    @Override
+    public void validateSysFolderFilePermissionParams(List<SysFolderFilePermissionParam> sysFolderFilePermissionParams) {
+        if (CollUtil.isEmpty(sysFolderFilePermissionParams)) {
+            throw new AiurtBootException("文件夹权限不能为空,至少保留一个权限级别为可管理权限的人员或部门");
+        }
+
+        boolean hasPermissionSix = Optional.ofNullable(sysFolderFilePermissionParams)
+                .orElse(CollUtil.newArrayList())
+                .stream()
+                .anyMatch(param -> hasPermissionSix(param));
+
+        if (!hasPermissionSix) {
+            throw new AiurtBootException("文件夹权限至少保留一个权限级别为可管理权限的人员或部门");
+        }
+    }
+
+    /**
+     * 检查 SysFolderFilePermissionParam 对象是否具有权限为 6，并且用户ID列表或部门编码列表至少有一个非空。
+     *
+     * @param param SysFolderFilePermissionParam 对象
+     * @return true 如果权限为 6 并且用户ID列表或部门代码列表至少有一个非空，否则返回 false
+     */
+    public boolean hasPermissionSix(SysFolderFilePermissionParam param) {
+        return ObjectUtil.isNotEmpty(param)
+                && SysFileConstant.PERMISSION_MANAGE.equals(param.getPermission())
+                && (CollUtil.isNotEmpty(param.getUserIds()) || CollUtil.isNotEmpty(param.getOrgCodes()));
+    }
+
 }

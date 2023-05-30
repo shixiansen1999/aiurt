@@ -62,7 +62,9 @@
             sys_file sf
         WHERE
          sf.del_flag = 0
-         AND sf.type_id IN ( SELECT sft.id FROM sys_file_type sft WHERE sft.folder_code_cc LIKE CONCAT (#{folderCodeCc}, '%' ) )
+         <if test="folderCodeCc!=null and folderCodeCc!=''">
+             AND sf.type_id IN ( SELECT sft.id FROM sys_file_type sft WHERE sft.folder_code_cc LIKE CONCAT (#{folderCodeCc}, '%' ) )
+         </if>
          AND sf.id IN (
             SELECT
                 sffp.file_id
