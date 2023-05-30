@@ -51,8 +51,7 @@
         <if test="name!='' and name !=null">
             AND sft1.name LIKE CONCAT('%',#{name}, '%' )
         </if>
-        GROUP BY
-        sft1.id
+        GROUP BY sft1.id
         ORDER BY sft1.create_time desc
     </select>
 </mapper>

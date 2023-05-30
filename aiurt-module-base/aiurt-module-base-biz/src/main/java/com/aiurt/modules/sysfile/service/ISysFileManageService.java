@@ -77,7 +77,7 @@ public interface ISysFileManageService extends IService<SysFile> {
     List<TypeNameVO> queryByTypeId(Long typeId);
 
     /**
-     * 构建数据，新版知识库表结构变动
+     * 构建文件的code_cc编码层级数据，兼容历史数据
      * @return
      */
     void buildData();

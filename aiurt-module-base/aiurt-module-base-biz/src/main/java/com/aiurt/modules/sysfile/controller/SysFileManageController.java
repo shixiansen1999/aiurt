@@ -26,7 +26,7 @@ import java.util.List;
  * @Description:
  */
 @Slf4j
-@Api(tags = "文件表")
+@Api(tags = "文件接口")
 @RestController
 @RequestMapping("/sys/file")
 public class SysFileManageController {
@@ -146,7 +146,7 @@ public class SysFileManageController {
     @PostMapping(value = "/addCount")
     public Result<?> addCount(@RequestParam("id") Long id) {
         boolean result = sysFileManageService.addCount(id);
-        return result ? Result.ok() : Result.error("更改次数失败");
+        return result ? Result.OK("更改次数成功") : Result.error("更改次数失败");
     }
 
     /**
@@ -164,14 +164,14 @@ public class SysFileManageController {
     }
 
     /**
-     * 构建数据，新版知识库表结构变动
+     * 构建文件的code_cc编码层级数据，兼容历史数据
      *
      * @return
      */
     @PostMapping(value = "/builddata")
     public Result<?> buildData() {
         sysFileManageService.buildData();
-        return Result.ok("编辑成功！");
+        return Result.OK("编辑成功！");
     }
 
     /**
@@ -182,7 +182,7 @@ public class SysFileManageController {
     @PostMapping(value = "/saveSysFolderFilePermission")
     public Result<?> saveSysFolderFilePermission() {
         sysFolderFilePermissionService.saveSysFolderFilePermission();
-        return Result.ok("编辑成功！");
+        return Result.OK("编辑成功！");
     }
 
 }

@@ -19,8 +19,6 @@ import java.util.List;
  */
 public interface SysFileManageMapper extends BaseMapper<SysFile> {
 
-    IPage<SysFile> selectFilePage(Page page, @Param("typeId") List<Long> typeId, @Param("fileName") String fileName);
-
     /**
      * 根据条件查询文件分页列表
      *

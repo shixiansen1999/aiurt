@@ -2,23 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.sysfile.mapper.SysFileManageMapper">
 
-    <select id="selectFilePage" resultType="com.aiurt.modules.sysfile.entity.SysFile">
-        select * from sys_file
-        <where>
-            del_flag = 0
-            <if test="typeId != null and typeId.size() != 0">
-                and type_id in
-                <foreach collection="typeId" index="index" open="(" separator="," close=")" item="item">
-                    #{item}
-                </foreach>
-            </if>
-            <if test="fileName != null">
-                and `name` LIKE CONCAT ('%', #{fileName}, '%')
-            </if>
-        </where>
-        order by create_time desc
-        <!--limit #{no},#{size}-->
-    </select>
     <select id="getFilePageList" resultType="com.aiurt.modules.sysfile.vo.SysFileManageVO">
         SELECT
         sf.id,
@@ -31,9 +14,11 @@
         sf.url,
         sf.file_size,
         sf.down_size,
-        IFNULL(MAX(sffp1.permission), 0) AS permission
+        IFNULL(MAX(sffp1.permission), 0) AS permission,
+        sft1.name as typeName
         FROM
         sys_file sf
+        LEFT JOIN sys_file_type sft1 ON (sft1.id = sf.type_id AND sft1.del_flag = 0)
         LEFT JOIN sys_folder_file_permission sffp1 ON ( sffp1.file_id = sf.id AND sffp1.del_flag = 0 )
         WHERE
         sf.id IN (
@@ -67,8 +52,8 @@
                 #{username}
             </foreach>
         </if>
-        GROUP BY
-        sf.id
+        GROUP BY sf.id
+        ORDER BY sf.create_time desc
     </select>
     <select id="queryTypeByFolderCode" resultType="com.aiurt.modules.sysfile.vo.TypeNameVO">
         SELECT DISTINCT
@@ -157,10 +142,10 @@
             temp.url,
             temp.permission,
             temp.parentId,
-            temp.create_by,
-            temp.update_by,
-            temp.create_time,
-            temp.update_time
+            temp.createBy,
+            temp.updateBy,
+            temp.createTime,
+            temp.updateTime
         FROM
             (
                 SELECT
@@ -171,10 +156,10 @@
                     0 AS `status`,
                     IFNULL( MAX( sffp.permission ), 0 ) AS permission,
                     sft.parent_id AS parentId,
-                    sft.create_by,
-                    sft.update_by,
-                    sft.create_time,
-                    sft.update_time
+                    sft.create_by AS createBy,
+                    sft.update_by AS updateBy,
+                    sft.create_time AS createTime,
+                    sft.update_time AS updateTime
                 FROM
                     sys_file_type sft
                     LEFT JOIN sys_folder_file_permission sffp ON (sft.id = sffp.folder_id  AND ( sffp.user_id =  #{userId} OR sffp.org_code = #{orgCode} ))
@@ -187,23 +172,33 @@
                             WHERE
                                 sffp.del_flag = 0
                               AND ( sffp.user_id =  #{userId} OR sffp.org_code = #{orgCode} )
-                              AND (
+                              AND ((
                                     sffp.folder_id IN (
                                     SELECT
-                                        s1.id
+                                    s1.id
                                     FROM
-                                        sys_file_type s1
+                                    sys_file_type s1
                                     WHERE
-                                        s1.folder_code IS NOT NULL
-                                      AND s1.folder_code != ''
+                                    s1.folder_code IS NOT NULL
+                                    AND s1.folder_code != ''
                                     AND s1.folder_code_cc LIKE CONCAT( sft.folder_code_cc, '%' )
-                                )))
+                                    ))
+                                    OR (
+                                    sffp.file_id IN (
+                                    SELECT
+                                    sf1.id
+                                    FROM
+                                    sys_file sf1
+                                    WHERE
+                                    sf1.code_cc IS NOT NULL
+                                    AND sf1.code_cc != ''
+                                    AND sf1.code_cc LIKE CONCAT( sft.folder_code_cc, '%' )
+                                    ))))
                   AND sft.del_flag = 0
                   AND sft.folder_code_cc != ''
 		          AND sft.folder_code_cc IS NOT NULL
 		          AND sft.parent_id = #{parentId}
-                GROUP BY
-                    sft.id
+                GROUP BY sft.id
 
                 UNION ALL
 
@@ -215,40 +210,20 @@
                     1 AS status,
                     IFNULL( MAX( sffp.permission ), 0 ) AS permission,
                     sf.type_id AS parentId,
-                    sf.create_by,
-                    sf.update_by,
-                    sf.create_time,
-                    sf.update_time
+                    sf.create_by AS createBy,
+                    sf.update_by AS updateBy,
+                    sf.create_time AS createTime,
+                    sf.update_time AS updateTime
                 FROM
                     sys_file sf
                     LEFT JOIN sys_folder_file_permission sffp ON (
                     sf.id = sffp.file_id
                     AND ( sffp.user_id =  #{userId} OR sffp.org_code = #{orgCode} ))
                 WHERE
-                    EXISTS (
-                    SELECT
-                    1
-                    FROM
-                    sys_folder_file_permission sffp
-                    WHERE
-                    sffp.del_flag = 0
-                  AND ( sffp.user_id =  #{userId} OR sffp.org_code = #{orgCode})
-                  AND (
-                    sffp.file_id IN (
-                    SELECT
-                    sf1.id
-                    FROM
-                    sys_file sf1
-                    WHERE
-                    sf1.code_cc IS NOT NULL
-                  AND sf1.code_cc != ''
-                  AND sf1.code_cc LIKE CONCAT( sf.code_cc, '%' )
-                    )))
-                  AND sffp.permission IS NOT NULL
+                  sffp.permission IS NOT NULL
                   AND sf.del_flag = 0
-                  AND ( sf.type_id = #{parentId} )
-                GROUP BY
-                    sf.id
+                  AND  sf.type_id = #{parentId}
+                GROUP BY sf.id
             ) AS temp
         <where>
         <if test="fileName!=null and fileName!=''">
@@ -256,6 +231,6 @@
         </if>
         </where>
         ORDER BY
-            temp.create_time DESC;
+            temp.createTime DESC;
     </select>
 </mapper>

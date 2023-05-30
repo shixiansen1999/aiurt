@@ -1,5 +1,6 @@
 package com.aiurt.modules.sysfile.vo;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -38,6 +39,9 @@ public class SysFileManageVO implements Serializable {
     @ApiModelProperty(value = "文件类型")
     private String type;
 
+    @ApiModelProperty(value = "文件夹名称")
+    private String typeName;
+
     @ApiModelProperty(value = "大小")
     private String fileSize;
 
@@ -48,6 +52,10 @@ public class SysFileManageVO implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
+
+    @ApiModelProperty(value = "创建人")
+    @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
+    private String createBy;
 
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

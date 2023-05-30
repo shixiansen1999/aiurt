@@ -35,9 +35,9 @@ public class SysFolderController {
     /**
      * 查询文件夹树形结构列表
      *
-     * @param req      HttpServletRequest对象，用于获取请求相关信息
-     * @param name     文件夹名称，用于筛选符合名称的文件夹
-     * @param pid 文件夹父级id，用于筛选符合id的文件夹
+     * @param req  HttpServletRequest对象，用于获取请求相关信息
+     * @param name 文件夹名称，用于筛选符合名称的文件夹
+     * @param pid  文件夹父级id，用于筛选符合id的文件夹
      * @return 查询结果，包含SysFolderTreeVO对象列表
      */
     @AutoLog(value = "查询文件夹树形结构列表")
@@ -59,7 +59,7 @@ public class SysFolderController {
     @PostMapping(value = "/add")
     public Result<?> add(HttpServletRequest req, @RequestBody @Validated SysFolderParam param) {
         sysFolderService.addFolder(req, param);
-        return Result.ok("添加成功！");
+        return Result.OK("添加成功！");
     }
 
     /**
@@ -74,7 +74,7 @@ public class SysFolderController {
     @PostMapping(value = "/edit")
     public Result<?> edit(HttpServletRequest req, @RequestBody @Validated SysFolderParam param) {
         sysFolderService.edit(req, param);
-        return Result.ok("编辑成功！");
+        return Result.OK("编辑成功！");
     }
 
     /**
@@ -105,16 +105,17 @@ public class SysFolderController {
     @PostMapping(value = "/delete")
     public Result<?> deleteFolder(HttpServletRequest req, @RequestBody @NotNull(message = "id不能为空") List<Long> ids) {
         sysFolderService.deleteFolder(req, ids);
-        return Result.ok("删除成功!");
+        return Result.OK("删除成功!");
     }
 
     /**
-     * 构建数据，新版知识库表结构变动
+     * 构建文件夹的等级和编码和编码层级数据，兼容历史数据
+     *
      * @return
      */
     @PostMapping(value = "/builddata")
     public Result<?> buildData() {
         sysFolderService.buildData();
-        return Result.ok("编辑成功！");
+        return Result.OK("编辑成功！");
     }
 }

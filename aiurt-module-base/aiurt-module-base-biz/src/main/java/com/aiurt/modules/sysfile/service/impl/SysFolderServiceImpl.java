@@ -22,9 +22,11 @@ import com.aiurt.modules.sysfile.vo.*;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import liquibase.pro.packaged.L;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -135,7 +137,7 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
         // 查询文件夹权限
         List<SysFolderFilePermission> sysFolderFilePermissions = sysFolderFilePermissionService.list(
                 new LambdaQueryWrapper<SysFolderFilePermission>()
-                        .select(SysFolderFilePermission::getOrgCode,SysFolderFilePermission::getUserId,SysFolderFilePermission::getPermission)
+                        .select(SysFolderFilePermission::getOrgCode, SysFolderFilePermission::getUserId, SysFolderFilePermission::getPermission)
                         .eq(SysFolderFilePermission::getFolderId, sysFileType.getId())
                         .eq(SysFolderFilePermission::getDelFlag, CommonConstant.DEL_FLAG_0));
 
@@ -430,6 +432,24 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
                 }
             }
         }
+    }
+
+    @Override
+    public Map<Long, String> getFolderCodeCcByFolderId(List<Long> folderList) {
+        if (CollUtil.isEmpty(folderList)) {
+            return CollUtil.newHashMap();
+        }
+
+        LambdaQueryWrapper<SysFileType> lam = new LambdaQueryWrapper<>();
+        List<SysFileType> sysFileTypeList = sysFolderMapper.selectList(lam);
+        if (CollUtil.isNotEmpty(sysFileTypeList)) {
+            return sysFileTypeList.stream()
+                    .filter(sysFileType -> sysFileType.getId() != null && sysFileType.getFolderCodeCc() != null)
+                    .collect(Collectors.toMap(SysFileType::getId, SysFileType::getFolderCodeCc, (v1, v2) -> v1));
+
+
+        }
+        return CollUtil.newHashMap();
     }
 
     /**
