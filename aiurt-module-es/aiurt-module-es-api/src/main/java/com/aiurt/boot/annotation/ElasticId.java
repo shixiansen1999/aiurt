@@ -1,4 +1,4 @@
-package com.aiurt.boot.core.annotation;
+package com.aiurt.boot.annotation;
 
 import java.lang.annotation.*;
 

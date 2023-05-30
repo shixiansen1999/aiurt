@@ -1,7 +1,7 @@
 package com.aiurt.boot.core.utils;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.core.annotation.ElasticId;
+import com.aiurt.boot.annotation.ElasticId;
 import org.springframework.data.elasticsearch.annotations.Document;
 
 import java.lang.reflect.Field;

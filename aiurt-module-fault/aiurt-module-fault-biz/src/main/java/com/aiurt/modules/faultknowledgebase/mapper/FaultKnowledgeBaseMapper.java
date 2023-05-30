@@ -7,6 +7,7 @@ import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.knowledge.entity.KnowledgeBase;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.ApiModelProperty;
@@ -101,4 +102,11 @@ public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase>
      * @return
      */
     List<AnalyzeFaultCauseResDTO> countFaultCauseByIdSet(@Param("idList") List<String> idList);
+
+    /**
+     * 同步故障知识库数据到ES
+     *
+     * @return
+     */
+    List<KnowledgeBase> synchrodata();
 }

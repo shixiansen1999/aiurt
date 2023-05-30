@@ -467,4 +467,27 @@
         GROUP BY
                 t1.id
     </select>
+
+    <select id="synchrodata" resultType="com.aiurt.modules.knowledge.entity.KnowledgeBase">
+        select fkb.id                    id,
+               fkb.fault_phenomenon_code faultPhenomenonCode,
+               fkb.fault_phenomenon      faultPhenomenon,
+               fkb.major_code            majorCode,
+               cm.major_name             majorName,
+               fkb.system_code           systemCode,
+               cs.system_name            systemName,
+               fkb.material_code         materialCode,
+               dc.material_name          materialName,
+               fkb.device_type_code      deviceTypeCode,
+               dt.name                   deviceTypeName,
+               fkb.fault_level_code      faultLevelCode,
+               fkb.scan_num              scanNum,
+               fkb.create_time           createTime
+        from fault_knowledge_base fkb
+                 left join device_compose dc on (fkb.material_code = dc.material_code and dc.del_flag = 0)
+                 left join cs_major cm on (fkb.major_code = cm.major_code and cm.del_flag = 0)
+                 left join cs_subsystem cs on (fkb.system_code = cs.system_code and cs.del_flag = 0)
+                 left join device_type dt on (fkb.device_type_code = dt.code and dt.del_flag = 0)
+        where fkb.del_flag = 0
+    </select>
 </mapper>

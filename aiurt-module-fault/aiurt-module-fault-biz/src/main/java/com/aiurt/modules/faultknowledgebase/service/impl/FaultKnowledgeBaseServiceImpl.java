@@ -11,6 +11,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.api.ElasticAPI;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
@@ -38,6 +39,11 @@ import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.aiurt.modules.faultsparepart.service.IFaultSparePartService;
 import com.aiurt.modules.flow.api.FlowBaseApi;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
+import com.aiurt.modules.knowledge.dto.KnowledgeBaseReqDTO;
+import com.aiurt.modules.knowledge.dto.KnowledgeBaseResDTO;
+import com.aiurt.modules.knowledge.entity.CauseSolution;
+import com.aiurt.modules.knowledge.entity.KnowledgeBase;
+import com.aiurt.modules.knowledge.entity.SparePart;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -55,6 +61,7 @@ import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
@@ -727,7 +734,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     Long sum = resList.stream().filter(Objects::nonNull).map(AnalyzeFaultCauseResDTO::getNum).reduce(0L, Long::sum);
                     resList.stream().forEach(re -> {
                         if (sum != 0L) {
-                            re.setPercentage(NumberUtil.div((float) re.getNum(), (float) sum, 2) * 100+"");
+                            re.setPercentage(NumberUtil.div((float) re.getNum(), (float) sum, 2) * 100 + "");
                         } else {
                             re.setPercentage("0");
                         }
@@ -1175,5 +1182,94 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 break;
         }
         this.updateById(faultKnowledgeBase);
+    }
+
+    @Override
+    public IPage<KnowledgeBaseResDTO> search(Page<KnowledgeBaseResDTO> page, KnowledgeBaseReqDTO knowledgeBaseReqDTO) {
+        page.setRecords(new ArrayList<>());
+        return page;
+    }
+
+    @Autowired
+    private ElasticAPI elasticApi;
+
+    @Override
+    public void synchrodata(HttpServletRequest request, HttpServletResponse response) {
+        List<KnowledgeBase> knowledgeBases = faultKnowledgeBaseMapper.synchrodata();
+        if (CollUtil.isEmpty(knowledgeBases)) {
+            return;
+        }
+        List<String> knowledgeBaseIds = knowledgeBases.stream()
+                .map(KnowledgeBase::getId)
+                .collect(Collectors.toList());
+        List<FaultCauseSolution> faultCauseSolutions = faultCauseSolutionService.lambdaQuery()
+                .eq(FaultCauseSolution::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .in(FaultCauseSolution::getKnowledgeBaseId, knowledgeBaseIds)
+                .list();
+        if (CollUtil.isNotEmpty(faultCauseSolutions)) {
+            List<CauseSolution> causeSolutions = new ArrayList<>();
+            CauseSolution causeSolution = null;
+            for (FaultCauseSolution faultCauseSolution : faultCauseSolutions) {
+                causeSolution = new CauseSolution();
+                BeanUtils.copyProperties(faultCauseSolution, causeSolution);
+                causeSolutions.add(causeSolution);
+            }
+
+            List<String> causeSolutionIds = faultCauseSolutions.stream()
+                    .map(FaultCauseSolution::getId)
+                    .distinct()
+                    .collect(Collectors.toList());
+            List<FaultSparePart> faultSpareParts = faultSparePartService.lambdaQuery()
+                    .eq(FaultSparePart::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .in(FaultSparePart::getCauseSolutionId, causeSolutionIds)
+                    .list();
+
+            List<SparePart> spareParts = new ArrayList<>();
+            if (CollUtil.isNotEmpty(faultSpareParts)) {
+                List<String> sparePartCodes = faultSpareParts.stream()
+                        .map(FaultSparePart::getSparePartCode)
+                        .distinct()
+                        .collect(Collectors.toList());
+                Map<String, String> sparePartCodeMap = CollUtil.isEmpty(sparePartCodes) ? Collections.emptyMap() : sysBaseApi.getMaterialNameByCode(sparePartCodes);
+                SparePart sparePart = null;
+                for (FaultSparePart faultSparePart : faultSpareParts) {
+                    faultSparePart.setSparePartName(sparePartCodeMap.get(faultSparePart.getSparePartCode()));
+                    sparePart = new SparePart();
+                    BeanUtils.copyProperties(faultSparePart, sparePart);
+                    spareParts.add(sparePart);
+                }
+            }
+            Map<String, List<SparePart>> sparePartMap = Collections.emptyMap();
+            if (CollUtil.isNotEmpty(spareParts)) {
+                sparePartMap = spareParts.stream().collect(Collectors.groupingBy(SparePart::getCauseSolutionId));
+            }
+            Map<String, Map<String, String>> causeNumberMap = this.buildCauseNumberMap(knowledgeBaseIds);
+            for (CauseSolution solution : causeSolutions) {
+                String id = solution.getId();
+                String knowledgeBaseId = solution.getKnowledgeBaseId();
+                List<SparePart> sparePartList = ObjectUtil.isEmpty(sparePartMap.get(id)) ? Collections.emptyList() : sparePartMap.get(id);
+                solution.setSpareParts(sparePartList);
+
+                Map<String, String> map = causeNumberMap.get(knowledgeBaseId);
+                if (CollUtil.isNotEmpty(map)) {
+                    String happenRate = ObjectUtil.isEmpty(map.get(id)) ? "0%" : map.get(id);
+                    solution.setHappenRate(happenRate);
+                }
+            }
+
+            // 放入解决方案信息
+            Map<String, List<CauseSolution>> causeSolutionMap = causeSolutions.stream()
+                    .collect(Collectors.groupingBy(CauseSolution::getKnowledgeBaseId));
+            for (KnowledgeBase knowledgeBase : knowledgeBases) {
+                knowledgeBase.setReasonSolutions(causeSolutionMap.get(knowledgeBase.getId()));
+            }
+        }
+
+        // 调用API存入ES
+        try {
+            BulkResponse[] bulkResponses = elasticApi.saveBatch(knowledgeBases);
+        } catch (Exception e) {
+            throw new AiurtBootException("同步知识库数据异常！");
+        }
     }
 }

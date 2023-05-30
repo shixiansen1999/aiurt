@@ -6,6 +6,8 @@ import com.aiurt.modules.faultknowledgebase.dto.RepairSolRecDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.knowledge.dto.KnowledgeBaseReqDTO;
+import com.aiurt.modules.knowledge.dto.KnowledgeBaseResDTO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -104,4 +106,21 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @return
      */
     RepairSolRecDTO queryRepairSolRecDTO(String knowledgeId);
+
+    /**
+     * 故障知识库高级搜索-分页列表查询
+     *
+     * @param page
+     * @param knowledgeBaseReqDTO
+     * @return
+     */
+    IPage<KnowledgeBaseResDTO> search(Page<KnowledgeBaseResDTO> page, KnowledgeBaseReqDTO knowledgeBaseReqDTO);
+
+    /**
+     * 同步故障知识库数据到ES
+     *
+     * @param request
+     * @param response
+     */
+    void synchrodata(HttpServletRequest request, HttpServletResponse response);
 }
