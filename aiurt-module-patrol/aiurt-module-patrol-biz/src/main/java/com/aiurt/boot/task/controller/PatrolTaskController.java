@@ -7,6 +7,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
@@ -32,7 +33,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
@@ -67,7 +70,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     private ArchiveUtils archiveUtils;
     @Autowired
     private ISysBaseAPI sysBaseApi;
-
+    @Autowired
+    private ISysParamAPI sysParamApi;
 
     /**
      * PC巡检任务列表-巡视任务池
@@ -748,9 +752,17 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @GetMapping(value = "/printPatrolTaskById")
     public Result<List<PrintPatrolTaskDTO>> printPatrolTaskById(@RequestParam(name="ids",required=true) String ids,
                                                       HttpServletRequest req) {
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            List<PrintPatrolTaskDTO> printPatrolTaskDTOS = patrolTaskService.printPatrolTaskDeviceById(ids);
+            return Result.OK(printPatrolTaskDTOS);
+        }else {
+            List<PrintPatrolTaskDTO> printPatrolTaskDTOS = patrolTaskService.printPatrolTaskById(ids);
+            return Result.OK(printPatrolTaskDTOS);
+        }
 
-        List<PrintPatrolTaskDTO> printPatrolTaskDTOS = patrolTaskService.printPatrolTaskById(ids);
-        return Result.OK(printPatrolTaskDTOS);
     }
     /**
 

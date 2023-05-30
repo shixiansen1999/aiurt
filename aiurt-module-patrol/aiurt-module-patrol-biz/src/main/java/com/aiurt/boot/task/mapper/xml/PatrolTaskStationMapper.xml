@@ -73,4 +73,19 @@
         pts.del_flag = 0
         AND pts.task_code = #{taskCode}
     </select>
+
+    <select id="getStationInfoByDeviceId" resultType="com.aiurt.boot.statistics.dto.IndexStationDTO">
+        SELECT DISTINCT
+        ptd.station_code,
+        cs.station_name
+        FROM
+        patrol_task_device ptd
+        JOIN cs_station cs ON ptd.station_code = cs.station_code
+        AND cs.del_flag = 0
+        WHERE
+        ptd.del_flag = 0
+        <if test="id != null and id != ''">
+            AND ptd.id = #{id}
+        </if>
+    </select>
 </mapper>

@@ -222,7 +222,8 @@
                 WHERE
                 ptd.del_flag = 0
         <if test="taskId != null and taskId != ''">
-            AND ptd.task_id = #{taskId}
+            AND( ptd.task_id = #{taskId}
+            or  ptd.id = #{taskId})
         </if>
     </select>
     <select id="getStationName" resultType="java.lang.String">
@@ -319,14 +320,16 @@
     <select id="getMac" resultType="com.aiurt.boot.task.dto.PatrolTaskDeviceDTO">
         SELECT
                 ptd.id,
+                ptd.task_id,
                 ptd.patrol_number,
                 ptd.mac,
                 ptd.mac_status,
                 ptd.station_code
         FROM
                 patrol_task_device ptd
-        WHERE
-                ptd.task_id = #{id}
+        WHERE 1=1 and
+                (ptd.task_id = #{id}
+                or ptd.id = #{id})
           AND ptd.del_flag = 0
         GROUP BY ptd.id
     </select>

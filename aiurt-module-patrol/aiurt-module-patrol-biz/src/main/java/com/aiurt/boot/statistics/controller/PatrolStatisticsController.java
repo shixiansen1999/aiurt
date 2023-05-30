@@ -1,5 +1,6 @@
 package com.aiurt.boot.statistics.controller;
 
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.statistics.dto.IndexScheduleDTO;
 import com.aiurt.boot.statistics.dto.IndexTaskDTO;
 import com.aiurt.boot.statistics.model.*;
@@ -14,6 +15,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
@@ -34,7 +37,8 @@ import java.util.List;
 public class PatrolStatisticsController {
     @Autowired
     private PatrolStatisticsService patrolStatisticsService;
-
+    @Autowired
+    private ISysParamAPI sysParamApi;
     /**
      * 获取首页的巡视概况信息
      *
@@ -86,8 +90,17 @@ public class PatrolStatisticsController {
     @PermissionData(pageComponent = "dashboard/Analysis")
     public Result<IPage<IndexTaskInfo>> getIndexTaskList(HttpServletRequest request, @Validated @RequestBody IndexTaskDTO indexTaskDTO) {
         Page<IndexTaskInfo> page = new Page<>(indexTaskDTO.getPageNo(), indexTaskDTO.getPageSize());
-        IPage<IndexTaskInfo> pageList = patrolStatisticsService.getIndexTaskList(request,page, indexTaskDTO);
-        return Result.ok(pageList);
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            IPage<IndexTaskInfo> pageList = patrolStatisticsService.getIndexTaskDeviceList(request,page, indexTaskDTO);
+            return Result.ok(pageList);
+        } else {
+            IPage<IndexTaskInfo> pageList = patrolStatisticsService.getIndexTaskList(request,page, indexTaskDTO);
+            return Result.ok(pageList);
+        }
+
     }
 
     /**
