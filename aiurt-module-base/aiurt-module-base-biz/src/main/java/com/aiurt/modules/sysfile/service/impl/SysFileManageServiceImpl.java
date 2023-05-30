@@ -90,7 +90,6 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
         getLoginUser();
         Result<SysFile> result = new Result<>();
 
-
         try {
             List<Long> folderList = files.stream().map(SysFileParam::getTypeId).collect(Collectors.toList());
             Map<Long, List<SysFolderFilePermission>> permissionByFolderId = sysFolderService.getPermissionByFolderId(folderList);
@@ -118,8 +117,6 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
         if (ObjectUtil.isEmpty(sysFile)) {
             throw new AiurtBootException("未查询到此项数据");
         }
-
-        FileNameUtils.validateFolderName(sysFileParam.getName().trim());
 
         sysFolderService.validateSysFolderFilePermissionParams(sysFileParam.getSysFolderFilePermissionParams());
 
@@ -247,8 +244,8 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
         if (StrUtil.isEmpty(name)) {
             throw new AiurtBootException("文件名称不能为空");
         }
-        FileNameUtils.validateFolderName(name.trim());
-        sysFile.setName(name);
+
+        sysFile.setName(name.trim());
         sysFileManageMapper.updateById(sysFile);
     }
 

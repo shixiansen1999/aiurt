@@ -1,6 +1,5 @@
 package com.aiurt.modules.sysfile.utils;
 
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 
 import java.util.regex.Pattern;
