@@ -98,7 +98,13 @@ public class PatrolScreenService {
             PatrolSituation taskDeviceCount = patrolTaskMapper.getTaskDeviceCount(module);
             data.setPatrolNumber(taskDeviceCount.getSum());
             data.setFinishNumber(taskDeviceCount.getFinish());
-            data.setOmitNumber(taskDeviceCount.getOmit());
+            //漏巡
+            String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
+            String omitEndTime = this.getOmitDateScope(endTime).split(ScreenConstant.TIME_SEPARATOR)[1];
+            module.setStartTime(DateUtil.parse(omitStartTime));
+            module.setEndTime(DateUtil.parse(omitEndTime));
+            PatrolSituation taskDeviceCount2 = patrolTaskMapper.getTaskDeviceCount(module);
+            data.setOmitNumber(taskDeviceCount2.getOmit());
         } else {
             List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
             String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
