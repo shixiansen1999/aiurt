@@ -2195,12 +2195,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public String printPatrolTask(String id) {
         PatrolTask patrolTask = patrolTaskMapper.selectById(id);
-        PatrolPlan patrolPlan = patrolPlanMapper.selectByCode(patrolTask.getPlanCode());
-        List<PatrolPlanStandard> patrolPlanStandard = patrolPlanStandardMapper.selectList(new LambdaQueryWrapper<PatrolPlanStandard>()
-                .eq(PatrolPlanStandard::getDelFlag,0).eq(PatrolPlanStandard::getPlanId,patrolPlan.getId()));
+        List<PatrolTaskStandard> patrolTaskStandard = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>()
+                .eq(PatrolTaskStandard::getDelFlag,0).eq(PatrolTaskStandard::getTaskId,patrolTask.getId()));
+//        PatrolPlan patrolPlan = patrolPlanMapper.selectByCode(patrolTask.getPlanCode());
+//        List<PatrolPlanStandard> patrolPlanStandard = patrolPlanStandardMapper.selectList(new LambdaQueryWrapper<PatrolPlanStandard>()
+//                .eq(PatrolPlanStandard::getDelFlag,0).eq(PatrolPlanStandard::getPlanId,patrolPlan.getId()));
         PatrolStandard patrolStandard = patrolStandardMapper.selectOne(new LambdaQueryWrapper<PatrolStandard>()
                 .eq(PatrolStandard::getDelFlag,0)
-                .in(PatrolStandard::getCode,patrolPlanStandard.stream().map(PatrolPlanStandard::getStandardCode).collect(Collectors.toList()))
+                .in(PatrolStandard::getCode,patrolTaskStandard.stream().map(PatrolTaskStandard::getStandardCode).collect(Collectors.toList()))
                 .orderByDesc(PatrolStandard::getPrintTemplate).last("LIMIT 1"));
         String excelName = null;
         if (StrUtil.isNotEmpty(patrolStandard.getPrintTemplate())){
@@ -2272,12 +2274,16 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             int index =  taskDTO.getSignUrl().indexOf("?");
             SysAttachment sysAttachment = sysBaseApi.getFilePath(taskDTO.getSignUrl().substring(0, index));
             InputStream inputStream = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
-            try {
-                byte[] convert = convert(inputStream);
-                WriteCellData writeImageData = writeCellImageData(convert);
-                imageMap.put("signImage",writeImageData);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            if(ObjectUtil.isEmpty(inputStream)){
+                imageMap.put("signImage",null);
+            } else {
+                try {
+                    byte[] convert = convert(inputStream);
+                    WriteCellData writeImageData = writeCellImageData(convert);
+                    imageMap.put("signImage",writeImageData);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }else{
             imageMap.put("signImage",null);
