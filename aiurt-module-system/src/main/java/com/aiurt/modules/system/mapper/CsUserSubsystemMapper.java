@@ -1,16 +1,16 @@
 package com.aiurt.modules.system.mapper;
 
-import java.util.List;
-
 import com.aiurt.modules.subsystem.dto.ListDTO;
 import com.aiurt.modules.subsystem.dto.SubsystemFaultDTO;
 import com.aiurt.modules.subsystem.dto.SystemByCodeDTO;
 import com.aiurt.modules.subsystem.dto.YearFaultDTO;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.apache.ibatis.annotations.Param;
 import com.aiurt.modules.system.entity.CsUserSubsystem;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.CsUserSubsystemModel;
+
+import java.util.List;
 
 /**
  * @Description: 用户子系统表
@@ -125,4 +125,21 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
      * @return
      */
     SubsystemFaultDTO selectSubSystem(@Param("subsystemCode")SubsystemFaultDTO subsystemCode);
+
+    /**
+     * 查询子系统的维修时长（过滤已挂起的）
+     * @param time
+     * @param subsystemCode
+     * @return
+     */
+    Long getSubsystemFilterFaultDTO(@Param("time") String time, @Param("subsystemCode")String subsystemCode);
+
+    /**
+     * 查询子系统的下的设备分类的维修时长（过滤已挂起的）
+     * @param time
+     * @param subsystemCode
+     * @param deviceTypeCode
+     * @return
+     */
+    Long getFilterNum(@Param("time") String time,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
 }
