@@ -233,6 +233,6 @@
         </if>
         </where>
         ORDER BY
-            temp.createTime DESC,temp.id ASC;
+        temp.status ASC,temp.createTime DESC,temp.id ASC;
     </select>
 </mapper>
