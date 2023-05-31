@@ -428,4 +428,9 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 		return baseMapper.getCurrentNewModified(dictCode);
 	}
 
+    @Override
+    public DictModel dictById(String id) {
+        return baseMapper.dictByid(id);
+    }
+
 }

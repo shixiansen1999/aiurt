@@ -30,6 +30,10 @@ public class DictModel implements Serializable{
 	/**
 	 * 字典value
 	 */
+	private String id;
+	/**
+	 * 字典value
+	 */
 	private String value;
 	/**
 	 * 字典文本

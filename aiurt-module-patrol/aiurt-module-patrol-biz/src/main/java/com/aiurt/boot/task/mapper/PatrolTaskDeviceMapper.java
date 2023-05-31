@@ -232,4 +232,12 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     List<PatrolTaskDeviceDTO> getMacByDeviceId(@Param("id")String id);
+
+    /**
+     * PC巡检任务池获取子系统名称和巡检单主表ids
+     *
+     * @param collect
+     * @return
+     */
+    List<PatrolTaskDeviceParam> getIdsAndSystemName(@Param("collect") List<String> collect);
 }

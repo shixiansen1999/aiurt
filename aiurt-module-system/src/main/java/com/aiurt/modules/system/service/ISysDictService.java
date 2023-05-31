@@ -259,4 +259,11 @@ public interface ISysDictService extends IService<SysDict> {
 	 * @return
 	 */
     String getCurrentNewModified(String dictCode);
+
+	/**
+	 * 根据字典值列表 查询 text 和 value
+	 * @param id
+	 * @return
+	 */
+	DictModel dictById(String id);
 }

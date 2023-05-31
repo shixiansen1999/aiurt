@@ -1166,5 +1166,17 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     Date getRecentConnectTimeByStationCode(String stationCode);
+
+    /**
+     * 保存
+     * @param sysAttachment
+     */
+    void saveSysAttachment(SysAttachment sysAttachment);
+    /**
+     * 字典值列表的id翻译
+     * @param id
+     * @return
+     */
+    DictModel dictById(String id);
 }
 
