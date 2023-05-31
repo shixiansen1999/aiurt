@@ -1,7 +1,8 @@
 package com.aiurt.modules.system.controller;
 
 
-import com.aiurt.modules.system.service.impl.OfficeFileImpl;
+import com.aiurt.modules.system.service.IOfficeFileService;
+import com.aiurt.modules.system.service.impl.OfficeFileServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -26,7 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 public class OfficeFileController {
 
     @Autowired
-    private OfficeFileImpl officeFile;
+    private IOfficeFileService officeFile;
 
     /**
      * 在线编辑回调

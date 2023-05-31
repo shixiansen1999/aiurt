@@ -18,7 +18,6 @@ import com.aiurt.modules.sysfile.param.SysFolderParam;
 import com.aiurt.modules.sysfile.service.ISysFileService;
 import com.aiurt.modules.sysfile.service.ISysFolderFilePermissionService;
 import com.aiurt.modules.sysfile.service.ISysFolderService;
-import com.aiurt.modules.sysfile.utils.FileNameUtils;
 import com.aiurt.modules.sysfile.vo.*;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -100,9 +99,6 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
         this.validateSysFolderFilePermissionParams(param.getSysFolderFilePermissionParams());
 
         try {
-            // 修改文件夹基本信息
-            updateFileType(sysFileType, param);
-
             // 删除原来的权限信息
             boolean isDeleteSuccess = deleteOriginalPermissions(sysFileType);
 
@@ -531,6 +527,8 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
             throw new AiurtBootException("文件夹名称不能为空");
         }
 
+        sysFileType.setUpdateTime(new Date());
+        sysFileType.setUpdateBy(getLoginUser().getUsername());
         sysFileType.setName(name.trim());
         sysFolderMapper.updateById(sysFileType);
     }

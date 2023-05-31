@@ -64,14 +64,14 @@ public class SysFolderController {
     }
 
     /**
-     * 编辑文件夹
+     * 编辑文件夹权限管理
      *
      * @param req   HttpServletRequest对象，用于获取请求参数和会话信息
      * @param param SysFolderParam对象，包含要编辑的系统文件夹参数信息
      * @return Result对象，表示编辑操作的结果
      */
-    @AutoLog(value = "编辑文件夹")
-    @ApiOperation(value = "编辑文件夹", notes = "编辑文件夹")
+    @AutoLog(value = "编辑文件夹权限管理")
+    @ApiOperation(value = "编辑文件夹权限管理", notes = "编辑文件夹权限管理")
     @PostMapping(value = "/edit")
     public Result<?> edit(HttpServletRequest req, @RequestBody SysFolderParam param) {
         sysFolderService.edit(req, param);

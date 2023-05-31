@@ -93,16 +93,16 @@ public class SysFileManageController {
     }
 
     /**
-     * 编辑文件
+     * 编辑文件权限管理
      *
      * @param req          HttpServletRequest对象，用于获取请求相关信息
      * @param sysFileParam SysFileParam对象，待编辑的文件信息
      * @return 编辑结果，包含SysFile对象
      */
-    @AutoLog(value = "编辑文件")
-    @ApiOperation(value = "编辑文件", notes = "编辑文件")
+    @AutoLog(value = "编辑文件权限管理")
+    @ApiOperation(value = "编辑文件权限管理", notes = "编辑文件权限管理")
     @PutMapping(value = "/edit")
-    public Result<SysFile> editFile(HttpServletRequest req, @RequestBody  SysFileParam sysFileParam) {
+    public Result<SysFile> editFile(HttpServletRequest req, @RequestBody SysFileParam sysFileParam) {
         sysFileManageService.editFile(sysFileParam);
         return Result.OK("编辑文档成功");
     }

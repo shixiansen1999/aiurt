@@ -22,7 +22,6 @@ import com.aiurt.modules.sysfile.param.SysFileWebParam;
 import com.aiurt.modules.sysfile.service.ISysFileManageService;
 import com.aiurt.modules.sysfile.service.ISysFolderFilePermissionService;
 import com.aiurt.modules.sysfile.service.ISysFolderService;
-import com.aiurt.modules.sysfile.utils.FileNameUtils;
 import com.aiurt.modules.sysfile.vo.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -70,10 +69,17 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
     @Override
     public Page<SysFileManageVO> getFilePageList(Page<SysFileManageVO> page, SysFileWebParam sysFileWebParam) {
         LoginUser loginUser = getLoginUser();
+
+        trimSysFileWebParamName(sysFileWebParam);
+
         List<String> userNames = getUserNames(sysFileWebParam);
 
         // 为了查询文件夹时把他子级所有文件夹的文件也查出来，所以利用folderCodeCc文件夹编码右模糊匹配
         setFolderCode(sysFileWebParam);
+
+        if (ObjectUtil.isNotEmpty(sysFileWebParam) && StrUtil.isNotEmpty(sysFileWebParam.getName())) {
+            sysFileWebParam.setName(sysFileWebParam.getName().trim());
+        }
 
         List<SysFileManageVO> result = sysFileManageMapper.getFilePageList(page, sysFileWebParam, loginUser.getId(), loginUser.getOrgCode(), userNames);
 
@@ -121,9 +127,6 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
         sysFolderService.validateSysFolderFilePermissionParams(sysFileParam.getSysFolderFilePermissionParams());
 
         try {
-            // 修改文件基本信息
-            updateFile(sysFile, sysFileParam);
-
             // 删除原来的权限信息
             boolean isDeleteSuccess = deleteOriginalPermissions(sysFile);
 
@@ -225,14 +228,17 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
             parentId = SysFileConstant.NUM_LONG_0;
         }
 
-        Page<SysFileManageAppVO> listPage;
-        if (SysFileConstant.NUM_LONG_0.equals(parentId)) {
-            listPage = baseMapper.listTopLevelFolders(page, parentId, fileName, loginUser.getId(), loginUser.getOrgCode());
-        } else {
-            listPage = baseMapper.listChildNodesByParentId(page, parentId, fileName, loginUser.getId(), loginUser.getOrgCode());
+        if (StrUtil.isNotEmpty(fileName)) {
+            fileName = fileName.trim();
         }
 
-        return listPage;
+        if (SysFileConstant.NUM_LONG_0.equals(parentId)) {
+            page = baseMapper.listTopLevelFolders(page, parentId, fileName, loginUser.getId(), loginUser.getOrgCode());
+        } else {
+            page = baseMapper.listChildNodesByParentId(page, parentId, fileName, loginUser.getId(), loginUser.getOrgCode());
+        }
+
+        return page;
     }
 
     @Override
@@ -245,6 +251,8 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
             throw new AiurtBootException("文件名称不能为空");
         }
 
+        sysFile.setUpdateTime(new Date());
+        sysFile.setUpdateBy(getLoginUser().getUsername());
         sysFile.setName(name.trim());
         sysFileManageMapper.updateById(sysFile);
     }
@@ -556,4 +564,20 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
         return sysFile;
     }
 
+    /**
+     * 如果 SysFileWebParam 对象不为空，并且名称字段（name）不为空字符串，则修剪 SysFileWebParam 对象的名称字段。
+     *
+     * @param sysFileWebParam 要修剪名称字段的 SysFileWebParam 对象。
+     */
+    private void trimSysFileWebParamName(SysFileWebParam sysFileWebParam) {
+        if (ObjectUtil.isNotEmpty(sysFileWebParam)) {
+            if (StrUtil.isNotEmpty(sysFileWebParam.getName())) {
+                sysFileWebParam.setName(sysFileWebParam.getName().trim());
+            }
+
+            if (StrUtil.isNotEmpty(sysFileWebParam.getCreateByName())) {
+                sysFileWebParam.setCreateByName(sysFileWebParam.getCreateByName().trim());
+            }
+        }
+    }
 }
