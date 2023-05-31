@@ -2,6 +2,7 @@ package com.aiurt.modules.system.service;
 
 import com.aiurt.modules.system.entity.SysDictItem;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.system.vo.DictModel;
 
 import java.util.List;
 
@@ -21,4 +22,11 @@ public interface ISysDictItemService extends IService<SysDictItem> {
      * @return
      */
     public List<SysDictItem> selectItemsByMainId(String mainId);
+
+    /**
+     * 根据字典code查询字典项
+     * @param code
+     * @return
+     */
+    List<DictModel> dictByCode(String code);
 }

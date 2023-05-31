@@ -3,6 +3,7 @@ package com.aiurt.modules.system.controller;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -16,6 +17,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang.StringUtils;
 import com.aiurt.modules.system.service.ISysDictItemService;
+import org.jeecg.common.system.vo.DictModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -131,7 +133,16 @@ public class SysDictItemController {
 		}
 		return result;
 	}
-
+	/**
+	 * @功能：根据code查询DictModel数据
+	 * @param code
+	 * @return
+	 */
+	@RequestMapping(value = "/dictByCode", method = RequestMethod.GET)
+	public Result<List<DictModel>> dictByCode(@RequestParam(name="code",required=true) String code) {
+		List<DictModel> joinSystem = sysDictItemService.dictByCode(code);
+		return Result.ok(joinSystem);
+	}
 	/**
 	 * @功能：批量删除字典数据
 	 * @param ids

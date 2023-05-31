@@ -156,8 +156,8 @@ spring:
           #driver-class-name: com.mysql.cj.jdbc.Driver
   #redis 配置
   redis:
-    database: 0
-    host: 192.168.1.28
+    database: 5
+    host: 192.168.1.29
     lettuce:
       pool:
         max-active: 8   #最大连接数据库连接数,设 -1 为没有限制
@@ -166,7 +166,7 @@ spring:
         min-idle: 0     #最小等待连接中的数量,设 0 为没有限制
       shutdown-timeout: 100ms
     password: 1qaz@2wsx
-    port: 7379
+    port: 6379
   elasticsearch:
     uris: http://192.168.1.29:9200
     connection-timeout: 3000
@@ -201,7 +201,7 @@ jeecg:
   # 签名密钥串(前后端要一致，正式发布请自行修改)
   signatureSecret: dd05f1c54d63749eda95f9fa6d49v442a
   # 本地：local\Minio：minio\阿里云：alioss
-  uploadType: local
+  uploadType: minio
   path:
     #文件上传根目录 设置
     upload: /opt/upFiles
@@ -296,8 +296,8 @@ logging:
   level:
     com:
      aiurt:
-      boot:
-       index:
+      modules:
+       sysfile:
         mapper: debug
 #swagger
 knife4j:

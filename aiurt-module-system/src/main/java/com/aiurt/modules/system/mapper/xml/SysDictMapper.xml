@@ -11,7 +11,7 @@
 
 	<!-- 通过字典code获取有效的字典数据项 -->
 	<select id="queryEnableDictItemsByCode" parameterType="String"  resultType="org.jeecg.common.system.vo.DictModel">
-		   select s.item_value as "value",s.item_text as "text" from sys_dict_item s
+		   select s.id,s.item_value as "value",s.item_text as "text" from sys_dict_item s
 		   where dict_id = (select id from sys_dict where dict_code = #{code})
 		   and s.status = 1
 		   order by s.sort_order asc
@@ -215,4 +215,12 @@
 	LEFT JOIN sys_dict_item sdi ON sdi.dict_id = sd.id
 	where sd.dict_code = #{dictCode}
 	</select>
+    <select id="dictByid" resultType="org.jeecg.common.system.vo.DictModel">
+		select item_text as text ,item_value as value from sys_dict_item
+		<where>
+		<if test="id != null and id != ''">
+			id = #{id}
+		</if>
+		</where>
+    </select>
 </mapper>

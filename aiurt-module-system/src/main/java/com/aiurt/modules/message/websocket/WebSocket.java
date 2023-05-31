@@ -8,12 +8,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import javax.websocket.OnClose;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
+import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
+import java.io.EOFException;
+import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -170,6 +169,19 @@ public class WebSocket {
                 e.printStackTrace();
             }
         }
+    }
+    /**
+     * 配置错误信息处理
+     * @param session
+     * @param t
+     */
+    @OnError
+    public void onError(Session session, Throwable t) {
+        //什么都不想打印都去掉就好了
+        log.info("【websocket消息】出现未知错误 ");
+        //打印错误信息，如果你不想打印错误信息，去掉就好了
+        //这里打印的也是  java.io.EOFException: null
+        t.printStackTrace();
     }
 
     // 此为广播消息
