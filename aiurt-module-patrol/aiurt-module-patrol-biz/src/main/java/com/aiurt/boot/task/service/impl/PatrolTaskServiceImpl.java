@@ -71,6 +71,7 @@ import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.ss.util.RegionUtil;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -2328,9 +2329,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
                 // 设置边距（单位为英寸）
                 // 设置打印边距
-
                 //自动换行
-                setWrapText(workbook,7,startRow,endRow,0,3);
+               // setWrapText(workbook,1,startRow,endRow,0,0);
+                addReturn(workbook,startRow,endRow,0,0);
+                setWrapText(workbook,7,startRow,endRow,1,2);
                 //合并指定范围行的单元格
                 mergeCellsInColumnRange(workbook,40,startRow,endRow,firstColumn,lastColumn);
                 // 保存修改后的Excel文件
@@ -2437,6 +2439,44 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
         return writeCellData;
     }
+    private void addReturn(Workbook workbook, int startRow, int endRow,int startColumn, int endColumn){
+        Sheet sheet = workbook.getSheetAt(0);
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setBorderTop(BorderStyle.THIN);
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        cellStyle.setWrapText(true);
+
+        Font font = workbook.createFont();
+        // 设置字体为宋体
+        font.setFontName("宋体");
+        // 设置字体大小为9号
+        font.setFontHeightInPoints((short) 9);
+        cellStyle.setFont(font);
+        for (int row = startRow; row <= endRow; row++) {
+            Row currentRow = sheet.getRow(row);
+            for (int col = startColumn; col <= endColumn; col++) {
+                Cell cell = currentRow.getCell(col);
+                String cellValue = cell.getStringCellValue();
+                cell.setCellStyle(cellStyle);
+                String v = addReturnAfterEachCharacter(cellValue);
+                cell.setCellValue(v);
+
+            }
+        }
+
+    }
+    private static String addReturnAfterEachCharacter(String text) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            stringBuilder.append(text.charAt(i));
+            stringBuilder.append("\n");
+        }
+        return stringBuilder.toString();
+    }
     private void setWrapText(Workbook workbook,int returnRowMaxLength, int startRow, int endRow,int startColumn, int endColumn){
         Sheet sheet = workbook.getSheetAt(0);
         CellStyle cellStyle = workbook.createCellStyle();
@@ -2445,7 +2485,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         cellStyle.setBorderLeft(BorderStyle.THIN);
         cellStyle.setBorderRight(BorderStyle.THIN);
         cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        cellStyle.setWrapText(true);//设置自动换行
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        //设置自动换行
+        cellStyle.setWrapText(true);
+        Font font = workbook.createFont();
+        // 设置字体为宋体
+        font.setFontName("宋体");
+        // 设置字体大小为9号
+        font.setFontHeightInPoints((short) 9);
+        cellStyle.setFont(font);
         for (int row = startRow; row <= endRow; row++) {
             Row currentRow = sheet.getRow(row);
             for (int col = startColumn; col <= endColumn; col++) {
@@ -2481,12 +2529,24 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         cellStyle.setBorderBottom(BorderStyle.THIN);
         cellStyle.setBorderLeft(BorderStyle.THIN);
         cellStyle.setBorderRight(BorderStyle.THIN);
+        Font font = workbook.createFont();
+        // 设置字体为宋体
+        font.setFontName("宋体");
+        // 设置字体大小为9号
+        font.setFontHeightInPoints((short) 9);
+        cellStyle.setFont(font);
+        sheet.autoSizeColumn(0);
         cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
-        cellStyle.setWrapText(true);//设置自动换行
+        //设置自动换行
+        cellStyle.setWrapText(true);
 
         for (int row = startRow; row <= endRow; row++) {
             CellRangeAddress cellRangeAddress = new CellRangeAddress(row, row, startColumn, endColumn);
             sheet.addMergedRegion(cellRangeAddress);
+            RegionUtil.setBorderTop(BorderStyle.THIN, cellRangeAddress, sheet);
+            RegionUtil.setBorderRight(BorderStyle.THIN, cellRangeAddress, sheet);
+            RegionUtil.setBorderBottom(BorderStyle.THIN, cellRangeAddress, sheet);
+            RegionUtil.setBorderLeft(BorderStyle.THIN, cellRangeAddress, sheet);
             Row currentRow = sheet.getRow(row);
             // 给合并的区域设置框线
             for (int col = startColumn; col <= endColumn; col++) {
