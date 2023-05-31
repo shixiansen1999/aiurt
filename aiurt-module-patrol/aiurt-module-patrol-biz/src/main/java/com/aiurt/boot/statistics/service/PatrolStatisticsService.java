@@ -635,6 +635,7 @@ public class PatrolStatisticsService {
         String filterConditions = this.getPermissionSQL(request);
         indexScheduleDTO.setJointSQL(filterConditions);
         pageList = patrolTaskMapper.getScheduleDeviceList(page, indexScheduleDTO);
+        boolean b1 = GlobalThreadLocal.setDataFilter(false);
         pageList.getRecords().forEach(l -> {
             String taskCode = l.getCode();
             // 巡视用户信息
@@ -674,7 +675,7 @@ public class PatrolStatisticsService {
             l.setStationInfo(CollUtil.join(stationInfo, ","));
 
         });
-
+        GlobalThreadLocal.setDataFilter(b1);
         return pageList;
     }
 }
