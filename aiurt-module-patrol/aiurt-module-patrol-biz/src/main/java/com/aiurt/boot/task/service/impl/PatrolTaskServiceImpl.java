@@ -2212,6 +2212,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         // 填充list 的时候还要注意 模板中{.} 多了个点 表示list
         // 如果填充list的对象是map,必须包涵所有list的key,哪怕数据为null，必须使用map.put(key,null)
         String templateFileName = "patrol" +"/" + "template" + "/" + excelName;
+        log.info("templateFileName:"+templateFileName);
         InputStream minioFile = MinioUtil.getMinioFile("platform",templateFileName);
         Workbook workbookTpl = null;
         CellRangeAddress mergeRegion = null;
