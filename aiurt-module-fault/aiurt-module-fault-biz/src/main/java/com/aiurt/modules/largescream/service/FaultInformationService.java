@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.fault.constants.FaultConstant;
@@ -28,10 +29,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserMajorModel;
-import org.jeecg.common.system.vo.CsUserSubsystemModel;
-import org.jeecg.common.system.vo.DictModel;
-import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -70,7 +69,8 @@ public class FaultInformationService {
 
     @Value("${fault.lv3}")
     private Integer lv3Hours;
-
+    @Autowired
+    private ISysParamAPI sysParamApi;
 
     /**
      * 综合大屏-故障信息统计数量
@@ -257,18 +257,22 @@ public class FaultInformationService {
 
         List<CsLine> allLine = sysBaseApi.getAllLine();
         List<CsLine> list;
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.OLD_LINE);
+        String value = paramModel.getValue();
         if (StrUtil.isNotEmpty(lineCode)) {
             list = allLine.stream().filter(a -> lineCode.equals(a.getLineCode()))
-                    .filter(a -> !"1号线-旧".equals(a.getLineName()))
-                    .filter(a -> !"2号线-旧".equals(a.getLineName())).collect(Collectors.toList());
+                    .filter(a -> !value.contains(a.getLineCode()))
+                    .collect(Collectors.toList());
         } else {
-            list = allLine.stream().filter(a -> !"1号线-旧".equals(a.getLineName()))
-                    .filter(a -> !"2号线-旧".equals(a.getLineName())).collect(Collectors.toList());
+            list = allLine.stream().filter(a -> !value.contains(a.getLineCode()))
+                    .collect(Collectors.toList());
         }
 
         List<Fault> largeLineFaultInfo = faultInformationMapper.getLargeLineFaultInfo(startDate, endDate, majors,lineCode);
         //根据line_code分组，查询同一条线路下的所有故障
-        Map<String, List<Fault>> collect = largeLineFaultInfo.stream().collect(Collectors.groupingBy(Fault::getLineCode));
+        Map<String, List<Fault>> collect = largeLineFaultInfo.stream()
+                .filter(a -> !value.contains(a.getLineCode()))
+                .collect(Collectors.groupingBy(Fault::getLineCode));
 
         Map<String, List<CsLine>> listMap = list.stream().collect(Collectors.groupingBy(CsLine::getLineCode));
 

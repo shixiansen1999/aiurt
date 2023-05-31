@@ -262,4 +262,8 @@ public interface SysParamCodeConstant {
      * 更加配置获取更新upload_time时间间隔
      */
     String WIFI_UPDATE_INTERVAL = "wifi_update_interval";
+    /**
+     * 根据配置获取要筛选掉的线路数据
+     */
+    String OLD_LINE = "old_line";
 }
