@@ -23,13 +23,13 @@ public interface SysFileManageMapper extends BaseMapper<SysFile> {
      * 根据条件查询文件分页列表
      *
      * @param page             分页对象，用于返回分页结果
-     * @param sysFileWebParam  文件查询参数对象，包含查询条件
+     * @param condition  文件查询参数对象，包含查询条件
      * @param currLoginUserId  当前登录用户ID
      * @param currLoginOrgCode 当前登录用户所属组织机构代码
      * @param userNames        用户账号集合
      * @return 文件分页列表
      */
-    List<SysFileManageVO> getFilePageList(@Param("page") Page<SysFileManageVO> page, @Param("sysFileWebParam") SysFileWebParam sysFileWebParam, @Param("currLoginUserId") String currLoginUserId, @Param("currLoginOrgCode") String currLoginOrgCode, @Param("userNames") List<String> userNames);
+    List<SysFileManageVO> getFilePageList(@Param("page") Page<SysFileManageVO> page, @Param("condition") SysFileWebParam condition, @Param("currLoginUserId") String currLoginUserId, @Param("currLoginOrgCode") String currLoginOrgCode, @Param("userNames") List<String> userNames);
 
     /**
      * 根据文件夹编码查询所有子级文件夹下的文件的文件的类型

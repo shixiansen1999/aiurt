@@ -18,6 +18,7 @@ import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.service.ISysFileManageService;
 import com.aiurt.modules.sysfile.service.ISysFileService;
 import com.aiurt.modules.system.constant.SystemConstant;
+import com.aiurt.modules.system.service.IOfficeFileService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -52,7 +53,7 @@ import java.util.Scanner;
  */
 @Slf4j
 @Service
-public class OfficeFileImpl {
+public class OfficeFileServiceImpl implements IOfficeFileService {
 
     @Autowired
     private RestTemplate restTemplate;
@@ -91,6 +92,7 @@ public class OfficeFileImpl {
      * @param response 表示要发送的 HttpServletResponse 对象
      * @throws Exception 如果在处理请求过程中发生错误
      */
+    @Override
     public void callback(HttpServletRequest request, HttpServletResponse response) throws IOException {
         PrintWriter writer = response.getWriter();
         Scanner scanner = new Scanner(request.getInputStream()).useDelimiter("\\A");
@@ -195,6 +197,25 @@ public class OfficeFileImpl {
         this.updateEsData(attachment, bytes);
     }
 
+    @Override
+    public String getSysFileKey(String id) {
+        if (StrUtil.isBlank(id)) {
+            return UUIDGenerator.generate();
+        }
+
+        SysAttachment sysAttachment = sysAttachmentService.getById(id);
+        if (ObjectUtil.isEmpty(sysAttachment)) {
+            return UUIDGenerator.generate();
+        }
+
+        String documentKey = sysAttachment.getDocumentKey();
+        if (StrUtil.isBlank(documentKey)) {
+            documentKey = sysAttachment.getId();
+        }
+
+        return documentKey;
+    }
+
     /**
      * 更新规范规程知识库的文件
      *
@@ -252,6 +273,14 @@ public class OfficeFileImpl {
         return response;
     }
 
+    /**
+     * 在本地存储中上传文件。
+     *
+     * @param fileName   文件名
+     * @param attachment SysAttachment对象，表示文件的相关信息
+     * @param stream     文件输入流
+     * @throws IOException 如果发生I/O错误
+     */
     private void uploadLocal(String fileName, SysAttachment attachment, InputStream stream) throws IOException {
         String ctxPath = uploadpath;
         File file = new File(ctxPath);
@@ -285,19 +314,5 @@ public class OfficeFileImpl {
         String bestMatchPattern = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
         return new AntPathMatcher().extractPathWithinPattern(bestMatchPattern, path);
     }
-
-    public String getSysFileKey(String id) {
-        if (StrUtil.isBlank(id)) {
-            return UUIDGenerator.generate();
-        }
-        SysAttachment sysAttachment = sysAttachmentService.getById(id);
-        String documentKey = sysAttachment.getDocumentKey();
-
-        if (StrUtil.isBlank(documentKey)) {
-            documentKey = sysAttachment.getId();
-        }
-        return documentKey;
-    }
-
 
 }

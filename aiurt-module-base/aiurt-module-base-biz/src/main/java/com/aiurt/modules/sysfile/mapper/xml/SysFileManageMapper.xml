@@ -34,17 +34,17 @@
         )
         AND sf.del_flag = 0
         AND ( sffp1.user_id = #{currLoginUserId} OR sffp1.org_code = #{currLoginOrgCode})
-        <if test="sysFileWebParam.typeId !='' and sysFileWebParam.typeId!=null">
-            AND sf.code_cc LIKE CONCAT (#{sysFileWebParam.folderCodeCc}, '%')
+        <if test="condition.typeId !='' and condition.typeId!=null">
+            AND sf.code_cc LIKE CONCAT (#{condition.folderCodeCc}, '%')
         </if>
-        <if test="sysFileWebParam.name !='' and sysFileWebParam.name!=null">
-            AND sf.name  LIKE CONCAT ('%', #{sysFileWebParam.name}, '%')
+        <if test="condition.name !='' and condition.name!=null">
+            AND sf.name  LIKE CONCAT ('%', #{condition.name}, '%')
         </if>
-        <if test="sysFileWebParam.type !='' and sysFileWebParam.type!=null">
-            AND sf.type = #{sysFileWebParam.type}
+        <if test="condition.type !='' and condition.type!=null">
+            AND sf.type = #{condition.type}
         </if>
-        <if test="sysFileWebParam.startTime !=null and sysFileWebParam.endTime!=null">
-            AND sf.create_time between #{sysFileWebParam.startTime} and #{sysFileWebParam.endTime}
+        <if test="condition.startTime !=null and condition.endTime!=null">
+            AND sf.create_time between #{condition.startTime} and #{condition.endTime}
         </if>
         <if test="userNames!=null and userNames.size>0">
             AND sf.create_by in
@@ -53,7 +53,7 @@
             </foreach>
         </if>
         GROUP BY sf.id
-        ORDER BY sf.create_time desc
+        ORDER BY sf.create_time DESC,sf.id ASC
     </select>
     <select id="queryTypeByFolderCode" resultType="com.aiurt.modules.sysfile.vo.TypeNameVO">
         SELECT DISTINCT
@@ -132,7 +132,7 @@
         </if>
         GROUP BY
         sft1.id
-        ORDER BY sft1.create_time desc
+        ORDER BY sft1.create_time DESC,sft1.id ASC
     </select>
 
     <select id="listChildNodesByParentId" resultType="com.aiurt.modules.sysfile.vo.SysFileManageAppVO">
@@ -233,6 +233,6 @@
         </if>
         </where>
         ORDER BY
-            temp.createTime DESC;
+        temp.status ASC,temp.createTime DESC,temp.id ASC;
     </select>
 </mapper>

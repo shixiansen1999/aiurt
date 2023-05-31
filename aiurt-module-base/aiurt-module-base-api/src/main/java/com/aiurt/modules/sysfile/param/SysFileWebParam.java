@@ -1,5 +1,6 @@
 package com.aiurt.modules.sysfile.param;
 
+import com.aiurt.modules.base.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -18,7 +19,7 @@ import java.time.LocalDate;
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-public class SysFileWebParam implements Serializable {
+public class SysFileWebParam extends BaseEntity implements Serializable {
 
     /**
      * 创建人
