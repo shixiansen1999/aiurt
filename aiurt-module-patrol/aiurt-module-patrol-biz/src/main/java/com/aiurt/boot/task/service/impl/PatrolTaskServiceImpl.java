@@ -2527,7 +2527,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
             }
             taskDTO.setPrintStationDTOList(stationDTOS);
-            taskDTO.setTitle(patrolTask.getName() + "巡视表");
+            taskDTO.setTitle(patrolTask.getName());
             arrayList.add(taskDTO);
         }
         return arrayList;
