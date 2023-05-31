@@ -596,12 +596,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param condition
      * @return
      */
-    @DataPermission({
-            @DataColumn(key = "deptName", value = "pto.org_code"),
-            @DataColumn(key = "majorName", value = "ptsd.major_code"),
-            @DataColumn(key = "systemName", value = "ptsd.system_code"),
-            @DataColumn(key = "lineName", value = "pts.line_code"),
-            @DataColumn(key = "stationName", value = "pts.station_code")
-    })
     IPage<IndexTaskInfo> getIndexTaskDeviceList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition);
+
+    IPage<ScheduleTask> getScheduleDeviceList(Page<ScheduleTask> page, @Param("condition")IndexScheduleDTO indexScheduleDTO);
 }
