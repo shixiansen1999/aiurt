@@ -45,6 +45,22 @@ public class KnowledgeBase {
     private String faultPhenomenon;
 
     /**
+     * 故障知识分类编码
+     */
+    @Field(type = FieldType.Keyword)
+    @ApiModelProperty(value = "故障知识分类编码")
+    private String knowledgeBaseTypeCode;
+
+    /**
+     * 故障知识分类名称
+     */
+    @HighlightField(name = "knowledgeBaseTypeName")
+    @Field(type = FieldType.Text, analyzer = "ik_max_word", searchAnalyzer = "ik_smart")
+    @CompletionField(analyzer = "ik_max_word")
+    @ApiModelProperty(value = "故障知识分类名称")
+    private String knowledgeBaseTypeName;
+
+    /**
      * 专业编号
      */
     @Field(type = FieldType.Keyword)

@@ -14,6 +14,28 @@
           "suggest": {
             "type": "completion",
             "analyzer": "ik_max_word"
+          },
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        },
+        "search_analyzer": "ik_smart"
+      },
+      "knowledgeBaseTypeCode": {
+        "type": "keyword"
+      },
+      "knowledgeBaseTypeName": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "fields": {
+          "suggest": {
+            "type": "completion",
+            "analyzer": "ik_max_word"
+          },
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
           }
         },
         "search_analyzer": "ik_smart"

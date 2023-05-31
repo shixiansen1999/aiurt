@@ -41,6 +41,7 @@ import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.aiurt.modules.faultsparepart.service.IFaultSparePartService;
 import com.aiurt.modules.flow.api.FlowBaseApi;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
+import com.aiurt.modules.knowledge.dto.KnowledgeBaseMatchDTO;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseReqDTO;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseResDTO;
 import com.aiurt.modules.knowledge.entity.CauseSolution;
@@ -53,6 +54,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -69,8 +71,6 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.SpringContextUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -94,10 +94,10 @@ import java.util.stream.Collectors;
  * @Date: 2022-06-24
  * @Version: V1.0
  */
+@Slf4j
 @Service
 public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBaseMapper, FaultKnowledgeBase> implements IFaultKnowledgeBaseService, IFlowableBaseUpdateStatusService {
 
-    private static final Logger log1 = LoggerFactory.getLogger(FaultKnowledgeBaseServiceImpl.class);
     @Autowired
     private FaultKnowledgeBaseMapper faultKnowledgeBaseMapper;
     @Resource
@@ -1201,7 +1201,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         try {
             pageList = elasticApi.search(page, knowledgeBaseReqDTO);
         } catch (Exception e) {
-            log1.info("高级搜索分页查询异常：{}", e.getMessage());
+            log.info("高级搜索分页查询异常：{}", e.getMessage());
             throw new AiurtBootException("搜索异常！");
         }
         return pageList;
@@ -1300,7 +1300,32 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         try {
             BulkResponse[] bulkResponses = elasticApi.saveBatch(knowledgeBases);
         } catch (Exception e) {
+            log.error("同步知识库数据异常：{}", e.getMessage());
             throw new AiurtBootException("同步知识库数据异常！");
         }
+    }
+
+    @Override
+    public IPage<KnowledgeBaseResDTO> knowledgeBaseMatching(Page<KnowledgeBaseResDTO> page, KnowledgeBaseMatchDTO knowledgeBaseMatchDTO) {
+        IPage<KnowledgeBaseResDTO> pageList = null;
+        try {
+            pageList = elasticApi.knowledgeBaseMatching(page, knowledgeBaseMatchDTO);
+        } catch (IOException e) {
+            log.error("知识库匹配搜索异常：{}", e.getMessage());
+            throw new AiurtBootException("搜索异常！");
+        }
+        return pageList;
+    }
+
+    @Override
+    public List<String> phenomenonMatching(HttpServletRequest request, HttpServletResponse response, KnowledgeBaseMatchDTO knowledgeBaseMatchDTO) {
+        List<String> list = null;
+        try {
+            list = elasticApi.phenomenonMatching(knowledgeBaseMatchDTO);
+        } catch (Exception e) {
+            log.error("智能助手故障现象匹配搜索异常：{}", e.getMessage());
+            throw new AiurtBootException("搜索异常！");
+        }
+        return list;
     }
 }

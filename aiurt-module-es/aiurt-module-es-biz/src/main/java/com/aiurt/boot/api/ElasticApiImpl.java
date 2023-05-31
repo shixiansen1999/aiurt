@@ -4,18 +4,27 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.core.common.model.HighLight;
 import com.aiurt.boot.core.common.model.Sort;
+import com.aiurt.boot.core.dto.FaultKnowledgeBaseModel;
 import com.aiurt.boot.core.service.ElasticService;
 import com.aiurt.boot.core.utils.ElasticTools;
+import com.aiurt.modules.knowledge.dto.KnowledgeBaseMatchDTO;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseReqDTO;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseResDTO;
 import com.aiurt.modules.knowledge.entity.KnowledgeBase;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.collapse.CollapseBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.BeanUtils;
@@ -26,6 +35,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -71,20 +82,44 @@ public class ElasticApiImpl implements ElasticAPI {
             String deviceTypeCode = knowledgeBaseReqDTO.getDeviceTypeCode();
             String materialCode = knowledgeBaseReqDTO.getMaterialCode();
             Integer sortFlag = knowledgeBaseReqDTO.getSort();
-            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+            AtomicReference<BoolQueryBuilder> boolQueryBuilder = new AtomicReference<>();
+//            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
             // 多字段匹配
             if (ObjectUtil.isNotEmpty(keyword)) {
-                String[] fieldNames = {"faultPhenomenon", "majorName", "systemName", "materialName", "deviceTypeName"};
-                boolQueryBuilder.must(QueryBuilders.multiMatchQuery(keyword, fieldNames));
+                if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                    boolQueryBuilder.set(QueryBuilders.boolQuery());
+                }
+                String[] fieldNames = {"faultPhenomenon", "knowledgeBaseTypeName", "majorName", "systemName", "materialName", "deviceTypeName"};
+                boolQueryBuilder.get().must(QueryBuilders.multiMatchQuery(keyword, fieldNames));
             }
             // 专业编号
-            Optional.ofNullable(majorCode).ifPresent(major -> boolQueryBuilder.must(QueryBuilders.termQuery("majorCode", major)));
+            Optional.ofNullable(majorCode).ifPresent(major -> {
+                if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                    boolQueryBuilder.set(QueryBuilders.boolQuery());
+                }
+                boolQueryBuilder.get().must(QueryBuilders.termQuery("majorCode", major));
+            });
             // 子系统编号
-            Optional.ofNullable(systemCode).ifPresent(system -> boolQueryBuilder.must(QueryBuilders.termQuery("systemCode", system)));
+            Optional.ofNullable(systemCode).ifPresent(system -> {
+                if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                    boolQueryBuilder.set(QueryBuilders.boolQuery());
+                }
+                boolQueryBuilder.get().must(QueryBuilders.termQuery("systemCode", system));
+            });
             // 设备类型编号
-            Optional.ofNullable(deviceTypeCode).ifPresent(deviceType -> boolQueryBuilder.must(QueryBuilders.termQuery("deviceTypeCode", deviceType)));
+            Optional.ofNullable(deviceTypeCode).ifPresent(deviceType -> {
+                if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                    boolQueryBuilder.set(QueryBuilders.boolQuery());
+                }
+                boolQueryBuilder.get().must(QueryBuilders.termQuery("deviceTypeCode", deviceType));
+            });
             // 组件编号
-            Optional.ofNullable(materialCode).ifPresent(material -> boolQueryBuilder.must(QueryBuilders.termQuery("materialCode", material)));
+            Optional.ofNullable(materialCode).ifPresent(material -> {
+                if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                    boolQueryBuilder.set(QueryBuilders.boolQuery());
+                }
+                boolQueryBuilder.get().must(QueryBuilders.termQuery("materialCode", material));
+            });
 //            // 备件
 //            if (ObjectUtil.isNotEmpty(materialCode)) {
 //                boolQueryBuilder.must(QueryBuilders.nestedQuery(
@@ -93,7 +128,9 @@ public class ElasticApiImpl implements ElasticAPI {
 //                        ScoreMode.Total
 //                ));
 //            }
-            queryBuilder = boolQueryBuilder;
+            if (ObjectUtil.isNotEmpty(boolQueryBuilder.get())) {
+                queryBuilder = boolQueryBuilder.get();
+            }
             // 根据浏览次数降序排序
             if (ObjectUtil.isNotEmpty(sortFlag)) {
                 Sort.Order sortOrder = new Sort.Order(SortOrder.DESC, "scanNum");
@@ -117,5 +154,126 @@ public class ElasticApiImpl implements ElasticAPI {
         page.setTotal(pageList.getTotal());
         page.setRecords(knowledgeBaseRes);
         return page;
+    }
+
+    @Override
+    public IPage<KnowledgeBaseResDTO> knowledgeBaseMatching(Page<KnowledgeBaseResDTO> page, KnowledgeBaseMatchDTO knowledgeBaseMatchDTO) throws IOException {
+        String[] indexs = {"knowledge_base"};
+        // 条件查询
+        QueryBuilder queryBuilder = QueryBuilders.matchAllQuery();
+        if (ObjectUtil.isNotEmpty(knowledgeBaseMatchDTO)) {
+            List<String> devices = knowledgeBaseMatchDTO.getDevices();
+            List<String> phenomenons = knowledgeBaseMatchDTO.getPhenomenons();
+            AtomicReference<BoolQueryBuilder> boolQueryBuilder = new AtomicReference<>();
+            Optional.ofNullable(knowledgeBaseMatchDTO.getMajor())
+                    .ifPresent(major -> {
+                        if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                            boolQueryBuilder.set(QueryBuilders.boolQuery());
+                        }
+                        boolQueryBuilder.get().must(QueryBuilders.matchQuery("majorName", major));
+                    });
+            Optional.ofNullable(knowledgeBaseMatchDTO.getSubsystem())
+                    .ifPresent(subsystem -> {
+                        if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                            boolQueryBuilder.set(QueryBuilders.boolQuery());
+                        }
+                        boolQueryBuilder.get().must(QueryBuilders.matchQuery("systemName", subsystem));
+                    });
+            if (CollUtil.isNotEmpty(devices)) {
+                if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                    boolQueryBuilder.set(QueryBuilders.boolQuery());
+                }
+                boolQueryBuilder.get().must(QueryBuilders.matchQuery("deviceTypeName", devices.stream().collect(Collectors.joining(" "))));
+            }
+            if (CollUtil.isNotEmpty(phenomenons)) {
+                if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                    boolQueryBuilder.set(QueryBuilders.boolQuery());
+                }
+                boolQueryBuilder.get().must(QueryBuilders.matchQuery("faultPhenomenon", phenomenons.stream().collect(Collectors.joining(" "))));
+            }
+            if (ObjectUtil.isNotEmpty(boolQueryBuilder.get())) {
+                queryBuilder = boolQueryBuilder.get();
+            }
+        }
+        IPage<KnowledgeBase> pageList = elasticService.search(new Page(page.getCurrent(), page.getSize()), queryBuilder, indexs, KnowledgeBase.class, null, null);
+        List<KnowledgeBase> records = pageList.getRecords();
+        List<KnowledgeBaseResDTO> knowledgeBaseRes = new ArrayList<>();
+        KnowledgeBaseResDTO knowledgeBase = null;
+        if (CollUtil.isNotEmpty(records)) {
+            for (KnowledgeBase record : records) {
+                knowledgeBase = new KnowledgeBaseResDTO();
+                BeanUtils.copyProperties(record, knowledgeBase);
+                knowledgeBase.setTitle(record.getFaultPhenomenon());
+                knowledgeBaseRes.add(knowledgeBase);
+            }
+        }
+        page.setCurrent(pageList.getCurrent());
+        page.setSize(pageList.getSize());
+        page.setTotal(pageList.getTotal());
+        page.setRecords(knowledgeBaseRes);
+        return page;
+    }
+
+    @Override
+    public List<String> phenomenonMatching(KnowledgeBaseMatchDTO knowledgeBaseMatchDTO) throws Exception {
+        QueryBuilder queryBuilder = QueryBuilders.matchAllQuery();
+        final String fieldName = "faultPhenomenon";
+        String index = "knowledge_base";
+        if (ObjectUtil.isNotEmpty(knowledgeBaseMatchDTO)) {
+            List<String> devices = knowledgeBaseMatchDTO.getDevices();
+            List<String> phenomenons = knowledgeBaseMatchDTO.getPhenomenons();
+            AtomicReference<BoolQueryBuilder> boolQueryBuilder = new AtomicReference<>();
+            Optional.ofNullable(knowledgeBaseMatchDTO.getMajor())
+                    .ifPresent(major -> {
+                        if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                            boolQueryBuilder.set(QueryBuilders.boolQuery());
+                        }
+                        boolQueryBuilder.get().must(QueryBuilders.matchQuery("majorName", major));
+                    });
+            Optional.ofNullable(knowledgeBaseMatchDTO.getSubsystem())
+                    .ifPresent(subsystem -> {
+                        if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                            boolQueryBuilder.set(QueryBuilders.boolQuery());
+                        }
+                        boolQueryBuilder.get().must(QueryBuilders.matchQuery("systemName", subsystem));
+                    });
+            if (CollUtil.isNotEmpty(devices)) {
+                if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                    boolQueryBuilder.set(QueryBuilders.boolQuery());
+                }
+                String device = devices.stream().collect(Collectors.joining(" "));
+                boolQueryBuilder.get().must(QueryBuilders.matchQuery("deviceTypeName", device));
+            }
+            if (CollUtil.isNotEmpty(phenomenons)) {
+                if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                    boolQueryBuilder.set(QueryBuilders.boolQuery());
+                }
+                String phenomenon = phenomenons.stream().collect(Collectors.joining(" "));
+                boolQueryBuilder.get().must(QueryBuilders.matchQuery("faultPhenomenon", phenomenon));
+            }
+            if (ObjectUtil.isNotEmpty(boolQueryBuilder.get())) {
+                queryBuilder = boolQueryBuilder.get();
+            }
+        }
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        CollapseBuilder collapseBuilder = new CollapseBuilder(fieldName + ".keyword");
+        builder.query(queryBuilder);
+        builder.size(10);
+        builder.collapse(collapseBuilder);
+
+        SearchRequest searchRequest = new SearchRequest(index);
+        searchRequest.source(builder);
+
+        List<String> phenomenons = new ArrayList<>();
+        SearchResponse searchResponse = elasticService.search(searchRequest);
+        SearchHits hits = searchResponse.getHits();
+        SearchHit[] searchHits = hits.getHits();
+        for (SearchHit hit : searchHits) {
+            FaultKnowledgeBaseModel knowledgeBaseModel = JSON.parseObject(hit.getSourceAsString(), FaultKnowledgeBaseModel.class);
+            if (ObjectUtil.isNotEmpty(knowledgeBaseModel) && ObjectUtil.isNotEmpty(knowledgeBaseModel.getFaultPhenomenon())) {
+                phenomenons.add(knowledgeBaseModel.getFaultPhenomenon());
+            }
+        }
+        return phenomenons;
     }
 }

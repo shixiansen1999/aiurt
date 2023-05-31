@@ -41,6 +41,18 @@ public class KnowledgeBaseResDTO implements Serializable {
     private String title;
 
     /**
+     * 故障知识分类编码
+     */
+    @ApiModelProperty(value = "故障知识分类编码")
+    private String knowledgeBaseTypeCode;
+
+    /**
+     * 故障知识分类名称
+     */
+    @ApiModelProperty(value = "故障知识分类名称")
+    private String knowledgeBaseTypeName;
+
+    /**
      * 专业编号
      */
     @ApiModelProperty(value = "专业编号")

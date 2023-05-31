@@ -6,6 +6,7 @@ import com.aiurt.modules.faultknowledgebase.dto.RepairSolRecDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.knowledge.dto.KnowledgeBaseMatchDTO;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseReqDTO;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseResDTO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -123,4 +124,23 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @param response
      */
     void synchrodata(HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 智能助手知识库数据匹配
+     *
+     * @param page
+     * @param knowledgeBaseMatchDTO
+     * @return
+     */
+    IPage<KnowledgeBaseResDTO> knowledgeBaseMatching(Page<KnowledgeBaseResDTO> page, KnowledgeBaseMatchDTO knowledgeBaseMatchDTO);
+
+    /**
+     * 智能助手故障现象匹配
+     *
+     * @param request
+     * @param response
+     * @param knowledgeBaseMatchDTO
+     * @return
+     */
+    List<String> phenomenonMatching(HttpServletRequest request, HttpServletResponse response, KnowledgeBaseMatchDTO knowledgeBaseMatchDTO);
 }
