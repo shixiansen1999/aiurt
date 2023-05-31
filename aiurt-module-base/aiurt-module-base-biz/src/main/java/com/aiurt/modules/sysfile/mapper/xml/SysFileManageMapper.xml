@@ -53,7 +53,7 @@
             </foreach>
         </if>
         GROUP BY sf.id
-        ORDER BY sf.create_time desc
+        ORDER BY sf.create_time DESC,sf.id ASC
     </select>
     <select id="queryTypeByFolderCode" resultType="com.aiurt.modules.sysfile.vo.TypeNameVO">
         SELECT DISTINCT
@@ -132,7 +132,7 @@
         </if>
         GROUP BY
         sft1.id
-        ORDER BY sft1.create_time desc
+        ORDER BY sft1.create_time DESC,sft1.id ASC
     </select>
 
     <select id="listChildNodesByParentId" resultType="com.aiurt.modules.sysfile.vo.SysFileManageAppVO">
@@ -233,6 +233,6 @@
         </if>
         </where>
         ORDER BY
-            temp.createTime DESC;
+        temp.status ASC,temp.createTime DESC,temp.id ASC;
     </select>
 </mapper>

@@ -52,6 +52,6 @@
             AND sft1.name LIKE CONCAT('%',#{name}, '%' )
         </if>
         GROUP BY sft1.id
-        ORDER BY sft1.create_time desc
+        ORDER BY sft1.create_time DESC,sft1.id ASC
     </select>
 </mapper>
