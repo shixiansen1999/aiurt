@@ -2,8 +2,6 @@ package com.aiurt.boot.statistics.service;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -174,13 +172,14 @@ public class PatrolStatisticsService {
     }
 
     /**
-     * 如果参数日期是周一至周四，则返回上周五00时00分00秒和周日23时59分59秒，否则返回周一00时00分00秒和周四23时59分59秒
+     * 如果参数日期是周一至周四，则返回上周五00时00分00秒和周日23时59分59秒，否则返回周一00时00分00秒和周四23时59分59秒（旧）
+     * 如果参数日期是周一至周三，则返回上周四00时00分00秒和周日23时59分59秒，否则返回周一00时00分00秒和周三23时59分59秒（新）
      *
      * @param date
      * @return
      */
     public List<Date> getOmitDateScope(Date date) {
-        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_WEEKDAYS);
+        /*SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_WEEKDAYS);
         String value = sysParamModel.getValue();
         String[] split = StrUtil.split(value, ",");
         List<Date> patrolList = new ArrayList();
@@ -246,6 +245,27 @@ public class PatrolStatisticsService {
                         DateUtil.parse(DateUtil.format(secondDate, "yyyy-MM-dd 00:00:00")));
             }
 
+        }*/
+
+        // 参数日期所在周的周一
+        Date monday = DateUtils.getWeekStartTime(date);
+        ZoneId zoneId = ZoneId.systemDefault();
+        LocalDate localDate = monday.toInstant().atZone(zoneId).toLocalDate();
+        if (Calendar.THURSDAY == DateUtil.dayOfWeek(date) ||Calendar.FRIDAY == DateUtil.dayOfWeek(date) || Calendar.SATURDAY == DateUtil.dayOfWeek(date)
+                || Calendar.SUNDAY == DateUtil.dayOfWeek(date)) {
+            // 周一往后2天，星期三
+            Date wednesday = Date.from(localDate.plusDays(2).atStartOfDay().atZone(zoneId).toInstant());
+            return Arrays.asList(DateUtil.parse(DateUtil.format(monday, "yyyy-MM-dd 00:00:00")),
+                    DateUtil.parse(DateUtil.format(wednesday, "yyyy-MM-dd 23:59:59")));
+        } else {
+            // 周一往前3天，星期五（旧）
+            //Date friday = Date.from(localDate.minusDays(3).atStartOfDay().atZone(zoneId).toInstant());
+            // 周一往前4天，星期四（新）
+            Date friday = Date.from(localDate.minusDays(4).atStartOfDay().atZone(zoneId).toInstant());
+            // 周一往前1天，星期天
+            Date sunday = Date.from(localDate.minusDays(1).atStartOfDay().atZone(zoneId).toInstant());
+            return Arrays.asList(DateUtil.parse(DateUtil.format(friday, "yyyy-MM-dd 00:00:00")),
+                    DateUtil.parse(DateUtil.format(sunday, "yyyy-MM-dd 23:59:59")));
         }
 
     }
