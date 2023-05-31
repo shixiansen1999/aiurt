@@ -130,7 +130,16 @@ public class PatrolStatisticsController {
                                                        HttpServletRequest request,
                                                        @Validated IndexScheduleDTO indexScheduleDTO) {
         Page<ScheduleTask> page = new Page<>(pageNo, pageSize);
-        IPage<ScheduleTask> pageList = patrolStatisticsService.getScheduleList(page,request, indexScheduleDTO);
-        return Result.ok(pageList);
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            IPage<ScheduleTask> pageList = patrolStatisticsService.getScheduleDeviceList(page,request, indexScheduleDTO);
+            return Result.ok(pageList);
+        } else {
+            IPage<ScheduleTask> pageList = patrolStatisticsService.getScheduleList(page,request, indexScheduleDTO);
+            return Result.ok(pageList);
+        }
+
     }
 }

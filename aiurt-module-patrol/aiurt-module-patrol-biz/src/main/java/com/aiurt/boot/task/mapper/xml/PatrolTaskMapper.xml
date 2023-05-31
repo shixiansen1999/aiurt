@@ -1849,7 +1849,9 @@
     <sql id="IndexTaskDevice">
         SELECT
         pt.id,
-        pt.`code`
+        pt.`code`,
+        pt.patrol_date,
+        IF(1 = pt.auditor, pt.auditor_time, pt.submit_time) submitTime
         FROM patrol_task pt
         left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
         left join patrol_task_standard ptsd on pt.id = ptsd.task_id and ptsd.del_flag = 0
@@ -1925,5 +1927,52 @@
         GROUP BY ptd.id
     </select>
 
+    <sql id="ScheduleDeviceList">
+        SELECT
+        pt.id,
+        pt.`code`,
+        pt.patrol_date,
+        IF(1 = pt.auditor, pt.auditor_time, pt.submit_time) submitTime
+        FROM patrol_task pt
+        left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
+        left join patrol_task_standard ptsd on pt.id = ptsd.task_id and ptsd.del_flag = 0
+        left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
+        left join patrol_task_user ptu on pt.code = ptu.task_code and ptu.del_flag = 0
+        WHERE pt.del_flag = 0 AND pt.discard_status != 1
+        <if test="condition.jointSQL != null and condition.jointSQL != ''">
+            and ${condition.jointSQL}
+        </if>
+        <if test="condition.date != null">
+            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')= DATE_FORMAT(#{condition.date}, '%Y-%m-%d')
+        </if>
+        <if test="condition.source != null">
+            AND pt.source = #{condition.source}
+        </if>
+        GROUP BY pt.`code`
+    </sql>
 
+    <select id="getScheduleDeviceList" resultType="com.aiurt.boot.statistics.model.ScheduleTask">
+        SELECT
+        ptd.id,
+        ps.`name`,
+        statistics.`code`,
+        ptd.`status`,
+        statistics.patrol_date,
+        statistics.submitTime,
+        ptd.station_code
+        FROM
+        (
+        <include refid="ScheduleDeviceList"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id and ptd.del_flag = 0
+        left join patrol_accompany pa on pa.task_device_code = ptd.patrol_number and pa.del_flag = 0
+        left join patrol_task_standard ptss on ptd.task_standard_id = ptss.id and ptss.del_flag = 0
+        left join patrol_standard ps on ps.id = ptss.standard_id and ps.del_flag = 0
+        where 1=1
+        AND ptd.`status` = 2
+        <if test="condition.stationCode != null and condition.stationCode != ''">
+            AND ptd.station_code = #{condition.stationCode}
+        </if>
+        GROUP BY ptd.id
+    </select>
 </mapper>

@@ -463,21 +463,6 @@ public class PatrolStatisticsService {
         if (ObjectUtil.isEmpty(indexScheduleDTO.getStatus())) {
             indexScheduleDTO.setStatus(PatrolConstant.TASK_COMPLETE);
         }
-//        if (ObjectUtil.isNotEmpty(indexScheduleDTO.getIsAllData()) && ALLDATA.equals(indexScheduleDTO.getIsAllData())) {
-//            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO, null);
-//        } else {
-////            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-////            if (ObjectUtil.isEmpty(loginUser)) {
-////                throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
-////            }
-////            List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
-//            //数据权限
-////            List<PatrolTaskOrganization> patrolTaskOrganizations = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
-//            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO, null);
-//        }
-//        // 数据权限
-//        String filterConditions = this.getPermissionSQL(request);
-//        indexScheduleDTO.setJointSQL(filterConditions);
 
         pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO);
         if (CollectionUtil.isNotEmpty(pageList.getRecords())) {
@@ -639,6 +624,57 @@ public class PatrolStatisticsService {
 
         });
         GlobalThreadLocal.setDataFilter(b1);
+        return pageList;
+    }
+
+    public IPage<ScheduleTask> getScheduleDeviceList(Page<ScheduleTask> page, HttpServletRequest request, IndexScheduleDTO indexScheduleDTO) {
+        IPage<ScheduleTask> pageList = null;
+        // 默认已完成
+        List<DictModel> dictItems1 = sysBaseApi.getDictItems(PatrolDictCode.PATROL_BILL_STATUS);
+        // 获取权限数据
+        String filterConditions = this.getPermissionSQL(request);
+        indexScheduleDTO.setJointSQL(filterConditions);
+        pageList = patrolTaskMapper.getScheduleDeviceList(page, indexScheduleDTO);
+        pageList.getRecords().forEach(l -> {
+            String taskCode = l.getCode();
+            // 巡视用户信息
+            QueryWrapper<PatrolTaskUser> userWrapper = new QueryWrapper<>();
+            userWrapper.lambda().eq(PatrolTaskUser::getTaskCode, taskCode).eq(PatrolTaskUser::getDelFlag, 0);
+            List<PatrolTaskUser> list = patrolTaskUserMapper.selectList(userWrapper);
+            // 巡视用户Map
+            Map<String, List<PatrolTaskUser>> userMap = list.stream().collect(Collectors.groupingBy(PatrolTaskUser::getTaskCode));
+
+            List<PatrolTaskUser> userList = Optional.ofNullable(userMap.get(taskCode)).orElseGet(ArrayList::new);
+            List<String> indexUsers = new ArrayList<>();
+            userList.forEach(u -> {
+                if (StrUtil.isEmpty(u.getUserName())) {
+                    String username = patrolTaskUserMapper.getUsername(u.getUserId());
+                    indexUsers.add(username);
+                    return;
+                }
+                indexUsers.add( u.getUserName());
+            });
+
+            // 巡视组织机构信息
+            List<IndexOrgDTO> orgInfo = patrolTaskOrganizationMapper.getOrgInfo(taskCode);
+
+            // 巡视站点信息
+            List<String> stationInfo = new ArrayList<>();
+            String stationName = patrolTaskDeviceMapper.getStationName(l.getStationCode());
+            stationInfo.add(stationName);
+
+
+            // 字典翻译
+            String statusDictName = dictItems1.stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+            l.setStatusName(statusDictName);
+            l.setUserInfo(CollUtil.join(indexUsers, ","));
+            l.setOrgInfo(orgInfo.stream().map(IndexOrgDTO::getOrgName).collect(Collectors.joining(",")));
+            l.setStationInfo(CollUtil.join(stationInfo, ","));
+
+        });
+
         return pageList;
     }
 }
