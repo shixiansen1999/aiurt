@@ -66,6 +66,18 @@ public class ScreenModule {
      * 线路编号
      */
     private String lineCode;
+    /**
+     * 站点编号
+     */
+    private String stationCode;
+    /**
+     * 条件筛选的任务状态
+     */
+    private Integer[] taskDeviceStatus;
+    /**
+     * 巡检结果：0异常、1正常
+     */
+    private Integer state;
 //    /**
 //     * 专业编号
 //     */
