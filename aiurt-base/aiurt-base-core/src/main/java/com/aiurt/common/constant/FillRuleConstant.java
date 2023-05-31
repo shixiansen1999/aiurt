@@ -18,6 +18,11 @@ public class FillRuleConstant {
     public static final String DEPART = "org_num_role";
 
     /**
+     * 文件夹编码
+     */
+    public static final String FOLDER_NUM_CODE = "folder_num_code";
+
+    /**
      * 分类字典编码
      */
     public static final String CATEGORY = "category_code_rule";

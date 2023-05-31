@@ -51,6 +51,9 @@ public class SysFile {
 	@Excel(name = "文件名称", width = 15)
 	@ApiModelProperty(value = "文件名称")
 	private String name;
+
+	@ApiModelProperty(value = "编码层级结构，用于存储编码的层级路径")
+	private String codeCc;
 	/**
 	 * 文件url
 	 */
