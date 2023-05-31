@@ -2456,6 +2456,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         // 设置字体大小为9号
         font.setFontHeightInPoints((short) 9);
         cellStyle.setFont(font);
+        sheet.autoSizeColumn(0);
         for (int row = startRow; row <= endRow; row++) {
             Row currentRow = sheet.getRow(row);
             for (int col = startColumn; col <= endColumn; col++) {
@@ -2494,6 +2495,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         // 设置字体大小为9号
         font.setFontHeightInPoints((short) 9);
         cellStyle.setFont(font);
+        sheet.autoSizeColumn(0);
         for (int row = startRow; row <= endRow; row++) {
             Row currentRow = sheet.getRow(row);
             for (int col = startColumn; col <= endColumn; col++) {
