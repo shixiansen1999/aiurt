@@ -1729,16 +1729,28 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Override
     public List<LoginUser> queryUser(Fault fault) {
         LoginUser loginUser = checkLogin();
-        //根据当前登录人所拥有的部门权限查人员
-        List<CsUserDepartModel> departByUserId = sysBaseAPI.getDepartByUserId(loginUser.getId());
+        List<String> orgCodeList = new ArrayList<>();
+        if (!loginUser.getRoleCodes().contains("admin")) {
+            //根据当前登录人所拥有的部门权限查人员
+            List<CsUserDepartModel> departByUserId = sysBaseAPI.getDepartByUserId(loginUser.getId());
 
-        if (CollectionUtil.isEmpty(departByUserId)) {
-            return Collections.emptyList();
-        }
+            if (CollectionUtil.isEmpty(departByUserId)) {
+                return Collections.emptyList();
+            }
+            orgCodeList = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+            if (CollectionUtil.isEmpty(orgCodeList)) {
+                return Collections.emptyList();
+            }
+        }else {
+            List<SysDepartModel> allSysDepart = sysBaseAPI.getAllSysDepart();
+            if (CollectionUtil.isEmpty(allSysDepart)) {
+                return Collections.emptyList();
+            }
+            orgCodeList = allSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+            if (CollectionUtil.isEmpty(orgCodeList)) {
+                return Collections.emptyList();
+            }
 
-        List<String> orgCodeList = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-        if (CollectionUtil.isEmpty(orgCodeList)) {
-            return Collections.emptyList();
         }
 
         // 当前登录人的部门权限和任务的组织机构交集
