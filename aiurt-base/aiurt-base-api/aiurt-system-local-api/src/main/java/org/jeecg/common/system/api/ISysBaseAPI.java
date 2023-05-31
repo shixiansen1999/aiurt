@@ -1172,5 +1172,11 @@ public interface ISysBaseAPI extends CommonAPI {
      * @param sysAttachment
      */
     void saveSysAttachment(SysAttachment sysAttachment);
+    /**
+     * 字典值列表的id翻译
+     * @param id
+     * @return
+     */
+    DictModel dictById(String id);
 }
 

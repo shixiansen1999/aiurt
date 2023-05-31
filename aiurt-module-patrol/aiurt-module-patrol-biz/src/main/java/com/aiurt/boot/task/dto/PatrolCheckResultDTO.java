@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecgframework.poi.excel.annotation.Excel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,4 +51,10 @@ public class PatrolCheckResultDTO extends PatrolCheckResult {
      */
     @ApiModelProperty(value = "字典下拉列表")
     private  List<DictModel> list;
+    /**
+     * 子系统名称
+     */
+    @Excel(name = "子系统名称", width = 15)
+    @ApiModelProperty(value = "子系统名称")
+    private String subsystemName;
 }

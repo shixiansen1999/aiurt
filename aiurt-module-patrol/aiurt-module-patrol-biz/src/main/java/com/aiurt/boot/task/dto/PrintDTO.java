@@ -17,8 +17,10 @@ public class PrintDTO {
     private String location;
     @ApiModelProperty(value = "子系统")
     private String subSystem;
-    @ApiModelProperty(value = "设备")
+    @ApiModelProperty(value = "父类容")
     private String equipment;
+    @ApiModelProperty(value = "子类容")
+    private String content;
     @ApiModelProperty(value = "巡检标准")
     private String standard;
     @ApiModelProperty(value = "巡检结果正常")

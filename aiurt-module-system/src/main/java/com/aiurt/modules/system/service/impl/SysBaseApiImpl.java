@@ -1833,6 +1833,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return userMapper.getUserListByName(realName);
     }
 
+    @Override
+    public DictModel dictById(String id) {
+        return sysDictService.dictById(id);
+    }
+
     /**
      * 添加定时任务
      *

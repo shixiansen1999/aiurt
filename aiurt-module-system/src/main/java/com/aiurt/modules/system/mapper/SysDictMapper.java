@@ -279,4 +279,12 @@ public interface SysDictMapper extends BaseMapper<SysDict> {
 	 * @return
 	 */
     String getCurrentNewModified(String dictCode);
+
+	/**
+	 * 根据字典值列表id查询text和value
+	 *
+	 * @param id
+	 * @return
+	 */
+	DictModel dictByid(@Param("id") String id);
 }

@@ -88,9 +88,16 @@
         WHERE
         pcr.del_flag =0
         and pcr.`check` = 0
-        <if test="taskDeviceId != null and taskDeviceId !=''">
-            and task_device_id = #{taskDeviceId}
-        </if>
+        AND pcr.task_device_id IN (
+        SELECT  ptd.id   FROM
+        patrol_task_device ptd
+        WHERE  ptd.del_flag = 0
+        <if test="collect !=null and collect.size>0">
+            and ptd.patrol_number in
+            <foreach collection="collect" item="collect" open="(" close=")" separator=",">
+                #{collect}
+            </foreach>
+        </if>)
         order by pcr.content,pcr.order
     </select>
     <select id="getQualityStandard" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
@@ -99,18 +106,32 @@
         pcr.content,
         pcr.quality_standard,
         pcr.check_result,
-        pcr.remark
+        pcr.remark,
+        css.system_name as subsystemName
         FROM
         patrol_check_result pcr
+        LEFT JOIN patrol_task_device ptd ON pcr.task_device_id = ptd.id
+        LEFT JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
+        AND pts.del_flag = 0
+        LEFT JOIN cs_subsystem css ON css.system_code = pts.subsystem_code
+        AND css.del_flag = 0
         WHERE
-        pcr.del_flag =0
-        and pcr.`check` = 1
-        <if test="taskDeviceId != null and taskDeviceId !=''">
-            and task_device_id = #{taskDeviceId}
-        </if>
+        pcr.del_flag = 0
+        AND pcr.`check` = 1
+        AND pcr.task_device_id IN (
+        SELECT  ptd.id   FROM
+        patrol_task_device ptd
+        WHERE  ptd.del_flag = 0
+        <if test="collect !=null and collect.size>0">
+        and ptd.patrol_number in
+        <foreach collection="collect" item="collect" open="(" close=")" separator=",">
+            #{collect}
+        </foreach>
+        </if>)
         <if test="parentId != null and parentId !=''">
             and parent_id = #{parentId}
         </if>
-        order by pcr.content,pcr.order
+        GROUP BY  pcr.id
+        ORDER BY pcr.content,pcr.ORDER
     </select>
 </mapper>

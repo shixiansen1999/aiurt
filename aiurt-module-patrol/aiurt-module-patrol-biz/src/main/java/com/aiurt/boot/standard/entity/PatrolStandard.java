@@ -84,6 +84,8 @@ public class PatrolStandard extends DictEntity implements Serializable {
     /**生效状态：0停用 1启用*/
     @ApiModelProperty(value = "生效状态：0未生效 1生效")
     private java.lang.Integer status;
+    @ApiModelProperty(value = "打印模板文件名称(来源字典值)")
+    private java.lang.String printTemplate;
     @Excel(name = "生效状态", width = 15,needMerge = true)
     @ApiModelProperty(value = "生效状态：0未生效 1生效")
     @TableField(exist = false)

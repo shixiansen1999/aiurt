@@ -15,7 +15,9 @@ import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.plan.entity.PatrolPlan;
+import com.aiurt.boot.plan.entity.PatrolPlanStandard;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
+import com.aiurt.boot.plan.mapper.PatrolPlanStandardMapper;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
@@ -65,8 +67,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -149,6 +153,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private PatrolSamplePersonMapper patrolSamplePersonMapper;
     @Autowired
     private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private PatrolPlanStandardMapper patrolPlanStandardMapper;
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
@@ -2187,17 +2193,59 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
-    public String printPatrolTask(String id){
+    public String printPatrolTask(String id) {
+        PatrolTask patrolTask = patrolTaskMapper.selectById(id);
+        PatrolPlan patrolPlan = patrolPlanMapper.selectByCode(patrolTask.getPlanCode());
+        List<PatrolPlanStandard> patrolPlanStandard = patrolPlanStandardMapper.selectList(new LambdaQueryWrapper<PatrolPlanStandard>()
+                .eq(PatrolPlanStandard::getDelFlag,0).eq(PatrolPlanStandard::getPlanId,patrolPlan.getId()));
+        PatrolStandard patrolStandard = patrolStandardMapper.selectOne(new LambdaQueryWrapper<PatrolStandard>()
+                .eq(PatrolStandard::getDelFlag,0)
+                .in(PatrolStandard::getCode,patrolPlanStandard.stream().map(PatrolPlanStandard::getStandardCode).collect(Collectors.toList()))
+                .orderByDesc(PatrolStandard::getPrintTemplate).last("LIMIT 1"));
+        String excelName = null;
+        if (StrUtil.isNotEmpty(patrolStandard.getPrintTemplate())){
+            excelName = sysBaseApi.dictById(patrolStandard.getPrintTemplate()).getValue();
+        }else {
+            excelName = "listPatrol.xlsx";
+        }
         // 模板注意 用{} 来表示你要用的变量 如果本来就有"{","}" 特殊字符 用"\{","\}"代替
         // 填充list 的时候还要注意 模板中{.} 多了个点 表示list
         // 如果填充list的对象是map,必须包涵所有list的key,哪怕数据为null，必须使用map.put(key,null)
-        String templateFileName = "patrol" +"/" + "template" + "/" + "listPatrol.xlsx";
+        String templateFileName = "patrol" +"/" + "template" + "/" + excelName;
         InputStream minioFile = MinioUtil.getMinioFile("platform",templateFileName);
-        // 方案1 一下子全部放到内存里面 并填充
-        PatrolTask patrolTask = patrolTaskMapper.selectById(id);
+        Workbook workbookTpl = null;
+        CellRangeAddress mergeRegion = null;
+        Integer firstColumn = null;
+        Integer lastColumn = null;
+        try {
+//            inputStreamTemplate = new FileInputStream(templateFileName);
+            workbookTpl = WorkbookFactory.create(minioFile);
+            Sheet sheet = workbookTpl.getSheetAt(0);
+            mergeRegion = findMergeRegions(sheet, "巡检标准");
+            firstColumn = mergeRegion.getFirstColumn();
+            lastColumn = mergeRegion.getLastColumn();
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+//            if (null!=workbookTpl){
+//                try {
+//                    workbookTpl.close();
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
+        }
+
+
+
+
+        // 全部放到内存里面 并填充
         String fileName = patrolTask.getName() + System.currentTimeMillis() + ".xlsx";
         String relatiePath = "/" + "patrol" + "/" + "print" + "/" + fileName;
-        String filePath = path + fileName;
+        String filePath = path +"/" +  fileName;
         // 这里 会填充到第一个sheet， 然后文件流会自动关闭
         // 查询头部数据
         PrintPatrolTaskDTO taskDTO = new PrintPatrolTaskDTO();
@@ -2241,7 +2289,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
         //查询巡视标准详情
         List<PrintDTO> patrolData = getPrint(id);
-        try (ExcelWriter excelWriter = EasyExcel.write(filePath).withTemplate(minioFile).build()) {
+        InputStream minioFile2 = MinioUtil.getMinioFile("platform",templateFileName);
+        try (ExcelWriter excelWriter = EasyExcel.write(filePath).withTemplate(minioFile2).build()) {
             int[] mergeColumnIndex = {0,1,2};
             CustomCellMergeHandler customCellMergeStrategy = new CustomCellMergeHandler(3,mergeColumnIndex);
             WriteSheet writeSheet = EasyExcel.writerSheet().registerWriteHandler(customCellMergeStrategy).build();
@@ -2262,25 +2311,26 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             try (InputStream inputStream = new FileInputStream(filePath);
                 Workbook workbook = WorkbookFactory.create(inputStream)) {
                 Sheet sheet = workbook.getSheetAt(0);
-                sheet.setMargin(Sheet.TopMargin, 0.5); // 上边距
-                sheet.setMargin(Sheet.BottomMargin, 0.5); // 下边距
-                sheet.setMargin(Sheet.LeftMargin, 2); // 左边距
-                sheet.setMargin(Sheet.RightMargin, 2); // 右边距
+//                sheet.setMargin(Sheet.TopMargin, 0.5); // 上边距
+//                sheet.setMargin(Sheet.BottomMargin, 0.5); // 下边距
+//                sheet.setMargin(Sheet.LeftMargin, 1); // 左边距
+//                sheet.setMargin(Sheet.RightMargin, 1); // 右边距
+                PrintSetup printSetup = sheet.getPrintSetup();
+                printSetup.setFitHeight((short)0);
+                sheet.setFitToPage(true);
+
+                // 设置边距（单位为英寸）
+                // 设置打印边距
 
                 //自动换行
-                setWrapText(workbook,10,startRow,endRow,0,2);
+                setWrapText(workbook,7,startRow,endRow,0,3);
                 //合并指定范围行的单元格
-                mergeCellsInColumnRange(workbook,25,startRow,endRow,3,10);
+                mergeCellsInColumnRange(workbook,40,startRow,endRow,firstColumn,lastColumn);
                 // 保存修改后的Excel文件
                 try (OutputStream outputStream = new FileOutputStream(filePath)) {
                     workbook.write(outputStream);
                 }
             }
-
-
-
-
-
             MinioUtil.upload(new FileInputStream(filePath),relatiePath);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -2298,41 +2348,46 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
         for (PatrolStationDTO dto : billGangedInfo) {
             //获取检修项
-            List<PatrolBillDTO> billInfo = dto.getBillInfo();
-            if (CollUtil.isNotEmpty(billInfo)) {
-                for (PatrolBillDTO patrolBillDTO : billInfo) {
-                    //根据检修单号查询检修项
-                    String billCode = patrolBillDTO.getBillCode();
-                    if (StrUtil.isNotEmpty(billCode)) {
-                        PatrolTaskDeviceParam taskDeviceParam = patrolTaskDeviceMapper.getIdAndSystemName(billCode);
-                        List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceIdAndParent(taskDeviceParam.getId());
-                        for (PatrolCheckResultDTO c : checkResultList) {
-                            List<PatrolCheckResultDTO> list = patrolCheckResultMapper.getQualityStandard(taskDeviceParam.getId(),c.getOldId());
-                            for (PatrolCheckResultDTO t :list){
-                                PrintDTO printDTO = new PrintDTO();
-                                printDTO.setStandard(t.getQualityStandard());
-                                printDTO.setEquipment(c.getContent());
-                                if(ObjectUtil.isEmpty(t.getCheckResult())){
-                                    printDTO.setResultTrue("☐正常");
-                                    printDTO.setResultFalse("☐异常");
-                                }else {
-                                    printDTO.setResultTrue(t.getCheckResult()==0?"☐正常":"☑正常");
-                                    printDTO.setResultFalse(t.getCheckResult()==0?"☑异常":"☐异常");
-                                }
-                                printDTO.setRemark(t.getRemark());
-                                printDTO.setLocation(dto.getStationName());
-                                printDTO.setSubSystem(taskDeviceParam.getSubsystemName());
-                                if (ObjectUtil.isNotEmpty(printDTO.getStandard())){
-                                    getPrint.add(printDTO);
-                                }
-
-                            }
-
-                        }
-
+            List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
+            List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceIdAndParent(collect);
+            for (PatrolCheckResultDTO c : checkResultList) {
+                List<PatrolCheckResultDTO> list = patrolCheckResultMapper.getQualityStandard(collect,c.getOldId());
+                for (PatrolCheckResultDTO t :list){
+                    PrintDTO printDTO = new PrintDTO();
+                    printDTO.setStandard(t.getQualityStandard());
+                    printDTO.setEquipment(c.getContent());
+                    printDTO.setContent(t.getContent());
+                    if(ObjectUtil.isEmpty(t.getCheckResult())){
+                        printDTO.setResultTrue("☐正常");
+                        printDTO.setResultFalse("☐异常");
+                    }else {
+                        printDTO.setResultTrue(t.getCheckResult()==0?"☐正常":"☑正常");
+                        printDTO.setResultFalse(t.getCheckResult()==0?"☑异常":"☐异常");
                     }
+                    printDTO.setRemark(t.getRemark());
+                    printDTO.setLocation(dto.getStationName());
+                    printDTO.setSubSystem(t.getSubsystemName());
+                    if (ObjectUtil.isNotEmpty(printDTO.getStandard())){
+                        getPrint.add(printDTO);
+                    }
+
                 }
+
             }
+//            List<PatrolBillDTO> billInfo = dto.getBillInfo();
+//            if (CollUtil.isNotEmpty(billInfo)) {
+//                for (PatrolBillDTO patrolBillDTO : billInfo) {
+//                    //根据检修单号查询检修项
+//                    String billCode = patrolBillDTO.getBillCode();
+//                    if (StrUtil.isNotEmpty(billCode)) {
+//                        PatrolTaskDeviceParam taskDeviceParam = patrolTaskDeviceMapper.getIdAndSystemName(billCode);
+//                        //List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceIdAndParent(taskDeviceParam.getId());
+//
+//
+//
+//                    }
+//                }
+//            }
         }
         return getPrint;
     }
@@ -2385,8 +2440,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         cellStyle.setWrapText(true);//设置自动换行
         for (int row = startRow; row <= endRow; row++) {
+            Row currentRow = sheet.getRow(row);
             for (int col = startColumn; col <= endColumn; col++) {
-                Row currentRow = sheet.getRow(row);
                 Cell cell = currentRow.getCell(col);
                 if (cell == null) {
                     cell = currentRow.createCell(col);
@@ -2394,7 +2449,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 cell.setCellStyle(cellStyle);
                 String cellValue = cell.getStringCellValue();
                 if (Objects.nonNull(cellValue) && cellValue.length() >= returnRowMaxLength) {
-                    //当字符数大于30的时候，长度除以30+1 就是倍数，默认高度乘倍数即可计算出高度
+                    //当字符数大于RowMaxLength的时候，长度除以RowMaxLength+1 就是倍数，默认高度乘倍数即可计算出高度
                     int foldRowNum = (cellValue.length() / returnRowMaxLength) + 1;
                     currentRow.setHeightInPoints((short) (15 * foldRowNum));
                 }
@@ -2425,10 +2480,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         for (int row = startRow; row <= endRow; row++) {
             CellRangeAddress cellRangeAddress = new CellRangeAddress(row, row, startColumn, endColumn);
             sheet.addMergedRegion(cellRangeAddress);
-
+            Row currentRow = sheet.getRow(row);
             // 给合并的区域设置框线
             for (int col = startColumn; col <= endColumn; col++) {
-                Row currentRow = sheet.getRow(row);
+
                 Cell cell = currentRow.getCell(col);
                 if (cell == null) {
                     cell = currentRow.createCell(col);
@@ -2436,7 +2491,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 cell.setCellStyle(cellStyle);
                 String cellValue = cell.getStringCellValue();
                 if (Objects.nonNull(cellValue)&&cellValue.length() >= returnRowMaxLength ){
-                    //当字符数大于30的时候，长度除以30+1 就是倍数，默认高度乘倍数即可计算出高度
+                    //当字符数大于RowMaxLength的时候，长度除以RowMaxLength+1 就是倍数，默认高度乘倍数即可计算出高度
                     int foldRowNum = (cellValue.length() / returnRowMaxLength) + 1;
                     currentRow.setHeightInPoints((short) (15 * foldRowNum));
                 }
@@ -2531,5 +2586,74 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             arrayList.add(taskDTO);
         }
         return arrayList;
+    }
+
+    private CellRangeAddress findMergeRegions(Sheet sheet,String searchValue){
+        int startRow = 1;
+        int endRow = 3;
+
+        CellReference cellRef = searchCellWithMergedRegion(sheet, searchValue, startRow, endRow);
+        CellRangeAddress mergedRegion = null;
+        if (cellRef != null) {
+            int rowIndex = cellRef.getRow();
+            int columnIndex = cellRef.getCol();
+            System.out.println("找到匹配的值 \"" + searchValue + "\"，位于行 " + (rowIndex + 1) + "，列 " + (columnIndex + 1));
+
+            mergedRegion = getMergedRegion(sheet, rowIndex, columnIndex);
+            if (mergedRegion != null) {
+                int firstRow = mergedRegion.getFirstRow();
+                int lastRow = mergedRegion.getLastRow();
+                int firstColumn = mergedRegion.getFirstColumn();
+                int lastColumn = mergedRegion.getLastColumn();
+                System.out.println("合并区域范围：行 " + (firstRow + 1) + " 到 " + (lastRow + 1) + "，列 " + (firstColumn + 1) + " 到 " + (lastColumn + 1));
+            } else {
+                System.out.println("该单元格未合并");
+            }
+
+            return  mergedRegion;
+        } else {
+            System.out.println("未找到匹配的值 \"" + searchValue + "\"");
+        }
+
+        return mergedRegion;
+    }
+
+
+    //删除合并区域
+    private List<CellRangeAddress> removeMergedRegions(Sheet sheet){
+        List<CellRangeAddress> mergeRegions = sheet.getMergedRegions();
+        for (int i = 0; i < mergeRegions.size(); i++) {
+            sheet.removeMergedRegion(i);
+        }
+        return mergeRegions;
+    }
+
+
+    private static CellReference searchCellWithMergedRegion(Sheet sheet, String searchValue, int startRow, int endRow) {
+        for (int rowIndex = startRow; rowIndex <= endRow; rowIndex++) {
+            Row row = sheet.getRow(rowIndex);
+            if (row == null) {
+                continue;
+            }
+
+            for (Cell cell : row) {
+                if (cell.getCellType() == CellType.STRING) {
+                    String cellValue = cell.getStringCellValue();
+                    if (searchValue.equals(cellValue)) {
+                        return new CellReference(rowIndex, cell.getColumnIndex());
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static CellRangeAddress getMergedRegion(Sheet sheet, int rowIndex, int columnIndex) {
+        for (CellRangeAddress mergedRegion : sheet.getMergedRegions()) {
+            if (mergedRegion.isInRange(rowIndex, columnIndex)) {
+                return mergedRegion;
+            }
+        }
+        return null;
     }
 }
