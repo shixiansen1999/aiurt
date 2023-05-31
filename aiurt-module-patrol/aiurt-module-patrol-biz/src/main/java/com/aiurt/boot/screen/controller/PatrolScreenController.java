@@ -87,9 +87,10 @@ public class PatrolScreenController {
                                                                      @ApiParam(name = "screenModule", value = "巡视数据统计模块标识，不传直接返空：1计划数、2完成数、3漏检数、4巡视异常数、5今日巡视数、6今日巡视完成数")
                                                                              Integer screenModule,
                                                                      @ApiParam(name = "lineCode", value = "线路编号") String lineCode,
-                                                                     @ApiParam(name = "stationCode", value = "站点") String stationCode) {
+                                                                     @ApiParam(name = "stationCode", value = "站点") String stationCode,
+                                                                     @ApiParam(name = "username", value = "巡视人名称") String username) {
         Page<ScreenStatisticsTask> page = new Page<>(pageNo, pageSize);
-        IPage<ScreenStatisticsTask> pageList = screenService.getStatisticsDataList(page, timeType, screenModule, lineCode,stationCode);
+        IPage<ScreenStatisticsTask> pageList = screenService.getStatisticsDataList(page, timeType, screenModule, lineCode,stationCode, username);
         return Result.ok(pageList);
     }
 

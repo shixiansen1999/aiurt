@@ -270,6 +270,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @PutMapping("/approval")
     @ApiOperation(value = "故障审批", notes = "故障审批")
     @AutoLog(value = "上报审批", operateType =  3, operateTypeAlias = "上报审批", permissionUrl = PERMISSION_URL)
+    @LimitSubmit(key = "approval:#approvalDTO")
     public Result<?> approval(@RequestBody ApprovalDTO approvalDTO) {
 
         faultService.approval(approvalDTO);
@@ -386,6 +387,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @AutoLog(value = "开始维修", operateType = 3, operateTypeAlias = "开始维修", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "开始维修", notes = "开始维修")
     @PutMapping("/startRepair")
+    @LimitSubmit(key = "startRepair:#refuseAssignmentDTO")
     public Result<?> startRepair(@RequestBody RefuseAssignmentDTO refuseAssignmentDTO) {
         faultService.startRepair(refuseAssignmentDTO.getFaultCode());
         return Result.OK("操作成功");
@@ -494,6 +496,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @AutoLog(value = "维修结果审核")
     @ApiOperation(value = "维修结果审核", notes = "维修结果审核")
     @PutMapping("/approvalResult")
+    @LimitSubmit(key = "approvalResult:#resultDTO")
     public Result<?> approvalResult(@RequestBody ApprovalResultDTO resultDTO) {
         faultService.approvalResult(resultDTO);
         return Result.OK("操作成功");
