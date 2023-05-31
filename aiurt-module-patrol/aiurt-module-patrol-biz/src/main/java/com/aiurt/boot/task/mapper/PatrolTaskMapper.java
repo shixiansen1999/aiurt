@@ -599,4 +599,6 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     IPage<IndexTaskInfo> getIndexTaskDeviceList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition);
 
     IPage<ScheduleTask> getScheduleDeviceList(Page<ScheduleTask> page, @Param("condition")IndexScheduleDTO indexScheduleDTO);
+
+    IPage<ScreenStatisticsTask> getStatisticsDataDeviceList(Page<ScreenStatisticsTask> page, @Param("condition") ScreenModule moduleType);
 }

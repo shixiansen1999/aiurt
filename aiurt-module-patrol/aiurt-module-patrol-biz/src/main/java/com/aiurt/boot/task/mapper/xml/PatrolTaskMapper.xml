@@ -1975,4 +1975,73 @@
         </if>
         GROUP BY ptd.id
     </select>
+
+    <sql id="StatisticsDataDeviceList">
+        SELECT
+        pt.id,
+        pt.`code`,
+        pt.patrol_date,
+        pt.omit_status,
+        IF(1 = pt.auditor, pt.auditor_time, pt.submit_time) submitTime
+        FROM patrol_task pt
+        left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
+        left join patrol_task_standard ptsd on pt.id = ptsd.task_id and ptsd.del_flag = 0
+        left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
+        <!--        left join patrol_task_user ptu on pt.code = ptu.task_code and ptu.del_flag = 0-->
+        WHERE pt.del_flag = 0 AND pt.discard_status != 1
+        <if test="condition.startTime != null and condition.endTime != null">
+            AND pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
+        </if>
+        <if test="condition.omit != null">
+            AND pt.omit_status = #{condition.omit}
+        </if>
+        <if test="condition.orgCodes != null and condition.orgCodes.size > 0">
+            and pto.org_code in
+            <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="condition.today != null">
+            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.today}, '%Y-%m-%d')
+        </if>
+        GROUP BY pt.`code`
+    </sql>
+
+
+    <select id="getStatisticsDataDeviceList" resultType="com.aiurt.boot.screen.model.ScreenStatisticsTask">
+        SELECT
+        ptd.id as taskId,
+        ps.`name`,
+        statistics.`code`,
+        ptd.`status`,
+        ptd.check_time as submitTime,
+        statistics.omit_status,
+        GROUP_CONCAT(DISTINCT CONCAT_WS( '/', cs.line_name, cs.station_name ) SEPARATOR '；' ) stationInfo
+        FROM
+        (
+        <include refid="StatisticsDataDeviceList"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id and ptd.del_flag = 0
+        left join patrol_accompany pa on pa.task_device_code = ptd.patrol_number and pa.del_flag = 0
+        left join patrol_task_standard ptss on ptd.task_standard_id = ptss.id and ptss.del_flag = 0
+        left join patrol_standard ps on ps.id = ptss.standard_id and ps.del_flag = 0
+        JOIN cs_station cs ON ptd.station_code = cs.station_code AND cs.del_flag = 0
+        where 1=1
+        <if test="condition.stationCode != null and condition.stationCode != ''">
+            AND ptd.station_code = #{condition.stationCode}
+        </if>
+        <if test="condition.lineCode != null and condition.lineCode != ''">
+            AND ptd.line_code = #{condition.lineCode}
+        </if>
+        <if test="condition.taskDeviceStatus != null">
+            AND ptd.`status` in
+            <foreach collection="condition.taskDeviceStatus" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="condition.state != null">
+            AND (ptd.check_result = #{condition.state} or ptd.mac_status = #{condition.state})
+        </if>
+        GROUP BY ptd.id
+    </select>
 </mapper>
