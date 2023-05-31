@@ -258,16 +258,27 @@ public class FaultInformationService {
         List<CsLine> allLine = sysBaseApi.getAllLine();
         List<CsLine> list;
         SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.OLD_LINE);
-        String value = paramModel.getValue();
-        if (StrUtil.isNotEmpty(lineCode)) {
-            list = allLine.stream().filter(a -> lineCode.equals(a.getLineCode()))
-                    .filter(a -> !value.contains(a.getLineCode()))
-                    .collect(Collectors.toList());
-        } else {
-            list = allLine.stream().filter(a -> !value.contains(a.getLineCode()))
-                    .collect(Collectors.toList());
-        }
+        boolean flag = "1".equals(paramModel.getValue());
+        SysParamModel paramModel2 = sysParamApi.selectByCode(SysParamCodeConstant.OLD_LINECODE);
+        String value = paramModel2.getValue();
 
+        if (StrUtil.isNotEmpty(lineCode)) {
+            if (flag) {
+                list = allLine.stream().filter(a -> lineCode.equals(a.getLineCode()))
+                        .filter(a -> !value.contains(a.getLineCode()))
+                        .collect(Collectors.toList());
+            } else {
+                list = allLine.stream().filter(a -> lineCode.equals(a.getLineCode())).collect(Collectors.toList());
+            }
+
+        } else {
+            if (flag) {
+                list = allLine.stream().filter(a -> !value.contains(a.getLineCode()))
+                        .collect(Collectors.toList());
+            }else {
+                list = new ArrayList<>(allLine);
+            }
+        }
         List<Fault> largeLineFaultInfo = faultInformationMapper.getLargeLineFaultInfo(startDate, endDate, majors,lineCode);
         //根据line_code分组，查询同一条线路下的所有故障
         Map<String, List<Fault>> collect = largeLineFaultInfo.stream()

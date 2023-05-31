@@ -263,7 +263,11 @@ public interface SysParamCodeConstant {
      */
     String WIFI_UPDATE_INTERVAL = "wifi_update_interval";
     /**
-     * 根据配置获取要筛选掉的线路数据
+     * 根据配置获取是否要筛选掉的旧线路数据
      */
     String OLD_LINE = "old_line";
+    /**
+     * 根据配置获取要筛选掉的旧线路数据
+     */
+    String OLD_LINECODE = "old_linecode";
 }
