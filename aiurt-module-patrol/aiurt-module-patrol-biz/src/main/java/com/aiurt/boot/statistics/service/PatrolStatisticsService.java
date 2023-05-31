@@ -367,14 +367,7 @@ public class PatrolStatisticsService {
 //        String filterConditions = this.getPermissionSQL(request);
 //        indexTaskDTO.setJointSQL(filterConditions);
         //根据配置决定是否需要把工单数量作为任务数量
-        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
-        boolean value = "1".equals(paramModel.getValue());
-        if (value) {
-            pageList = patrolTaskMapper.getIndexTaskDeviceList(page, indexTaskDTO);
-        } else {
-            pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO);
-        }
-
+        pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO);
 
         boolean b1 = GlobalThreadLocal.setDataFilter(false);
 
@@ -426,10 +419,12 @@ public class PatrolStatisticsService {
 
             //从任务获取mac地址匹配结果
             Integer macStatus = l.getMacStatus();
-            if (0 == macStatus) {
-                l.setMacMatchResult("异常");
-            } else {
-                l.setMacMatchResult("正常");
+            if (macStatus != null) {
+                if (0 == macStatus) {
+                    l.setMacMatchResult("异常");
+                } else {
+                    l.setMacMatchResult("正常");
+                }
             }
 
             // 字典翻译
@@ -468,21 +463,6 @@ public class PatrolStatisticsService {
         if (ObjectUtil.isEmpty(indexScheduleDTO.getStatus())) {
             indexScheduleDTO.setStatus(PatrolConstant.TASK_COMPLETE);
         }
-//        if (ObjectUtil.isNotEmpty(indexScheduleDTO.getIsAllData()) && ALLDATA.equals(indexScheduleDTO.getIsAllData())) {
-//            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO, null);
-//        } else {
-////            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-////            if (ObjectUtil.isEmpty(loginUser)) {
-////                throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
-////            }
-////            List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
-//            //数据权限
-////            List<PatrolTaskOrganization> patrolTaskOrganizations = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
-//            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO, null);
-//        }
-//        // 数据权限
-//        String filterConditions = this.getPermissionSQL(request);
-//        indexScheduleDTO.setJointSQL(filterConditions);
 
         pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO);
         if (CollectionUtil.isNotEmpty(pageList.getRecords())) {
@@ -525,5 +505,176 @@ public class PatrolStatisticsService {
             patrolCheckResultDTOS.addAll(tree);
         }
         return patrolCheckResultDTOS;
+    }
+
+    public IPage<IndexTaskInfo> getIndexTaskDeviceList(HttpServletRequest request, Page<IndexTaskInfo> page, IndexTaskDTO indexTaskDTO) {
+
+        Integer omitStatus = indexTaskDTO.getOmitStatus();
+        if (ObjectUtil.isNotEmpty(omitStatus) && PatrolConstant.OMIT_STATUS.equals(omitStatus)) {
+            Date startDate = this.getOmitDateScope(indexTaskDTO.getStartDate()).stream().min(Comparator.comparingLong(Date::getTime)).get();
+            Date endDate = this.getOmitDateScope(indexTaskDTO.getEndDate()).stream().max(Comparator.comparingLong(Date::getTime)).get();
+            indexTaskDTO.setStartDate(startDate);
+            indexTaskDTO.setEndDate(endDate);
+            Integer[] i = {0,1};
+            indexTaskDTO.setTaskDeviceStatus(i);
+        } else {
+            indexTaskDTO.setOmitStatus(null);
+        }
+
+        IPage<IndexTaskInfo> pageList = null;
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
+        }
+
+//        // 获取权限数据
+//        String filterConditions = this.getPermissionSQL(request);
+//        indexTaskDTO.setJointSQL(filterConditions);
+        //根据配置决定是否需要把工单数量作为任务数量
+        // 获取权限数据
+        String filterConditions = this.getPermissionSQL(request);
+        indexTaskDTO.setJointSQL(filterConditions);
+        if (indexTaskDTO.getStatus() != null) {
+            Integer[] status = indexTaskDTO.getStatus();
+            List<Integer> list = Arrays.stream(status).filter(i -> i.equals(7)).collect(Collectors.toList());
+            if (list.size() > 0) {
+                Integer[] i = {2};
+                indexTaskDTO.setTaskDeviceStatus(i);
+            } else {
+                Integer[] i = {0,1};
+                indexTaskDTO.setTaskDeviceStatus(i);
+            }
+
+        }
+        pageList = patrolTaskMapper.getIndexTaskDeviceList(page, indexTaskDTO);
+
+        boolean b1 = GlobalThreadLocal.setDataFilter(false);
+
+        List<DictModel> dictItems = sysBaseApi.getDictItems(PatrolDictCode.ABNORMAL_STATE);
+        List<DictModel> dictItems1 = sysBaseApi.getDictItems(PatrolDictCode.PATROL_BILL_STATUS);
+
+        List<IndexTaskInfo> records = pageList.getRecords();
+        List<String> taskCodes = records.stream().map(IndexTaskInfo::getCode).distinct().collect(Collectors.toList());
+        // 巡视用户Map
+        Map<String, List<PatrolTaskUser>> userMap;
+
+        if (CollectionUtil.isNotEmpty(taskCodes)) {
+            // 巡视用户信息
+            QueryWrapper<PatrolTaskUser> userWrapper = new QueryWrapper<>();
+            userWrapper.lambda().in(PatrolTaskUser::getTaskCode, taskCodes).eq(PatrolTaskUser::getDelFlag, 0);
+            List<PatrolTaskUser> userList = patrolTaskUserMapper.selectList(userWrapper);
+            userMap = userList.stream().collect(Collectors.groupingBy(PatrolTaskUser::getTaskCode));
+        } else {
+            userMap = Collections.emptyMap();
+        }
+
+
+        pageList.getRecords().stream().forEach(l -> {
+            String taskCode = l.getCode();
+
+            List<PatrolTaskUser> userList = Optional.ofNullable(userMap.get(taskCode)).orElseGet(ArrayList::new);
+            List<IndexUserDTO> indexUsers = new ArrayList<>();
+            userList.forEach(u -> {
+                if (StrUtil.isEmpty(u.getUserName())) {
+                    String username = patrolTaskUserMapper.getUsername(u.getUserId());
+                    indexUsers.add(new IndexUserDTO(u.getUserId(), username));
+                    return;
+                }
+                indexUsers.add(new IndexUserDTO(u.getUserId(), u.getUserName()));
+            });
+
+            // 巡视组织机构信息
+            List<IndexOrgDTO> orgInfo = patrolTaskOrganizationMapper.getOrgInfo(taskCode);
+
+            // 巡视站点信息
+            List<IndexStationDTO> stationInfo = new ArrayList<>();
+            String stationCode = indexTaskDTO.getStationCode();
+            if (ObjectUtil.isEmpty(stationCode)) {
+                stationInfo = patrolTaskStationMapper.getStationInfoByDeviceId(l.getId());
+            } else {
+                String stationName = patrolTaskDeviceMapper.getStationName(stationCode);
+                stationInfo.add(new IndexStationDTO(stationCode, stationName));
+            }
+
+            //从工单获取mac地址匹配结果
+            Integer macStatus = l.getMacStatus();
+            if (macStatus != null) {
+                if (0 == macStatus) {
+                    l.setMacMatchResult("异常");
+                } else {
+                    l.setMacMatchResult("正常");
+                }
+            }
+            // 字典翻译
+            String abnormalDictName = dictItems.stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getAbnormalState())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+            String statusDictName = dictItems1.stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+
+            l.setUserInfo(indexUsers);
+            l.setOrgInfo(orgInfo);
+            l.setStationInfo(stationInfo);
+            // 返显异常状态
+            if (l.getStatus() != null) {
+                l.setAbnormalDictName(abnormalDictName);
+            }
+            l.setStatusDictName(statusDictName);
+
+        });
+        GlobalThreadLocal.setDataFilter(b1);
+        return pageList;
+    }
+
+    public IPage<ScheduleTask> getScheduleDeviceList(Page<ScheduleTask> page, HttpServletRequest request, IndexScheduleDTO indexScheduleDTO) {
+        IPage<ScheduleTask> pageList = null;
+        // 默认已完成
+        List<DictModel> dictItems1 = sysBaseApi.getDictItems(PatrolDictCode.PATROL_BILL_STATUS);
+        // 获取权限数据
+        String filterConditions = this.getPermissionSQL(request);
+        indexScheduleDTO.setJointSQL(filterConditions);
+        pageList = patrolTaskMapper.getScheduleDeviceList(page, indexScheduleDTO);
+        pageList.getRecords().forEach(l -> {
+            String taskCode = l.getCode();
+            // 巡视用户信息
+            QueryWrapper<PatrolTaskUser> userWrapper = new QueryWrapper<>();
+            userWrapper.lambda().eq(PatrolTaskUser::getTaskCode, taskCode).eq(PatrolTaskUser::getDelFlag, 0);
+            List<PatrolTaskUser> list = patrolTaskUserMapper.selectList(userWrapper);
+            // 巡视用户Map
+            Map<String, List<PatrolTaskUser>> userMap = list.stream().collect(Collectors.groupingBy(PatrolTaskUser::getTaskCode));
+
+            List<PatrolTaskUser> userList = Optional.ofNullable(userMap.get(taskCode)).orElseGet(ArrayList::new);
+            List<String> indexUsers = new ArrayList<>();
+            userList.forEach(u -> {
+                if (StrUtil.isEmpty(u.getUserName())) {
+                    String username = patrolTaskUserMapper.getUsername(u.getUserId());
+                    indexUsers.add(username);
+                    return;
+                }
+                indexUsers.add( u.getUserName());
+            });
+
+            // 巡视组织机构信息
+            List<IndexOrgDTO> orgInfo = patrolTaskOrganizationMapper.getOrgInfo(taskCode);
+
+            // 巡视站点信息
+            List<String> stationInfo = new ArrayList<>();
+            String stationName = patrolTaskDeviceMapper.getStationName(l.getStationCode());
+            stationInfo.add(stationName);
+
+
+            // 字典翻译
+            String statusDictName = dictItems1.stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+            l.setStatusName(statusDictName);
+            l.setUserInfo(CollUtil.join(indexUsers, ","));
+            l.setOrgInfo(orgInfo.stream().map(IndexOrgDTO::getOrgName).collect(Collectors.joining(",")));
+            l.setStationInfo(CollUtil.join(stationInfo, ","));
+
+        });
+
+        return pageList;
     }
 }

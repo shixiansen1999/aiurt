@@ -1,11 +1,7 @@
 package com.aiurt.boot.screen.controller;
 
-import com.aiurt.boot.screen.model.ScreenImportantData;
-import com.aiurt.boot.screen.model.ScreenStatistics;
-import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
-import com.aiurt.boot.screen.model.ScreenStatisticsTask;
+import com.aiurt.boot.screen.model.*;
 import com.aiurt.boot.screen.service.PatrolScreenService;
-import com.aiurt.boot.screen.model.ScreenTemHum;
 import com.aiurt.boot.task.entity.TemperatureHumidity;
 import com.aiurt.boot.task.param.TemHumParam;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -16,6 +12,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -35,7 +32,8 @@ public class PatrolScreenController {
 
     @Autowired
     private PatrolScreenService screenService;
-
+    @Autowired
+    private ISysParamAPI sysParamApi;
     /**
      * 大屏巡视模块-重要数据展示
      *
@@ -88,9 +86,10 @@ public class PatrolScreenController {
                                                                              Integer timeType,
                                                                      @ApiParam(name = "screenModule", value = "巡视数据统计模块标识，不传直接返空：1计划数、2完成数、3漏检数、4巡视异常数、5今日巡视数、6今日巡视完成数")
                                                                              Integer screenModule,
-                                                                     @ApiParam(name = "lineCode", value = "线路编号,多选的话英文逗号分割") String lineCode) {
+                                                                     @ApiParam(name = "lineCode", value = "线路编号") String lineCode,
+                                                                     @ApiParam(name = "stationCode", value = "站点") String stationCode) {
         Page<ScreenStatisticsTask> page = new Page<>(pageNo, pageSize);
-        IPage<ScreenStatisticsTask> pageList = screenService.getStatisticsDataList(page, timeType, screenModule, lineCode);
+        IPage<ScreenStatisticsTask> pageList = screenService.getStatisticsDataList(page, timeType, screenModule, lineCode,stationCode);
         return Result.ok(pageList);
     }
 

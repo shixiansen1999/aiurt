@@ -21,4 +21,8 @@ public interface PatrolDictCode {
      * 巡视项字典编号
      */
     String ITEM_REQUIRED = "patrol_item_required";
+    /**
+     * 巡视工单任务状态字典编码
+     */
+    String PATROL_BILL_STATUS = "patrol_bill_status";
 }

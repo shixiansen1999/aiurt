@@ -12,20 +12,23 @@ import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.*;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.statistics.model.PatrolSituation;
-import com.aiurt.boot.screen.model.ScreenTemHum;
 import com.aiurt.boot.task.dto.TemperatureHumidityDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.entity.TemperatureHumidity;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
+import com.aiurt.boot.task.mapper.PatrolTaskUserMapper;
 import com.aiurt.boot.task.mapper.TemperatureHumidityMapper;
 import com.aiurt.boot.task.param.TemHumParam;
 import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecg.common.util.DateUtils;
@@ -61,7 +64,8 @@ public class PatrolScreenService {
     private TemperatureHumidityMapper temperatureHumidityMapper;
     @Autowired
     private ISysParamAPI sysParamApi;
-
+    @Autowired
+    private PatrolTaskUserMapper patrolTaskUserMapper;
     /**
      * 大屏巡视模块-重要数据展示
      *
@@ -158,12 +162,19 @@ public class PatrolScreenService {
         boolean value = "1".equals(paramModel.getValue());
         if (value) {
             //指定时间范围数量
-            module.setOmit(PatrolConstant.OMIT_STATUS);
+
             PatrolSituation taskDeviceCount = patrolTaskMapper.getTaskDeviceCount(module);
             data.setPlanNum(taskDeviceCount.getSum());
             data.setFinishNum(taskDeviceCount.getFinish());
-            data.setOmitNum(taskDeviceCount.getOmit());
             data.setAbnormalNum(taskDeviceCount.getAbnormal());
+            //漏巡条件构建
+            String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
+            String omitEndTime = this.getOmitDateScope(endTime).split(ScreenConstant.TIME_SEPARATOR)[1];
+            module.setStartTime(DateUtil.parse(omitStartTime));
+            module.setEndTime(DateUtil.parse(omitEndTime));
+            module.setOmit(PatrolConstant.OMIT_STATUS);
+            PatrolSituation taskDeviceOmitCount = patrolTaskMapper.getTaskDeviceCount(module);
+            data.setOmitNum(taskDeviceOmitCount.getOmit());
             //今日数量构造条件对象
             module.setStartTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 00:00:00")));
             module.setEndTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 23:59:59")));
@@ -228,31 +239,80 @@ public class PatrolScreenService {
         if (CollectionUtil.isEmpty(orgCodes)) {
             return page;
         }
-        ScreenTran tran = new ScreenTran();
-        tran.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
-        tran.setStartTime(startTime);
-        tran.setEndTime(endTime);
-        tran.setOrgCodes(orgCodes);
-        tran.setLineCode(lineCode);
 
-        IPage<ScreenStatisticsTask> list = patrolTaskMapper.getScreenTask(page,tran);
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            ScreenModule moduleType = new ScreenModule();
+            moduleType.setOrgCodes(orgCodes);
+            moduleType.setLineCode(lineCode);
+            moduleType.setStartTime(startTime);
+            moduleType.setEndTime(endTime);
 
-        // 字典翻译
-        Map<String, String> statusItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
-                .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-        Map<String, String> omitItems = sysBaseApi.getDictItems(PatrolDictCode.OMIT_STATUS)
-                .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-        Map<String, String> abnormalItems = sysBaseApi.getDictItems(PatrolDictCode.ABNORMAL_STATE)
-                .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-        for (ScreenStatisticsTask task : list.getRecords()) {
-            String statusName = statusItems.get(String.valueOf(task.getStatus()));
-            String omitStatusName = omitItems.get(String.valueOf(task.getOmitStatus()));
-            String abnormalName = abnormalItems.get(String.valueOf(task.getAbnormalState()));
-            task.setStatusName(statusName);
-            task.setOmitStatusName(omitStatusName);
-            task.setAbnormalStateName(abnormalName);
+            List<DictModel> dictItems1 = sysBaseApi.getDictItems(PatrolDictCode.PATROL_BILL_STATUS);
+            Map<String, String> omitItems = sysBaseApi.getDictItems(PatrolDictCode.OMIT_STATUS)
+                    .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+
+            IPage<ScreenStatisticsTask> pageList = patrolTaskMapper.getStatisticsDataDeviceList(page, moduleType);
+            pageList.getRecords().forEach(l -> {
+
+                String taskCode = l.getCode();
+                // 巡视用户信息
+                QueryWrapper<PatrolTaskUser> userWrapper = new QueryWrapper<>();
+                userWrapper.lambda().eq(PatrolTaskUser::getTaskCode, taskCode).eq(PatrolTaskUser::getDelFlag, 0);
+                List<PatrolTaskUser> list = patrolTaskUserMapper.selectList(userWrapper);
+                // 巡视用户Map
+                Map<String, List<PatrolTaskUser>> userMap = list.stream().collect(Collectors.groupingBy(PatrolTaskUser::getTaskCode));
+
+                List<PatrolTaskUser> userList = Optional.ofNullable(userMap.get(taskCode)).orElseGet(ArrayList::new);
+                List<String> indexUsers = new ArrayList<>();
+                userList.forEach(u -> {
+                    if (StrUtil.isEmpty(u.getUserName())) {
+                        String username = patrolTaskUserMapper.getUsername(u.getUserId());
+                        indexUsers.add(username);
+                        return;
+                    }
+                    indexUsers.add( u.getUserName());
+                });
+                // 字典翻译
+                String statusDictName = dictItems1.stream()
+                        .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
+                        .map(DictModel::getText).collect(Collectors.joining());
+                String omitStatusName = omitItems.get(String.valueOf(l.getOmitStatus()));
+                l.setStatusName(statusDictName);
+                l.setOmitStatusName(omitStatusName);
+                l.setUserInfo(CollUtil.join(indexUsers, ","));
+            });
+            return pageList;
+
         }
-        return list;
+        else {
+            ScreenTran tran = new ScreenTran();
+            tran.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
+            tran.setStartTime(startTime);
+            tran.setEndTime(endTime);
+            tran.setOrgCodes(orgCodes);
+            tran.setLineCode(lineCode);
+            IPage<ScreenStatisticsTask> list = patrolTaskMapper.getScreenTask(page,tran);
+
+            // 字典翻译
+            Map<String, String> statusItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
+                    .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+            Map<String, String> omitItems = sysBaseApi.getDictItems(PatrolDictCode.OMIT_STATUS)
+                    .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+            Map<String, String> abnormalItems = sysBaseApi.getDictItems(PatrolDictCode.ABNORMAL_STATE)
+                    .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+            for (ScreenStatisticsTask task : list.getRecords()) {
+                String statusName = statusItems.get(String.valueOf(task.getStatus()));
+                String omitStatusName = omitItems.get(String.valueOf(task.getOmitStatus()));
+                String abnormalName = abnormalItems.get(String.valueOf(task.getAbnormalState()));
+                task.setStatusName(statusName);
+                task.setOmitStatusName(omitStatusName);
+                task.setAbnormalStateName(abnormalName);
+            }
+            return list;
+        }
     }
 
 
@@ -465,7 +525,7 @@ public class PatrolScreenService {
      * @return
      */
     public IPage<ScreenStatisticsTask> getStatisticsDataList(Page<ScreenStatisticsTask> page, Integer timeType,
-                                                             Integer screenModule, String lineCode) {
+                                                             Integer screenModule, String lineCode,String stationCode) {
         // 默认本周
         if (ObjectUtil.isEmpty(timeType)) {
             timeType = ScreenConstant.THIS_WEEK;
@@ -483,6 +543,7 @@ public class PatrolScreenService {
         moduleType.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
         moduleType.setOrgCodes(orgCodes);
         moduleType.setLineCode(lineCode);
+        moduleType.setStationCode(stationCode);
         String dateTime = ScreenDateUtil.getDateTime(timeType);
         String[] split = dateTime.split(ScreenConstant.TIME_SEPARATOR);
         Date startTime = DateUtil.parse(split[0]);
@@ -528,23 +589,90 @@ public class PatrolScreenService {
                 moduleType.setEndTime(endTime);
                 break;
         }
-        IPage<ScreenStatisticsTask> pageList = patrolTaskMapper.getStatisticsDataList(page, moduleType);
-        // 字典翻译
-        Map<String, String> statusItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
-                .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-        Map<String, String> omitItems = sysBaseApi.getDictItems(PatrolDictCode.OMIT_STATUS)
-                .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-        Map<String, String> abnormalItems = sysBaseApi.getDictItems(PatrolDictCode.ABNORMAL_STATE)
-                .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-        for (ScreenStatisticsTask task : pageList.getRecords()) {
-            String statusName = statusItems.get(String.valueOf(task.getStatus()));
-            String omitStatusName = omitItems.get(String.valueOf(task.getOmitStatus()));
-            String abnormalName = abnormalItems.get(String.valueOf(task.getAbnormalState()));
-            task.setStatusName(statusName);
-            task.setOmitStatusName(omitStatusName);
-            task.setAbnormalStateName(abnormalName);
+
+
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            Integer[] i = {2};
+            Integer[] j = {0,1};
+            switch (screenModule) {
+                // 完成数
+                case 2:
+                    moduleType.setTaskDeviceStatus(i);
+                    break;
+                // 漏巡数
+                case 3:
+                    moduleType.setTaskDeviceStatus(j);
+                    break;
+                // 巡视异常数
+                case 4:
+                    moduleType.setState(0);
+                    break;
+                // 今日巡视完成数
+                case 6:
+                    moduleType.setTaskDeviceStatus(i);
+                    break;
+                default:
+                    break;
+            }
+            List<DictModel> dictItems1 = sysBaseApi.getDictItems(PatrolDictCode.PATROL_BILL_STATUS);
+            Map<String, String> omitItems = sysBaseApi.getDictItems(PatrolDictCode.OMIT_STATUS)
+                    .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+
+            IPage<ScreenStatisticsTask> pageList = patrolTaskMapper.getStatisticsDataDeviceList(page, moduleType);
+            pageList.getRecords().forEach(l -> {
+
+                String taskCode = l.getCode();
+                // 巡视用户信息
+                QueryWrapper<PatrolTaskUser> userWrapper = new QueryWrapper<>();
+                userWrapper.lambda().eq(PatrolTaskUser::getTaskCode, taskCode).eq(PatrolTaskUser::getDelFlag, 0);
+                List<PatrolTaskUser> list = patrolTaskUserMapper.selectList(userWrapper);
+                // 巡视用户Map
+                Map<String, List<PatrolTaskUser>> userMap = list.stream().collect(Collectors.groupingBy(PatrolTaskUser::getTaskCode));
+
+                List<PatrolTaskUser> userList = Optional.ofNullable(userMap.get(taskCode)).orElseGet(ArrayList::new);
+                List<String> indexUsers = new ArrayList<>();
+                userList.forEach(u -> {
+                    if (StrUtil.isEmpty(u.getUserName())) {
+                        String username = patrolTaskUserMapper.getUsername(u.getUserId());
+                        indexUsers.add(username);
+                        return;
+                    }
+                    indexUsers.add( u.getUserName());
+                });
+                // 字典翻译
+                String statusDictName = dictItems1.stream()
+                        .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
+                        .map(DictModel::getText).collect(Collectors.joining());
+                String omitStatusName = omitItems.get(String.valueOf(l.getOmitStatus()));
+                l.setStatusName(statusDictName);
+                l.setOmitStatusName(omitStatusName);
+                l.setUserInfo(CollUtil.join(indexUsers, ","));
+            });
+            return pageList;
+
+        } else {
+            IPage<ScreenStatisticsTask> pageList = patrolTaskMapper.getStatisticsDataList(page, moduleType);
+            // 字典翻译
+            Map<String, String> statusItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
+                    .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+            Map<String, String> omitItems = sysBaseApi.getDictItems(PatrolDictCode.OMIT_STATUS)
+                    .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+            Map<String, String> abnormalItems = sysBaseApi.getDictItems(PatrolDictCode.ABNORMAL_STATE)
+                    .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+            for (ScreenStatisticsTask task : pageList.getRecords()) {
+                String statusName = statusItems.get(String.valueOf(task.getStatus()));
+                String omitStatusName = omitItems.get(String.valueOf(task.getOmitStatus()));
+                String abnormalName = abnormalItems.get(String.valueOf(task.getAbnormalState()));
+                task.setStatusName(statusName);
+                task.setOmitStatusName(omitStatusName);
+                task.setAbnormalStateName(abnormalName);
+            }
+            return pageList;
         }
-        return pageList;
+
     }
 
     /**
