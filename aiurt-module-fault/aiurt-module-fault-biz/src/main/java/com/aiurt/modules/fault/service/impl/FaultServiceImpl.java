@@ -1392,24 +1392,29 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
         }
         // 已解决
+        SysParamModel submitParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_AUDIT);
+        boolean submitValue = "1".equals(submitParamModel.getValue());
         if (flag.equals(solveStatus)) {
-            fault.setStatus(FaultStatusEnum.RESULT_CONFIRM.getStatus());
             fault.setEndTime(new Date());
             fault.setDuration(DateUtil.between(fault.getReceiveTime(), fault.getEndTime(), DateUnit.MINUTE));
             one.setEndTime(new Date());
-
-            // 审核
-            try {
-                TodoDTO todoDTO = new TodoDTO();
-                todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-                todoDTO.setTitle("维修待审核");
-                todoDTO.setMsgAbstract("维修待审核");
-                todoDTO.setPublishingContent("故障维修完成待审核");
-                sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障维修结果待审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
-            } catch (Exception e) {
-                e.printStackTrace();
+            if(submitValue){
+                fault.setStatus(FaultStatusEnum.RESULT_CONFIRM.getStatus());
+                // 审核
+                try {
+                    TodoDTO todoDTO = new TodoDTO();
+                    todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                    todoDTO.setTitle("维修待审核");
+                    todoDTO.setMsgAbstract("维修待审核");
+                    todoDTO.setPublishingContent("故障维修完成待审核");
+                    sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障维修结果待审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }else {
+                fault.setStatus(FaultStatusEnum.Close.getStatus());
+                noAudit(faultCode);
             }
-            //repairRecordService.updateById(one);
             //推送数据到调度系统
             faultExternalService.complete(repairRecordDTO,one.getEndTime(),loginUser);
         }
@@ -1439,8 +1444,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         sparePartBaseApi.updateSparePartMalfunction(malfunctionList);*/
 
-
-        saveLog(loginUser, "填写维修记录", faultCode, FaultStatusEnum.REPAIR.getStatus(), null);
+        if(submitValue){
+            saveLog(loginUser, "填写维修记录", faultCode, FaultStatusEnum.REPAIR.getStatus(), null);
+        }
 
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_DEAL.getType(), faultCode, loginUser.getUsername(), "1");
 
@@ -1668,7 +1674,35 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_RESULT.getType(), faultCode, loginUser.getUsername(), "1");
     }
-
+    /**
+     * 不需要工班长审核
+     *
+     * @param faultCode 故障编号
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void noAudit(String faultCode) {
+        LoginUser loginUser = checkLogin();
+        // 修改备件, 更改状态
+        LambdaQueryWrapper<DeviceChangeSparePart> dataWrapper = new LambdaQueryWrapper<>();
+        dataWrapper.eq(DeviceChangeSparePart::getCode, faultCode).eq(DeviceChangeSparePart::getConsumables,0);
+        List<DeviceChangeSparePart> oneSourceList = sparePartService.list(dataWrapper);
+        // 处理备件
+        if (CollectionUtil.isNotEmpty(oneSourceList)) {
+            List<DeviceChangeSparePartDTO> dataList = new ArrayList<>();
+            oneSourceList.stream().forEach(deviceChangeSparePart -> {
+                DeviceChangeSparePartDTO dto = new DeviceChangeSparePartDTO();
+                BeanUtils.copyProperties(deviceChangeSparePart, dto);
+                dataList.add(dto);
+            });
+            try {
+                sparePartBaseApi.dealChangeSparePart(dataList);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+        saveLog(loginUser, "维修完成", faultCode, FaultStatusEnum.Close.getStatus(), null);
+        todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_RESULT.getType(), faultCode, loginUser.getUsername(), "1");
+    }
     /**
      * 查询工作类型
      *
@@ -1695,16 +1729,28 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Override
     public List<LoginUser> queryUser(Fault fault) {
         LoginUser loginUser = checkLogin();
-        //根据当前登录人所拥有的部门权限查人员
-        List<CsUserDepartModel> departByUserId = sysBaseAPI.getDepartByUserId(loginUser.getId());
+        List<String> orgCodeList = new ArrayList<>();
+        if (!loginUser.getRoleCodes().contains("admin")) {
+            //根据当前登录人所拥有的部门权限查人员
+            List<CsUserDepartModel> departByUserId = sysBaseAPI.getDepartByUserId(loginUser.getId());
 
-        if (CollectionUtil.isEmpty(departByUserId)) {
-            return Collections.emptyList();
-        }
+            if (CollectionUtil.isEmpty(departByUserId)) {
+                return Collections.emptyList();
+            }
+            orgCodeList = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+            if (CollectionUtil.isEmpty(orgCodeList)) {
+                return Collections.emptyList();
+            }
+        }else {
+            List<SysDepartModel> allSysDepart = sysBaseAPI.getAllSysDepart();
+            if (CollectionUtil.isEmpty(allSysDepart)) {
+                return Collections.emptyList();
+            }
+            orgCodeList = allSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+            if (CollectionUtil.isEmpty(orgCodeList)) {
+                return Collections.emptyList();
+            }
 
-        List<String> orgCodeList = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-        if (CollectionUtil.isEmpty(orgCodeList)) {
-            return Collections.emptyList();
         }
 
         // 当前登录人的部门权限和任务的组织机构交集

@@ -23,4 +23,10 @@ public interface IScheduleService extends IService<Schedule> {
     Result<?> importScheduleExcel(List<Map<Integer, String>> scheduleDate, HttpServletResponse response) throws IOException;
 
     Result<Schedule> add(Schedule schedule);
+    /**
+     * 排班表模板下载
+     * @param response
+     * @throws IOException
+     */
+    void exportTemplateXls(HttpServletResponse response)throws IOException;;
 }

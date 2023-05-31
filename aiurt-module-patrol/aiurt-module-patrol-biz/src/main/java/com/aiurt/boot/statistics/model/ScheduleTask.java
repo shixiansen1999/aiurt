@@ -55,6 +55,12 @@ public class ScheduleTask implements Serializable {
      */
     @ApiModelProperty(value = "组织机构")
     private String orgInfo;
+
+    /**
+     * 站点
+     */
+    @ApiModelProperty(value = "站点")
+    private String stationCode;
     /**
      * 任务计划执行日期
      */

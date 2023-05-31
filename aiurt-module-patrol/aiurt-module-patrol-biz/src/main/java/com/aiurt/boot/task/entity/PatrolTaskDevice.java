@@ -67,7 +67,7 @@ public class PatrolTaskDevice implements Serializable {
     private java.util.Date checkTime;
 	/**检查结果：0正常、1异常*/
 	@Excel(name = "检查结果：0正常、1异常", width = 15)
-    @ApiModelProperty(value = "检查结果：0正常、1异常")
+    @ApiModelProperty(value = "检查结果：0异常、1正常")
     private java.lang.Integer checkResult;
     /**线路编号*/
     @Excel(name = "线路编号", width = 15)
@@ -89,6 +89,12 @@ public class PatrolTaskDevice implements Serializable {
     @Excel(name = "wifi mac地址", width = 15)
     @ApiModelProperty(value = "wifi mac地址")
     private String mac;
+    /**
+     * mac匹配；0异常；1正常
+     */
+    @Excel(name = "mac匹配；0异常；1正常", width = 15)
+    @ApiModelProperty(value = "mac匹配；0异常；1正常")
+    private java.lang.Integer macStatus;
 	/**工单提交用户ID*/
 	@Excel(name = "工单提交用户ID", width = 15)
     @ApiModelProperty(value = "工单提交用户ID")

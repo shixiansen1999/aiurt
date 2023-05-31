@@ -1,5 +1,6 @@
 package com.aiurt.boot.screen.model;
 
+import com.aiurt.boot.constant.PatrolConstant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,6 +31,18 @@ public class ScreenModule {
      */
     private Integer status;
     /**
+     * 工单任务完成状态
+     */
+    private final Integer checkStatus = PatrolConstant.BILL_COMPLETE;
+    /**
+     * 工单检查结果异常状态
+     */
+    private final Integer checkResult = PatrolConstant.RESULT_EXCEPTION;
+    /**
+     * 工单检查mac地址匹配异常状态
+     */
+    private final Integer macStatus = PatrolConstant.MAC_MATCH_EXCEPTION;
+    /**
      * 漏检状态
      */
     private Integer omit;
@@ -53,6 +66,18 @@ public class ScreenModule {
      * 线路编号
      */
     private String lineCode;
+    /**
+     * 站点编号
+     */
+    private String stationCode;
+    /**
+     * 条件筛选的任务状态
+     */
+    private Integer[] taskDeviceStatus;
+    /**
+     * 巡检结果：0异常、1正常
+     */
+    private Integer state;
 //    /**
 //     * 专业编号
 //     */

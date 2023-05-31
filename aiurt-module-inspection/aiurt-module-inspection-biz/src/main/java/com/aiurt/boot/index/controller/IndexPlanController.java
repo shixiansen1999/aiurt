@@ -102,9 +102,10 @@ public class IndexPlanController {
     @PermissionData(pageComponent = "dashboard/Analysis")
     @RequestMapping(value = "/getUserSchedule", method = RequestMethod.GET)
     public Result<List<DayTodoDTO>> getUserSchedule(@ApiParam(value = "年份") @RequestParam(name = "year") Integer year,
-                                                    @ApiParam(value = "月份") @RequestParam(name = "month") Integer month
+                                                    @ApiParam(value = "月份") @RequestParam(name = "month") Integer month,
+                                                    HttpServletRequest request
     ) {
-        List<DayTodoDTO> result = indexPlanService.getUserSchedule(year, month);
+        List<DayTodoDTO> result = indexPlanService.getUserSchedule(year, month,request);
         return Result.OK(result);
     }
 

@@ -13,7 +13,6 @@ import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
-import com.aiurt.boot.statistics.dto.IndexStationDTO;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
@@ -49,7 +48,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @Description: patrol_task_device
@@ -214,7 +212,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             }
             e.setOrgList(patrolTaskMapper.getOrgCode(patrolTask.getCode()));
             List<PatrolAccompanyDTO> accompanyDTOList = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
-            String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining("；"));
+            String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining(";"));
             e.setUserName(userName);
             e.setAccompanyName(accompanyDTOList);
             // 设置抽检人信息
@@ -255,6 +253,21 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     .set(PatrolTaskDevice::getStatus, PatrolConstant.BILL_COMPLETE)
                     .set(PatrolTaskDevice::getMac, patrolTaskDevice.getMac())
                     .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
+            //mac地址匹配
+            List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(Collections.singletonList(taskDevice.getStationCode()));
+            if (CollUtil.isNotEmpty(wifiMac) && StrUtil.isNotEmpty(patrolTaskDevice.getMac())) {
+                //忽略大小写全匹配
+                String mac1 = patrolTaskDevice.getMac();
+                String join = CollUtil.join(wifiMac, ",");
+                if (join.toLowerCase().contains(mac1.toLowerCase())) {
+                    updateWrapper.set(PatrolTaskDevice::getMacStatus, 1);
+                } else {
+                    updateWrapper.set(PatrolTaskDevice::getMacStatus, 0);
+                }
+            } else {
+                updateWrapper.set(PatrolTaskDevice::getMacStatus, 0);
+            }
+
             patrolTaskDeviceMapper.update(patrolTaskDevice, updateWrapper);
             SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_SUBMIT_SIGNATURE);
             boolean value = "1".equals(paramModel.getValue());
@@ -340,34 +353,18 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
                 //获取mac地址
                 List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(task.getId());
-                List<IndexStationDTO> stationInfo = patrolTaskStationMapper.getStationInfo(task.getCode());
-                List<String> list = Optional.ofNullable(stationInfo)
-                        .map(Collection::stream)
-                        .orElseGet(Stream::empty)
-                        .map(IndexStationDTO::getStationCode)
-                        .collect(Collectors.toList());
-                List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(list);
 
                 if (CollUtil.isNotEmpty(mac)) {
-                    for (PatrolTaskDeviceDTO patrolTaskDeviceDTO : mac) {
-                        if (StrUtil.isNotEmpty(patrolTaskDeviceDTO.getMac()) && CollUtil.isNotEmpty(wifiMac)) {
-                            //忽略大小写全匹配
-                            String mac1 = patrolTaskDeviceDTO.getMac();
-                            String join = CollUtil.join(wifiMac, ",");
-                            if (join.toLowerCase().contains(mac1.toLowerCase())) {
-                                updateWrapper.set(PatrolTask::getMacStatus, 1);
-                            } else {
-                                updateWrapper.set(PatrolTask::getMacStatus, 0);
-                                break;
-                            }
-                        }else {
-                            updateWrapper.set(PatrolTask::getMacStatus, 0);
-                            break;
-                        }
+                    long l = mac.stream().filter(m -> m.getMacStatus().equals(PatrolConstant.MAC_STATUS_EXCEPTION) || ObjectUtil.isEmpty(m.getMacStatus())).count();
+                    if (l == 0L) {
+                        updateWrapper.set(PatrolTask::getMacStatus, 1);
+                    }else {
+                        updateWrapper.set(PatrolTask::getMacStatus, 0);
                     }
                 } else {
                     updateWrapper.set(PatrolTask::getMacStatus, 0);
                 }
+
                 patrolTaskMapper.update(new PatrolTask(), updateWrapper);
                 // 提交任务如果需要审核则发送一条审核待办消息
                 try {

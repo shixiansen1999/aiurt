@@ -1,11 +1,13 @@
 package com.aiurt.modules.schedule.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.Week;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.schedule.entity.Schedule;
@@ -27,9 +29,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.apache.poi.ss.usermodel.DataValidation;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
@@ -37,8 +37,10 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.util.SpringContextUtils;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.entity.TemplateExportParams;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +55,7 @@ import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -196,10 +199,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                     Boolean isSkipWeekend = schedule.getIsSkipWeekend();
                     Date time = start.getTime();
                     Week week = DateUtil.dayOfWeekEnum(time);
-                    if (("星期日".equals(week.toChinese()) || "星期六".equals(week.toChinese())) && isSkipWeekend) {
-                        start.add(Calendar.DAY_OF_YEAR, 1);
-                        continue;
-                    }
+
                     int index = (i % itemSize == 0 ? itemSize : i % itemSize);
                     Integer ruleItemId = scheduleRuleItemMap.get(index);
                     ScheduleItem scheduleItem = ItemService.getById(ruleItemId);
@@ -218,6 +218,17 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                                 .color(scheduleItem.getColor())
                                 .delFlag(0)
                                 .build();
+                        //跳过周末则周末安排休息班次
+                        if (("星期日".equals(week.toChinese()) || "星期六".equals(week.toChinese())) && isSkipWeekend) {
+                            LambdaQueryWrapper<ScheduleItem> queryWrapper = new LambdaQueryWrapper<>();
+                            queryWrapper.eq(ScheduleItem::getName, "休息").eq(ScheduleItem::getDelFlag, 0);
+                            List<ScheduleItem> scheduleItems = ItemService.getBaseMapper().selectList(queryWrapper);
+                            if (CollUtil.isNotEmpty(scheduleItems)) {
+                                record.setItemId(scheduleItems.get(0).getId());
+                            }
+                            record.setItemName("休息");
+                        }
+
                         //  如果需要跳过节假日，并且当天和指定班次一样，则变更班次
                         List<String> allHolidays = iSysBaseApi.getAllHolidays();
                         Date date = start.getTime();
@@ -245,6 +256,86 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
         }
         result.success("添加成功！");
         return result;
+    }
+
+    @Override
+    public void exportTemplateXls(HttpServletResponse response) throws IOException {
+        //获取输入流，原始模板位置
+        org.springframework.core.io.Resource resource = new ClassPathResource("/templates/schedule.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+
+        //2.获取临时文件
+        File fileTemp= new File("/templates/schedule.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+
+        String path = fileTemp.getAbsolutePath();
+        cn.afterturn.easypoi.excel.entity.TemplateExportParams exportParams = new cn.afterturn.easypoi.excel.entity.TemplateExportParams(path);
+        Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+        Workbook workbook =  cn.afterturn.easypoi.excel.ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+
+        CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+
+        //班次下拉框
+        List<DictModel> dictModels3 = bean.queryTableDictItemsByCode("schedule_item", "name", "id");
+        Map<String, DictModel> collect6 = dictModels3.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
+        List<DictModel> collect = new ArrayList<>(collect6.values());
+        for (int i = 1; i <=31; i++) {
+            selectList(workbook, Integer.toString(i), 2+i, 2+i, collect);
+        }
+
+
+        String fileName = "排班表导入模板.xlsx";
+
+        try {
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            response.setHeader("Content-Disposition", "attachment;filename="+"排班表导入模板.xlsx");
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //下拉框
+    private void selectList(Workbook workbook,String name,int firstCol, int lastCol,List<DictModel> modelList){
+        Sheet sheet = workbook.getSheetAt(0);
+        if (CollectionUtil.isNotEmpty(modelList)) {
+            //将新建的sheet页隐藏掉, 下拉值太多，需要创建隐藏页面
+            int sheetTotal = workbook.getNumberOfSheets();
+            String hiddenSheetName = name + "_hiddenSheet";
+            List<String> collect = modelList.stream().map(DictModel::getText).collect(Collectors.toList());
+            Sheet hiddenSheet = workbook.getSheet(hiddenSheetName);
+            if (hiddenSheet == null) {
+                hiddenSheet = workbook.createSheet(hiddenSheetName);
+                //写入下拉数据到新的sheet页中
+                for (int i = 0; i < collect.size(); i++) {
+                    Row hiddenRow = hiddenSheet.createRow(i);
+                    Cell hiddenCell = hiddenRow.createCell(0);
+                    hiddenCell.setCellValue(collect.get(i));
+                }
+                workbook.setSheetHidden(sheetTotal, true);
+            }
+
+            // 下拉数据
+            CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3, 65535, firstCol, lastCol);
+            //  生成下拉框内容名称
+            String strFormula = hiddenSheetName + "!$A$1:$A$65535";
+            // 根据隐藏页面创建下拉列表
+            XSSFDataValidationConstraint constraint = new XSSFDataValidationConstraint(DataValidationConstraint.ValidationType.LIST, strFormula);
+            XSSFDataValidationHelper dvHelper = new XSSFDataValidationHelper((XSSFSheet) hiddenSheet);
+            DataValidation validation = dvHelper.createValidation(constraint, cellRangeAddressList);
+            //  对sheet页生效
+            sheet.addValidationData(validation);
+        }
+
     }
 
     /**校验,如果导入出错怎返回错误报告

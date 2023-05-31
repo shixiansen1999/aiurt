@@ -1478,14 +1478,24 @@
     <select id="getTemAndHum" resultType="com.aiurt.boot.task.dto.TemperatureHumidityDTO">
         SELECT t.*, s.line_code, s.line_name, s.station_code, s.station_name
         from `temperature_humidity` t
-        left join sensor_information s on t.station_code = s.station_code
-        where s.del_flag = 0 and  t.create_time between DATE_SUB(now(), INTERVAL 30 DAY) and now()
-          AND
-            DATE_FORMAT(t.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{date}
-          AND
-            s.line_code = #{lineCode}
-          AND
-            s.station_code = #{stationCode}
+        left join sensor_information s on t.ip = s.station_ip
+        where s.del_flag = 0
+            AND s.line_code = #{condition.lineCode}
+            AND s.station_code = #{condition.stationCode}
+            <if test="condition.mode != null and condition.mode == 0">
+                AND DATE_FORMAT(t.create_time, '%Y-%m-%d %H') = DATE_FORMAT(#{condition.date}, '%Y-%m-%d %H')
+            </if>
+            <if test="condition.mode != null and condition.mode == 1">
+                AND DATE_FORMAT(t.create_time, '%Y-%m-%d') = DATE_FORMAT(#{condition.date}, '%Y-%m-%d')
+            </if>
+            <if test="condition.mode != null and condition.mode == 2">
+                AND t.create_time > DATE_SUB(#{condition.date}, INTERVAL #{condition.interval} DAY) AND t.create_time <![CDATA[<=]]> #{condition.date}
+                AND DATE_FORMAT(t.create_time, '%H') = #{condition.hour}
+            </if>
+            <if test="condition.mode != null and condition.mode == 3">
+                AND t.create_time > DATE_SUB(#{condition.date}, INTERVAL #{condition.interval} DAY) AND t.create_time <![CDATA[<=]]> #{condition.date}
+                AND DATE_FORMAT(t.create_time, '%H') = #{condition.hour}
+            </if>
         order by create_time desc
     </select>
 
@@ -1506,7 +1516,8 @@
         pt.id,
         pt.`status`,
         pt.abnormal_state,
-        pt.omit_status
+        pt.omit_status,
+        date_format(pt.patrol_date, '%Y-%m-%d') as patrolDate
         FROM patrol_task pt
         left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
         left join patrol_task_standard ptsd on pt.id = ptsd.task_id and ptsd.del_flag = 0
@@ -1526,14 +1537,511 @@
 
     <select id="getOverviewInfoCount" resultType="com.aiurt.boot.statistics.model.PatrolSituation">
         SELECT
-        COUNT( 1 ) `sum`,
-        SUM( #{condition.status} = statistics.`status` ) `finish`,
-        SUM( #{condition.status} != statistics.`status` ) `unfinish`,
-        SUM( #{condition.abnormal} = statistics.abnormal_state ) `abnormal`,
-        SUM( #{condition.omitStatus} = statistics.omit_status ) omit
+        IFNULL(COUNT( 1 ), 0) `sum`,
+        IFNULL(SUM( #{condition.status} = statistics.`status` ) , 0) `finish`,
+        IFNULL(SUM( #{condition.status} != statistics.`status` ) , 0)`unfinish`,
+        IFNULL(SUM( #{condition.abnormal} = statistics.abnormal_state ), 0) `abnormal`,
+        IFNULL(SUM( #{condition.omitStatus} = statistics.omit_status ), 0) omit
         FROM
         (
         <include refid="OverviewInfo"/>
         ) statistics
+    </select>
+
+    <select id="getTaskDeviceOverviewInfoCount" resultType="com.aiurt.boot.statistics.model.PatrolSituation">
+        SELECT
+        IFNULL(COUNT( 1 ), 0) `sum`,
+        IFNULL(SUM( #{condition.checkStatus} = ptd.`status` ), 0) `finish`,
+        IFNULL(SUM( #{condition.checkStatus} != ptd.`status` ) , 0)`unfinish`,
+        IFNULL(SUM( #{condition.checkResult} = ptd.check_result or #{condition.macStatus} = ptd.mac_status ), 0) `abnormal`,
+        IFNULL(SUM( #{condition.omitStatus} = statistics.omit_status and #{condition.checkStatus} != ptd.`status`), 0) omit
+        FROM
+        (
+        <include refid="OverviewInfo"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id and ptd.del_flag = 0
+    </select>
+
+    <select id="getCountONMonth" resultType="com.aiurt.boot.statistics.model.PatrolSituation">
+        SELECT
+        IFNULL(COUNT( 1 ), 0) `sum`,
+        IFNULL(SUM( #{condition.status} = statistics.`status` ) , 0) `finish`,
+        IFNULL(SUM( #{condition.status} != statistics.`status` ) , 0)`unfinish`,
+        IFNULL(SUM( #{condition.abnormal} = statistics.abnormal_state ), 0) `abnormal`,
+        IFNULL(SUM( #{condition.omitStatus} = statistics.omit_status ), 0) omit,
+        statistics.patrolDate
+        FROM
+        (
+        <include refid="OverviewInfo"/>
+        ) statistics
+        group by statistics.patrolDate
+    </select>
+
+    <select id="getTaskDeviceCountONMonth" resultType="com.aiurt.boot.statistics.model.PatrolSituation">
+        SELECT
+        IFNULL(COUNT( 1 ), 0) `sum`,
+        IFNULL(SUM( #{condition.checkStatus} = ptd.`status` ), 0) `finish`,
+        IFNULL(SUM( #{condition.checkStatus} != ptd.`status` ) , 0)`unfinish`,
+        IFNULL(SUM( #{condition.checkResult} = ptd.check_result or #{condition.macStatus} = ptd.mac_status ), 0) `abnormal`,
+        IFNULL(SUM( #{condition.omitStatus} = statistics.omit_status and #{condition.checkStatus} != ptd.`status`), 0) omit,
+        statistics.patrolDate
+        FROM
+        (
+        <include refid="OverviewInfo"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id and ptd.del_flag = 0
+        group by statistics.patrolDate
+    </select>
+
+
+    <sql id="ImportantData">
+        select
+        pt.id,
+        pt.`status`,
+        pt.abnormal_state,
+        pt.omit_status,
+        date_format(pt.patrol_date, '%Y-%m-%d') as patrolDate
+        from patrol_task pt
+        LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code AND pts.del_flag = 0
+        JOIN cs_station cs ON pts.station_code = cs.station_code AND cs.del_flag = 0
+        where  pt.del_flag = 0
+        <if test="condition.startTime != null and condition.endTime != null">
+            AND  pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
+        </if>
+        <if test="condition.discardStatus != null">
+            AND  pt.discard_status = #{condition.discardStatus}
+        </if>
+        <if test="condition.lineCode != null and condition.lineCode != ''">
+            AND  cs.line_code = #{condition.lineCode}
+        </if>
+        <if test="condition.orgCodes != null and condition.orgCodes.size > 0">
+            AND  pt.`code` IN(
+            select distinct task_code
+            from patrol_task_organization where del_flag = 0
+            and org_code in
+            <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            )
+        </if>
+        group by pt.code
+    </sql>
+
+    <select id="getTaskDeviceCount" resultType="com.aiurt.boot.statistics.model.PatrolSituation">
+        SELECT
+        IFNULL(COUNT( 1 ), 0) `sum`,
+        IFNULL(SUM( #{condition.checkStatus} = ptd.`status` ), 0) `finish`,
+        IFNULL(SUM( #{condition.checkStatus} != ptd.`status` ) , 0)`unfinish`,
+        IFNULL(SUM( #{condition.checkResult} = ptd.check_result or #{condition.macStatus} = ptd.mac_status ), 0) `abnormal`,
+        IFNULL(SUM( #{condition.omit} = statistics.omit_status and #{condition.checkStatus} != ptd.`status`), 0) omit,
+        statistics.patrolDate
+        FROM
+        (
+        <include refid="ImportantData"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id and ptd.del_flag = 0
+    </select>
+
+    <sql id="ReportTaskDeviceData">
+        select
+        pt.id,
+        pt.code,
+        pt.`status`,
+        pt.abnormal_state,
+        pt.omit_status,
+        pto.org_code,
+        IFNULL(pt.duration,'0') * 60 workHours
+        from patrol_task pt
+        LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code AND pts.del_flag = 0
+        JOIN cs_station cs ON pts.station_code = cs.station_code AND cs.del_flag = 0
+        LEFT JOIN patrol_task_organization pto on pto.task_code = pt.code and pto.del_flag =0
+        LEFT JOIN patrol_task_standard ptsd on ptsd.task_id = pt.id and ptsd.del_flag = 0
+        where pt.del_flag = 0 AND pt.discard_status = 0
+        <if test="condition.startDate != null and condition.endDate != null">
+            AND pt.patrol_date BETWEEN #{condition.startDate} AND #{condition.endDate}
+        </if>
+        <if test="condition.lineCode != null and condition.lineCode != ''">
+            AND cs.line_code = #{condition.lineCode}
+        </if>
+        <if test="condition.stationCode != null and condition.stationCode != ''">
+            AND cs.station_code = #{condition.stationCode}
+        </if>
+        <if test="condition.orgCodeList != null and condition.orgCodeList.size > 0">
+            and pto.org_code in
+            <foreach collection="condition.orgCodeList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="condition.subsystemCode != null and condition.subsystemCode != ''">
+            and  ptsd.subsystem_code = #{condition.subsystemCode}
+        </if>
+        group by pt.code
+    </sql>
+
+    <select id="getReportTaskDeviceCount" resultType="com.aiurt.boot.report.model.PatrolReport">
+        SELECT
+        IFNULL(COUNT( 1 ), 0) `taskTotal`,
+        IFNULL(SUM( #{condition.checkStatus} = ptd.`status` ), 0) `inspectedNumber`,
+        IFNULL(SUM( #{condition.checkStatus} != ptd.`status` ) , 0)`notInspectedNumber`,
+        IFNULL(SUM( #{condition.checkResult} = ptd.check_result or #{condition.macStatus} = ptd.mac_status ), 0) `abnormalNumber`,
+        IFNULL(SUM( #{condition.omit} = statistics.omit_status and #{condition.checkStatus} != ptd.`status`), 0) missInspectedNumber,
+        statistics.org_code
+        FROM
+        (
+        <include refid="ReportTaskDeviceData"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id and ptd.del_flag = 0
+        group by statistics.org_code
+    </select>
+
+    <select id="getFaultList" resultType="com.aiurt.boot.report.model.PatrolReport">
+        SELECT
+        IFNULL(COUNT( ptf.patrol_number ), 0) `faultNumber`,
+        statistics.org_code
+        FROM
+        (
+        <include refid="ReportTaskDeviceData"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id and ptd.del_flag = 0
+        left join patrol_task_fault ptf on ptd.patrol_number = ptf.patrol_number and ptf.del_flag = 0
+        LEFT JOIN fault f on ptf.fault_code = f.`code` and f.`status` = 12
+        group by statistics.org_code
+    </select>
+    <select id="getFilterFailureReport" resultType="com.aiurt.boot.report.model.FailureReport">
+      SELECT
+        a.id,
+        a.system_name,
+        a.system_code as code,
+        count(c.id AND c.end_time is NOT NULL and c.status = 12 OR not null) AS resolvedNum
+        FROM cs_subsystem a
+        LEFT JOIN fault c ON a.system_code = c.sub_system_code and c.`status` > 2
+        <if test="startTime != null and endTime != null">
+            and DATE_FORMAT(c.happen_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+            AND DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+        </if>
+        <if test="lineCode != null">
+            AND c.line_code = #{lineCode}
+        </if>
+        <if test="stationCode != null and stationCode.size > 0">
+            AND c.station_code IN
+            <foreach collection="stationCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        where a.del_flag = 0
+         and not EXISTS (select 1 from operation_process where fault_code = c.code and  process_code = 10)
+        <if test="id != null">
+            AND a.id in (select system_id from cs_user_subsystem where user_id = #{id})
+        </if>
+        group by a.id
+</select>
+<select id="selectFaultWorkTime" resultType="java.lang.Integer">
+ select ifnull((TIME_TO_SEC(abc.time) / 60), 0) as times from
+        (SELECT timediff(c.end_time,IFNULL( IFNULL( c.recevice_time, c.assign_time ),c.start_time)) AS time
+        FROM
+        fault a
+        LEFT JOIN fault_repair_record c
+        ON a.`code` = c.fault_code
+        WHERE
+        a.`status`
+        >0
+        and not EXISTS (select 1 from operation_process where fault_code = a.code and  process_code = 10)
+        <if test="code != null">
+            and a.sub_system_code = #{code}
+        </if>
+        <if test="orgCode != null">
+            and a.sys_org_code = #{orgCode}
+        </if>
+        <if test="startTime != null and endTime != null">
+            and DATE_FORMAT( a.happen_time
+            , '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{startTime}
+            , '%Y-%m-%d' )
+            AND DATE_FORMAT( #{endTime}
+            , '%Y-%m-%d' )
+        </if>
+        <if test="lineCode != null">
+            AND a.line_code = #{lineCode}
+        </if>
+        <if test="stationCode != null and stationCode.size > 0">
+            AND a.station_code IN
+            <foreach collection="stationCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        and (a.end_time
+        or not NULL) ) as abc
+        where 1 = 1
+</select>
+<select id="getFilterOrgReport" resultType="com.aiurt.boot.report.model.FailureOrgReport">
+  SELECT
+        a.id,
+        a.depart_name as orgName,
+        a.org_code,
+        count(c.id AND c.end_time is NOT NULL and c.status = 12 OR not null) AS resolvedNum
+        FROM sys_depart a
+        LEFT JOIN fault c ON a.org_code = c.sys_org_code and c.`status` > 2
+        <if test="startTime != null and endTime != null">
+            and DATE_FORMAT(c.happen_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+            AND DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+        </if>
+        <if test="lineCode != null">
+            AND c.line_code = #{lineCode}
+        </if>
+        <if test="stationCode != null and stationCode.size > 0">
+            AND c.station_code IN
+            <foreach collection="stationCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="systemCode != null and systemCode.size > 0">
+            AND c.sub_system_code IN
+            <foreach collection="systemCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        WHERE a.del_flag = 0
+        and not EXISTS (select 1 from operation_process where fault_code = c.code and  process_code = 10)
+        <if test="ids != null and ids.size > 0">
+            AND a.id IN
+            <foreach collection="ids" item="ids" open="(" separator="," close=")">
+                #{ids}
+            </foreach>
+        </if>
+        GROUP BY a.depart_name, a.org_code
+</select>
+
+    <select id="getReportTaskUserCount" resultType="com.aiurt.boot.report.model.PatrolReport">
+        SELECT
+        IFNULL(COUNT( 1 ), 0) `taskTotal`,
+        IFNULL(SUM( #{condition.checkStatus} = ptd.`status` ), 0) `inspectedNumber`,
+        IFNULL(SUM( #{condition.checkStatus} != ptd.`status` ) , 0)`notInspectedNumber`,
+        IFNULL(SUM( #{condition.checkResult} = ptd.check_result or #{condition.macStatus} = ptd.mac_status ), 0) `abnormalNumber`,
+        IFNULL(SUM( #{condition.omit} = statistics.omit_status and #{condition.checkStatus} != ptd.`status`), 0) missInspectedNumber,
+        ptu.user_id,
+        SUM(statistics.workHours) as workHours
+        FROM
+        (
+        <include refid="ReportTaskDeviceData"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id and ptd.del_flag = 0
+        left join patrol_task_user ptu on ptu.task_code = statistics.code and ptu.del_flag = 0
+        group by ptu.user_id
+    </select>
+
+    <select id="getReportTaskAccompanyCount" resultType="com.aiurt.boot.report.model.PatrolReport">
+        SELECT
+        IFNULL(COUNT( 1 ), 0) `taskTotal`,
+        IFNULL(SUM( #{condition.checkStatus} = ptd.`status` ), 0) `inspectedNumber`,
+        IFNULL(SUM( #{condition.checkStatus} != ptd.`status` ) , 0)`notInspectedNumber`,
+        IFNULL(SUM( #{condition.checkResult} = ptd.check_result or #{condition.macStatus} = ptd.mac_status ), 0) `abnormalNumber`,
+        IFNULL(SUM( #{condition.omit} = statistics.omit_status and #{condition.checkStatus} != ptd.`status`), 0) missInspectedNumber,
+        pa.user_id,
+        SUM(statistics.workHours) as workHours
+        FROM
+        (
+        <include refid="ReportTaskDeviceData"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id and ptd.del_flag = 0
+        left join patrol_accompany pa on pa.task_device_code = ptd.patrol_number and pa.del_flag = 0
+        group by pa.user_id
+    </select>
+
+    <sql id="IndexTaskDevice">
+        SELECT
+        pt.id,
+        pt.`code`,
+        pt.patrol_date,
+        IF(1 = pt.auditor, pt.auditor_time, pt.submit_time) submitTime
+        FROM patrol_task pt
+        left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
+        left join patrol_task_standard ptsd on pt.id = ptsd.task_id and ptsd.del_flag = 0
+        left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
+        left join patrol_task_user ptu on pt.code = ptu.task_code and ptu.del_flag = 0
+        WHERE pt.del_flag = 0 AND pt.discard_status != 1
+        <if test="condition.jointSQL != null and condition.jointSQL != ''">
+            and ${condition.jointSQL}
+        </if>
+        <if test="condition.startDate != null and condition.endDate != null">
+            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')
+            BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            AND DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+        </if>
+<!--        <if test="condition.status != null and condition.status.length > 0">-->
+<!--            AND pt.`status` IN-->
+<!--            <foreach collection="condition.status" item="item" open="(" separator="," close=")">-->
+<!--                #{item}-->
+<!--            </foreach>-->
+<!--        </if>-->
+        <if test="condition.omitStatus != null">
+            AND pt.omit_status = #{condition.omitStatus}
+        </if>
+        <if test="condition.username != null and condition.username != ''">
+            and  ptu.user_name
+            LIKE CONCAT('%', #{condition.username}, '%')
+        </if>
+        <if test="condition.orgCode != null and condition.orgCode != ''">
+            AND pto.org_code = #{condition.orgCode}
+        </if>
+        GROUP BY pt.`code`
+    </sql>
+
+    <select id="getIndexTaskDeviceList" resultType="com.aiurt.boot.statistics.model.IndexTaskInfo">
+        SELECT
+        ptd.id,
+        ps.`name`,
+        ptd.check_result as abnormalState ,
+        statistics.`code`,
+        ptd.`status`,
+        ptd.check_time as submitTime,
+        ptd.mac_status
+        FROM
+        (
+        <include refid="IndexTaskDevice"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id and ptd.del_flag = 0
+        left join patrol_accompany pa on pa.task_device_code = ptd.patrol_number and pa.del_flag = 0
+        left join patrol_task_standard ptss on ptd.task_standard_id = ptss.id and ptss.del_flag = 0
+        left join patrol_standard ps on ps.id = ptss.standard_id and ps.del_flag = 0
+        where 1=1
+        <if test="condition.taskStatus != null">
+            AND ptd.`status` = #{condition.taskStatus}
+        </if>
+        <if test="condition.taskDeviceStatus != null">
+            AND ptd.`status` in
+            <foreach collection="condition.taskDeviceStatus" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="condition.state != null">
+            AND (ptd.check_result = #{condition.state} or ptd.mac_status = #{condition.state})
+        </if>
+        <if test="condition.exceptionType != null and condition.exceptionType == 0">
+            and ptd.check_result = 0
+        </if>
+        <if test="condition.exceptionType != null and condition.exceptionType == 1">
+            and ptd.mac_status = 0
+        </if>
+        <if test="condition.stationCode != null and condition.stationCode != ''">
+            AND ptd.station_code = #{condition.stationCode}
+        </if>
+        GROUP BY ptd.id
+    </select>
+
+    <sql id="ScheduleDeviceList">
+        SELECT
+        pt.id,
+        pt.`code`,
+        pt.patrol_date,
+        IF(1 = pt.auditor, pt.auditor_time, pt.submit_time) submitTime
+        FROM patrol_task pt
+        left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
+        left join patrol_task_standard ptsd on pt.id = ptsd.task_id and ptsd.del_flag = 0
+        left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
+        left join patrol_task_user ptu on pt.code = ptu.task_code and ptu.del_flag = 0
+        WHERE pt.del_flag = 0 AND pt.discard_status != 1
+        <if test="condition.jointSQL != null and condition.jointSQL != ''">
+            and ${condition.jointSQL}
+        </if>
+        <if test="condition.date != null">
+            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')= DATE_FORMAT(#{condition.date}, '%Y-%m-%d')
+        </if>
+        <if test="condition.source != null">
+            AND pt.source = #{condition.source}
+        </if>
+        GROUP BY pt.`code`
+    </sql>
+
+    <select id="getScheduleDeviceList" resultType="com.aiurt.boot.statistics.model.ScheduleTask">
+        SELECT
+        ptd.id,
+        ps.`name`,
+        statistics.`code`,
+        ptd.`status`,
+        statistics.patrol_date,
+        statistics.submitTime,
+        ptd.station_code
+        FROM
+        (
+        <include refid="ScheduleDeviceList"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id and ptd.del_flag = 0
+        left join patrol_accompany pa on pa.task_device_code = ptd.patrol_number and pa.del_flag = 0
+        left join patrol_task_standard ptss on ptd.task_standard_id = ptss.id and ptss.del_flag = 0
+        left join patrol_standard ps on ps.id = ptss.standard_id and ps.del_flag = 0
+        where 1=1
+        AND ptd.`status` = 2
+        <if test="condition.stationCode != null and condition.stationCode != ''">
+            AND ptd.station_code = #{condition.stationCode}
+        </if>
+        GROUP BY ptd.id
+    </select>
+
+    <sql id="StatisticsDataDeviceList">
+        SELECT
+        pt.id,
+        pt.`code`,
+        pt.patrol_date,
+        pt.omit_status,
+        IF(1 = pt.auditor, pt.auditor_time, pt.submit_time) submitTime
+        FROM patrol_task pt
+        left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
+        left join patrol_task_standard ptsd on pt.id = ptsd.task_id and ptsd.del_flag = 0
+        left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
+        <!--        left join patrol_task_user ptu on pt.code = ptu.task_code and ptu.del_flag = 0-->
+        WHERE pt.del_flag = 0 AND pt.discard_status != 1
+        <if test="condition.startTime != null and condition.endTime != null">
+            AND pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
+        </if>
+        <if test="condition.omit != null">
+            AND pt.omit_status = #{condition.omit}
+        </if>
+        <if test="condition.orgCodes != null and condition.orgCodes.size > 0">
+            and pto.org_code in
+            <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="condition.today != null">
+            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.today}, '%Y-%m-%d')
+        </if>
+        GROUP BY pt.`code`
+    </sql>
+
+
+    <select id="getStatisticsDataDeviceList" resultType="com.aiurt.boot.screen.model.ScreenStatisticsTask">
+        SELECT
+        ptd.id as taskId,
+        ps.`name`,
+        statistics.`code`,
+        ptd.`status`,
+        ptd.check_time as submitTime,
+        statistics.omit_status,
+        GROUP_CONCAT(DISTINCT CONCAT_WS( '/', cs.line_name, cs.station_name ) SEPARATOR '；' ) stationInfo
+        FROM
+        (
+        <include refid="StatisticsDataDeviceList"/>
+        ) statistics
+        left join  patrol_task_device ptd on ptd.task_id = statistics.id and ptd.del_flag = 0
+        left join patrol_accompany pa on pa.task_device_code = ptd.patrol_number and pa.del_flag = 0
+        left join patrol_task_standard ptss on ptd.task_standard_id = ptss.id and ptss.del_flag = 0
+        left join patrol_standard ps on ps.id = ptss.standard_id and ps.del_flag = 0
+        JOIN cs_station cs ON ptd.station_code = cs.station_code AND cs.del_flag = 0
+        where 1=1
+        <if test="condition.stationCode != null and condition.stationCode != ''">
+            AND ptd.station_code = #{condition.stationCode}
+        </if>
+        <if test="condition.lineCode != null and condition.lineCode != ''">
+            AND ptd.line_code = #{condition.lineCode}
+        </if>
+        <if test="condition.taskDeviceStatus != null">
+            AND ptd.`status` in
+            <foreach collection="condition.taskDeviceStatus" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="condition.state != null">
+            AND (ptd.check_result = #{condition.state} or ptd.mac_status = #{condition.state})
+        </if>
+        GROUP BY ptd.id
     </select>
 </mapper>

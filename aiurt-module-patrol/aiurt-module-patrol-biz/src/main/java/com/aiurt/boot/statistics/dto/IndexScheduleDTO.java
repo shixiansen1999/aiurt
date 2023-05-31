@@ -6,12 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+
 /**
  * @author JB
  * @Description:
@@ -51,8 +52,14 @@ public class IndexScheduleDTO implements Serializable {
     @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
     private Integer status;
 
-//    /**
-//     * 拼接SQL
-//     */
-//    private String jointSQL;
+    /**
+     * 组织机构编号
+     */
+    private List<String> orgCodes;
+
+
+    /**
+     * 自定义SQL
+     */
+    private String jointSQL;
 }

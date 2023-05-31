@@ -164,6 +164,14 @@ public interface PatrolConstant {
      */
     Integer RESULT_EXCEPTION = 0;
     /**
+     * 巡检检查mac地址匹配正常状态
+     */
+    Integer MAC_MATCH_NORMAL = 1;
+    /**
+     * 巡检检查mac地址匹配异常状态
+     */
+    Integer MAC_MATCH_EXCEPTION = 0;
+    /**
      * 与设备类型无关
      */
     Integer DEVICE_INDEPENDENCE = 0;
@@ -260,4 +268,12 @@ public interface PatrolConstant {
      * 巡视抽查状态：0未确认
      */
     Integer SPOT_CHECK_STATUS_0 = 0;
+    /**
+     * 巡检任务mac地址匹配正常状态
+     */
+    Integer MAC_STATUS_NORMAL = 1;
+    /**
+     * 巡检任务mac地址匹配异常状态
+     */
+    Integer MAC_STATUS_EXCEPTION = 0;
 }

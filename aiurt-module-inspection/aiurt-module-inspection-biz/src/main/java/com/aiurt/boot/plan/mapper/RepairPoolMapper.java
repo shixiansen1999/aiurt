@@ -4,6 +4,7 @@ import com.aiurt.boot.index.dto.InspectionDTO;
 import com.aiurt.boot.index.dto.PlanIndexDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.CodeManageDTO;
+import com.aiurt.boot.plan.dto.StationPlanDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.aiurt.boot.plan.req.SelectPlanReq;
@@ -172,4 +173,25 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
             @DataColumn(key = "systemName",value = "rpc.subsystem_code")
     })
     List<RepairPool> selectRepairPool(@Param("page")Page<RepairPool> page, @Param("selectPlanReq") SelectPlanReq selectPlanReq);
+
+    /**
+     * 检修计划站点信息列表
+     * @param page
+     * @param userId
+     * @return 返回一个检修计划站点信息列表
+     */
+    //    @DataPermission({
+    //            @DataColumn(key = "stationName",value = "cs.station_code")
+    //    })
+    List<StationPlanDTO> queryPlanStationList(@Param("page")Page<StationPlanDTO> page,@Param("userId")String userId);
+
+    /**
+     * 检修计划-统计部门站点的数（未完成、已完成、计划数）
+     * @param selectPlanReq
+     * @return List<RepairPool> queryPlanOrgList
+     */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "rpor.org_code")
+    })
+    List<RepairPool> queryPlanOrgList(@Param("selectPlanReq")SelectPlanReq selectPlanReq);
 }

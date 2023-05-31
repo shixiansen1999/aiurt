@@ -54,6 +54,7 @@ public class SysUserPositionCurrentServiceImpl extends ServiceImpl<SysUserPositi
             this.save(sysUserPositionCurrent);
             return;
         }
+
         // 已存在，更新
         // 不更新create_time
         sysUserPositionCurrent.setCreateTime(null);

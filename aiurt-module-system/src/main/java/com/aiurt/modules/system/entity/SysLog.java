@@ -3,6 +3,7 @@ package com.aiurt.modules.system.entity;
 import java.util.Date;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import io.swagger.annotations.ApiModelProperty;
 import org.springframework.format.annotation.DateTimeFormat;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -111,5 +112,13 @@ public class SysLog implements Serializable {
 
 
 	private String permissionUrl;
+
+	@ApiModelProperty(value = "客户端版本")
+	private String clientVersion;
+
+	@ApiModelProperty(value = "客户端mac")
+	private String clientMac;
+
+
 
 }

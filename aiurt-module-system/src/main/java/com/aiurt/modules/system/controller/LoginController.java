@@ -632,7 +632,8 @@ public class LoginController {
 		result.setResult(obj);
 		result.setSuccess(true);
 		result.setCode(200);
-		baseCommonService.addLog("用户名: " + username + ",登录成功[移动端]！", CommonConstant.LOG_TYPE_1, null);
+		baseCommonService.addLog("用户名: " + username + ",登录成功[移动端]！", CommonConstant.LOG_TYPE_1,
+				null, sysLoginModel.getClientMac(), sysLoginModel.getClientVersion());
 		return result;
 	}
 

@@ -92,4 +92,10 @@ public class SysUserPosition {
      */
     @ApiModelProperty(value = "当前用户(app)所在的车站编号")
     private String stationCode;
+
+    @ApiModelProperty(value = "客户端版本")
+    private String clientVersion;
+
+    @ApiModelProperty(value = "客户端mac")
+    private String clientMac;
 }
