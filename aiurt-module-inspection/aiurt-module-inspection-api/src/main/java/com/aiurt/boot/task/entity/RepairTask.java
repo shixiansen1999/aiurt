@@ -383,9 +383,9 @@ public class RepairTask extends BaseEntity {
     @TableField(exist = false)
     private String ecmStatusName;
     /**备注*/
-    @TableField(exist = false)
+    /*@TableField(exist = false)
     @ApiModelProperty(value = "备注")
-    private String content;
+    private String content;*/
 
     @TableField(exist = false)
     @ApiModelProperty(value = "附件")
