@@ -1,22 +1,18 @@
 package com.aiurt.modules.sysfile.vo;
 
 import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.modules.sysfile.entity.SysFile;
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @description: FileAppVO
@@ -26,27 +22,22 @@ import java.util.List;
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-public class FileAppVO implements Serializable {
+public class SysFileManageAppVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @TableId(type = IdType.AUTO)
     @ApiModelProperty(value = "主键id")
     private Long id;
 
-    @ApiModelProperty(value = "文件夹id")
-    private Long typeId;
+    @ApiModelProperty(value = "文件夹或文件名称")
+    private String name;
+
+    @ApiModelProperty(value = "文件url")
+    private String url;
 
     @ApiModelProperty(value = "文件类型")
     private String type;
 
-    @ApiModelProperty(value = "文件夹名称")
-    private String typeName;
-
-    @ApiModelProperty(value = "文件名称")
-    private String fileName;
-
-    @ApiModelProperty(value = "文件url")
-    private String url;
     /**
      * 是否为文件 0.否 1.是
      */
