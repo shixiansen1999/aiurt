@@ -36,7 +36,7 @@ public class PersonnelPortraitResDTO implements Serializable {
      * 站点个数
      */
     @ApiModelProperty(value = "站点个数")
-    private Integer number;
+    private Long number;
 
     /**
      * 工区位置
