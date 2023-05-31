@@ -181,10 +181,10 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
                         Long aLong11 = sparePartStockMapper.timeCount(null, CollectionUtil.isNotEmpty(list1) ? Arrays.asList(q.getBaseTypeCode()):list3, DateUtil.date().year(),null);
                         long l11 = aLong11==null ? l5 : aLong11 + l5;
                         //上个月的消耗量
-                        Long aLong12 = sparePartStockMapper.timeCount(null, CollectionUtil.isNotEmpty(list1) ? Arrays.asList(q.getBaseTypeCode()):list3, DateUtil.date().year(), DateUtil.date().month() - 1);
+                        Long aLong12 = sparePartStockMapper.timeCount(null, CollectionUtil.isNotEmpty(list1) ? Arrays.asList(q.getBaseTypeCode()):list3, DateUtil.date().year(), DateUtil.date().month());
                         long l12 = aLong12==null ? l6 : aLong12+l6;
                         //本月的消耗量
-                        Long aLong13 = sparePartStockMapper.timeCount(null, CollectionUtil.isNotEmpty(list1) ? Arrays.asList(q.getBaseTypeCode()):list3, DateUtil.date().year(), DateUtil.date().month());
+                        Long aLong13 = sparePartStockMapper.timeCount(null, CollectionUtil.isNotEmpty(list1) ? Arrays.asList(q.getBaseTypeCode()):list3, DateUtil.date().year(), DateUtil.date().month()+1);
                         long l13 = aLong13==null ? l7 : aLong13+l7;
                         SparePartStatistics sparePartStatistics1 = new SparePartStatistics();
                         this.getJudge(sparePartStatistics1,q,l,l8,l9,l10,l11,l12,l13);

@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
@@ -32,7 +33,9 @@ import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
@@ -81,6 +84,8 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     private CsUserSubsystemMapper csUserSubsystemMapper;
     @Value("${jeecg.path.upload}")
     String filepath;
+    @Autowired
+    private ISysParamAPI sysParamApi;
     /**
      * 添加
      *
@@ -158,8 +163,14 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             subSystemCodes = csUserSubsystemMapper.selectByUserId(page,sysUser.getId());
         }
         List<SubsystemFaultDTO> subsystemFaultDtos = new ArrayList<>();
+        SysParamModel filterParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_FILTER);
+        boolean filterValue = "1".equals(filterParamModel.getValue());
         subSystemCodes.forEach(s -> {
             SubsystemFaultDTO subDTO = csUserSubsystemMapper.getSubsystemFaultDTO(time,s.getSystemCode());
+            if(filterValue){
+                Long numDuration = csUserSubsystemMapper.getSubsystemFilterFaultDTO(time,s.getSystemCode());
+                subDTO.setNum(numDuration);
+            }
             subDTO.setFailureNum(subDTO.getCommonFaultNum()+subDTO.getSeriousFaultNum());
             subDTO.setSystemCode(s.getSystemCode());subDTO.setSystemName(s.getSystemName());subDTO.setId(s.getId());
             subDTO.setCode(subDTO.getSystemCode());subDTO.setName(subDTO.getSystemName());
@@ -168,7 +179,12 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             List<SubsystemFaultDTO> deviceTypeList = new ArrayList<>();
             list.forEach(l->{
                 SubsystemFaultDTO deviceType = csUserSubsystemMapper.getSubsystemByDeviceType(time,s.getSystemCode(),l.getDeviceTypeCode());
-                Long num = csUserSubsystemMapper.getNum(time,s.getSystemCode(),l.getDeviceTypeCode());
+                Long num = 0L;
+                if(filterValue){
+                    num = csUserSubsystemMapper.getFilterNum(time,s.getSystemCode(),l.getDeviceTypeCode());
+                }else {
+                    num = csUserSubsystemMapper.getNum(time,s.getSystemCode(),l.getDeviceTypeCode());
+                }
                 deviceType.setFailureNum(deviceType.getCommonFaultNum()+deviceType.getSeriousFaultNum());
                 deviceType.setFailureDuration(new BigDecimal((1.0 * (num==null?0:num) / 60)).setScale(2, BigDecimal.ROUND_HALF_UP));
                 deviceType.setDeviceTypeCode(l.getDeviceTypeCode());

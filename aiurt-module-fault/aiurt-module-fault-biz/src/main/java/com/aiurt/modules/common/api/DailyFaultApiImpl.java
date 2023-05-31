@@ -183,7 +183,7 @@ public class DailyFaultApiImpl implements DailyFaultApi {
             }
             double time = 1.0 * (timeOne+timeTwo) / 3600;
             // 展示需要以小时数展示，并保留两位小数
-            BigDecimal decimal = BigDecimal.valueOf(time).setScale(2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal decimal = new BigDecimal(time).setScale(2, BigDecimal.ROUND_HALF_UP);
             userDurationMap.put(userId, decimal);
         });
         return userDurationMap;
@@ -209,27 +209,38 @@ public class DailyFaultApiImpl implements DailyFaultApi {
             List<FaultDurationTask> participantsByIdDuration = new ArrayList<>();
             if(filterValue){
                 // 获取指派人员在指定时间范围内的每一个任务的时长(单位秒)
-                faultByIdDuration = faultInformationMapper.getFilterFaultByIdDuration(startTime, endTime, userList);
-                // 获取参与人在指定时间范围内的每一个任务的任务时长(单位秒)
-                participantsByIdDuration = faultInformationMapper.getFilterParticipantsDuration(startTime, endTime, userList);
+                faultByIdDuration = faultInformationMapper.getFilterFaultUserDuration(startTime, endTime);
+                // 获取参与人员在指定时间范围内的任务时长(单位秒)
+                participantsByIdDuration = faultInformationMapper.getFilterFaultParticipantsDuration(startTime, endTime);
             }else {
                 // 获取指派人员在指定时间范围内的每一个任务的时长(单位秒)
                  faultByIdDuration = faultInformationMapper.getFaultByIdDuration(startTime, endTime, userList);
                 // 获取参与人在指定时间范围内的每一个任务的任务时长(单位秒)
                  participantsByIdDuration = faultInformationMapper.getParticipantsDuration(startTime, endTime, userList);
             }
+            Map<String, Long> durationMap = faultByIdDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
+                    v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
 
-            List<String> collect = faultByIdDuration.stream().map(FaultDurationTask::getTaskId).collect(Collectors.toList());
-            //若参与人和指派人同属一个班组，则该班组只取一次工时，不能累加
-            List<FaultDurationTask> dtos = participantsByIdDuration.stream().filter(t -> !collect.contains(t.getTaskId())).collect(Collectors.toList());
-            dtos.addAll(faultByIdDuration);
+            Map<String, Long> participantsMap = participantsByIdDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
+                    v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
             BigDecimal sum = new BigDecimal("0.00");
-            for (FaultDurationTask dto : dtos) {
-                sum = sum.add(new BigDecimal(dto.getDuration()));
+            for (LoginUser user : userList) {
+                String userId = user.getId();
+                Long timeOne = durationMap.get(userId);
+                Long timeTwo = participantsMap.get(userId);
+                if (ObjectUtil.isEmpty(timeOne)) {
+                    timeOne = 0L;
+                }
+                if (ObjectUtil.isEmpty(timeTwo)) {
+                    timeTwo = 0L;
+                }
+                double time = 1.0 * (timeOne+timeTwo) / 3600;
+                // 展示需要以小时数展示，并保留两位小数
+                BigDecimal a = new BigDecimal(time).setScale(2, BigDecimal.ROUND_HALF_UP);
+                sum = sum.add(a);
             }
             //秒转时
-            BigDecimal decimal = sum.divide(new BigDecimal("3600"), 2, BigDecimal.ROUND_HALF_UP);
-            return decimal;
+            return sum;
         }
     return new BigDecimal("0.00");
     }
@@ -263,6 +274,7 @@ public class DailyFaultApiImpl implements DailyFaultApi {
             f.setConstructorsNum(faultInformationMapper.getConstructorsNum(startTime,endTime,orgId));
             List<String> collect = userFaultList.stream().map(UserTimeDTO::getFrrId).collect(Collectors.toList());
             accompanyFaultList = accompanyFaultList.stream().parallel().filter(a -> !collect.contains(a.getFrrId())).collect(Collectors.toList());
+            userFaultList.addAll(accompanyFaultList);
             Long sum = accompanyFaultList
                     .stream().filter(w-> w.getDuration() !=null)
                     .mapToLong(w -> w.getDuration())
@@ -294,7 +306,12 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                 Long s = (f.getNum()/f.getNum1())/60;
                 f.setRepairTime(s.toString());
             }
-            f.setFailureTime(new BigDecimal((1.0 * (f.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
+            BigDecimal sumFailureTime = new BigDecimal("0.00");
+            for (UserTimeDTO userTimeDTO : userFaultList) {
+                BigDecimal decimal = new BigDecimal((1.0 * (userTimeDTO.getDuration()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP);
+                sumFailureTime = sumFailureTime.add(decimal);
+            }
+            f.setFailureTime(sumFailureTime);
             BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
             f.setConstructionHours(totalPrice.setScale(2,BigDecimal.ROUND_HALF_UP));
             map.put(f.getOrgId(),f);

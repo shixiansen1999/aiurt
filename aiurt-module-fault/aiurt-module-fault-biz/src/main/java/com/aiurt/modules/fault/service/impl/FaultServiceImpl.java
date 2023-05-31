@@ -1593,7 +1593,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 }
             }
 
-            saveLog(loginUser, "维修结果审核通过", faultCode, FaultStatusEnum.Close.getStatus(), null);
+            saveLog(loginUser, "维修结果审核通过", faultCode, FaultStatusEnum.Close.getStatus(), resultDTO.getApprovalRejection());
             Set<String> userNameSet = new HashSet<>();
             userNameSet.add(fault.getAppointUserName());
             userNameSet.add(fault.getReceiveUserName());
