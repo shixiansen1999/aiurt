@@ -278,13 +278,6 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
     List<OverhaulStatisticsDTO> readNameLists(@Param("condition") OverhaulStatisticsDTO condition);
 
     /**
-     * 统计完成数量
-     * @param condition
-     * @return
-     */
-    Long countCompletedNumber(@Param("condition") OverhaulStatisticsDTO condition);
-
-    /**
      * 获取状态
      * @param id
      * @return

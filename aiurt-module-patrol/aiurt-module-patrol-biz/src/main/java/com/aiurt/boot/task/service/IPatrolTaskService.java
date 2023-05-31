@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -231,6 +232,13 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @return
      */
     void spotCheck(PatrolTaskDTO patrolTaskDTO);
+
+    /**
+     * 返回
+     * @param ids
+     * @return
+     */
+    String printPatrolTask(String ids);
     /**
      * 打印巡视但详情
      * @param ids

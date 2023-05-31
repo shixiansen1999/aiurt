@@ -1833,6 +1833,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return userMapper.getUserListByName(realName);
     }
 
+    @Override
+    public DictModel dictById(String id) {
+        return sysDictService.dictById(id);
+    }
+
     /**
      * 添加定时任务
      *
@@ -3219,6 +3224,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<SysUserPositionCurrent> list = sysUserPositionCurrentService.list(queryWrapper);
         return CollUtil.isEmpty(list) ? null : list.get(0).getUploadTime();
     }
+    @Override
+    public void saveSysAttachment(SysAttachment sysAttachment) {
+        sysAttachmentService.save(sysAttachment);
+    }
+
 
     @Override
     public String getStationCodeByMac(String mac) {
