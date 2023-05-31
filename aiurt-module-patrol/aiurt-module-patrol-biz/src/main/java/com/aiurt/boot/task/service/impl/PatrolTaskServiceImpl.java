@@ -2131,8 +2131,17 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public MacDto getMac(String id) {
+        List<PatrolTaskDeviceDTO> mac = new ArrayList<>();
         //获取巡视单mac地址
-        List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(id);
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            mac = patrolTaskDeviceMapper.getMacByDeviceId(id);
+        }else {
+            mac = patrolTaskDeviceMapper.getMac(id);
+        }
+
         PatrolTask byId = this.getById(mac.get(0).getTaskId());
 
         List<IndexStationDTO> stationInfo = patrolTaskStationMapper.getStationInfo(byId.getCode());

@@ -78,6 +78,10 @@ public class ScreenModule {
      * 巡检结果：0异常、1正常
      */
     private Integer state;
+    /**
+     * 巡视用户名称
+     */
+    private String username;
 //    /**
 //     * 专业编号
 //     */

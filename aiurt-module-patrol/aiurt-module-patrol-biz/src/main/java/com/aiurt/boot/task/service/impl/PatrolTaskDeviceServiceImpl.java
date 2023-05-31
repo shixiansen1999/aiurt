@@ -440,7 +440,15 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     }
     @Override
     public List<PatrolStationDTO> getBillGangedInfo(String taskId) {
-        List<PatrolBillDTO> billGangedInfo = patrolTaskDeviceMapper.getBillGangedInfo(taskId);
+        List<PatrolBillDTO> billGangedInfo = new ArrayList<>();
+        //根据配置决定是否需要把工单数量作为任务数量
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            billGangedInfo  = patrolTaskDeviceMapper.getDeviceBillGangedInfo(taskId);
+        } else {
+            billGangedInfo  = patrolTaskDeviceMapper.getBillGangedInfo(taskId);
+        }
         Map<String, List<PatrolBillDTO>> collect = billGangedInfo.stream().filter((t) -> StrUtil.isNotBlank(t.getStationCode())).collect(Collectors.groupingBy(PatrolBillDTO::getStationCode));
         List<PatrolStationDTO> stationList = new ArrayList<>();
         for (Map.Entry<String, List<PatrolBillDTO>> entry : collect.entrySet()) {

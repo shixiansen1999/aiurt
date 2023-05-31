@@ -434,12 +434,17 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             while (!start.getTime().after(end)) {
                 if (StrUtil.isNotEmpty(scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+2))) {
-                    ScheduleItem scheduleItem = scheduleItemService.getOne(new LambdaQueryWrapper<ScheduleItem>()
-                            .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime()) + 2))
-                            .eq(ScheduleItem::getCreateBy, user.getUsername())
-                            .eq(ScheduleItem::getDelFlag, 0));
-                    if (ObjectUtil.isEmpty(scheduleItem)){
-                        errorList.add(DateUtil.format(start.getTime(),"dd")+"号存在系统中未包含的班次名称");
+                    ScheduleItem scheduleItem = null;
+                    try {
+                        scheduleItem = scheduleItemService.getOne(new LambdaQueryWrapper<ScheduleItem>()
+                                .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime()) + 2))
+                                .eq(ScheduleItem::getDelFlag, 0));
+                        if (ObjectUtil.isEmpty(scheduleItem)){
+                            errorList.add(DateUtil.format(start.getTime(),"dd")+"号存在系统中未包含的班次名称");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        errorList.add("系统中存在多个相同的排班班次:" + scheduleMap.get(DateUtil.dayOfMonth(start.getTime()) + 2));
                     }
                 }
                 start.add(Calendar.DAY_OF_YEAR, 1);
@@ -497,7 +502,6 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                 if (StrUtil.isNotEmpty(scheduleMap.get(DateUtil.dayOfMonth(start.getTime())+2))) {
                     ScheduleItem scheduleItem = scheduleItemService.getOne(new LambdaQueryWrapper<ScheduleItem>()
                             .eq(ScheduleItem::getName, scheduleMap.get(DateUtil.dayOfMonth(start.getTime()) + 2))
-                            .eq(ScheduleItem::getCreateBy, loginUser.getUsername())
                             .eq(ScheduleItem::getDelFlag, 0));
                     ScheduleRecord record = ScheduleRecord.builder()
                             .scheduleId(null)

@@ -1,28 +1,23 @@
 package com.aiurt.boot.task.service.impl;
 
 
-import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
-import com.aiurt.boot.plan.dto.StationDTO;
-import com.aiurt.boot.task.dto.*;
+import com.aiurt.boot.task.dto.RepairPrintMessage;
+import com.aiurt.boot.task.dto.RepairTaskUserNameDTO;
 import com.aiurt.boot.task.entity.RepairTask;
-import com.aiurt.boot.task.entity.RepairTaskEnclosure;
-import com.aiurt.boot.task.entity.RepairTaskResult;
-import com.aiurt.common.result.SpareResult;
 import com.aiurt.common.util.DateUtils;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.BeanUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 /**
  * @author zwl
@@ -116,7 +111,7 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
         // 对组织机构、站点、专业、子系统进行编码处理并设置相应的属性
         setTranslatedCode(repairTask, manager);
 
-        repairTask.setContent(repairTask.getErrorContent());
+        //repairTask.setContent(repairTask.getErrorContent());
         repairTask.setPath(repairTask.getUrl());
         repairTask.setTitle(repairTask.getSiteName() + "检修记录表");
 

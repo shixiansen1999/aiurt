@@ -75,7 +75,7 @@ public class EmergencyMaterialsCategoryController extends BaseController<Emergen
 			lambdaQueryWrapper.eq(EmergencyMaterialsCategory::getCategoryCode,emergencyMaterialsCategory.getCategoryCode());
 			EmergencyMaterialsCategory one = emergencyMaterialsCategoryService.getOne(lambdaQueryWrapper);
 			if (ObjectUtil.isEmpty(one)) {
-				return Result.OK();
+				return Result.OK(new Page());
 			}
 			List<EmergencyMaterialsCategory> emergencyMaterialsCategoryList = new ArrayList<>();
 			List<EmergencyMaterialsCategory> emergencyMaterialsCategories = treeMenuList(list, one, emergencyMaterialsCategoryList);
