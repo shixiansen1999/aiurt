@@ -225,29 +225,30 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 sendTodo(fault.getCode(), null, user.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
             } else {
                 if (value) {
-                    if(ObjectUtil.isEmpty(fault.getIsFaultExternal())){
+                    if (ObjectUtil.isEmpty(fault.getIsFaultExternal())) {
                         todoDTO.setTitle("故障上报审核");
                         todoDTO.setMsgAbstract("有新的故障信息");
                         todoDTO.setPublishingContent("有新的故障信息，请审核");
                         sendTodo(fault.getCode(), RoleConstant.PRODUCTION, null, "故障上报审核", TodoBusinessTypeEnum.FAULT_APPROVAL.getType(), todoDTO, faultMessageDTO);
                     }
+                } else {
+                    //此班组当前时间段当班维修人员收到通知
+                    List<LoginUser> users = getUserByWorkArea(fault.getStationCode());
+                    if (CollectionUtil.isNotEmpty(users)) {
+                        List<String> list = users.stream().map(LoginUser::getUsername).collect(Collectors.toList());
+                        //发送通知
+                        MessageDTO messageDTO = new MessageDTO(user.getUsername(),CollUtil.join(list,","), "有新的故障上报" + DateUtil.today(), null);
 
+                        //业务类型，消息类型，消息模板编码，摘要，发布内容
+                        faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+                        messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                        messageDTO.setMsgAbstract("有新的故障信息");
+                        messageDTO.setPublishingContent("有新的故障信息，请查看");
+                        messageDTO.setIsRingBell(true);
+                        sendMessage(messageDTO,faultMessageDTO);
+                    }
                 }
-                //此班组当前时间段当班维修人员收到通知
-                List<LoginUser> users = getUserByWorkArea(fault.getStationCode());
-                if (CollectionUtil.isNotEmpty(users)) {
-                    List<String> list = users.stream().map(LoginUser::getUsername).collect(Collectors.toList());
-                    //发送通知
-                    MessageDTO messageDTO = new MessageDTO(user.getUsername(),CollUtil.join(list,","), "有新的故障上报" + DateUtil.today(), null);
 
-                    //业务类型，消息类型，消息模板编码，摘要，发布内容
-                    faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-                    messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-                    messageDTO.setMsgAbstract("有新的故障信息");
-                    messageDTO.setPublishingContent("有新的故障信息，请查看");
-                    messageDTO.setIsRingBell(true);
-                    sendMessage(messageDTO,faultMessageDTO);
-                }
             }
 
             if (value) {
@@ -478,6 +479,22 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 todoDTO.setPublishingContent("有新的故障信息，请尽快安排维修");
                 // 审批通过 新增任务， 该线路或者是工班长，指派任务
                 sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
+
+                //此班组当前时间段当班维修人员收到通知
+                List<LoginUser> users = getUserByWorkArea(fault.getStationCode());
+                if (CollectionUtil.isNotEmpty(users)) {
+                    List<String> list = users.stream().map(LoginUser::getUsername).collect(Collectors.toList());
+                    //发送通知
+                    MessageDTO messageDTO = new MessageDTO(user.getUsername(),CollUtil.join(list,","), "有新的故障上报" + DateUtil.today(), null);
+
+                    //业务类型，消息类型，消息模板编码，摘要，发布内容
+                    faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+                    messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                    messageDTO.setMsgAbstract("有新的故障信息");
+                    messageDTO.setPublishingContent("有新的故障信息，请查看");
+                    messageDTO.setIsRingBell(true);
+                    sendMessage(messageDTO,faultMessageDTO);
+                }
             } else {
                 //被驳回发送通知
                 MessageDTO messageDTO = new MessageDTO(user.getUsername(),fault.getReceiveUserName(), "故障上报审核驳回" + DateUtil.today(), null);
