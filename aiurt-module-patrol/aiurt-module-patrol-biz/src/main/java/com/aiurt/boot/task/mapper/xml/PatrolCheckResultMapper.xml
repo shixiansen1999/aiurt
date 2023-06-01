@@ -73,7 +73,7 @@
         <if test="taskDeviceId != null and taskDeviceId !=''">
             and task_device_id = #{taskDeviceId}
         </if>
-        order by pcr.content,pcr.order
+        order by pcr.order,pcr.code
     </select>
     <select id="getCheckByTaskDeviceIdAndParent" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
         SELECT

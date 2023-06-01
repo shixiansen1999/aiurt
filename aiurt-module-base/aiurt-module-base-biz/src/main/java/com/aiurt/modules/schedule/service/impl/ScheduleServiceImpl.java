@@ -402,10 +402,11 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             }
 
             //判断部门，人员，工号是否填写，并且存在在该系统中
+            SysDepartModel depart = null;
             if (StrUtil.isNotEmpty(scheduleMap.get(0))) {
                 List<String> departNames = StrUtil.splitTrim(scheduleMap.get(0), "/");
                 SysDepartModel parentDepart = scheduleMapper.getDepartByName(departNames.get(0));
-                SysDepartModel depart = scheduleMapper.getDepartByName(departNames.get(1));
+                depart = scheduleMapper.getDepartByName(departNames.get(1));
                 if (ObjectUtil.isEmpty(depart) || ObjectUtil.isEmpty(parentDepart)) {
                     errorList.add("系统中未存在该组织机构");
                 }
@@ -417,6 +418,10 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                 LoginUser user = scheduleMapper.getUser(scheduleMap.get(1), scheduleMap.get(2));
                 if (ObjectUtil.isEmpty(user)) {
                     errorList.add("系统中未存在该人员姓名或工号");
+                }
+                // 判断部门下是否存在该人员
+                if (ObjectUtil.isNotEmpty(depart) && !StrUtil.equals(user.getOrgId(), depart.getId())) {
+                    errorList.add(depart.getDepartName() + "未存在该人员");
                 }
                 //判断时间内是否有人已经排班
                 if (CollUtil.isNotEmpty(userIds)&&userIds.contains(user.getId())) {
@@ -452,9 +457,9 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             String error = null;
             if (CollUtil.isNotEmpty(errorList)) {
                 error = StrUtil.join(";", errorList);
+                errorLines++;
             }
             lm.put("mistake", error);
-            errorLines++;
             listMap.add(lm);
         }
         errorMap.put("maplist", listMap);
@@ -521,7 +526,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             }
 
         }
-        return Result.ok("文件导入成功！");
+        return imporReturnRes(0, scheduleDate.size() - 3, null,true, null);
     }
 
     public static Result<?> imporReturnRes(int errorLines, int successLines, List<String> errorMessage, boolean isType,String failReportUrl ) throws IOException {
