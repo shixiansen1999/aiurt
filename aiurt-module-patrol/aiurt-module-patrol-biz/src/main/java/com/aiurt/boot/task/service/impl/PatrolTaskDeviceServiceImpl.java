@@ -440,15 +440,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     }
     @Override
     public List<PatrolStationDTO> getBillGangedInfo(String taskId) {
-        List<PatrolBillDTO> billGangedInfo = new ArrayList<>();
-        //根据配置决定是否需要把工单数量作为任务数量
-        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
-        boolean value = "1".equals(paramModel.getValue());
-        if (value) {
-            billGangedInfo  = patrolTaskDeviceMapper.getDeviceBillGangedInfo(taskId);
-        } else {
-            billGangedInfo  = patrolTaskDeviceMapper.getBillGangedInfo(taskId);
-        }
+        List<PatrolBillDTO> billGangedInfo = patrolTaskDeviceMapper.getBillGangedInfo(taskId);
+
         Map<String, List<PatrolBillDTO>> collect = billGangedInfo.stream().filter((t) -> StrUtil.isNotBlank(t.getStationCode())).collect(Collectors.groupingBy(PatrolBillDTO::getStationCode));
         List<PatrolStationDTO> stationList = new ArrayList<>();
         for (Map.Entry<String, List<PatrolBillDTO>> entry : collect.entrySet()) {
@@ -806,5 +799,24 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             e.setRightCheckNumber(rightCheck.size()==0?0:rightCheck.size());
             e.setAberrantNumber(aberrant.size()==0?0:aberrant.size());
         return e;
+    }
+
+    @Override
+    public List<PatrolStationDTO> getBillGangedInfoByDeviceID(String deviceId) {
+        List<PatrolBillDTO> billGangedInfo = patrolTaskDeviceMapper.getDeviceBillGangedInfo(deviceId);
+        Map<String, List<PatrolBillDTO>> collect = billGangedInfo.stream().filter((t) -> StrUtil.isNotBlank(t.getStationCode())).collect(Collectors.groupingBy(PatrolBillDTO::getStationCode));
+        List<PatrolStationDTO> stationList = new ArrayList<>();
+        for (Map.Entry<String, List<PatrolBillDTO>> entry : collect.entrySet()) {
+            String stationCode = entry.getKey();
+            if (ObjectUtil.isEmpty(stationCode)) {
+                continue;
+            }
+            PatrolStationDTO station = new PatrolStationDTO();
+            station.setStationCode(stationCode);
+            station.setStationName(patrolTaskDeviceMapper.getStationName(stationCode));
+            station.setBillInfo(entry.getValue());
+            stationList.add(station);
+        }
+        return stationList;
     }
 }
