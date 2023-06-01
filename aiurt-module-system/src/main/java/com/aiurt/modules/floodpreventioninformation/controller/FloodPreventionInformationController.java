@@ -1,13 +1,11 @@
 package com.aiurt.modules.floodpreventioninformation.controller;
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.floodpreventioninformation.entity.FloodPreventionInformation;
 import com.aiurt.modules.floodpreventioninformation.service.IFloodPreventionInformationService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -16,7 +14,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * @Description: flood_prevention_information
@@ -48,76 +44,12 @@ public class FloodPreventionInformationController extends BaseController<FloodPr
     @AutoLog(value = "查询防汛信息",operateType = 1,operateTypeAlias = "查询防汛信息",permissionUrl = "/flood/prevention/information/list")
     @ApiOperation(value="查询防汛信息", notes="查询防汛信息")
     @GetMapping(value = "/list")
+    @PermissionData(pageComponent = "system/floodPrevention")
     public Result<IPage<FloodPreventionInformation>> list(FloodPreventionInformation floodPreventionInformation,
                                           @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                           @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
-        LambdaQueryWrapper<FloodPreventionInformation> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(FloodPreventionInformation::getDelFlag,CommonConstant.DEL_FLAG_0);
-        if (StrUtil.isNotBlank(floodPreventionInformation.getStationName())){
-            lambdaQueryWrapper.like(FloodPreventionInformation::getStationName,floodPreventionInformation.getStationName());
-        }
-        if (StrUtil.isNotBlank(floodPreventionInformation.getLineCode())){
-            lambdaQueryWrapper.eq(FloodPreventionInformation::getLineCode,floodPreventionInformation.getLineCode());
-        }
-        if(StrUtil.isNotBlank(floodPreventionInformation.getCodeCc())){
-            if(floodPreventionInformation.getCodeCc().contains(CommonConstant.SYSTEM_SPLIT_STR)){
-                String[] split = floodPreventionInformation.getCodeCc().split(CommonConstant.SYSTEM_SPLIT_STR);
-                int length = split.length;
-                switch (length){
-                    case 2:
-                        lambdaQueryWrapper.eq(FloodPreventionInformation::getLineCode, split[0]);
-                        lambdaQueryWrapper.eq(FloodPreventionInformation::getStationCode, split[1]);
-                        break;
-                    default:
-                        lambdaQueryWrapper.eq(FloodPreventionInformation::getLineCode, split[0]);
-                }
-            }else{
-                lambdaQueryWrapper.eq(FloodPreventionInformation::getLineCode, floodPreventionInformation.getCodeCc());
-            }
-        }
-        if (StrUtil.isNotBlank(floodPreventionInformation.getStationCode())){
-            lambdaQueryWrapper.eq(FloodPreventionInformation::getStationCode,floodPreventionInformation.getStationCode());
-        }
-        if (StrUtil.isNotBlank(floodPreventionInformation.getScreenStationName())){
-            lambdaQueryWrapper.eq(FloodPreventionInformation::getStationName,floodPreventionInformation.getScreenStationName());
-        }
-        lambdaQueryWrapper.orderByDesc(FloodPreventionInformation::getCreateTime);
         Page<FloodPreventionInformation> page = new Page<FloodPreventionInformation>(pageNo, pageSize);
-        Page<FloodPreventionInformation> pageList = iFloodPreventionInformationService.page(page, lambdaQueryWrapper);
-        pageList.getRecords().forEach(e->{
-            if (ObjectUtil.isNotNull(e.getPeripheryWater())){
-                e.setPeripheryWaterName(baseApi.translateDict("periphery_water",String.valueOf(e.getPeripheryWater())));
-            }
-            if (ObjectUtil.isNotNull(e.getPeripheryGrounds())){
-                e.setPeripheryGroundsName(baseApi.translateDict("periphery_grounds",String.valueOf(e.getPeripheryGrounds())));
-            }
-            if (StrUtil.isNotBlank(e.getOrgCode())){
-                e.setOrgName( baseApi.getDepartNameByOrgCode(e.getOrgCode()));
-            }
-            if(ObjectUtil.isNotNull(e.getGrade())){
-                e.setGradeName(baseApi.translateDict("floodPrevention_level",String.valueOf(e.getGrade())));
-            }
-            if (StrUtil.isNotBlank(e.getEntrance()) && ObjectUtil.isNotNull(e.getGrade())){
-                e.setEntranceGrade(e.getEntrance()+baseApi.translateDict("floodPrevention_level",String.valueOf(e.getGrade())));
-            }else {
-                if (StrUtil.isNotBlank(e.getEntrance())){
-                    e.setEntranceGrade(e.getEntrance());
-                }
-                if(ObjectUtil.isNotNull(e.getGrade())){
-                    e.setEntranceGrade(baseApi.translateDict("floodPrevention_level",String.valueOf(e.getGrade())));
-                }
-            }
-            if(StrUtil.isNotBlank(e.getEmergencyPeople())){
-                StringBuilder stringBuilder = new StringBuilder();
-                String[] split = e.getEmergencyPeople().split(",");
-                List<String> stringList = Arrays.asList(split);
-                stringList.forEach(str->{
-                    LoginUser userById = baseApi.getUserById(str);
-                    stringBuilder.append(userById.getRealname()+",");
-                });
-                e.setEmergencyPeopleName(stringBuilder.deleteCharAt(stringBuilder.length()-1).toString());
-            }
-        });
+        IPage<FloodPreventionInformation> pageList = iFloodPreventionInformationService.getList(page, floodPreventionInformation);
         return Result.OK(pageList);
     }
 
