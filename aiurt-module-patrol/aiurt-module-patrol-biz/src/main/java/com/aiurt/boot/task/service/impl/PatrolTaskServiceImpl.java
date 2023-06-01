@@ -2341,9 +2341,13 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 //自动换行
                // setWrapText(workbook,1,startRow,endRow,0,0);
                 addReturn(workbook,startRow,endRow,0,0);
-                setWrapText(workbook,7,startRow,endRow,1,2);
+                setWrapText(workbook,7,1,1,1,1,true);
+                setWrapText(workbook,7,startRow,endRow,1,firstColumn>3?3:2,false);
                 //合并指定范围行的单元格
                 mergeCellsInColumnRange(workbook,40,startRow,endRow,firstColumn,lastColumn);
+
+                //设置第一列列宽
+                setColumnWidth(sheet,0,10);
                 // 保存修改后的Excel文件
                 try (OutputStream outputStream = new FileOutputStream(filePath)) {
                     workbook.write(outputStream);
@@ -2410,6 +2414,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         return getPrint;
     }
 
+
+
+
     /**
      * 设置图片属性
      * @param fileByte
@@ -2435,9 +2442,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         // 图片类型
         //imageData.setImageType(ImageData.ImageType.PICTURE_TYPE_PNG);
         // 上 右 下 左 需要留空设置，类似于 css 的 margin
-        imageData.setTop(10);
+        imageData.setTop(5);
 //        imageData.setRight(1);
-        imageData.setBottom(10);
+        imageData.setBottom(5);
         imageData.setLeft(100);
 
         // 设置图片的位置：Relative表示相对于当前的单元格index，first是左上点，last是对角线的右下点，这样确定一个图片的位置和大小。
@@ -2487,7 +2494,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         return stringBuilder.toString();
     }
-    private void setWrapText(Workbook workbook,int returnRowMaxLength, int startRow, int endRow,int startColumn, int endColumn){
+    private void setWrapText(Workbook workbook,int returnRowMaxLength, int startRow, int endRow,int startColumn, int endColumn,boolean isBoldFont){
         Sheet sheet = workbook.getSheetAt(0);
         CellStyle cellStyle = workbook.createCellStyle();
         cellStyle.setBorderTop(BorderStyle.THIN);
@@ -2501,6 +2508,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         Font font = workbook.createFont();
         // 设置字体为宋体
         font.setFontName("宋体");
+        font.setBold(isBoldFont);
         // 设置字体大小为9号
         font.setFontHeightInPoints((short) 9);
         cellStyle.setFont(font);
@@ -2514,6 +2522,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
                 cell.setCellStyle(cellStyle);
                 String cellValue = cell.getStringCellValue();
+                returnRowMaxLength = getReturnRowMaxLengthForColumn(sheet, startColumn);
                 if (Objects.nonNull(cellValue) && cellValue.length() >= returnRowMaxLength) {
                     //当字符数大于RowMaxLength的时候，长度除以RowMaxLength+1 就是倍数，默认高度乘倍数即可计算出高度
                     int foldRowNum = (cellValue.length() / returnRowMaxLength) + 1;
@@ -2568,6 +2577,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
                 cell.setCellStyle(cellStyle);
                 String cellValue = cell.getStringCellValue();
+                returnRowMaxLength = getReturnRowMaxLengthForRegion(sheet, cellRangeAddress);
                 if (Objects.nonNull(cellValue)&&cellValue.length() >= returnRowMaxLength ){
                     //当字符数大于RowMaxLength的时候，长度除以RowMaxLength+1 就是倍数，默认高度乘倍数即可计算出高度
                     int foldRowNum = (cellValue.length() / returnRowMaxLength) + 1;
@@ -2579,6 +2589,45 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
 
     }
+
+    /**
+     * 设置列宽
+     * @param sheet
+     * @param columnIndex
+     * @param columnWidth
+     */
+    private void setColumnWidth(Sheet sheet,int columnIndex,int columnWidth){
+        sheet.setColumnWidth(columnIndex, columnWidth * 256);
+    }
+
+    /**
+     * 获取某合并区域最大可容纳字符数
+     * @param sheet
+     * @param cellRangeAddress
+     * @return
+     */
+    private int getReturnRowMaxLengthForRegion(Sheet sheet, CellRangeAddress cellRangeAddress) {
+        int returnRowMaxLength;
+        int firstColumnIndex = cellRangeAddress.getFirstColumn();
+        int lastColumnIndex = cellRangeAddress.getLastColumn();
+        int columnWidth = sheet.getColumnWidth(firstColumnIndex);
+        // 如果合并区域跨多列，则获取第一个单元格的宽度，并累加后续列的宽度
+        for (int i = firstColumnIndex + 1; i <= lastColumnIndex; i++) {
+            columnWidth += sheet.getColumnWidth(i);
+        }
+
+        returnRowMaxLength = (int)(columnWidth*0.6)/256;
+        return returnRowMaxLength;
+    }
+
+    private int getReturnRowMaxLengthForColumn(Sheet sheet, int columnIndex) {
+        int returnRowMaxLength;
+        int columnWidth = sheet.getColumnWidth(columnIndex);
+        // 如果合并区域跨多列，则获取第一个单元格的宽度，并累加后续列的宽度
+        returnRowMaxLength = (int)(columnWidth*0.6)/256;
+        return returnRowMaxLength;
+    }
+
     public static byte[] convert(InputStream inputStream) throws IOException {
         ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
         byte[] buffer = new byte[4096];
