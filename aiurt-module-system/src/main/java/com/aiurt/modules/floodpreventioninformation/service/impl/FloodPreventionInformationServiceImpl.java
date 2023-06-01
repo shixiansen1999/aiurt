@@ -9,6 +9,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.XlsUtil;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.floodpreventioninformation.entity.FloodPreventionInformation;
 import com.aiurt.modules.floodpreventioninformation.mapper.FloodPreventionInformationMapper;
 import com.aiurt.modules.floodpreventioninformation.model.FloodPreventionInformationModel;
@@ -22,6 +23,8 @@ import com.aiurt.modules.system.mapper.SysDictMapper;
 import com.aiurt.modules.system.mapper.SysUserMapper;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -29,6 +32,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -36,6 +40,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -417,4 +422,81 @@ public class FloodPreventionInformationServiceImpl extends ServiceImpl<FloodPrev
             e.printStackTrace();
         }
     }
+
+    @Override
+    public IPage<FloodPreventionInformation> getList(Page<FloodPreventionInformation> page, FloodPreventionInformation floodPreventionInformation) {
+
+        LambdaQueryWrapper<FloodPreventionInformation> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(FloodPreventionInformation::getDelFlag,CommonConstant.DEL_FLAG_0);
+        if (StrUtil.isNotBlank(floodPreventionInformation.getStationName())){
+            lambdaQueryWrapper.like(FloodPreventionInformation::getStationName,floodPreventionInformation.getStationName());
+        }
+        if (StrUtil.isNotBlank(floodPreventionInformation.getLineCode())){
+            //由于没保存线路，所以线路转成站点
+            List<String> stationCodes = baseApi.getStationCodeByLineCode(floodPreventionInformation.getLineCode());
+            lambdaQueryWrapper.in(FloodPreventionInformation::getStationCode,stationCodes);
+        }
+        if(StrUtil.isNotBlank(floodPreventionInformation.getCodeCc())){
+            if(floodPreventionInformation.getCodeCc().contains(CommonConstant.SYSTEM_SPLIT_STR)){
+                String[] split = floodPreventionInformation.getCodeCc().split(CommonConstant.SYSTEM_SPLIT_STR);
+                int length = split.length;
+                switch (length){
+                    case 2:
+                        lambdaQueryWrapper.eq(FloodPreventionInformation::getLineCode, split[0]);
+                        lambdaQueryWrapper.eq(FloodPreventionInformation::getStationCode, split[1]);
+                        break;
+                    default:
+                        lambdaQueryWrapper.eq(FloodPreventionInformation::getLineCode, split[0]);
+                }
+            }else{
+                lambdaQueryWrapper.eq(FloodPreventionInformation::getLineCode, floodPreventionInformation.getCodeCc());
+            }
+        }
+        if (StrUtil.isNotBlank(floodPreventionInformation.getStationCode())){
+            lambdaQueryWrapper.eq(FloodPreventionInformation::getStationCode,floodPreventionInformation.getStationCode());
+        }
+        if (StrUtil.isNotBlank(floodPreventionInformation.getScreenStationName())){
+            lambdaQueryWrapper.eq(FloodPreventionInformation::getStationName,floodPreventionInformation.getScreenStationName());
+        }
+        lambdaQueryWrapper.orderByDesc(FloodPreventionInformation::getCreateTime);
+
+        Page<FloodPreventionInformation> pageList = this.page(page, lambdaQueryWrapper);
+        GlobalThreadLocal.setDataFilter(false);
+        pageList.getRecords().forEach(e->{
+            if (ObjectUtil.isNotNull(e.getPeripheryWater())){
+                e.setPeripheryWaterName(baseApi.translateDict("periphery_water",String.valueOf(e.getPeripheryWater())));
+            }
+            if (ObjectUtil.isNotNull(e.getPeripheryGrounds())){
+                e.setPeripheryGroundsName(baseApi.translateDict("periphery_grounds",String.valueOf(e.getPeripheryGrounds())));
+            }
+            if (StrUtil.isNotBlank(e.getOrgCode())){
+                e.setOrgName( baseApi.getDepartNameByOrgCode(e.getOrgCode()));
+            }
+            if(ObjectUtil.isNotNull(e.getGrade())){
+                e.setGradeName(baseApi.translateDict("floodPrevention_level",String.valueOf(e.getGrade())));
+            }
+            if (StrUtil.isNotBlank(e.getEntrance()) && ObjectUtil.isNotNull(e.getGrade())){
+                e.setEntranceGrade(e.getEntrance()+baseApi.translateDict("floodPrevention_level",String.valueOf(e.getGrade())));
+            }else {
+                if (StrUtil.isNotBlank(e.getEntrance())){
+                    e.setEntranceGrade(e.getEntrance());
+                }
+                if(ObjectUtil.isNotNull(e.getGrade())){
+                    e.setEntranceGrade(baseApi.translateDict("floodPrevention_level",String.valueOf(e.getGrade())));
+                }
+            }
+            if(StrUtil.isNotBlank(e.getEmergencyPeople())){
+                StringBuilder stringBuilder = new StringBuilder();
+                String[] split = e.getEmergencyPeople().split(",");
+                List<String> stringList = Arrays.asList(split);
+                stringList.forEach(str->{
+                    LoginUser userById = baseApi.getUserById(str);
+                    stringBuilder.append(userById.getRealname()+",");
+                });
+                e.setEmergencyPeopleName(stringBuilder.deleteCharAt(stringBuilder.length()-1).toString());
+            }
+        });
+        return pageList;
+    }
+
 }
