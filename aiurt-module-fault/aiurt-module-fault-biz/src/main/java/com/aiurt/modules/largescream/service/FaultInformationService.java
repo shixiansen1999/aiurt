@@ -281,9 +281,15 @@ public class FaultInformationService {
         }
         List<Fault> largeLineFaultInfo = faultInformationMapper.getLargeLineFaultInfo(startDate, endDate, majors,lineCode);
         //根据line_code分组，查询同一条线路下的所有故障
-        Map<String, List<Fault>> collect = largeLineFaultInfo.stream()
-                .filter(a -> !value.contains(a.getLineCode()))
-                .collect(Collectors.groupingBy(Fault::getLineCode));
+        Map<String, List<Fault>> collect = new HashMap<>();
+        if (flag) {
+            collect = largeLineFaultInfo.stream()
+                    .filter(a -> !value.contains(a.getLineCode()))
+                    .collect(Collectors.groupingBy(Fault::getLineCode));
+        }else {
+            collect = largeLineFaultInfo.stream().collect(Collectors.groupingBy(Fault::getLineCode));
+        }
+
 
         Map<String, List<CsLine>> listMap = list.stream().collect(Collectors.groupingBy(CsLine::getLineCode));
 
