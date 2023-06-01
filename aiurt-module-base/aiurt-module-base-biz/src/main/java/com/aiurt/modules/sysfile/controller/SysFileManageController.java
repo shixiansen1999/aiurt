@@ -5,8 +5,11 @@ import com.aiurt.modules.sysfile.entity.SysFile;
 import com.aiurt.modules.sysfile.param.SysFileParam;
 import com.aiurt.modules.sysfile.param.SysFileWebParam;
 import com.aiurt.modules.sysfile.service.ISysFileManageService;
-import com.aiurt.modules.sysfile.vo.*;
 import com.aiurt.modules.sysfile.service.ISysFolderFilePermissionService;
+import com.aiurt.modules.sysfile.vo.SysFileDetailVO;
+import com.aiurt.modules.sysfile.vo.SysFileManageAppVO;
+import com.aiurt.modules.sysfile.vo.SysFileManageVO;
+import com.aiurt.modules.sysfile.vo.TypeNameVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -25,6 +29,7 @@ import java.util.List;
  * @create: 2023-05-22 16:57
  * @Description:
  */
+@Validated
 @Slf4j
 @Api(tags = "文件接口")
 @RestController
@@ -87,7 +92,7 @@ public class SysFileManageController {
     @AutoLog(value = "添加文件")
     @ApiOperation(value = "添加文件", notes = "添加文件")
     @PostMapping(value = "/add")
-    public Result<SysFile> addFile(HttpServletRequest req, @RequestBody @Validated List<SysFileParam> files) {
+    public Result<SysFile> addFile(HttpServletRequest req, @RequestBody @Valid List<SysFileParam> files) {
         Result<SysFile> result = sysFileManageService.addFile(files);
         return result;
     }
