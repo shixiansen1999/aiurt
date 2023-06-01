@@ -47,7 +47,7 @@ public class PersonnelTeamDTO {
     /**检修总工时*/
     @TableField(exist = false)
     @ApiModelProperty(value = "检修总工时")
-    private Long  overhaulWorkingHours;
+    private float  overhaulWorkingHours;
 
     /**检修计划任务数*/
     @TableField(exist = false)
