@@ -97,6 +97,13 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * @return
      */
     List<PatrolStationDTO> getBillGangedInfo(String taskId);
+    /**
+     * 根据工单ID获取工单站点和巡检表联动信息
+     *
+     * @param deviceId
+     * @return
+     */
+    List<PatrolStationDTO> getBillGangedInfoByDeviceID(String deviceId);
 
     /**
      * 工单详情
