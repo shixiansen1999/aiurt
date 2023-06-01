@@ -28,7 +28,7 @@ public class SysFileParam implements Serializable {
 
     @ApiModelProperty(value = "文件名称")
     @NotBlank(message = "文件名称不能为空")
-    @Length(min = 1, max = 255, message = "文件名称长度必须是1-255个字符")
+    @Length(min = 1, max = 255, message = "文件名称长度需要在1-255个字符范围内")
     private String name;
 
     @ApiModelProperty(value = "大小")

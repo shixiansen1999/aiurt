@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -24,6 +25,7 @@ import java.util.List;
  * @Date: 2023-05-23
  * @Version: V1.0
  */
+@Validated
 @Slf4j
 @Api(tags = "文件夹接口")
 @RestController
@@ -58,7 +60,7 @@ public class SysFolderController {
     @AutoLog(value = "添加文件夹")
     @ApiOperation(value = "添加文件夹", notes = "添加文件夹")
     @PostMapping(value = "/add")
-    public Result<?> add(HttpServletRequest req, @RequestBody @Validated SysFolderParam param) {
+    public Result<?> add(HttpServletRequest req, @RequestBody @Valid SysFolderParam param) {
         sysFolderService.addFolder(req, param);
         return Result.OK("添加成功！");
     }

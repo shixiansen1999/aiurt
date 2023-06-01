@@ -1,5 +1,6 @@
 package com.aiurt.common.exception;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.enums.SentinelErrorInfoEnum;
@@ -24,8 +25,12 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.xml.ws.WebServiceException;
 import java.net.ConnectException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 异常处理器
@@ -42,7 +47,7 @@ public class AiurtBootExceptionHandler {
      */
     @ExceptionHandler(AiurtBootException.class)
     public Result<?> handleAiurtBootException(AiurtBootException e) {
-       //  log.error(e.getMessage(), e);
+        //  log.error(e.getMessage(), e);
         return Result.error(e.getCode(), e.getMessage());
     }
 
@@ -215,6 +220,7 @@ public class AiurtBootExceptionHandler {
         log.error(e.getMessage(), e);
         return Result.error("连接异常,尝试开启VPN后重试");
     }
+
     /**
      * webservice连接异常处理
      *
@@ -230,9 +236,29 @@ public class AiurtBootExceptionHandler {
     @ExceptionHandler(value = {BadSqlGrammarException.class})
     public Result<?> handleSQLSyntaxErrorException(BadSqlGrammarException e) {
         String message = e.getMessage();
-        if (StrUtil.isNotBlank(message) && message.indexOf("Unknown column")>-1 && message.indexOf("order clause")>-1) {
+        if (StrUtil.isNotBlank(message) && message.indexOf("Unknown column") > -1 && message.indexOf("order clause") > -1) {
             return Result.error("该列不支持排序");
         }
         return Result.error(message);
     }
+
+    /**
+     * 异常处理方法，用于处理 ConstraintViolationException 异常
+     *
+     * @param e ConstraintViolationException 异常对象
+     * @return 包含错误信息的 Result 对象
+     */
+    @ExceptionHandler(value = ConstraintViolationException.class)
+    public Result<?> handleConstraintViolationException(ConstraintViolationException e) {
+        // 从异常对象中拿到约束违例信息，并返回其中的第一个错误消息
+        List<String> errorMessages = e.getConstraintViolations()
+                .stream()
+                .map(ConstraintViolation::getMessage)
+                .collect(Collectors.toList());
+        // 从异常对象中拿到约束违例信息，并返回其中的第一个错误消息
+        String errorMessage = CollUtil.isEmpty(errorMessages) ? null : errorMessages.get(0);
+        log.error(e.getMessage(), e);
+        return Result.error(errorMessage);
+    }
+
 }
