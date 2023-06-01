@@ -102,6 +102,7 @@
     </select>
     <select id="getQualityStandard" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
         SELECT
+        pcr.old_id,
         pcr.user_id,
         pcr.content,
         pcr.quality_standard,
