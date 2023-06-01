@@ -308,26 +308,15 @@
         ORDER BY rp.start_time ASC, rp.type ASC, rp.create_time DESC
     </select>
      <select id="queryPlanStationList" resultType="com.aiurt.boot.plan.dto.StationPlanDTO">
-       select cs.station_code as stationCode ,cs.station_name as stationName,cs.line_code as lineCode,cs.line_name as lineName
-    from cs_user_station cus
-    left join cs_station cs on cs.id = cus.station_id
-    left join cs_line cl on cs.line_code = cl.line_code and cl.del_flag = 0
-    where cs.del_flag = 0
-    <if test="userId != null and userId != ''">
-        and cus.user_id = #{userId}
-    </if>
-    order by cl.sort,cl.line_code,cs.sort,cs.station_code
-<!--      SELECT-->
-<!--        cs.station_code,-->
-<!--        cs.station_name,-->
-<!--        cs.line_code,-->
-<!--        cs.line_name-->
-<!--    FROM-->
-<!--        cs_station cs-->
-<!--        LEFT JOIN cs_line cl ON cs.line_code = cl.line_code-->
-<!--        AND cl.del_flag = 0-->
-<!--    WHERE-->
-<!--        cs.del_flag = 0-->
+        select cs.station_code as stationCode ,cs.station_name as stationName,cs.line_code as lineCode,cs.line_name as lineName
+        from cs_user_station cus
+        left join cs_station cs on cs.id = cus.station_id
+        left join cs_line cl on cs.line_code = cl.line_code and cl.del_flag = 0
+        where cs.del_flag = 0
+        <if test="userId != null and userId != ''">
+            and cus.user_id = #{userId}
+        </if>
+        order by cl.sort,cl.line_code,cs.sort,cs.station_code
     </select>
     <select id="queryPlanOrgList" resultType="com.aiurt.boot.plan.entity.RepairPool">
         SELECT
@@ -370,5 +359,17 @@
         </where>
         GROUP BY rp.id
         ORDER BY rp.start_time ASC, rp.type ASC, rp.create_time DESC
+    </select>
+    <select id="queryCenterPlanStationList" resultType="com.aiurt.boot.plan.dto.StationPlanDTO">
+        select cs.station_code as stationCode ,cs.station_name as stationName,cs.line_code as lineCode,cs.line_name as lineName
+        from cs_station cs
+        where cs.del_flag = 0
+        <if test="stationCodeList != null and stationCodeList.length != 0">
+        and cs.station_code in
+            <foreach collection="stationCodeList"  item="item" open="(" separator="," close=")">
+              #{item}
+            </foreach>
+        </if>
+        order by cs.line_name
     </select>
 </mapper>
