@@ -25,7 +25,7 @@
     <select id="getSubsystemFaultDTO" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
     SELECT
     COUNT(fa.id and fl.weight >=8 or not null) as seriousFaultNum,
-    COUNT(fa.id and fl.weight &lt;= 7 or not null) as commonFaultNum,
+    COUNT(fa.id and (fl.weight &lt;= 7 or fa.fault_level is null) or not null) as commonFaultNum,
     IFNULL(SUM(fa.duration),0)  as num
     FROM cs_subsystem ss
     LEFT JOIN fault fa on fa.sub_system_code = ss.system_code
@@ -41,7 +41,7 @@
         SELECT
 
         COUNT(fa.id and fl.weight >=8 or not null) as seriousFaultNum,
-        COUNT(fa.id and fl.weight  &lt;= 7 or not null ) as commonFaultNum
+        COUNT(fa.id and (fl.weight &lt;= 7 or fa.fault_level is null) or not null ) as commonFaultNum
         FROM   fault fa
         LEFT JOIN fault_device fd on  fd.fault_code =fa.`code`
         LEFT JOIN  device de on fd.device_code = de.`code`
