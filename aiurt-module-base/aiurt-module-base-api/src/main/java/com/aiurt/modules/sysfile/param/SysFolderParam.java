@@ -34,7 +34,7 @@ public class SysFolderParam implements Serializable {
 
     @ApiModelProperty("文件夹名称")
     @NotBlank(message = "文件夹名称是不能为空")
-    @Length(min = 1, max = 255, message = "文件夹名称长度必须是1-255个字符")
+    @Length(min = 1, max = 255, message = "文件夹名称长度需要在1-255个字符范围内")
     private String name;
 
     @ApiModelProperty("文件夹等级")
