@@ -136,6 +136,7 @@
                 LEFT JOIN fault_repair_record fr ON fr.fault_code = c.`code`
         WHERE
             a.del_flag = 0
+          and not EXISTS (select 1 from operation_process where fault_code = c.code and  process_code = 10)
          and  a.system_code = #{code}
         GROUP BY
             date_format(c.happen_time, '%c'),
@@ -157,6 +158,7 @@
             a.del_flag = 0
           and  a.system_code = #{code}
           and a.device_type_code = #{deviceTypeCode}
+        and not EXISTS (select 1 from operation_process where fault_code = c.code and  process_code = 10)
         GROUP BY
             date_format(c.happen_time, '%c'),
             a.`code`
