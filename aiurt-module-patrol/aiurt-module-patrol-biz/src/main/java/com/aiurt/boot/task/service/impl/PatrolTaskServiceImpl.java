@@ -2342,9 +2342,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                // setWrapText(workbook,1,startRow,endRow,0,0);
                 addReturn(workbook,startRow,endRow,0,0);
                 setWrapText(workbook,7,1,1,1,1,true);
-                setWrapText(workbook,7,startRow,endRow,1,3,false);
+                setWrapText(workbook,7,startRow,endRow,1,firstColumn>3?3:2,false);
                 //合并指定范围行的单元格
                 mergeCellsInColumnRange(workbook,40,startRow,endRow,firstColumn,lastColumn);
+
                 //设置第一列列宽
                 setColumnWidth(sheet,0,10);
                 // 保存修改后的Excel文件
@@ -2441,9 +2442,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         // 图片类型
         //imageData.setImageType(ImageData.ImageType.PICTURE_TYPE_PNG);
         // 上 右 下 左 需要留空设置，类似于 css 的 margin
-        imageData.setTop(10);
+        imageData.setTop(5);
 //        imageData.setRight(1);
-        imageData.setBottom(10);
+        imageData.setBottom(5);
         imageData.setLeft(100);
 
         // 设置图片的位置：Relative表示相对于当前的单元格index，first是左上点，last是对角线的右下点，这样确定一个图片的位置和大小。
