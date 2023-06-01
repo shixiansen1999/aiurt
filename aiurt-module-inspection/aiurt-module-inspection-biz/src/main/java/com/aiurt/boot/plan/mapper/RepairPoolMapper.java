@@ -176,22 +176,27 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
 
     /**
      * 检修计划站点信息列表
-     * @param page
-     * @param userId
+     * @param page 分页对象
+     * @param userId 用户id
      * @return 返回一个检修计划站点信息列表
      */
-    //    @DataPermission({
-    //            @DataColumn(key = "stationName",value = "cs.station_code")
-    //    })
     List<StationPlanDTO> queryPlanStationList(@Param("page")Page<StationPlanDTO> page,@Param("userId")String userId);
 
     /**
      * 检修计划-统计部门站点的数（未完成、已完成、计划数）
-     * @param selectPlanReq
+     * @param selectPlanReq 查询条件
      * @return List<RepairPool> queryPlanOrgList
      */
     @DataPermission({
             @DataColumn(key = "deptName",value = "rpor.org_code")
     })
     List<RepairPool> queryPlanOrgList(@Param("selectPlanReq")SelectPlanReq selectPlanReq);
+
+    /**
+     * 检修计划站点信息列表(中心班组)
+     * @param page 分页对象
+     * @param stationCodeList 站点集合
+     * @return  List<StationPlanDTO> queryCenterPlanStationList
+     */
+    List<StationPlanDTO> queryCenterPlanStationList(@Param("page")Page<StationPlanDTO> page, @Param("stationCodeList")String[] stationCodeList);
 }
