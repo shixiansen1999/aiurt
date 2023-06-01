@@ -1,5 +1,6 @@
 package com.aiurt.modules.fault.mapper;
 
+import com.aiurt.modules.fault.dto.FaultMaintenanceDTO;
 import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -37,4 +38,11 @@ public interface FaultRepairRecordMapper extends BaseMapper<FaultRepairRecord> {
      */
     RepairRecordDetailDTO getRecordByFaultCode(String faultCode);
 
+    /**
+     * 人员画像擅长维修统计
+     *
+     * @param userIds
+     * @return
+     */
+    List<FaultMaintenanceDTO> personnelPortraitStatic(@Param("userIds") List<String> userIds);
 }

@@ -2,6 +2,7 @@ package com.aiurt.modules.common.api;
 
 import com.aiurt.modules.dailyschedule.entity.DailySchedule;
 import com.aiurt.modules.dailyschedule.service.IDailyScheduleService;
+import com.aiurt.modules.schedule.dto.ScheduleUserWorkDTO;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.schedule.service.IScheduleRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,5 +35,10 @@ public class BaseApiImpl implements IBaseApi {
     @Override
     public List<SysUserTeamDTO> getTodayOndutyDetailNoPage(List<String> orgCodes, Date date) {
         return scheduleRecordService.getTodayOndutyDetailNoPage(orgCodes, date);
+    }
+
+    @Override
+    public List<ScheduleUserWorkDTO> getTodayUserWork(List<String> userIds) {
+        return scheduleRecordService.getTodayUserWork(userIds);
     }
 }

@@ -38,4 +38,28 @@
         LEFT JOIN sys_user su on a.appoint_user_name = su.username
         where a.fault_code = #{faultCode} and a.solve_status = 1 order by a.create_time desc
     </select>
+
+    <select id="personnelPortraitStatic" resultType="com.aiurt.modules.fault.dto.FaultMaintenanceDTO">
+        select max.userId,
+        max.deviceTypeCode,
+        max.deviceTypeName,
+        max(num) num
+        from (select frr.appoint_user_name userId,
+        dt.code deviceTypeCode,
+        dt.name deviceTypeName,
+        count(dt.code) num
+        from fault_repair_record frr
+        join fault_device fd on (frr.fault_code = fd.fault_code and fd.del_flag = 0)
+        left join device d on (fd.device_code = d.code and d.del_flag = 0)
+        left join device_type dt on (d.device_type_code = dt.code and dt.del_flag = 0)
+        where frr.del_flag = 0
+        group by frr.appoint_user_name, dt.code) max
+        group by max.userId
+        <if test="userIds != null and userIds.size() > 0">
+            having max.userId in
+            <foreach collection="userIds" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
 </mapper>

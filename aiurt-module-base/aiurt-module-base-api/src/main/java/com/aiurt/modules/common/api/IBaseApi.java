@@ -1,6 +1,7 @@
 package com.aiurt.modules.common.api;
 
 import com.aiurt.modules.dailyschedule.entity.DailySchedule;
+import com.aiurt.modules.schedule.dto.ScheduleUserWorkDTO;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 
 import java.util.Date;
@@ -24,4 +25,12 @@ public interface IBaseApi {
      * @return
      */
     List<SysUserTeamDTO> getTodayOndutyDetailNoPage(List<String> orgCodes, Date date);
+
+    /**
+     * 查询用户今日是否值班
+     *
+     * @param userIds
+     * @return
+     */
+    List<ScheduleUserWorkDTO> getTodayUserWork(List<String> userIds);
 }

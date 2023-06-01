@@ -44,11 +44,16 @@ public class PersonnelPortraitResDTO implements Serializable {
     @ApiModelProperty(value = "工区位置")
     private String position;
 
+//    /**
+//     * 班组负责线路
+//     */
+//    @ApiModelProperty(value = "班组负责线路")
+//    private String line;
     /**
-     * 班组负责线路
+     * 班组负责站点
      */
-    @ApiModelProperty(value = "班组负责线路")
-    private String line;
+    @ApiModelProperty(value = "班组负责站点")
+    private String station;
 
     /**
      * 用户信息

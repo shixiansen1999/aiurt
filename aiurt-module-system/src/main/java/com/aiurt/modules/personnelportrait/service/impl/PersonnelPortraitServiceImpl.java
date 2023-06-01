@@ -6,6 +6,9 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.PersonnelPortraitFaultApi;
+import com.aiurt.modules.common.api.IBaseApi;
+import com.aiurt.modules.fault.dto.FaultMaintenanceDTO;
 import com.aiurt.modules.personnelportrait.dto.*;
 import com.aiurt.modules.personnelportrait.service.PersonnelPortraitService;
 import com.aiurt.modules.position.entity.CsLine;
@@ -13,6 +16,7 @@ import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.mapper.CsStationPositionMapper;
 import com.aiurt.modules.position.service.ICsLineService;
 import com.aiurt.modules.position.service.ICsStationService;
+import com.aiurt.modules.schedule.dto.ScheduleUserWorkDTO;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.entity.SysRole;
 import com.aiurt.modules.system.entity.SysUser;
@@ -40,6 +44,8 @@ import java.util.stream.Collectors;
 public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
 
     private final ISysBaseAPI iSysBaseApi;
+    private final IBaseApi iBaseApi;
+    private final PersonnelPortraitFaultApi personnelPortraitFaultApi;
     private final ISysUserService sysUserService;
     private final ISysDepartService sysDepartService;
     private final ISysUserRoleService sysUserRoleService;
@@ -64,8 +70,10 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         String departName = depart.getDepartName();
         final String title = departName + "人员画像";
         String leader = null;
-        String line = this.selectLine(orgCode);
-        Long number = this.countStation(orgCode);
+//        String line = this.selectLine(orgCode);
+        List<String> stations = this.selectStation(orgCode);
+        String station = stations.stream().collect(Collectors.joining(","));
+        long number = stations.size();
         String position = this.selectPosition(orgCode);
 
         List<UserInfoResDTO> userInfos = Collections.emptyList();
@@ -123,7 +131,8 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         personnelPortrait.setTitle(title);
         // 在这个班组下为工班长的人
         personnelPortrait.setLeader(leader);
-        personnelPortrait.setLine(line);
+//        personnelPortrait.setLine(line);
+        personnelPortrait.setStation(station);
         personnelPortrait.setNumber(number);
         personnelPortrait.setPosition(position);
         personnelPortrait.setUserInfos(userInfos);
@@ -154,12 +163,16 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
      * @param orgCode
      * @return
      */
-    private Long countStation(String orgCode) {
-        Long count = csStationService.lambdaQuery()
+    private List<String> selectStation(String orgCode) {
+        List<CsStation> stations = csStationService.lambdaQuery()
                 .eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .eq(CsStation::getSysOrgCode, orgCode)
-                .count();
-        return count;
+                .list();
+        if (CollUtil.isEmpty(stations)) {
+            Collections.emptyList();
+        }
+        List<String> stationNames = stations.stream().map(CsStation::getStationName).collect(Collectors.toList());
+        return stationNames;
     }
 
     /**
@@ -194,14 +207,28 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         Map<String, String> jobGradeMap = iSysBaseApi.getDictItems("job_grade")
                 .stream()
                 .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText()));
+        List<String> userIds = users.stream().map(SysUser::getId).distinct().collect(Collectors.toList());
+        List<ScheduleUserWorkDTO> todayUserWork = iBaseApi.getTodayUserWork(userIds);
+        List<FaultMaintenanceDTO> faultMaintenances = personnelPortraitFaultApi.personnelPortraitStatic(userIds);
         for (SysUser user : users) {
             String seniority = null;
             String role = null;
             String level = null;
+            String dutyStatus = "休息";
+            String speciality = null;
             Date workingTime = user.getWorkingTime();
+            // 判断工龄显示方式
             if (ObjectUtil.isNotEmpty(workingTime)) {
                 long year = DateUtil.betweenYear(workingTime, nowDate, false);
-                seniority = String.valueOf(year);
+                if (3 <= year && 5 > year) {
+                    seniority = "工龄3年+";
+                } else if (5 <= year && 7 > year) {
+                    seniority = "工龄5年+";
+                } else if (7 <= year && 10 > year) {
+                    seniority = "工龄7年+";
+                } else if (10 >= year) {
+                    seniority = "工龄10年+";
+                }
             }
             if (ObjectUtil.isNotEmpty(user.getJobGrade())) {
                 level = jobGradeMap.get(String.valueOf(user.getJobGrade()));
@@ -211,18 +238,32 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
                 role = userRoleMap.get(id).stream().map(SysRole::getRoleName)
                         .collect(Collectors.joining(";"));
             }
+            ScheduleUserWorkDTO scheduleUserWork = todayUserWork.stream()
+                    .filter(l -> user.getId().equals(l.getUserId()))
+                    .filter(l -> DateUtil.isIn(new Date(), l.getStartTime(), l.getEndTime())
+                            && "1".equals(l.getWork()))
+                    .findFirst().orElseGet(ScheduleUserWorkDTO::new);
+            if (StrUtil.isNotEmpty(scheduleUserWork.getWork())) {
+                dutyStatus = "值班中";
+            }
+            FaultMaintenanceDTO faultMaintenance = faultMaintenances.stream()
+                    .filter(l -> user.getId().equals(l.getUserId())).findFirst()
+                    .orElseGet(FaultMaintenanceDTO::new);
+            if (ObjectUtil.isNotEmpty(faultMaintenance.getNum()) && 8 < faultMaintenance.getNum()
+                    && ObjectUtil.isNotEmpty(faultMaintenance.getDeviceTypeName())) {
+                speciality = "擅长" + faultMaintenance.getDeviceTypeName() + "维修";
+            }
             userInfo = new UserInfoResDTO();
             userInfo.setUserId(id);
             userInfo.setPicurl(user.getAvatar());
-            // todo 根据排班判定。当天有排班就值班，排班班次基础数据那有个字段：是否为休息日。
-            userInfo.setDutyStatus("值班中");
+            // 根据排班判定。当天有排班就值班，排班班次基础数据那有个字段：是否为休息日。
+            userInfo.setDutyStatus(dutyStatus);
             userInfo.setUsername(user.getRealname());
             userInfo.setRole(role);
             userInfo.setLevel(level);
-            // todo 判断工龄显示方式
             userInfo.setSeniority(seniority);
-            // todo 历史设备维修类型维修数>8次，则显示：擅长$设备类型$维修
-            userInfo.setSpeciality("");
+            // 历史设备维修类型维修数>8次，则显示：擅长$设备类型$维修
+            userInfo.setSpeciality(speciality);
             userInfos.add(userInfo);
         }
         return userInfos;
