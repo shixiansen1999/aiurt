@@ -14,11 +14,9 @@ import com.aiurt.boot.task.dto.OverhaulStatisticsDTO;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTOS;
 import com.aiurt.boot.task.dto.PersonnelTeamDTO;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
-import com.aiurt.modules.sysfile.vo.SysFileTypeDetailVO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
@@ -243,7 +241,7 @@ public class OverhaulStatisticsService{
                 if (CollUtil.isNotEmpty(nameList1)){
                 List<String> collect2 = nameList1.stream().map(OverhaulStatisticsDTO::getUserId).collect(Collectors.toList());
                 if (CollectionUtil.isNotEmpty(collect2)){
-                    //获取所有检修任务人员总工时和所有同行人总工时
+                    /*//获取所有检修任务人员总工时和所有同行人总工时
                     List<PersonnelTeamDTO> teamTime = personnelTeamMapper.getTeamTime(collect2, condition.getStartDate() , condition.getEndDate());
                     List<PersonnelTeamDTO> teamPeerTime = personnelTeamMapper.getTeamPeerTime(collect2, condition.getStartDate(), condition.getEndDate());
                     List<String> collect5 = teamTime.stream().map(PersonnelTeamDTO::getTaskId).collect(Collectors.toList());
@@ -259,8 +257,10 @@ public class OverhaulStatisticsService{
                         }
                     }
                     //秒转时
-                    BigDecimal decimal = sum.divide(new BigDecimal("3600"),1, BigDecimal.ROUND_HALF_UP);
-                    e.setMaintenanceDuration(decimal.longValue());
+                    BigDecimal decimal = sum.divide(new BigDecimal("3600"),1, BigDecimal.ROUND_HALF_UP);*/
+                    double sum = nameList1.stream().mapToDouble(OverhaulStatisticsDTO::getMaintenanceDuration).sum();
+                    BigDecimal bigDecimal = new BigDecimal(sum).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    e.setMaintenanceDuration(bigDecimal.floatValue());
                 }else {
                     e.setMaintenanceDuration(0L);
                 }
