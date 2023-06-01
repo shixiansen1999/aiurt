@@ -270,4 +270,12 @@ public interface SysParamCodeConstant {
      * 根据配置获取要筛选掉的旧线路数据
      */
     String OLD_LINECODE = "old_linecode";
+    /**
+     * app-检修计划-站点-中心班组的角色有哪些，用于看到特点的站点
+     */
+    String CENTER_ROLE_CODE = "center_role_code";
+    /**
+     * app-检修计划-站点-中心班组需要看到的站点
+     */
+    String INSPECTION_STATION_CODE = "inspection_station_code";
 }

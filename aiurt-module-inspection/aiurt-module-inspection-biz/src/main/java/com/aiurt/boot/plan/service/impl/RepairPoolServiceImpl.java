@@ -1823,7 +1823,35 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         //根据数据权限，查询站所信息
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         selectPlanReq.setIsManual(InspectionConstant.IS_MANUAL_0);
-        List<StationPlanDTO> csStationList =baseMapper.queryPlanStationList(page,user.getId());
+        List<StationPlanDTO> csStationList = new ArrayList<>();
+        SysParamModel centerOrg = iSysParamAPI.selectByCode(SysParamCodeConstant.CENTER_ROLE_CODE);
+        String valueOrgRoles = centerOrg.getValue();
+        //中心班组-只查这几个班组
+        if(ObjectUtil.isNotEmpty(valueOrgRoles)){
+            String[] orgCodes = valueOrgRoles.split(",");
+            Boolean centerRole = false;
+                for (String orgCode : orgCodes) {
+                    if(user.getRoleCodes().contains(orgCode)){
+                        centerRole = true;
+                        break;
+                    }
+            }
+            if(centerRole){
+                SysParamModel paramModel2 = iSysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_STATION_CODE);
+                String value = paramModel2.getValue();
+                if(ObjectUtil.isEmpty(value)){
+                    throw  new AiurtBootException("未给中心班组配置需要的看到的站点");
+                }
+                String[] stationCodeList = value.split(",");
+                csStationList =baseMapper.queryCenterPlanStationList(page,stationCodeList);
+            }
+            else {
+                csStationList =baseMapper.queryPlanStationList(page,user.getId());
+            }
+        }
+       else {
+            csStationList =baseMapper.queryPlanStationList(page,user.getId());
+        }
         if(CollUtil.isNotEmpty(csStationList)){
             //循环站点信息
             for (StationPlanDTO stationPlanDTO : csStationList) {
