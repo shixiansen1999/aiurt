@@ -42,6 +42,12 @@ public class FaultKnowledgeBaseBuildDTO extends DictEntity implements Serializab
     @ApiModelProperty(value = "故障现象")
     private String faultPhenomenon;
     /**
+     * 排查方法
+     */
+    @Excel(name = "排查方法", width = 15)
+    @ApiModelProperty(value = "排查方法")
+    private String method;
+    /**
      * 专业编码
      */
     @Excel(name = "专业编码", width = 15)
