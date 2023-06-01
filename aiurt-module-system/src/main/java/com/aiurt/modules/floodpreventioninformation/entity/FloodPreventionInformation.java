@@ -1,5 +1,9 @@
 package com.aiurt.modules.floodpreventioninformation.entity;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
+import com.aiurt.common.aspect.annotation.LineFilterColumn;
+import com.aiurt.common.aspect.annotation.StaionFilterColumn;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -24,7 +28,7 @@ import java.util.Date;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="flood_prevention_information对象", description="flood_prevention_information")
-public class FloodPreventionInformation implements Serializable {
+public class FloodPreventionInformation extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**主键id*/
@@ -35,11 +39,13 @@ public class FloodPreventionInformation implements Serializable {
     /**线路编码*/
     @Excel(name = "线路编码")
     @ApiModelProperty(value = "线路编码")
+    @LineFilterColumn
     private String lineCode;
 
     /**站点编码*/
     @Excel(name = "站点编码")
     @ApiModelProperty(value = "站点编码")
+    @StaionFilterColumn
     private String stationCode;
 
     /**站点名称*/
@@ -50,6 +56,7 @@ public class FloodPreventionInformation implements Serializable {
     /**部门编码*/
     @Excel(name = "部门编码")
     @ApiModelProperty(value = "部门编码")
+    @DeptFilterColumn
     private String orgCode;
 
     /**部门名称*/
