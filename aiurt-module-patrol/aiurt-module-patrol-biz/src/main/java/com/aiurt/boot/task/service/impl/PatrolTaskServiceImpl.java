@@ -2662,8 +2662,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             taskDTO.setSignUrl(patrolTask.getSignUrl());
 
             //巡视单内容
-
-            List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
+            List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfoByDeviceID(id);
 
             List<PrintStationDTO> stationDTOS = new ArrayList<>();
 
