@@ -204,6 +204,8 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     faultKnowledgeBaseBuild.setFaultCause(solution.getFaultCause());
                     // 解决方案
                     faultKnowledgeBaseBuild.setSolution(solution.getSolution());
+                    // 维修视频url
+                    faultKnowledgeBaseBuild.setVideoUrl(solution.getVideoUrl());
                     // 百分比
                     faultKnowledgeBaseBuild.setHappenRate(solution.getHappenRate());
                     faultKnowledgeBaseBuild.setVirId(String.valueOf(virId));

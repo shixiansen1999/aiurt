@@ -127,6 +127,12 @@ public class KnowledgeBaseResDTO implements Serializable {
     private Integer scanNum;
 
     /**
+     * 排查方法
+     */
+    @ApiModelProperty(value = "排查方法")
+    private String method;
+
+    /**
      * 采用数
      */
     @ApiModelProperty(value = "采用数")

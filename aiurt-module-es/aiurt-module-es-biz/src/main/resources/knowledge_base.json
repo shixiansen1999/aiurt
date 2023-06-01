@@ -73,6 +73,17 @@
       "scanNum": {
         "type": "integer"
       },
+      "method": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "fields": {
+          "suggest": {
+            "type": "completion",
+            "analyzer": "ik_max_word"
+          }
+        },
+        "search_analyzer": "ik_smart"
+      },
       "use": {
         "type": "integer"
       },

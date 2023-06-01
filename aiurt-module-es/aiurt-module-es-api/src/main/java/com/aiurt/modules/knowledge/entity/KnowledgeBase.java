@@ -148,6 +148,12 @@ public class KnowledgeBase {
     private Integer scanNum;
 
     /**
+     * 排查方法
+     */
+    @Field(type = FieldType.Text)
+    @ApiModelProperty(value = "排查方法")
+    private String method;
+    /**
      * 采用数
      */
     @Field(type = FieldType.Integer)

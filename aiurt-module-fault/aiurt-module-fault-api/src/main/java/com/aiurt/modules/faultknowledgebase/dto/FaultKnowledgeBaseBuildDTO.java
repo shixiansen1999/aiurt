@@ -87,6 +87,12 @@ public class FaultKnowledgeBaseBuildDTO extends DictEntity implements Serializab
     @ApiModelProperty(value = "解决方案")
     private String solution;
     /**
+     * 维修视频url
+     */
+    @org.jeecgframework.poi.excel.annotation.Excel(name = "维修视频url", width = 15)
+    @ApiModelProperty(value = "维修视频url")
+    private String videoUrl;
+    /**
      * 原因出现率百分比
      */
     @Excel(name = "原因出现率百分比", width = 15)
