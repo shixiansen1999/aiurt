@@ -44,17 +44,17 @@ public class UserDetailResDTO implements Serializable {
     @ApiModelProperty(value = "用户性别")
     private String gender;
 
-    /**
-     * 用户年龄
-     */
-    @ApiModelProperty(value = "用户年龄")
-    private Integer age;
+//    /**
+//     * 用户年龄
+//     */
+//    @ApiModelProperty(value = "用户年龄")
+//    private Integer age;
 
     /**
      * 入职年限
      */
     @ApiModelProperty(value = "入职年限")
-    private Integer year;
+    private Long year;
 
     /**
      * 用户工龄
@@ -122,8 +122,8 @@ public class UserDetailResDTO implements Serializable {
     private String certificateNumber;
 
     /**
-     * 用户职级
+     * 手机号码
      */
-    @ApiModelProperty(value = "用户职级")
+    @ApiModelProperty(value = "手机号码")
     private String phone;
 }

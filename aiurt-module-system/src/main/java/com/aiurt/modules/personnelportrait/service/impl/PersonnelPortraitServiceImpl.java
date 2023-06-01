@@ -25,6 +25,7 @@ import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.system.service.ISysRoleService;
 import com.aiurt.modules.system.service.ISysUserRoleService;
 import com.aiurt.modules.system.service.ISysUserService;
+import com.aiurt.modules.train.task.dto.TrainExperienceDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -53,6 +54,9 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
     private final ICsLineService csLineService;
     private final ICsStationService csStationService;
     private final CsStationPositionMapper csStationPositionMapper;
+
+    // 用户职级字典编码
+    private final String JOB_GRADE = "job_grade";
 
 
     @Override
@@ -203,8 +207,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
     private List<UserInfoResDTO> setUserInfo(List<SysUser> users, Map<String, List<SysRole>> userRoleMap) {
         List<UserInfoResDTO> userInfos = new ArrayList<>();
         UserInfoResDTO userInfo = null;
-        Date nowDate = new Date();
-        Map<String, String> jobGradeMap = iSysBaseApi.getDictItems("job_grade")
+        Map<String, String> jobGradeMap = iSysBaseApi.getDictItems(JOB_GRADE)
                 .stream()
                 .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText()));
         List<String> userIds = users.stream().map(SysUser::getId).distinct().collect(Collectors.toList());
@@ -215,21 +218,10 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
             String role = null;
             String level = null;
             String dutyStatus = "休息";
-            String speciality = null;
             Date workingTime = user.getWorkingTime();
             // 判断工龄显示方式
-            if (ObjectUtil.isNotEmpty(workingTime)) {
-                long year = DateUtil.betweenYear(workingTime, nowDate, false);
-                if (3 <= year && 5 > year) {
-                    seniority = "工龄3年+";
-                } else if (5 <= year && 7 > year) {
-                    seniority = "工龄5年+";
-                } else if (7 <= year && 10 > year) {
-                    seniority = "工龄7年+";
-                } else if (10 >= year) {
-                    seniority = "工龄10年+";
-                }
-            }
+            String speciality = this.getSeniority(workingTime);
+
             if (ObjectUtil.isNotEmpty(user.getJobGrade())) {
                 level = jobGradeMap.get(String.valueOf(user.getJobGrade()));
             }
@@ -269,9 +261,102 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         return userInfos;
     }
 
+    /**
+     * 工龄判断
+     *
+     * @param workingTime
+     * @return
+     */
+    private String getSeniority(Date workingTime) {
+        if (ObjectUtil.isNotEmpty(workingTime)) {
+            long year = DateUtil.betweenYear(workingTime, new Date(), false);
+            if (3 <= year && 5 > year) {
+                return "工龄3年+";
+            } else if (5 <= year && 7 > year) {
+                return "工龄5年+";
+            } else if (7 <= year && 10 > year) {
+                return "工龄7年+";
+            } else if (10 >= year) {
+                return "工龄10年+";
+            }
+        }
+        return null;
+    }
+
     @Override
     public UserDetailResDTO userDetail(String userId) {
-        return new UserDetailResDTO();
+        SysUser sysUser = sysUserService.lambdaQuery()
+                .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(SysUser::getId, userId)
+                .one();
+
+        UserDetailResDTO userDetail = new UserDetailResDTO();
+        if (ObjectUtil.isEmpty(sysUser)) {
+            return userDetail;
+        }
+        Map<String, String> sexMap = iSysBaseApi.getDictItems("sex")
+                .stream()
+                .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText()));
+        Map<String, String> jobGradeMap = iSysBaseApi.getDictItems(JOB_GRADE)
+                .stream()
+                .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText()));
+        String sex = null;
+        Long year = null;
+        String seniority = this.getSeniority(sysUser.getWorkingTime());
+        String speciality = null;
+        String level = null;
+        String roleCode = null;
+        String roleName = null;
+        if (ObjectUtil.isNotEmpty(sysUser.getSex())) {
+            sex = sexMap.get(String.valueOf(sysUser.getSex()));
+        }
+        if (ObjectUtil.isNotEmpty(sysUser.getEntryDate())) {
+            year = DateUtil.betweenYear(sysUser.getEntryDate(), new Date(), false);
+        }
+        if (ObjectUtil.isNotEmpty(sysUser.getJobGrade())) {
+            level = jobGradeMap.get(String.valueOf(sysUser.getJobGrade()));
+        }
+        List<FaultMaintenanceDTO> faultMaintenances = personnelPortraitFaultApi.personnelPortraitStatic(Arrays.asList(sysUser.getId()));
+        FaultMaintenanceDTO faultMaintenance = faultMaintenances.stream()
+                .filter(l -> userId.equals(l.getUserId())).findFirst()
+                .orElseGet(FaultMaintenanceDTO::new);
+        if (ObjectUtil.isNotEmpty(faultMaintenance.getNum()) && 8 < faultMaintenance.getNum()
+                && ObjectUtil.isNotEmpty(faultMaintenance.getDeviceTypeName())) {
+            speciality = "擅长" + faultMaintenance.getDeviceTypeName() + "维修";
+        }
+        List<SysUserRole> userRoles = sysUserRoleService.lambdaQuery()
+                .in(SysUserRole::getUserId, userId)
+                .select(SysUserRole::getUserId, SysUserRole::getRoleId)
+                .list();
+        if (CollUtil.isNotEmpty(userRoles)) {
+            String roleIds = userRoles.stream().map(SysUserRole::getId).distinct().collect(Collectors.joining());
+            List<SysRole> roles = sysRoleService.lambdaQuery()
+                    .in(SysRole::getId, roleIds)
+                    .select(SysRole::getId, SysRole::getRoleCode, SysRole::getRoleName)
+                    .list();
+            if (CollUtil.isNotEmpty(roles)) {
+                roleCode = roles.stream().map(SysRole::getRoleCode).collect(Collectors.joining(","));
+                roleName = roles.stream().map(SysRole::getRoleName).collect(Collectors.joining(","));
+            }
+        }
+        userDetail.setUserId(sysUser.getId());
+        userDetail.setPicurl(sysUser.getAvatar());
+        userDetail.setUsername(sysUser.getRealname());
+        userDetail.setGender(sex);
+        userDetail.setYear(year);
+        userDetail.setSeniority(seniority);
+        userDetail.setSpeciality(speciality);
+//        userDetail.setMajorCode(sysUser.getMajorId());
+//        userDetail.setMajorName()
+        userDetail.setOrgCode(sysUser.getOrgCode());
+        userDetail.setOrgName(sysUser.getOrgName());
+        userDetail.setRoleCode(roleCode);
+        userDetail.setRoleName(roleName);
+        userDetail.setLevel(level);
+        userDetail.setJobNumber(sysUser.getWorkNo());
+        userDetail.setCertificateNumber(sysUser.getPermitCode());
+        userDetail.setPhone(sysUser.getPhone());
+        return userDetail;
     }
 
     @Override
@@ -299,7 +384,23 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
 
     @Override
     public List<ExperienceResDTO> experience(String userId) {
-        return new ArrayList<>();
+        List<TrainExperienceDTO> trainExperience = iBaseApi.getTrainExperience(userId);
+        List<ExperienceResDTO> experiences = new ArrayList<>();
+        ExperienceResDTO experienceResDTO = null;
+        for (TrainExperienceDTO experience : trainExperience) {
+            experienceResDTO = new ExperienceResDTO();
+            if (!userId.equals(experience.getUserId())) {
+                continue;
+            }
+            String startTime = DateUtil.format(experience.getStartTime(), "YYYY-MM-dd HH:mm:ss");
+            String endTime = DateUtil.format(experience.getEndTime(), "YYYY-MM-dd HH:mm:ss");
+            String taskName = "参与培训：" + experience.getTaskName();
+            experienceResDTO.setStarDate(startTime);
+            experienceResDTO.setEndDate(endTime);
+            experienceResDTO.setDescription(taskName);
+            experiences.add(experienceResDTO);
+        }
+        return experiences;
     }
 
     @Override

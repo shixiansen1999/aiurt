@@ -21,29 +21,29 @@ import java.io.Serializable;
 public class HistoryResDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 用户ID
-     */
-    @ApiModelProperty(value = "用户ID")
-    private String userId;
-
-    /**
-     * 设备编号
-     */
-    @ApiModelProperty(value = "设备编号")
-    private String deviceCode;
+//    /**
+//     * 用户ID
+//     */
+//    @ApiModelProperty(value = "用户ID")
+//    private String userId;
+//
+//    /**
+//     * 设备编号
+//     */
+//    @ApiModelProperty(value = "设备编号")
+//    private String deviceCode;
 
     /**
      * 设备名称
      */
     @ApiModelProperty(value = "设备名称")
-    private String deviceName;
+    private String name;
 
     /**
      * 处理次数
      */
     @ApiModelProperty(value = "处理次数")
-    private Integer number;
+    private Integer value;
 
 //    /**
 //     * 故障设备列表
