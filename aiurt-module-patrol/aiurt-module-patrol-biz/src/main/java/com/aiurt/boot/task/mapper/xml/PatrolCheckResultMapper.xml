@@ -73,6 +73,6 @@
         <if test="taskDeviceId != null and taskDeviceId !=''">
             and task_device_id = #{taskDeviceId}
         </if>
-        order by pcr.order
+        order by pcr.order,pcr.code
     </select>
 </mapper>
