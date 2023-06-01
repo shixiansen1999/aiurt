@@ -34,7 +34,7 @@ public class SysAbout {
 	/**内容*/
 	@Excel(name = "内容", width = 15)
     @ApiModelProperty(value = "内容")
-	public Object content;
+	public String cotent;
 	/**状态 0禁用 1启用*/
 	@Excel(name = "状态 0禁用 1启用", width = 15)
     @ApiModelProperty(value = "状态 0禁用 1启用")
@@ -55,4 +55,7 @@ public class SysAbout {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新时间")
 	public Date updateTime;
+
+	@ApiModelProperty(value = "版本号")
+	private String version;
 }
