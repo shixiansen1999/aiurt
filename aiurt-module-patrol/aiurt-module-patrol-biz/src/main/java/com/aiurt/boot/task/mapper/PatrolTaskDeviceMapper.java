@@ -219,6 +219,19 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     List<PatrolTaskDeviceDTO>  getMac(@Param("id")String id);
+    /**
+     * 根据任务ID获取工单站点和巡检表联动信息
+     *
+     * @param taskId
+     * @return
+     */
+    List<PatrolBillDTO> getDeviceBillGangedInfo(@Param("taskId") String taskId);
+    /**
+     * 获取mac地址
+     * @param id
+     * @return
+     */
+    List<PatrolTaskDeviceDTO> getMacByDeviceId(@Param("id")String id);
 
     /**
      * PC巡检任务池获取子系统名称和巡检单主表ids

@@ -2,6 +2,7 @@ package com.aiurt.boot.screen.controller;
 
 import com.aiurt.boot.screen.model.*;
 import com.aiurt.boot.screen.service.PatrolScreenService;
+import com.aiurt.boot.screen.model.ScreenTemHum;
 import com.aiurt.boot.task.entity.TemperatureHumidity;
 import com.aiurt.boot.task.param.TemHumParam;
 import com.aiurt.common.aspect.annotation.AutoLog;

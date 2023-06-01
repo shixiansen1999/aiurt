@@ -1535,7 +1535,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
         if (!InspectionConstant.TO_BE_ASSIGNED.equals(repairPool.getStatus())) {
-            throw new AiurtBootException("已指派不允许删除");
+            if(!InspectionConstant.GIVE_BACK.equals(repairPool.getStatus())){
+                throw new AiurtBootException("已指派不允许删除");
+            }
         }
 
         // 删除站点机构
