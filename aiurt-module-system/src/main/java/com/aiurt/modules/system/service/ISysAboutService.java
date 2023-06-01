@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.service;
 
+import com.aiurt.modules.git.entity.SysTemVersionInfo;
 import com.aiurt.modules.system.entity.SysAbout;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -11,4 +12,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface ISysAboutService extends IService<SysAbout> {
 
+    SysTemVersionInfo queryVersionInfo();
 }
