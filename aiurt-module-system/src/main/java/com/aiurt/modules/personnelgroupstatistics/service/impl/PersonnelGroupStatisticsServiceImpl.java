@@ -13,6 +13,7 @@ import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.dto.UserTeamParameter;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
 import com.aiurt.boot.index.dto.TeamWorkAreaDTO;
+import com.aiurt.boot.statistics.service.PatrolStatisticsService;
 import com.aiurt.boot.task.dto.PersonnelTeamDTO;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.fault.dto.FaultReportDTO;
@@ -62,6 +63,8 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
     private OverhaulApi overhaulApi;
     @Autowired
     private ISysParamAPI sysParamApi;
+    @Autowired
+    private PatrolStatisticsService statisticsService;
     @Override
     public Page<GroupModel> queryGroupPageList(List<String> departIds, String startTime, String endTime, Page<GroupModel> page) {
         //获取当前登录用户管辖的班组

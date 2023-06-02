@@ -106,8 +106,8 @@ public class PatrolReportService {
             List<Date> endList = statisticsService.getOmitDateScope(endDate);
             Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
             Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
-            omitModel.setStartDate(DateUtil.formatDate(startTime));
-            omitModel.setEndDate(DateUtil.formatDate(endTime));
+            omitModel.setStartDate(DateUtil.formatDateTime(startTime));
+            omitModel.setEndDate(DateUtil.formatDateTime(endTime));
         } else {
             boolean isNowWeek = isNowWeekDate(report.getStartDate(), report.getEndDate());
             isNullDate = isNowWeek;
@@ -115,8 +115,8 @@ public class PatrolReportService {
             List<Date> endList = statisticsService.getOmitDateScope(DateUtil.parse(report.getEndDate()));
             Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
             Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
-            omitModel.setStartDate(DateUtil.formatDate(startTime));
-            omitModel.setEndDate(DateUtil.formatDate(endTime));
+            omitModel.setStartDate(DateUtil.formatDateTime(startTime));
+            omitModel.setEndDate(DateUtil.formatDateTime(endTime));
         }
         //只查组织机构，做主数据返回，为了条件查询不影响组织机构显示
         List<PatrolReport> orgIdNameList = patrolTaskMapper.getReportTaskList(pageList,orgIdList);
@@ -672,8 +672,8 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             List<Date> endList = statisticsService.getOmitDateScope(endDate);
             Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
             Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
-            omitModel.setStartDate(DateUtil.formatDate(startTime));
-            omitModel.setEndDate(DateUtil.formatDate(endTime));
+            omitModel.setStartDate(DateUtil.formatDateTime(startTime));
+            omitModel.setEndDate(DateUtil.formatDateTime(endTime));
         } else {
             boolean isNowWeek = isNowWeekDate(report.getStartDate(), report.getEndDate());
             isNullDate = isNowWeek;
@@ -681,8 +681,8 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             List<Date> endList = statisticsService.getOmitDateScope(DateUtil.parse(report.getEndDate()));
             Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
             Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
-            omitModel.setStartDate(DateUtil.formatDate(startTime));
-            omitModel.setEndDate(DateUtil.formatDate(endTime));
+            omitModel.setStartDate(DateUtil.formatDateTime(startTime));
+            omitModel.setEndDate(DateUtil.formatDateTime(endTime));
         }
 
         //只查组织机构，做主数据返回，为了条件查询不影响组织机构显示
