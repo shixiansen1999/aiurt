@@ -1,6 +1,8 @@
 package com.aiurt.modules.floodpreventioninformation.service;
 
 import com.aiurt.modules.floodpreventioninformation.entity.FloodPreventionInformation;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
@@ -31,5 +33,11 @@ public interface IFloodPreventionInformationService extends IService<FloodPreven
      * @throws IOException
      */
     void exportTemplateXl(HttpServletResponse response) throws IOException;
-
+    /**
+     * 列表查询
+     * @param page 分页
+     * @param floodPreventionInformation 传参
+     * @return 返回列表
+     */
+    IPage<FloodPreventionInformation> getList(Page<FloodPreventionInformation> page, FloodPreventionInformation floodPreventionInformation);
 }
