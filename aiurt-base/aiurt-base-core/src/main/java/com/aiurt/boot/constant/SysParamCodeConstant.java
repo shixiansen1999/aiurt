@@ -278,4 +278,8 @@ public interface SysParamCodeConstant {
      * app-检修计划-站点-中心班组需要看到的站点
      */
     String INSPECTION_STATION_CODE = "inspection_station_code";
+    /**
+     * 调度下发新的故障-需要响铃的中心班组
+     */
+    String FAULT_EXTERNAL_ORG = "fault_external_org";
 }
