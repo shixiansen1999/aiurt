@@ -1,7 +1,6 @@
 package com.aiurt.modules.fault.entity;
 
 import com.aiurt.common.aspect.annotation.*;
-import com.aiurt.modules.base.BaseEntity;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -387,5 +386,10 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "完成状态")
     @Dict(dicCode = "fault_state")
     private Integer state;
+    /**
+     * 用户ID字段(人员画像历史维修记录列表(更多)用到)
+     */
+    @TableField(exist = false)
+    private String userId;
 }
 

@@ -1,6 +1,5 @@
 package com.aiurt.modules.personnelportrait.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -9,8 +8,10 @@ import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.common.api.PersonnelPortraitFaultApi;
+import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.dto.FaultHistoryDTO;
 import com.aiurt.modules.fault.dto.FaultMaintenanceDTO;
+import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.personnelportrait.dto.*;
 import com.aiurt.modules.personnelportrait.service.PersonnelPortraitService;
 import com.aiurt.modules.position.entity.CsLine;
@@ -25,12 +26,14 @@ import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.entity.SysUserRole;
 import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.train.task.dto.TrainExperienceDTO;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -422,11 +425,23 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
     public List<HistoryResDTO> history(String userId) {
         List<FaultHistoryDTO> faultHistorys = personnelPortraitFaultApi.repairDeviceTopFive(userId);
         List<HistoryResDTO> historys = new ArrayList<>();
-        HistoryResDTO history = new HistoryResDTO();
+        HistoryResDTO history = null;
         for (FaultHistoryDTO faultHistory : faultHistorys) {
-            BeanUtil.copyProperties(faultHistory, historys);
+            history = new HistoryResDTO();
+            history.setName(faultHistory.getName());
+            history.setValue(faultHistory.getValue());
             historys.add(history);
         }
         return historys;
+    }
+
+    @Override
+    public IPage<Fault> historyRecord(Integer pageNo, Integer pageSize, String userId, HttpServletRequest request) {
+        Fault fault = new Fault();
+        fault.setUserId(userId);
+        // 已完成状态
+        fault.setStatus(FaultConstant.FAULT_STATUS);
+        personnelPortraitFaultApi.selectFaultRecordPageList(fault, pageNo, pageSize, request);
+        return null;
     }
 }

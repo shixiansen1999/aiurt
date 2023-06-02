@@ -1,8 +1,11 @@
 package com.aiurt.modules.personnelportrait.service;
 
 
+import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.personnelportrait.dto.*;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -66,4 +69,15 @@ public interface PersonnelPortraitService {
      * @return
      */
     List<HistoryResDTO> history(String userId);
+
+    /**
+     * 历史维修记录列表(更多)
+     *
+     * @param pageNo
+     * @param pageSize
+     * @param userId
+     * @param request
+     * @return
+     */
+    IPage<Fault> historyRecord(Integer pageNo, Integer pageSize, String userId, HttpServletRequest request);
 }

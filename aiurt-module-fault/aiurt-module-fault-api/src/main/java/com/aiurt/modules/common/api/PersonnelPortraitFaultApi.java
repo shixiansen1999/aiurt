@@ -2,7 +2,10 @@ package com.aiurt.modules.common.api;
 
 import com.aiurt.modules.fault.dto.FaultHistoryDTO;
 import com.aiurt.modules.fault.dto.FaultMaintenanceDTO;
+import com.aiurt.modules.fault.entity.Fault;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -22,4 +25,12 @@ public interface PersonnelPortraitFaultApi {
      * 处理的设备TOP5
      */
     List<FaultHistoryDTO> repairDeviceTopFive(String userId);
+
+    /**
+     * 历史维修记录(更多)
+     *
+     * @param fault
+     * @return
+     */
+    IPage<Fault> selectFaultRecordPageList(Fault fault, Integer pageNo, Integer pageSize, HttpServletRequest request);
 }

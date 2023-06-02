@@ -26,6 +26,6 @@ public class FaultHistoryDTO implements Serializable {
     /**
      * 处理数
      */
-    private String value;
+    private Integer value;
 
 }
