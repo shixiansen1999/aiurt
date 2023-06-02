@@ -1769,17 +1769,20 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
 
         }
+        // 当前登录人的部门权限和任务的站点通过工区关联的部门的交集
+        List<String> departs = sysBaseAPI.getWorkAreaByCode(fault.getStationCode())
+                .stream()
+                .flatMap(csWorkAreaModel -> csWorkAreaModel.getOrgCodeList().stream())
+                .collect(Collectors.toList());
 
-        // 当前登录人的部门权限和任务的组织机构交集
-        List<String> intersectOrg = CollectionUtil.intersection(orgCodeList, Arrays.asList(fault.getSysOrgCode()))
-                .stream().collect(Collectors.toList());
+        List<String> intersectOrg = new ArrayList<>(CollectionUtil.intersection(orgCodeList, departs));
         if (CollectionUtil.isEmpty(intersectOrg)) {
             return Collections.emptyList();
         }
         List<LoginUser> loginUserList = sysBaseAPI.getUserByDepIds(orgCodeList);
         // 根据配置决定是否关联排班
         SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_SCHEDULING);
-        boolean value = "1".equals(paramModel.getValue()) ? true : false;
+        boolean value = "1".equals(paramModel.getValue());
         if (value) {
             // 获取今日当班人员信息
             List<SysUserTeamDTO> todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());

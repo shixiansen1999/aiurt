@@ -17,6 +17,10 @@ public enum SysAnnmentTypeEnum {
      */
     FAULT("fault", "component","","故障业务消息"),
     /**
+     * 故障
+     */
+    FAULT_EXTERNAL("fault_external", "component","","故障业务消息"),
+    /**
      * 周计划
      */
     OPERATE_PLAN("week_plan", "component","","周计划业务消息"),

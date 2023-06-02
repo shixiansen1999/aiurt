@@ -3,8 +3,10 @@ package com.aiurt.modules.system.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.service.impl.PatrolStandardItemsServiceImpl;
 import com.aiurt.common.api.dto.message.*;
@@ -3134,27 +3136,38 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public void sendAllMessage(String message) {
-        List<SysUser> userList = userMapper.selectList(new LambdaQueryWrapper<SysUser>().eq(SysUser::getOrgCode, "A01A01A01A01").eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0));
-        String[] userIds = userList.stream().map(SysUser::getUsername).toArray(String[]::new);
-//        for (int i = 0; i < userIds.length; i++) {
-//            if (org.jeecg.common.util.oConvertUtils.isNotEmpty(userIds[i])) {
-//                SysUser sysUser = userMapper.getUserByName(userIds[i]);
-//                if (sysUser == null) {
-//                    continue;
-//                }
-                JSONObject obj = new JSONObject();
-                obj.put(WebsocketConst.MSG_CMD, WebsocketConst.CMD_USER);
-//                obj.put(WebsocketConst.MSG_USER_ID, sysUser.getId());
-                obj.put(WebsocketConst.MSG_TXT, message);
-                if (ObjectUtil.isNotEmpty(message)) {
-                    obj.put(WebsocketConst.IS_RING_BELL, true);
-                }
-                webSocket.sendAllMessage(obj.toJSONString());
-            //}
-        //}
-    }
+    public void sendAllMessage() {
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_EXTERNAL_ORG);
+        String value = sysParamModel.getValue();
+        List<String> orgCodes = StrUtil.splitTrim(value, ",");
+        List<SysUser> users = userMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getOrgCode, orgCodes).eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollectionUtil.isNotEmpty(users)) {
+            List<String> list = users.stream().map(SysUser::getUsername).collect(Collectors.toList());
+            //发送通知
+            MessageDTO messageDTO = new MessageDTO(null,CollUtil.join(list,","), "调度已产生新的故障，请及时处理！" + DateUtil.today(), null);
 
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.FAULT_EXTERNAL.getType());
+            messageDTO.setData(map);
+            messageDTO.setMsgAbstract("有新的故障信息");
+            messageDTO.setPublishingContent("有新的故障信息，请查看");
+            messageDTO.setIsRingBell(true);
+            sendMessage(messageDTO);
+        }
+    }
+    /**
+     * 发送消息
+     * @param messageDTO
+     */
+    private void sendMessage(MessageDTO messageDTO) {
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_MESSAGE);
+        messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+        messageDTO.setPriority("L");
+        messageDTO.setStartTime(new Date());
+        messageDTO.setCategory(CommonConstant.MSG_CATEGORY_6);
+        sendTemplateMessage(messageDTO);
+    }
     /**
      * 根据编码查询设备分类
      *
@@ -3216,13 +3229,27 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public Date getRecentConnectTimeByStationCode(String stationCode) {
+    public Date getRecentConnectTimeByStationCode(String username, String stationCode) {
         LambdaQueryWrapper<SysUserPositionCurrent> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(SysUserPositionCurrent::getStationCode, stationCode);
-        queryWrapper.orderByDesc(SysUserPositionCurrent::getUploadTime);
-        queryWrapper.last("limit 1");
-        List<SysUserPositionCurrent> list = sysUserPositionCurrentService.list(queryWrapper);
-        return CollUtil.isEmpty(list) ? null : list.get(0).getUploadTime();
+        queryWrapper.eq(SysUserPositionCurrent::getCreateBy, username);
+        SysUserPositionCurrent sysUserPositionCurrent;
+        try{
+            sysUserPositionCurrent = sysUserPositionCurrentService.getOne(queryWrapper);
+        }catch (Exception e){
+            throw new AiurtBootException(username + " 在用户实时位置表中有多条数据，请联系相关人员处理！");
+        }
+        if (ObjectUtil.isNull(sysUserPositionCurrent)) {
+            return null;
+        }
+        // 如果参数的站点和用户当前所在站点相同，返回当前站点的连接时间
+        // 如果参数的站点和用户上一站的站点相同，返回上一站的站点的连接时间
+        if (StrUtil.equals(stationCode, sysUserPositionCurrent.getStationCode())) {
+            return sysUserPositionCurrent.getUploadTime();
+        }else if(StrUtil.equals(stationCode, sysUserPositionCurrent.getLastStationCode())){
+            return sysUserPositionCurrent.getLastUploadTime();
+        }else {
+            return null;
+        }
     }
     @Override
     public void saveSysAttachment(SysAttachment sysAttachment) {
