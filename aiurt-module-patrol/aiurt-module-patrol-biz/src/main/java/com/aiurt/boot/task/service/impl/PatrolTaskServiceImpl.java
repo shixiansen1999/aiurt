@@ -1310,7 +1310,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 updateWrapper.set(PatrolTask::getDuration, standardDuration);
             } else {
                 // 非工区，当巡视时长大于大于上限时长时，巡视时长等于上限时长。不然就是wifi最近连接巡视站点时间减提交时间
-                Date recentConnectTime = sysBaseApi.getRecentConnectTimeByStationCode(stationCode);
+                Date recentConnectTime = sysBaseApi.getRecentConnectTimeByStationCode(sysUser.getUsername(), stationCode);
                 if (ObjectUtil.isNull(recentConnectTime)) {
                     updateWrapper.set(PatrolTask::getDuration, standardDuration);
                 }else {
