@@ -7,9 +7,7 @@ import com.aiurt.modules.faultexternal.dto.FalutExternalReceiveDTO;
 import com.aiurt.modules.faultexternal.dto.FaultExternalDTO;
 import com.aiurt.modules.faultexternal.entity.FaultExternal;
 import com.aiurt.modules.faultexternal.service.IFaultExternalService;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -92,27 +90,7 @@ public class FaultExternalController extends BaseController<FaultExternal, IFaul
 	 @ApiOperation(value = "生产调度故障-添加", notes = "生产调度故障-添加")
 	 @PostMapping(value = "/appendFault")
 	 public Result<FaultExternal> appendFault(@RequestBody JSONObject formData) {
-		 Result<FaultExternal> result = new Result<FaultExternal>();
-		 try {
-			 JSONObject dataJson = formData.getJSONObject("data");
-			 FaultExternal faultExternal = JSON.toJavaObject(dataJson, FaultExternal.class);
-			 if (faultExternal.getUrlList() != null && faultExternal.getUrlList().size() > 0) {
-				 String urls = String.join(",", faultExternal.getUrlList());
-				 faultExternal.setUrls(urls);
-			 }
-			 FaultExternal external = faultExternalService.getOne(new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getIndocno, faultExternal.getIndocno()));
-			 if (external == null) {
-				 faultExternalService.save(faultExternal);
-				 iSysBaseAPI.sendAllMessage("调度系统故障列表有新的数据生成！");
-			 } else {
-				 faultExternalService.update(faultExternal, new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getIndocno, faultExternal.getIndocno()));
-			 }
-			 result.success("添加成功！");
-		 } catch (Exception e) {
-			 log.error(e.getMessage(), e);
-			 result.error500("操作失败");
-		 }
-		 return result;
+		 return  faultExternalService.appendFault(formData);
 	 }
 
 	/**
