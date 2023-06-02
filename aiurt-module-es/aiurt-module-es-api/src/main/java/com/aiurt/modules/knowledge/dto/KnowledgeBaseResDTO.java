@@ -101,7 +101,11 @@ public class KnowledgeBaseResDTO implements Serializable {
      */
     @ApiModelProperty(value = "设备类型名称")
     private String deviceTypeName;
-
+    /**
+     * 组件/部位
+     */
+    @ApiModelProperty(value = "组件/部位")
+    private String joinComponent;
     /**
      * 故障原因
      */

@@ -122,6 +122,7 @@ public class KnowledgeBase {
     /**
      * 故障原因
      */
+    @HighlightField(name = "reasonSolutions.faultCause")
     @Field(type = FieldType.Nested)
     @ApiModelProperty(value = "故障原因")
     private List<CauseSolution> reasonSolutions;
@@ -136,6 +137,7 @@ public class KnowledgeBase {
     /**
      * 故障等级名称
      */
+    @HighlightField(name = "faultLevelName")
     @Field(type = FieldType.Text)
     @ApiModelProperty(value = "故障等级名称")
     private String faultLevelName;

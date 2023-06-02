@@ -15,6 +15,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -33,6 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -89,8 +91,16 @@ public class ElasticApiImpl implements ElasticAPI {
                 if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
                     boolQueryBuilder.set(QueryBuilders.boolQuery());
                 }
-                String[] fieldNames = {"faultPhenomenon", "knowledgeBaseTypeName", "majorName", "systemName", "materialName", "deviceTypeName"};
-                boolQueryBuilder.get().must(QueryBuilders.multiMatchQuery(keyword, fieldNames));
+                String[] fieldNames = {
+                        "faultPhenomenon", "knowledgeBaseTypeName", "majorName",
+                        "systemName", "materialName", "deviceTypeName", "faultLevelName"
+                };
+                boolQueryBuilder.get().should(QueryBuilders.multiMatchQuery(keyword, fieldNames));
+                boolQueryBuilder.get().should(QueryBuilders.nestedQuery(
+                        "reasonSolutions",
+                        QueryBuilders.matchQuery("reasonSolutions.faultCause", keyword),
+                        ScoreMode.Total)
+                );
             }
             // 专业编号
             Optional.ofNullable(majorCode).ifPresent(major -> {
@@ -146,6 +156,12 @@ public class ElasticApiImpl implements ElasticAPI {
                 knowledgeBase = new KnowledgeBaseResDTO();
                 BeanUtils.copyProperties(record, knowledgeBase);
                 knowledgeBase.setTitle(record.getFaultPhenomenon());
+                // 组件/部位字段拼接专业等信息
+                String joinComponent = Arrays.asList(record.getMajorName(), record.getDeviceTypeName(), record.getMaterialName())
+                        .stream()
+                        .filter(l -> ObjectUtil.isNotEmpty(l))
+                        .collect(Collectors.joining("/"));
+                knowledgeBase.setJoinComponent(joinComponent);
                 knowledgeBaseRes.add(knowledgeBase);
             }
         }
