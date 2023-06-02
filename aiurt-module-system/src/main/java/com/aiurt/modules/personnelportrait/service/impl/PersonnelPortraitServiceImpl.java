@@ -21,14 +21,12 @@ import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.entity.SysRole;
 import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.entity.SysUserRole;
-import com.aiurt.modules.system.service.ISysDepartService;
-import com.aiurt.modules.system.service.ISysRoleService;
-import com.aiurt.modules.system.service.ISysUserRoleService;
-import com.aiurt.modules.system.service.ISysUserService;
+import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.train.task.dto.TrainExperienceDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -54,6 +52,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
     private final ICsLineService csLineService;
     private final ICsStationService csStationService;
     private final CsStationPositionMapper csStationPositionMapper;
+    private final ICsUserMajorService csUserMajorService;
 
     // 用户职级字典编码
     private final String JOB_GRADE = "job_grade";
@@ -307,6 +306,8 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         String level = null;
         String roleCode = null;
         String roleName = null;
+        String majorCode = null;
+        String majorName = null;
         if (ObjectUtil.isNotEmpty(sysUser.getSex())) {
             sex = sexMap.get(String.valueOf(sysUser.getSex()));
         }
@@ -329,7 +330,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
                 .select(SysUserRole::getUserId, SysUserRole::getRoleId)
                 .list();
         if (CollUtil.isNotEmpty(userRoles)) {
-            String roleIds = userRoles.stream().map(SysUserRole::getId).distinct().collect(Collectors.joining());
+            List<String> roleIds = userRoles.stream().map(SysUserRole::getRoleId).distinct().collect(Collectors.toList());
             List<SysRole> roles = sysRoleService.lambdaQuery()
                     .in(SysRole::getId, roleIds)
                     .select(SysRole::getId, SysRole::getRoleCode, SysRole::getRoleName)
@@ -339,6 +340,12 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
                 roleName = roles.stream().map(SysRole::getRoleName).collect(Collectors.joining(","));
             }
         }
+        List<CsUserMajorModel> majors = csUserMajorService.getMajorByUserId(userId);
+        if (CollUtil.isNotEmpty(majors)) {
+            majorCode = majors.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.joining(","));
+            majorName = majors.stream().map(CsUserMajorModel::getMajorName).collect(Collectors.joining(","));
+        }
+
         userDetail.setUserId(sysUser.getId());
         userDetail.setPicurl(sysUser.getAvatar());
         userDetail.setUsername(sysUser.getRealname());
@@ -346,8 +353,9 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         userDetail.setYear(year);
         userDetail.setSeniority(seniority);
         userDetail.setSpeciality(speciality);
-//        userDetail.setMajorCode(sysUser.getMajorId());
-//        userDetail.setMajorName()
+        // 确认过此处使用专业权限
+        userDetail.setMajorCode(majorCode);
+        userDetail.setMajorName(majorName);
         userDetail.setOrgCode(sysUser.getOrgCode());
         userDetail.setOrgName(sysUser.getOrgName());
         userDetail.setRoleCode(roleCode);
