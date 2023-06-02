@@ -1,5 +1,7 @@
 package com.aiurt.modules.common.api;
 
+import cn.hutool.core.collection.CollUtil;
+import com.aiurt.modules.fault.dto.FaultDeviceDTO;
 import com.aiurt.modules.fault.dto.FaultHistoryDTO;
 import com.aiurt.modules.fault.dto.FaultMaintenanceDTO;
 import com.aiurt.modules.fault.entity.Fault;
@@ -39,5 +41,11 @@ public class PersonnelPortraitFaultApiImpl implements PersonnelPortraitFaultApi 
     @Override
     public IPage<Fault> selectFaultRecordPageList(Fault fault, Integer pageNo, Integer pageSize, HttpServletRequest request) {
         return faultService.queryPageList(fault, pageNo, pageSize, request);
+    }
+
+    @Override
+    public List<FaultDeviceDTO> deviceInfo(String userId) {
+        List<FaultDeviceDTO> deviceInfo = faultRepairRecordMapper.deviceInfo(userId);
+        return deviceInfo;
     }
 }

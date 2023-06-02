@@ -1,5 +1,6 @@
 package com.aiurt.modules.fault.mapper;
 
+import com.aiurt.modules.fault.dto.FaultDeviceDTO;
 import com.aiurt.modules.fault.dto.FaultHistoryDTO;
 import com.aiurt.modules.fault.dto.FaultMaintenanceDTO;
 import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
@@ -13,12 +14,13 @@ import java.util.List;
 /**
  * @Description: 维修记录
  * @Author: aiurt
- * @Date:   2022-06-28
+ * @Date: 2022-06-28
  * @Version: V1.0
  */
 public interface FaultRepairRecordMapper extends BaseMapper<FaultRepairRecord> {
     /**
      * 根据维修编号查询故障维修记录
+     *
      * @param faultCode
      * @return
      */
@@ -26,6 +28,7 @@ public interface FaultRepairRecordMapper extends BaseMapper<FaultRepairRecord> {
 
     /**
      * 查询故障分类名称
+     *
      * @param deviceTypeCode
      * @return
      */
@@ -34,6 +37,7 @@ public interface FaultRepairRecordMapper extends BaseMapper<FaultRepairRecord> {
 
     /**
      * 根据故障编号获取维修记录中的处理方案
+     *
      * @param faultCode
      * @return
      */
@@ -54,4 +58,12 @@ public interface FaultRepairRecordMapper extends BaseMapper<FaultRepairRecord> {
      * @return
      */
     List<FaultHistoryDTO> repairDeviceTopFive(@Param("userId") String userId);
+
+    /**
+     * 历史维修记录-设备故障信息列表
+     *
+     * @param userId
+     * @return
+     */
+    List<FaultDeviceDTO> deviceInfo(@Param("userId") String userId);
 }

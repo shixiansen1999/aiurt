@@ -9,6 +9,7 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.common.api.PersonnelPortraitFaultApi;
 import com.aiurt.modules.fault.constants.FaultConstant;
+import com.aiurt.modules.fault.dto.FaultDeviceDTO;
 import com.aiurt.modules.fault.dto.FaultHistoryDTO;
 import com.aiurt.modules.fault.dto.FaultMaintenanceDTO;
 import com.aiurt.modules.fault.entity.Fault;
@@ -436,12 +437,17 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
     }
 
     @Override
+    public List<FaultDeviceDTO> deviceInfo(String userId) {
+        return personnelPortraitFaultApi.deviceInfo(userId);
+
+    }
+
+    @Override
     public IPage<Fault> historyRecord(Integer pageNo, Integer pageSize, String userId, HttpServletRequest request) {
         Fault fault = new Fault();
         fault.setUserId(userId);
         // 已完成状态
         fault.setStatus(FaultConstant.FAULT_STATUS);
-        personnelPortraitFaultApi.selectFaultRecordPageList(fault, pageNo, pageSize, request);
-        return null;
+        return personnelPortraitFaultApi.selectFaultRecordPageList(fault, pageNo, pageSize, request);
     }
 }

@@ -1,5 +1,6 @@
 package com.aiurt.modules.common.api;
 
+import com.aiurt.modules.fault.dto.FaultDeviceDTO;
 import com.aiurt.modules.fault.dto.FaultHistoryDTO;
 import com.aiurt.modules.fault.dto.FaultMaintenanceDTO;
 import com.aiurt.modules.fault.entity.Fault;
@@ -33,4 +34,12 @@ public interface PersonnelPortraitFaultApi {
      * @return
      */
     IPage<Fault> selectFaultRecordPageList(Fault fault, Integer pageNo, Integer pageSize, HttpServletRequest request);
+
+    /**
+     * 历史维修记录-设备故障信息列表
+     *
+     * @param userId
+     * @return
+     */
+    List<FaultDeviceDTO> deviceInfo(String userId);
 }

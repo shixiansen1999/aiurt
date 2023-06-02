@@ -1,6 +1,7 @@
 package com.aiurt.modules.personnelportrait.service;
 
 
+import com.aiurt.modules.fault.dto.FaultDeviceDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.personnelportrait.dto.*;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -80,4 +81,12 @@ public interface PersonnelPortraitService {
      * @return
      */
     IPage<Fault> historyRecord(Integer pageNo, Integer pageSize, String userId, HttpServletRequest request);
+
+    /**
+     * 历史维修记录-设备故障信息列表
+     *
+     * @param userId
+     * @return
+     */
+    List<FaultDeviceDTO> deviceInfo(String userId);
 }

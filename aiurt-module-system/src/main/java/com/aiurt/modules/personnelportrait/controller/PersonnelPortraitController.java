@@ -1,5 +1,6 @@
 package com.aiurt.modules.personnelportrait.controller;
 
+import com.aiurt.modules.fault.dto.FaultDeviceDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.personnelportrait.dto.*;
 import com.aiurt.modules.personnelportrait.service.PersonnelPortraitService;
@@ -121,14 +122,20 @@ public class PersonnelPortraitController {
         return Result.OK(history);
     }
 
+    /**
+     * 历史维修记录-设备故障信息列表
+     */
+    @ApiOperation(value = "历史维修记录-设备故障信息列表", notes = "历史维修记录-设备故障信息列表")
+    @GetMapping(value = "/device/info")
+    public Result<List<FaultDeviceDTO>> deviceInfo(@RequestParam @ApiParam(name = "userId", value = "用户ID") String userId) {
+        List<FaultDeviceDTO> history = personnelPortraitService.deviceInfo(userId);
+        return Result.OK(history);
+    }
 
     /**
      * 历史维修记录列表(更多)
      */
     @ApiOperation(value = "历史维修记录列表(更多)", notes = "历史维修记录列表(更多)")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = HistoryResDTO.class)
-    })
     @GetMapping(value = "/history/record")
     public Result<IPage<Fault>> historyRecord(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,

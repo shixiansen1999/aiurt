@@ -74,4 +74,23 @@
         group by d.code
         order by `value` desc limit 5
     </select>
+
+    <select id="deviceInfo" resultType="com.aiurt.modules.fault.dto.FaultDeviceDTO">
+        select frr.fault_code                                                   `code`,
+               fd.device_code                                                   deviceCode,
+               d.name                                                           deviceName,
+               concat_ws('/', cl.line_name, cs.station_name, csp.position_name) `position`,
+               frr.fault_phenomenon                                             faultPhenomenon,
+               frr.end_time                                                     endTime
+        from fault_repair_record frr
+                 join fault_device fd
+                      on (frr.fault_code = fd.fault_code and fd.del_flag = 0)
+                 left join device d on (fd.device_code = d.code and d.del_flag = 0)
+                 left join cs_line cl on (d.line_code = cl.line_code and cl.del_flag = 0)
+                 left join cs_station cs on (d.station_code = cs.station_code and cs.del_flag = 0)
+                 left join cs_station_position csp on (d.position_code = csp.position_code and csp.del_flag = 0)
+        where frr.del_flag = 0
+          and frr.appoint_user_name = #{userId}
+        order by frr.end_time desc limit 2
+    </select>
 </mapper>

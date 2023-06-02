@@ -1201,6 +1201,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     public IPage<KnowledgeBaseResDTO> search(Page<KnowledgeBaseResDTO> page, KnowledgeBaseReqDTO knowledgeBaseReqDTO) {
         IPage<KnowledgeBaseResDTO> pageList = null;
         try {
+            // todo 记录搜索记录
             pageList = elasticApi.search(page, knowledgeBaseReqDTO);
         } catch (Exception e) {
             log.info("高级搜索分页查询异常：{}", e.getMessage());
