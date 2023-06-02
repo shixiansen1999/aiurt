@@ -16,6 +16,7 @@ import com.aiurt.modules.faultexternal.entity.FaultExternal;
 import com.aiurt.modules.faultexternal.mapper.FaultExternalMapper;
 import com.aiurt.modules.faultexternal.service.IFaultExternalService;
 import com.aiurt.modules.position.entity.CsStation;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -247,6 +248,28 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+    @Override
+    public Result<FaultExternal> appendFault(JSONObject formData) {
+        try {
+            JSONObject dataJson = formData.getJSONObject("data");
+            FaultExternal faultExternal = JSON.toJavaObject(dataJson, FaultExternal.class);
+            if (faultExternal.getUrlList() != null && faultExternal.getUrlList().size() > 0) {
+                String urls = String.join(",", faultExternal.getUrlList());
+                faultExternal.setUrls(urls);
+            }
+            FaultExternal external = this.getOne(new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getIndocno, faultExternal.getIndocno()));
+            if (external == null) {
+                faultExternalMapper.insert(faultExternal);
+                iSysBaseAPI.sendAllMessage();
+            } else {
+                faultExternalMapper.update(faultExternal, new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getIndocno, faultExternal.getIndocno()));
+            }
+            return  Result.OK("添加成功！");
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return  Result.error("添加失败");
         }
     }
 }
