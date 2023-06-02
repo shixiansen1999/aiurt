@@ -19,7 +19,7 @@ public enum SysAnnmentEnum {
     /**
      * 故障
      */
-    FAULT("fault", "component","","故障业务消息", Arrays.asList("fault", "fault_analysis_report", "fault_knowledge_base")),
+    FAULT("fault", "component","","故障业务消息", Arrays.asList("fault", "fault_analysis_report", "fault_knowledge_base","fault_external")),
     /**
      * 周计划
      */
