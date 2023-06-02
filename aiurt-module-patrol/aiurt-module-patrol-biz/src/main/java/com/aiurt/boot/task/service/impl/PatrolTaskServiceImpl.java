@@ -15,9 +15,7 @@ import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.plan.entity.PatrolPlan;
-import com.aiurt.boot.plan.entity.PatrolPlanStandard;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
-import com.aiurt.boot.plan.mapper.PatrolPlanStandardMapper;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
@@ -37,10 +35,7 @@ import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.common.util.ArchiveUtils;
-import com.aiurt.common.util.AsyncThreadPoolExecutorUtil;
-import com.aiurt.common.util.MinioUtil;
-import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.common.util.*;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.api.IBaseApi;
@@ -49,7 +44,6 @@ import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.metadata.data.ImageData;
 import com.alibaba.excel.metadata.data.WriteCellData;
 import com.alibaba.excel.util.MapUtils;
 import com.alibaba.excel.write.metadata.WriteSheet;
@@ -67,11 +61,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.hssf.usermodel.HSSFPrintSetup;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.CellReference;
-import org.apache.poi.ss.util.RegionUtil;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -154,8 +145,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private PatrolSamplePersonMapper patrolSamplePersonMapper;
     @Autowired
     private ISysParamAPI iSysParamAPI;
-    @Autowired
-    private PatrolPlanStandardMapper patrolPlanStandardMapper;
+
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
@@ -1310,7 +1300,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 updateWrapper.set(PatrolTask::getDuration, standardDuration);
             } else {
                 // 非工区，当巡视时长大于大于上限时长时，巡视时长等于上限时长。不然就是wifi最近连接巡视站点时间减提交时间
-                Date recentConnectTime = sysBaseApi.getRecentConnectTimeByStationCode(stationCode);
+                Date recentConnectTime = sysBaseApi.getRecentConnectTimeByStationCode(sysUser.getUsername(), stationCode);
                 if (ObjectUtil.isNull(recentConnectTime)) {
                     updateWrapper.set(PatrolTask::getDuration, standardDuration);
                 }else {
@@ -2207,9 +2197,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         PatrolTask patrolTask = patrolTaskMapper.selectById(id);
         List<PatrolTaskStandard> patrolTaskStandard = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>()
                 .eq(PatrolTaskStandard::getDelFlag,0).eq(PatrolTaskStandard::getTaskId,patrolTask.getId()));
-//        PatrolPlan patrolPlan = patrolPlanMapper.selectByCode(patrolTask.getPlanCode());
-//        List<PatrolPlanStandard> patrolPlanStandard = patrolPlanStandardMapper.selectList(new LambdaQueryWrapper<PatrolPlanStandard>()
-//                .eq(PatrolPlanStandard::getDelFlag,0).eq(PatrolPlanStandard::getPlanId,patrolPlan.getId()));
         PatrolStandard patrolStandard = patrolStandardMapper.selectOne(new LambdaQueryWrapper<PatrolStandard>()
                 .eq(PatrolStandard::getDelFlag,0)
                 .in(PatrolStandard::getCode,patrolTaskStandard.stream().map(PatrolTaskStandard::getStandardCode).collect(Collectors.toList()))
@@ -2234,7 +2221,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 //            inputStreamTemplate = new FileInputStream(templateFileName);
             workbookTpl = WorkbookFactory.create(minioFile);
             Sheet sheet = workbookTpl.getSheetAt(0);
-            mergeRegion = findMergeRegions(sheet, "巡检标准");
+            mergeRegion = FilePrintUtils.findMergeRegions(sheet, "巡检标准");
             firstColumn = mergeRegion.getFirstColumn();
             lastColumn = mergeRegion.getLastColumn();
 
@@ -2242,15 +2229,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
-        } finally {
-//            if (null!=workbookTpl){
-//                try {
-//                    workbookTpl.close();
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
         }
+
 
 
 
@@ -2288,8 +2268,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 imageMap.put("signImage",null);
             } else {
                 try {
-                    byte[] convert = convert(inputStream);
-                    WriteCellData writeImageData = writeCellImageData(convert);
+                    byte[] convert = FilePrintUtils.convert(inputStream);
+                    WriteCellData writeImageData = FilePrintUtils.writeCellImageData(convert);
                     imageMap.put("signImage",writeImageData);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -2335,15 +2315,22 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 PrintSetup printSetup = sheet.getPrintSetup();
                 printSetup.setFitHeight((short)0);
                 sheet.setFitToPage(true);
+                // 页脚中显示当前页码和总页数
+                Footer footer = sheet.getFooter();
+                footer.setRight("&P of &N");
 
                 // 设置边距（单位为英寸）
                 // 设置打印边距
                 //自动换行
                // setWrapText(workbook,1,startRow,endRow,0,0);
-                addReturn(workbook,startRow,endRow,0,0);
-                setWrapText(workbook,7,startRow,endRow,1,2);
+                FilePrintUtils.addReturn(workbook,startRow,endRow,0,0);
+                FilePrintUtils.setWrapText(workbook,7,1,1,1,1,true);
+                FilePrintUtils.setWrapText(workbook,7,startRow,endRow,1,firstColumn>3?3:2,false);
                 //合并指定范围行的单元格
-                mergeCellsInColumnRange(workbook,40,startRow,endRow,firstColumn,lastColumn);
+                FilePrintUtils.mergeCellsInColumnRange(workbook,40,startRow,endRow,firstColumn,lastColumn);
+
+                //设置第一列列宽
+                FilePrintUtils.setColumnWidth(sheet,0,10);
                 // 保存修改后的Excel文件
                 try (OutputStream outputStream = new FileOutputStream(filePath)) {
                     workbook.write(outputStream);
@@ -2388,208 +2375,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     if (ObjectUtil.isNotEmpty(printDTO.getStandard())){
                         getPrint.add(printDTO);
                     }
-
                 }
-
             }
-//            List<PatrolBillDTO> billInfo = dto.getBillInfo();
-//            if (CollUtil.isNotEmpty(billInfo)) {
-//                for (PatrolBillDTO patrolBillDTO : billInfo) {
-//                    //根据检修单号查询检修项
-//                    String billCode = patrolBillDTO.getBillCode();
-//                    if (StrUtil.isNotEmpty(billCode)) {
-//                        PatrolTaskDeviceParam taskDeviceParam = patrolTaskDeviceMapper.getIdAndSystemName(billCode);
-//                        //List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceIdAndParent(taskDeviceParam.getId());
-//
-//
-//
-//                    }
-//                }
-//            }
         }
         return getPrint;
-    }
-
-    /**
-     * 设置图片属性
-     * @param fileByte
-     * @return
-     * @throws IOException
-     */
-    private WriteCellData<Void> writeCellImageData(byte[] fileByte)  {
-        if (fileByte == null) {
-            return null;
-        }
-
-        WriteCellData<Void> writeCellData = new WriteCellData<>();
-        // 这里可以设置为 EMPTY 则代表不需要其他数据了
-        //writeCellData.setType(CellDataTypeEnum.EMPTY);
-
-        List<ImageData> imageDataList = new ArrayList<>();
-        writeCellData.setImageDataList(imageDataList);
-
-        ImageData imageData = new ImageData();
-        imageDataList.add(imageData);
-        // 设置图片
-        imageData.setImage(fileByte);
-        // 图片类型
-        //imageData.setImageType(ImageData.ImageType.PICTURE_TYPE_PNG);
-        // 上 右 下 左 需要留空设置，类似于 css 的 margin
-        imageData.setTop(10);
-//        imageData.setRight(1);
-        imageData.setBottom(10);
-        imageData.setLeft(100);
-
-        // 设置图片的位置：Relative表示相对于当前的单元格index，first是左上点，last是对角线的右下点，这样确定一个图片的位置和大小。
-//      imageData.setRelativeFirstRowIndex(0);
-        imageData.setRelativeFirstColumnIndex(0);
-//      imageData.setRelativeLastRowIndex(0);
-        imageData.setRelativeLastColumnIndex(1);
-
-        return writeCellData;
-    }
-    private void addReturn(Workbook workbook, int startRow, int endRow,int startColumn, int endColumn){
-        Sheet sheet = workbook.getSheetAt(0);
-        CellStyle cellStyle = workbook.createCellStyle();
-        cellStyle.setBorderTop(BorderStyle.THIN);
-        cellStyle.setBorderBottom(BorderStyle.THIN);
-        cellStyle.setBorderLeft(BorderStyle.THIN);
-        cellStyle.setBorderRight(BorderStyle.THIN);
-        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        cellStyle.setAlignment(HorizontalAlignment.CENTER);
-        cellStyle.setWrapText(true);
-
-        Font font = workbook.createFont();
-        // 设置字体为宋体
-        font.setFontName("宋体");
-        // 设置字体大小为9号
-        font.setFontHeightInPoints((short) 9);
-        cellStyle.setFont(font);
-        sheet.autoSizeColumn(0);
-        for (int row = startRow; row <= endRow; row++) {
-            Row currentRow = sheet.getRow(row);
-            for (int col = startColumn; col <= endColumn; col++) {
-                Cell cell = currentRow.getCell(col);
-                String cellValue = cell.getStringCellValue();
-                cell.setCellStyle(cellStyle);
-                String v = addReturnAfterEachCharacter(cellValue);
-                cell.setCellValue(v);
-
-            }
-        }
-
-    }
-    private static String addReturnAfterEachCharacter(String text) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < text.length(); i++) {
-            stringBuilder.append(text.charAt(i));
-            stringBuilder.append("\n");
-        }
-        return stringBuilder.toString();
-    }
-    private void setWrapText(Workbook workbook,int returnRowMaxLength, int startRow, int endRow,int startColumn, int endColumn){
-        Sheet sheet = workbook.getSheetAt(0);
-        CellStyle cellStyle = workbook.createCellStyle();
-        cellStyle.setBorderTop(BorderStyle.THIN);
-        cellStyle.setBorderBottom(BorderStyle.THIN);
-        cellStyle.setBorderLeft(BorderStyle.THIN);
-        cellStyle.setBorderRight(BorderStyle.THIN);
-        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        cellStyle.setAlignment(HorizontalAlignment.CENTER);
-        //设置自动换行
-        cellStyle.setWrapText(true);
-        Font font = workbook.createFont();
-        // 设置字体为宋体
-        font.setFontName("宋体");
-        // 设置字体大小为9号
-        font.setFontHeightInPoints((short) 9);
-        cellStyle.setFont(font);
-        sheet.autoSizeColumn(0);
-        for (int row = startRow; row <= endRow; row++) {
-            Row currentRow = sheet.getRow(row);
-            for (int col = startColumn; col <= endColumn; col++) {
-                Cell cell = currentRow.getCell(col);
-                if (cell == null) {
-                    cell = currentRow.createCell(col);
-                }
-                cell.setCellStyle(cellStyle);
-                String cellValue = cell.getStringCellValue();
-                if (Objects.nonNull(cellValue) && cellValue.length() >= returnRowMaxLength) {
-                    //当字符数大于RowMaxLength的时候，长度除以RowMaxLength+1 就是倍数，默认高度乘倍数即可计算出高度
-                    int foldRowNum = (cellValue.length() / returnRowMaxLength) + 1;
-                    currentRow.setHeightInPoints((short) (15 * foldRowNum));
-                }
-
-            }
-        }
-
-    }
-    /**
-     * 合并多行范围的单元格
-     * @param returnRowMaxLength
-     * @param startRow
-     * @param endRow
-     * @param startColumn
-     * @param endColumn
-     */
-    private void mergeCellsInColumnRange(Workbook workbook,int returnRowMaxLength, int startRow, int endRow, int startColumn, int endColumn) {
-        // 获取要操作的Sheet对象
-        Sheet sheet = workbook.getSheetAt(0);
-        CellStyle cellStyle = workbook.createCellStyle();
-        cellStyle.setBorderTop(BorderStyle.THIN);
-        cellStyle.setBorderBottom(BorderStyle.THIN);
-        cellStyle.setBorderLeft(BorderStyle.THIN);
-        cellStyle.setBorderRight(BorderStyle.THIN);
-        Font font = workbook.createFont();
-        // 设置字体为宋体
-        font.setFontName("宋体");
-        // 设置字体大小为9号
-        font.setFontHeightInPoints((short) 9);
-        cellStyle.setFont(font);
-        sheet.autoSizeColumn(0);
-        cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
-        //设置自动换行
-        cellStyle.setWrapText(true);
-
-        for (int row = startRow; row <= endRow; row++) {
-            CellRangeAddress cellRangeAddress = new CellRangeAddress(row, row, startColumn, endColumn);
-            sheet.addMergedRegion(cellRangeAddress);
-            RegionUtil.setBorderTop(BorderStyle.THIN, cellRangeAddress, sheet);
-            RegionUtil.setBorderRight(BorderStyle.THIN, cellRangeAddress, sheet);
-            RegionUtil.setBorderBottom(BorderStyle.THIN, cellRangeAddress, sheet);
-            RegionUtil.setBorderLeft(BorderStyle.THIN, cellRangeAddress, sheet);
-            Row currentRow = sheet.getRow(row);
-            // 给合并的区域设置框线
-            for (int col = startColumn; col <= endColumn; col++) {
-
-                Cell cell = currentRow.getCell(col);
-                if (cell == null) {
-                    cell = currentRow.createCell(col);
-                }
-                cell.setCellStyle(cellStyle);
-                String cellValue = cell.getStringCellValue();
-                if (Objects.nonNull(cellValue)&&cellValue.length() >= returnRowMaxLength ){
-                    //当字符数大于RowMaxLength的时候，长度除以RowMaxLength+1 就是倍数，默认高度乘倍数即可计算出高度
-                    int foldRowNum = (cellValue.length() / returnRowMaxLength) + 1;
-                    currentRow.setHeightInPoints((short) (15 * foldRowNum));
-                }
-
-            }
-
-        }
-
-    }
-    public static byte[] convert(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
-        byte[] buffer = new byte[4096];
-        int bytesRead;
-
-        while ((bytesRead = inputStream.read(buffer)) != -1) {
-            byteOutput.write(buffer, 0, bytesRead);
-        }
-
-        byteOutput.close();
-        return byteOutput.toByteArray();
     }
 
     @Override
@@ -2665,72 +2454,4 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         return arrayList;
     }
 
-    private CellRangeAddress findMergeRegions(Sheet sheet,String searchValue){
-        int startRow = 1;
-        int endRow = 3;
-
-        CellReference cellRef = searchCellWithMergedRegion(sheet, searchValue, startRow, endRow);
-        CellRangeAddress mergedRegion = null;
-        if (cellRef != null) {
-            int rowIndex = cellRef.getRow();
-            int columnIndex = cellRef.getCol();
-            System.out.println("找到匹配的值 \"" + searchValue + "\"，位于行 " + (rowIndex + 1) + "，列 " + (columnIndex + 1));
-
-            mergedRegion = getMergedRegion(sheet, rowIndex, columnIndex);
-            if (mergedRegion != null) {
-                int firstRow = mergedRegion.getFirstRow();
-                int lastRow = mergedRegion.getLastRow();
-                int firstColumn = mergedRegion.getFirstColumn();
-                int lastColumn = mergedRegion.getLastColumn();
-                System.out.println("合并区域范围：行 " + (firstRow + 1) + " 到 " + (lastRow + 1) + "，列 " + (firstColumn + 1) + " 到 " + (lastColumn + 1));
-            } else {
-                System.out.println("该单元格未合并");
-            }
-
-            return  mergedRegion;
-        } else {
-            System.out.println("未找到匹配的值 \"" + searchValue + "\"");
-        }
-
-        return mergedRegion;
-    }
-
-
-    //删除合并区域
-    private List<CellRangeAddress> removeMergedRegions(Sheet sheet){
-        List<CellRangeAddress> mergeRegions = sheet.getMergedRegions();
-        for (int i = 0; i < mergeRegions.size(); i++) {
-            sheet.removeMergedRegion(i);
-        }
-        return mergeRegions;
-    }
-
-
-    private static CellReference searchCellWithMergedRegion(Sheet sheet, String searchValue, int startRow, int endRow) {
-        for (int rowIndex = startRow; rowIndex <= endRow; rowIndex++) {
-            Row row = sheet.getRow(rowIndex);
-            if (row == null) {
-                continue;
-            }
-
-            for (Cell cell : row) {
-                if (cell.getCellType() == CellType.STRING) {
-                    String cellValue = cell.getStringCellValue();
-                    if (searchValue.equals(cellValue)) {
-                        return new CellReference(rowIndex, cell.getColumnIndex());
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private static CellRangeAddress getMergedRegion(Sheet sheet, int rowIndex, int columnIndex) {
-        for (CellRangeAddress mergedRegion : sheet.getMergedRegions()) {
-            if (mergedRegion.isInRange(rowIndex, columnIndex)) {
-                return mergedRegion;
-            }
-        }
-        return null;
-    }
 }

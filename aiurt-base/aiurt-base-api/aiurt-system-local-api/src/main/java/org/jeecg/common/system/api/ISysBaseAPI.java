@@ -1161,11 +1161,12 @@ public interface ISysBaseAPI extends CommonAPI {
     String getStationCodeByMac(String mac);
 
     /**
-     * 根据stationCode查询sys_user_position_current表，获取站点最近一次的连接时间
+     * 根据username和stationCode查询sys_user_position_current表，获取站点最近一次的连接时间
+     * @param username
      * @param stationCode
      * @return
      */
-    Date getRecentConnectTimeByStationCode(String stationCode);
+    Date getRecentConnectTimeByStationCode(String username, String stationCode);
 
     /**
      * 保存
