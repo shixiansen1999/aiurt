@@ -65,5 +65,5 @@ public interface PersonnelPortraitService {
      * @param userId
      * @return
      */
-    HistoryResDTO history(String userId);
+    List<HistoryResDTO> history(String userId);
 }

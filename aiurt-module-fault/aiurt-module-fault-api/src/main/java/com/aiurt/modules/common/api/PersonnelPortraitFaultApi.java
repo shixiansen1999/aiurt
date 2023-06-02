@@ -1,5 +1,6 @@
-package com.aiurt.modules;
+package com.aiurt.modules.common.api;
 
+import com.aiurt.modules.fault.dto.FaultHistoryDTO;
 import com.aiurt.modules.fault.dto.FaultMaintenanceDTO;
 
 import java.util.List;
@@ -17,4 +18,8 @@ public interface PersonnelPortraitFaultApi {
      */
     List<FaultMaintenanceDTO> personnelPortraitStatic(List<String> userIds);
 
+    /**
+     * 处理的设备TOP5
+     */
+    List<FaultHistoryDTO> repairDeviceTopFive(String userId);
 }

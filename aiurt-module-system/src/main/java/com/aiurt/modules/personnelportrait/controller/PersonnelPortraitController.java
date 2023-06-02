@@ -113,8 +113,8 @@ public class PersonnelPortraitController {
             @ApiResponse(code = 200, message = "OK", response = HistoryResDTO.class)
     })
     @GetMapping(value = "/history")
-    public Result<HistoryResDTO> history(@RequestParam @ApiParam(name = "userId", value = "用户ID") String userId) {
-        HistoryResDTO history = personnelPortraitService.history(userId);
+    public Result<List<HistoryResDTO>> history(@RequestParam @ApiParam(name = "userId", value = "用户ID") String userId) {
+        List<HistoryResDTO> history = personnelPortraitService.history(userId);
         return Result.OK(history);
     }
 }

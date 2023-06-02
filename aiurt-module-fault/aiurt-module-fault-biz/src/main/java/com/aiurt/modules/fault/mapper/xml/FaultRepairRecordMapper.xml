@@ -62,4 +62,16 @@
             </foreach>
         </if>
     </select>
+
+    <select id="repairDeviceTopFive" resultType="com.aiurt.modules.fault.dto.FaultHistoryDTO">
+        select concat(d.name, '(', d.code, ')') `name`,
+               count(d.`code`)                  `value`
+        from fault_repair_record frr
+                 join fault_device fd on (frr.fault_code = fd.fault_code and fd.del_flag = 0)
+                 left join device d on (fd.device_code = d.code and d.del_flag = 0)
+        where frr.del_flag = 0
+          and frr.appoint_user_name = #{userId}
+        group by d.code
+        order by `value` desc limit 5
+    </select>
 </mapper>

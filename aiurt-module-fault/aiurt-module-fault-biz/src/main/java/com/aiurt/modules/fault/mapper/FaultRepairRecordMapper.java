@@ -1,5 +1,6 @@
 package com.aiurt.modules.fault.mapper;
 
+import com.aiurt.modules.fault.dto.FaultHistoryDTO;
 import com.aiurt.modules.fault.dto.FaultMaintenanceDTO;
 import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
@@ -45,4 +46,12 @@ public interface FaultRepairRecordMapper extends BaseMapper<FaultRepairRecord> {
      * @return
      */
     List<FaultMaintenanceDTO> personnelPortraitStatic(@Param("userIds") List<String> userIds);
+
+    /**
+     * 处理的设备TOP5
+     *
+     * @param userId
+     * @return
+     */
+    List<FaultHistoryDTO> repairDeviceTopFive(@Param("userId") String userId);
 }

@@ -1,13 +1,15 @@
 package com.aiurt.modules.personnelportrait.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.modules.PersonnelPortraitFaultApi;
 import com.aiurt.modules.common.api.IBaseApi;
+import com.aiurt.modules.common.api.PersonnelPortraitFaultApi;
+import com.aiurt.modules.fault.dto.FaultHistoryDTO;
 import com.aiurt.modules.fault.dto.FaultMaintenanceDTO;
 import com.aiurt.modules.personnelportrait.dto.*;
 import com.aiurt.modules.personnelportrait.service.PersonnelPortraitService;
@@ -417,7 +419,14 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
     }
 
     @Override
-    public HistoryResDTO history(String userId) {
-        return new HistoryResDTO();
+    public List<HistoryResDTO> history(String userId) {
+        List<FaultHistoryDTO> faultHistorys = personnelPortraitFaultApi.repairDeviceTopFive(userId);
+        List<HistoryResDTO> historys = new ArrayList<>();
+        HistoryResDTO history = new HistoryResDTO();
+        for (FaultHistoryDTO faultHistory : faultHistorys) {
+            BeanUtil.copyProperties(faultHistory, historys);
+            historys.add(history);
+        }
+        return historys;
     }
 }
