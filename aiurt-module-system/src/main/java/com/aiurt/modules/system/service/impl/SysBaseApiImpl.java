@@ -3216,13 +3216,27 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public Date getRecentConnectTimeByStationCode(String stationCode) {
+    public Date getRecentConnectTimeByStationCode(String username, String stationCode) {
         LambdaQueryWrapper<SysUserPositionCurrent> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(SysUserPositionCurrent::getStationCode, stationCode);
-        queryWrapper.orderByDesc(SysUserPositionCurrent::getUploadTime);
-        queryWrapper.last("limit 1");
-        List<SysUserPositionCurrent> list = sysUserPositionCurrentService.list(queryWrapper);
-        return CollUtil.isEmpty(list) ? null : list.get(0).getUploadTime();
+        queryWrapper.eq(SysUserPositionCurrent::getCreateBy, username);
+        SysUserPositionCurrent sysUserPositionCurrent;
+        try{
+            sysUserPositionCurrent = sysUserPositionCurrentService.getOne(queryWrapper);
+        }catch (Exception e){
+            throw new AiurtBootException(username + " 在用户实时位置表中有多条数据，请联系相关人员处理！");
+        }
+        if (ObjectUtil.isNull(sysUserPositionCurrent)) {
+            return null;
+        }
+        // 如果参数的站点和用户当前所在站点相同，返回当前站点的连接时间
+        // 如果参数的站点和用户上一站的站点相同，返回上一站的站点的连接时间
+        if (StrUtil.equals(stationCode, sysUserPositionCurrent.getStationCode())) {
+            return sysUserPositionCurrent.getUploadTime();
+        }else if(StrUtil.equals(stationCode, sysUserPositionCurrent.getLastStationCode())){
+            return sysUserPositionCurrent.getLastUploadTime();
+        }else {
+            return null;
+        }
     }
     @Override
     public void saveSysAttachment(SysAttachment sysAttachment) {
