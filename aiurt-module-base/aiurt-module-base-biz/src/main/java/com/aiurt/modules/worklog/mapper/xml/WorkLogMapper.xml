@@ -52,7 +52,7 @@
             AND sd.org_code = #{param.departCode}
         </if>
         ORDER BY
-            wl.create_time DESC
+            wl.create_time DESC,id DESC
     </select>
 
     <select id="exportXls" resultType="com.aiurt.common.result.WorkLogResult">
