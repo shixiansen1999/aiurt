@@ -143,6 +143,9 @@ public class ElasticApiImpl implements ElasticAPI {
             // 根据浏览次数降序排序
             if (ObjectUtil.isNotEmpty(sortFlag)) {
                 Sort.Order sortOrder = new Sort.Order(SortOrder.DESC, "scanNum");
+                if (2 == sortFlag) {
+                    sortOrder = new Sort.Order(SortOrder.DESC, "updateTime");
+                }
                 sort = new Sort(sortOrder);
             }
         }

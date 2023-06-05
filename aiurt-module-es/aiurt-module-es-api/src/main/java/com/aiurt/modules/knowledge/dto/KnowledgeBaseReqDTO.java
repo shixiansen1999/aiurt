@@ -45,8 +45,8 @@ public class KnowledgeBaseReqDTO implements Serializable {
     private String materialCode;
 
     /**
-     * 排序:匹配程度传0,浏览次数传1
+     * 排序:匹配程度传0,浏览次数传1,更新时间传2
      */
-    @ApiModelProperty(value = "排序:匹配程度传0,浏览次数传1")
+    @ApiModelProperty(value = "排序:匹配程度传0,浏览次数传1,更新时间传2")
     private Integer sort;
 }

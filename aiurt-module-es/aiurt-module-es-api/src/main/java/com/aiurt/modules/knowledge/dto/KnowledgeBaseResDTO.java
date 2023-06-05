@@ -149,4 +149,12 @@ public class KnowledgeBaseResDTO implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "更新时间")
+    private Date updateTime;
 }

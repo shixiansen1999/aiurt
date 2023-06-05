@@ -485,7 +485,8 @@
                fkb.fault_level_code         faultLevelCode,
                fkb.scan_num                 scanNum,
                fkb.method                   method,
-               fkb.create_time              createTime
+               fkb.create_time              createTime,
+               fkb.update_time              updateTime
         from fault_knowledge_base fkb
                  left join fault_knowledge_base_type fkbt
                            on (fkb.knowledge_base_type_code = fkbt.code and fkbt.del_flag = 0)

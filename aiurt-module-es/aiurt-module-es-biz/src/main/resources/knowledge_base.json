@@ -91,6 +91,10 @@
         "type": "date",
         "index": false
       },
+      "updateTime": {
+        "type": "date",
+        "index": false
+      },
       "reasonSolutions": {
         "type": "nested",
         "properties": {

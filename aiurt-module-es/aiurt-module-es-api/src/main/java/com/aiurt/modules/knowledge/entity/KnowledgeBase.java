@@ -170,4 +170,13 @@ public class KnowledgeBase {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
+
+    /**
+     * 修改时间
+     */
+    @Field(type = FieldType.Date, format = DateFormat.year_month_day)
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "修改时间")
+    private Date updateTime;
 }
