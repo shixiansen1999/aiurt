@@ -135,4 +135,29 @@
         GROUP BY  pcr.id
         ORDER BY pcr.content,pcr.ORDER
     </select>
+
+    <select id="getCheckResultAllByTaskId" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
+        SELECT
+        pcr.old_id,
+        pcr.user_id,
+        pcr.content,
+        pcr.quality_standard,
+        pcr.check_result,
+        pcr.remark,
+        pcr.`check`
+        FROM
+        patrol_check_result pcr
+        WHERE
+        pcr.del_flag =0
+        AND pcr.task_device_id IN (
+        SELECT  ptd.id   FROM
+        patrol_task_device ptd
+        WHERE  ptd.del_flag = 0
+        <if test="collect !=null and collect.size>0">
+            and ptd.patrol_number in
+            <foreach collection="collect" item="collect" open="(" close=")" separator=",">
+                #{collect}
+            </foreach>
+        </if>)
+    </select>
 </mapper>
