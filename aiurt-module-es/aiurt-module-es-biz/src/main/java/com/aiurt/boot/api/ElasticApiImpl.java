@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.core.common.model.HighLight;
 import com.aiurt.boot.core.common.model.Sort;
-import com.aiurt.boot.core.dto.FaultKnowledgeBaseModel;
 import com.aiurt.boot.core.service.ElasticService;
 import com.aiurt.boot.core.utils.ElasticTools;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseMatchDTO;
@@ -269,7 +268,7 @@ public class ElasticApiImpl implements ElasticAPI {
         SearchHits hits = searchResponse.getHits();
         SearchHit[] searchHits = hits.getHits();
         for (SearchHit hit : searchHits) {
-            FaultKnowledgeBaseModel knowledgeBaseModel = JSON.parseObject(hit.getSourceAsString(), FaultKnowledgeBaseModel.class);
+            KnowledgeBase knowledgeBaseModel = JSON.parseObject(hit.getSourceAsString(), KnowledgeBase.class);
             if (ObjectUtil.isNotEmpty(knowledgeBaseModel) && ObjectUtil.isNotEmpty(knowledgeBaseModel.getFaultPhenomenon())) {
                 phenomenons.add(knowledgeBaseModel.getFaultPhenomenon());
             }
