@@ -55,4 +55,11 @@ public interface PatrolCheckResultMapper extends BaseMapper<PatrolCheckResult> {
      * @return
      */
     List<PatrolCheckResultDTO> getQualityStandard(@Param("collect") List<String> collect, @Param("parentId") String parentId);
+
+    /**
+     * 根据任务设备表id查找巡检结果
+     * @param collect
+     * @return
+     */
+    List<PatrolCheckResultDTO> getCheckResultAllByTaskId(@Param("collect") List<String> collect);
 }
