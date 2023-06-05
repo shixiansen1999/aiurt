@@ -275,21 +275,6 @@ public class PatrolTaskPrintServiceImpl extends PatrolTaskServiceImpl {
         //文件打印签名
         Map<String, Object> imageMap = getSignImageMap(taskDTO);
 
-        if ("telephone_system1.xlsx".equals(excelName)){
-
-        }
-        if ("safty_produce_check.xlsx".equals(excelName)){
-
-        }
-        if ("wireless_system.xlsx".equals(excelName)){
-
-        }
-        if ("network_manage.xlsx".equals(excelName)){
-
-        }
-        //查询巡视标准详情
-        List<PrintDTO> patrolData = getPrint(id);
-
         InputStream minioFile2 = MinioUtil.getMinioFile("platform", templateFileName);
         try (ExcelWriter excelWriter = EasyExcel.write(filePath).withTemplate(minioFile2).build()) {
             int[] mergeColumnIndex = {0,1,2};
@@ -297,7 +282,7 @@ public class PatrolTaskPrintServiceImpl extends PatrolTaskServiceImpl {
             WriteSheet writeSheet = EasyExcel.writerSheet().registerWriteHandler(customCellMergeStrategy).build();
             FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.FALSE).build();
             //填充列表数据
-            excelWriter.fill(new FillWrapper("list",patrolData),fillConfig, writeSheet);
+            fillData(id, excelName, excelWriter, writeSheet);
             //填充表头
             excelWriter.fill(headerMap, writeSheet);
             //填充图片
@@ -317,7 +302,31 @@ public class PatrolTaskPrintServiceImpl extends PatrolTaskServiceImpl {
         return sysAttachment.getId()+"?fileName="+sysAttachment.getFileName();
     }
 
+    /**
+     * 填充业务数据
+     * @param taskId
+     * @param excelName
+     * @param excelWriter
+     * @param writeSheet
+     * @return
+     */
+   private ExcelWriter fillData(String taskId,String excelName,ExcelWriter excelWriter,WriteSheet writeSheet){
+       List<PrintDTO> patrolData = new ArrayList<>();
+       if ("telephone_system1.xlsx".equals(excelName)){
+           patrolData =  getPrint(taskId);
+           FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.FALSE).build();
+           //填充列表数据
+           excelWriter.fill(new FillWrapper("list",patrolData),fillConfig, writeSheet);
+       }else if ("safty_produce_check.xlsx".equals(excelName)){
 
+       }else if ("wireless_system.xlsx".equals(excelName)){
+
+       }else if ("network_manage.xlsx".equals(excelName)){
+
+       }
+
+       return excelWriter;
+    }
     /**
      * 电话系统模板
      * @param patrolTask
