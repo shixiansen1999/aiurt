@@ -2217,19 +2217,19 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         CellRangeAddress mergeRegion = null;
         Integer firstColumn = null;
         Integer lastColumn = null;
-        try {
-//            inputStreamTemplate = new FileInputStream(templateFileName);
-            workbookTpl = WorkbookFactory.create(minioFile);
-            Sheet sheet = workbookTpl.getSheetAt(0);
-            mergeRegion = FilePrintUtils.findMergeRegions(sheet, "巡检标准");
-            firstColumn = mergeRegion.getFirstColumn();
-            lastColumn = mergeRegion.getLastColumn();
-
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+////            inputStreamTemplate = new FileInputStream(templateFileName);
+//            workbookTpl = WorkbookFactory.create(minioFile);
+//            Sheet sheet = workbookTpl.getSheetAt(0);
+//            mergeRegion = FilePrintUtils.findMergeRegions(sheet, "巡检标准");
+//            firstColumn = mergeRegion.getFirstColumn();
+//            lastColumn = mergeRegion.getLastColumn();
+//
+//        } catch (FileNotFoundException e) {
+//            throw new RuntimeException(e);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
 
 
 
@@ -2252,11 +2252,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (StrUtil.isNotEmpty(patrolTask.getEndUserId())) {
             taskDTO.setUserName(patrolTaskMapper.getUsername(patrolTask.getEndUserId()));
         }
+        if (StrUtil.isNotEmpty(patrolTask.getSpotCheckUserId())) {
+            taskDTO.setSpotCheckUserName(patrolTaskMapper.getUsername(patrolTask.getSpotCheckUserId()));
+        }
         taskDTO.setSignUrl(patrolTask.getSignUrl());
         Map<String, Object> map = MapUtils.newHashMap();
         map.put("title",patrolTask.getName());
         map.put("patrolStation", taskDTO.getStationNames());
         map.put("patrolPerson", taskDTO.getUserName());
+        map.put("checkUserName",taskDTO.getSpotCheckUserName());
         map.put("patrolDate", DateUtil.format(patrolTask.getSubmitTime(),"yyyy-MM-dd"));
         map.put("patrolTime", DateUtil.format(patrolTask.getSubmitTime(),"HH:mm"));
         Map<String, Object> imageMap = MapUtils.newHashMap();
@@ -2285,13 +2289,13 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
 
         //查询巡视标准详情
-        List<PrintDTO> patrolData = getPrint(id);
+        List<PrintDTO> patrolData = getPrint(id,map);
         InputStream minioFile2 = MinioUtil.getMinioFile("platform",templateFileName);
         try (ExcelWriter excelWriter = EasyExcel.write(filePath).withTemplate(minioFile2).build()) {
             int[] mergeColumnIndex = {0,1,2};
             CustomCellMergeHandler customCellMergeStrategy = new CustomCellMergeHandler(3,mergeColumnIndex);
             WriteSheet writeSheet = EasyExcel.writerSheet().registerWriteHandler(customCellMergeStrategy).build();
-            FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
+            FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.FALSE).build();
             //填充列表数据
             excelWriter.fill(new FillWrapper("list",patrolData),fillConfig, writeSheet);
             //填充表头
@@ -2305,37 +2309,31 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 endRow = startRow+patrolData.size()-1;
             }
 
-            try (InputStream inputStream = new FileInputStream(filePath);
-                Workbook workbook = WorkbookFactory.create(inputStream)) {
-                Sheet sheet = workbook.getSheetAt(0);
-//                sheet.setMargin(Sheet.TopMargin, 0.5); // 上边距
-//                sheet.setMargin(Sheet.BottomMargin, 0.5); // 下边距
-//                sheet.setMargin(Sheet.LeftMargin, 1); // 左边距
-//                sheet.setMargin(Sheet.RightMargin, 1); // 右边距
-                PrintSetup printSetup = sheet.getPrintSetup();
-                printSetup.setFitHeight((short)0);
-                sheet.setFitToPage(true);
-                // 页脚中显示当前页码和总页数
-                Footer footer = sheet.getFooter();
-                footer.setRight("&P of &N");
-
-                // 设置边距（单位为英寸）
-                // 设置打印边距
-                //自动换行
-               // setWrapText(workbook,1,startRow,endRow,0,0);
-                FilePrintUtils.addReturn(workbook,startRow,endRow,0,0);
-                FilePrintUtils.setWrapText(workbook,7,1,1,1,1,true);
-                FilePrintUtils.setWrapText(workbook,7,startRow,endRow,1,firstColumn>3?3:2,false);
-                //合并指定范围行的单元格
-                FilePrintUtils.mergeCellsInColumnRange(workbook,40,startRow,endRow,firstColumn,lastColumn);
-
-                //设置第一列列宽
-                FilePrintUtils.setColumnWidth(sheet,0,10);
-                // 保存修改后的Excel文件
-                try (OutputStream outputStream = new FileOutputStream(filePath)) {
-                    workbook.write(outputStream);
-                }
-            }
+//            try (InputStream inputStream = new FileInputStream(filePath);
+//                Workbook workbook = WorkbookFactory.create(inputStream)) {
+//                Sheet sheet = workbook.getSheetAt(0);
+////                sheet.setMargin(Sheet.TopMargin, 0.5); // 上边距
+////                sheet.setMargin(Sheet.BottomMargin, 0.5); // 下边距
+////                sheet.setMargin(Sheet.LeftMargin, 1); // 左边距
+////                sheet.setMargin(Sheet.RightMargin, 1); // 右边距
+//                FilePrintUtils.printSet(sheet);
+//                // 设置边距（单位为英寸）
+//                // 设置打印边距
+//                //自动换行
+//               // setWrapText(workbook,1,startRow,endRow,0,0);
+//                FilePrintUtils.addReturn(workbook,startRow,endRow,0,0);
+//                FilePrintUtils.setWrapText(workbook,7,1,1,1,1,true);
+//                FilePrintUtils.setWrapText(workbook,7,startRow,endRow,1,firstColumn>3?3:2,false);
+//                //合并指定范围行的单元格
+//                FilePrintUtils.mergeCellsInColumnRange(workbook,40,startRow,endRow,firstColumn,lastColumn);
+//
+//                //设置第一列列宽
+//                FilePrintUtils.setColumnWidth(sheet,0,10);
+//                // 保存修改后的Excel文件
+//                try (OutputStream outputStream = new FileOutputStream(filePath)) {
+//                    workbook.write(outputStream);
+//                }
+//            }
             MinioUtil.upload(new FileInputStream(filePath),relatiePath);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -2348,35 +2346,68 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         return sysAttachment.getId()+"?fileName="+sysAttachment.getFileName();
     }
 
-    private List<PrintDTO> getPrint(String id) {
+    private List<PrintDTO> getPrint(String id, Map<String, Object> map) {
         List<PrintDTO> getPrint = new ArrayList<>();
         List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
         for (PatrolStationDTO dto : billGangedInfo) {
             //获取检修项
             List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
-            List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceIdAndParent(collect);
-            for (PatrolCheckResultDTO c : checkResultList) {
-                List<PatrolCheckResultDTO> list = patrolCheckResultMapper.getQualityStandard(collect,c.getOldId());
-                for (PatrolCheckResultDTO t :list){
-                    PrintDTO printDTO = new PrintDTO();
-                    printDTO.setStandard(t.getQualityStandard());
-                    printDTO.setEquipment(c.getContent());
-                    printDTO.setContent(t.getContent());
-                    if(ObjectUtil.isEmpty(t.getCheckResult())){
-                        printDTO.setResultTrue("☐正常");
-                        printDTO.setResultFalse("☐异常");
-                    }else {
-                        printDTO.setResultTrue(t.getCheckResult()==0?"☐正常":"☑正常");
-                        printDTO.setResultFalse(t.getCheckResult()==0?"☑异常":"☐异常");
-                    }
-                    printDTO.setRemark(t.getRemark());
-                    printDTO.setLocation(dto.getStationName());
-                    printDTO.setSubSystem(t.getSubsystemName());
-                    if (ObjectUtil.isNotEmpty(printDTO.getStandard())){
-                        getPrint.add(printDTO);
-                    }
-                }
+            //List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceIdAndParent(collect);
+            List<PatrolCheckResultDTO> checkResultAll =  patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
+            List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
+            boolean result = checkDTOs.stream().anyMatch(f -> f.getContent().contains("电暖气"));
+            if (result){
+                map.put("isTrue","☑有");
+                map.put("isFalse","☐无");
+            }else {
+                map.put("isFalse","☑无");
+                map.put("isTure","☐有");
             }
+            AtomicInteger i = new AtomicInteger();
+            checkDTOs.forEach(c->{
+                i.getAndIncrement();
+                PrintDTO printDTO = new PrintDTO();
+                if(ObjectUtil.isEmpty(c.getCheckResult())){
+                    printDTO.setResult("☐是 ☐否");
+                }else {
+                    printDTO.setResult(c.getCheckResult()==0?"☐是 ☑否":"☑是 ☐否");
+                }
+                printDTO.setRemark(c.getRemark());
+                if (ObjectUtil.isNotEmpty(c.getQualityStandard())){
+                    getPrint.add(printDTO);
+                }
+                if (!result && i.get()==5 ){
+                    printDTO.setResult("☐是 ☐否");
+                    getPrint.add(printDTO);
+                    getPrint.add(printDTO);
+                    getPrint.add(new PrintDTO());
+                }
+                if (result && i.get()==7){
+                    getPrint.add(new PrintDTO());
+                }
+            });
+//            for (PatrolCheckResultDTO c : checkResultList) {
+//                List<PatrolCheckResultDTO> list = patrolCheckResultMapper.getQualityStandard(collect,c.getOldId());
+//                for (PatrolCheckResultDTO t :list){
+//                    PrintDTO printDTO = new PrintDTO();
+//                    printDTO.setStandard(t.getQualityStandard());
+//                    printDTO.setEquipment(c.getContent());
+//                    printDTO.setContent(t.getContent());
+//                    if(ObjectUtil.isEmpty(t.getCheckResult())){
+//                        printDTO.setResultTrue("☐正常");
+//                        printDTO.setResultFalse("☐异常");
+//                    }else {
+//                        printDTO.setResultTrue(t.getCheckResult()==0?"☐正常":"☑正常");
+//                        printDTO.setResultFalse(t.getCheckResult()==0?"☑异常":"☐异常");
+//                    }
+//                    printDTO.setRemark(t.getRemark());
+//                    printDTO.setLocation(dto.getStationName());
+//                    printDTO.setSubSystem(t.getSubsystemName());
+//                    if (ObjectUtil.isNotEmpty(printDTO.getStandard())){
+//                        getPrint.add(printDTO);
+//                    }
+//                }
+//            }
         }
         return getPrint;
     }
