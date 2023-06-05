@@ -70,6 +70,7 @@ import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -2206,7 +2207,22 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (StrUtil.isNotEmpty(patrolStandard.getPrintTemplate())){
             excelName = sysBaseApi.dictById(patrolStandard.getPrintTemplate()).getValue();
         }else {
-            excelName = "listPatrol.xlsx";
+            excelName = "telephone_system.xlsx";
+        }
+        if ("telephone_system.xlsx".equals(excelName)){
+
+        }
+        if ("telephone_system1.xlsx".equals(excelName)){
+
+        }
+        if ("safty_produce_check.xlsx".equals(excelName)){
+
+        }
+        if ("telephone_system1.xlsx".equals(excelName)){
+
+        }
+        if ("telephone_system1.xlsx".equals(excelName)){
+
         }
         // 模板注意 用{} 来表示你要用的变量 如果本来就有"{","}" 特殊字符 用"\{","\}"代替
         // 填充list 的时候还要注意 模板中{.} 多了个点 表示list
@@ -2290,7 +2306,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
 
         //查询巡视标准详情
-        List<PrintDTO> patrolData = getPrint(id,map);
+        List<PrintDTO> patrolData = getWirelessSystem(id,map);
         InputStream minioFile2 = MinioUtil.getMinioFile("platform",templateFileName);
         try (ExcelWriter excelWriter = EasyExcel.write(filePath).withTemplate(minioFile2).build()) {
             int[] mergeColumnIndex = {0,1,2};
@@ -2435,7 +2451,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 childDTOs.forEach(c->{
                     if(c.getCheckResult().equals(0)){
                         flag.set(true);
-                        stringBuffer.append(c.getQualityStandard()+":异常");
+                        stringBuffer.append(c.getQualityStandard()).append(":异常");
                         stringBuffer.append(",");
                     }
                 });
@@ -2445,7 +2461,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     stringBuffer.deleteCharAt(stringBuffer.length()-1);
                     printDTO.setRemark(stringBuffer.toString());
                 }else{
-                    printDTO.setResultTrue("☐正常");
+                    printDTO.setResultTrue("☑正常");
                     printDTO.setResultFalse("☐异常");
                 }
                 getRemark.add(printDTO);
@@ -2525,6 +2541,34 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             arrayList.add(taskDTO);
         }
         return arrayList;
+    }
+    private List<PrintDTO> getWirelessSystem(String id,Map<String, Object> map) {
+        List<PrintDTO> getPrint = new ArrayList<>();
+        List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
+        Set<String> set = new LinkedHashSet<>() ;
+        StringBuilder text  = new StringBuilder();
+        for (PatrolStationDTO dto : billGangedInfo) {
+            //获取检修项
+            String str = new String();
+            List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
+            List<PatrolCheckResultDTO> checkResultAll =  patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
+            List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
+            List<String> wirelessSystem = sysBaseApi.getDictItems("wireless_system").stream().map(w-> w.getText()).collect(Collectors.toList());
+            List<String> result = wirelessSystem.stream().filter(w -> !checkDTOs.stream().anyMatch(c -> c.getContent().equals(w))).collect(Collectors.toList());
+            if (!result.isEmpty()){
+                str =  result.stream().filter(s -> s.contains("：") || s.contains(":") )
+                        .map(s -> s.split("[：:]")[0])
+                        .collect(Collectors.joining(",")) + "( 无 )";
+                set.add(str);
+            }
+            checkDTOs.forEach(c-> {
+                if(c.getCheckResult()==0){
+                    text.append("\n").append(c.getContent()).append(":异常");
+             }
+            });
+        }
+            map.put("remark","本站 : \n"+set.toString()+text);
+            return getPrint;
     }
 
 }
