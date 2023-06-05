@@ -83,6 +83,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -2410,6 +2411,47 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 //            }
         }
         return getPrint;
+    }
+
+    private List<PrintDTO> getRemark(String id) {
+        List<PrintDTO> getRemark = new ArrayList<>();
+        List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
+        for (PatrolStationDTO dto : billGangedInfo) {
+            //获取检修项
+            List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
+            List<PatrolCheckResultDTO> checkResultAll = patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
+            List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
+            //父级
+            for (PatrolCheckResultDTO parentDTO : checkResultAll.stream().filter(c -> c.getHierarchyType() == 0).collect(Collectors.toList())) {
+                PrintDTO printDTO = new PrintDTO();
+                String oldId = parentDTO.getOldId();
+                StringBuffer stringBuffer = new StringBuffer();
+                AtomicBoolean flag = new AtomicBoolean(false);
+                //子级
+                List<PatrolCheckResultDTO> childDTOs =  checkDTOs.stream()
+                        .filter(c -> c.getHierarchyType() == 1)
+                        .filter(c -> c.getParentId().equals(oldId))
+                        .collect(Collectors.toList());
+                childDTOs.forEach(c->{
+                    if(c.getCheckResult().equals(0)){
+                        flag.set(true);
+                        stringBuffer.append(c.getQualityStandard()+":异常");
+                        stringBuffer.append(",");
+                    }
+                });
+                if(flag.get()){
+                    printDTO.setResultTrue("☐正常");
+                    printDTO.setResultFalse("☑异常");
+                    stringBuffer.deleteCharAt(stringBuffer.length()-1);
+                    printDTO.setRemark(stringBuffer.toString());
+                }else{
+                    printDTO.setResultTrue("☐正常");
+                    printDTO.setResultFalse("☐异常");
+                }
+                getRemark.add(printDTO);
+            }
+        }
+        return getRemark;
     }
 
     @Override
