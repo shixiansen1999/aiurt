@@ -126,7 +126,7 @@
         SELECT
             a.system_name AS NAME,
             a.system_code AS CODE,
-            IFNULL(SUM(c.duration),0)  as num,
+            IFNULL(SUM(DISTINCT(c.duration)),0)  as num,
             date_format(c.happen_time, '%c') MONTH
         FROM
             cs_subsystem a
