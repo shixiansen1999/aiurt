@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author
@@ -42,4 +43,12 @@ public interface PersonnelPortraitFaultApi {
      * @return
      */
     List<FaultDeviceDTO> deviceInfo(String userId);
+
+    /**
+     * 获取近五年的故障任务数据
+     *
+     * @param userId
+     * @return
+     */
+    Map<Integer, Long> getFaultTaskNumber(String userId, int flagYearAgo, int thisYear);
 }

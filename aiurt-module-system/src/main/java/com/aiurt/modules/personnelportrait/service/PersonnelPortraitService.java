@@ -61,7 +61,7 @@ public interface PersonnelPortraitService {
      * @param userId
      * @return
      */
-    List<WaveResDTO> waveRose(String userId);
+    WaveResDTO waveRose(String userId);
 
     /**
      * 历史维修记录

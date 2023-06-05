@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author
@@ -23,32 +23,26 @@ public class WaveResDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
-     * 用户ID
-     */
-    @ApiModelProperty(value = "用户ID")
-    private String userId;
-
-    /**
      * 年份
      */
     @ApiModelProperty(value = "年份")
-    private Integer year;
+    private List<Integer> year;
 
     /**
      * 巡视数
      */
     @ApiModelProperty(value = "巡视数")
-    private BigDecimal patrol;
+    private List<Long> patrol;
 
     /**
      * 检修数
      */
     @ApiModelProperty(value = "检修数")
-    private BigDecimal inspection;
+    private List<Long> inspection;
 
     /**
      * 故障数
      */
     @ApiModelProperty(value = "故障数")
-    private BigDecimal fault;
+    private List<Long> fault;
 }

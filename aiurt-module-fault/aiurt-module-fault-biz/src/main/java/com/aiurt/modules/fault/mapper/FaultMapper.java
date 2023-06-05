@@ -11,6 +11,7 @@ import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
+import org.jeecg.common.system.vo.PortraitTaskModel;
 
 import java.util.Date;
 import java.util.List;
@@ -125,4 +126,17 @@ public interface FaultMapper extends BaseMapper<Fault> {
      */
     List<String> getDeviceName(@Param("code")String code);
 
+    /**
+     * 获取近五年的故障任务数据
+     *
+     * @param userId
+     * @param fiveYearsAgo
+     * @param thisYear
+     * @param faultStatus
+     * @return
+     */
+    List<PortraitTaskModel> getFaultTaskNumber(@Param("userId") String userId,
+                                               @Param("fiveYearsAgo") int fiveYearsAgo,
+                                               @Param("thisYear") int thisYear,
+                                               @Param("faultStatus") Integer faultStatus);
 }

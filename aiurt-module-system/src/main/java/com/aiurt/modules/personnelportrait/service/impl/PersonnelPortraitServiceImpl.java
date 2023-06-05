@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.api.PersonnelPortraitInspectionApi;
+import com.aiurt.boot.api.PersonnelPortraitPatrolApi;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.common.api.IBaseApi;
@@ -51,6 +53,8 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
     private final ISysBaseAPI iSysBaseApi;
     private final IBaseApi iBaseApi;
     private final PersonnelPortraitFaultApi personnelPortraitFaultApi;
+    private final PersonnelPortraitInspectionApi personnelPortraitInspectionApi;
+    private final PersonnelPortraitPatrolApi personnelPortraitPatrolApi;
     private final ISysUserService sysUserService;
     private final ISysDepartService sysDepartService;
     private final ISysUserRoleService sysUserRoleService;
@@ -418,8 +422,33 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
     }
 
     @Override
-    public List<WaveResDTO> waveRose(String userId) {
-        return new ArrayList<>();
+    public WaveResDTO waveRose(String userId) {
+        final int year = DateUtil.thisYear();
+        // 近几年
+        final int flag = 5;
+        final int flagYearAgo = year - flag;
+        // 获取近五年的巡视任务数据
+        Map<Integer, Long> patrolMap = personnelPortraitPatrolApi.getPatrolTaskNumber(userId, flagYearAgo, year);
+        // 获取近五年的检修任务数据
+        Map<Integer, Long> inspectionMap = personnelPortraitInspectionApi.getInspectionNumber(userId, flagYearAgo, year);
+        // 获取近五年的故障任务数据
+        Map<Integer, Long> faultMap = personnelPortraitFaultApi.getFaultTaskNumber(userId, flagYearAgo, year);
+        WaveResDTO waveRes = new WaveResDTO();
+        List<Integer> years = new LinkedList<>();
+        List<Long> patrols = new LinkedList<>();
+        List<Long> inspections = new LinkedList<>();
+        List<Long> faults = new LinkedList<>();
+        for (int i = year - flag + 1; i <= year; i++) {
+            years.add(i);
+            patrols.add(ObjectUtil.isEmpty(patrolMap.get(i)) ? 0 : patrolMap.get(i));
+            inspections.add(ObjectUtil.isEmpty(inspectionMap.get(i)) ? 0 : inspectionMap.get(i));
+            faults.add(ObjectUtil.isEmpty(faultMap.get(i)) ? 0 : faultMap.get(i));
+        }
+        waveRes.setYear(years);
+        waveRes.setPatrol(patrols);
+        waveRes.setInspection(inspections);
+        waveRes.setFault(faults);
+        return waveRes;
     }
 
     @Override

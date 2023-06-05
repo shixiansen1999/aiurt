@@ -104,8 +104,8 @@ public class PersonnelPortraitController {
             @ApiResponse(code = 200, message = "OK", response = WaveResDTO.class)
     })
     @GetMapping(value = "/wave")
-    public Result<List<WaveResDTO>> waveRose(@RequestParam @ApiParam(name = "userId", value = "用户ID") String userId) {
-        List<WaveResDTO> waveRes = personnelPortraitService.waveRose(userId);
+    public Result<WaveResDTO> waveRose(@RequestParam @ApiParam(name = "userId", value = "用户ID") String userId) {
+        WaveResDTO waveRes = personnelPortraitService.waveRose(userId);
         return Result.OK(waveRes);
     }
 
