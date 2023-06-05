@@ -48,6 +48,7 @@ import com.aiurt.modules.knowledge.entity.CauseSolution;
 import com.aiurt.modules.knowledge.entity.KnowledgeBase;
 import com.aiurt.modules.knowledge.entity.SparePart;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
+import com.aiurt.modules.search.service.ISearchRecordsService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -79,6 +80,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import search.entity.SearchRecords;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -106,6 +108,8 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     private FaultKnowledgeBaseTypeMapper faultKnowledgeBaseTypeMapper;
     @Autowired
     private FaultAnalysisReportMapper faultAnalysisReportMapper;
+    @Autowired
+    private ISearchRecordsService searchRecordsService;
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
 
@@ -391,8 +395,10 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 faultSparePartService.remove(wrapper);
                 faultCauseSolutionService.removeBatchByIds(causeSolutionIds);
             }
-            QueryWrapper<FaultCauseSolution> wrapper = new QueryWrapper<>();
-            wrapper.lambda().eq(FaultCauseSolution::getKnowledgeBaseId, id);
+//            QueryWrapper<FaultCauseSolution> wrapper = new QueryWrapper<>();
+//            wrapper.lambda().eq(FaultCauseSolution::getKnowledgeBaseId, id);
+            // 删除ES的数据
+            elasticApi.removeKnowledgeBase(id);
         }
         return Result.OK("删除成功!");
     }
@@ -440,6 +446,8 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             // 删除解决方案信息
             faultCauseSolutionService.removeBatchByIds(causeSolutionIds);
         }
+        // 删除ES的数据
+        elasticApi.removeBatchKnowledgeBase(ids);
         return Result.OK("批量删除成功!");
     }
 
@@ -1066,6 +1074,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             // 添加故障原因和解决方案
             this.saveFaultData(faultKnowledgeBase);
             String newId = faultKnowledgeBase.getId();
+            // todo 保存数据到ES
             return newId;
         } else {
             getFaultCodeList(faultKnowledgeBase);
@@ -1089,6 +1098,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             wrapper.lambda().eq(FaultCauseSolution::getKnowledgeBaseId, id);
             faultCauseSolutionService.remove(wrapper);
             this.saveFaultData(faultKnowledgeBase);
+            // todo 更新ES的数据
             return id;
         }
 
@@ -1199,12 +1209,38 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     @Override
     public IPage<KnowledgeBaseResDTO> search(Page<KnowledgeBaseResDTO> page, KnowledgeBaseReqDTO knowledgeBaseReqDTO) {
+        // 记录搜索记录,不影响查询业务
+        try {
+            String keyword = knowledgeBaseReqDTO.getKeyword();
+            if (ObjectUtil.isNotEmpty(knowledgeBaseReqDTO) && StrUtil.isNotEmpty(keyword)) {
+                Date searchTime = new Date();
+                LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                SearchRecords searchRecords = searchRecordsService.lambdaQuery()
+                        .eq(SearchRecords::getKeyword, keyword).one();
+                if (ObjectUtil.isNotEmpty(searchRecords)) {
+                    searchRecords.setSearchTime(searchTime);
+                    searchRecords.setUserId(loginUser.getId());
+                    searchRecords.setResultCount(searchRecords.getResultCount() + 1);
+                    searchRecordsService.updateById(searchRecords);
+                } else {
+                    SearchRecords records = new SearchRecords();
+                    records.setKeyword(keyword);
+                    records.setUserId(loginUser.getId());
+                    records.setSearchTime(searchTime);
+                    records.setResultCount(1);
+                    searchRecordsService.save(records);
+                }
+            }
+        } catch (Exception e) {
+            log.error("保存搜索记录异常：", e.getMessage());
+        }
+
+        // 分页搜索
         IPage<KnowledgeBaseResDTO> pageList = null;
         try {
-            // todo 记录搜索记录
             pageList = elasticApi.search(page, knowledgeBaseReqDTO);
         } catch (Exception e) {
-            log.info("高级搜索分页查询异常：{}", e.getMessage());
+            log.error("高级搜索分页查询异常：{}", e.getMessage());
             throw new AiurtBootException("搜索异常！");
         }
         return pageList;
@@ -1233,6 +1269,14 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     .collect(Collectors.toMap(k -> k.getCode(), v -> v.getName()));
             knowledgeBases.forEach(knowledgeBase -> knowledgeBase.setFaultLevelName(levelMap.get(knowledgeBase.getFaultLevelCode())));
         }
+        // todo 采用率的计算，为空则给0
+        knowledgeBases.forEach(knowledgeBase -> {
+            Integer use = knowledgeBase.getUse();
+            if (ObjectUtil.isEmpty(use)) {
+                knowledgeBase.setUse(0);
+            }
+        });
+
         List<String> knowledgeBaseIds = knowledgeBases.stream()
                 .map(KnowledgeBase::getId)
                 .collect(Collectors.toList());

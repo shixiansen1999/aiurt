@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.core.common.model.HighLight;
 import com.aiurt.boot.core.common.model.Sort;
-import com.aiurt.boot.core.dto.FaultKnowledgeBaseModel;
 import com.aiurt.boot.core.service.ElasticService;
 import com.aiurt.boot.core.utils.ElasticTools;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseMatchDTO;
@@ -285,11 +284,30 @@ public class ElasticApiImpl implements ElasticAPI {
         SearchHits hits = searchResponse.getHits();
         SearchHit[] searchHits = hits.getHits();
         for (SearchHit hit : searchHits) {
-            FaultKnowledgeBaseModel knowledgeBaseModel = JSON.parseObject(hit.getSourceAsString(), FaultKnowledgeBaseModel.class);
-            if (ObjectUtil.isNotEmpty(knowledgeBaseModel) && ObjectUtil.isNotEmpty(knowledgeBaseModel.getFaultPhenomenon())) {
-                phenomenons.add(knowledgeBaseModel.getFaultPhenomenon());
+            KnowledgeBase knowledgeBase = JSON.parseObject(hit.getSourceAsString(), KnowledgeBase.class);
+            if (ObjectUtil.isNotEmpty(knowledgeBase) && ObjectUtil.isNotEmpty(knowledgeBase.getFaultPhenomenon())) {
+                phenomenons.add(knowledgeBase.getFaultPhenomenon());
             }
         }
         return phenomenons;
+    }
+
+    @Override
+    public void removeKnowledgeBase(String id) {
+        try {
+            elasticService.deleteById(id, KnowledgeBase.class);
+        } catch (Exception e) {
+            log.error("删除ES故障知识库记录失败：", e.getMessage());
+        }
+    }
+
+    @Override
+    public void removeBatchKnowledgeBase(List<String> ids) {
+        try {
+            BoolQueryBuilder builder = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("id", ids));
+            elasticService.deleteByCondition(builder, KnowledgeBase.class);
+        } catch (Exception e) {
+            log.error("批量删除ES故障知识库记录失败：", e.getMessage());
+        }
     }
 }

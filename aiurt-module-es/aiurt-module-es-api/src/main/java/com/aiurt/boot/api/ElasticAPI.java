@@ -47,4 +47,18 @@ public interface ElasticAPI {
      * @return
      */
     List<String> phenomenonMatching(KnowledgeBaseMatchDTO knowledgeBaseMatchDTO) throws Exception;
+
+    /**
+     * 删除故障知识库记录
+     *
+     * @param id
+     */
+    void removeKnowledgeBase(String id);
+
+    /**
+     * 批量删除故障知识库记录
+     *
+     * @param ids
+     */
+    void removeBatchKnowledgeBase(List<String> ids);
 }
