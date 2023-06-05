@@ -240,21 +240,7 @@ public class PatrolTaskPrintServiceImpl extends PatrolTaskServiceImpl {
         }else {
             excelName = "telephone_system.xlsx";
         }
-        if ("telephone_system.xlsx".equals(excelName)){
 
-        }
-        if ("telephone_system1.xlsx".equals(excelName)){
-
-        }
-        if ("safty_produce_check.xlsx".equals(excelName)){
-
-        }
-        if ("telephone_system1.xlsx".equals(excelName)){
-
-        }
-        if ("telephone_system1.xlsx".equals(excelName)){
-
-        }
         // 模板注意 用{} 来表示你要用的变量 如果本来就有"{","}" 特殊字符 用"\{","\}"代替
         // 填充list 的时候还要注意 模板中{.} 多了个点 表示list
         // 如果填充list的对象是map,必须包涵所有list的key,哪怕数据为null，必须使用map.put(key,null)
@@ -277,6 +263,11 @@ public class PatrolTaskPrintServiceImpl extends PatrolTaskServiceImpl {
 //            throw new RuntimeException(e);
 //        }
 
+        // 全部放到内存里面 并填充
+        String fileName = patrolTask.getName() + System.currentTimeMillis() + ".xlsx";
+        String relatiePath = "/" + "patrol" + "/" + "print" + "/" + fileName;
+        String filePath = path +"/" +  fileName;
+
         //获取头部数据
         PrintPatrolTaskDTO taskDTO = getHeaderData(patrolTask);
         //填充头部Map
@@ -284,10 +275,45 @@ public class PatrolTaskPrintServiceImpl extends PatrolTaskServiceImpl {
         //文件打印签名
         Map<String, Object> imageMap = getSignImageMap(taskDTO);
 
-        //查询巡视标准详情
-        List<PrintDTO> patrolData = getPrintOthers(id,headerMap);
+        if ("telephone_system1.xlsx".equals(excelName)){
 
-        SysAttachment sysAttachment = fillTemplateData(patrolTask,patrolData, templateFileName);
+        }
+        if ("safty_produce_check.xlsx".equals(excelName)){
+
+        }
+        if ("wireless_system.xlsx".equals(excelName)){
+
+        }
+        if ("network_manage.xlsx".equals(excelName)){
+
+        }
+        //查询巡视标准详情
+        List<PrintDTO> patrolData = getPrint(id);
+
+        InputStream minioFile2 = MinioUtil.getMinioFile("platform", templateFileName);
+        try (ExcelWriter excelWriter = EasyExcel.write(filePath).withTemplate(minioFile2).build()) {
+            int[] mergeColumnIndex = {0,1,2};
+            CustomCellMergeHandler customCellMergeStrategy = new CustomCellMergeHandler(3,mergeColumnIndex);
+            WriteSheet writeSheet = EasyExcel.writerSheet().registerWriteHandler(customCellMergeStrategy).build();
+            FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.FALSE).build();
+            //填充列表数据
+            excelWriter.fill(new FillWrapper("list",patrolData),fillConfig, writeSheet);
+            //填充表头
+            excelWriter.fill(headerMap, writeSheet);
+            //填充图片
+            excelWriter.fill(imageMap, writeSheet);
+            excelWriter.finish();
+
+            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        SysAttachment sysAttachment = new SysAttachment();
+        sysAttachment.setFileName(fileName);
+        sysAttachment.setFilePath(relatiePath);
+        sysAttachment.setType("minio");
+        sysBaseApi.saveSysAttachment(sysAttachment);
+
         return sysAttachment.getId()+"?fileName="+sysAttachment.getFileName();
     }
 
@@ -528,6 +554,14 @@ public class PatrolTaskPrintServiceImpl extends PatrolTaskServiceImpl {
         map.put("checkUserName", taskDTO.getSpotCheckUserName());
         map.put("patrolDate", DateUtil.format(patrolTask.getSubmitTime(),"yyyy-MM-dd"));
         map.put("patrolTime", DateUtil.format(patrolTask.getSubmitTime(),"HH:mm"));
+        map.put("year",DateUtil.format(patrolTask.getSubmitTime(),"yyyy"));
+        map.put("month",DateUtil.format(patrolTask.getSubmitTime(),"MM"));
+        map.put("day",DateUtil.format(patrolTask.getSubmitTime(),"dd"));
+        if (ObjectUtil.isNotEmpty(patrolTask.getSpotCheckTime())) {
+            map.put("yearSpot",DateUtil.format(patrolTask.getSpotCheckTime(),"yyyy"));
+            map.put("monthSpot",DateUtil.format(patrolTask.getSpotCheckTime(),"MM"));
+            map.put("daySpot",DateUtil.format(patrolTask.getSpotCheckTime(),"dd"));
+        }
         return map;
     }
 
@@ -597,7 +631,6 @@ public class PatrolTaskPrintServiceImpl extends PatrolTaskServiceImpl {
         for (PatrolStationDTO dto : billGangedInfo) {
             //获取检修项
             List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
-            //List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceIdAndParent(collect);
             List<PatrolCheckResultDTO> checkResultAll =  patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
             List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
             boolean result = checkDTOs.stream().anyMatch(f -> f.getContent().contains("电暖气"));
@@ -631,28 +664,6 @@ public class PatrolTaskPrintServiceImpl extends PatrolTaskServiceImpl {
                     getPrint.add(new PrintDTO());
                 }
             });
-//            for (PatrolCheckResultDTO c : checkResultList) {
-//                List<PatrolCheckResultDTO> list = patrolCheckResultMapper.getQualityStandard(collect,c.getOldId());
-//                for (PatrolCheckResultDTO t :list){
-//                    PrintDTO printDTO = new PrintDTO();
-//                    printDTO.setStandard(t.getQualityStandard());
-//                    printDTO.setEquipment(c.getContent());
-//                    printDTO.setContent(t.getContent());
-//                    if(ObjectUtil.isEmpty(t.getCheckResult())){
-//                        printDTO.setResultTrue("☐正常");
-//                        printDTO.setResultFalse("☐异常");
-//                    }else {
-//                        printDTO.setResultTrue(t.getCheckResult()==0?"☐正常":"☑正常");
-//                        printDTO.setResultFalse(t.getCheckResult()==0?"☑异常":"☐异常");
-//                    }
-//                    printDTO.setRemark(t.getRemark());
-//                    printDTO.setLocation(dto.getStationName());
-//                    printDTO.setSubSystem(t.getSubsystemName());
-//                    if (ObjectUtil.isNotEmpty(printDTO.getStandard())){
-//                        getPrint.add(printDTO);
-//                    }
-//                }
-//            }
         }
         return getPrint;
     }
