@@ -1,6 +1,8 @@
 package com.aiurt.modules.fault.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @projectName: aiurt-platform
@@ -12,6 +14,8 @@ import lombok.Data;
  * @version: 1.0
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserTimeDTO {
 
     private String userId;
