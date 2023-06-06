@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultalarm.dto.resp;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
@@ -25,15 +26,18 @@ public class AlmRecordRespDTO extends DictEntity {
     private Date almTime;
 
     @ApiModelProperty(value = "处理状态编号")
+    @Dict(dicCode = "alm_deal_state")
     private Integer state;
 
     @ApiModelProperty(value = "告警级别编号")
+    @Dict(dicCode = "alm_level")
     private Integer level;
 
     @ApiModelProperty(value = "告警描述")
     private String almText;
 
     @ApiModelProperty(value = "设备ID")
+    @Dict(dictTable = "device", dicCode = "id", dicText = "name")
     private String deviceId;
 
     @ApiModelProperty(value = "设备编号")
@@ -53,34 +57,27 @@ public class AlmRecordRespDTO extends DictEntity {
     private Date dealDateTime;
 
     @ApiModelProperty(value = "处理人ID")
+    @Dict(dictTable = "sys_user", dicCode = "id", dicText = "realname")
     private String dealUserId;
 
-    @ApiModelProperty(value = "如果取消告警，记录取消时间+30分钟到此字段")
-    private Date timeAfter30Minutes;
-
     @ApiModelProperty(value = "站点编码")
+    @Dict(dictTable = "cs_station", dicCode = "station_code", dicText = "station_name")
     private String stationCode;
 
-    @ApiModelProperty(value = "站点")
-    private String stationName;
-
-    @ApiModelProperty(value = "设备类型")
-    private String deviceTypeName;
+    @ApiModelProperty(value = "设备类型编码")
+    @Dict(dictTable = "device_type", dicCode = "code", dicText = "name")
+    private String deviceTypeCode;
 
     @ApiModelProperty(value = "告警重复次数")
     private Integer almNum;
 
     @ApiModelProperty(value = "专业编码")
+    @Dict(dictTable = "cs_major", dicCode = "major_code", dicText = "major_name")
     private String majorCode;
 
-    @ApiModelProperty(value = "专业名称")
-    private String majorName;
-
     @ApiModelProperty(value = "子系统")
+    @Dict(dictTable = "cs_subsystem", dicCode = "system_code", dicText = "system_name")
     private String subSystemCode;
-
-    @ApiModelProperty(value = "子系统名称")
-    private String subSystemName;
 
     @ApiModelProperty(value = "工单编号")
     private String faultCode;

@@ -1,5 +1,13 @@
 package com.aiurt.modules.faultalarm.entity;
 
+/**
+ * @author:wgp
+ * @create: 2023-06-06 15:43
+ * @Description:
+ */
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -10,6 +18,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -19,14 +28,15 @@ import java.util.Date;
  * @Description: 告警记录实体
  */
 @Data
-@TableName("on_alm_record")
+@TableName("on_alm_record_history")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value = "on_alm_record对象", description = "告警记录对象")
-public class AlmRecord implements Serializable {
+public class AlmRecordHistory implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "记录ID")
+    @TableId(type = IdType.ASSIGN_ID)
     private String id;
 
     @ApiModelProperty(value = "告警发生时间")
@@ -54,11 +64,28 @@ public class AlmRecord implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date lastAlarmTime;
 
+    @ApiModelProperty(value = "取消原因")
+    private String cancelReason;
+
     @ApiModelProperty(value = "处理说明")
     private String dealRemark;
 
+    @ApiModelProperty(value = "处理时间(yyyy-MM-dd)")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date dealDateTime;
+
+    @ApiModelProperty(value = "处理人ID")
+    private String dealUserId;
+
+    @ApiModelProperty(value = "如果取消告警，记录取消时间+30分钟到此字段")
+    private Date timeAfter30Minutes;
+
     @ApiModelProperty(value = "告警重复次数")
     private Integer almNum;
+
+    @ApiModelProperty(value = "工单编号")
+    private String faultCode;
 
     @Excel(name = "删除状态，0.未删除 1.已删除", width = 15)
     @ApiModelProperty(value = "删除状态，0.未删除 1.已删除", required = false)

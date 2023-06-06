@@ -14,6 +14,7 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 
 /**
  * @author:wgp
@@ -30,15 +31,15 @@ public class FaultAlarmController {
     private IFaultAlarmService faultAlarmService;
 
     /**
-     * 查询处理过的告警记录的分页列表
+     * 查询实时告警记录的分页列表
      *
      * @param almRecordReqDto 请求DTO，包含查询条件
      * @param pageNo          当前页码，默认为1
      * @param pageSize        每页显示的记录数，默认为10
-     * @return 响应结果，包含分页后的处理过的告警记录列表
+     * @return 响应结果，包含分页后的告警记录列表
      */
     @AutoLog(value = "查询", operateType = 1, operateTypeAlias = "查询")
-    @ApiOperation(value = "查询处理过的告警记录的分页列表", notes = "查询处理过的告警记录的分页列表")
+    @ApiOperation(value = "查询实时告警记录的分页列表", notes = "查询实时告警记录的分页列表")
     @GetMapping(value = "/list")
     public Result<IPage<AlmRecordRespDTO>> queryAlarmRecordPageList(AlmRecordReqDTO almRecordReqDto, @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo, @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
         IPage<AlmRecordRespDTO> pageList = faultAlarmService.queryAlarmRecordPageList(almRecordReqDto, pageNo, pageSize);
@@ -54,7 +55,7 @@ public class FaultAlarmController {
     @AutoLog(value = "取消告警", operateType = 3, operateTypeAlias = "取消告警")
     @ApiOperation(value = "取消告警", notes = "取消告警")
     @RequestMapping(value = "/cancelAlarm", method = {RequestMethod.PUT, RequestMethod.POST})
-    public Result<?> cancelAlarm(@RequestBody CancelAlarmReqDTO cancelAlarmReqDTO) {
+    public Result<?> cancelAlarm(@RequestBody @Valid CancelAlarmReqDTO cancelAlarmReqDTO) {
         faultAlarmService.cancelAlarm(cancelAlarmReqDTO);
         return Result.OK("取消告警成功!");
     }
@@ -72,4 +73,21 @@ public class FaultAlarmController {
         AlmRecordRespDTO result = faultAlarmService.faultAlarmService(id);
         return Result.OK(result);
     }
+
+    /**
+     * 查询历史告警记录的分页列表
+     *
+     * @param almRecordReqDto 请求DTO，包含查询条件
+     * @param pageNo          当前页码，默认为1
+     * @param pageSize        每页显示的记录数，默认为10
+     * @return 响应结果，包含分页后的历史告警记录列表
+     */
+    @AutoLog(value = "查询", operateType = 1, operateTypeAlias = "查询")
+    @ApiOperation(value = "查询历史告警记录的分页列表", notes = "查询历史告警记录的分页列表")
+    @GetMapping(value = "/history/list")
+    public Result<IPage<AlmRecordRespDTO>> queryAlarmRecordHistoryPageList(AlmRecordReqDTO almRecordReqDto, @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo, @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        IPage<AlmRecordRespDTO> pageList = faultAlarmService.queryAlarmRecordHistoryPageList(almRecordReqDto, pageNo, pageSize);
+        return Result.OK(pageList);
+    }
+
 }

@@ -1,5 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.faultalarm.mapper.AlmRecordMapper">
-    
+
+    <select id="querySqlServerOnAlm" resultType="com.aiurt.modules.faultalarm.entity.AlmRecord">
+        SELECT
+            CONCAT(EquipmentID,'_', Alm_Element,'_',AlmIndex) AS id,
+            CONCAT(EquipmentID,'_', Alm_Element) AS equipmentId,
+            MAX ( DateTime ) AS lastLarmTime,
+            MIN ( DateTime ) AS almTime,
+            LEVEL as level,
+            AlmText AS almText,
+            COUNT(*) AS almNum
+        FROM
+            dbo.OnAlm
+        where Level =1
+        GROUP BY
+            EquipmentID,
+            Alm_Element,
+            AlmIndex,
+            LEVEL,
+            AlmText
+        order by lastLarmTime desc,almTime desc
+    </select>
+    <select id="queryAlarmRecordPageList" resultType="com.aiurt.modules.faultalarm.dto.resp.AlmRecordRespDTO">
+        SELECT
+            oar.id,
+            oar.alm_time,
+            oar.state,
+            oar.`level`,
+            oar.alm_text,
+            oar.device_id,
+            oar.last_larm_time,
+            oar.alm_num,
+            d.`code` AS deviceCode,
+            d.station_code,
+            d.device_type_code,
+            d.major_code,
+            d.system_code AS subSystemCode
+        FROM
+            on_alm_record oar
+        LEFT JOIN device d ON d.id = oar.device_id
+        <where>
+            <if test="almRecordReqDto.subSystemCode!=null and almRecordReqDto.subSystemCode!=''">
+                d.system_code = #{almRecordReqDto.subSystemCode}
+            </if>
+            <if test="almRecordReqDto.stationCode !=null and almRecordReqDto.stationCode!=''">
+                and d.station_code = #{almRecordReqDto.stationCode}
+            </if>
+        </where>
+        GROUP BY
+            oar.id
+        Order BY oar.last_larm_time desc,oar.alm_time desc,d.code desc
+    </select>
+    <select id="queryAlarmRecordHistoryPageList"
+            resultType="com.aiurt.modules.faultalarm.dto.resp.AlmRecordRespDTO">
+        SELECT
+        oar.id,
+        oar.alm_time,
+        oar.state,
+        oar.`level`,
+        oar.alm_text,
+        oar.device_id,
+        oar.last_larm_time,
+        oar.alm_num,
+        d.`code` AS deviceCode,
+        d.station_code,
+        d.device_type_code,
+        d.major_code,
+        d.system_code AS subSystemCode
+        FROM
+        on_alm_record oar
+        LEFT JOIN device d ON d.id = oar.device_id
+        <where>
+            <if test="almRecordReqDto.subSystemCode!=null and almRecordReqDto.subSystemCode!=''">
+                d.system_code = #{almRecordReqDto.subSystemCode}
+            </if>
+            <if test="almRecordReqDto.stationCode !=null and almRecordReqDto.stationCode!=''">
+                and d.station_code = #{almRecordReqDto.stationCode}
+            </if>
+            <if test="almRecordReqDto.state !=null">
+                and oar.state = #{state}
+            </if>
+            <if test="almRecordReqDto.startAlmTime !=null and almRecordReqDto.endAlmTime!=''">
+                and DATE(d.alm_time) BETWEEN #{almRecordReqDto.startAlmTime} AND #{almRecordReqDto.endAlmTime}
+            </if>
+        </where>
+        GROUP BY
+        oar.id
+        Order BY oar.last_larm_time desc,oar.alm_time desc,d.code desc
+    </select>
 </mapper>
