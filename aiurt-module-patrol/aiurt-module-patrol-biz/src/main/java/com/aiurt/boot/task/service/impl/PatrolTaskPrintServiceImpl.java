@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -169,6 +170,11 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         InputStream minioFile2 = MinioUtil.getMinioFile("platform", templateFileName);
         ExcelWriter excelWriter = null;
         try {
+            Workbook workbook = WorkbookFactory.create(filePath);
+            Sheet sheet  = workbook.getSheetAt(0);
+            //打印设置
+            FilePrintUtils.printSet(sheet);
+
             excelWriter = EasyExcel.write(filePath).withTemplate(minioFile2).build();
             int[] mergeColumnIndex = {0,1,2};
             CustomCellMergeHandler customCellMergeStrategy = new CustomCellMergeHandler(3,mergeColumnIndex);
@@ -577,7 +583,12 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             List<PatrolCheckResultDTO> checkResultAll = patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
             List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
             //父级
-            for (PatrolCheckResultDTO parentDTO : checkResultAll.stream().filter(c -> c.getHierarchyType() == 0).collect(Collectors.toList())) {
+            List<PatrolCheckResultDTO> parentDTOList = checkResultAll.stream()
+                    .filter(c -> Objects.nonNull(c) && c.getHierarchyType() == 0).collect(Collectors.toList());
+            if (CollUtil.isEmpty(parentDTOList)) {
+                continue;
+            }
+            for (PatrolCheckResultDTO parentDTO : parentDTOList) {
                 PrintDTO printDTO = new PrintDTO();
                 String oldId = parentDTO.getOldId();
                 StringBuffer stringBuffer = new StringBuffer();
