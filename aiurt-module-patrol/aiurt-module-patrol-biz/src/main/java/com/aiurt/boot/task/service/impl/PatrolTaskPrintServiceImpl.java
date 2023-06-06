@@ -578,7 +578,12 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             List<PatrolCheckResultDTO> checkResultAll = patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
             List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
             //父级
-            for (PatrolCheckResultDTO parentDTO : checkResultAll.stream().filter(c -> Objects.nonNull(c) && c.getHierarchyType() == 0).collect(Collectors.toList())) {
+            List<PatrolCheckResultDTO> parentDTOList = checkResultAll.stream()
+                    .filter(c -> Objects.nonNull(c) && c.getHierarchyType() == 0).collect(Collectors.toList());
+            if (CollUtil.isEmpty(parentDTOList)) {
+                continue;
+            }
+            for (PatrolCheckResultDTO parentDTO : parentDTOList) {
                 PrintDTO printDTO = new PrintDTO();
                 String oldId = parentDTO.getOldId();
                 StringBuffer stringBuffer = new StringBuffer();
