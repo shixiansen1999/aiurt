@@ -183,10 +183,10 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             excelWriter.fill(imageMap, writeSheet);
             excelWriter.finish();
 
-            Workbook workbook = WorkbookFactory.create(filePath);
-            Sheet sheet  = workbook.getSheetAt(0);
-            //打印设置
-            FilePrintUtils.printSet(sheet);
+//            Workbook workbook = WorkbookFactory.create(filePath);
+//            Sheet sheet  = workbook.getSheetAt(0);
+//            //打印设置
+//            FilePrintUtils.printSet(sheet);
 
             MinioUtil.upload(new FileInputStream(filePath),relatiePath);
         } catch (Exception e) {
