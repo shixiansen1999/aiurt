@@ -271,7 +271,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
                 sum = sum.add(new BigDecimal(dto.getDuration()));
             }
             //秒转时
-            BigDecimal decimal = sum.divide(new BigDecimal("3600"), 1, BigDecimal.ROUND_HALF_UP);
+            BigDecimal decimal = sum.divide(new BigDecimal("3600"), 2, BigDecimal.ROUND_HALF_UP);
             return decimal;
         }
         return new BigDecimal("0.00");
