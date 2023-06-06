@@ -170,6 +170,11 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         InputStream minioFile2 = MinioUtil.getMinioFile("platform", templateFileName);
         ExcelWriter excelWriter = null;
         try {
+            Workbook workbook = WorkbookFactory.create(filePath);
+            Sheet sheet  = workbook.getSheetAt(0);
+            //打印设置
+            FilePrintUtils.printSet(sheet);
+
             excelWriter = EasyExcel.write(filePath).withTemplate(minioFile2).build();
             int[] mergeColumnIndex = {0,1,2};
             CustomCellMergeHandler customCellMergeStrategy = new CustomCellMergeHandler(3,mergeColumnIndex);
