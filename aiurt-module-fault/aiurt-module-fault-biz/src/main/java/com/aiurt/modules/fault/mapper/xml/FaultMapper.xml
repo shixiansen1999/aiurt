@@ -286,10 +286,10 @@
         select year(f.happen_time) `year`, count(f.id) `number`
         from fault f
         where 1=1
-          and year (f.happen_time) between #{fiveYearsAgo}
+          and year(f.happen_time) between #{fiveYearsAgo}
           and #{thisYear}
           and status = #{faultStatus}
-          and f.appoint_user_name = #{userId}
+          and f.appoint_user_name = #{username}
         group by year (f.happen_time)
     </select>
 </mapper>

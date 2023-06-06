@@ -5,6 +5,7 @@ import com.aiurt.modules.fault.dto.FaultHistoryDTO;
 import com.aiurt.modules.fault.dto.FaultMaintenanceDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.jeecg.common.system.vo.RadarModel;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -21,7 +22,7 @@ public interface PersonnelPortraitFaultApi {
      *
      * @return
      */
-    List<FaultMaintenanceDTO> personnelPortraitStatic(List<String> userIds);
+    List<FaultMaintenanceDTO> personnelPortraitStatic(List<String> usernames);
 
     /**
      * 处理的设备TOP5
@@ -51,4 +52,12 @@ public interface PersonnelPortraitFaultApi {
      * @return
      */
     Map<Integer, Long> getFaultTaskNumber(String userId, int flagYearAgo, int thisYear);
+
+    /**
+     * 获取故障处理总次数
+     *
+     * @param userId
+     * @return
+     */
+    RadarModel getHandleNumber(String userId);
 }

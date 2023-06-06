@@ -8,6 +8,7 @@ import com.aiurt.boot.api.PersonnelPortraitInspectionApi;
 import com.aiurt.boot.api.PersonnelPortraitPatrolApi;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.common.api.PersonnelPortraitFaultApi;
 import com.aiurt.modules.fault.constants.FaultConstant;
@@ -34,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.RadarModel;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -220,8 +222,9 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
                 .stream()
                 .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText()));
         List<String> userIds = users.stream().map(SysUser::getId).distinct().collect(Collectors.toList());
+        List<String> usernames = users.stream().map(SysUser::getUsername).distinct().collect(Collectors.toList());
         List<ScheduleUserWorkDTO> todayUserWork = iBaseApi.getTodayUserWork(userIds);
-        List<FaultMaintenanceDTO> faultMaintenances = personnelPortraitFaultApi.personnelPortraitStatic(userIds);
+        List<FaultMaintenanceDTO> faultMaintenances = personnelPortraitFaultApi.personnelPortraitStatic(usernames);
         for (SysUser user : users) {
             String seniority = null;
             String role = null;
@@ -248,7 +251,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
                 dutyStatus = "值班中";
             }
             FaultMaintenanceDTO faultMaintenance = faultMaintenances.stream()
-                    .filter(l -> user.getId().equals(l.getUserId())).findFirst()
+                    .filter(l -> user.getUsername().equals(l.getUsername())).findFirst()
                     .orElseGet(FaultMaintenanceDTO::new);
             if (ObjectUtil.isNotEmpty(faultMaintenance.getNum()) && 8 < faultMaintenance.getNum()
                     && ObjectUtil.isNotEmpty(faultMaintenance.getDeviceTypeName())) {
@@ -327,9 +330,9 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         if (ObjectUtil.isNotEmpty(sysUser.getJobGrade())) {
             level = jobGradeMap.get(String.valueOf(sysUser.getJobGrade()));
         }
-        List<FaultMaintenanceDTO> faultMaintenances = personnelPortraitFaultApi.personnelPortraitStatic(Arrays.asList(sysUser.getId()));
+        List<FaultMaintenanceDTO> faultMaintenances = personnelPortraitFaultApi.personnelPortraitStatic(Arrays.asList(sysUser.getUsername()));
         FaultMaintenanceDTO faultMaintenance = faultMaintenances.stream()
-                .filter(l -> userId.equals(l.getUserId())).findFirst()
+                .filter(l -> sysUser.getUsername().equals(l.getUsername())).findFirst()
                 .orElseGet(FaultMaintenanceDTO::new);
         if (ObjectUtil.isNotEmpty(faultMaintenance.getNum()) && 8 < faultMaintenance.getNum()
                 && ObjectUtil.isNotEmpty(faultMaintenance.getDeviceTypeName())) {
@@ -379,24 +382,89 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
 
     @Override
     public RadarResDTO radarMap(String userId) {
+        RadarModel handleRadar = personnelPortraitFaultApi.getHandleNumber(userId);
+        RadarModel performanceRadar = new RadarModel();
+        performanceRadar.setCurrentValue(30);
+        performanceRadar.setMaxValue(50);
+        performanceRadar.setMinValue(1);
+        RadarModel aptitudeRadar = new RadarModel();
+        aptitudeRadar.setCurrentValue(7);
+        aptitudeRadar.setMaxValue(10);
+        aptitudeRadar.setMinValue(1);
+        RadarModel seniorityRadar = new RadarModel();
+        seniorityRadar.setCurrentValue(90);
+        seniorityRadar.setMaxValue(100);
+        seniorityRadar.setMinValue(20);
+        RadarModel efficiencyRadar = personnelPortraitFaultApi.getHandleNumber(userId);/*personnelPortraitFaultApi.getEfficiency(userId);*/
+        // 故障处理总次数
+        double handle = calculateScore(handleRadar.getCurrentValue(), handleRadar.getMaxValue(), handleRadar.getMinValue());
+        // 绩效
+        double performance = calculateScore(performanceRadar.getCurrentValue(), performanceRadar.getMaxValue(), performanceRadar.getMinValue());
+        // 资质
+        double aptitude = calculateScore(aptitudeRadar.getCurrentValue(), aptitudeRadar.getMaxValue(), aptitudeRadar.getMinValue());
+        // 工龄
+        double seniority = calculateScore(seniorityRadar.getCurrentValue(), seniorityRadar.getMaxValue(), seniorityRadar.getMinValue());
+        // 解决效率
+        double efficiency = calculateScore(efficiencyRadar.getCurrentValue(), efficiencyRadar.getMaxValue(), efficiencyRadar.getMinValue());
         RadarResDTO data = new RadarResDTO();
-        data.setHandle(BigDecimal.valueOf(60));
-        data.setPerformance(BigDecimal.valueOf(60));
-        data.setAptitude(BigDecimal.valueOf(60));
-        data.setSeniority(BigDecimal.valueOf(60));
-        data.setEfficiency(BigDecimal.valueOf(60));
+        data.setHandle(handle);
+        data.setPerformance(performance);
+        data.setAptitude(aptitude);
+        data.setSeniority(seniority);
+        data.setEfficiency(efficiency);
         return data;
+    }
+
+    /**
+     * 雷达图分数转化计算
+     *
+     * @param currentValue
+     * @param minValue
+     * @param maxValue
+     * @return
+     */
+    private static double calculateScore(int currentValue, int maxValue, int minValue) {
+        // 最高分为
+        final int topScore = 100;
+        final int lowestScore = 60;
+
+        if (maxValue == minValue) {
+            if (currentValue == maxValue) {
+                return topScore;
+            } else {
+                return lowestScore;
+            }
+        }
+        // 计算当前值相对于最小值和最大值的百分比
+        double percentage = 1.0 * (currentValue - minValue) / (maxValue - minValue);
+        // 将百分比映射到分数范围
+        double score = percentage * (topScore - lowestScore) + lowestScore;
+        // 如果小数较多则保留3位小数
+        score = Double.parseDouble(String.format("%.3f", score));
+        return score;
     }
 
     @Override
     public DashboardResDTO dashboard(String userId) {
         DashboardResDTO data = new DashboardResDTO();
-        data.setScore(BigDecimal.valueOf(90));
+        int score = 90;
+        String grade = null;
+        // 分值60-69，显示一般； 70-79，显示中等； 80-89，显示良好； 90-100显示优秀
+        if (60 <= score && 70 > score) {
+            grade = "一般";
+        } else if (70 <= score && 80 > score) {
+            grade = "中等";
+        } else if (80 <= score && 90 > score) {
+            grade = "良好";
+        } else if (90 <= score && 100 >= score) {
+            grade = "优秀";
+        }
+        data.setScore(BigDecimal.valueOf(score));
         data.setOrgRank(1);
         data.setOrgTotal(16);
         data.setMajorRank(1);
         data.setMajorTotal(32);
-        data.setPerformances(new ArrayList<>());
+        data.setGrade(grade);
         return data;
     }
 
@@ -473,8 +541,12 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
 
     @Override
     public IPage<Fault> historyRecord(Integer pageNo, Integer pageSize, String userId, HttpServletRequest request) {
+        SysUser sysUser = sysUserService.getById(userId);
+        if (ObjectUtil.isEmpty(sysUser)) {
+            throw new AiurtBootException("未找到对应的用户信息！");
+        }
         Fault fault = new Fault();
-        fault.setUserId(userId);
+        fault.setUsername(sysUser.getUsername());
         // 已完成状态
         fault.setStatus(FaultConstant.FAULT_STATUS);
         return personnelPortraitFaultApi.selectFaultRecordPageList(fault, pageNo, pageSize, request);

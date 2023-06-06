@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 /**
  * @author
@@ -22,38 +21,32 @@ import java.math.BigDecimal;
 public class RadarResDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
-     * 用户ID
-     */
-    @ApiModelProperty(value = "用户ID")
-    private String userId;
-
-    /**
      * 故障处理总次数
      */
     @ApiModelProperty(value = "故障处理总次数")
-    private BigDecimal handle;
+    private Double handle;
 
     /**
      * 绩效
      */
     @ApiModelProperty(value = "绩效")
-    private BigDecimal performance;
+    private Double performance;
 
     /**
      * 资质
      */
     @ApiModelProperty(value = "资质")
-    private BigDecimal aptitude;
+    private Double aptitude;
 
     /**
      * 工龄
      */
     @ApiModelProperty(value = "工龄")
-    private BigDecimal seniority;
+    private Double seniority;
 
     /**
      * 解决效率
      */
     @ApiModelProperty(value = "解决效率")
-    private BigDecimal efficiency;
+    private Double efficiency;
 }

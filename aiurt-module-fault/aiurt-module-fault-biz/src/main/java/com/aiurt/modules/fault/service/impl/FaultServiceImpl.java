@@ -1957,8 +1957,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (StrUtil.isNotBlank(statusCondition)) {
             queryWrapper.in("status", StrUtil.split(statusCondition, ','));
         }
-        if (StrUtil.isNotBlank(fault.getUserId())) {
-            queryWrapper.lambda().eq(Fault::getAppointUserName, fault.getUserId());
+        if (StrUtil.isNotBlank(fault.getUsername())) {
+            queryWrapper.lambda().eq(Fault::getAppointUserName, fault.getUsername());
         }
 
         // 故障等级

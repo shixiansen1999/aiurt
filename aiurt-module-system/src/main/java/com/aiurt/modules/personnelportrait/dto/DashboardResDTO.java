@@ -23,11 +23,11 @@ import java.util.List;
 public class DashboardResDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 用户ID
-     */
-    @ApiModelProperty(value = "用户ID")
-    private String userId;
+//    /**
+//     * 用户ID
+//     */
+//    @ApiModelProperty(value = "用户ID")
+//    private String userId;
 
     /**
      * 分数
@@ -63,10 +63,10 @@ public class DashboardResDTO implements Serializable {
     @ApiModelProperty(value = "专业人数")
     private Integer majorTotal;
 
-    /**
-     * 绩效
-     */
-    @ApiModelProperty(value = "绩效")
-    private List<PerformanceResDTO> performances;
+//    /**
+//     * 绩效
+//     */
+//    @ApiModelProperty(value = "绩效")
+//    private List<PerformanceResDTO> performances;
 
 }

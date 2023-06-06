@@ -129,13 +129,13 @@ public interface FaultMapper extends BaseMapper<Fault> {
     /**
      * 获取近五年的故障任务数据
      *
-     * @param userId
+     * @param username
      * @param fiveYearsAgo
      * @param thisYear
      * @param faultStatus
      * @return
      */
-    List<PortraitTaskModel> getFaultTaskNumber(@Param("userId") String userId,
+    List<PortraitTaskModel> getFaultTaskNumber(@Param("username") String username,
                                                @Param("fiveYearsAgo") int fiveYearsAgo,
                                                @Param("thisYear") int thisYear,
                                                @Param("faultStatus") Integer faultStatus);

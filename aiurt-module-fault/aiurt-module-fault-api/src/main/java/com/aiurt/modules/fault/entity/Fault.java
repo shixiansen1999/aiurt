@@ -387,9 +387,9 @@ public class Fault extends DictEntity implements Serializable {
     @Dict(dicCode = "fault_state")
     private Integer state;
     /**
-     * 用户ID字段(人员画像历史维修记录列表(更多)用到)
+     * 用户账号字段(人员画像历史维修记录列表(更多)用到)
      */
     @TableField(exist = false)
-    private String userId;
+    private String username;
 }
 

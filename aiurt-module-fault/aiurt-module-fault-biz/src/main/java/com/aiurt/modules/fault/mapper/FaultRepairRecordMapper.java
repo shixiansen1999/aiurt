@@ -8,8 +8,10 @@ import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.jeecg.common.system.vo.RadarNumberModel;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: 维修记录
@@ -46,24 +48,31 @@ public interface FaultRepairRecordMapper extends BaseMapper<FaultRepairRecord> {
     /**
      * 人员画像擅长维修统计
      *
-     * @param userIds
+     * @param usernames
      * @return
      */
-    List<FaultMaintenanceDTO> personnelPortraitStatic(@Param("userIds") List<String> userIds);
+    List<FaultMaintenanceDTO> personnelPortraitStatic(@Param("usernames") List<String> usernames);
 
     /**
      * 处理的设备TOP5
      *
-     * @param userId
+     * @param username
      * @return
      */
-    List<FaultHistoryDTO> repairDeviceTopFive(@Param("userId") String userId);
+    List<FaultHistoryDTO> repairDeviceTopFive(@Param("username") String username);
 
     /**
      * 历史维修记录-设备故障信息列表
      *
-     * @param userId
+     * @param username
      * @return
      */
-    List<FaultDeviceDTO> deviceInfo(@Param("userId") String userId);
+    List<FaultDeviceDTO> deviceInfo(@Param("username") String username);
+
+    /**
+     * 获取故障处理总次数
+     *
+     * @return
+     */
+    List<RadarNumberModel> getHandleNumber();
 }
