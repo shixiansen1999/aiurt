@@ -297,6 +297,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
 
     <select id="getYearFault" resultType="java.lang.Integer">
         select count(*) from fault where 1=1 and approval_pass_time  is not null
+        and `status` not in ( "1", "2", "0" ) and line_code not in ("01","02","100")
         <if test="condition.firstDay != null and condition.firstDay != ''">
             and DATE_FORMAT(approval_pass_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.firstDay},'%Y-%m-%d')
         </if>
