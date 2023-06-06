@@ -104,7 +104,7 @@ public class Fault extends DictEntity implements Serializable {
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm" )
     @ApiModelProperty(value = "故障发生时间yyyy-MM-dd HH:mm",  required = true)
-    @NotNull(message = "请填写故障发生时间")
+
     private Date happenTime;
 
 	/**故障现象*/
@@ -303,6 +303,10 @@ public class Fault extends DictEntity implements Serializable {
 
     @ApiModelProperty(value = "故障报修时长 min")
     private Long duration;
+
+    @ApiModelProperty(value = "故障报修时长查询参数")
+    @TableField(exist = false)
+    private String faultDuration;
 
     @ApiModelProperty(value = "app, 故障上报设备编码，逗号隔开")
     @TableField(exist = false)
