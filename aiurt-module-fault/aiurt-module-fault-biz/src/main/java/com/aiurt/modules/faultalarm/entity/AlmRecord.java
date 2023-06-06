@@ -1,5 +1,7 @@
 package com.aiurt.modules.faultalarm.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -27,6 +29,7 @@ public class AlmRecord implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "记录ID")
+    @TableId(type = IdType.ASSIGN_ID)
     private String id;
 
     @ApiModelProperty(value = "告警发生时间")

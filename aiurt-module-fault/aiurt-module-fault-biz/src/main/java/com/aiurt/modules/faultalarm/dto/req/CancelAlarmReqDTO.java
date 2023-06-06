@@ -2,6 +2,7 @@ package com.aiurt.modules.faultalarm.dto.req;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
 
@@ -21,5 +22,6 @@ public class CancelAlarmReqDTO {
     private String cancelReason;
 
     @ApiModelProperty(value = "备注")
+    @Length(message = "备注不能超过{}个字符", max = 255)
     private String dealRemark;
 }
