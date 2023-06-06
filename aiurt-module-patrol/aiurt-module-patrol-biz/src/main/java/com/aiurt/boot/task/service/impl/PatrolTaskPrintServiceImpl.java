@@ -170,11 +170,6 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         InputStream minioFile2 = MinioUtil.getMinioFile("platform", templateFileName);
         ExcelWriter excelWriter = null;
         try {
-            Workbook workbook = WorkbookFactory.create(filePath);
-            Sheet sheet  = workbook.getSheetAt(0);
-            //打印设置
-            FilePrintUtils.printSet(sheet);
-
             excelWriter = EasyExcel.write(filePath).withTemplate(minioFile2).build();
             int[] mergeColumnIndex = {0,1,2};
             CustomCellMergeHandler customCellMergeStrategy = new CustomCellMergeHandler(3,mergeColumnIndex);
@@ -187,6 +182,11 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             //填充图片
             excelWriter.fill(imageMap, writeSheet);
             excelWriter.finish();
+
+            Workbook workbook = WorkbookFactory.create(filePath);
+            Sheet sheet  = workbook.getSheetAt(0);
+            //打印设置
+            FilePrintUtils.printSet(sheet);
 
             MinioUtil.upload(new FileInputStream(filePath),relatiePath);
         } catch (Exception e) {
@@ -313,16 +313,6 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
     public String printPatrolTaskByNetworkManage(String id){
         Map<String, Object> fillDataMap = MapUtils.newHashMap();
         fillDataMap.put("设备指示灯-设备指示灯","⬜正常");
-        fillDataMap.put("导航树监视-服务器是否通信正常","⬜正常");
-        fillDataMap.put("导航树监视-设备指示灯","⬜正常");
-        fillDataMap.put("导航树监视-网元是否通信正常","⬜正常");
-        fillDataMap.put("拓扑图监视-网元是否通信正常","⬜正常");
-        fillDataMap.put("拓扑图监视-网元工作状态","⬜正常");
-        fillDataMap.put("拓扑图监视-光连接状态","☑异常");
-        fillDataMap.put("告警监视-状态板查询告警状态","⬜正常");
-        fillDataMap.put("性能监视-查询当前15分钟","⬜正常");
-        fillDataMap.put("性能监视-查询历史15分钟","☑异常");
-
 
         List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
         for (PatrolStationDTO dto : billGangedInfo) {
@@ -579,6 +569,9 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
         for (PatrolStationDTO dto : billGangedInfo) {
             //获取检修项
+            if (CollUtil.isEmpty(dto.getBillInfo())){
+                continue;
+            }
             List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
             List<PatrolCheckResultDTO> checkResultAll = patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
             List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
