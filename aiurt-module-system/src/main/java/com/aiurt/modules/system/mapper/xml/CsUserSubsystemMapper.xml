@@ -45,9 +45,9 @@
         FROM   fault fa
         LEFT JOIN fault_device fd on  fd.fault_code =fa.`code`
         LEFT JOIN  device de on fd.device_code = de.`code`
-        LEFT JOIN fault_level fl on fa.fault_level = fl.`code`
+        LEFT JOIN fault_level fl on fa.fault_level = fl.`code` and fl.del_flag = 0
         WHERE
-        fd.del_flag =0   and fl.del_flag = 0
+        fd.del_flag =0
         AND fa.sub_system_code = #{subsystemCode}
         and de.device_type_code = #{deviceTypeCode}
         AND date_format(fa.happen_time ,'%Y-%m') = date_format( #{time},'%Y-%m')
@@ -126,7 +126,7 @@
         SELECT
             a.system_name AS NAME,
             a.system_code AS CODE,
-            IFNULL(SUM(c.duration),0)  as num,
+            IFNULL(SUM(DISTINCT(c.duration)),0)  as num,
             date_format(c.happen_time, '%c') MONTH
         FROM
             cs_subsystem a
