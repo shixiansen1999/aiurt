@@ -83,10 +83,10 @@ public class FaultKnowledgeBaseBuildDTO extends DictEntity implements Serializab
     @Dict(dictTable = "device_compose", dicText = "material_name", dicCode = "material_code")
     private String materialCode;
     /**
-     * 故障知识库ID
+     * 故障原因及解决方案Id
      */
-    @ApiModelProperty(value = "故障知识库ID")
-    private String knowledgeBaseId;
+    @ApiModelProperty(value = "故障原因及解决方案Id")
+    private String causeId;
     /**
      * 故障原因
      */

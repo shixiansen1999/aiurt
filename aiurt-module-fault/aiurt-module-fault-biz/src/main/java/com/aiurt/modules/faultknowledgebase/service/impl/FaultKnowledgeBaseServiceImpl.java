@@ -204,6 +204,8 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 for (FaultCauseSolutionDTO solution : solutions) {
                     faultKnowledgeBaseBuild = new FaultKnowledgeBaseBuildDTO();
                     BeanUtils.copyProperties(knowledgeBase, faultKnowledgeBaseBuild);
+                    // 故障原因及解决方案记录ID
+                    faultKnowledgeBaseBuild.setCauseId(solution.getId());
                     // 故障原因
                     faultKnowledgeBaseBuild.setFaultCause(solution.getFaultCause());
                     // 解决方案
