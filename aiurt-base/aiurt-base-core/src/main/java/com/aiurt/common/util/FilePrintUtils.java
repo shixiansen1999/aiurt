@@ -199,6 +199,20 @@ public class FilePrintUtils {
 
     }
 
+    public static void printSet(Sheet sheet) {
+        PrintSetup printSetup = sheet.getPrintSetup();
+        printSetup.setFitHeight((short)0);
+        sheet.setFitToPage(true);
+        // 页脚中显示当前页码和总页数
+        Footer footer = sheet.getFooter();
+        footer.setRight("&P/&N");
+    }
+    /**
+     * 获取单元格换行的行数
+     * @param text
+     * @param maxReturnLength
+     * @return
+     */
     private static int getReturnRowNum(String text,int maxReturnLength) {
         // 按照换行符分割字符串，得到字符串数组
         String[] lines = text.split("\n");
