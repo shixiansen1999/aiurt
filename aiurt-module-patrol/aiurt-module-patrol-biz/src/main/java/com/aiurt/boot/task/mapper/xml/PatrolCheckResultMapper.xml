@@ -133,7 +133,7 @@
             and parent_id = #{parentId}
         </if>
         GROUP BY  pcr.id
-        ORDER BY pcr.content,pcr.ORDER
+        ORDER BY pts.subsystem_code,pcr.content,pcr.ORDER
     </select>
 
     <select id="getCheckResultAllByTaskId" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
