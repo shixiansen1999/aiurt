@@ -71,7 +71,7 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 	  */
 	 @AutoLog(value = "app巡检-检查项-检查结果备注-保存", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
 	 @ApiOperation(value = "app巡检-检查项-检查结果备注-保存", notes = "app巡检-检查项-检查结果备注-保存")
-	 @PostMapping(value = "/patrolTaskCheckResult")
+	 @GetMapping(value = "/patrolTaskCheckResult")
 	 public Result<?> patrolTaskCheckResult(@RequestParam(name ="id")String id,
 											@RequestParam(name="checkResult") Integer checkResult,
 											@RequestParam(name="remark") String remark,
