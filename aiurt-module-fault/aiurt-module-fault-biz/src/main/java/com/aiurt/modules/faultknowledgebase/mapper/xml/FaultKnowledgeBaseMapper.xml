@@ -169,6 +169,9 @@
         <if test="condition.faultPhenomenonCode != null and  condition.faultPhenomenonCode != ''">
             and a.fault_phenomenon_code like concat('%',#{condition.faultPhenomenonCode},'%')
         </if>
+        <if test="condition.status != null and  condition.status != ''">
+            and a.status = #{condition.status}
+        </if>
         ORDER BY a.create_time DESC
     </select>
 
