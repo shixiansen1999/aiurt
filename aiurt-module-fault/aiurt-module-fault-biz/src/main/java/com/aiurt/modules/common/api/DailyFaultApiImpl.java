@@ -343,61 +343,76 @@ public class DailyFaultApiImpl implements DailyFaultApi {
     }
 
     @Override
-    public Map<String, FaultReportDTO> getFaultUserReport(List<String> teamId, String startTime, String endTime,String userId) {
+    public Map<String, FaultReportDTO> getFaultUserReport(List<String> teamId, String startTime, String endTime,String userId,List<String> userIds) {
         Map<String, FaultReportDTO> map = new HashMap<>(32);
-        List<LoginUser> loginUsers = new ArrayList<>();
-        loginUsers= sysBaseApi.getUseList(teamId);
-        if (CollUtil.isEmpty(loginUsers)&&ObjectUtil.isEmpty(userId)) {
+        List<String> users = new ArrayList<>();
+        if (CollUtil.isEmpty(userIds)&&ObjectUtil.isEmpty(userId)) {
             return map;
         }
-        if(ObjectUtil.isNotEmpty(userId)){
-            LoginUser user = sysBaseApi.getUserById(userId);
-            loginUsers.add(user);
+        if (ObjectUtil.isNotEmpty(userId)) {
+            users.add(userId);
+        }
+        if (CollUtil.isNotEmpty(userIds)) {
+            users.addAll(userIds);
         }
         SysParamModel filterParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_FILTER);
         boolean filterValue = "1".equals(filterParamModel.getValue());
-        loginUsers.forEach(f->{
-            FaultReportDTO faultReportDTO = new FaultReportDTO();
-            Long sum = 0L;
-            if(filterValue){
-                faultReportDTO = faultInformationMapper.getFilterFaultUserReport(teamId,startTime,endTime,null,f.getId());
-                sum = faultInformationMapper.getFilterUserTimes(f.getId(),startTime,endTime);
-            }else {
-                faultReportDTO = faultInformationMapper.getFaultUserReport(teamId,startTime,endTime,null,f.getId());
-                sum = faultInformationMapper.getUserTimes(f.getId(),startTime,endTime);
-            }
-            faultReportDTO.setNum(faultReportDTO.getNum()+sum);
-            List<String> str = faultInformationMapper.getUserConstructionHours(f.getId(),startTime,endTime);
-            List<BigDecimal> doubles = new ArrayList<>();
-            str.forEach(s -> {
-                List<String> str1 = Arrays.asList(s.split(","));
-                str1.forEach(ss->{
-                    List<String> strings = Arrays.asList(ss.split("至"));
-                    SimpleDateFormat format = new SimpleDateFormat("HH:mm");
-                    try {
-                        Date start = format.parse(strings.get(0));
-                        Date end = format.parse(strings.get(1));
-                        Long time = end.getTime() - start.getTime();
-                        BigDecimal decimal = new BigDecimal(time);
-                        doubles.add(NumberUtil.div(decimal,NumberUtil.round((1000*60*60),2)));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
+        //线程处理
+        ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
+        if (CollectionUtil.isNotEmpty(users)){
+            users.forEach(id->{
+                threadPoolExecutor.execute(() -> {
+                    FaultReportDTO faultReportDTO = new FaultReportDTO();
+                    Long sum = 0L;
+                    if(filterValue){
+                        faultReportDTO = faultInformationMapper.getFilterFaultUserReport(teamId,startTime,endTime,null,id);
+                        sum = faultInformationMapper.getFilterUserTimes(id,startTime,endTime);
+                    }else {
+                        faultReportDTO = faultInformationMapper.getFaultUserReport(teamId,startTime,endTime,null,id);
+                        sum = faultInformationMapper.getUserTimes(id,startTime,endTime);
                     }
+                    faultReportDTO.setNum(faultReportDTO.getNum()+sum);
+                    List<String> str = faultInformationMapper.getUserConstructionHours(id,startTime,endTime);
+                    List<BigDecimal> doubles = new ArrayList<>();
+                    str.forEach(s -> {
+                        List<String> str1 = Arrays.asList(s.split(","));
+                        str1.forEach(ss->{
+                            List<String> strings = Arrays.asList(ss.split("至"));
+                            SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+                            try {
+                                Date start = format.parse(strings.get(0));
+                                Date end = format.parse(strings.get(1));
+                                Long time = end.getTime() - start.getTime();
+                                BigDecimal decimal = new BigDecimal(time);
+                                doubles.add(NumberUtil.div(decimal,NumberUtil.round((1000*60*60),2)));
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                        });
+                    });
+                    FaultReportDTO  fau = faultInformationMapper.getUserConstructorsNum(id,startTime,endTime);
+                    if (fau.getNum1()==0){
+                        faultReportDTO.setRepairTime("0");
+                    }else {
+                        Long s = (faultReportDTO.getNum()/fau.getNum1())/60;
+                        faultReportDTO.setRepairTime(s.toString());
+                    }
+                    faultReportDTO.setConstructorsNum(fau.getConstructorsNum());
+                    faultReportDTO.setFailureTime(new BigDecimal((1.0 * (faultReportDTO.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
+                    BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    faultReportDTO.setConstructionHours(totalPrice.setScale(2,BigDecimal.ROUND_HALF_UP));
+                    map.put(id,faultReportDTO);
                 });
             });
-            FaultReportDTO  fau = faultInformationMapper.getUserConstructorsNum(f.getId(),startTime,endTime);
-            if (fau.getNum1()==0){
-                faultReportDTO.setRepairTime("0");
-            }else {
-                Long s = (faultReportDTO.getNum()/fau.getNum1())/60;
-                faultReportDTO.setRepairTime(s.toString());
-            }
-            faultReportDTO.setConstructorsNum(fau.getConstructorsNum());
-            faultReportDTO.setFailureTime(new BigDecimal((1.0 * (faultReportDTO.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
-            BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
-            faultReportDTO.setConstructionHours(totalPrice.setScale(2,BigDecimal.ROUND_HALF_UP));
-            map.put(f.getId(),faultReportDTO);
-        });
+        }
+        threadPoolExecutor.shutdown();
+        try {
+            // 等待线程池中的任务全部完成
+            threadPoolExecutor.awaitTermination(100, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            // 处理中断异常
+            log.info("循环方法的线程中断异常", e.getMessage());
+        }
         return map;
     }
 

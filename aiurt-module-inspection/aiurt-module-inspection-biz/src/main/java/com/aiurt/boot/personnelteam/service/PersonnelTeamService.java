@@ -37,31 +37,27 @@ public class PersonnelTeamService implements OverhaulApi {
     private PersonnelTeamMapper personnelTeamMapper;
 
       @Override
-      public Map<String, PersonnelTeamDTO> personnelInformation (Date startDate, Date endDate, List<String> teamId,String userId){
+      public Map<String, PersonnelTeamDTO> personnelInformation (Date startDate, Date endDate, List<String> teamId,String userId,List<String> userIds){
 
-          if (CollectionUtil.isNotEmpty(teamId)){
-              return this.getUserList(startDate, endDate, teamId, null);
+          if (CollectionUtil.isNotEmpty(userIds)){
+              return this.getUserList(startDate, endDate, userIds, null);
           }
 
-          if (CollectionUtil.isEmpty(teamId)){
+          if (CollectionUtil.isEmpty(userIds)){
               return this.getUserList(startDate, endDate, null, userId);
           }
 
           return new HashMap<>(16);
       }
 
-    private Map<String, PersonnelTeamDTO> getUserList(Date startDate, Date endDate, List<String> teamId,String userId){
+    private Map<String, PersonnelTeamDTO> getUserList(Date startDate, Date endDate, List<String> userIds,String userId){
             Map<String,PersonnelTeamDTO> map = new HashMap<>(16);
-            if (CollectionUtil.isNotEmpty(teamId)){
-                List<LoginUser> useList = sysBaseAPI.getUseList(teamId);
-                //获取人员id
-                List<String> collect1 = useList.stream().map(LoginUser::getId).collect(Collectors.toList());
-
+            if (CollectionUtil.isNotEmpty(userIds)){
                 //查询人员的计划任务数量
-                List<PersonnelTeamDTO> scheduledTask1 = personnelTeamMapper.getScheduledTask(collect1, null, startDate, endDate,null);
+                List<PersonnelTeamDTO> scheduledTask1 = personnelTeamMapper.getScheduledTask(userIds, null, startDate, endDate,null);
 
                 //查询人员的完成任务数量
-                List<PersonnelTeamDTO> scheduledTask2 = personnelTeamMapper.getScheduledTask(collect1, 8L, startDate, endDate,null);
+                List<PersonnelTeamDTO> scheduledTask2 = personnelTeamMapper.getScheduledTask(userIds, 8L, startDate, endDate,null);
                 if (CollectionUtil.isNotEmpty(scheduledTask1) && CollectionUtil.isNotEmpty(scheduledTask2)){
                     Map<String, PersonnelTeamDTO> collect2 = scheduledTask1.stream().collect(Collectors.toMap(PersonnelTeamDTO::getUserId, v -> v));
                     getNumber(startDate, endDate, map, collect2, scheduledTask2);
@@ -83,61 +79,74 @@ public class PersonnelTeamService implements OverhaulApi {
 
     private void getNumber(Date startDate, Date endDate, Map<String, PersonnelTeamDTO> map, Map<String, PersonnelTeamDTO> collect2, List<PersonnelTeamDTO> scheduledTask2) {
         Map<String, PersonnelTeamDTO> collect3 = scheduledTask2.stream().collect(Collectors.toMap(PersonnelTeamDTO::getUserId, v -> v));
+        //线程处理
+        ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
+        if (CollectionUtil.isNotEmpty(collect2)){
+            for (Map.Entry<String, PersonnelTeamDTO> entry : collect2.entrySet()) {
+                threadPoolExecutor.execute(() -> {
+                    PersonnelTeamDTO personnelTeamDTO = new PersonnelTeamDTO();
+                    String key = entry.getKey();
 
-        for (Map.Entry<String, PersonnelTeamDTO> entry : collect2.entrySet()) {
-            PersonnelTeamDTO personnelTeamDTO = new PersonnelTeamDTO();
-            String key = entry.getKey();
+                    personnelTeamDTO.setUserId(key);
 
-            personnelTeamDTO.setUserId(key);
+                    //检修人任务的工时
+                    PersonnelTeamDTO userTime = personnelTeamMapper.getUserTime(key, startDate, endDate);
+                    //同行人任务的工时
+                    PersonnelTeamDTO peerTime = personnelTeamMapper.getUserPeerTime(key, startDate, endDate);
+                    if(userTime.getCounter()!=null && peerTime.getCounter()!=null){
+                        long l = userTime.getCounter() + peerTime.getCounter();
+                        //检修人任务的总工时
+                        //秒转时
+                        BigDecimal decimal = new BigDecimal(l).divide(new BigDecimal("3600"),2, BigDecimal.ROUND_HALF_UP);
+                        personnelTeamDTO.setOverhaulWorkingHours(decimal.floatValue());
+                    }else {
+                        personnelTeamDTO.setOverhaulWorkingHours(0L);
+                    }
 
-            //检修人任务的工时
-            PersonnelTeamDTO userTime = personnelTeamMapper.getUserTime(key, startDate, endDate);
-            //同行人任务的工时
-            PersonnelTeamDTO peerTime = personnelTeamMapper.getUserPeerTime(key, startDate, endDate);
-            if(userTime.getCounter()!=null && peerTime.getCounter()!=null){
-                long l = userTime.getCounter() + peerTime.getCounter();
-                //检修人任务的总工时
-                //秒转时
-                BigDecimal decimal = new BigDecimal(l).divide(new BigDecimal("3600"),2, BigDecimal.ROUND_HALF_UP);
-                personnelTeamDTO.setOverhaulWorkingHours(decimal.floatValue());
-            }else {
-                personnelTeamDTO.setOverhaulWorkingHours(0L);
+                    PersonnelTeamDTO q = collect3.get(key);
+                    PersonnelTeamDTO e = entry.getValue();
+
+                    //查询人员的计划任务数量
+                    Long counter1 = e.getCounter();
+                    if(counter1!=null){
+                        personnelTeamDTO.setPlanTaskNumber(counter1);
+                    }else {
+                        personnelTeamDTO.setPlanTaskNumber(0L);
+                    }
+
+                    if (ObjectUtil.isNotEmpty(e) && ObjectUtil.isNotEmpty(q)) {
+
+                        //查询人员的完成任务数量
+                        Long counter2 = q.getCounter();
+                        if (counter2!=null){
+                            personnelTeamDTO.setCompleteTaskNumber(counter2);
+                        }else {
+                            personnelTeamDTO.setCompleteTaskNumber(0L);
+                        }
+                        //计划完成率
+                        if (personnelTeamDTO.getCompleteTaskNumber() != null && personnelTeamDTO.getPlanTaskNumber() != null && personnelTeamDTO.getPlanTaskNumber() != 0) {
+                            BigDecimal div = NumberUtil.div(personnelTeamDTO.getCompleteTaskNumber(), personnelTeamDTO.getPlanTaskNumber());
+                            BigDecimal multiply = div.multiply(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_UP);
+                            personnelTeamDTO.setPlanCompletionRate(Convert.toStr(multiply));
+
+                        } else {
+                            personnelTeamDTO.setPlanCompletionRate("0");
+                        }
+                    } else {
+                        personnelTeamDTO.setPlanCompletionRate("0");
+                        personnelTeamDTO.setCompleteTaskNumber(0L);
+                    }
+                    map.put(key, personnelTeamDTO);
+                });
             }
-
-            PersonnelTeamDTO q = collect3.get(key);
-            PersonnelTeamDTO e = entry.getValue();
-
-            //查询人员的计划任务数量
-            Long counter1 = e.getCounter();
-            if(counter1!=null){
-                personnelTeamDTO.setPlanTaskNumber(counter1);
-            }else {
-                personnelTeamDTO.setPlanTaskNumber(0L);
-            }
-
-            if (ObjectUtil.isNotEmpty(e) && ObjectUtil.isNotEmpty(q)) {
-
-                //查询人员的完成任务数量
-                Long counter2 = q.getCounter();
-                if (counter2!=null){
-                    personnelTeamDTO.setCompleteTaskNumber(counter2);
-                }else {
-                    personnelTeamDTO.setCompleteTaskNumber(0L);
-                }
-                //计划完成率
-                if (personnelTeamDTO.getCompleteTaskNumber() != null && personnelTeamDTO.getPlanTaskNumber() != null && personnelTeamDTO.getPlanTaskNumber() != 0) {
-                    BigDecimal div = NumberUtil.div(personnelTeamDTO.getCompleteTaskNumber(), personnelTeamDTO.getPlanTaskNumber());
-                    BigDecimal multiply = div.multiply(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_UP);
-                    personnelTeamDTO.setPlanCompletionRate(Convert.toStr(multiply));
-
-                } else {
-                    personnelTeamDTO.setPlanCompletionRate("0");
-                }
-            } else {
-                personnelTeamDTO.setPlanCompletionRate("0");
-                personnelTeamDTO.setCompleteTaskNumber(0L);
-            }
-            map.put(key, personnelTeamDTO);
+        }
+        threadPoolExecutor.shutdown();
+        try {
+            // 等待线程池中的任务全部完成
+            threadPoolExecutor.awaitTermination(100, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            // 处理中断异常
+            log.info("循环方法的线程中断异常", e.getMessage());
         }
     }
 

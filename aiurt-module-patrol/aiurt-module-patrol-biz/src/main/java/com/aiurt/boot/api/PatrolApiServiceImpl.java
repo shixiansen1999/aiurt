@@ -672,42 +672,56 @@ public class PatrolApiServiceImpl implements PatrolApi {
         List<PatrolReport> patrolReportOmitList = patrolTaskMapper.getReportTaskUserCount(report);
         List<PatrolReport> patrolReportAccompanyOmitList = patrolTaskMapper.getReportTaskAccompanyCount(report);
 
-        for (UserTeamPatrolDTO dto : userBaseList) {
-            PatrolReport report1 = Optional.ofNullable(patrolReportList).orElse(Collections.emptyList()).stream().filter(p ->StrUtil.isNotEmpty(p.getUserId()) && p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
-            PatrolReport report2 = Optional.ofNullable(patrolReportAccompanyList).orElse(Collections.emptyList()).stream().filter(p ->StrUtil.isNotEmpty(p.getUserId()) && p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
-            if (ObjectUtil.isNotNull(report1)) {
-                dto.setPlanTaskNumber(report1.getTaskTotal());
-                dto.setActualFinishTaskNumber(report1.getInspectedNumber());
-                BigDecimal scale = NumberUtil.div(report1.getWorkHours(), 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
-                dto.setWorkHours(scale);
-            }
-            if (ObjectUtil.isNotNull(report1)&&ObjectUtil.isNotNull(report2)) {
-                dto.setPlanTaskNumber(report1.getTaskTotal() + report2.getTaskTotal());
-                dto.setActualFinishTaskNumber(report1.getInspectedNumber()+report2.getInspectedNumber());
-                BigDecimal scale = NumberUtil.div(NumberUtil.add(report1.getWorkHours(),report2.getWorkHours()), 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
-                dto.setWorkHours(scale);
-            }
+        //线程处理
+        ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
+        if (CollectionUtil.isNotEmpty(userBaseList)){
+            userBaseList.forEach(dto->{
+                threadPoolExecutor.execute(() -> {
+                    PatrolReport report1 = Optional.ofNullable(patrolReportList).orElse(Collections.emptyList()).stream().filter(p ->StrUtil.isNotEmpty(p.getUserId()) && p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
+                    PatrolReport report2 = Optional.ofNullable(patrolReportAccompanyList).orElse(Collections.emptyList()).stream().filter(p ->StrUtil.isNotEmpty(p.getUserId()) && p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
+                    if (ObjectUtil.isNotNull(report1)) {
+                        dto.setPlanTaskNumber(report1.getTaskTotal());
+                        dto.setActualFinishTaskNumber(report1.getInspectedNumber());
+                        BigDecimal scale = NumberUtil.div(report1.getWorkHours(), 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        dto.setWorkHours(scale);
+                    }
+                    if (ObjectUtil.isNotNull(report1)&&ObjectUtil.isNotNull(report2)) {
+                        dto.setPlanTaskNumber(report1.getTaskTotal() + report2.getTaskTotal());
+                        dto.setActualFinishTaskNumber(report1.getInspectedNumber()+report2.getInspectedNumber());
+                        BigDecimal scale = NumberUtil.div(NumberUtil.add(report1.getWorkHours(),report2.getWorkHours()), 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        dto.setWorkHours(scale);
+                    }
 
-            dto.setPlanFinishRate(new BigDecimal(0));
-            //计算计划完成率
-            if (dto.getPlanTaskNumber() != 0) {
-                BigDecimal b = BigDecimal.valueOf(1.0 * (dto.getActualFinishTaskNumber()) / dto.getPlanTaskNumber() * 100).setScale(2, BigDecimal.ROUND_HALF_UP);
-                dto.setPlanFinishRate(b);
-            } else {
-                dto.setPlanFinishRate(new BigDecimal(0));
-            }
+                    dto.setPlanFinishRate(new BigDecimal(0));
+                    //计算计划完成率
+                    if (dto.getPlanTaskNumber() != 0) {
+                        BigDecimal b = BigDecimal.valueOf(1.0 * (dto.getActualFinishTaskNumber()) / dto.getPlanTaskNumber() * 100).setScale(2, BigDecimal.ROUND_HALF_UP);
+                        dto.setPlanFinishRate(b);
+                    } else {
+                        dto.setPlanFinishRate(new BigDecimal(0));
+                    }
 
-            PatrolReport report3 = Optional.ofNullable(patrolReportOmitList).orElse(Collections.emptyList()).stream().filter(p ->StrUtil.isNotEmpty(p.getUserId()) && p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
-            PatrolReport report4 = Optional.ofNullable(patrolReportAccompanyOmitList).orElse(Collections.emptyList()).stream().filter(p ->StrUtil.isNotEmpty(p.getUserId()) && p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
-            if (ObjectUtil.isNotNull(report3)) {
-                dto.setMissPatrolNumber((int) report3.getMissInspectedNumber());
-            }
-            if (ObjectUtil.isNotNull(report3) && ObjectUtil.isNotNull(report4)) {
-                dto.setMissPatrolNumber((int) report3.getMissInspectedNumber() + (int) report4.getMissInspectedNumber());
-            }
-            //计算平均每月漏检次数
-            BigDecimal avgMissNumber = NumberUtil.div(new BigDecimal(dto.getMissPatrolNumber()), new BigDecimal(12)).setScale(2, BigDecimal.ROUND_HALF_UP);
-            dto.setAvgMissPatrolNumber(avgMissNumber);
+                    PatrolReport report3 = Optional.ofNullable(patrolReportOmitList).orElse(Collections.emptyList()).stream().filter(p ->StrUtil.isNotEmpty(p.getUserId()) && p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
+                    PatrolReport report4 = Optional.ofNullable(patrolReportAccompanyOmitList).orElse(Collections.emptyList()).stream().filter(p ->StrUtil.isNotEmpty(p.getUserId()) && p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
+                    if (ObjectUtil.isNotNull(report3)) {
+                        dto.setMissPatrolNumber((int) report3.getMissInspectedNumber());
+                    }
+                    if (ObjectUtil.isNotNull(report3) && ObjectUtil.isNotNull(report4)) {
+                        dto.setMissPatrolNumber((int) report3.getMissInspectedNumber() + (int) report4.getMissInspectedNumber());
+                    }
+                    //计算平均每月漏检次数
+                    BigDecimal avgMissNumber = NumberUtil.div(new BigDecimal(dto.getMissPatrolNumber()), new BigDecimal(12)).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    dto.setAvgMissPatrolNumber(avgMissNumber);
+                });
+            });
+        }
+        threadPoolExecutor.shutdown();
+        try {
+            // 等待线程池中的任务全部完成
+            threadPoolExecutor.awaitTermination(100, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            // 处理中断异常
+            log.info("循环方法的线程中断异常", e.getMessage());
         }
 
         Map<String, UserTeamPatrolDTO> groupBy = userBaseList.stream().collect(Collectors.toMap(UserTeamPatrolDTO::getUserId, v -> v, (a, b) -> a));

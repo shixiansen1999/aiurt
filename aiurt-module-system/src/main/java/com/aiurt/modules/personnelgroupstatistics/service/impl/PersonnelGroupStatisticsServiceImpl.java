@@ -154,7 +154,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         List<String> ids = getDepartIds(departIds);
         if (CollUtil.isNotEmpty(ids)) {
             List<PersonnelModel> personnelModels = personnelGroupStatisticsMapper.queryUserPageList(ids, page);
-
+            List<String> userIds = personnelModels.stream().map(PersonnelModel::getUserId).collect(Collectors.toList());
             //获取所有人员巡检参数数据
             UserTeamParameter userTeamParameter = new UserTeamParameter();
             userTeamParameter.setStartDate(startTime);
@@ -172,9 +172,9 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             }
 
             //获取所有人员维修参数数据
-            Map<String, FaultReportDTO> faultUserReport = dailyFaultApi.getFaultUserReport(ids, startTime, endTime, null);
+            Map<String, FaultReportDTO> faultUserReport = dailyFaultApi.getFaultUserReport(ids, startTime, endTime, null,userIds);
             //获取所有人员检修参数数据
-            Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), ids, null);
+            Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), ids, null, userIds);
 
             for (PersonnelModel model : personnelModels) {
                 String userId = model.getUserId();
@@ -408,11 +408,11 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             userParameter = patrolApi.getUserParameter(userTeamParameter);
         }
         //获取人员维修参数数据
-        Map<String, FaultReportDTO> faultUserReport = dailyFaultApi.getFaultUserReport(null, DateUtil.formatDateTime(lastYear), DateUtil.formatDateTime(end), userId);
+        Map<String, FaultReportDTO> faultUserReport = dailyFaultApi.getFaultUserReport(null, DateUtil.formatDateTime(lastYear), DateUtil.formatDateTime(end), userId,null);
         //获取人员检修参数数据
         String startDate = DateUtil.formatDate(lastYear);
         String endDate = DateUtil.formatDate(end);
-        Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(DateUtil.parse(startDate), DateUtil.parse(endDate), null, userId);
+        Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(DateUtil.parse(startDate), DateUtil.parse(endDate), null, userId,null);
 
         TeamUserModel user = personnelGroupStatisticsMapper.getUser(userId);
 

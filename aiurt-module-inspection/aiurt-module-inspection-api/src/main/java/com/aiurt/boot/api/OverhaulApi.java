@@ -19,7 +19,7 @@ public interface OverhaulApi {
      * @param userId
      * @return
      */
-    Map<String, PersonnelTeamDTO> personnelInformation(Date startDate, Date endDate, List<String> teamId,String userId);
+    Map<String, PersonnelTeamDTO> personnelInformation(Date startDate, Date endDate, List<String> teamId,String userId,List<String> userIds);
 
 
     /**
