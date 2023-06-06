@@ -53,6 +53,7 @@ import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.alibaba.excel.write.metadata.fill.FillWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import io.lettuce.core.AbstractRedisReactiveCommands;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -183,10 +184,29 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             excelWriter.fill(imageMap, writeSheet);
             excelWriter.finish();
 
-//            Workbook workbook = WorkbookFactory.create(filePath);
-//            Sheet sheet  = workbook.getSheetAt(0);
-//            //打印设置
-//            FilePrintUtils.printSet(sheet);
+            try (InputStream inputStream = new FileInputStream(filePath);
+                Workbook workbook = WorkbookFactory.create(inputStream)) {
+                Sheet sheet  = workbook.getSheetAt(0);
+                //打印设置
+                FilePrintUtils.printSet(sheet);
+
+                // 保存修改后的Excel文件
+                OutputStream outputStream = null;
+                try{
+                    outputStream = new FileOutputStream(filePath);
+                    workbook.write(outputStream);
+                }finally {
+                    if (null!=inputStream){
+                        inputStream.close();
+                    }
+                    if (null!=outputStream){
+                        outputStream.close();
+                    }
+                    if (null!=workbook){
+                        workbook.close();
+                    }
+                }
+            }
 
             MinioUtil.upload(new FileInputStream(filePath),relatiePath);
         } catch (Exception e) {
@@ -712,7 +732,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         map.put("patrolDate", DateUtil.format(patrolTask.getSubmitTime(),"yyyy-MM-dd"));
         map.put("patrolTime", DateUtil.format(patrolTask.getSubmitTime(),"HH:mm"));
         Map<String, Object> imageMap = MapUtils.newHashMap();
-        if(StrUtil.isNotEmpty(taskDTO.getSignUrl())){
+        if(StrUtil.isNotEmpty(taskDTO.getSignUrl())&&taskDTO.getSignUrl().indexOf("?")!=-1){
             int index =  taskDTO.getSignUrl().indexOf("?");
             SysAttachment sysAttachment = sysBaseApi.getFilePath(taskDTO.getSignUrl().substring(0, index));
             InputStream inputStream = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
