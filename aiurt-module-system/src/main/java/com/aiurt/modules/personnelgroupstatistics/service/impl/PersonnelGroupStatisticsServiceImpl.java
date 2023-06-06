@@ -68,11 +68,12 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         List<String> ids = getDepartIds(departIds);
         if (CollUtil.isNotEmpty(ids)) {
             List<GroupModel> personnelGroupModels = personnelGroupStatisticsMapper.queryGroupPageList(ids, page);
+            List<String> list = personnelGroupModels.stream().map(GroupModel::getTeamId).collect(Collectors.toList());
             //获取所有班组巡检参数数据
             UserTeamParameter userTeamParameter = new UserTeamParameter();
             userTeamParameter.setStartDate(startTime);
             userTeamParameter.setEndDate(endTime);
-            userTeamParameter.setOrgIdList(ids);
+            userTeamParameter.setOrgIdList(list);
             Map<String, UserTeamPatrolDTO> teamParameter = new HashMap<>();
             //根据配置决定是否需要把工单数量作为任务数量
             SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
@@ -83,9 +84,9 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 teamParameter  = patrolApi.getUserTeamParameter(userTeamParameter);
             }
             //获取所有班组维修参数数据
-            Map<String, FaultReportDTO> faultOrgReport = dailyFaultApi.getFaultOrgReport(ids, startTime, endTime);
+            Map<String, FaultReportDTO> faultOrgReport = dailyFaultApi.getFaultOrgReport(list, startTime, endTime);
             ///获取所有班组检修参数数据
-            Map<String, PersonnelTeamDTO> teamInformation = overhaulApi.teamInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), ids);
+            Map<String, PersonnelTeamDTO> teamInformation = overhaulApi.teamInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), list);
 
             for (GroupModel model : personnelGroupModels) {
                 String teamId = model.getTeamId();

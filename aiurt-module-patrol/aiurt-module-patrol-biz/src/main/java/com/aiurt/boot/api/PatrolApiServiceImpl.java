@@ -1,8 +1,10 @@
 package com.aiurt.boot.api;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -28,6 +30,7 @@ import com.aiurt.config.datafilter.constant.DataPermRuleType;
 import com.aiurt.config.datafilter.utils.ContextUtil;
 import com.aiurt.config.datafilter.utils.SqlBuilderUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
@@ -41,11 +44,14 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
  * @author cgkj0
  */
+@Slf4j
 @Service
 public class PatrolApiServiceImpl implements PatrolApi {
     @Autowired
@@ -533,6 +539,22 @@ public class PatrolApiServiceImpl implements PatrolApi {
             orgCodes.add(zero.getOrgCode());
         }
 
+        List<LoginUser> useList1 = sysBaseApi.getUseList(orgIds);
+        //计算指派实际巡检数、同行人的实际巡检数
+        List<UserTeamPatrolDTO> userNowNumber = new ArrayList<>();
+        List<UserTeamPatrolDTO> peopleNowNumber = new ArrayList<>();
+        // 通信5期，班组的巡视工时改为同行人累加，需要把所有的人都加起来
+        List<UserTeamPatrolDTO> allNowNumber = new ArrayList<>();
+        if (CollUtil.isNotEmpty(useList1)) {
+            List<String> useIdList = useList1.stream().map(LoginUser::getId).collect(Collectors.toList());
+            userNowNumber.addAll(patrolTaskMapper.getUserNowNumber(useIdList, userTeamParameter.getStartDate(), userTeamParameter.getEndDate()));
+            peopleNowNumber.addAll(patrolTaskMapper.getPeopleNowNumber(useIdList, userTeamParameter.getStartDate(), userTeamParameter.getEndDate()));
+            // 通信5期，班组的巡视工时改为同行人累加，需要把所有的人都加起来
+            allNowNumber.addAll(userNowNumber);
+            allNowNumber.addAll(peopleNowNumber);
+        }
+
+
         PatrolReportModel report = new PatrolReportModel();
         report.setOrgCodeList(orgCodes);
         report.setStartDate(userTeamParameter.getStartDate());
@@ -549,64 +571,68 @@ public class PatrolApiServiceImpl implements PatrolApi {
         //获取漏检数
         List<PatrolReport> patrolReportOmitList = patrolTaskMapper.getReportTaskDeviceCount(report);
 
-        for (UserTeamPatrolDTO dto : userBaseList) {
-            //获取部门下的人员
-            List<LoginUser> useList = sysBaseApi.getUserPersonnel(dto.getOrgId());
-            List<String> useIds = useList.stream().map(LoginUser::getId).collect(Collectors.toList());
-            //计算计划巡检数的计划巡检数
-            PatrolReport reportTask = Optional.ofNullable(patrolReportList).orElse(Collections.emptyList()).stream().filter(p -> p.getOrgCode().equals(dto.getOrgCode())).findFirst().orElse(null);
-            if (ObjectUtil.isNotNull(reportTask)) {
-                dto.setPlanTaskNumber(reportTask.getTaskTotal());
-                dto.setActualFinishTaskNumber(reportTask.getInspectedNumber());
-                dto.setPlanFinishRate(new BigDecimal(0));
-                //计算计划完成率
-                if (dto.getPlanTaskNumber() != 0) {
-                    BigDecimal b = BigDecimal.valueOf(1.0 * (dto.getActualFinishTaskNumber()) / dto.getPlanTaskNumber() * 100).setScale(2, BigDecimal.ROUND_HALF_UP);
-                    dto.setPlanFinishRate(b);
-                } else {
-                    dto.setPlanFinishRate(new BigDecimal(0));
-                }
-            }
-
-            //计算指派实际巡检数、同行人的实际巡检数
-            List<UserTeamPatrolDTO> userNowNumber = new ArrayList<>();
-            List<UserTeamPatrolDTO> peopleNowNumber = new ArrayList<>();
-            // 通信5期，班组的巡视工时改为同行人累加，需要把所有的人都加起来
-            List<UserTeamPatrolDTO> allNowNumber = new ArrayList<>();
-            if (CollUtil.isNotEmpty(useIds)) {
-                userNowNumber.addAll(patrolTaskMapper.getUserNowNumber(useIds, userTeamParameter.getStartDate(), userTeamParameter.getEndDate()));
-                peopleNowNumber.addAll(patrolTaskMapper.getPeopleNowNumber(useIds, userTeamParameter.getStartDate(), userTeamParameter.getEndDate()));
-                // 通信5期，班组的巡视工时改为同行人累加，需要把所有的人都加起来
-                allNowNumber.addAll(userNowNumber);
-                allNowNumber.addAll(peopleNowNumber);
-            }
-            //过滤实际数不是同一任务的班组
-            List<String> nowTaskIds = userNowNumber.stream().map(UserTeamPatrolDTO::getTaskId).collect(Collectors.toList());
-            List<UserTeamPatrolDTO> notNowTasks = peopleNowNumber.stream().filter(u -> !nowTaskIds.contains(u.getTaskId())).collect(Collectors.toList());
-            userNowNumber.addAll(notNowTasks);
-
-            //计算工时
-            if (ObjectUtil.isNotEmpty(dto.getWorkHours())) {
-                // 通信5期，班组的巡视工时改为同行人累加
-                List<UserTeamPatrolDTO> dtos = allNowNumber.stream().filter(e -> e.getWorkHours() != null).collect(Collectors.toList());
-                BigDecimal planTotalWorkTime = dtos.stream().map(UserTeamPatrolDTO::getWorkHours).reduce(BigDecimal.ZERO, BigDecimal::add);
-                BigDecimal scale = NumberUtil.div(planTotalWorkTime, 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
-                dto.setWorkHours(scale);
-            }
-
-            //计算漏巡
-            PatrolReport reportOmitTask = Optional.ofNullable(patrolReportOmitList).orElse(Collections.emptyList()).stream().filter(p -> p.getOrgCode().equals(dto.getOrgCode())).findFirst().orElse(null);
-            if (ObjectUtil.isNotNull(reportOmitTask)) {
-                dto.setMissPatrolNumber((int) reportOmitTask.getMissInspectedNumber());
-            }
-
-            //计算平均每月漏检次数
-            BigDecimal avgMissNumber = NumberUtil.div(new BigDecimal(dto.getMissPatrolNumber()), new BigDecimal(12)).setScale(2, BigDecimal.ROUND_HALF_UP);
-            dto.setAvgMissPatrolNumber(avgMissNumber);
-
-        }
+        //计算工时，漏巡数，月漏巡数
+        countUserTeamParameterDevice(userBaseList, patrolReportList, allNowNumber, patrolReportOmitList);
         Map<String, UserTeamPatrolDTO> groupBy = userBaseList.stream().collect(Collectors.toMap(UserTeamPatrolDTO::getOrgId, v -> v, (a, b) -> a));
         return groupBy;
+    }
+
+    private void countUserTeamParameterDevice(List<UserTeamPatrolDTO> userBaseList,List<PatrolReport> patrolReportList, List<UserTeamPatrolDTO> allNowNumber,List<PatrolReport> patrolReportOmitList) {
+        ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
+        if (CollectionUtil.isNotEmpty(userBaseList)){
+            userBaseList.forEach(q->{
+                threadPoolExecutor.execute(() -> {
+                    getMoreDetail(q, patrolReportList, allNowNumber, patrolReportOmitList);
+                });
+            });
+        }
+        threadPoolExecutor.shutdown();
+        try {
+            // 等待线程池中的任务全部完成
+            threadPoolExecutor.awaitTermination(100, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            // 处理中断异常
+            log.info("循环方法的线程中断异常", e.getMessage());
+        }
+    }
+
+    private void getMoreDetail(UserTeamPatrolDTO dto, List<PatrolReport> patrolReportList, List<UserTeamPatrolDTO> allNowNumber,List<PatrolReport> patrolReportOmitList) {
+        //获取部门下的人员
+        //List<LoginUser> useList = sysBaseApi.getUserPersonnel(dto.getOrgId());
+        //List<String> useIds = useList.stream().map(LoginUser::getId).collect(Collectors.toList());
+        //计算计划巡检数的计划巡检数
+        PatrolReport reportTask = Optional.ofNullable(patrolReportList).orElse(Collections.emptyList()).stream().filter(p -> p.getOrgCode().equals(dto.getOrgCode())).findFirst().orElse(null);
+        if (ObjectUtil.isNotNull(reportTask)) {
+            dto.setPlanTaskNumber(reportTask.getTaskTotal());
+            dto.setActualFinishTaskNumber(reportTask.getInspectedNumber());
+            dto.setPlanFinishRate(new BigDecimal(0));
+            //计算计划完成率
+            if (dto.getPlanTaskNumber() != 0) {
+                BigDecimal b = BigDecimal.valueOf(1.0 * (dto.getActualFinishTaskNumber()) / dto.getPlanTaskNumber() * 100).setScale(2, BigDecimal.ROUND_HALF_UP);
+                dto.setPlanFinishRate(b);
+            } else {
+                dto.setPlanFinishRate(new BigDecimal(0));
+            }
+        }
+
+        //计算工时
+        if (ObjectUtil.isNotEmpty(dto.getWorkHours())&&CollUtil.isNotEmpty(allNowNumber)) {
+            // 通信5期，班组的巡视工时改为同行人累加
+            List<UserTeamPatrolDTO> dtos = allNowNumber.stream().filter(e -> e.getWorkHours() != null && e.getOrgId().equals(dto.getOrgId())).collect(Collectors.toList());
+            BigDecimal planTotalWorkTime = dtos.stream().map(UserTeamPatrolDTO::getWorkHours).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal scale = NumberUtil.div(planTotalWorkTime, 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
+            dto.setWorkHours(scale);
+        }
+
+        //计算漏巡
+        PatrolReport reportOmitTask = Optional.ofNullable(patrolReportOmitList).orElse(Collections.emptyList()).stream().filter(p -> p.getOrgCode().equals(dto.getOrgCode())).findFirst().orElse(null);
+        if (ObjectUtil.isNotNull(reportOmitTask)) {
+            dto.setMissPatrolNumber((int) reportOmitTask.getMissInspectedNumber());
+        }
+
+        //计算平均每月漏检次数
+        BigDecimal avgMissNumber = NumberUtil.div(new BigDecimal(dto.getMissPatrolNumber()), new BigDecimal(12)).setScale(2, BigDecimal.ROUND_HALF_UP);
+        dto.setAvgMissPatrolNumber(avgMissNumber);
     }
 
     @Override
