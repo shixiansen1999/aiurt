@@ -20,7 +20,7 @@ public class FaultAlarmConstant {
      */
     public static final Integer ALM_DEAL_STATE_2 = 2;
     /**
-     * 告警信息处理状态2表示已派单
+     * 告警信息处理状态3表示已派单
      */
     public static final Integer ALM_DEAL_STATE_3 = 3;
 
