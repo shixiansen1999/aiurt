@@ -41,11 +41,11 @@
             on_alm_record oar
         LEFT JOIN device d ON d.id = oar.device_id
         <where>
-            <if test="almRecordReqDto.subSystemCode!=null and almRecordReqDto.subSystemCode!=''">
-                d.system_code = #{almRecordReqDto.subSystemCode}
+            <if test="condition.subSystemCode!=null and condition.subSystemCode!=''">
+                d.system_code = #{condition.subSystemCode}
             </if>
-            <if test="almRecordReqDto.stationCode !=null and almRecordReqDto.stationCode!=''">
-                and d.station_code = #{almRecordReqDto.stationCode}
+            <if test="condition.stationCode !=null and condition.stationCode!=''">
+                and d.station_code = #{condition.stationCode}
             </if>
         </where>
         GROUP BY
@@ -76,17 +76,17 @@
         on_alm_record_history oar
         LEFT JOIN device d ON d.id = oar.device_id
         <where>
-            <if test="almRecordReqDto.subSystemCode!=null and almRecordReqDto.subSystemCode!=''">
-                d.system_code = #{almRecordReqDto.subSystemCode}
+            <if test="condition.subSystemCode!=null and condition.subSystemCode!=''">
+                d.system_code = #{condition.subSystemCode}
             </if>
-            <if test="almRecordReqDto.stationCode !=null and almRecordReqDto.stationCode!=''">
-                and d.station_code = #{almRecordReqDto.stationCode}
+            <if test="condition.stationCode !=null and condition.stationCode!=''">
+                and d.station_code = #{condition.stationCode}
             </if>
-            <if test="almRecordReqDto.state !=null">
-                and oar.state = #{state}
+            <if test="condition.state !=null">
+                and oar.state = #{condition.state}
             </if>
-            <if test="almRecordReqDto.startAlmTime !=null and almRecordReqDto.endAlmTime!=''">
-                and DATE(d.alm_time) BETWEEN #{almRecordReqDto.startAlmTime} AND #{almRecordReqDto.endAlmTime}
+            <if test="condition.startAlmTime !=null and condition.endAlmTime!=''">
+                and DATE(d.alm_time) BETWEEN #{condition.startAlmTime} AND #{condition.endAlmTime}
             </if>
         </where>
         GROUP BY

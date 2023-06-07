@@ -21,12 +21,12 @@ public interface IFaultAlarmService extends IService<AlmRecord> {
     /**
      * 查询处理过的告警记录的分页列表
      *
-     * @param almRecordReqDto 请求DTO，包含查询条件
-     * @param pageNo          当前页码，默认为1
-     * @param pageSize        每页显示的记录数，默认为10
+     * @param condition 请求DTO，包含查询条件
+     * @param pageNo    当前页码，默认为1
+     * @param pageSize  每页显示的记录数，默认为10
      * @return 响应结果，包含分页后的处理过的告警记录列表
      */
-    IPage<AlmRecordRespDTO> queryAlarmRecordPageList(AlmRecordReqDTO almRecordReqDto, Integer pageNo, Integer pageSize);
+    IPage<AlmRecordRespDTO> queryAlarmRecordPageList(AlmRecordReqDTO condition, Integer pageNo, Integer pageSize);
 
     /**
      * 取消告警
@@ -45,9 +45,11 @@ public interface IFaultAlarmService extends IService<AlmRecord> {
 
     /**
      * 查询sqlserver中的当前告警数据
+     *
      * @return
      */
     List<AlmRecord> querySqlServerOnAlm();
+
     /**
      * 查询历史告警记录的分页列表
      *

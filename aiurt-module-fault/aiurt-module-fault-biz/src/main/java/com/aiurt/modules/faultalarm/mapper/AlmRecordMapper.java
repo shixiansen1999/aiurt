@@ -32,12 +32,13 @@ public interface AlmRecordMapper extends BaseMapper<AlmRecord> {
      * @return 响应结果，包含分页后的实时告警记录列表
      */
     Page<AlmRecordRespDTO> queryAlarmRecordPageList(@Param("page") Page<AlmRecordRespDTO> page, @Param("almRecordReqDto") AlmRecordReqDTO almRecordReqDto);
+
     /**
      * 查询历史告警记录的分页列表
      *
-     * @param almRecordReqDto 请求DTO，包含查询条件
-     * @param page            分页参数
+     * @param condition 请求DTO，包含查询条件
+     * @param page      分页参数
      * @return 响应结果，包含分页后的历史告警记录列表
      */
-    Page<AlmRecordRespDTO> queryAlarmRecordHistoryPageList(Page<AlmRecordRespDTO> page, AlmRecordReqDTO almRecordReqDto);
+    Page<AlmRecordRespDTO> queryAlarmRecordHistoryPageList(Page<AlmRecordRespDTO> page, AlmRecordReqDTO condition);
 }
