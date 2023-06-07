@@ -74,6 +74,7 @@ import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.system.util.SecurityUtil;
+import com.aiurt.modules.system.vo.SysUserDepVo;
 import com.aiurt.modules.workarea.entity.WorkArea;
 import com.aiurt.modules.workarea.entity.WorkAreaOrg;
 import com.aiurt.modules.workarea.mapper.WorkAreaMapper;
@@ -81,6 +82,7 @@ import com.aiurt.modules.workarea.mapper.WorkAreaOrgMapper;
 import com.aiurt.modules.workarea.service.IWorkAreaService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -92,6 +94,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
@@ -107,6 +110,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -147,6 +151,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private ISysDepartService sysDepartService;
     @Autowired
     private SysDepartMapper sysDepartMapper;
+    @Autowired
+    private CsUserMajorMapper csUserMajorMapper;
+    @Autowired
+    private CsUserDepartMapper csUserDepartMapper;
     @Autowired
     private ISysDictService sysDictService;
     @Resource
@@ -3260,5 +3268,149 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public String getStationCodeByMac(String mac) {
         return mac == null ? null : csPositionWifiMapper.getStationCodeByMac(mac);
+    }
+
+    @Override
+    public JSONObject queryPageUserList(LoginUser loginUser, List<String> excludeUserIds, String isBelongOrg,
+                                              String isPermissionOrg, Integer pageNo, Integer pageSize,
+                                              HttpServletRequest req) {
+
+        // 因为此方法基本是从/sys/user/list搬过来的，所以先把请求参数的LoginUser转化成SysUser
+        SysUser user = new SysUser();
+        BeanUtils.copyProperties(loginUser, user);
+        // 因为LoginUser没有majorId、roleCode、systemId、stationId，后面有用到，从req获取
+        user.setMajorId(req.getParameter("majorId"));
+        user.setStationId(req.getParameter("roleCode"));
+        user.setRoleCode(req.getParameter("systemId"));
+        user.setSystemId(req.getParameter("stationId"));
+
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        // Result<IPage<SysUser>> result = new Result<>();
+        QueryWrapper<SysUser> queryWrapper = QueryGenerator.initQueryWrapper(user, req.getParameterMap());
+
+        // 查询当前登录人所属部门的用户
+        if ("1".equals(isBelongOrg)) {
+            if (StrUtil.isBlank(user.getOrgId())){
+                queryWrapper.eq("org_id",sysUser.getOrgId());
+            }
+        }
+        // 查询当前登录人拥有的权限的部门用户，只有当isBelongOrg=0才有效，因为isBelongOrg=0就直接获取所属部门的用户了
+        // 这里使用了in，因为部门也不会太多
+        if ("1".equals(isPermissionOrg) && "0".equals(isBelongOrg)){
+            List<CsUserDepartModel> departModels = csUserDepartMapper.getDepartByUserId(user.getId());
+            List<String> orgIdList = departModels.stream().map(CsUserDepartModel::getId).collect(Collectors.toList());
+            queryWrapper.in("org_id",orgIdList);
+        }
+
+        // 过滤excludeUserIds, 这里使用了in，但是因为user的数量不会太多，不会造成sql很长的in
+        if (CollUtil.isNotEmpty(excludeUserIds)){
+            queryWrapper.notIn("id", excludeUserIds);
+        }
+
+        //用户ID
+        String code = req.getParameter("code");
+        if (oConvertUtils.isNotEmpty(code)) {
+            queryWrapper.in("id", Arrays.asList(code.split(",")));
+            pageSize = code.split(",").length;
+        }
+        //update-end-Author:wangshuai--Date:20211119--for:【vue3】通过部门id查询用户，通过code查询id
+
+        //update-begin-author:taoyan--date:20220104--for: JTC-372 【用户冻结问题】 online授权、用户组件，选择用户都能看到被冻结的用户
+        String status = req.getParameter("status");
+        if (oConvertUtils.isNotEmpty(status)) {
+            queryWrapper.eq("status", Integer.parseInt(status));
+        }
+        //update-end-author:taoyan--date:20220104--for: JTC-372 【用户冻结问题】 online授权、用户组件，选择用户都能看到被冻结的用户
+
+        //TODO 外部模拟登陆临时账号，列表不显示
+        queryWrapper.ne("username", "_reserve_user_external");
+
+        // 根据角色， 站点， 系统， 专业
+        queryWrapper.apply(StrUtil.isNotBlank(user.getMajorId()),
+                "id in (select user_id from cs_user_major where 1=1 and major_id in (select id from cs_major where 1=1 and ( id = {0} or major_code = {0})))",
+                user.getMajorId());
+        queryWrapper.apply(StrUtil.isNotBlank(user.getRoleCode()), "id in (select user_id from sys_user_role where 1=1 and role_id in (select id from sys_role where 1=1 and (id = {0} or role_code ={0})))",
+                user.getRoleCode());
+        queryWrapper.apply(StrUtil.isNotBlank(user.getSystemId()), "id in (select user_id from cs_user_subsystem where 1=1 and system_id in (select id from cs_subsystem where 1=1 and (id ={0} or system_code = {0})))", user.getSystemId());
+
+        queryWrapper.apply(StrUtil.isNotBlank(user.getStationId()), "id in (select user_id from cs_user_station where 1=1 and station_id in (select id from cs_station where 1=1 and (id ={0} or station_code = {0})))", user.getStationId());
+        //如果是查全部，则把当前登录人所属部门的人排在前面
+        String sql = "order by case when ( org_code = '"+sysUser.getOrgCode()+"') then 0 else 1 end,id DESC";
+        queryWrapper.last("0".equals(isBelongOrg),sql);
+        Page<SysUser> page = new Page<SysUser>(pageNo, pageSize);
+        // 这里修改了下面的，因为会有循环依赖
+        // IPage<SysUser> pageList = sysUserService.page(page, queryWrapper);
+        IPage<SysUser> pageList = userMapper.selectPage(page, queryWrapper);
+
+
+        //批量查询用户的所属部门
+        //step.1 先拿到全部的 useids
+        //step.2 通过 useids，一次性查询用户的所属部门名字
+        List<String> userIds = pageList.getRecords().stream().map(SysUser::getId).collect(Collectors.toList());
+        if (userIds != null && userIds.size() > 0) {
+            // 这里修改了下面的，是因为会有循环依赖
+            // Map<String, String> useDepNames = sysUserService.getDepNamesByUserIds(userIds);
+            List<SysUserDepVo> list = userMapper.getDepNamesByUserIds(userIds);
+            Map<String, String> useDepNames = new HashMap(5);
+            list.forEach(item -> {
+                        if (useDepNames.get(item.getUserId()) == null) {
+                            useDepNames.put(item.getUserId(), item.getDepartName());
+                        } else {
+                            useDepNames.put(item.getUserId(), useDepNames.get(item.getUserId()) + "," + item.getDepartName());
+                        }
+                    }
+            );
+
+            pageList.getRecords().forEach(item -> {
+                item.setOrgCodeTxt(useDepNames.get(item.getId()));
+                getUserDetail(item);
+            });
+        }
+        // result.setSuccess(true);
+        // result.setResult(pageList);
+        log.info(pageList.toString());
+        return JSONObject.parseObject(JSON.toJSONString(pageList, SerializerFeature.WriteMapNullValue));
+    }
+
+    private void getUserDetail(SysUser sysUser) {
+        List<String> roleIds = sysUserRoleMapper.getRoleIds(sysUser.getId());
+        List<String> roleNames = sysUserRoleMapper.getRoleNames(sysUser.getId());
+        List<CsUserDepartModel> departModelList = csUserDepartMapper.getDepartByUserId(sysUser.getId());
+        List<CsUserStationModel> stationList = csUserStaionMapper.getStationByUserId(sysUser.getId());
+        List<CsUserMajorModel> majorList = csUserMajorMapper.getMajorByUserId(sysUser.getId());
+        List<CsUserSubsystemModel> subsystemList = csUserSubsystemMapper.getSubsystemByUserId(sysUser.getId());
+        sysUser.setRoleIds(roleIds);
+        sysUser.setRoleNames(StrUtil.join(",", roleNames));
+
+        List<String> departIds = departModelList.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
+        sysUser.setDepartCodes(departIds);
+        List<String> departNameList = departModelList.stream().map(CsUserDepartModel::getDepartName).collect(Collectors.toList());
+        sysUser.setDepartNames(StrUtil.join(",", departNameList));
+
+        List<String> stationIds = stationList.stream().map(CsUserStationModel::getStationId).collect(Collectors.toList());
+        sysUser.setStationIds(stationIds);
+
+        List<String> stationNameList = stationList.stream().map(CsUserStationModel::getStationName).collect(Collectors.toList());
+        sysUser.setStationNames(StrUtil.join(",", stationNameList));
+
+        List<String> majorIds = majorList.stream().map(CsUserMajorModel::getMajorId).collect(Collectors.toList());
+        sysUser.setMajorIds(majorIds);
+        List<String> majorNameList = majorList.stream().map(CsUserMajorModel::getMajorName).collect(Collectors.toList());
+        sysUser.setMajorNames(StrUtil.join(",", majorNameList));
+
+        List<String> subsystemIds = subsystemList.stream().map(CsUserSubsystemModel::getSystemId).collect(Collectors.toList());
+        sysUser.setSystemCodes(subsystemIds);
+        List<String> systemNameList = subsystemList.stream().map(CsUserSubsystemModel::getSystemName).collect(Collectors.toList());
+        sysUser.setSystemNames(StrUtil.join(",", systemNameList));
+
+
+        if (com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotBlank(sysUser.getOrgId())) {
+            SysDepart depart = sysDepartService.getById(sysUser.getOrgId());
+            depart = Optional.ofNullable(depart).orElse(new SysDepart());
+            sysUser.setOrgCode(depart.getOrgCode());
+            sysUser.setOrgName(depart.getDepartName());
+        }
+
+        // 处理
     }
 }
