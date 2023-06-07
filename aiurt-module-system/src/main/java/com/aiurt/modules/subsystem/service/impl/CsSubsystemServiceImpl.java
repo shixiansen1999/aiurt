@@ -3,6 +3,7 @@ package com.aiurt.modules.subsystem.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
@@ -24,6 +25,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.poi.ss.usermodel.*;
@@ -62,6 +64,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -70,6 +74,7 @@ import java.util.stream.Collectors;
  * @Date:   2022-06-21
  * @Version: V1.0
  */
+@Slf4j
 @Service
 public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSubsystem> implements ICsSubsystemService {
     @Autowired
@@ -165,37 +170,50 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         List<SubsystemFaultDTO> subsystemFaultDtos = new ArrayList<>();
         SysParamModel filterParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_FILTER);
         boolean filterValue = "1".equals(filterParamModel.getValue());
-        subSystemCodes.forEach(s -> {
-            SubsystemFaultDTO subDTO = csUserSubsystemMapper.getSubsystemFaultDTO(time,s.getSystemCode());
-            if(filterValue){
-                Long numDuration = csUserSubsystemMapper.getSubsystemFilterFaultDTO(time,s.getSystemCode());
-                subDTO.setNum(numDuration);
-            }
-            subDTO.setFailureNum(subDTO.getCommonFaultNum()+subDTO.getSeriousFaultNum());
-            subDTO.setSystemCode(s.getSystemCode());subDTO.setSystemName(s.getSystemName());subDTO.setId(s.getId());
-            subDTO.setCode(subDTO.getSystemCode());subDTO.setName(subDTO.getSystemName());
-            subDTO.setFailureDuration(new BigDecimal((1.0 * ( subDTO.getNum()) / 60)).setScale(2, BigDecimal.ROUND_HALF_UP));
-            List<SubsystemFaultDTO> list = csUserSubsystemMapper.getSubsystemByDeviceTypeCode(s.getSystemCode(),deviceTypeCode);
-            List<SubsystemFaultDTO> deviceTypeList = new ArrayList<>();
-            list.forEach(l->{
-                SubsystemFaultDTO deviceType = csUserSubsystemMapper.getSubsystemByDeviceType(time,s.getSystemCode(),l.getDeviceTypeCode());
-                Long num = 0L;
-                if(filterValue){
-                    num = csUserSubsystemMapper.getFilterNum(time,s.getSystemCode(),l.getDeviceTypeCode());
-                }else {
-                    num = csUserSubsystemMapper.getNum(time,s.getSystemCode(),l.getDeviceTypeCode());
-                }
-                deviceType.setFailureNum(deviceType.getCommonFaultNum()+deviceType.getSeriousFaultNum());
-                deviceType.setFailureDuration(new BigDecimal((1.0 * (num==null?0:num) / 60)).setScale(2, BigDecimal.ROUND_HALF_UP));
-                deviceType.setDeviceTypeCode(l.getDeviceTypeCode());
-                deviceType.setDeviceTypeName(l.getDeviceTypeName());
-                deviceType.setName(l.getDeviceTypeName());deviceType.setCode(l.getDeviceTypeCode());deviceType.setId(l.getId());
-                deviceTypeList.add(deviceType);
+        //线程处理
+        ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
+        if (CollectionUtil.isNotEmpty(subSystemCodes)){
+            subSystemCodes.forEach(s->{
+                threadPoolExecutor.execute(() -> {
+                    SubsystemFaultDTO subDTO = csUserSubsystemMapper.getSubsystemFaultDTO(time,s.getSystemCode());
+                    if(filterValue){
+                        Long numDuration = csUserSubsystemMapper.getSubsystemFilterFaultDTO(time,s.getSystemCode());
+                        subDTO.setNum(numDuration);
+                    }
+                    subDTO.setFailureNum(subDTO.getCommonFaultNum()+subDTO.getSeriousFaultNum());
+                    subDTO.setSystemCode(s.getSystemCode());subDTO.setSystemName(s.getSystemName());subDTO.setId(s.getId());
+                    subDTO.setCode(subDTO.getSystemCode());subDTO.setName(subDTO.getSystemName());
+                    subDTO.setFailureDuration(new BigDecimal((1.0 * ( subDTO.getNum()) / 60)).setScale(2, BigDecimal.ROUND_HALF_UP));
+                    List<SubsystemFaultDTO> list = csUserSubsystemMapper.getSubsystemByDeviceTypeCode(s.getSystemCode(),deviceTypeCode);
+                    List<SubsystemFaultDTO> deviceTypeList = new ArrayList<>();
+                    list.forEach(l->{
+                        SubsystemFaultDTO deviceType = csUserSubsystemMapper.getSubsystemByDeviceType(time,s.getSystemCode(),l.getDeviceTypeCode());
+                        Long num = 0L;
+                        if(filterValue){
+                            num = csUserSubsystemMapper.getFilterNum(time,s.getSystemCode(),l.getDeviceTypeCode());
+                        }else {
+                            num = csUserSubsystemMapper.getNum(time,s.getSystemCode(),l.getDeviceTypeCode());
+                        }
+                        deviceType.setFailureNum(deviceType.getCommonFaultNum()+deviceType.getSeriousFaultNum());
+                        deviceType.setFailureDuration(new BigDecimal((1.0 * (num==null?0:num) / 60)).setScale(2, BigDecimal.ROUND_HALF_UP));
+                        deviceType.setDeviceTypeCode(l.getDeviceTypeCode());
+                        deviceType.setDeviceTypeName(l.getDeviceTypeName());
+                        deviceType.setName(l.getDeviceTypeName());deviceType.setCode(l.getDeviceTypeCode());deviceType.setId(l.getId());
+                        deviceTypeList.add(deviceType);
+                    });
+                    subDTO.setDeviceTypeList(deviceTypeList);
+                    subsystemFaultDtos.add(subDTO);
+                });
             });
-            subDTO.setDeviceTypeList(deviceTypeList);
-            subsystemFaultDtos.add(subDTO);
-        });
-
+        }
+        threadPoolExecutor.shutdown();
+        try {
+            // 等待线程池中的任务全部完成
+            threadPoolExecutor.awaitTermination(100, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            // 处理中断异常
+            log.info("循环方法的线程中断异常", e.getMessage());
+        }
         return page.setRecords(subsystemFaultDtos);
     }
 
@@ -203,7 +221,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     public List<YearFaultDTO> yearFault(String name) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<YearFaultDTO> yearFaultDtos = csUserSubsystemMapper.getYearNumFault(sysUser.getId());
-        yearFaultDtos.forEach(y->{
+        /*yearFaultDtos.forEach(y->{
             List<SubsystemFaultDTO> list = csUserSubsystemMapper.getSubsystemByDeviceTypeCode(y.getCode(),null);
             List<YearFaultDTO> years = new ArrayList<>();
             list.forEach(l->{
@@ -214,7 +232,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 years.add(year);
             });
             y.setYearFaultDtos(years);
-        });
+        });*/
         if (StrUtil.isNotBlank(name) && CollectionUtil.isNotEmpty(yearFaultDtos)){
              this.annualDataTree(name,yearFaultDtos);
         }
@@ -287,7 +305,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                       }
                   }
               });
-              List<SubsystemFaultDTO> list = csUserSubsystemMapper.getSubsystemByDeviceTypeCode(s.getSystemCode(),null);
+              /*List<SubsystemFaultDTO> list = csUserSubsystemMapper.getSubsystemByDeviceTypeCode(s.getSystemCode(),null);
               List<YearFaultDTO> yearFaultDTOList =new ArrayList<>();
               list.forEach(l->{
                   YearFaultDTO devDTO = new YearFaultDTO();
@@ -325,7 +343,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                   });
                   yearFaultDTOList.add(devDTO);
               });
-              yearFaultDTO.setYearFaultDtos(yearFaultDTOList);
+              yearFaultDTO.setYearFaultDtos(yearFaultDTOList);*/
               yearFaultDtos.add(yearFaultDTO);
           });
           if(StrUtil.isNotBlank(name) && CollectionUtil.isNotEmpty(yearFaultDtos)){
