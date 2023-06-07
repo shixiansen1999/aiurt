@@ -18,4 +18,15 @@
             #{item}
         </foreach>
     </select>
+
+    <select id="getList" resultType="com.aiurt.boot.check.entity.FixedAssetsCheckDetail">
+        SELECT
+                *
+        FROM
+                `fixed_assets_check_detail`
+        WHERE
+                del_flag = 0
+          AND check_id = #{id}
+          AND before_number != after_number
+    </select>
 </mapper>
