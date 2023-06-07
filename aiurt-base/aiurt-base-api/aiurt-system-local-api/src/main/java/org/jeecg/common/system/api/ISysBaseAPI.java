@@ -16,6 +16,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.system.vo.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -1178,5 +1179,20 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     DictModel dictById(String id);
+
+    /**
+     * 用户的分页列表查询，做一个新的过滤方法
+     * 这个方法是 /sys/user/list 接口的进一步封装
+     * @param loginUser user中查询过滤添加
+     * @param excludeUserIds 查询用户时，要排除的用户id列表
+     * @param isBelongOrg  是否查询属于当前登录人的所属部门的用户，0否1是
+     * @param isPermissionOrg  是否查询当前登录人拥有的权限的部门用户，0否1是
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    JSONObject queryPageUserList(LoginUser loginUser, List<String> excludeUserIds, String isBelongOrg,
+                                       String isPermissionOrg, Integer pageNo, Integer pageSize, HttpServletRequest req);
 }
 
