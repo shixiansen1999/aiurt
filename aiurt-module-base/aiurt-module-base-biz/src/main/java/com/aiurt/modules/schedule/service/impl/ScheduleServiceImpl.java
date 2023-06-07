@@ -418,14 +418,15 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                 LoginUser user = scheduleMapper.getUser(scheduleMap.get(1), scheduleMap.get(2));
                 if (ObjectUtil.isEmpty(user)) {
                     errorList.add("系统中未存在该人员姓名或工号");
-                }
-                // 判断部门下是否存在该人员
-                if (ObjectUtil.isNotEmpty(depart) && !StrUtil.equals(user.getOrgId(), depart.getId())) {
-                    errorList.add(depart.getDepartName() + "未存在该人员");
-                }
-                //判断时间内是否有人已经排班
-                if (CollUtil.isNotEmpty(userIds)&&userIds.contains(user.getId())) {
-                    errorList.add("用户此段时间内已排班");
+                }else {
+                    // 判断部门下是否存在该人员
+                    if (ObjectUtil.isNotEmpty(depart) && !StrUtil.equals(user.getOrgId(), depart.getId())) {
+                        errorList.add(depart.getDepartName() + "未存在该人员");
+                    }
+                    //判断时间内是否有人已经排班
+                    if (CollUtil.isNotEmpty(userIds)&&userIds.contains(user.getId())) {
+                        errorList.add("用户此段时间内已排班");
+                    }
                 }
             } else {
                 errorList.add("用户姓名或工号不能为空");
