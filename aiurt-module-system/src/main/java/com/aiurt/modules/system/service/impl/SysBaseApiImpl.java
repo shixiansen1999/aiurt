@@ -3285,7 +3285,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         user.setSystemId(req.getParameter("stationId"));
 
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Result<IPage<SysUser>> result = new Result<>();
+        // Result<IPage<SysUser>> result = new Result<>();
         QueryWrapper<SysUser> queryWrapper = QueryGenerator.initQueryWrapper(user, req.getParameterMap());
 
         // 查询当前登录人所属部门的用户
@@ -3366,10 +3366,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 getUserDetail(item);
             });
         }
-        result.setSuccess(true);
-        result.setResult(pageList);
+        // result.setSuccess(true);
+        // result.setResult(pageList);
         log.info(pageList.toString());
-        return JSONObject.parseObject(JSON.toJSONString(result, SerializerFeature.WriteMapNullValue));
+        return JSONObject.parseObject(JSON.toJSONString(pageList, SerializerFeature.WriteMapNullValue));
     }
 
     private void getUserDetail(SysUser sysUser) {
