@@ -21,6 +21,7 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -59,17 +60,18 @@ public class FaultAlarmServiceImpl extends ServiceImpl<AlmRecordMapper, AlmRecor
             throw new AiurtBootException("未查询到此项记录");
         }
 
-        // 增加历史记录
-        AlmRecordHistory almRecordHistory = new AlmRecordHistory();
-        BeanUtils.copyProperties(almRecordHistory, almRecordHistory, "id,createTime,createBy,updateBy,updateTime");
-        almRecordHistory.setCancelReason(cancelAlarmReqDTO.getCancelReason());
-        almRecordHistory.setDealDateTime(new Date());
-        almRecordHistory.setDealUserId(getLoginUser().getId());
-        almRecordHistory.setDealRemark(cancelAlarmReqDTO.getDealRemark());
+        // 检查告警是否已经取消过
+        String redisKey = FaultAlarmConstant.FAULT_ALARM_ID + almRecord.getId();
+        if (ObjectUtil.isNotEmpty(redisUtil.get(FaultAlarmConstant.FAULT_ALARM_ID + almRecord.getId()))) {
+            throw new AiurtBootException("取消告警失败，此告警信息上一次取消告警离此次取消告警小于30分钟");
+        }
+
+        // 添加历史记录
+        AlmRecordHistory almRecordHistory = createAlmRecordHistory(almRecord, cancelAlarmReqDTO);
         almRecordHistoryMapper.insert(almRecordHistory);
 
         // 设置redis的缓存时间为30分钟
-        redisUtil.set(FaultAlarmConstant.FAULT_ALARM_ID + almRecord.getId(), almRecord.getId(), 30 * 60);
+        redisUtil.set(redisKey, almRecord.getId(), 30 * 60);
 
         // 删除原来的记录
         almRecordMapper.deleteById(almRecord.getId());
@@ -77,20 +79,18 @@ public class FaultAlarmServiceImpl extends ServiceImpl<AlmRecordMapper, AlmRecor
 
     @Override
     public AlmRecordRespDTO faultAlarmService(String id) {
-        AlmRecordHistory almRecordHistory = almRecordHistoryMapper.selectById(id);
-        if (ObjectUtil.isEmpty(almRecordHistory)) {
+        AlmRecordRespDTO result = almRecordHistoryMapper.queryById(id);
+        if (ObjectUtil.isEmpty(result)) {
             throw new AiurtBootException("未查询到此项记录");
         }
-        AlmRecordRespDTO result = new AlmRecordRespDTO();
-        BeanUtils.copyProperties(almRecordHistory, result);
         return result;
     }
 
     @Override
     @DS("multi-sqlserver")
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class)
     public List<AlmRecord> querySqlServerOnAlm() {
-        List<AlmRecord> result = almRecordMapper.querySqlServerOnAlm();
-        return result;
+        return almRecordMapper.querySqlServerOnAlm();
     }
 
     @Override
@@ -111,6 +111,27 @@ public class FaultAlarmServiceImpl extends ServiceImpl<AlmRecordMapper, AlmRecor
             throw new AiurtBootException("请重新登录");
         }
         return loginUser;
+    }
+
+    /**
+     * 根据提供的AlmRecord和CancelAlarmReqDTO创建一个AlmRecordHistory对象。
+     *
+     * @param almRecord         表示告警记录的AlmRecord对象。
+     * @param cancelAlarmReqDTO 包含取消告警详情的CancelAlarmReqDTO对象。
+     * @return 创建的AlmRecordHistory对象。
+     */
+    private AlmRecordHistory createAlmRecordHistory(AlmRecord almRecord, CancelAlarmReqDTO cancelAlarmReqDTO) {
+        AlmRecordHistory almRecordHistory = new AlmRecordHistory();
+        almRecordHistory.setCancelReason(cancelAlarmReqDTO.getCancelReason());
+        almRecordHistory.setState(FaultAlarmConstant.ALM_DEAL_STATE_2);
+        almRecordHistory.setDealDateTime(new Date());
+        almRecordHistory.setDealUserId(getLoginUser().getId());
+        almRecordHistory.setDealRemark(cancelAlarmReqDTO.getDealRemark());
+
+        // 复制属性（排除不需要复制的属性）
+        BeanUtils.copyProperties(almRecord, almRecordHistory, new String[]{"id", "createTime", "createBy", "updateBy", "updateTime"});
+
+        return almRecordHistory;
     }
 
 }

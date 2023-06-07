@@ -62,7 +62,7 @@ public class AlmRecordHistory implements Serializable {
     @ApiModelProperty(value = "最后告警时间(yyyy-MM-dd HH:mm:ss)")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date lastAlarmTime;
+    private Date lastAlmTime;
 
     @ApiModelProperty(value = "取消原因")
     private String cancelReason;
@@ -77,9 +77,6 @@ public class AlmRecordHistory implements Serializable {
 
     @ApiModelProperty(value = "处理人ID")
     private String dealUserId;
-
-    @ApiModelProperty(value = "如果取消告警，记录取消时间+30分钟到此字段")
-    private Date timeAfter30Minutes;
 
     @ApiModelProperty(value = "告警重复次数")
     private Integer almNum;

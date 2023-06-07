@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultalarm.mapper;
 
+import com.aiurt.modules.faultalarm.dto.resp.AlmRecordRespDTO;
 import com.aiurt.modules.faultalarm.entity.AlmRecordHistory;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -11,4 +12,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface AlmRecordHistoryMapper extends BaseMapper<AlmRecordHistory> {
 
+    /**
+     * 根据id查询历史记录
+     * @param id
+     * @return
+     */
+    AlmRecordRespDTO queryById(String id);
 }

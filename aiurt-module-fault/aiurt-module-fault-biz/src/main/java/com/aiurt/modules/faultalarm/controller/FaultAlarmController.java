@@ -69,7 +69,7 @@ public class FaultAlarmController {
     @AutoLog(value = "获取告警记录详情", operateType = 1, operateTypeAlias = "获取告警记录详情", module = ModuleType.FAULT)
     @ApiOperation(value = "获取告警记录详情", notes = "获取告警记录详情")
     @GetMapping(value = "/alarmDetails")
-    public Result<AlmRecordRespDTO> alarmDetails(@RequestParam("告警记录id") String id) {
+    public Result<AlmRecordRespDTO> alarmDetails(@RequestParam(name = "id") String id) {
         AlmRecordRespDTO result = faultAlarmService.faultAlarmService(id);
         return Result.OK(result);
     }

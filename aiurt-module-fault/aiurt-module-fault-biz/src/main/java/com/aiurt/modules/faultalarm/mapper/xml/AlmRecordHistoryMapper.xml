@@ -2,4 +2,27 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.faultalarm.mapper.AlmRecordHistoryMapper">
 
+    <select id="queryById" resultType="com.aiurt.modules.faultalarm.dto.resp.AlmRecordRespDTO">
+        SELECT oar.id,
+               oar.alm_time,
+               oar.state,
+               oar.`level`,
+               oar.alm_text,
+               oar.device_id,
+               oar.last_alm_time,
+               oar.alm_num,
+               oar.deal_user_id,
+               CONCAT(cancel_reason, ' ', deal_remark) AS dealRemark,
+               oar.deal_date_time,
+               oar.fault_code,
+               d.`code`                                AS deviceCode,
+               d.station_code,
+               d.device_type_code,
+               d.major_code,
+               d.system_code                           AS subSystemCode
+        FROM on_alm_record_history oar
+        LEFT JOIN device d ON d.id = oar.device_id
+        where oar.id = #{id}
+        GROUP BY oar.id
+    </select>
 </mapper>

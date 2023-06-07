@@ -17,10 +17,7 @@ import org.quartz.JobExecutionException;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -37,43 +34,29 @@ public class OnAlmJob implements Job {
     @Resource
     private RedisUtil redisUtil;
 
-    @Transactional(rollbackFor = Exception.class)
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         log.info("OnAlmJob类定时任务同步当前告警数据开始，时间：{}", DateUtils.getTimestamp());
 
-        // sqlserver中的数据
+        // 获取sqlserver中的告警数据
         List<AlmRecord> onAlms = faultAlarmService.querySqlServerOnAlm();
 
-        if (CollUtil.isNotEmpty(onAlms)) {
-            // 获取设备对应关系
-            Map<String, String> deviceMap = getDeviceMap();
+        // 获取设备对应关系
+        Map<String, String> deviceMap = getDeviceMap();
 
-            // 转换设备对应关系
-            Iterator<AlmRecord> iterator = onAlms.iterator();
-            while (iterator.hasNext()) {
-                AlmRecord next = iterator.next();
-                if (ObjectUtil.isNotEmpty(redisUtil.get(FaultAlarmConstant.FAULT_ALARM_ID + next.getId()))) {
-                    iterator.remove();
-                } else {
-                    next.setDeviceId(deviceMap.get(next.getEquipmentId()));
-                }
-            }
-        }
+        List<AlmRecord> validOnAlms = filterAndTransformAlmRecords(onAlms, deviceMap);
 
-        // mysql中的数据
+        // 获取mysql中的告警数据
         List<String> oldIds = getOldIds();
 
         if (CollUtil.isEmpty(oldIds)) {
-            faultAlarmService.saveBatch(onAlms, 1000);
-        }
-
-        // 需要删除的数据
-        if (CollUtil.isNotEmpty(onAlms)) {
-            List<String> newIds = onAlms.stream().map(AlmRecord::getId).collect(Collectors.toList());
-            List<String> deleteIds = oldIds.stream().filter(oldId -> !newIds.contains(oldId)).collect(Collectors.toList());
+            faultAlarmService.saveBatch(validOnAlms, 1000);
+        } else {
+            // 需要删除的数据
+            List<String> deleteIds = findDeleteIds(validOnAlms, oldIds);
             faultAlarmService.removeBatchByIds(deleteIds, 1000);
-            faultAlarmService.saveOrUpdateBatch(onAlms, 1000);
+            faultAlarmService.saveOrUpdateBatch(validOnAlms, 1000);
         }
 
         log.info("OnAlmJob类定时任务同步当前告警数据结束，时间：{}", DateUtils.getTimestamp());
@@ -95,5 +78,50 @@ public class OnAlmJob implements Job {
      */
     private List<String> getOldIds() {
         return Optional.ofNullable(faultAlarmService.list(new LambdaQueryWrapper<AlmRecord>().select(AlmRecord::getId))).orElse(CollUtil.newArrayList()).stream().map(AlmRecord::getId).collect(Collectors.toList());
+    }
+
+    /**
+     * 过滤和转换后的有效告警记录列表
+     *
+     * @param onAlms    源告警记录列表，包含从SQL Server中查询的数据
+     * @param deviceMap 设备对应关系的映射，将设备ID映射到设备编号
+     * @return 设备对应关系的映射，将设备ID映射到设备编号
+     */
+    private List<AlmRecord> filterAndTransformAlmRecords(List<AlmRecord> onAlms, Map<String, String> deviceMap) {
+        List<AlmRecord> validOnAlms = new ArrayList<>();
+        Set<String> existingIds = new HashSet<>();
+
+        for (AlmRecord almRecord : onAlms) {
+            if (existingIds.contains(almRecord.getId())) {
+                continue;
+            }
+
+            if (ObjectUtil.isNotEmpty(redisUtil.get(FaultAlarmConstant.FAULT_ALARM_ID + almRecord.getId()))) {
+                continue;
+            }
+
+            existingIds.add(almRecord.getId());
+            almRecord.setState(FaultAlarmConstant.ALM_DEAL_STATE_1);
+            almRecord.setDeviceId(deviceMap.get(almRecord.getEquipmentId()));
+            validOnAlms.add(almRecord);
+        }
+
+        return validOnAlms;
+    }
+
+    /**
+     * @param validOnAlms 经过过滤和转换后的有效告警记录列表
+     * @param oldIds      旧的告警记录ID列表
+     * @return 需要删除的告警记录ID列表
+     */
+    private List<String> findDeleteIds(List<AlmRecord> validOnAlms, List<String> oldIds) {
+        if (CollUtil.isEmpty(oldIds)) {
+            return CollUtil.newArrayList();
+        }
+        List<String> newIds = Optional.ofNullable(validOnAlms).orElse(CollUtil.newArrayList())
+                .stream()
+                .map(AlmRecord::getId)
+                .collect(Collectors.toList());
+        return oldIds.stream().filter(oldId -> !newIds.contains(oldId)).collect(Collectors.toList());
     }
 }

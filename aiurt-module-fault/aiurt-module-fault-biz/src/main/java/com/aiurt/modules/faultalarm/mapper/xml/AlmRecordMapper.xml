@@ -6,7 +6,7 @@
         SELECT
             CONCAT(EquipmentID,'_', Alm_Element,'_',AlmIndex) AS id,
             CONCAT(EquipmentID,'_', Alm_Element) AS equipmentId,
-            MAX ( DateTime ) AS lastLarmTime,
+            MAX ( DateTime ) AS lastAlmTime,
             MIN ( DateTime ) AS almTime,
             LEVEL as level,
             AlmText AS almText,
@@ -20,7 +20,7 @@
             AlmIndex,
             LEVEL,
             AlmText
-        order by lastLarmTime desc,almTime desc
+        order by lastAlmTime desc,almTime desc
     </select>
     <select id="queryAlarmRecordPageList" resultType="com.aiurt.modules.faultalarm.dto.resp.AlmRecordRespDTO">
         SELECT
@@ -30,7 +30,7 @@
             oar.`level`,
             oar.alm_text,
             oar.device_id,
-            oar.last_larm_time,
+            oar.last_alm_time as lastAlmTime,
             oar.alm_num,
             d.`code` AS deviceCode,
             d.station_code,
@@ -50,7 +50,7 @@
         </where>
         GROUP BY
             oar.id
-        Order BY oar.last_larm_time desc,oar.alm_time desc,d.code desc
+        Order BY oar.last_alm_time desc,oar.alm_time desc,d.code desc
     </select>
     <select id="queryAlarmRecordHistoryPageList"
             resultType="com.aiurt.modules.faultalarm.dto.resp.AlmRecordRespDTO">
@@ -61,10 +61,10 @@
         oar.`level`,
         oar.alm_text,
         oar.device_id,
-        oar.last_larm_time,
+        oar.last_alm_time,
         oar.alm_num,
         oar.deal_user_id,
-        CONCAT(cancel_reason, ' ', deal_remark) AS combined_reason_remark AS dealRemark,
+        CONCAT(cancel_reason, ' ', deal_remark) AS dealRemark,
         oar.deal_date_time,
         oar.fault_code,
         d.`code` AS deviceCode,
@@ -73,7 +73,7 @@
         d.major_code,
         d.system_code AS subSystemCode
         FROM
-        on_alm_record oar
+        on_alm_record_history oar
         LEFT JOIN device d ON d.id = oar.device_id
         <where>
             <if test="almRecordReqDto.subSystemCode!=null and almRecordReqDto.subSystemCode!=''">
@@ -91,6 +91,6 @@
         </where>
         GROUP BY
         oar.id
-        Order BY oar.last_larm_time desc,oar.alm_time desc,d.code desc
+        Order BY oar.last_alm_time desc,oar.alm_time desc,d.code desc
     </select>
 </mapper>

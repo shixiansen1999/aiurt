@@ -55,10 +55,7 @@ public class AlmRecord implements Serializable {
     @ApiModelProperty(value = "最后告警时间(yyyy-MM-dd HH:mm:ss)")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date lastAlarmTime;
-
-    @ApiModelProperty(value = "处理说明")
-    private String dealRemark;
+    private Date lastAlmTime;
 
     @ApiModelProperty(value = "告警重复次数")
     private Integer almNum;
