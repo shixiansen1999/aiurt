@@ -8,6 +8,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.base.PageOrderGenerator;
 import com.aiurt.modules.basic.entity.CsWork;
@@ -15,6 +16,7 @@ import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
+import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.service.IFaultDeviceService;
 import com.aiurt.modules.fault.service.IFaultRepairRecordService;
 import com.aiurt.modules.fault.service.IFaultService;
@@ -65,6 +67,8 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     public static final String  PERMISSION_URL = "/fault/list";
 
+    @Autowired
+    private FaultMapper faultMapper;
 
     @Autowired
     private IFaultService faultService;
@@ -643,6 +647,30 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             });
         }
         return hitchDrillingDTOList;
+    }
+
+    /**
+     * 填写维修记录时，参与人的查询，主要是为了过滤掉维修人，使维修人不能又是维修人
+     * @param loginUser
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "查询用户", operateType =  1, operateTypeAlias = "查询用户", permissionUrl = PERMISSION_URL)
+    @ApiOperation(value = "查询用户", notes = "查询用户")
+    @GetMapping("/queryUser")
+    public Result<?> queryUser(LoginUser loginUser, @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                               @RequestParam(name = "faultCode") String faultCode,HttpServletRequest req){
+        Fault fault = faultMapper.selectByCode(faultCode);
+        if (Objects.isNull(fault)) {
+            throw new AiurtBootException("故障工单不存在");
+        }
+        String userId = sysBaseAPI.getUserByUserName(fault.getAppointUserName());
+        JSONObject jsonObject = sysBaseAPI.queryPageUserList(loginUser, Collections.singletonList(userId),
+                "1", "0", pageNo, pageSize, req);
+        return Result.ok(jsonObject);
     }
 
 }
