@@ -243,7 +243,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
            patrolData = getWirelessSystem(taskId,headerMap);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
        }else if ("pis_system.xlsx".equals(excelName)){
-           patrolData = getRemark(taskId);
+           patrolData = getRemark(taskId,headerMap);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
        }else if ("wireless_system1.xlsx".equals(excelName)){
            patrolData = getWirelessSystem1(taskId,headerMap);
@@ -642,7 +642,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         }
         return getPrint;
     }
-    private List<PrintDTO> getRemark(String id) {
+    private List<PrintDTO> getRemark(String id,Map<String,Object> map) {
         List<PrintDTO> getRemark = new ArrayList<>();
         List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
         for (PatrolStationDTO dto : billGangedInfo) {
@@ -664,19 +664,22 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             List<String> pisSystem = sysBaseApi.getDictItems("pis_system").stream().map(w-> w.getText()).collect(Collectors.toList());
             PrintDTO printDTO = new PrintDTO();
             pisSystem.forEach(str-> {
-                PatrolCheckResultDTO patrolCheckResultDTO = parentDTOList.stream().filter(p -> p.getCheck().equals(str)).findFirst().orElse(null);
+                PatrolCheckResultDTO patrolCheckResultDTO = parentDTOList.stream().filter(p -> p.getOldCode().equals(str)).findFirst().orElse(null);
                 if (ObjectUtil.isEmpty(patrolCheckResultDTO)){
-                    printDTO.setResult("☐是 ☑否");
-                    printDTO.setResultTrue("☐正常");
-                    printDTO.setResultFalse("☐异常");
-                    printDTO.setRemark(null);
+                    map.put("result"+str,"☐是 ☑否");
+                    map.put("resultTrue"+str,"☐正常");
+                    map.put("resultFalse"+str,"☐异常");
+                    map.put("remark"+str,null);
+//                    printDTO.setResult("");
+//                    printDTO.setResultTrue();
+//                    printDTO.setResultFalse("☐异常");
+//                    printDTO.setRemark(null);
                 }else {
                     String oldId = patrolCheckResultDTO.getOldId();
                     StringBuffer stringBuffer = new StringBuffer();
                     AtomicBoolean flag = new AtomicBoolean(false);
                     //子级
                     List<PatrolCheckResultDTO> childDTOs =  checkDTOs.stream()
-                            .filter(c -> c.getCheck() == 1)
                             .filter(c -> c.getParentId().equals(oldId))
                             .collect(Collectors.toList());
                     childDTOs.forEach(c->{
@@ -687,18 +690,26 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                         }
                     });
                     if(flag.get()){
-                        printDTO.setResult("☑是 ☐否");
-                        printDTO.setResultTrue("☐正常");
-                        printDTO.setResultFalse("☑异常");
+                        map.put("result"+str,"☑是 ☐否");
+                        map.put("resultTrue"+str,"☐正常");
+                        map.put("resultFalse"+str,"☑异常");
                         stringBuffer.deleteCharAt(stringBuffer.length()-1);
-                        printDTO.setRemark(stringBuffer.toString());
+                        map.put("remark"+str,stringBuffer.toString());
+//                        printDTO.setResult("☑是 ☐否");
+//                        printDTO.setResultTrue("☐正常");
+//                        printDTO.setResultFalse("☑异常");
+//                        printDTO.setRemark(stringBuffer.toString());
                     }else{
-                        printDTO.setResult("☑是 ☐否");
-                        printDTO.setResultTrue("☑正常");
-                        printDTO.setResultFalse("☐异常");
+                        map.put("result"+str,"☑是 ☐否");
+                        map.put("resultTrue"+str,"☑正常");
+                        map.put("resultFalse"+str,"☐异常");
+                        map.put("remark"+str,null);
+//                        printDTO.setResult("☑是 ☐否");
+//                        printDTO.setResultTrue("☑正常");
+//                        printDTO.setResultFalse("☐异常");
                     }
                 }
-                getRemark.add(printDTO);
+               // getRemark.add(printDTO);
             });
         }
         return getRemark;

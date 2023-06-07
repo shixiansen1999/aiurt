@@ -144,9 +144,12 @@
         pcr.quality_standard,
         pcr.check_result,
         pcr.remark,
-        pcr.`check`
+        pcr.`check`,
+        ps.`code` as oldCode,
+        pcr.parent_id
         FROM
         patrol_check_result pcr
+        LEFT JOIN patrol_standard_items ps on pcr.old_id = ps.id
         WHERE
         pcr.del_flag =0
         AND pcr.task_device_id IN (
