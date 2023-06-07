@@ -191,7 +191,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (CollUtil.isNotEmpty(result)) {
             result.forEach(repair -> {
                 // 提交线程任务
-                Future<RepairPool> submit = repairPool.submit(new PoolThreadService(repair, sysBaseApi, manager, repairPoolStationRelMapper, baseMapper, cycleTypeMap, inspectionTaskStateMap, workTypeMap, allRepairPoolOrgRels, allRepairPoolStationRels));
+                Future<RepairPool> submit = repairPool.submit(new PoolThreadService(repair, sysBaseApi, manager, repairPoolStationRelMapper, baseMapper, cycleTypeMap, inspectionTaskStateMap, workTypeMap, allRepairPoolOrgRels, allRepairPoolStationRels,repairTaskMapper));
                 futureList.add(submit);
             });
 
