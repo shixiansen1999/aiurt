@@ -122,14 +122,14 @@ public class FaultAlarmServiceImpl extends ServiceImpl<AlmRecordMapper, AlmRecor
      */
     private AlmRecordHistory createAlmRecordHistory(AlmRecord almRecord, CancelAlarmReqDTO cancelAlarmReqDTO) {
         AlmRecordHistory almRecordHistory = new AlmRecordHistory();
+
+        // 复制属性（排除不需要复制的属性）
+        BeanUtils.copyProperties(almRecord, almRecordHistory, new String[]{"id", "createTime", "createBy", "updateBy", "updateTime"});
         almRecordHistory.setCancelReason(cancelAlarmReqDTO.getCancelReason());
         almRecordHistory.setState(FaultAlarmConstant.ALM_DEAL_STATE_2);
         almRecordHistory.setDealDateTime(new Date());
         almRecordHistory.setDealUserId(getLoginUser().getId());
         almRecordHistory.setDealRemark(cancelAlarmReqDTO.getDealRemark());
-
-        // 复制属性（排除不需要复制的属性）
-        BeanUtils.copyProperties(almRecord, almRecordHistory, new String[]{"id", "createTime", "createBy", "updateBy", "updateTime"});
 
         return almRecordHistory;
     }

@@ -27,11 +27,11 @@ public interface AlmRecordMapper extends BaseMapper<AlmRecord> {
     /**
      * 查询实时告警记录的分页列表
      *
-     * @param almRecordReqDto 请求DTO，包含查询条件
+     * @param condition 请求DTO，包含查询条件
      * @param page            分页参数
      * @return 响应结果，包含分页后的实时告警记录列表
      */
-    Page<AlmRecordRespDTO> queryAlarmRecordPageList(@Param("page") Page<AlmRecordRespDTO> page, @Param("almRecordReqDto") AlmRecordReqDTO almRecordReqDto);
+    Page<AlmRecordRespDTO> queryAlarmRecordPageList(@Param("page") Page<AlmRecordRespDTO> page, @Param("condition") AlmRecordReqDTO condition);
 
     /**
      * 查询历史告警记录的分页列表
@@ -40,5 +40,5 @@ public interface AlmRecordMapper extends BaseMapper<AlmRecord> {
      * @param page      分页参数
      * @return 响应结果，包含分页后的历史告警记录列表
      */
-    Page<AlmRecordRespDTO> queryAlarmRecordHistoryPageList(Page<AlmRecordRespDTO> page, AlmRecordReqDTO condition);
+    Page<AlmRecordRespDTO> queryAlarmRecordHistoryPageList(Page<AlmRecordRespDTO> page, @Param("condition") AlmRecordReqDTO condition);
 }

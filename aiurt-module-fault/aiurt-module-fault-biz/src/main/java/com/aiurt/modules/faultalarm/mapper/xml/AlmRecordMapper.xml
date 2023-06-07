@@ -30,13 +30,14 @@
             oar.`level`,
             oar.alm_text,
             oar.device_id,
-            oar.last_alm_time as lastAlmTime,
+            oar.create_time,
+            oar.last_alm_time,
             oar.alm_num,
-            d.`code` AS deviceCode,
+            d.`code` AS device_code,
             d.station_code,
             d.device_type_code,
             d.major_code,
-            d.system_code AS subSystemCode
+            d.system_code AS sub_system_code
         FROM
             on_alm_record oar
         LEFT JOIN device d ON d.id = oar.device_id
@@ -64,14 +65,15 @@
         oar.last_alm_time,
         oar.alm_num,
         oar.deal_user_id,
-        CONCAT(cancel_reason, ' ', deal_remark) AS dealRemark,
+        oar.create_time,
+        CONCAT(IFNULL(cancel_reason,''), ' ', IFNULL(deal_remark,'')) AS deal_remark,
         oar.deal_date_time,
         oar.fault_code,
-        d.`code` AS deviceCode,
+        d.`code` AS device_code,
         d.station_code,
         d.device_type_code,
         d.major_code,
-        d.system_code AS subSystemCode
+        d.system_code AS sub_system_code
         FROM
         on_alm_record_history oar
         LEFT JOIN device d ON d.id = oar.device_id

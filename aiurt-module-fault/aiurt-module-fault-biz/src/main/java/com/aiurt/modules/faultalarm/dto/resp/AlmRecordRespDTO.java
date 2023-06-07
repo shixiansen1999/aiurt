@@ -81,4 +81,9 @@ public class AlmRecordRespDTO extends DictEntity {
 
     @ApiModelProperty(value = "工单编号")
     private String faultCode;
+
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "创建时间")
+    private Date createTime;
 }
