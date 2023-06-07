@@ -1,7 +1,7 @@
 package com.aiurt.boot.plan.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import com.aiurt.boot.constant.DictConstant;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.plan.dto.StationDTO;
@@ -10,6 +10,9 @@ import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.aiurt.boot.plan.entity.RepairPoolOrgRel;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper;
+import com.aiurt.boot.task.entity.RepairTask;
+import com.aiurt.boot.task.mapper.RepairTaskMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.system.api.ISysBaseAPI;
 
 import java.util.Collections;
@@ -47,6 +50,8 @@ public class PoolThreadService implements Callable<RepairPool> {
     private List<RepairPoolOrgRel> allRepairPoolOrgRels;
 
     private Map<String, List<StationDTO>> allRepairPoolStationRels;
+    private RepairTaskMapper repairTaskMapper;
+
 
     public PoolThreadService(RepairPool repairPool,
                              ISysBaseAPI sysBaseApi,
@@ -57,7 +62,8 @@ public class PoolThreadService implements Callable<RepairPool> {
                              Map<String, String> inspectionTaskStateMap,
                              Map<String, String> workTypeMap,
                              List<RepairPoolOrgRel> allRepairPoolOrgRels,
-                             Map<String, List<StationDTO>> allRepairPoolStationRels) {
+                             Map<String, List<StationDTO>> allRepairPoolStationRels,
+                             RepairTaskMapper repairTaskMapper) {
         this.repairPool = repairPool;
         this.sysBaseApi = sysBaseApi;
         this.manager = manager;
@@ -68,6 +74,7 @@ public class PoolThreadService implements Callable<RepairPool> {
         this.workTypeMap = workTypeMap;
         this.allRepairPoolOrgRels = allRepairPoolOrgRels;
         this.allRepairPoolStationRels = allRepairPoolStationRels;
+        this.repairTaskMapper = repairTaskMapper;
     }
 
     /**
@@ -110,6 +117,11 @@ public class PoolThreadService implements Callable<RepairPool> {
             repairPool.setStatusName(inspectionTaskStateMap.get(String.valueOf(repairPool.getStatus())));
             // 作业类型
             repairPool.setWorkTypeName(workTypeMap.get(String.valueOf(repairPool.getWorkType())));
+            //检修任务Id
+            RepairTask repairTask = repairTaskMapper.selectOne(new LambdaQueryWrapper<RepairTask>().eq(RepairTask::getRepairPoolId, repairPool.getId()));
+            if(ObjectUtil.isNotEmpty(repairTask)){
+                repairPool.setTaskId(repairTask.getId());
+            }
         } catch (Exception e) {
             throw e;
         } finally {
