@@ -1,9 +1,6 @@
 package com.aiurt.modules.fault.mapper;
 
-import com.aiurt.modules.fault.dto.FaultDeviceDTO;
-import com.aiurt.modules.fault.dto.FaultHistoryDTO;
-import com.aiurt.modules.fault.dto.FaultMaintenanceDTO;
-import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
+import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
@@ -75,4 +72,11 @@ public interface FaultRepairRecordMapper extends BaseMapper<FaultRepairRecord> {
      * @return
      */
     List<RadarNumberModel> getHandleNumber();
+
+    /**
+     * 获取用户故障处理的平均响应时间和平均解决时间
+     *
+     * @return
+     */
+    List<EfficiencyDTO> getEfficiency();
 }

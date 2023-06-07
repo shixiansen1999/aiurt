@@ -16,13 +16,13 @@ public class RadarModel {
      * 当前值
      */
 //    private int total;
-    private int currentValue;
+    private Double currentValue = 0.0;
     /**
      * 最大值
      */
-    private int maxValue;
+    private Double maxValue = 0.0;
     /**
      * 最小值
      */
-    private int minValue;
+    private Double minValue = 0.0;
 }

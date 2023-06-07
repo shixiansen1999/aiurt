@@ -5,13 +5,20 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import com.aiurt.modules.system.entity.SysUserAptitudes;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.jeecg.common.system.vo.RadarAptitudeModel;
 
 /**
  * @Description: sys_user_aptitudes
  * @Author: aiurt
- * @Date:   2023-06-07
+ * @Date: 2023-06-07
  * @Version: V1.0
  */
 public interface SysUserAptitudesMapper extends BaseMapper<SysUserAptitudes> {
-
+    /**
+     * 雷达图-获取用户的资质信息
+     *
+     * @param orgCode
+     * @return
+     */
+    List<RadarAptitudeModel> getAptitude(@Param("orgCode") String orgCode);
 }

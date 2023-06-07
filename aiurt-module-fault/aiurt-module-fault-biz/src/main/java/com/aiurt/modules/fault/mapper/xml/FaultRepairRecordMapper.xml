@@ -102,4 +102,17 @@
         where del_flag = 0
         group by appoint_user_name
     </select>
+
+    <select id="getEfficiency" resultType="com.aiurt.modules.fault.dto.EfficiencyDTO">
+        select frr.appoint_user_name username,
+               avg(time_to_sec(timediff(frr.start_time, f.assign_time))) responseTime,
+               avg(time_to_sec(timediff(frr.end_time, frr.start_time)))  resolveTime
+        from fault_repair_record frr
+                 join fault f on frr.fault_code = f.code
+        where frr.del_flag = 0
+          and frr.start_time is not null
+          and frr.end_time is not null
+          and f.assign_time is not null
+        group by f.appoint_user_name
+    </select>
 </mapper>

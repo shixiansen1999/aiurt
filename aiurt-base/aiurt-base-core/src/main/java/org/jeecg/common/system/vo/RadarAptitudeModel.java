@@ -5,23 +5,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @Description: 人员画像-雷达图故障处理次数计数对象
+ * @Description: 人员画像-雷达图资质证书计数对象
  * @author:
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RadarNumberModel {
-//    /**
-//     * 用户ID
-//     */
-//    private String userId;
+public class RadarAptitudeModel {
     /**
-     * 用户名
+     * 用户ID
      */
-    private String username;
+    private String userId;
     /**
-     * 数量
+     * 证书数量
      */
     private Integer number;
 }

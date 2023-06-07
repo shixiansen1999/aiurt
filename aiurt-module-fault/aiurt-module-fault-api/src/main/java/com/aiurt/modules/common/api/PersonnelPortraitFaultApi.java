@@ -57,7 +57,17 @@ public interface PersonnelPortraitFaultApi {
      * 获取故障处理总次数
      *
      * @param userId
+     * @param usernames
      * @return
      */
-    RadarModel getHandleNumber(String userId);
+    RadarModel getHandleNumber(String userId, List<String> usernames);
+
+    /**
+     * 获取故障解决效率
+     *
+     * @param username
+     * @param usernames
+     * @return
+     */
+    RadarModel getEfficiency(String username, List<String> usernames);
 }
