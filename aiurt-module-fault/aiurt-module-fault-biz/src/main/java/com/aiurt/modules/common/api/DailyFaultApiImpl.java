@@ -272,8 +272,8 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                 accompanyFaultList =faultInformationMapper.getAccompanyTime(f.getOrgId(),startTime,endTime);
             }
             f.setConstructorsNum(faultInformationMapper.getConstructorsNum(startTime,endTime,orgId));
-            List<String> collect = userFaultList.stream().map(UserTimeDTO::getFrrId).collect(Collectors.toList());
-            accompanyFaultList = accompanyFaultList.stream().parallel().filter(a -> !collect.contains(a.getFrrId())).collect(Collectors.toList());
+            // List<String> collect = userFaultList.stream().map(UserTimeDTO::getFrrId).collect(Collectors.toList());
+            // accompanyFaultList = accompanyFaultList.stream().parallel().filter(a -> !collect.contains(a.getFrrId())).collect(Collectors.toList());
             userFaultList.addAll(accompanyFaultList);
             Long sum = accompanyFaultList
                     .stream().filter(w-> w.getDuration() !=null)
@@ -307,6 +307,11 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                 f.setRepairTime(s.toString());
             }
             BigDecimal sumFailureTime = new BigDecimal("0.00");
+            userFaultList = userFaultList.stream()
+                    .collect(Collectors.groupingBy(UserTimeDTO::getUserId, Collectors.summingLong(UserTimeDTO::getDuration)))
+                    .entrySet().stream()
+                    .map(entry -> new UserTimeDTO(entry.getKey(), null, entry.getValue()))
+                    .collect(Collectors.toList());
             for (UserTimeDTO userTimeDTO : userFaultList) {
                 BigDecimal decimal = new BigDecimal((1.0 * (userTimeDTO.getDuration()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP);
                 sumFailureTime = sumFailureTime.add(decimal);

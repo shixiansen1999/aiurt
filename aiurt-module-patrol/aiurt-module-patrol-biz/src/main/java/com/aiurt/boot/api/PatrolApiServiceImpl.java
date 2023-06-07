@@ -271,7 +271,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
                 sum = sum.add(new BigDecimal(dto.getDuration()));
             }
             //秒转时
-            BigDecimal decimal = sum.divide(new BigDecimal("3600"), 1, BigDecimal.ROUND_HALF_UP);
+            BigDecimal decimal = sum.divide(new BigDecimal("3600"), 2, BigDecimal.ROUND_HALF_UP);
             return decimal;
         }
         return new BigDecimal("0.00");
@@ -636,6 +636,18 @@ public class PatrolApiServiceImpl implements PatrolApi {
         //先计算指定部门的工单数
         List<PatrolReport> patrolReportList = patrolTaskMapper.getReportTaskUserCount(report);
         List<PatrolReport> patrolReportAccompanyList = patrolTaskMapper.getReportTaskAccompanyCount(report);
+
+        // patrolReportList和patrolReportAccompanyList的巡视工时因为任务有多工单因此求和错误，重新给巡视工时赋值
+        Map<String, BigDecimal> patrolReportMap = patrolTaskUserMapper.getUserPlanNumber(useIds, report.getStartDate(), report.getEndDate())
+                .stream().collect(Collectors.toMap(UserTeamPatrolDTO::getUserId, UserTeamPatrolDTO::getWorkHours));
+        Map<String, BigDecimal> patrolReportAccompanyMap = patrolTaskUserMapper.getPeoplePlanNumber(useIds, report.getStartDate(), report.getEndDate())
+                .stream().collect(Collectors.toMap(UserTeamPatrolDTO::getUserId, UserTeamPatrolDTO::getWorkHours));
+        patrolReportList.forEach(r->r.setWorkHours(
+                patrolReportMap.containsKey(r.getUserId()) ? patrolReportMap.get(r.getUserId()): new BigDecimal(0))
+        );
+        patrolReportAccompanyList.forEach(a->a.setWorkHours(
+                patrolReportAccompanyMap.containsKey(a.getUserId()) ? patrolReportAccompanyMap.get(a.getUserId()): new BigDecimal(0))
+        );
 
         //计算漏检数（先推算漏检日期）
         String start = screenService.getOmitDateScope(DateUtil.parse(userTeamParameter.getStartDate())).split(ScreenConstant.TIME_SEPARATOR)[0];
