@@ -12,7 +12,7 @@
             AlmText AS almText,
             COUNT(*) AS almNum
         FROM
-            dbo.OnAlm
+            OnAlm
         where Level =1
         GROUP BY
             EquipmentID,

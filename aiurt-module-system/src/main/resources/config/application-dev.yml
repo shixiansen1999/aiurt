@@ -140,13 +140,13 @@ spring:
         connectionProperties: druid.stat.mergeSql\=true;druid.stat.slowSqlMillis\=5000
       datasource:
         master:
-          url: jdbc:mysql://192.168.1.29:3306/aiurt-platform-test?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+          url: jdbc:mysql://192.168.1.29:3306/aiurt-platform-dev?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
           username: root
           password: 1qaz@2wsx
           driver-class-name: com.mysql.cj.jdbc.Driver
           # 多数据源配置
         multi-sqlserver:
-          url: jdbc:sqlserver://192.168.1.27:1433;databaseName=al
+          url: jdbc:sqlserver://192.168.1.27:1433;databaseName=alarm
           username: sa
           password: 1qaz@2wsx
           driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
