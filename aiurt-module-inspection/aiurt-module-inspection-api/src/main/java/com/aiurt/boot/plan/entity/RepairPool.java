@@ -229,4 +229,7 @@ public class RepairPool implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "所属周（年）")
     private java.lang.String weekName;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修任务id")
+    private java.lang.String taskId;
 }
