@@ -37,7 +37,8 @@
             d.station_code,
             d.device_type_code,
             d.major_code,
-            d.system_code AS sub_system_code
+            d.system_code AS sub_system_code,
+            d.line_code
         FROM
             on_alm_record oar
         LEFT JOIN device d ON d.id = oar.device_id

@@ -6,11 +6,11 @@ import lombok.Data;
 /**
  * @author:wgp
  * @create: 2023-06-06 15:47
- * @Description:
+ * @Description: 系统设备与集中告警设备关联实体
  */
 @Data
 public class OnAlmEquDevice {
-    @ApiModelProperty(value = "是否受理")
+    @ApiModelProperty(value = "id")
     private String id;
     @ApiModelProperty(value = "设备id")
     private String deviceId;

@@ -1,4 +1,4 @@
-package com.aiurt.modules.job;
+package com.aiurt.modules.faultalarm.job;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;

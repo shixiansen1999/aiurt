@@ -86,4 +86,7 @@ public class AlmRecordRespDTO extends DictEntity {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
+
+    @ApiModelProperty(value = "线路编码")
+    private String lineCode;
 }

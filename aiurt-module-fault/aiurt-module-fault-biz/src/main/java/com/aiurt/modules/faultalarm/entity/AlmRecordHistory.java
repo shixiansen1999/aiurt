@@ -1,11 +1,4 @@
 package com.aiurt.modules.faultalarm.entity;
-
-/**
- * @author:wgp
- * @create: 2023-06-06 15:43
- * @Description:
- */
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -25,7 +18,7 @@ import java.util.Date;
 /**
  * @author:wgp
  * @create: 2023-06-05 09:36
- * @Description: 告警记录实体
+ * @Description: 告警历史记录实体
  */
 @Data
 @TableName("on_alm_record_history")
