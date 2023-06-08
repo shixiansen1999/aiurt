@@ -985,6 +985,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<LoginUser> getAllUsers();
+    /**
+     * 查询全部用户
+     *
+     * @return
+     */
+    List<LoginUser> queryAllUsers();
 
     /**
      * 根据位置编码获取线路站点和位置全名，格式如线路/站点/位置

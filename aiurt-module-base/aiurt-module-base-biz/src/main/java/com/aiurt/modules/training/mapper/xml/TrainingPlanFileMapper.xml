@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.training.mapper.TrainingPlanFileMapper">
+    <select id="listByPlanId" resultType="com.aiurt.modules.training.vo.TrainingPlanFileVO">
+        select pf.*,
+               f.type,
+               f.name,
+               f.url,
+               f.file_size as size,
+               f.create_time as uploadTime,
+               u.realname    as uploadName
+        from t_training_plan_file pf
+                     LEFT JOIN sys_file f ON (f.id = pf.file_id and f.del_flag = 0)
+                     LEFT JOIN sys_user u ON (u.id = f.create_by and u.del_flag = 0)
+        where pf.del_flag = 0
+          and pf.plan_id = #{planId}
+    </select>
+    <select id="getFilePageList" resultType="com.aiurt.modules.sysfile.vo.SysFileManageVO">
+        SELECT sf.id,
+               sf.name,
+               sf.create_time,
+               sf.create_by,
+               sf.type_id,
+               sf.type,
+               sf.update_time,
+               sf.url,
+               sf.file_size,
+               sf.down_size,
+               IFNULL(MAX(sffp1.permission), 0) AS permission,
+               sft1.name                        as typeName
+        FROM sys_file sf
+                     LEFT JOIN sys_file_type sft1 ON (sft1.id = sf.type_id AND sft1.del_flag = 0)
+                     LEFT JOIN sys_folder_file_permission sffp1 ON (sffp1.file_id = sf.id AND sffp1.del_flag = 0)
+                WHERE
+                sf.id IN (
+                        SELECT sffp.file_id
+                        FROM sys_folder_file_permission sffp
+                        WHERE sffp.del_flag = 0
+                          AND (sffp.user_id = #{currLoginUserId} OR sffp.org_code = #{currLoginOrgCode})
+                        GROUP BY sffp.file_id
+                        )
+                  AND sf.del_flag = 0
+                  AND (sffp1.user_id = #{currLoginUserId} OR sffp1.org_code = #{currLoginOrgCode})
+        <if test="condition.typeId != '' and condition.typeId != null">
+            AND sf.code_cc LIKE CONCAT(#{condition.folderCodeCc}, '%')
+        </if>
+        <if test="condition.name != '' and condition.name != null">
+            AND sf.name LIKE CONCAT('%', #{condition.name}, '%')
+        </if>
+        <if test="condition.type != '' and condition.type != null">
+            AND sf.type = #{condition.type}
+        </if>
+        <if test="condition.startTime != null and condition.endTime != null">
+            AND sf.create_time between #{condition.startTime} and #{condition.endTime}
+        </if>
+        <if test="userNames != null and userNames.size > 0">
+            AND sf.create_by in
+            <foreach collection="userNames" item="username" open="(" close=")" separator=",">
+                #{username}
+            </foreach>
+        </if>
+        <if test="condition.selections != null and condition.selections.size() != 0">
+            AND sf.id in
+            <foreach collection="condition.selections" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+         <if test="condition.id != null and condition.selections.size() == 0">
+            AND sf.id = #{condition.id}
+        </if>
+        GROUP BY sf.id
+        ORDER BY sf.create_time DESC, sf.id ASC
+    </select>
+</mapper>
