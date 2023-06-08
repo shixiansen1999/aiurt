@@ -27,4 +27,7 @@ public class AnalyzeFaultCauseResDTO implements Serializable {
 
     @ApiModelProperty("数量")
     private Long num;
+
+    @ApiModelProperty(value = "故障原因id")
+    private String faultCauseSolutionId;
 }

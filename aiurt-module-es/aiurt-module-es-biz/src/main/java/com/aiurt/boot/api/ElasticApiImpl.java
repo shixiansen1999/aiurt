@@ -14,6 +14,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -81,6 +83,7 @@ public class ElasticApiImpl implements ElasticAPI {
             String deviceTypeCode = knowledgeBaseReqDTO.getDeviceTypeCode();
             String materialCode = knowledgeBaseReqDTO.getMaterialCode();
             Integer sortFlag = knowledgeBaseReqDTO.getSort();
+            Integer status = knowledgeBaseReqDTO.getStatus();
             AtomicReference<BoolQueryBuilder> boolQueryBuilder = new AtomicReference<>();
 //            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
             // 多字段匹配
@@ -88,8 +91,16 @@ public class ElasticApiImpl implements ElasticAPI {
                 if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
                     boolQueryBuilder.set(QueryBuilders.boolQuery());
                 }
-                String[] fieldNames = {"faultPhenomenon", "knowledgeBaseTypeName", "majorName", "systemName", "materialName", "deviceTypeName"};
-                boolQueryBuilder.get().must(QueryBuilders.multiMatchQuery(keyword, fieldNames));
+                String[] fieldNames = {
+                        "faultPhenomenon", "knowledgeBaseTypeName", "majorName",
+                        "systemName", "materialName", "deviceTypeName", "faultLevelName"
+                };
+                boolQueryBuilder.get().should(QueryBuilders.multiMatchQuery(keyword, fieldNames));
+                boolQueryBuilder.get().should(QueryBuilders.nestedQuery(
+                        "reasonSolutions",
+                        QueryBuilders.matchQuery("reasonSolutions.faultCause", keyword),
+                        ScoreMode.Total)
+                );
             }
             // 专业编号
             Optional.ofNullable(majorCode).ifPresent(major -> {
@@ -119,6 +130,13 @@ public class ElasticApiImpl implements ElasticAPI {
                 }
                 boolQueryBuilder.get().must(QueryBuilders.termQuery("materialCode", material));
             });
+            // 状态
+            Optional.ofNullable(status).ifPresent(s -> {
+                if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                    boolQueryBuilder.set(QueryBuilders.boolQuery());
+                }
+                boolQueryBuilder.get().must(QueryBuilders.termQuery("status", s));
+            });
 //            // 备件
 //            if (ObjectUtil.isNotEmpty(materialCode)) {
 //                boolQueryBuilder.must(QueryBuilders.nestedQuery(
@@ -133,6 +151,9 @@ public class ElasticApiImpl implements ElasticAPI {
             // 根据浏览次数降序排序
             if (ObjectUtil.isNotEmpty(sortFlag)) {
                 Sort.Order sortOrder = new Sort.Order(SortOrder.DESC, "scanNum");
+                if (2 == sortFlag) {
+                    sortOrder = new Sort.Order(SortOrder.DESC, "updateTime");
+                }
                 sort = new Sort(sortOrder);
             }
         }
@@ -145,6 +166,12 @@ public class ElasticApiImpl implements ElasticAPI {
                 knowledgeBase = new KnowledgeBaseResDTO();
                 BeanUtils.copyProperties(record, knowledgeBase);
                 knowledgeBase.setTitle(record.getFaultPhenomenon());
+                // 组件/部位字段拼接专业等信息
+                String joinComponent = Arrays.asList(record.getMajorName(), record.getDeviceTypeName(), record.getMaterialName())
+                        .stream()
+                        .filter(l -> ObjectUtil.isNotEmpty(l))
+                        .collect(Collectors.joining("/"));
+                knowledgeBase.setJoinComponent(joinComponent);
                 knowledgeBaseRes.add(knowledgeBase);
             }
         }
@@ -268,11 +295,30 @@ public class ElasticApiImpl implements ElasticAPI {
         SearchHits hits = searchResponse.getHits();
         SearchHit[] searchHits = hits.getHits();
         for (SearchHit hit : searchHits) {
-            KnowledgeBase knowledgeBaseModel = JSON.parseObject(hit.getSourceAsString(), KnowledgeBase.class);
-            if (ObjectUtil.isNotEmpty(knowledgeBaseModel) && ObjectUtil.isNotEmpty(knowledgeBaseModel.getFaultPhenomenon())) {
-                phenomenons.add(knowledgeBaseModel.getFaultPhenomenon());
+            KnowledgeBase knowledgeBase = JSON.parseObject(hit.getSourceAsString(), KnowledgeBase.class);
+            if (ObjectUtil.isNotEmpty(knowledgeBase) && ObjectUtil.isNotEmpty(knowledgeBase.getFaultPhenomenon())) {
+                phenomenons.add(knowledgeBase.getFaultPhenomenon());
             }
         }
         return phenomenons;
+    }
+
+    @Override
+    public void removeKnowledgeBase(String id) {
+        try {
+            elasticService.deleteById(id, KnowledgeBase.class);
+        } catch (Exception e) {
+            log.error("删除ES故障知识库记录失败：", e.getMessage());
+        }
+    }
+
+    @Override
+    public void removeBatchKnowledgeBase(List<String> ids) {
+        try {
+            BoolQueryBuilder builder = QueryBuilders.boolQuery().must(QueryBuilders.termsQuery("id", ids));
+            elasticService.deleteByCondition(builder, KnowledgeBase.class);
+        } catch (Exception e) {
+            log.error("批量删除ES故障知识库记录失败：", e.getMessage());
+        }
     }
 }

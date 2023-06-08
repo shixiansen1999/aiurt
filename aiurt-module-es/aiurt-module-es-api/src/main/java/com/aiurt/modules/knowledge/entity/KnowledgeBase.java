@@ -122,6 +122,7 @@ public class KnowledgeBase {
     /**
      * 故障原因
      */
+    @HighlightField(name = "reasonSolutions.faultCause")
     @Field(type = FieldType.Nested)
     @ApiModelProperty(value = "故障原因")
     private List<CauseSolution> reasonSolutions;
@@ -134,8 +135,16 @@ public class KnowledgeBase {
     private String faultLevelCode;
 
     /**
+     * 状态
+     */
+    @Field(type = FieldType.Integer)
+    @ApiModelProperty(value = "状态(0:待审批,1:已审批,2:已驳回)")
+    private Integer status;
+
+    /**
      * 故障等级名称
      */
+    @HighlightField(name = "faultLevelName")
     @Field(type = FieldType.Text)
     @ApiModelProperty(value = "故障等级名称")
     private String faultLevelName;
@@ -168,4 +177,13 @@ public class KnowledgeBase {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
+
+    /**
+     * 修改时间
+     */
+    @Field(type = FieldType.Date, format = DateFormat.year_month_day)
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "修改时间")
+    private Date updateTime;
 }

@@ -92,7 +92,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @ApiOperation(value = "故障上报", notes = "故障上报")
     @PostMapping(value = "/add")
     @LimitSubmit(key = "add:#fault")
-    public Result<?> add(@Validated @RequestBody Fault fault) {
+    public Result<?> add( @RequestBody Fault fault) {
         String faultCode = faultService.add(fault);
         return Result.OK("故障上报成功", faultCode);
     }
@@ -389,6 +389,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query")
     })
+    @Deprecated
     public Result<List<LoginUser>> queryUser(@Param(value = "faultCode") String faultCode) {
         // 根据故障编号获取故障所属组织机构
         Fault fault = faultService.lambdaQuery().eq(Fault::getCode, faultCode).last("limit 1").one();

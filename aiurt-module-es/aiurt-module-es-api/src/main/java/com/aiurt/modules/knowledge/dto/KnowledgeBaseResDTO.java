@@ -1,5 +1,6 @@
 package com.aiurt.modules.knowledge.dto;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.knowledge.entity.CauseSolution;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -101,7 +102,11 @@ public class KnowledgeBaseResDTO implements Serializable {
      */
     @ApiModelProperty(value = "设备类型名称")
     private String deviceTypeName;
-
+    /**
+     * 组件/部位
+     */
+    @ApiModelProperty(value = "组件/部位")
+    private String joinComponent;
     /**
      * 故障原因
      */
@@ -119,6 +124,13 @@ public class KnowledgeBaseResDTO implements Serializable {
      */
     @ApiModelProperty(value = "故障等级名称")
     private String faultLevelName;
+
+    /**
+     * 状态
+     */
+    @Dict(dicCode = "fault_knowledge")
+    @ApiModelProperty(value = "状态(0:待审批,1:已审批,2:已驳回)")
+    private Integer status;
 
     /**
      * 浏览数
@@ -145,4 +157,12 @@ public class KnowledgeBaseResDTO implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "更新时间")
+    private Date updateTime;
 }

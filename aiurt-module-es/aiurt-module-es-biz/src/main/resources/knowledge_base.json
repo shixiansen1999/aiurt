@@ -70,6 +70,9 @@
       "faultLevelName": {
         "type": "text"
       },
+      "status": {
+        "type": "integer"
+      },
       "scanNum": {
         "type": "integer"
       },
@@ -88,6 +91,10 @@
         "type": "integer"
       },
       "createTime": {
+        "type": "date",
+        "index": false
+      },
+      "updateTime": {
         "type": "date",
         "index": false
       },

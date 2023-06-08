@@ -1,15 +1,22 @@
 package com.aiurt.modules.fault.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.entity.FaultRepairParticipants;
+import com.aiurt.modules.faultcauseusagerecords.entity.FaultCauseUsageRecords;
+import com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -143,4 +150,36 @@ public class RepairRecordDTO extends DictEntity implements Serializable  {
 
     @ApiModelProperty(value = "故障设备：位置")
     private String stationPositionCode;
+
+    @ApiModelProperty(value = "使用的解决方案")
+    private List<FaultCauseUsageRecords> recordsList;
+
+    @ApiModelProperty(value = "排查方法")
+    private String method;
+
+    @ApiModelProperty(value = "故障级别")
+    @Dict(dictTable = "fault_level", dicCode = "code", dicText = "name")
+    private String faultLevel;
+
+    @ApiModelProperty(value = "故障原因")
+    private String faultCauseSolution;
+
+    @ApiModelProperty(value = "故障原因分析百分比")
+    @TableField(exist = false)
+    private List<AnalyzeFaultCauseResDTO> analyzeFaultCauseResDTOList;
+
+    /**专业编码*/
+    @ApiModelProperty(value = "专业编码", required = true)
+    @NotBlank(message = "请选择所属专业")
+    @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
+    private String majorCode;
+
+
+    /**专业子系统编码*/
+    @ApiModelProperty(value = "专业子系统编码")
+    @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
+    private String subSystemCode;
+
+
+
 }

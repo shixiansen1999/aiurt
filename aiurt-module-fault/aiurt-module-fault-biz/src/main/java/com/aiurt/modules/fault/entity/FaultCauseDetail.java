@@ -80,4 +80,6 @@ public class FaultCauseDetail implements Serializable {
     @ApiModelProperty(value = "逻辑删除字段")
     @TableLogic
     private Integer delFlag;
+
+	private String faultCause;
 }

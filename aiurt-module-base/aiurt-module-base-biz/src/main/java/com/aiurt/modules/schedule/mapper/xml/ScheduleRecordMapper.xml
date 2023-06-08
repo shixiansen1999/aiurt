@@ -439,8 +439,14 @@
     <select id="getTodayUserWork" resultType="com.aiurt.modules.schedule.dto.ScheduleUserWorkDTO">
         select sr.user_id, sr.date, sr.start_time, sr.end_time, si.is_rest_day
         from schedule_record sr
-                 left join schedule_item si on (sr.item_id = si.id and si.del_flag = 0)
+        left join schedule_item si on (sr.item_id = si.id and si.del_flag = 0)
         where sr.del_flag = 0
-          and date_format(sr.date, '%Y-%m-%d') = date_format(#{now}, '%Y-%m-%d')
+        and date_format(sr.date, '%Y-%m-%d') = date_format(#{now}, '%Y-%m-%d')
+        <if test="userIds!=null and userIds.size()>0 ">
+            and sr.user_id in
+            <foreach collection="userIds" separator="," open="(" close=")" item="item">
+                #{item}
+            </foreach>
+        </if>
     </select>
 </mapper>

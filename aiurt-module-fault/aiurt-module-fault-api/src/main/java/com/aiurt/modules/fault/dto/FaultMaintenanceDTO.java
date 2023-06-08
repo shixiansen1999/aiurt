@@ -17,9 +17,9 @@ import java.io.Serializable;
 public class FaultMaintenanceDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
-     * 用户ID
+     * 用户账号
      */
-    private String userId;
+    private String username;
     /**
      * 设备类型编号
      */

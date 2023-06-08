@@ -1,7 +1,10 @@
 package com.aiurt.modules.personnelportrait.controller;
 
+import com.aiurt.modules.fault.dto.FaultDeviceDTO;
+import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.personnelportrait.dto.*;
 import com.aiurt.modules.personnelportrait.service.PersonnelPortraitService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 
@@ -100,8 +104,8 @@ public class PersonnelPortraitController {
             @ApiResponse(code = 200, message = "OK", response = WaveResDTO.class)
     })
     @GetMapping(value = "/wave")
-    public Result<List<WaveResDTO>> waveRose(@RequestParam @ApiParam(name = "userId", value = "用户ID") String userId) {
-        List<WaveResDTO> waveRes = personnelPortraitService.waveRose(userId);
+    public Result<WaveResDTO> waveRose(@RequestParam @ApiParam(name = "userId", value = "用户ID") String userId) {
+        WaveResDTO waveRes = personnelPortraitService.waveRose(userId);
         return Result.OK(waveRes);
     }
 
@@ -113,8 +117,31 @@ public class PersonnelPortraitController {
             @ApiResponse(code = 200, message = "OK", response = HistoryResDTO.class)
     })
     @GetMapping(value = "/history")
-    public Result<HistoryResDTO> history(@RequestParam @ApiParam(name = "userId", value = "用户ID") String userId) {
-        HistoryResDTO history = personnelPortraitService.history(userId);
+    public Result<List<HistoryResDTO>> history(@RequestParam @ApiParam(name = "userId", value = "用户ID") String userId) {
+        List<HistoryResDTO> history = personnelPortraitService.history(userId);
         return Result.OK(history);
+    }
+
+    /**
+     * 历史维修记录-设备故障信息列表
+     */
+    @ApiOperation(value = "历史维修记录-设备故障信息列表", notes = "历史维修记录-设备故障信息列表")
+    @GetMapping(value = "/device/info")
+    public Result<List<FaultDeviceDTO>> deviceInfo(@RequestParam @ApiParam(name = "userId", value = "用户ID") String userId) {
+        List<FaultDeviceDTO> history = personnelPortraitService.deviceInfo(userId);
+        return Result.OK(history);
+    }
+
+    /**
+     * 历史维修记录列表(更多)
+     */
+    @ApiOperation(value = "历史维修记录列表(更多)", notes = "历史维修记录列表(更多)")
+    @GetMapping(value = "/history/record")
+    public Result<IPage<Fault>> historyRecord(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                              @RequestParam @ApiParam(name = "userId", value = "用户ID") String userId,
+                                              HttpServletRequest request) {
+        IPage<Fault> pageList = personnelPortraitService.historyRecord(pageNo, pageSize, userId, request);
+        return Result.OK(pageList);
     }
 }

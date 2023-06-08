@@ -1,8 +1,12 @@
 package com.aiurt.modules.personnelportrait.service;
 
 
+import com.aiurt.modules.fault.dto.FaultDeviceDTO;
+import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.personnelportrait.dto.*;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -57,7 +61,7 @@ public interface PersonnelPortraitService {
      * @param userId
      * @return
      */
-    List<WaveResDTO> waveRose(String userId);
+    WaveResDTO waveRose(String userId);
 
     /**
      * 历史维修记录
@@ -65,5 +69,24 @@ public interface PersonnelPortraitService {
      * @param userId
      * @return
      */
-    HistoryResDTO history(String userId);
+    List<HistoryResDTO> history(String userId);
+
+    /**
+     * 历史维修记录列表(更多)
+     *
+     * @param pageNo
+     * @param pageSize
+     * @param userId
+     * @param request
+     * @return
+     */
+    IPage<Fault> historyRecord(Integer pageNo, Integer pageSize, String userId, HttpServletRequest request);
+
+    /**
+     * 历史维修记录-设备故障信息列表
+     *
+     * @param userId
+     * @return
+     */
+    List<FaultDeviceDTO> deviceInfo(String userId);
 }

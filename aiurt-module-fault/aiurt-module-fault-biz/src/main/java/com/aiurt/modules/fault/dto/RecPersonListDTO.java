@@ -70,5 +70,7 @@ public class RecPersonListDTO implements Serializable {
 
     @ApiModelProperty(value = "历史维修任务")
     private List<FaultRecDTO> faultRecList;
+
+    private Integer performanceScore;
 }
 

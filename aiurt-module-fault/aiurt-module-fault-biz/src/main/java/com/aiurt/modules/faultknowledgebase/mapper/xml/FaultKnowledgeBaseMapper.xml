@@ -169,6 +169,9 @@
         <if test="condition.faultPhenomenonCode != null and  condition.faultPhenomenonCode != ''">
             and a.fault_phenomenon_code like concat('%',#{condition.faultPhenomenonCode},'%')
         </if>
+        <if test="condition.status != null and  condition.status != ''">
+            and a.status = #{condition.status}
+        </if>
         ORDER BY a.create_time DESC
     </select>
 
@@ -483,9 +486,11 @@
                fkb.device_type_code         deviceTypeCode,
                dt.name                      deviceTypeName,
                fkb.fault_level_code         faultLevelCode,
+               fkb.status                   `status`,
                fkb.scan_num                 scanNum,
                fkb.method                   method,
-               fkb.create_time              createTime
+               fkb.create_time              createTime,
+               fkb.update_time              updateTime
         from fault_knowledge_base fkb
                  left join fault_knowledge_base_type fkbt
                            on (fkb.knowledge_base_type_code = fkbt.code and fkbt.del_flag = 0)

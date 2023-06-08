@@ -233,12 +233,26 @@ public class ElasticServiceImpl<T, M> implements ElasticService<T, M> {
                 // 将原来的字段替换为高亮字段即可
                 if (ObjectUtil.isNotEmpty(highlightField)) {
                     Text[] fragments = highlightField.fragments();
-                    String newTitle = "";
-                    for (Text text : fragments) {
-                        newTitle += text;
+                    // fixme 高亮嵌套替換此部分后期需优化为更通用的
+                    String name = highlightField.getName();
+                    String[] names = StrUtil.split(name, ".");
+                    if (2 <= names.length) {
+                        Object obj = sourceAsMap.get(names[0]);
+                        if (obj instanceof List) {
+                            for (int i = 0; i < ((List<?>) obj).size(); i++) {
+                                Map<String, Object> objectMap = (Map<String, Object>) ((List<?>) obj).get(i);
+                                objectMap.put(names[1], fragments[i].toString());
+                            }
+                        }
+                    } else {
+                        String newTitle = "";
+                        for (Text text : fragments) {
+                            newTitle += text;
+                        }
+                        // 替换掉原来的内容
+                        sourceAsMap.put(field, newTitle);
+
                     }
-                    // 替换掉原来的内容
-                    sourceAsMap.put(field, newTitle);
                 }
             });
             replaceList.add(sourceAsMap);
