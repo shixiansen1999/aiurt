@@ -693,7 +693,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                 set.add(str);
             }
             checkDTOs.forEach(c-> {
-                if(c.getCheckResult()==0){
+                if(Objects.nonNull(c.getCheckResult())&&c.getCheckResult()==0){
                     text.append("\n").append(c.getContent()).append(":异常");
                 }
             });
