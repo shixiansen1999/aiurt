@@ -1,12 +1,12 @@
 package com.aiurt.modules.device.service.impl;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.mapper.DeviceAssemblyMapper;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.material.entity.MaterialBase;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.ObjectUtils;
@@ -14,8 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @Description: 设备
@@ -32,26 +33,27 @@ public class DeviceAssemblyServiceImpl extends ServiceImpl<DeviceAssemblyMapper,
     @Override
     public List<DeviceAssembly> fromMaterialToAssembly(List<MaterialBase> materialBaseList) {
         List<DeviceAssembly> deviceAssemblyList = new ArrayList<>();
-
+        QueryWrapper<DeviceAssembly> queryWrapper = new QueryWrapper();
+        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+        List<DeviceAssembly> deviceAssemblies = deviceAssemblyMapper.selectList(queryWrapper);
+        Set<String> assemblyCodeSet = deviceAssemblies.stream().map(DeviceAssembly::getCode).collect(Collectors.toSet());
         if(materialBaseList != null && materialBaseList.size()>0) {
             for (MaterialBase materialBase : materialBaseList) {
                 if (ObjectUtils.isNotEmpty(materialBase.getAddNumber())) {
+                    Integer num = 1;
                     for (int i = 0; i < materialBase.getAddNumber(); i++) {
                         DeviceAssembly deviceAssembly = new DeviceAssembly();
-                        DeviceAssembly deviceAssemblyOld = deviceAssemblyMapper.selectOne(new LambdaQueryWrapper<DeviceAssembly>().likeRight(DeviceAssembly::getCode, materialBase.getCode())
-                                .eq(DeviceAssembly::getDelFlag, 0).orderByDesc(DeviceAssembly::getCreateTime).last("limit 1"));
                         String code = materialBase.getCode();
                         String format = "";
-                        if (deviceAssemblyOld != null) {
-                            String codeold = deviceAssemblyOld.getCode();
-                            String numstr = codeold.substring(codeold.length() - 3);
-                            format = String.format("%03d", Long.parseLong(numstr) + 1 +materialBase.getAddNumber() - i-1);
-                        } else {
-                            format = "001";
-                        }
+                        do {
+                            String number = String.format("%03d",num );
+                            format = code+ number;
+                            num = num + 1;
+                        } while (assemblyCodeSet.contains(format));
+                        assemblyCodeSet.add(format);
                         Device device = deviceService.getOne(new QueryWrapper<Device>().eq("code", materialBase.getDeviceCode()));
                         deviceAssembly.setDeviceCode(materialBase.getDeviceCode() == null ? "" : materialBase.getDeviceCode());
-                        deviceAssembly.setCode(code + format);
+                        deviceAssembly.setCode(format);
                         deviceAssembly.setSpecifications(materialBase.getSpecifications() == null ? "" : materialBase.getSpecifications());
                         deviceAssembly.setMaterialCode(materialBase.getCode() == null ? "" : materialBase.getCode());
                         deviceAssembly.setBaseTypeCode(materialBase.getBaseTypeCode() == null ? "" : materialBase.getBaseTypeCode());
@@ -65,20 +67,17 @@ public class DeviceAssemblyServiceImpl extends ServiceImpl<DeviceAssemblyMapper,
                     }
                 } else {
                     DeviceAssembly deviceAssembly = new DeviceAssembly();
-                    DeviceAssembly deviceAssemblyOld = deviceAssemblyMapper.selectOne(new LambdaQueryWrapper<DeviceAssembly>().likeRight(DeviceAssembly::getCode, materialBase.getCode())
-                            .eq(DeviceAssembly::getDelFlag, 0).orderByDesc(DeviceAssembly::getCreateTime).last("limit 1"));
                     String code = materialBase.getCode();
                     String format = "";
-                    if (deviceAssemblyOld != null) {
-                        String codeold = deviceAssemblyOld.getCode();
-                        String numstr = codeold.substring(codeold.length() - 3);
-                        format = String.format("%03d", Long.parseLong(numstr) + 1);
-                    } else {
-                        format = "001";
-                    }
+                    Integer num = 1;
+                    do {
+                        String number = String.format("%03d",num );
+                        format = code+ number;
+                        num = num + 1;
+                    } while (assemblyCodeSet.contains(format));
                     Device device = deviceService.getOne(new QueryWrapper<Device>().eq("code", materialBase.getDeviceCode()));
                     deviceAssembly.setDeviceCode(materialBase.getDeviceCode() == null ? "" : materialBase.getDeviceCode());
-                    deviceAssembly.setCode(code + format);
+                    deviceAssembly.setCode(format);
                     deviceAssembly.setSpecifications(materialBase.getSpecifications() == null ? "" : materialBase.getSpecifications());
                     deviceAssembly.setMaterialCode(materialBase.getCode() == null ? "" : materialBase.getCode());
                     deviceAssembly.setBaseTypeCode(materialBase.getBaseTypeCode() == null ? "" : materialBase.getBaseTypeCode());
