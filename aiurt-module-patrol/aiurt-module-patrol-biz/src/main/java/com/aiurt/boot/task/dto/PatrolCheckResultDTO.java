@@ -57,4 +57,14 @@ public class PatrolCheckResultDTO extends PatrolCheckResult {
     @Excel(name = "子系统名称", width = 15)
     @ApiModelProperty(value = "子系统名称")
     private String subsystemName;
+
+    @ApiModelProperty(value = "巡检人")
+    private  String oldCode;
+
+    /**
+     * 程序及方法
+     */
+    @Excel(name = "程序及方法", width = 15)
+    @ApiModelProperty(value = "程序及方法")
+    private String procMethods;
 }
