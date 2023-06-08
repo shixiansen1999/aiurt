@@ -49,4 +49,10 @@ public class KnowledgeBaseReqDTO implements Serializable {
      */
     @ApiModelProperty(value = "排序:匹配程度传0,浏览次数传1,更新时间传2")
     private Integer sort;
+
+    /**
+     * 状态
+     */
+    @ApiModelProperty(value = "状态(0:待审批,1:已审批,2:已驳回)")
+    private Integer status;
 }

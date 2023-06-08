@@ -70,6 +70,9 @@
       "faultLevelName": {
         "type": "text"
       },
+      "status": {
+        "type": "integer"
+      },
       "scanNum": {
         "type": "integer"
       },

@@ -135,6 +135,13 @@ public class KnowledgeBase {
     private String faultLevelCode;
 
     /**
+     * 状态
+     */
+    @Field(type = FieldType.Integer)
+    @ApiModelProperty(value = "状态(0:待审批,1:已审批,2:已驳回)")
+    private Integer status;
+
+    /**
      * 故障等级名称
      */
     @HighlightField(name = "faultLevelName")

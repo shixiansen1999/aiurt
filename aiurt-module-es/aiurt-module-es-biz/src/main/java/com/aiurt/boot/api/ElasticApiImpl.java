@@ -83,6 +83,7 @@ public class ElasticApiImpl implements ElasticAPI {
             String deviceTypeCode = knowledgeBaseReqDTO.getDeviceTypeCode();
             String materialCode = knowledgeBaseReqDTO.getMaterialCode();
             Integer sortFlag = knowledgeBaseReqDTO.getSort();
+            Integer status = knowledgeBaseReqDTO.getStatus();
             AtomicReference<BoolQueryBuilder> boolQueryBuilder = new AtomicReference<>();
 //            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
             // 多字段匹配
@@ -128,6 +129,13 @@ public class ElasticApiImpl implements ElasticAPI {
                     boolQueryBuilder.set(QueryBuilders.boolQuery());
                 }
                 boolQueryBuilder.get().must(QueryBuilders.termQuery("materialCode", material));
+            });
+            // 状态
+            Optional.ofNullable(status).ifPresent(s -> {
+                if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                    boolQueryBuilder.set(QueryBuilders.boolQuery());
+                }
+                boolQueryBuilder.get().must(QueryBuilders.termQuery("status", s));
             });
 //            // 备件
 //            if (ObjectUtil.isNotEmpty(materialCode)) {
