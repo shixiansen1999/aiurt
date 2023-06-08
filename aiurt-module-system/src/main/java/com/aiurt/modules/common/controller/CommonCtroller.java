@@ -346,7 +346,7 @@ public class CommonCtroller {
         }
 
         LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(CsStationPosition::getStaionCode, list).orderByAsc(CsStationPosition::getStaionCode, CsStationPosition::getPositionCode);
+        wrapper.eq(CsStationPosition::getDelFlag,CommonConstant.DEL_FLAG_0).in(CsStationPosition::getStaionCode, list).orderByAsc(CsStationPosition::getStaionCode, CsStationPosition::getPositionCode);
         List<CsStationPosition> stationList = stationPositionService.getBaseMapper().selectList(wrapper);
         List<SelectTable> tableList = stationList.stream().map(stationPosition -> {
             SelectTable selectTable = new SelectTable();
