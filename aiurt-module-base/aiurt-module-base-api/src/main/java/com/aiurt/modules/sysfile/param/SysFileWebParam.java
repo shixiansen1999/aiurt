@@ -10,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * @description: SysFileWebParam
@@ -21,6 +22,8 @@ import java.time.LocalDate;
 @EqualsAndHashCode(callSuper = false)
 public class SysFileWebParam extends BaseEntity implements Serializable {
 
+    @ApiModelProperty(value = "主键id")
+    private String id;
     /**
      * 创建人
      */
@@ -62,4 +65,9 @@ public class SysFileWebParam extends BaseEntity implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "创建时间")
     private LocalDate endTime;
+    /**
+     * 多个id查询
+     */
+    @ApiModelProperty(value = "多个id查询")
+    private List<String> selections;
 }
