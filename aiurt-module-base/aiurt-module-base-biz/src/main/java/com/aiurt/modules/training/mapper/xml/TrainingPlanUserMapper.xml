@@ -48,7 +48,7 @@
         <if test="param.presenter != null and param.presenter != ''">
             and tp.presenter like concat('%', #{param.presenter}, '%')
         </if>
-        order by u.id desc
+        order by u.create_time desc
     </select>
 
     <select id="exportListPlan" resultType="com.aiurt.modules.training.vo.PlanUserVO">
@@ -85,6 +85,6 @@
         <if test="param.presenter != null and param.presenter != ''">
             and tp.presenter like concat('%', #{param.presenter}, '%')
         </if>
-        order by u.id desc
+        order by u.create_time desc
     </select>
 </mapper>
