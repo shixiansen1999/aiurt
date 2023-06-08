@@ -798,7 +798,17 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         List<PrintDTO> patrolData = print(id);
         InputStream minioFile2 = MinioUtil.getMinioFile("platform",templateFileName);
         try (ExcelWriter excelWriter = EasyExcel.write(filePath).withTemplate(minioFile2).build()) {
-            int[] mergeColumnIndex = {0,1,2};
+            int[] mergeColumnIndex;
+            if ("patrolType8".equals(type)) {
+                if (ObjectUtil.isEmpty(cellByText)){
+                    mergeColumnIndex = new int[]{0};
+                }else{
+                    mergeColumnIndex = new int[]{0, 1};
+                }
+
+            }else{
+                mergeColumnIndex = new int[]{0, 1, 2};
+            }
             CustomCellMergeHandler customCellMergeStrategy = new CustomCellMergeHandler(3,mergeColumnIndex);
             WriteSheet writeSheet = EasyExcel.writerSheet().registerWriteHandler(customCellMergeStrategy).build();
             FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
@@ -825,7 +835,6 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     //如果项目列占用多列，则需合并
                     if (ObjectUtil.isEmpty(cellByText)){
                         FilePrintUtils.setWrapText(workbook,7,startRow,endRow,0,0,false);
-                        FilePrintUtils.setColumnWidth(sheet,0,20);
                     }else{
                         FilePrintUtils.setWrapText(workbook,7,startRow,endRow,0,1,false);
                     }
@@ -835,7 +844,8 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     //合并指定范围行的单元格
                     FilePrintUtils.mergeCellsInColumnRange(workbook,true,startRow,endRow,firstColumn,lastColumn);
                     FilePrintUtils.mergeCellsInColumnRange(workbook,true,startRow,endRow,lastColumn+1,lastColumn+3);
-
+                    //设置列宽
+                    FilePrintUtils.setColumnWidth(sheet,0,15);
                 }else{
                     //自动换行
                     // setWrapText(workbook,1,startRow,endRow,0,0);
@@ -893,11 +903,11 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     if(ObjectUtil.isEmpty(t.getCheckResult())){
                         printDTO.setResultTrue("☐正常");
                         printDTO.setResultFalse("☐异常");
-                        printDTO.setResult("☐正常\n☐异常");
+                        printDTO.setResult("⬜正常\n⬜异常");
                     }else {
                         printDTO.setResultTrue(t.getCheckResult()==0?"☐正常":"☑正常");
                         printDTO.setResultFalse(t.getCheckResult()==0?"☑异常":"☐异常");
-                        printDTO.setResult(t.getCheckResult()==0?"☑正常\n☐异常":"☐正常\n☑异常");
+                        printDTO.setResult(t.getCheckResult()==0?"☑正常\n⬜异常":"⬜正常\n☑异常");
                     }
 //                    printDTO.setResult(result);
 //                    printDTO.setContentRemark(contentRemark);
