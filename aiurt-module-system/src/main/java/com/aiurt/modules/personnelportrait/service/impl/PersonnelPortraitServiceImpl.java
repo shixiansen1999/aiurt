@@ -289,14 +289,18 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
      */
     private String getSeniority(Date workingTime) {
         if (ObjectUtil.isNotEmpty(workingTime)) {
+            final int three = 3;
+            final int five = 5;
+            final int seven = 7;
+            final int ten = 10;
             long year = DateUtil.betweenYear(workingTime, new Date(), false);
-            if (3 <= year && 5 > year) {
+            if (three <= year && five > year) {
                 return "工龄3年+";
-            } else if (5 <= year && 7 > year) {
+            } else if (five <= year && seven > year) {
                 return "工龄5年+";
-            } else if (7 <= year && 10 > year) {
+            } else if (seven <= year && ten > year) {
                 return "工龄7年+";
-            } else if (10 >= year) {
+            } else if (ten >= year) {
                 return "工龄10年+";
             }
         }
@@ -408,15 +412,15 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         RadarModel efficiencyRadar = personnelPortraitFaultApi.getEfficiency(sysUser.getUsername(), usernames);
 
         // 故障处理总次数
-        double handle = calculateScore(handleRadar.getCurrentValue(), handleRadar.getMaxValue(), handleRadar.getMinValue());
+        double handle = this.calculateScore(handleRadar.getCurrentValue(), handleRadar.getMaxValue(), handleRadar.getMinValue());
         // 绩效
-        double performance = calculateScore(performanceRadar.getCurrentValue(), performanceRadar.getMaxValue(), performanceRadar.getMinValue());
+        double performance = this.calculateScore(performanceRadar.getCurrentValue(), performanceRadar.getMaxValue(), performanceRadar.getMinValue());
         // 资质
-        double aptitude = calculateScore(aptitudeRadar.getCurrentValue(), aptitudeRadar.getMaxValue(), aptitudeRadar.getMinValue());
+        double aptitude = this.calculateScore(aptitudeRadar.getCurrentValue(), aptitudeRadar.getMaxValue(), aptitudeRadar.getMinValue());
         // 工龄
-        double seniority = calculateScore(seniorityRadar.getCurrentValue(), seniorityRadar.getMaxValue(), seniorityRadar.getMinValue());
+        double seniority = this.calculateScore(seniorityRadar.getCurrentValue(), seniorityRadar.getMaxValue(), seniorityRadar.getMinValue());
         // 解决效率
-        double efficiency = calculateScore(efficiencyRadar.getCurrentValue(), efficiencyRadar.getMaxValue(), efficiencyRadar.getMinValue());
+        double efficiency = this.calculateScore(efficiencyRadar.getCurrentValue(), efficiencyRadar.getMaxValue(), efficiencyRadar.getMinValue());
 
         RadarResDTO data = new RadarResDTO();
         data.setHandle(handle);
@@ -473,7 +477,8 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         }
 
         RadarModel radarModel = new RadarModel();
-        RadarPerformanceModel radarPerformanceModel = performances.stream().filter(l -> userId.equals(l.getUserId()))
+        RadarPerformanceModel radarPerformanceModel = performances.stream()
+                .filter(l -> userId.equals(l.getUserId()))
                 .findFirst()
                 .orElse(null);
         // 班组其他成员有数据，但是查询的用户不一定有数据
@@ -536,7 +541,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
      * @param maxValue
      * @return
      */
-    private static double calculateScore(double currentValue, double maxValue, double minValue) {
+    private double calculateScore(double currentValue, double maxValue, double minValue) {
         // 最高分为
         final int topScore = 100;
         final int lowestScore = 60;
@@ -559,15 +564,67 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
 
     @Override
     public DashboardResDTO dashboard(String userId) {
+        SysUser user = sysUserService.getById(userId);
+        if (ObjectUtil.isEmpty(user)) {
+            throw new AiurtBootException("未找到对应的用户信息！");
+        }
+        // 获取班组的成员
+        List<SysUser> userList = sysUserService.lambdaQuery()
+                .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(SysUser::getOrgCode, user.getOrgCode())
+                .list();
+
+        // 根据ID找到了用户的话至少会有一个用户
+        if (CollUtil.isEmpty(userList)) {
+            throw new AiurtBootException("数据存在异常！");
+        }
+        List<RankingDTO> rankings = new ArrayList<>();
+        RankingDTO ranking = null;
+        // fixme 里面的分数获取需批量查询后获取数据
+        for (SysUser sysUser : userList) {
+            ranking = new RankingDTO();
+            // 计算班组成员的分数
+            RadarResDTO radarRes = this.radarMap(sysUser.getId());
+            double evaluationScore = this.evaluationScore(radarRes);
+            ranking.setUserId(sysUser.getId());
+            ranking.setUsername(sysUser.getUsername());
+            ranking.setScore(evaluationScore);
+            rankings.add(ranking);
+        }
+
+        // 最后对成员进行排名
+        Comparator<RankingDTO> comparator = Comparator.comparingDouble(RankingDTO::getScore).reversed();
+        List<RankingDTO> sortedRankings = rankings.stream().sorted(comparator).collect(Collectors.toList());
+        // 排名标识，存在并列排名则后续的排名需跳过
+        int rank = 0;
+        double previousValue = Double.MAX_VALUE;
+        for (RankingDTO sortedRanking : sortedRankings) {
+            Double score = sortedRanking.getScore();
+            if (previousValue != score) {
+                rank++;
+            }
+            sortedRanking.setRank(rank);
+            previousValue = score;
+        }
+
+        RankingDTO rankingDTO = sortedRankings.stream()
+                .filter(l -> userId.equals(l.getUserId()))
+                .findFirst()
+                .orElseGet(null);
         DashboardResDTO data = new DashboardResDTO();
-        int score = 90;
+        if (ObjectUtil.isEmpty(rankingDTO)) {
+            return data;
+        }
+        double score = rankingDTO.getScore();
+        int orgRank = rankingDTO.getRank();
+        int total = userList.size();
+        String grade = null;
+
         final int sixty = 60;
         final int seventy = 70;
         final int eighty = 80;
         final int ninety = 90;
         final int oneHundred = 100;
-
-        String grade = null;
         // 分值60-69，显示一般； 70-79，显示中等； 80-89，显示良好； 90-100显示优秀
         if (sixty <= score && seventy > score) {
             grade = "一般";
@@ -579,12 +636,35 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
             grade = "优秀";
         }
         data.setScore(BigDecimal.valueOf(score));
-        data.setOrgRank(1);
-        data.setOrgTotal(16);
-        data.setMajorRank(1);
-        data.setMajorTotal(32);
+        data.setOrgRank(orgRank);
+        data.setOrgTotal(total);
         data.setGrade(grade);
         return data;
+    }
+
+    /**
+     * @param radarRes 人员综合表现分数DTO对象
+     * @return
+     */
+    private double evaluationScore(RadarResDTO radarRes) {
+        // 故障处理总次数权重占比
+        final double handleWeight = 0.3;
+        // 解决效率权重占比
+        final double efficiencyWeight = 0.3;
+        // 工龄权重占比
+        final double seniorityWeight = 0.2;
+        // 资质权重占比
+        final double aptitudeWeight = 0.1;
+        // 绩效权重占比
+        final double performanceWeight = 0.1;
+        // 计算加权结果
+        double weightedSum = (radarRes.getHandle() * handleWeight)
+                + (radarRes.getEfficiency() * efficiencyWeight)
+                + (radarRes.getSeniority() * seniorityWeight)
+                + (radarRes.getAptitude() * aptitudeWeight)
+                + (radarRes.getPerformance() * performanceWeight);
+        weightedSum = Double.parseDouble(String.format("%.3f", weightedSum));
+        return weightedSum;
     }
 
     @Override
