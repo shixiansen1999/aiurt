@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.modules.faultalarm.dto.req.AlmRecordReqDTO;
 import com.aiurt.modules.faultalarm.dto.req.CancelAlarmReqDTO;
+import com.aiurt.modules.faultalarm.dto.req.OnFailureReportedReqDTO;
 import com.aiurt.modules.faultalarm.dto.resp.AlmRecordRespDTO;
 import com.aiurt.modules.faultalarm.service.IFaultAlarmService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -70,7 +71,7 @@ public class FaultAlarmController {
     @ApiOperation(value = "获取告警记录详情", notes = "获取告警记录详情")
     @GetMapping(value = "/alarmDetails")
     public Result<AlmRecordRespDTO> alarmDetails(@RequestParam(name = "id") String id) {
-        AlmRecordRespDTO result = faultAlarmService.faultAlarmService(id);
+        AlmRecordRespDTO result = faultAlarmService.alarmDetails(id);
         return Result.OK(result);
     }
 
@@ -88,6 +89,20 @@ public class FaultAlarmController {
     public Result<IPage<AlmRecordRespDTO>> queryAlarmRecordHistoryPageList(AlmRecordReqDTO almRecordReqDto, @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo, @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
         IPage<AlmRecordRespDTO> pageList = faultAlarmService.queryAlarmRecordHistoryPageList(almRecordReqDto, pageNo, pageSize);
         return Result.OK(pageList);
+    }
+
+    /**
+     * 故障上报后的回调
+     *
+     * @param onFailureReportedReqDTO 故障上报后的回调的请求DTO
+     * @return 响应结果，包含取消告警操作的结果信息
+     */
+    @AutoLog(value = "故障上报后的回调", operateType = 3, operateTypeAlias = "故障上报后的回调")
+    @ApiOperation(value = "故障上报后的回调", notes = "故障上报后的回调")
+    @RequestMapping(value = "/onFailureReported", method = RequestMethod.POST)
+    public Result<?> onFailureReported(@RequestBody @Valid OnFailureReportedReqDTO onFailureReportedReqDTO) {
+        faultAlarmService.onFailureReported(onFailureReportedReqDTO);
+        return Result.OK();
     }
 
 }

@@ -12,7 +12,7 @@
                oar.last_alm_time,
                oar.alm_num,
                oar.deal_user_id,
-               CONCAT(cancel_reason, ' ', deal_remark) AS dealRemark,
+               CONCAT(IFNULL(cancel_reason,''), ' ', IFNULL(deal_remark,'')) AS dealRemark,
                oar.deal_date_time,
                oar.fault_code,
                d.`code`                                AS deviceCode,

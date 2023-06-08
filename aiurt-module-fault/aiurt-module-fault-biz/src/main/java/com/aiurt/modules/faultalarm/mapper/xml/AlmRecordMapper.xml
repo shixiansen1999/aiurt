@@ -87,8 +87,8 @@
             <if test="condition.state !=null">
                 and oar.state = #{condition.state}
             </if>
-            <if test="condition.startAlmTime !=null and condition.endAlmTime!=''">
-                and DATE(d.alm_time) BETWEEN #{condition.startAlmTime} AND #{condition.endAlmTime}
+            <if test="condition.startAlmTime !=null and condition.endAlmTime!=null">
+                and DATE(oar.alm_time) BETWEEN #{condition.startAlmTime} AND #{condition.endAlmTime}
             </if>
         </where>
         GROUP BY

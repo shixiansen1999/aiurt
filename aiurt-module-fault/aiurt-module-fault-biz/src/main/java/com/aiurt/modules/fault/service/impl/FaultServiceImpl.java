@@ -2071,7 +2071,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @param code 故障编码
      * @return
      */
-    private Fault isExist(String code) {
+    @Override
+    public Fault isExist(String code) {
 
         Fault fault = baseMapper.selectByCode(code);
 

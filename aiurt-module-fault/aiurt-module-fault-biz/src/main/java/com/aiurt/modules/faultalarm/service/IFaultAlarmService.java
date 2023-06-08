@@ -3,6 +3,7 @@ package com.aiurt.modules.faultalarm.service;
 
 import com.aiurt.modules.faultalarm.dto.req.AlmRecordReqDTO;
 import com.aiurt.modules.faultalarm.dto.req.CancelAlarmReqDTO;
+import com.aiurt.modules.faultalarm.dto.req.OnFailureReportedReqDTO;
 import com.aiurt.modules.faultalarm.dto.resp.AlmRecordRespDTO;
 import com.aiurt.modules.faultalarm.entity.AlmRecord;
 import com.aiurt.modules.faultalarm.entity.OnAlm;
@@ -41,7 +42,7 @@ public interface IFaultAlarmService extends IService<AlmRecord> {
      * @param id 告警记录ID
      * @return 告警记录响应DTO
      */
-    AlmRecordRespDTO faultAlarmService(String id);
+    AlmRecordRespDTO alarmDetails(String id);
 
     /**
      * 查询sqlserver中的当前告警数据
@@ -59,4 +60,11 @@ public interface IFaultAlarmService extends IService<AlmRecord> {
      * @return 响应结果，包含分页后的历史告警记录列表
      */
     IPage<AlmRecordRespDTO> queryAlarmRecordHistoryPageList(AlmRecordReqDTO almRecordReqDto, Integer pageNo, Integer pageSize);
+
+    /**
+     * 故障上报后的回调
+     * @param onFailureReportedReqDTO 故障上报后的回调的请求DTO
+     */
+    void onFailureReported(OnFailureReportedReqDTO onFailureReportedReqDTO);
+
 }
