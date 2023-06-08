@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -684,7 +685,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
             String strName = excelName.substring(0, excelName.indexOf("."));
             List<String> wirelessSystem = sysBaseApi.getDictItems(strName).stream().map(w-> w.getText()).collect(Collectors.toList());
-            List<String> result = wirelessSystem.stream().filter(w -> !checkDTOs.stream().anyMatch(c -> c.getContent().equals(w))).collect(Collectors.toList());
+            List<String> result = wirelessSystem.stream().filter(w -> !checkResultAll.stream().anyMatch(c -> c.getContent().equals(w))).collect(Collectors.toList());
             if (!result.isEmpty()){
                 str =  result.stream().filter(s -> s.contains("：") || s.contains(":") )
                         .map(s -> s.split("[：:]")[0])
@@ -797,7 +798,17 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         List<PrintDTO> patrolData = print(id);
         InputStream minioFile2 = MinioUtil.getMinioFile("platform",templateFileName);
         try (ExcelWriter excelWriter = EasyExcel.write(filePath).withTemplate(minioFile2).build()) {
-            int[] mergeColumnIndex = {0,1,2};
+            int[] mergeColumnIndex;
+            if ("patrolType8".equals(type)) {
+                if (ObjectUtil.isEmpty(cellByText)){
+                    mergeColumnIndex = new int[]{0};
+                }else{
+                    mergeColumnIndex = new int[]{0, 1};
+                }
+
+            }else{
+                mergeColumnIndex = new int[]{0, 1, 2};
+            }
             CustomCellMergeHandler customCellMergeStrategy = new CustomCellMergeHandler(3,mergeColumnIndex);
             WriteSheet writeSheet = EasyExcel.writerSheet().registerWriteHandler(customCellMergeStrategy).build();
             FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
@@ -824,7 +835,6 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     //如果项目列占用多列，则需合并
                     if (ObjectUtil.isEmpty(cellByText)){
                         FilePrintUtils.setWrapText(workbook,7,startRow,endRow,0,0,false);
-                        FilePrintUtils.setColumnWidth(sheet,0,20);
                     }else{
                         FilePrintUtils.setWrapText(workbook,7,startRow,endRow,0,1,false);
                     }
@@ -834,7 +844,8 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     //合并指定范围行的单元格
                     FilePrintUtils.mergeCellsInColumnRange(workbook,true,startRow,endRow,firstColumn,lastColumn);
                     FilePrintUtils.mergeCellsInColumnRange(workbook,true,startRow,endRow,lastColumn+1,lastColumn+3);
-
+                    //设置列宽
+                    FilePrintUtils.setColumnWidth(sheet,0,15);
                 }else{
                     //自动换行
                     // setWrapText(workbook,1,startRow,endRow,0,0);
@@ -874,6 +885,15 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceIdAndParent(collect);
             for (PatrolCheckResultDTO c : checkResultList) {
                 List<PatrolCheckResultDTO> list = patrolCheckResultMapper.getQualityStandard(collect,c.getOldId());
+//                list.stream().filter(l -> l.getCheckResult()==0).collect(Collectors.toList());
+//                String result; String contentRemark = "";
+//                if (CollectionUtil.isNotEmpty(list)){
+//                    result = "☐正常\n☑异常";
+//                    contentRemark =  String.join(",",list.stream().map(l-> l.getRemark()).collect(Collectors.toList()));
+//                }else {
+//                    result = "☑正常\n☐异常";
+//
+//                }
                 for (PatrolCheckResultDTO t :list){
                     PrintDTO printDTO = new PrintDTO();
                     printDTO.setStandard(t.getQualityStandard());
@@ -883,12 +903,14 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     if(ObjectUtil.isEmpty(t.getCheckResult())){
                         printDTO.setResultTrue("☐正常");
                         printDTO.setResultFalse("☐异常");
-                        printDTO.setResult("☐正常\n\n☐异常情况记录");
+                        printDTO.setResult("⬜正常\n⬜异常");
                     }else {
                         printDTO.setResultTrue(t.getCheckResult()==0?"☐正常":"☑正常");
                         printDTO.setResultFalse(t.getCheckResult()==0?"☑异常":"☐异常");
-                        printDTO.setResult(t.getCheckResult()==0?"☑正常\n⬜异常情况记录":"⬜正常\n☑异常情况记录");
+                        printDTO.setResult(t.getCheckResult()==0?"☑正常\n⬜异常":"⬜正常\n☑异常");
                     }
+//                    printDTO.setResult(result);
+//                    printDTO.setContentRemark(contentRemark);
                     printDTO.setRemark(t.getRemark());
                     printDTO.setLocation(dto.getStationName());
                     printDTO.setSubSystem(t.getSubsystemName());
