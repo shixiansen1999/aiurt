@@ -71,6 +71,22 @@ public class RecPersonListDTO implements Serializable {
     @ApiModelProperty(value = "历史维修任务")
     private List<FaultRecDTO> faultRecList;
 
+    @ApiModelProperty(value = "绩效分数")
     private Integer performanceScore;
+
+    @ApiModelProperty(value = "工龄分数")
+    private Integer tenureScore;
+
+    @ApiModelProperty(value = "解决效率")
+    private Integer solutionEfficiencyScore;
+
+    @ApiModelProperty("故障处理总次数")
+    private Integer faultNumScore;
+
+    @ApiModelProperty("资质次数")
+    private Integer qualificationScore;
+
+    @ApiModelProperty("人员等级")
+    private Integer personnelLevelScore;
 }
 

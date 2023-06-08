@@ -215,6 +215,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     .delFlag(CommonConstant.DEL_FLAG_0)
                     // 负责人
                     .appointUserName(user.getUsername())
+                    .knowledgeId(fault.getKnowledgeId())
                     .build();
 
             repairRecordService.save(record);
@@ -652,6 +653,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         fault.setFaultDeviceList(faultDeviceList);
         if (CollUtil.isNotEmpty(faultDeviceList)) {
             fault.setDeviceCodes(StrUtil.join(",", faultDeviceList.stream().map(FaultDevice::getDeviceCode).collect(Collectors.toList())));
+            fault.setDeviceName(StrUtil.join(",", faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.toList())));
+            fault.setDeviceTypeCode(faultDeviceList.get(0).getDeviceTypeCode());
         }
 
         // 故障等级,权重登记
@@ -735,6 +738,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .appointUserName(assignDTO.getOperatorUserName())
                 // 附件
                 .assignFilePath(assignDTO.getFilepath())
+                .knowledgeId(fault.getKnowledgeId())
                 .build();
 
         // 修改状态
@@ -806,6 +810,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 // 领取时间
                 .receviceTime(new Date())
                 // 附件
+                .knowledgeId(fault.getKnowledgeId())
                 .assignFilePath(assignDTO.getFilepath())
                 .build();
 
@@ -2030,6 +2035,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     @Override
     public List<RecPersonListDTO> queryRecPersonList(String faultCode) {
+
+        // 查询所在得人员部门下得人员
+        // 计算得分
+
         return null;
     }
 
