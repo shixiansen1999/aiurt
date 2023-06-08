@@ -1,5 +1,6 @@
 package com.aiurt.modules.knowledge.dto;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.knowledge.entity.CauseSolution;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -123,6 +124,13 @@ public class KnowledgeBaseResDTO implements Serializable {
      */
     @ApiModelProperty(value = "故障等级名称")
     private String faultLevelName;
+
+    /**
+     * 状态
+     */
+    @Dict(dicCode = "fault_knowledge")
+    @ApiModelProperty(value = "状态(0:待审批,1:已审批,2:已驳回)")
+    private Integer status;
 
     /**
      * 浏览数

@@ -486,6 +486,7 @@
                fkb.device_type_code         deviceTypeCode,
                dt.name                      deviceTypeName,
                fkb.fault_level_code         faultLevelCode,
+               fkb.status                   `status`,
                fkb.scan_num                 scanNum,
                fkb.method                   method,
                fkb.create_time              createTime,
