@@ -45,10 +45,11 @@ public class TrainingPlanFileServiceImpl extends ServiceImpl<TrainingPlanFileMap
         pageList.getRecords().forEach(p -> {
             if (ObjectUtil.isNotEmpty(p.getFileId())) {
                 SysFileWebParam sysFileWebParam = new SysFileWebParam();
+                sysFileWebParam.setId(String.valueOf(p.getFileId()));
                 List<SysFileManageVO> result = this.baseMapper.getFilePageList(null, sysFileWebParam, loginUser.getId(), loginUser.getOrgCode(), null);
                 if (CollUtil.isNotEmpty(result)) {
                     sysFileWebParam.setId(String.valueOf(p.getFileId()));
-                    //用ld查询，是只有一个的
+                    //用id查询，是只有一个的
                     SysFileManageVO sysFileManageVO = result.get(0);
                     p.setPermission(sysFileManageVO.getPermission());
                 }
@@ -72,7 +73,7 @@ public class TrainingPlanFileServiceImpl extends ServiceImpl<TrainingPlanFileMap
             sysFileWebParam.setName(sysFileWebParam.getName().trim());
         }
         if (ObjectUtil.isNotEmpty(sysFileWebParam.getId())) {
-            //判断是否是多个
+            //判断是否是多个,因为前端组件问题，只用id传参并多个，要兼容其他功能调接口用id查询
             List<String> ids = StrUtil.splitTrim(sysFileWebParam.getId(), ",");
             if (ids.size() > 1) {
                 sysFileWebParam.setSelections(ids);
