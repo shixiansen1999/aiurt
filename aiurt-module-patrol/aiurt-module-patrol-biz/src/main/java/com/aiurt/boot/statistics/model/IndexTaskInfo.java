@@ -79,6 +79,12 @@ public class IndexTaskInfo implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "巡检结果提交时间,格式yyyy-MM-dd HH:mm:ss")
     private java.util.Date submitTime;
+    /**
+     * 巡视时长，单位：分钟
+     * 工单的巡视时长:check_time减start_time，不足一分钟的按照一分钟算
+     */
+    @ApiModelProperty(value = "巡视时长，单位：分钟")
+    private Integer duration;
 
     /**
      * mac匹配；0异常；1正常
