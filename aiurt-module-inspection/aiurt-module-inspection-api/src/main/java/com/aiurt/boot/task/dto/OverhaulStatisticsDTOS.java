@@ -7,6 +7,7 @@ import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -71,7 +72,7 @@ public class OverhaulStatisticsDTOS {
     @TableField(exist = false)
     @Excel(name = "总检修时长", width = 15)
     @ApiModelProperty(value = "总检修时长")
-    private float maintenanceDuration;
+    private BigDecimal maintenanceDuration;
 
     /**计划检修总数*/
     @TableField(exist = false)
@@ -179,6 +180,11 @@ public class OverhaulStatisticsDTOS {
 
     @ApiModelProperty("导出参数")
     private String  exportParameters;
+
+    /**
+     * 任务完成状态
+     */
+    private final Integer repairTaskStatus = 8;
 
     /**
      * 重写hashCode方法
