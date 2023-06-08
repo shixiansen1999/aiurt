@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -874,6 +875,15 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceIdAndParent(collect);
             for (PatrolCheckResultDTO c : checkResultList) {
                 List<PatrolCheckResultDTO> list = patrolCheckResultMapper.getQualityStandard(collect,c.getOldId());
+                list.stream().filter(l -> l.getCheckResult()==0).collect(Collectors.toList());
+                String result; String contentRemark = "";
+                if (CollectionUtil.isNotEmpty(list)){
+                    result = "☐正常\n☑异常";
+                    contentRemark =  String.join(",",list.stream().map(l-> l.getRemark()).collect(Collectors.toList()));
+                }else {
+                    result = "☑正常\n☐异常";
+
+                }
                 for (PatrolCheckResultDTO t :list){
                     PrintDTO printDTO = new PrintDTO();
                     printDTO.setStandard(t.getQualityStandard());
@@ -883,12 +893,12 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     if(ObjectUtil.isEmpty(t.getCheckResult())){
                         printDTO.setResultTrue("☐正常");
                         printDTO.setResultFalse("☐异常");
-                        printDTO.setResult("☐正常\n\n☐异常情况记录");
                     }else {
                         printDTO.setResultTrue(t.getCheckResult()==0?"☐正常":"☑正常");
                         printDTO.setResultFalse(t.getCheckResult()==0?"☑异常":"☐异常");
-                        printDTO.setResult(t.getCheckResult()==0?"☑正常\n⬜异常情况记录":"⬜正常\n☑异常情况记录");
                     }
+                    printDTO.setResult(result);
+                    printDTO.setContentRemark(contentRemark);
                     printDTO.setRemark(t.getRemark());
                     printDTO.setLocation(dto.getStationName());
                     printDTO.setSubSystem(t.getSubsystemName());
