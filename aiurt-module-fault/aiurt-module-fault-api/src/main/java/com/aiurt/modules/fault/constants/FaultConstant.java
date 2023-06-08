@@ -47,4 +47,14 @@ public class FaultConstant {
      *  判断条件
      */
     public static final int FAULT_START = 0;
+
+    /**
+     * 站所类型：办公大楼
+     */
+    public static final Integer STATION_TYPE_5 = 5;
+
+    /**
+     * 站所类型字段名
+     */
+    public static final String STATION_TYPE= "stationType";
 }

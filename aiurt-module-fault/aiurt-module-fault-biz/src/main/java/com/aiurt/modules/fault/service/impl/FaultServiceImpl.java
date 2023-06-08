@@ -21,6 +21,7 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.common.api.IBaseApi;
+import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.*;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
@@ -39,6 +40,7 @@ import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -159,12 +161,21 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
         FaultKnowledgeBaseType one = faultKnowledgeBaseTypeService.getOne(queryWrapper.eq(FaultKnowledgeBaseType::getCode, fault.getFaultPhenomenon()).eq(FaultKnowledgeBaseType::getDelFlag, 0));
-        // 自报自修跳过
+        // 自报自修,并且是中心班组故障（故障报修站点是控制中心站点）->跳过
         boolean b = StrUtil.equalsIgnoreCase(faultModeCode, SELF_FAULT_MODE_CODE);
+        // 获取故障报修站点信息
+        boolean isCenterFault;
+        JSONObject station = sysBaseAPI.getCsStationByCode(fault.getStationCode());
+        if (ObjectUtil.isEmpty(station)) {
+            throw new AiurtBootException("系统中不存在该站点，请确认故障站点是否正确");
+        }
+        Integer stationType = station.getInteger(FaultConstant.STATION_TYPE);
+        // 判断是否中心班组故障
+        isCenterFault = ObjectUtil.isNotEmpty(stationType) ? (ObjectUtil.equal(FaultConstant.STATION_TYPE_5, stationType) ? true : false) : false;
         // 根据配置决定是否需要审核
         SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_PROCESS);
         boolean value = "1".equals(paramModel.getValue());
-        if (b) {
+        if (b && isCenterFault) {
             fault.setAppointUserName(user.getUsername());
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
             // 方便统计
