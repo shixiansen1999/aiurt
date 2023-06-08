@@ -395,5 +395,8 @@ public class Fault extends DictEntity implements Serializable {
      */
     @TableField(exist = false)
     private String username;
+
+    @TableField(exist = false)
+    private String deviceTypeCode;
 }
 
