@@ -3229,6 +3229,15 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
+    public List<StationAndMacModel> getStationAndMacByCode(List<String> stationCodes) {
+        if (CollUtil.isNotEmpty(stationCodes)) {
+            List<StationAndMacModel> mac = csPositionWifiMapper.getStationAndMac(stationCodes);
+            return mac;
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
     public Date getRecentConnectTimeByStationCode(String username, String stationCode) {
         LambdaQueryWrapper<SysUserPositionCurrent> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysUserPositionCurrent::getCreateBy, username);

@@ -1178,5 +1178,10 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     DictModel dictById(String id);
+    /**
+     * 根据站点code获取mac地址和站点名称
+     * @return
+     */
+    List<StationAndMacModel> getStationAndMacByCode(List<String> stationCodes);
 }
 
