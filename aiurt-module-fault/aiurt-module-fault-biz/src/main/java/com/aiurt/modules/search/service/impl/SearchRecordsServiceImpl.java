@@ -1,8 +1,12 @@
 package com.aiurt.modules.search.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.search.mapper.SearchRecordsMapper;
 import com.aiurt.modules.search.service.ISearchRecordsService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -60,5 +64,29 @@ public class SearchRecordsServiceImpl extends ServiceImpl<SearchRecordsMapper, S
             hotKeywords.add(hotKeyword);
         }
         return hotKeywords;
+    }
+
+    @Override
+    public IPage<HotKeywordResDTO> cuteHandHotKeyword(Integer pageNo, Integer pageSize) {
+        QueryWrapper<SearchRecords> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(SearchRecords::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .orderByDesc(SearchRecords::getResultCount, SearchRecords::getSearchTime);
+        Page<SearchRecords> recordsPage = this.page(new Page<>(pageNo, pageSize), wrapper);
+        List<SearchRecords> records = recordsPage.getRecords();
+
+        List<HotKeywordResDTO> hotKeywords = new ArrayList<>();
+        if (CollUtil.isNotEmpty(records)) {
+            HotKeywordResDTO hotKeyword = null;
+            for (SearchRecords record : records) {
+                hotKeyword = new HotKeywordResDTO();
+                BeanUtils.copyProperties(record, hotKeyword);
+                hotKeywords.add(hotKeyword);
+            }
+        }
+
+        Page<HotKeywordResDTO> pageList = new Page<>(pageNo, pageNo);
+        pageList.setTotal(recordsPage.getTotal());
+        pageList.setRecords(hotKeywords);
+        return pageList;
     }
 }
