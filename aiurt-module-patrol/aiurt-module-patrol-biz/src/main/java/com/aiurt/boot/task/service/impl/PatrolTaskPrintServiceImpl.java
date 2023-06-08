@@ -53,7 +53,6 @@ import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.alibaba.excel.write.metadata.fill.FillWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import io.lettuce.core.AbstractRedisReactiveCommands;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -228,16 +227,13 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
            patrolData = getPrintOthers(taskId,headerMap);
            //填充列表数据
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
-       }else if ("wireless_system.xlsx".equals(excelName)){
-           patrolData = getWirelessSystem(taskId,headerMap);
+       }else if ("wireless_system.xlsx".equals(excelName) || "wireless_system1.xlsx".equals(excelName)){
+           patrolData = getWirelessSystem(taskId,headerMap,excelName);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
-       }else if ("pis_system.xlsx".equals(excelName)){
-           patrolData = getRemark(taskId,headerMap);
+       }else if ("pis_system.xlsx".equals(excelName) || "pis_system1.xlsx".equals(excelName)){
+           patrolData = getRemark(taskId,headerMap,excelName);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
-       }else if ("wireless_system1.xlsx".equals(excelName)){
-           patrolData = getWirelessSystem1(taskId,headerMap);
-           excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
-       }else if("cctv_system.xlsx".equals(excelName)){
+       } else if("cctv_system.xlsx".equals(excelName)){
            patrolData = getCctvSystem(taskId,headerMap);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
        }
@@ -299,36 +295,6 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         }
         return getCctvSystem;
     }
-
-    private List<PrintDTO> getWirelessSystem1(String taskId, Map<String, Object> headerMap) {
-        List<PrintDTO> getPrint = new ArrayList<>();
-        List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(taskId);
-        Set<String> set = new LinkedHashSet<>() ;
-        StringBuilder text  = new StringBuilder();
-        for (PatrolStationDTO dto : billGangedInfo) {
-            //获取检修项
-            String str;
-            List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
-            List<PatrolCheckResultDTO> checkResultAll =  patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
-            List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
-            List<String> wirelessSystem = sysBaseApi.getDictItems("wireless_system1").stream().map(w-> w.getText()).collect(Collectors.toList());
-            List<String> result = wirelessSystem.stream().filter(w -> !checkDTOs.stream().anyMatch(c -> c.getContent().equals(w))).collect(Collectors.toList());
-            if (!result.isEmpty()){
-                str =  result.stream().filter(s -> s.contains("：") || s.contains(":") )
-                        .map(s -> s.split("[：:]")[0])
-                        .collect(Collectors.joining(",")) + "( 无 )";
-                set.add(str);
-            }
-            checkDTOs.forEach(c-> {
-                if(c.getCheckResult()==0){
-                    text.append("\n").append(c.getContent()).append(":异常");
-                }
-            });
-        }
-        headerMap.put("remark","本站 : \n"+set.toString()+text);
-        return getPrint;
-    }
-
     /**
      * 电话系统模板
      * @param patrolTask
@@ -631,7 +597,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         }
         return getPrint;
     }
-    private List<PrintDTO> getRemark(String id,Map<String,Object> map) {
+    private List<PrintDTO> getRemark(String id, Map<String,Object> map, String excelName) {
         List<PrintDTO> getRemark = new ArrayList<>();
         List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
         for (PatrolStationDTO dto : billGangedInfo) {
@@ -650,7 +616,8 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             if (CollUtil.isEmpty(parentDTOList)) {
                 continue;
             }
-            List<String> pisSystem = sysBaseApi.getDictItems("pis_system").stream().map(w-> w.getText()).collect(Collectors.toList());
+            String strName = excelName.substring(0, excelName.indexOf("."));
+            List<String> pisSystem = sysBaseApi.getDictItems(strName).stream().map(w-> w.getText()).collect(Collectors.toList());
             PrintDTO printDTO = new PrintDTO();
             pisSystem.forEach(str-> {
                 PatrolCheckResultDTO patrolCheckResultDTO = parentDTOList.stream().filter(p -> p.getOldCode().equals(str)).findFirst().orElse(null);
@@ -704,7 +671,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         return getRemark;
     }
 
-    private List<PrintDTO> getWirelessSystem(String id,Map<String, Object> map) {
+    private List<PrintDTO> getWirelessSystem(String id, Map<String, Object> map, String excelName) {
         List<PrintDTO> getPrint = new ArrayList<>();
         List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
         Set<String> set = new LinkedHashSet<>() ;
@@ -715,7 +682,8 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
             List<PatrolCheckResultDTO> checkResultAll =  patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
             List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
-            List<String> wirelessSystem = sysBaseApi.getDictItems("wireless_system").stream().map(w-> w.getText()).collect(Collectors.toList());
+            String strName = excelName.substring(0, excelName.indexOf("."));
+            List<String> wirelessSystem = sysBaseApi.getDictItems(strName).stream().map(w-> w.getText()).collect(Collectors.toList());
             List<String> result = wirelessSystem.stream().filter(w -> !checkDTOs.stream().anyMatch(c -> c.getContent().equals(w))).collect(Collectors.toList());
             if (!result.isEmpty()){
                 str =  result.stream().filter(s -> s.contains("：") || s.contains(":") )
