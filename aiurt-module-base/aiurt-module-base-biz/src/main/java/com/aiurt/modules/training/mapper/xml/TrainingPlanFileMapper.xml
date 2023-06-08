@@ -65,7 +65,7 @@
                 #{id}
             </foreach>
         </if>
-         <if test="condition.id != null and condition.selections.size() == 0">
+         <if test="condition.id != null and condition.selections == null">
             AND sf.id = #{condition.id}
         </if>
         GROUP BY sf.id
