@@ -8,4 +8,14 @@
         #{item}
     </foreach>
     </select>
+
+<select id="getStationAndMac" resultType="org.jeecg.common.system.vo.StationAndMacModel">
+    select cpw.mac ,cs.station_name
+    from cs_position_wifi cpw
+    left join cs_station cs on cpw.station_code = cs.station_code
+    where cpw.del_flag = 0 and cpw.station_code in
+    <foreach collection="stationCodes" open="(" separator="," close=")" item="item" index="index">
+        #{item}
+    </foreach>
+    </select>
 </mapper>
