@@ -71,7 +71,7 @@ public class TrainingPlanController extends BaseController<TrainingPlan, ITraini
                                                      @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
         QueryWrapper<TrainingPlan> queryWrapper = QueryGenerator.initQueryWrapper(trainingPlan, req.getParameterMap());
-        queryWrapper.lambda().eq(TrainingPlan::getDelFlag, CommonConstant.DEL_FLAG_0);
+        queryWrapper.lambda().eq(TrainingPlan::getDelFlag, CommonConstant.DEL_FLAG_0).orderByDesc(TrainingPlan::getCreateTime);
         IPage<TrainingPlan> pageList = trainingPlanService.page(new Page<>(pageNo, pageSize), queryWrapper);
         pageList.getRecords().forEach(f -> f.setQrCode(TRAINING_PLAN_SING_URL.concat(f.getId().toString())));
         return Result.ok(pageList);
