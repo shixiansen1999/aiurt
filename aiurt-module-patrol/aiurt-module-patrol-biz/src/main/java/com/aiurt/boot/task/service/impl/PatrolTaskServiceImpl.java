@@ -2224,7 +2224,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 //            inputStreamTemplate = new FileInputStream(templateFileName);
             workbookTpl = WorkbookFactory.create(minioFile);
             Sheet sheet = workbookTpl.getSheetAt(0);
-            mergeRegion = FilePrintUtils.findMergeRegions(sheet, "巡检标准");
+            mergeRegion = FilePrintUtils.findMergeRegions(sheet, 1,3,"巡检标准");
             firstColumn = mergeRegion.getFirstColumn();
             lastColumn = mergeRegion.getLastColumn();
 
@@ -2325,7 +2325,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 FilePrintUtils.setWrapText(workbook,7,1,1,1,1,true);
                 FilePrintUtils.setWrapText(workbook,7,startRow,endRow,1,firstColumn>3?3:2,false);
                 //合并指定范围行的单元格
-                FilePrintUtils.mergeCellsInColumnRange(workbook,40,startRow,endRow,firstColumn,lastColumn);
+                FilePrintUtils.mergeCellsInColumnRange(workbook,true,startRow,endRow,firstColumn,lastColumn);
 
                 //设置第一列列宽
                 FilePrintUtils.setColumnWidth(sheet,0,10);

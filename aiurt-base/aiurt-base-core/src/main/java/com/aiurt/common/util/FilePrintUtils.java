@@ -4,6 +4,7 @@ import com.alibaba.excel.metadata.data.ImageData;
 import com.alibaba.excel.metadata.data.WriteCellData;
 
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.ss.util.RegionUtil;
@@ -120,7 +121,7 @@ public class FilePrintUtils {
         // 设置字体大小为9号
         font.setFontHeightInPoints((short) 9);
         cellStyle.setFont(font);
-        sheet.autoSizeColumn(0);
+//        sheet.autoSizeColumn(0);
         for (int row = startRow; row <= endRow; row++) {
             Row currentRow = sheet.getRow(row);
             for (int col = startColumn; col <= endColumn; col++) {
@@ -143,13 +144,13 @@ public class FilePrintUtils {
     }
     /**
      * 合并多行范围的单元格
-     * @param returnRowMaxLength
+     * @param isSetFont
      * @param startRow
      * @param endRow
      * @param startColumn
      * @param endColumn
      */
-    public static void mergeCellsInColumnRange(Workbook workbook, int returnRowMaxLength, int startRow, int endRow, int startColumn, int endColumn) {
+    public static void mergeCellsInColumnRange(Workbook workbook, boolean isSetFont, int startRow, int endRow, int startColumn, int endColumn) {
         // 获取要操作的Sheet对象
         Sheet sheet = workbook.getSheetAt(0);
         CellStyle cellStyle = workbook.createCellStyle();
@@ -157,17 +158,20 @@ public class FilePrintUtils {
         cellStyle.setBorderBottom(BorderStyle.THIN);
         cellStyle.setBorderLeft(BorderStyle.THIN);
         cellStyle.setBorderRight(BorderStyle.THIN);
-        Font font = workbook.createFont();
-        // 设置字体为宋体
-        font.setFontName("宋体");
-        // 设置字体大小为9号
-        font.setFontHeightInPoints((short) 9);
-        cellStyle.setFont(font);
-        sheet.autoSizeColumn(0);
+        if (isSetFont){
+            Font font = workbook.createFont();
+            // 设置字体为宋体
+            font.setFontName("宋体");
+            // 设置字体大小为9号
+            font.setFontHeightInPoints((short) 9);
+            cellStyle.setFont(font);
+        }
+
         cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
+//        cellStyle.setAlignment(HorizontalAlignment.LEFT);
         //设置自动换行
         cellStyle.setWrapText(true);
-
+        sheet.autoSizeColumn(0);
         for (int row = startRow; row <= endRow; row++) {
             CellRangeAddress cellRangeAddress = new CellRangeAddress(row, row, startColumn, endColumn);
             sheet.addMergedRegion(cellRangeAddress);
@@ -185,7 +189,7 @@ public class FilePrintUtils {
                 }
                 cell.setCellStyle(cellStyle);
                 String cellValue = cell.getStringCellValue();
-                returnRowMaxLength = getReturnRowMaxLengthForRegion(sheet, cellRangeAddress);
+                int returnRowMaxLength = getReturnRowMaxLengthForRegion(sheet, cellRangeAddress);
                 if (Objects.nonNull(cellValue)&&cellValue.length() > returnRowMaxLength ){
                     //当字符数大于RowMaxLength的时候，长度除以RowMaxLength+1 就是倍数，默认高度乘倍数即可计算出高度
 //                    int foldRowNum = (cellValue.length() / returnRowMaxLength) + 1;
@@ -278,10 +282,15 @@ public class FilePrintUtils {
         return byteOutput.toByteArray();
     }
 
-    public static CellRangeAddress findMergeRegions(Sheet sheet, String searchValue){
-        int startRow = 1;
-        int endRow = 3;
-
+    /**
+     * 查找某个字符串所在的合并区域
+     * @param sheet
+     * @param startRow
+     * @param endRow
+     * @param searchValue
+     * @return
+     */
+    public static CellRangeAddress findMergeRegions(Sheet sheet,int startRow,int endRow, String searchValue){
         CellReference cellRef = searchCellWithMergedRegion(sheet, searchValue, startRow, endRow);
         CellRangeAddress mergedRegion = null;
         if (cellRef != null) {
@@ -308,7 +317,29 @@ public class FilePrintUtils {
         return mergedRegion;
     }
 
-
+    /**
+     * 查找某个字符串所在的单元格
+     * @param sheet
+     * @param searchText
+     * @return
+     */
+    public static CellAddress findCellByText(Sheet sheet, int startRow, int endRow, String searchText) {
+        for (int rowIndex = startRow; rowIndex <= endRow; rowIndex++) {
+            Row row = sheet.getRow(rowIndex);
+            if (row != null) {
+                for (Cell cell : row) {
+                    CellType cellType = cell.getCellType();
+                    if (cellType == CellType.STRING) {
+                        String cellValue = cell.getStringCellValue();
+                        if (cellValue.equals(searchText)) {
+                            return cell.getAddress();
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
     //删除合并区域
     private List<CellRangeAddress> removeMergedRegions(Sheet sheet){
         List<CellRangeAddress> mergeRegions = sheet.getMergedRegions();
