@@ -1893,6 +1893,7 @@
         statistics.`code`,
         ptd.`status`,
         ptd.check_time as submitTime,
+        IF(TIMESTAMPDIFF(MINUTE, ptd.start_time,ptd.check_time)=0,1,TIMESTAMPDIFF(MINUTE, ptd.start_time,ptd.check_time)) as duration,
         ptd.mac_status
         FROM
         (
