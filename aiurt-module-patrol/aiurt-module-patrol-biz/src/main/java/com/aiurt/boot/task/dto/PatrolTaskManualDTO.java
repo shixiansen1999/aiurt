@@ -78,6 +78,6 @@ public class PatrolTaskManualDTO {
     @TableField(exist = false)
     List<String> orgCodeList;
     /**标准工时*/
-    @ApiModelProperty(value = "标准工时：单位分钟")
+    @ApiModelProperty(value = "标准工时：单位秒")
     private java.lang.Integer standardDuration;
 }

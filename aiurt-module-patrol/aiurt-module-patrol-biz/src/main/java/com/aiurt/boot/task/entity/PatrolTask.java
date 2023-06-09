@@ -336,12 +336,12 @@ public class PatrolTask extends DictEntity implements Serializable {
     /**
      * 标准工时
      */
-    @ApiModelProperty(value = "标准工时：单位分钟")
+    @ApiModelProperty(value = "标准工时：单位秒")
     private Integer standardDuration;
 
     /**
-     * 巡视工时：单位分钟
+     * 巡视工时：单位秒
      */
-    @ApiModelProperty(value = "巡视工时：单位分钟")
+    @ApiModelProperty(value = "巡视工时：单位秒")
     private Integer duration;
 }
