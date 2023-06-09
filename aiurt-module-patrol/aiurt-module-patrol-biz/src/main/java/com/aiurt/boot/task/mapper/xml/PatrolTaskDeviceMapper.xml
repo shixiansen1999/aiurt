@@ -204,7 +204,8 @@
           and del_flag = 0
     </select>
     <select id="getBillGangedInfo" resultType="com.aiurt.boot.task.dto.PatrolBillDTO">
-        SELECT ptd.id                                                                      billId,
+        SELECT ps.id,
+               ptd.id                                                                      billId,
                ptd.patrol_number                                                           billCode,
                CONCAT(ps.`name`, IF(d.`name` IS NOT NULL, CONCAT('(', d.`name`, ')'), '')) tableName,
                IF(ptd.device_code IS NOT NULL, d.station_code, ptd.station_code)           stationCode,
@@ -389,6 +390,33 @@
             <foreach collection="collect" item="collect" open="(" close=")" separator=",">
                 #{collect}
             </foreach>
+        </if>
+    </select>
+
+    <select id="getBillGanged" resultType="com.aiurt.boot.task.dto.PatrolBillDTO">
+        SELECT ps.id,
+        ptd.id                                                                      billId,
+        ptd.patrol_number                                                           billCode,
+        CONCAT(ps.`name`, IF(d.`name` IS NOT NULL, CONCAT('(', d.`name`, ')'), '')) tableName,
+        IF(ptd.device_code IS NOT NULL, d.station_code, ptd.station_code)           stationCode,
+        cs.station_name
+        FROM patrol_task_device ptd
+        LEFT JOIN device d ON ptd.device_code = d.`code`
+        AND d.del_flag = 0
+        LEFT JOIN cs_station cs ON
+        IF(ptd.device_code IS NOT NULL, d.station_code, ptd.station_code) = cs.station_code
+        AND cs.del_flag = 0
+        JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
+        AND pts.del_flag = 0
+        JOIN patrol_standard ps ON pts.standard_id = ps.id
+        AND ps.del_flag = 0
+        WHERE
+        ptd.del_flag = 0
+        <if test="taskId != null and taskId != ''">
+            AND ptd.task_id = #{taskId}
+        </if>
+        <if test="standardId != null and standardId != ''">
+            AND ps.id = #{standardId}
         </if>
     </select>
 </mapper>
