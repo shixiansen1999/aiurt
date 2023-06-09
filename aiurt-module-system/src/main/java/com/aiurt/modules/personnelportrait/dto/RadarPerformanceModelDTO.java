@@ -19,5 +19,5 @@ public class RadarPerformanceModelDTO {
     /**
      * 绩效分数
      */
-    private String score;
+    private Double score;
 }

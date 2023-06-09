@@ -222,8 +222,6 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
      * @return
      */
     private List<UserInfoResDTO> setUserInfo(List<SysUser> users, Map<String, List<SysRole>> userRoleMap) {
-        List<UserInfoResDTO> userInfos = new ArrayList<>();
-        UserInfoResDTO userInfo = null;
         Map<String, String> jobGradeMap = iSysBaseApi.getDictItems(JOB_GRADE)
                 .stream()
                 .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText()));
@@ -231,6 +229,11 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         List<String> usernames = users.stream().map(SysUser::getUsername).distinct().collect(Collectors.toList());
         List<ScheduleUserWorkDTO> todayUserWork = iBaseApi.getTodayUserWork(userIds);
         List<FaultMaintenanceDTO> faultMaintenances = personnelPortraitFaultApi.personnelPortraitStatic(usernames);
+
+        List<UserInfoResDTO> userInfos = new ArrayList<>();
+        UserInfoResDTO userInfo = null;
+        // fixme 后期需要通过故障模块的常量值进行获取，不在此处定义
+        final String working = "当班";
         for (SysUser user : users) {
             String seniority = null;
             String role = null;
@@ -254,7 +257,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
                             && "1".equals(l.getWork()))
                     .findFirst().orElseGet(ScheduleUserWorkDTO::new);
             if (StrUtil.isNotEmpty(scheduleUserWork.getWork())) {
-                dutyStatus = "值班中";
+                dutyStatus = working;
             }
             FaultMaintenanceDTO faultMaintenance = faultMaintenances.stream()
                     .filter(l -> user.getUsername().equals(l.getUsername())).findFirst()
@@ -276,6 +279,19 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
             userInfo.setSpeciality(speciality);
             userInfos.add(userInfo);
         }
+        // 值班中的排在前
+        userInfos = userInfos.stream().sorted((a, b) -> {
+            if (working.equals(a.getDutyStatus()) && !working.equals(b.getDutyStatus())) {
+                // a排在前面
+                return -1;
+            } else if (!working.equals(a.getDutyStatus()) && working.equals(b.getDutyStatus())) {
+                // b排在前面
+                return 1;
+            } else {
+                // 保持原有顺序
+                return 0;
+            }
+        }).collect(Collectors.toList());
         return userInfos;
     }
 
@@ -555,11 +571,11 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         if (ObjectUtil.isEmpty(radarPerformanceModel)) {
             return radarModel;
         }
-        double currentValue = Double.parseDouble(radarPerformanceModel.getScore());
+        double currentValue = radarPerformanceModel.getScore();
         radarModel.setCurrentValue(currentValue);
 
         List<Double> scores = performances.stream()
-                .map(performance -> Double.parseDouble(performance.getScore()))
+                .map(RadarPerformanceModelDTO::getScore)
                 .collect(Collectors.toList());
         if (CollUtil.isNotEmpty(scores)) {
             Double maxValue = Collections.max(scores);
@@ -664,7 +680,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         // 近一年班组成员绩效
         Date date = DateUtil.offsetMonth(new Date(), -12);
         List<RadarPerformanceModelDTO> performances = sysUserPerfMapper.getPerformance(date, orgCode);
-        Map<String, String> performancesMap = performances.stream().collect(Collectors.toMap(k -> k.getUserId(), v -> v.getScore()));
+        Map<String, Double> performancesMap = performances.stream().collect(Collectors.toMap(k -> k.getUserId(), v -> v.getScore()));
         // 资质
         List<RadarAptitudeModelDTO> aptitudes = sysUserAptitudesMapper.getAptitude(orgCode);
         Map<String, Integer> aptitudesMap = aptitudes.stream().collect(Collectors.toMap(k -> k.getUserId(), v -> v.getNumber()));
@@ -757,7 +773,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
                                      String username,
                                      Map<String, Integer> handlesMap,
                                      Map<String, Double> efficiencysMap,
-                                     Map<String, String> performancesMap,
+                                     Map<String, Double> performancesMap,
                                      Map<String, Integer> aptitudesMap,
                                      Map<String, Date> senioritysMap) {
         // 初始化最低分
@@ -781,10 +797,8 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
             efficiency = this.calculateScore(currentValue, maxValue, minValue);
         }
         if (ObjectUtil.isNotEmpty(performancesMap.get(id))) {
-            double currentValue = Double.parseDouble(performancesMap.get(id));
-            List<Double> values = performancesMap.values().stream()
-                    .map(obj -> Double.parseDouble(obj))
-                    .collect(Collectors.toList());
+            double currentValue = performancesMap.get(id);
+            List<Double> values = performancesMap.values().stream().collect(Collectors.toList());
             double maxValue = Collections.max(values);
             double minValue = Collections.min(values);
             performance = this.calculateScore(currentValue, maxValue, minValue);
