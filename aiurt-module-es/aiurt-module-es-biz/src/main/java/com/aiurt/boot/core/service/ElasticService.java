@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -14,6 +15,7 @@ import org.elasticsearch.index.reindex.BulkByScrollResponse;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public interface ElasticService<T, M> {
 
@@ -101,11 +103,20 @@ public interface ElasticService<T, M> {
     public BulkResponse bulkUpdate(List<T> list) throws Exception;
 
     /**
-     * 按照有值字段更新索引
+     * 更新索引
      *
      * @param t 索引实体类
      */
     public boolean update(T t) throws Exception;
+
+    /**
+     * 根据Map更新文档
+     *
+     * @param docId  文档ID
+     * @param clazz  索引实体类
+     * @param source 更新数据内容
+     */
+    boolean update(String docId, Class<T> clazz, Map<String, Object> source) throws IOException;
 
     /**
      * 删除索引
@@ -153,5 +164,4 @@ public interface ElasticService<T, M> {
      * @return
      */
     public boolean exists(M id, Class<T> clazz) throws Exception;
-
 }

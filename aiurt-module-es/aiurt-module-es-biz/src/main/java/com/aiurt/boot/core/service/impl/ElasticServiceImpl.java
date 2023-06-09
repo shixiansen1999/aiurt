@@ -349,6 +349,19 @@ public class ElasticServiceImpl<T, M> implements ElasticService<T, M> {
         return false;
     }
 
+    @Override
+    public boolean update(String docId, Class<T> clazz, Map<String, Object> source) throws IOException {
+        String indexName = ElasticTools.getIndexName(clazz);
+        UpdateRequest request = new UpdateRequest(indexName, docId);
+        request.doc(source);
+        UpdateResponse response = client.update(request, RequestOptions.DEFAULT);
+        if (response.getResult() == DocWriteResponse.Result.UPDATED) {
+//            log.info("INDEX UPDATE SUCCESS");
+            return true;
+        }
+        return false;
+    }
+
 //    private BulkResponse batchUpdate(List<T> list, String indexName, String indexType, T tot) throws Exception {
 //        Map map = ElasticTools.getFieldValue(tot);
 //        BulkRequest rrr = new BulkRequest();

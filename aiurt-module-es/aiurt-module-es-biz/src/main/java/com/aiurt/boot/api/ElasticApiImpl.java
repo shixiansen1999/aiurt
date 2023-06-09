@@ -32,10 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -320,5 +317,15 @@ public class ElasticApiImpl implements ElasticAPI {
         } catch (Exception e) {
             log.error("批量删除ES故障知识库记录失败：", e.getMessage());
         }
+    }
+
+    @Override
+    public boolean update(String docId, Class<KnowledgeBase> clazz, Map<String, Object> source) throws IOException {
+        return elasticService.update(docId, clazz, source);
+    }
+
+    @Override
+    public boolean exists(String docId, Class<KnowledgeBase> clazz) throws Exception {
+        return elasticService.exists(docId,clazz);
     }
 }

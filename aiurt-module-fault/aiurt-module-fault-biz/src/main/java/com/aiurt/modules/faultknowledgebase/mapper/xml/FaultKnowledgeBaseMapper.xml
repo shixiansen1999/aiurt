@@ -350,6 +350,7 @@
             fkb.fault_reason,
             fkb.method,
             fkb.solution,
+            fkb.scan_num,
             fkb.create_time,
             fkb.status,
             fkb.file_path,
