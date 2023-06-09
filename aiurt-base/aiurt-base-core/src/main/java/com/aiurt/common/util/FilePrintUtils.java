@@ -54,16 +54,25 @@ public class FilePrintUtils {
         imageData.setTop(5);
 //        imageData.setRight(1);
         imageData.setBottom(5);
-        imageData.setLeft(100);
+        imageData.setLeft(300);
 
         // 设置图片的位置：Relative表示相对于当前的单元格index，first是左上点，last是对角线的右下点，这样确定一个图片的位置和大小。
 //      imageData.setRelativeFirstRowIndex(0);
         imageData.setRelativeFirstColumnIndex(0);
 //      imageData.setRelativeLastRowIndex(0);
-        imageData.setRelativeLastColumnIndex(1);
+        imageData.setRelativeLastColumnIndex(2);
 
         return writeCellData;
     }
+
+    /**
+     * 文字竖向显示
+     * @param workbook
+     * @param startRow
+     * @param endRow
+     * @param startColumn
+     * @param endColumn
+     */
     public static void addReturn(Workbook workbook, int startRow, int endRow, int startColumn, int endColumn){
         Sheet sheet = workbook.getSheetAt(0);
         CellStyle cellStyle = workbook.createCellStyle();
@@ -103,6 +112,17 @@ public class FilePrintUtils {
         }
         return stringBuilder.toString();
     }
+
+    /**
+     * 换行设置
+     * @param workbook
+     * @param returnRowMaxLength
+     * @param startRow
+     * @param endRow
+     * @param startColumn
+     * @param endColumn
+     * @param isBoldFont
+     */
     public static void setWrapText(Workbook workbook, int returnRowMaxLength, int startRow, int endRow, int startColumn, int endColumn, boolean isBoldFont){
         Sheet sheet = workbook.getSheetAt(0);
         CellStyle cellStyle = workbook.createCellStyle();
@@ -203,6 +223,10 @@ public class FilePrintUtils {
 
     }
 
+    /**
+     * 打印设置
+     * @param sheet
+     */
     public static void printSet(Sheet sheet) {
         PrintSetup printSetup = sheet.getPrintSetup();
         printSetup.setFitHeight((short)0);
@@ -261,6 +285,12 @@ public class FilePrintUtils {
         return returnRowMaxLength;
     }
 
+    /**
+     * 获取某列最大显示的字符数
+     * @param sheet
+     * @param columnIndex
+     * @return
+     */
     private static int getReturnRowMaxLengthForColumn(Sheet sheet, int columnIndex) {
         int returnRowMaxLength;
         int columnWidth = sheet.getColumnWidth(columnIndex);
@@ -269,6 +299,12 @@ public class FilePrintUtils {
         return returnRowMaxLength;
     }
 
+    /**
+     * 将输入流转换成字节流
+     * @param inputStream
+     * @return
+     * @throws IOException
+     */
     public static byte[] convert(InputStream inputStream) throws IOException {
         ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
         byte[] buffer = new byte[4096];
@@ -340,15 +376,6 @@ public class FilePrintUtils {
         }
         return null;
     }
-    //删除合并区域
-    private List<CellRangeAddress> removeMergedRegions(Sheet sheet){
-        List<CellRangeAddress> mergeRegions = sheet.getMergedRegions();
-        for (int i = 0; i < mergeRegions.size(); i++) {
-            sheet.removeMergedRegion(i);
-        }
-        return mergeRegions;
-    }
-
 
     private static CellReference searchCellWithMergedRegion(Sheet sheet, String searchValue, int startRow, int endRow) {
         for (int rowIndex = startRow; rowIndex <= endRow; rowIndex++) {

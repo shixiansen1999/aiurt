@@ -240,4 +240,12 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     List<PatrolTaskDeviceParam> getIdsAndSystemName(@Param("collect") List<String> collect);
+
+    /**
+     * 根据任务ID获取工单站点和巡检id联动信息
+     *
+     * @param taskId
+     * @return
+     */
+    List<PatrolBillDTO> getBillGanged(@Param("taskId") String taskId, @Param("standardId") String standardId);
 }
