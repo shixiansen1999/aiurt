@@ -29,6 +29,7 @@ import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.fault.service.*;
+import com.aiurt.modules.faultalarm.entity.OnAlmEquDevice;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
 import com.aiurt.modules.faultcauseusagerecords.entity.FaultCauseUsageRecords;
@@ -42,6 +43,7 @@ import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.service.IFaultKnowledgeBaseTypeService;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.faultlevel.service.IFaultLevelService;
+import com.aiurt.modules.schedule.dto.ScheduleUserWorkDTO;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
@@ -156,7 +158,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     private IFaultCauseUsageRecordsService faultCauseUsageRecordsService;
 
 
-
     /**
      * 故障上报
      *
@@ -221,13 +222,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             repairRecordService.save(record);
         } else {
             if (value) {
-                if(ObjectUtil.isNotEmpty(fault.getIsFaultExternal())&&fault.getIsFaultExternal()){
+                if (ObjectUtil.isNotEmpty(fault.getIsFaultExternal()) && fault.getIsFaultExternal()) {
                     fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
                     fault.setApprovalPassTime(new Date());
-                }else {
+                } else {
                     fault.setStatus(FaultStatusEnum.NEW_FAULT.getStatus());
                 }
-            }else {
+            } else {
                 fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
                 fault.setApprovalPassTime(new Date());
             }
@@ -259,10 +260,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         saveLog(user, "故障上报", fault.getCode(), 1, null);
 
 
-
         try {
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-            BeanUtil.copyProperties(fault,faultMessageDTO);
+            BeanUtil.copyProperties(fault, faultMessageDTO);
 
             // 待办任务
             TodoDTO todoDTO = new TodoDTO();
@@ -273,10 +273,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 todoDTO.setPublishingContent("有新的维修任务");
                 todoDTO.setIsRingBell(true);
                 // 自检
-                sendTodo(fault.getCode(), null, user.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
+                sendTodo(fault.getCode(), null, user.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(), todoDTO, faultMessageDTO);
             } else {
                 if (value) {
-                    if(ObjectUtil.isEmpty(fault.getIsFaultExternal())){
+                    if (ObjectUtil.isEmpty(fault.getIsFaultExternal())) {
                         todoDTO.setTitle("故障上报审核");
                         todoDTO.setMsgAbstract("有新的故障信息");
                         todoDTO.setPublishingContent("有新的故障信息，请审核");
@@ -289,7 +289,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 if (CollectionUtil.isNotEmpty(users)) {
                     List<String> list = users.stream().map(LoginUser::getUsername).collect(Collectors.toList());
                     //发送通知
-                    MessageDTO messageDTO = new MessageDTO(user.getUsername(),CollUtil.join(list,","), "有新的故障上报" + DateUtil.today(), null);
+                    MessageDTO messageDTO = new MessageDTO(user.getUsername(), CollUtil.join(list, ","), "有新的故障上报" + DateUtil.today(), null);
 
                     //业务类型，消息类型，消息模板编码，摘要，发布内容
                     faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
@@ -297,7 +297,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     messageDTO.setMsgAbstract("有新的故障信息");
                     messageDTO.setPublishingContent("有新的故障信息，请查看");
                     messageDTO.setIsRingBell(true);
-                    sendMessage(messageDTO,faultMessageDTO);
+                    sendMessage(messageDTO, faultMessageDTO);
                 }
             }
 
@@ -307,7 +307,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 String remindUserName = fault.getRemindUserName();
                 if (StrUtil.isNotBlank(remindUserName)) {
                     //发送通知
-                    MessageDTO messageDTO = new MessageDTO(user.getUsername(),remindUserName, "故障上报审核" + DateUtil.today(), null);
+                    MessageDTO messageDTO = new MessageDTO(user.getUsername(), remindUserName, "故障上报审核" + DateUtil.today(), null);
 
                     //业务类型，消息类型，消息模板编码，摘要，发布内容
                     faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
@@ -315,7 +315,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     messageDTO.setMsgAbstract("有新的故障信息");
                     messageDTO.setPublishingContent("有新的故障信息，请审核");
 
-                    sendMessage(messageDTO,faultMessageDTO);
+                    sendMessage(messageDTO, faultMessageDTO);
                 }
             }
         } catch (Exception e) {
@@ -334,11 +334,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_SITUATION);
         boolean equals = "1".equals(sysParamModel.getValue());
         if (equals) {
-            sendInfo(fault,fault.getFaultDeviceList());
+            sendInfo(fault, fault.getFaultDeviceList());
         }
 
         return builder.toString();
     }
+
     /**
      * 根据配置实现是否需要自动抄送
      *
@@ -390,19 +391,20 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
             if (CollUtil.isNotEmpty(userNames)) {
                 String join = StrUtil.join(",", userNames);
-                fault.setRemindUserName(StrUtil.isNotEmpty(fault.getRemindUserName())?fault.getRemindUserName()+","+join:join);
+                fault.setRemindUserName(StrUtil.isNotEmpty(fault.getRemindUserName()) ? fault.getRemindUserName() + "," + join : join);
             }
         }
     }
 
     /**
      * 任务池
-     * @param businessKey 业务标识
-     * @param roleCode 角色编码
+     *
+     * @param businessKey     业务标识
+     * @param roleCode        角色编码
      * @param currentUserName 用户名
-     * @param taskName 任务标题
+     * @param taskName        任务标题
      */
-    private void sendTodo(String businessKey, String roleCode, String currentUserName, String taskName,String businessType,TodoDTO todoDTO,FaultMessageDTO faultMessageDTO) {
+    private void sendTodo(String businessKey, String roleCode, String currentUserName, String taskName, String businessType, TodoDTO todoDTO, FaultMessageDTO faultMessageDTO) {
         if (StrUtil.isNotBlank(roleCode)) {
             String userName = null;
             if (StrUtil.equalsAnyIgnoreCase(roleCode, RoleConstant.FOREMAN)) {
@@ -412,12 +414,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 String subSystemCode = fault.getSubSystemCode();
                 String stationCode = fault.getStationCode();
                 String sysOrgCode = fault.getSysOrgCode();
-                userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(roleCode, ','), majorCode, subSystemCode, stationCode,sysOrgCode);
-            }else {
-                userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(roleCode, ','), null, null, null,null);
+                userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(roleCode, ','), majorCode, subSystemCode, stationCode, sysOrgCode);
+            } else {
+                userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(roleCode, ','), null, null, null, null);
             }
             todoDTO.setCurrentUserName(userName);
-        }else {
+        } else {
             todoDTO.setCurrentUserName(currentUserName);
         }
         //构建消息模板
@@ -425,15 +427,15 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (CollUtil.isNotEmpty(todoDTO.getData())) {
             map.putAll(todoDTO.getData());
         }
-        map.put("code",faultMessageDTO.getCode());
-        String faultLevel = sysBaseAPI.translateDictFromTable("fault_level", "name","code",faultMessageDTO.getFaultLevel());
-        map.put("faultLevel",faultLevel);
+        map.put("code", faultMessageDTO.getCode());
+        String faultLevel = sysBaseAPI.translateDictFromTable("fault_level", "name", "code", faultMessageDTO.getFaultLevel());
+        map.put("faultLevel", faultLevel);
         String faultUrgency = sysBaseAPI.translateDict("fault_urgency", Convert.toStr(faultMessageDTO.getUrgency()));
-        map.put("urgency",faultUrgency);
-        String faultType = sysBaseAPI.translateDictFromTable("fault_type","name","code", faultMessageDTO.getFaultTypeCode());
-        map.put("faultTypeCode",faultType);
+        map.put("urgency", faultUrgency);
+        String faultType = sysBaseAPI.translateDictFromTable("fault_type", "name", "code", faultMessageDTO.getFaultTypeCode());
+        map.put("faultTypeCode", faultType);
         String faultModeCode = sysBaseAPI.translateDict("fault_mode_code", faultMessageDTO.getFaultModeCode());
-        map.put("faultModeCode",faultModeCode);
+        map.put("faultModeCode", faultModeCode);
 
         String line = sysBaseAPI.getPosition(faultMessageDTO.getLineCode());
         String station = sysBaseAPI.getPosition(faultMessageDTO.getStationCode());
@@ -442,7 +444,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (StrUtil.isNotBlank(position)) {
             faultStationPosition = faultStationPosition + position;
         }
-        map.put("faultStationPosition",faultStationPosition);
+        map.put("faultStationPosition", faultStationPosition);
         todoDTO.setData(map);
         SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_MESSAGE_PROCESS);
         todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
@@ -506,7 +508,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_APPROVAL.getType(), faultCode, user.getUsername(), "1");
         try {
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-            BeanUtil.copyProperties(fault,faultMessageDTO);
+            BeanUtil.copyProperties(fault, faultMessageDTO);
             if (b) {
                 TodoDTO todoDTO = new TodoDTO();
                 todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
@@ -514,13 +516,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 todoDTO.setMsgAbstract("有新的故障信息");
                 todoDTO.setPublishingContent("有新的故障信息，请尽快安排维修");
                 // 审批通过 新增任务， 该线路或者是工班长，指派任务
-                sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
+                sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(), todoDTO, faultMessageDTO);
             } else {
                 //被驳回发送通知
-                MessageDTO messageDTO = new MessageDTO(user.getUsername(),fault.getReceiveUserName(), "故障上报审核驳回" + DateUtil.today(), null);
+                MessageDTO messageDTO = new MessageDTO(user.getUsername(), fault.getReceiveUserName(), "故障上报审核驳回" + DateUtil.today(), null);
                 //构建消息模板
                 HashMap<String, Object> map = new HashMap<>();
-                map.put("approvalRejection",fault.getApprovalRejection());
+                map.put("approvalRejection", fault.getApprovalRejection());
                 messageDTO.setData(map);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
                 faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
@@ -528,7 +530,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 messageDTO.setMsgAbstract("故障上报审核驳回");
                 messageDTO.setPublishingContent("上报的故障被驳回，请处理");
 
-                sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO, faultMessageDTO);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -611,16 +613,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (!StrUtil.equalsAnyIgnoreCase(receiveUserName, user.getUsername())) {
             //发送通知
             try {
-                MessageDTO messageDTO = new MessageDTO(user.getUsername(),receiveUserName, "故障已被作废" + DateUtil.today(), null);
+                MessageDTO messageDTO = new MessageDTO(user.getUsername(), receiveUserName, "故障已被作废" + DateUtil.today(), null);
                 FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-                BeanUtil.copyProperties(fault,faultMessageDTO);
+                BeanUtil.copyProperties(fault, faultMessageDTO);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
                 faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
                 messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
                 messageDTO.setMsgAbstract("故障已被作废");
                 messageDTO.setPublishingContent("故障已被作废");
 
-                sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO, faultMessageDTO);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -639,13 +641,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         LoginUser user = checkLogin();
 
         Fault fault = isExist(code);
-        if(ObjectUtil.isNotEmpty(fault.getAppointUserName())){
-            if(fault.getAppointUserName().equals(user.getUsername())){
+        if (ObjectUtil.isNotEmpty(fault.getAppointUserName())) {
+            if (fault.getAppointUserName().equals(user.getUsername())) {
                 fault.setIsFault(true);
-            }else {
+            } else {
                 fault.setIsFault(false);
             }
-        }else {
+        } else {
             fault.setIsFault(false);
         }
         // 设备
@@ -758,16 +760,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType());
         //发送通知
         try {
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(),loginUser.getUsername(), "故障指派" + DateUtil.today(), null);
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(), loginUser.getUsername(), "故障指派" + DateUtil.today(), null);
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-            BeanUtil.copyProperties(fault,faultMessageDTO);
+            BeanUtil.copyProperties(fault, faultMessageDTO);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
             messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
             messageDTO.setMsgAbstract("有一个新的故障维修任务");
             messageDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
             messageDTO.setIsRingBell(true);
-            sendMessage(messageDTO,faultMessageDTO);
+            sendMessage(messageDTO, faultMessageDTO);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -824,22 +826,22 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 更新工班长指派的任务
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_ASSIGN.getType(), faultCode, user.getUsername(), "1");
         // 发送消息，告诉工班长已指派, // 工班长
-       // sendMessage(user, faultCode, fault.getAssignUserName(), String.format("故障【%s】已被【%s】领取!", faultCode, user.getRealname()));
-        String receiveUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), fault.getMajorCode(), fault.getSubSystemCode(), fault.getStationCode(),user.getOrgCode());
+        // sendMessage(user, faultCode, fault.getAssignUserName(), String.format("故障【%s】已被【%s】领取!", faultCode, user.getRealname()));
+        String receiveUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), fault.getMajorCode(), fault.getSubSystemCode(), fault.getStationCode(), user.getOrgCode());
 
         try {
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-            BeanUtil.copyProperties(fault,faultMessageDTO);
+            BeanUtil.copyProperties(fault, faultMessageDTO);
 
             //发送通知
-            MessageDTO messageDTO = new MessageDTO(user.getUsername(),receiveUserName, "故障领取" + DateUtil.today(), null);
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(), receiveUserName, "故障领取" + DateUtil.today(), null);
 
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
             messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
             messageDTO.setMsgAbstract("故障被主动领取");
-            messageDTO.setPublishingContent("故障被"+user.getRealname()+"主动领取");
-            sendMessage(messageDTO,faultMessageDTO);
+            messageDTO.setPublishingContent("故障被" + user.getRealname() + "主动领取");
+            sendMessage(messageDTO, faultMessageDTO);
 
             // 维修待办
             TodoDTO todoDTO = new TodoDTO();
@@ -847,7 +849,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             todoDTO.setTitle("故障维修");
             todoDTO.setMsgAbstract("故障被主动领取");
             todoDTO.setPublishingContent("故障被主动领取，维修人请尽快维修，并维修后填写维修记录");
-            sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
+            sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(), todoDTO, faultMessageDTO);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -888,7 +890,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         try {
             MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAssignUserName(), "故障维修" + DateUtil.today(), null);
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-            BeanUtil.copyProperties(fault,faultMessageDTO);
+            BeanUtil.copyProperties(fault, faultMessageDTO);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
             /*messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
@@ -902,7 +904,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             todoDTO.setTitle("故障接收");
             todoDTO.setMsgAbstract("接收到新的故障维修任务");
             todoDTO.setPublishingContent("接收到新的故障维修任务，请尽快维修，并维修后填写维修记录");
-            sendTodo(code, null, loginUser.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
+            sendTodo(code, null, loginUser.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(), todoDTO, faultMessageDTO);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -929,7 +931,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
 
-
         // 状态-已审批待指派
         fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
         fault.setAppointUserName(null);
@@ -946,7 +947,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_DEAL.getType(), faultCode, loginUser.getUsername(), "1");
         try {
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-            BeanUtil.copyProperties(fault,faultMessageDTO);
+            BeanUtil.copyProperties(fault, faultMessageDTO);
             HashMap<String, Object> map = new HashMap<>();
             map.put("refuseRemark", refuseAssignmentDTO.getRefuseRemark());
 
@@ -957,7 +958,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             todoDTO.setTitle("故障退回");
             todoDTO.setMsgAbstract("指派故障被退回");
             todoDTO.setPublishingContent("指派的维修任务被退回，请尽快重新指派");
-            sendTodo(refuseAssignmentDTO.getFaultCode(), RoleConstant.FOREMAN, null, "故障重新指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
+            sendTodo(refuseAssignmentDTO.getFaultCode(), RoleConstant.FOREMAN, null, "故障重新指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(), todoDTO, faultMessageDTO);
             /*// 消息通知，发送给指派人
             MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAssignUserName(), "故障退回" + DateUtil.today(), null);
 
@@ -1003,21 +1004,21 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         saveLog(user, "开始维修", code, FaultStatusEnum.REPAIR.getStatus(), null);
 
         // 发送给指派人
-        String receiveUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), fault.getMajorCode(), fault.getSubSystemCode(), fault.getStationCode(),fault.getSysOrgCode());
+        String receiveUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), fault.getMajorCode(), fault.getSubSystemCode(), fault.getStationCode(), fault.getSysOrgCode());
 
 
         // 消息通知，发送给指派人
         try {
             MessageDTO messageDTO = new MessageDTO(user.getUsername(), receiveUserName, "开始维修" + DateUtil.today(), null);
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-            BeanUtil.copyProperties(fault,faultMessageDTO);
+            BeanUtil.copyProperties(fault, faultMessageDTO);
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
             messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
             messageDTO.setMsgAbstract("开始维修");
             messageDTO.setPublishingContent("开始维修");
 
-            sendMessage(messageDTO,faultMessageDTO);
+            sendMessage(messageDTO, faultMessageDTO);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1058,7 +1059,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 生产调度挂起审核
         try {
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-            BeanUtil.copyProperties(fault,faultMessageDTO);
+            BeanUtil.copyProperties(fault, faultMessageDTO);
             HashMap<String, Object> map = new HashMap<>();
             map.put("hangUpReason", fault.getHangUpReason());
 
@@ -1069,7 +1070,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             todoDTO.setMsgAbstract("故障挂起申请");
             todoDTO.setPublishingContent("故障挂起申请，请确认");
 
-            sendTodo(fault.getCode(), RoleConstant.PRODUCTION, null, "故障挂起审核", TodoBusinessTypeEnum.FAULT_HANG_UP.getType(),todoDTO,faultMessageDTO);
+            sendTodo(fault.getCode(), RoleConstant.PRODUCTION, null, "故障挂起审核", TodoBusinessTypeEnum.FAULT_HANG_UP.getType(), todoDTO, faultMessageDTO);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1123,24 +1124,24 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 // 消息通知，发送给指派人
                 MessageDTO messageDTO = new MessageDTO(user.getUsername(), faultRepairRecord.getAppointUserName(), "故障挂起审核通过" + DateUtil.today(), null);
                 FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-                BeanUtil.copyProperties(fault,faultMessageDTO);
+                BeanUtil.copyProperties(fault, faultMessageDTO);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
                 faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
                 messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
                 messageDTO.setMsgAbstract("挂起申请");
                 messageDTO.setPublishingContent("故障挂起申请已通过");
-                sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO, faultMessageDTO);
 
                 // 消息通知，发送给报修人
                 messageDTO.setToUser(fault.getFaultApplicant());
                 messageDTO.setIsRingBell(true);
-                sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO, faultMessageDTO);
 
-            }else {
+            } else {
                 FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-                BeanUtil.copyProperties(fault,faultMessageDTO);
+                BeanUtil.copyProperties(fault, faultMessageDTO);
                 HashMap<String, Object> map = new HashMap<>();
-                map.put("approvalRejection",approvalHangUpDTO.getApprovalRejection());
+                map.put("approvalRejection", approvalHangUpDTO.getApprovalRejection());
 
                 // 维修待办
                 TodoDTO todoDTO = new TodoDTO();
@@ -1148,8 +1149,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
                 todoDTO.setTitle("故障挂起审核驳回");
                 todoDTO.setMsgAbstract("挂起申请被驳回");
-                todoDTO.setPublishingContent("您申请的故障挂起申请被驳回，关联故障编号："+faultCode);
-                sendTodo(faultCode, null, faultRepairRecord.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
+                todoDTO.setPublishingContent("您申请的故障挂起申请被驳回，关联故障编号：" + faultCode);
+                sendTodo(faultCode, null, faultRepairRecord.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(), todoDTO, faultMessageDTO);
 
                 // 消息通知，发送给指派人
                /* MessageDTO messageDTO = new MessageDTO(user.getUsername(), faultRepairRecord.getAppointUserName(), "故障挂起审核驳回" + DateUtil.today(), null);
@@ -1201,14 +1202,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 维修待办
         try {
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-            BeanUtil.copyProperties(fault,faultMessageDTO);
+            BeanUtil.copyProperties(fault, faultMessageDTO);
 
             TodoDTO todoDTO = new TodoDTO();
             todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
             todoDTO.setTitle("取消挂起");
             todoDTO.setMsgAbstract("挂起申请取消");
             todoDTO.setPublishingContent("挂起申请取消");
-            sendTodo(code, null, fault.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
+            sendTodo(code, null, fault.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(), todoDTO, faultMessageDTO);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1397,13 +1398,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         //判断是否要删除
         repairRecordDTO.getDeviceChangeList();
         //非|是易耗品
-       //sysBaseAPI.addSparePartOutOrder(repairRecordDTO.getNonConsumablesList());
-      //  Map<String, Integer> updateMap = buildSparePartNumMap(repairRecordDTO, faultCode);
+        //sysBaseAPI.addSparePartOutOrder(repairRecordDTO.getNonConsumablesList());
+        //  Map<String, Integer> updateMap = buildSparePartNumMap(repairRecordDTO, faultCode);
 
         // 更新备件出库未使用的数量
         List<SparePartStockDTO> list = repairRecordDTO.getDeviceChangeList();
         list.addAll(repairRecordDTO.getConsumableList());
-        sparePartBaseApi.addSparePartOutOrder(list,faultCode);
+        sparePartBaseApi.addSparePartOutOrder(list, faultCode);
         //sparePartBaseApi.updateSparePartOutOrder(updateMap);
 
         one.setProcessing(repairRecordDTO.getProcessing());
@@ -1425,7 +1426,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         Integer flag = 1;
 
         FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-        BeanUtil.copyProperties(fault,faultMessageDTO);
+        BeanUtil.copyProperties(fault, faultMessageDTO);
 
         // 未解决，需要重新指派
         if (!flag.equals(solveStatus) && flag.equals(assignFlag)) {
@@ -1442,9 +1443,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 todoDTO.setTitle("故障指派");
                 todoDTO.setMsgAbstract("有一个新的故障维修任务");
                 todoDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
-                sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障重新指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
+                sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障重新指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(), todoDTO, faultMessageDTO);
             } catch (Exception e) {
-               log.error(e.getMessage(), e);
+                log.error(e.getMessage(), e);
             }
         }
         // 已解决
@@ -1461,13 +1462,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 todoDTO.setTitle("维修待审核");
                 todoDTO.setMsgAbstract("维修待审核");
                 todoDTO.setPublishingContent("故障维修完成待审核");
-                sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障维修结果待审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
+                sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障维修结果待审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(), todoDTO, faultMessageDTO);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
             //repairRecordService.updateById(one);
             //推送数据到调度系统
-            faultExternalService.complete(repairRecordDTO,one.getEndTime(),loginUser);
+            faultExternalService.complete(repairRecordDTO, one.getEndTime(), loginUser);
         }
 
         // 使用的解决方案
@@ -1490,7 +1491,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         List<FaultCauseUsageRecords> recordsList = repairRecordDTO.getRecordsList();
         if (CollUtil.isNotEmpty(recordsList)) {
-            recordsList.stream().forEach(record->{
+            recordsList.stream().forEach(record -> {
                 record.setId(null);
                 record.setFaultCode(faultCode);
                 record.setFaultRepairRecordId(one.getId());
@@ -1641,7 +1642,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             fault.setStatus(FaultStatusEnum.Close.getStatus());
             // 修改备件, 更改状态
             LambdaQueryWrapper<DeviceChangeSparePart> dataWrapper = new LambdaQueryWrapper<>();
-            dataWrapper.eq(DeviceChangeSparePart::getCode, faultCode).eq(DeviceChangeSparePart::getConsumables,0);
+            dataWrapper.eq(DeviceChangeSparePart::getCode, faultCode).eq(DeviceChangeSparePart::getConsumables, 0);
             List<DeviceChangeSparePart> oneSourceList = sparePartService.list(dataWrapper);
             // 处理备件
             if (CollectionUtil.isNotEmpty(oneSourceList)) {
@@ -1675,37 +1676,37 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 List<String> list = StrUtil.split(faultApplicant, ',');
                 userNameSet.addAll(list);
             }
-            String name = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null,null);
+            String name = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null, null);
             if (StrUtil.isNotBlank(name)) {
                 List<String> list = StrUtil.splitTrim(",", name);
                 userNameSet.addAll(list);
             }
             //  发送消息
             try {
-                MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), CollUtil.join(userNameSet,",") , "维修完成" + DateUtil.today(), null);
+                MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), CollUtil.join(userNameSet, ","), "维修完成" + DateUtil.today(), null);
                 FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-                BeanUtil.copyProperties(fault,faultMessageDTO);
+                BeanUtil.copyProperties(fault, faultMessageDTO);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
                 faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
                 messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
                 messageDTO.setMsgAbstract("维修完成");
                 messageDTO.setPublishingContent("故障维修确认无误");
 
-                sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO, faultMessageDTO);
 
                 // 消息通知，发送给报修人
                 messageDTO.setToUser(fault.getFaultApplicant());
                 messageDTO.setIsRingBell(true);
-                sendMessage(messageDTO,faultMessageDTO);
+                sendMessage(messageDTO, faultMessageDTO);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         } else {
             try {
                 FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-                BeanUtil.copyProperties(fault,faultMessageDTO);
+                BeanUtil.copyProperties(fault, faultMessageDTO);
                 HashMap<String, Object> map = new HashMap<>();
-                map.put("approvalRejection",resultDTO.getApprovalRejection());
+                map.put("approvalRejection", resultDTO.getApprovalRejection());
 
                 TodoDTO todoDTO = new TodoDTO();
                 todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
@@ -1718,7 +1719,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
                 saveLog(loginUser, "维修结果驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), resultDTO.getApprovalRejection());
                 // 审核
-                sendTodo(faultCode, null, fault.getAppointUserName(), "故障维修处理", TodoBusinessTypeEnum.FAULT_DEAL.getType(),todoDTO,faultMessageDTO);
+                sendTodo(faultCode, null, fault.getAppointUserName(), "故障维修处理", TodoBusinessTypeEnum.FAULT_DEAL.getType(), todoDTO, faultMessageDTO);
 
                 /*MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAppointUserName(), "维修确认驳回" + DateUtil.today(), null);
 
@@ -1895,6 +1896,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 提审
+     *
      * @param faultCode 编码
      */
     @Override
@@ -1906,7 +1908,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         Fault fault = isExist(faultCode);
         try {
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-            BeanUtil.copyProperties(fault,faultMessageDTO);
+            BeanUtil.copyProperties(fault, faultMessageDTO);
 
             TodoDTO todoDTO = new TodoDTO();
             todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
@@ -1915,7 +1917,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             todoDTO.setPublishingContent("有新的故障信息，请尽快安排维修");
 
             // 待办任务
-            sendTodo(faultCode, RoleConstant.PRODUCTION, null, "故障上报审核", TodoBusinessTypeEnum.FAULT_APPROVAL.getType(),todoDTO,faultMessageDTO);
+            sendTodo(faultCode, RoleConstant.PRODUCTION, null, "故障上报审核", TodoBusinessTypeEnum.FAULT_APPROVAL.getType(), todoDTO, faultMessageDTO);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -2035,15 +2037,49 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     @Override
     public List<RecPersonListDTO> queryRecPersonList(String faultCode) {
+        List<RecPersonListDTO> result = faultMapper.getManagedDepartmentUsers(getLoginUser().getId());
+        if (CollUtil.isEmpty(result)) {
+            return result;
+        }
 
-        // 查询所在得人员部门下得人员
-        // 计算得分
+        // 算出人员当日排班情况
+        List<String> userIds = result.stream().map(RecPersonListDTO::getUserId).collect(Collectors.toList());
+        List<ScheduleUserWorkDTO> todayUserWork = baseApi.getTodayUserWork(userIds);
+        if (CollUtil.isNotEmpty(todayUserWork)) {
+            Map<String, String> workMap = todayUserWork.stream()
+                    .filter(work -> work.getUserId() != null && work.getWork() != null)
+                    .collect(Collectors.toMap(ScheduleUserWorkDTO::getUserId, ScheduleUserWorkDTO::getWork, (v1, v2) -> v1));
+
+            long countScheduleStatusOne = result.stream()
+                    .map(re -> {
+                        re.setScheduleStatus(workMap.get(re.getUserId()));
+                        return re;
+                    })
+                    .filter(re -> re.getScheduleStatus().equals("是"))
+                    .count();
+
+            result = result.stream()
+                    .map(re -> {
+                        re.setScheduleStatus(workMap.get(re.getUserId()));
+                        return re;
+                    })
+                    .filter(re -> re.getScheduleStatus().equals("是") || countScheduleStatusOne < 5)
+                    .collect(Collectors.toList());
+        }
+
+        // 是否处理相同故障
+
+
+        // 任务情况
+
+        // 当前距离站点
+
+        // 计算评估得分
 
         return null;
     }
 
     /**
-     *
      * @param records
      */
     private void dealResult(List<Fault> records) {
@@ -2055,13 +2091,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 查询故障设备列表
         Map<String, List<FaultDevice>> faultDeviceMap = faultDeviceService.list(new LambdaQueryWrapper<FaultDevice>()
-                .in(FaultDevice::getDeviceCode,records.stream().map(Fault::getCode).collect(Collectors.toList())))
+                        .in(FaultDevice::getDeviceCode, records.stream().map(Fault::getCode).collect(Collectors.toList())))
                 .stream().collect(Collectors.groupingBy(FaultDevice::getFaultCode));
         Map<String, Integer> weightMap = new HashMap<>();
         List<String> faultLevelList = records.stream().map(Fault::getFaultLevel).filter(StrUtil::isNotBlank).distinct().collect(Collectors.toList());
         if (CollUtil.isNotEmpty(faultLevelList)) {
             weightMap = faultLevelService.getBaseMapper().selectList(Wrappers.lambdaQuery(FaultLevel.class)
-                    .in(FaultLevel::getCode, faultLevelList))
+                            .in(FaultLevel::getCode, faultLevelList))
                     .stream().collect(Collectors.toMap(FaultLevel::getCode, faultLevel -> {
                         try {
                             return Integer.parseInt(faultLevel.getWeight());
@@ -2073,23 +2109,23 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
 
         Map<String, FaultAnalysisReport> reportMap = faultAnalysisReportService.getBaseMapper().selectList(Wrappers.lambdaQuery(FaultAnalysisReport.class)
-                .in(FaultAnalysisReport::getFaultCode, records.stream().map(Fault::getCode).distinct().collect(Collectors.toList()))
-                .eq(FaultAnalysisReport::getDelFlag, 0))
+                        .in(FaultAnalysisReport::getFaultCode, records.stream().map(Fault::getCode).distinct().collect(Collectors.toList()))
+                        .eq(FaultAnalysisReport::getDelFlag, 0))
                 .stream().collect(Collectors.toMap(FaultAnalysisReport::getFaultCode, Function.identity()));
 
         Map<String, Integer> finalWeightMap = weightMap;
         records.parallelStream().forEach(fault1 -> {
 
-            if(StrUtil.equalsIgnoreCase(user.getUsername(), fault1.getAppointUserName())){
+            if (StrUtil.equalsIgnoreCase(user.getUsername(), fault1.getAppointUserName())) {
                 fault1.setIsFault(true);
-            }else {
+            } else {
                 fault1.setIsFault(false);
             }
 
             // 权重登记
             if (StrUtil.isNotBlank(fault1.getFaultLevel())) {
                 fault1.setWeight(finalWeightMap.get(fault1.getFaultLevel()));
-            }else {
+            } else {
                 fault1.setWeight(0);
             }
 
@@ -2097,7 +2133,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             LambdaQueryWrapper<FaultRepairRecord> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(FaultRepairRecord::getFaultCode, fault1.getCode());
             Long count = faultRepairRecordService.getBaseMapper().selectCount(lambdaQueryWrapper);
-            fault1.setSignAgainFlag(count>0?1:0);
+            fault1.setSignAgainFlag(count > 0 ? 1 : 0);
 
 
             //如果存在故障分析则返回true
@@ -2109,7 +2145,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             fault1.setFaultDeviceList(faultDeviceList);
             if (CollUtil.isNotEmpty(faultDeviceList)) {
                 List<String> collect = faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.toList());
-                fault1.setDeviceName(CollUtil.join(collect,","));
+                fault1.setDeviceName(CollUtil.join(collect, ","));
             }
         });
     }
@@ -2134,7 +2170,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @param code 故障编码
      * @return
      */
-    private Fault isExist(String code) {
+    @Override
+    public Fault isExist(String code) {
 
         Fault fault = baseMapper.selectByCode(code);
 
@@ -2224,38 +2261,39 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @param roleCode 角色编码
      * @return 人员账号用逗号隔开
      */
-    private String getUserNameByOrgCodeAndRoleCode(List<String> roleCode,String majorCode, String subSystemCode, String stationCode,String sysOrgCode) {
+    private String getUserNameByOrgCodeAndRoleCode(List<String> roleCode, String majorCode, String subSystemCode, String stationCode, String sysOrgCode) {
         if (CollUtil.isEmpty(roleCode)) {
             return "";
         }
-        List<String> result = baseMapper.selectUserNameByComplex(roleCode, majorCode, subSystemCode, stationCode,sysOrgCode);
+        List<String> result = baseMapper.selectUserNameByComplex(roleCode, majorCode, subSystemCode, stationCode, sysOrgCode);
         if (CollUtil.isEmpty(result)) {
-            result = baseMapper.selectUserNameByComplex(roleCode, null, null, null,null);
+            result = baseMapper.selectUserNameByComplex(roleCode, null, null, null, null);
         }
         return CollUtil.isNotEmpty(result) ? StrUtil.join(",", result) : "";
     }
 
     /**
      * 发送消息
+     *
      * @param messageDTO
      * @param faultMessageDTO
      */
-    private void sendMessage(MessageDTO messageDTO,FaultMessageDTO faultMessageDTO) {
+    private void sendMessage(MessageDTO messageDTO, FaultMessageDTO faultMessageDTO) {
         //发送通知
         //构建消息模板
         HashMap<String, Object> map = new HashMap<>();
         if (CollUtil.isNotEmpty(messageDTO.getData())) {
             map.putAll(messageDTO.getData());
         }
-        map.put("code",faultMessageDTO.getCode());
-        String faultLevel = sysBaseAPI.translateDictFromTable("fault_level", "name","code",faultMessageDTO.getFaultLevel());
-        map.put("faultLevel",faultLevel);
+        map.put("code", faultMessageDTO.getCode());
+        String faultLevel = sysBaseAPI.translateDictFromTable("fault_level", "name", "code", faultMessageDTO.getFaultLevel());
+        map.put("faultLevel", faultLevel);
         String faultUrgency = sysBaseAPI.translateDict("fault_urgency", Convert.toStr(faultMessageDTO.getUrgency()));
-        map.put("urgency",faultUrgency);
-        String faultType = sysBaseAPI.translateDictFromTable("fault_type","name","code", faultMessageDTO.getFaultTypeCode());
-        map.put("faultTypeCode",faultType);
+        map.put("urgency", faultUrgency);
+        String faultType = sysBaseAPI.translateDictFromTable("fault_type", "name", "code", faultMessageDTO.getFaultTypeCode());
+        map.put("faultTypeCode", faultType);
         String faultModeCode = sysBaseAPI.translateDict("fault_mode_code", faultMessageDTO.getFaultModeCode());
-        map.put("faultModeCode",faultModeCode);
+        map.put("faultModeCode", faultModeCode);
 
         String line = sysBaseAPI.getPosition(faultMessageDTO.getLineCode());
         String station = sysBaseAPI.getPosition(faultMessageDTO.getStationCode());
@@ -2264,7 +2302,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (StrUtil.isNotBlank(position)) {
             faultStationPosition = faultStationPosition + position;
         }
-        map.put("faultStationPosition",faultStationPosition);
+        map.put("faultStationPosition", faultStationPosition);
 
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, faultMessageDTO.getCode());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, faultMessageDTO.getBusType());
@@ -2277,7 +2315,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         sysBaseAPI.sendTemplateMessage(messageDTO);
     }
 
-    /**获取设备所在站点对应关联的班组的当前时间有排班的人*/
+    /**
+     * 获取设备所在站点对应关联的班组的当前时间有排班的人
+     */
     private List<LoginUser> getUserByWorkArea(String stationCode) {
 
         // 根据配置决定是否关联排班
@@ -2312,7 +2352,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     }
 
 
-    /**获取设备所在站点对应关联的班组的工班长*/
+    /**
+     * 获取设备所在站点对应关联的班组的工班长
+     */
     private List<String> getForemanByWorkArea(String stationCode) {
         List<String> users = new ArrayList<>();
         List<CsWorkAreaModel> workAreaByCode = sysBaseAPI.getWorkAreaByCode(stationCode);
@@ -2328,7 +2370,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         return users;
     }
 
-    private void sendInfo(Fault fault,List<FaultDevice> faultDeviceList) {
+    private void sendInfo(Fault fault, List<FaultDevice> faultDeviceList) {
         LoginUser user = checkLogin();
         if (StrUtil.isNotBlank(fault.getDeviceCodes())) {
             List<FaultDevice> deviceList = StrUtil.split(fault.getDeviceCodes(), ',').stream().map(deviceCode -> {
@@ -2375,7 +2417,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                         List<FaultDevice> deviceList = faultDeviceService.queryByFaultCode(fault.getCode());
                         if (CollUtil.isNotEmpty(deviceList)) {
                             String deviceNames = deviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.joining(","));
-                            map.put("deviceNames",deviceNames);
+                            map.put("deviceNames", deviceNames);
                         }
                         Date thisHappenTime = fault.getHappenTime();
                         Fault lastFault = list.get(1);
@@ -2383,10 +2425,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                         String line = sysBaseAPI.getPosition(fault.getLineCode());
                         String station = sysBaseAPI.getPosition(lastFault.getStationCode());
 
-                        map.put("line",line);
-                        map.put("station",station);
-                        map.put("thisHappenTime",DateUtil.format(thisHappenTime,"yyyy-MM-dd HH:mm"));
-                        map.put("lastHappenTime",DateUtil.format(lastHappenTime,"yyyy-MM-dd HH:mm"));
+                        map.put("line", line);
+                        map.put("station", station);
+                        map.put("thisHappenTime", DateUtil.format(thisHappenTime, "yyyy-MM-dd HH:mm"));
+                        map.put("lastHappenTime", DateUtil.format(lastHappenTime, "yyyy-MM-dd HH:mm"));
                         messageDTO.setData(map);
 
                         messageDTO.setTitle("设备出现重复故障");
@@ -2409,4 +2451,18 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         }
     }
+
+    /**
+     * 获取当前登录人信息
+     *
+     * @return
+     */
+    public LoginUser getLoginUser() {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("请重新登录");
+        }
+        return loginUser;
+    }
+
 }

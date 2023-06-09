@@ -328,7 +328,8 @@ public class CommonController {
                 InputStream inputStream = new BufferedInputStream(new FileInputStream(filePath))) {
             // 设置强制下载不打开
             response.setContentType("application/force-download");
-            response.addHeader("Content-Disposition", "attachment;fileName=" + new String(fileName.getBytes("UTF-8"), "iso-8859-1"));
+            String encodedFileName = URLEncoder.encode(fileName, "UTF-8");
+            response.addHeader("Content-Disposition", "attachment;fileName=" + encodedFileName);
             byte[] buf = new byte[1024];
             int len;
             while ((len = inputStream.read(buf)) > 0) {

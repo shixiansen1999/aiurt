@@ -292,4 +292,28 @@
           and f.appoint_user_name = #{username}
         group by year (f.happen_time)
     </select>
+    <select id="getManagedDepartmentUsers" resultType="com.aiurt.modules.fault.dto.RecPersonListDTO">
+        SELECT
+            su.id AS userId,
+            su.username,
+            su.realname,
+            su.working_time,
+            su.avatar AS picturePath,
+            su.org_code
+        FROM
+            sys_user su
+        WHERE
+                su.org_code IN (
+                SELECT
+                    sd.org_code
+                FROM
+                    cs_user_depart cud
+                        LEFT JOIN sys_depart sd ON sd.id = cud.depart_id
+                WHERE
+                    sd.del_flag = 0
+                  AND cud.user_id = #{userId}
+            )
+        GROUP BY
+            su.id
+    </select>
 </mapper>

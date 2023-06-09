@@ -145,11 +145,11 @@ spring:
           password: $MYSQL_PASSWORD
           driver-class-name: com.mysql.cj.jdbc.Driver
           # 多数据源配置
-          #multi-datasource1:
-          #url: jdbc:mysql://localhost:3306/jeecg-boot2?useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
-          #username: root
-          #password: root
-          #driver-class-name: com.mysql.cj.jdbc.Driver
+        multi-sqlserver:
+          url: jdbc:sqlserver://$SQL_SERVER_IP:$SQL_SERVER_DB_PROT;databaseName=$SQL_SERVER_DB_NAME
+          username: $SQL_SERVER_USERNAME
+          password: $SQL_SERVER_PASSWORD
+          driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
   #redis 配置
   redis:
     database: 0
