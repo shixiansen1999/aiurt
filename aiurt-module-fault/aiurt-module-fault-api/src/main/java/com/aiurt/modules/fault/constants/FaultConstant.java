@@ -47,4 +47,9 @@ public class FaultConstant {
      *  判断条件
      */
     public static final int FAULT_START = 0;
+
+    /**
+     * 配置是否开启,1:开启
+     */
+    public static final String ENABLE = "1";
 }

@@ -21,6 +21,7 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.common.api.IBaseApi;
+import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.*;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
@@ -39,6 +40,7 @@ import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -165,23 +167,38 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_PROCESS);
         boolean value = "1".equals(paramModel.getValue());
         if (b) {
-            fault.setAppointUserName(user.getUsername());
-            fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
-            // 方便统计
-            fault.setApprovalPassTime(fault.getReceiveTime());
-            // 创建维修记录
-            FaultRepairRecord record = FaultRepairRecord.builder()
-                    // 做类型
-                    .faultCode(fault.getCode())
-                    // 故障现象
-                    .faultPhenomenon(one.getName())
-                    .startTime(new Date())
-                    .delFlag(CommonConstant.DEL_FLAG_0)
-                    // 负责人
-                    .appointUserName(user.getUsername())
-                    .build();
+            // 根据配置决定故障上报是否开启控制中心班组自检故障指派功能及权限
+            SysParamModel faultCenterAddParam = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_ADD);
+            boolean faultCenterAdd = FaultConstant.ENABLE.equals(faultCenterAddParam.getValue());
+            // 根据配置获取控制中心班组code,并判断当前登陆人所在班组是否是控制中心班组
+            SysParamModel faultCenterAddOrg = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_ADD_ORG);
+            boolean contains1 = StrUtil.splitTrim(faultCenterAddOrg.getValue(),',').contains(user.getOrgCode());
+            // 根据配置获取控制中心站点code，并判断故障站点是否时控制中心站点
+            SysParamModel faultCenterAddStation = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_ADD_STATION);
+            boolean contains2 = StrUtil.splitTrim(faultCenterAddStation.getValue(), ',').contains(fault.getStationCode());
+            if (faultCenterAdd && contains1 && !contains2 ) {
+                // 跳过到待指派
+                fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
+                fault.setApprovalPassTime(new Date());
+            } else {
+                fault.setAppointUserName(user.getUsername());
+                fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
+                // 方便统计
+                fault.setApprovalPassTime(fault.getReceiveTime());
+                // 创建维修记录
+                FaultRepairRecord record = FaultRepairRecord.builder()
+                        // 做类型
+                        .faultCode(fault.getCode())
+                        // 故障现象
+                        .faultPhenomenon(one.getName())
+                        .startTime(new Date())
+                        .delFlag(CommonConstant.DEL_FLAG_0)
+                        // 负责人
+                        .appointUserName(user.getUsername())
+                        .build();
 
-            repairRecordService.save(record);
+                repairRecordService.save(record);
+            }
         } else {
             if (value) {
                 if(ObjectUtil.isNotEmpty(fault.getIsFaultExternal())&&fault.getIsFaultExternal()){
