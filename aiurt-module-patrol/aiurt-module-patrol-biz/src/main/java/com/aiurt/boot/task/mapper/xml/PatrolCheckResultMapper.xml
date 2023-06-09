@@ -85,6 +85,11 @@
         pcr.remark
         FROM
         patrol_check_result pcr
+        LEFT JOIN patrol_task_device ptd ON pcr.task_device_id = ptd.id
+        LEFT JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
+        AND pts.del_flag = 0
+        LEFT JOIN cs_subsystem css ON css.system_code = pts.subsystem_code
+        AND css.del_flag = 0
         WHERE
         pcr.del_flag =0
         and pcr.`check` = 0
@@ -98,7 +103,8 @@
                 #{collect}
             </foreach>
         </if>)
-        order by pcr.content,pcr.order
+        GROUP BY  pcr.id
+        ORDER BY  pts.subsystem_code, pcr.`code`
     </select>
     <select id="getQualityStandard" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
         SELECT
@@ -135,7 +141,7 @@
             and pcr.parent_id = #{parentId}
         </if>
         GROUP BY  pcr.id
-        ORDER BY pts.subsystem_code,pcr.content,pcr.ORDER
+        ORDER BY  pcr.`code`,pts.subsystem_code
     </select>
 
     <select id="getCheckResultAllByTaskId" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
@@ -164,5 +170,13 @@
                 #{collect}
             </foreach>
         </if>)
+    </select>
+
+    <select id="getDictItems" resultType="org.jeecg.common.system.vo.DictModel">
+        <!-- 通过字典code获取字典数据 -->
+            select s.item_value as "value",s.item_text as "text" from sys_dict_item s
+            where dict_id = (select id from sys_dict where dict_code = #{code})
+            order by s.item_value asc
+
     </select>
 </mapper>

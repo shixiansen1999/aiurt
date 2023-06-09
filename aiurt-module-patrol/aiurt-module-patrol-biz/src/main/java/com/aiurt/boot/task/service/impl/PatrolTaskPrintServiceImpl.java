@@ -7,18 +7,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -26,13 +20,8 @@ import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
-import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
-import com.aiurt.boot.task.dto.PatrolStationDTO;
-import com.aiurt.boot.task.dto.PatrolTaskStationDTO;
-import com.aiurt.boot.task.dto.PrintDTO;
-import com.aiurt.boot.task.dto.PrintPatrolTaskDTO;
+import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
-import com.aiurt.boot.task.entity.PatrolTaskStandard;
 import com.aiurt.boot.task.mapper.PatrolCheckResultMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
@@ -45,7 +34,6 @@ import com.aiurt.boot.task.service.*;
 import com.aiurt.common.util.FilePrintUtils;
 import com.aiurt.common.util.MinioUtil;
 import com.aiurt.modules.basic.entity.SysAttachment;
-import com.aiurt.modules.common.api.IBaseApi;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.metadata.data.WriteCellData;
@@ -88,7 +76,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
     @Autowired
     private PatrolTaskUserMapper patrolTaskUserMapper;
     @Autowired
-    private IPatrolTaskUserService patrolTaskUserService;
+    private IPatrolSamplePersonService patrolSamplePersonService;
     @Autowired
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
     @Autowired
@@ -116,21 +104,23 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
     private PatrolManager manager;
     @Autowired
     private ISysBaseAPI sysBaseApi;
-    @Autowired
-    private IBaseApi baseApi;
 
     /**
      * 处理文件打印数据，并返回打印文件路径
      * @param id
      * @return打印文件路径
      */
-    public String printPatrolTask(String id) {
+    public String printPatrolTask(String id,String standardId) {
         PatrolTask patrolTask = patrolTaskMapper.selectById(id);
-        List<PatrolTaskStandard> patrolTaskStandard = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>()
-                .eq(PatrolTaskStandard::getDelFlag,0).eq(PatrolTaskStandard::getTaskId,patrolTask.getId()));
+//        List<PatrolTaskStandard> patrolTaskStandard = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>()
+//                .eq(PatrolTaskStandard::getDelFlag,0).eq(PatrolTaskStandard::getTaskId,patrolTask.getId()));
+//        PatrolStandard patrolStandard = patrolStandardMapper.selectOne(new LambdaQueryWrapper<PatrolStandard>()
+//                .eq(PatrolStandard::getDelFlag,0)
+//                .in(PatrolStandard::getCode,patrolTaskStandard.stream().map(PatrolTaskStandard::getStandardCode).collect(Collectors.toList()))
+//                .orderByDesc(PatrolStandard::getPrintTemplate).last("LIMIT 1"));
         PatrolStandard patrolStandard = patrolStandardMapper.selectOne(new LambdaQueryWrapper<PatrolStandard>()
                 .eq(PatrolStandard::getDelFlag,0)
-                .in(PatrolStandard::getCode,patrolTaskStandard.stream().map(PatrolTaskStandard::getStandardCode).collect(Collectors.toList()))
+                .in(PatrolStandard::getId,standardId)
                 .orderByDesc(PatrolStandard::getPrintTemplate).last("LIMIT 1"));
         String excelName = null;
         if (StrUtil.isNotEmpty(patrolStandard.getPrintTemplate())){
@@ -139,9 +129,9 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             excelName = "telephone_system.xlsx";
         }
         if (excelName.contains("telephone_system")){
-           return printPatrolTaskByCommonTpl(id,null);
+           return printPatrolTaskByCommonTpl(id,null,standardId);
         }else if (excelName.contains("patrol-type8")){
-           return printPatrolTaskByCommonTpl(id,"patrolType8");
+           return printPatrolTaskByCommonTpl(id,"patrolType8",standardId);
         }
         // 模板文件路径
         String templateFileName = "patrol" +"/" + "template" + "/" + excelName;
@@ -151,7 +141,6 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         String fileName = patrolTask.getName() + System.currentTimeMillis() + ".xlsx";
         String relatiePath = "/" + "patrol" + "/" + "print" + "/" + fileName;
         String filePath = path +"/" +  fileName;
-
         //获取头部数据
         PrintPatrolTaskDTO taskDTO = getHeaderData(patrolTask);
         //填充头部Map
@@ -168,7 +157,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             WriteSheet writeSheet = EasyExcel.writerSheet().registerWriteHandler(customCellMergeStrategy).build();
             FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.FALSE).build();
             //填充列表数据
-            excelWriter =  fillData(id, excelName, excelWriter, writeSheet,headerMap,filePath,templateFileName);
+            excelWriter =  fillData(id, excelName, excelWriter, writeSheet,headerMap,filePath,standardId);
             //填充表头
             excelWriter.fill(headerMap, writeSheet);
             //填充图片
@@ -193,17 +182,17 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
 
     /**
      * 通用模板数据封装
+     *
      * @param id
      * @param type
+     * @param standardId
      * @return 打印文件的minio路径
      */
-    public String printPatrolTaskByCommonTpl(String id,String type) {
+    public String printPatrolTaskByCommonTpl(String id, String type, String standardId) {
         PatrolTask patrolTask = patrolTaskMapper.selectById(id);
-        List<PatrolTaskStandard> patrolTaskStandard = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>()
-                .eq(PatrolTaskStandard::getDelFlag,0).eq(PatrolTaskStandard::getTaskId,patrolTask.getId()));
         PatrolStandard patrolStandard = patrolStandardMapper.selectOne(new LambdaQueryWrapper<PatrolStandard>()
                 .eq(PatrolStandard::getDelFlag,0)
-                .in(PatrolStandard::getCode,patrolTaskStandard.stream().map(PatrolTaskStandard::getStandardCode).collect(Collectors.toList()))
+                .in(PatrolStandard::getId,standardId)
                 .orderByDesc(PatrolStandard::getPrintTemplate).last("LIMIT 1"));
         String excelName = null;
         if (StrUtil.isNotEmpty(patrolStandard.getPrintTemplate())){
@@ -251,7 +240,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         Map<String, Object> imageMap = getSignImageMap(taskDTO);
 
         //查询巡视标准详情
-        List<PrintDTO> patrolData = print(id);
+        List<PrintDTO> patrolData = print(id,standardId);
         int startRow = 3;
         int endRow = startRow;
         if (CollUtil.isNotEmpty(patrolData)){
@@ -337,33 +326,32 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
      * @param excelWriter
      * @param writeSheet
      * @param headerMap
-     * @param filePath
-     * @param templateFileName
+     * @param standardId
      * @return
      */
-   private ExcelWriter fillData(String taskId, String excelName, ExcelWriter excelWriter, WriteSheet writeSheet, Map<String, Object> headerMap, String filePath, String templateFileName){
+   private ExcelWriter fillData(String taskId, String excelName, ExcelWriter excelWriter, WriteSheet writeSheet, Map<String, Object> headerMap,String filePath, String standardId){
        List<PrintDTO> patrolData = new ArrayList<>();
        if ("safty_produce_check.xlsx".equals(excelName)){
-           patrolData = getPrintOthers(taskId,headerMap);
+           patrolData = getPrintOthers(taskId,headerMap,standardId);
            //填充列表数据
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
        }else if ("wireless_system.xlsx".equals(excelName) || "wireless_system1.xlsx".equals(excelName)){
-           patrolData = getWirelessSystem(taskId,headerMap,excelName);
+           patrolData = getWirelessSystem(taskId,headerMap,excelName,standardId);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
        }else if ("pis_system.xlsx".equals(excelName) || "pis_system1.xlsx".equals(excelName)){
-           patrolData = getRemark(taskId,headerMap,excelName);
+           patrolData = getRemark(taskId,headerMap,excelName,standardId);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
        } else if("cctv_system.xlsx".equals(excelName)){
-           patrolData = getCctvSystem(taskId,headerMap);
+           patrolData = getCctvSystem(taskId,headerMap,standardId);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
        }
 
        return excelWriter;
     }
 
-    private List<PrintDTO> getCctvSystem(String taskId, Map<String, Object> headerMap) {
+    private List<PrintDTO> getCctvSystem(String taskId, Map<String, Object> headerMap, String standardId) {
         List<PrintDTO> getCctvSystem = new ArrayList<>();
-        List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(taskId);
+        List<PatrolStationDTO> billGangedInfo = getBillGangedInfo(taskId,standardId);
         for (PatrolStationDTO dto : billGangedInfo) {
             //获取检修项
             if (CollUtil.isEmpty(dto.getBillInfo())){
@@ -380,7 +368,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             if (CollUtil.isEmpty(parentDTOList)) {
                 continue;
             }
-            List<String> pisSystem = sysBaseApi.getDictItems("cctv_system").stream().map(w-> w.getText()).collect(Collectors.toList());
+            List<String> pisSystem = patrolCheckResultMapper.getDictItems("cctv_system").stream().map(w-> w.getText()).collect(Collectors.toList());
             PrintDTO printDTO = new PrintDTO();
             pisSystem.forEach(str-> {
                 PatrolCheckResultDTO patrolCheckResultDTO = parentDTOList.stream().filter(p -> p.getCheck().equals(str)).findFirst().orElse(null);
@@ -596,14 +584,15 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             }
         }
     }
-    private List<PrintDTO> getPrintOthers(String id, Map<String, Object> map) {
+    private List<PrintDTO> getPrintOthers(String id, Map<String, Object> map, String standardId) {
         List<PrintDTO> getPrint = new ArrayList<>();
-        List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
+        List<PatrolStationDTO> billGangedInfo = getBillGangedInfo(id,standardId);
         for (PatrolStationDTO dto : billGangedInfo) {
             //获取检修项
             List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
             List<PatrolCheckResultDTO> checkResultAll =  patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
             List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
+            List<String> safty = patrolCheckResultMapper.getDictItems("safty_produce_check").stream().map(w-> w.getText()).collect(Collectors.toList());
             boolean result = checkDTOs.stream().anyMatch(f -> f.getContent().contains("电暖气"));
             if (result){
                 map.put("isTrue","☑有");
@@ -612,28 +601,24 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                 map.put("isFalse","☑无");
                 map.put("isTure","☐有");
             }
-            AtomicInteger i = new AtomicInteger();
-            checkDTOs.forEach(c->{
-                i.getAndIncrement();
+            safty.add(7,null);
+            safty.forEach(s ->{
                 PrintDTO printDTO = new PrintDTO();
-                if(ObjectUtil.isEmpty(c.getCheckResult())){
+
+                PatrolCheckResultDTO patrolCheckResultDTO = checkDTOs.stream().filter(p -> p.getContent().equals(s)).findFirst().orElse(null);
+                if (ObjectUtil.isEmpty(patrolCheckResultDTO)){
                     printDTO.setResult("☐是 ☐否");
+                    getPrint.add(printDTO);
                 }else {
-                    printDTO.setResult(c.getCheckResult()==0?"☐是 ☑否":"☑是 ☐否");
-                }
-                printDTO.setRemark(c.getRemark());
-                if (ObjectUtil.isNotEmpty(c.getQualityStandard())){
+                    if(ObjectUtil.isEmpty(patrolCheckResultDTO.getCheckResult())){
+                        printDTO.setResult("☐是 ☐否");
+                    }else {
+                        printDTO.setResult(patrolCheckResultDTO.getCheckResult()==0?"☐是 ☑否":"☑是 ☐否");
+                    }
+                    printDTO.setRemark(patrolCheckResultDTO.getRemark());
                     getPrint.add(printDTO);
                 }
-                if (!result && i.get()==5 ){
-                    printDTO.setResult("☐是 ☐否");
-                    getPrint.add(printDTO);
-                    getPrint.add(printDTO);
-                    getPrint.add(new PrintDTO());
-                }
-                if (result && i.get()==7){
-                    getPrint.add(new PrintDTO());
-                }
+
             });
         }
         return getPrint;
@@ -641,14 +626,11 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
 
 
 
-    private List<PrintDTO> getRemark(String id, Map<String,Object> map, String excelName) {
+    private List<PrintDTO> getRemark(String id, Map<String,Object> map, String excelName, String standardId) {
         List<PrintDTO> getRemark = new ArrayList<>();
-        List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
+        List<PatrolStationDTO> billGangedInfo = getBillGangedInfo(id,standardId);
         for (PatrolStationDTO dto : billGangedInfo) {
             //获取检修项
-            if (CollUtil.isEmpty(dto.getBillInfo())){
-                continue;
-            }
             List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
             List<PatrolCheckResultDTO> checkResultAll = patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
             List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
@@ -657,11 +639,8 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     .filter(c -> Objects.nonNull(c)
                        &&Objects.nonNull(c.getCheck())&& c.getCheck() == 0)
                     .collect(Collectors.toList());
-            if (CollUtil.isEmpty(parentDTOList)) {
-                continue;
-            }
             String strName = excelName.substring(0, excelName.indexOf("."));
-            List<String> pisSystem = sysBaseApi.getDictItems(strName).stream().map(w-> w.getText()).collect(Collectors.toList());
+            List<String> pisSystem = patrolCheckResultMapper.getDictItems(strName).stream().map(w-> w.getText()).collect(Collectors.toList());
             PrintDTO printDTO = new PrintDTO();
             pisSystem.forEach(str-> {
                 PatrolCheckResultDTO patrolCheckResultDTO = parentDTOList.stream().filter(p -> p.getOldCode().equals(str)).findFirst().orElse(null);
@@ -715,19 +694,20 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         return getRemark;
     }
 
-    private List<PrintDTO> getWirelessSystem(String id, Map<String, Object> map, String excelName) {
+    private List<PrintDTO> getWirelessSystem(String id, Map<String, Object> map, String excelName, String standardId) {
         List<PrintDTO> getPrint = new ArrayList<>();
-        List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
+        List<PatrolStationDTO> billGangedInfo = getBillGangedInfo(id,standardId);
         Set<String> set = new LinkedHashSet<>() ;
         StringBuilder text  = new StringBuilder();
         for (PatrolStationDTO dto : billGangedInfo) {
             //获取检修项
+            //获取本站是否有此设备
             String str = new String();
             List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
             List<PatrolCheckResultDTO> checkResultAll =  patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
             List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
             String strName = excelName.substring(0, excelName.indexOf("."));
-            List<String> wirelessSystem = sysBaseApi.getDictItems(strName).stream().map(w-> w.getText()).collect(Collectors.toList());
+            List<String> wirelessSystem = patrolCheckResultMapper.getDictItems(strName).stream().map(w-> w.getText()).collect(Collectors.toList());
             List<String> result = wirelessSystem.stream().filter(w -> !checkResultAll.stream().anyMatch(c -> c.getContent().equals(w))).collect(Collectors.toList());
             if (!result.isEmpty()){
                 str =  result.stream().filter(s -> s.contains("：") || s.contains(":") )
@@ -752,9 +732,9 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
      * @param id
      * @return
      */
-    private List<PrintDTO> print(String id) {
+    private List<PrintDTO> print(String id,String standardId) {
         List<PrintDTO> getPrint = new ArrayList<>();
-        List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
+        List<PatrolStationDTO> billGangedInfo = getBillGangedInfo(id, standardId);
         for (PatrolStationDTO dto : billGangedInfo) {
             //获取检修项
             List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
@@ -779,11 +759,11 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     if(ObjectUtil.isEmpty(t.getCheckResult())){
                         printDTO.setResultTrue("☐正常");
                         printDTO.setResultFalse("☐异常");
-                        printDTO.setResult("⬜正常\n⬜异常");
+                        printDTO.setResult("☐正常\n☐异常");
                     }else {
                         printDTO.setResultTrue(t.getCheckResult()==0?"☐正常":"☑正常");
                         printDTO.setResultFalse(t.getCheckResult()==0?"☑异常":"☐异常");
-                        printDTO.setResult(t.getCheckResult()==0?"☑正常\n⬜异常":"⬜正常\n☑异常");
+                        printDTO.setResult(t.getCheckResult()==0?"☐正常\n☑异常":"☑正常\n☐异常");
                     }
 //                    printDTO.setResult(result);
 //                    printDTO.setContentRemark(contentRemark);
@@ -799,9 +779,9 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         return getPrint;
     }
 
-    private List<PrintDTO> getPrint(String id) {
+    private List<PrintDTO> getPrint(String id,String standardId) {
         List<PrintDTO> getPrint = new ArrayList<>();
-        List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
+        List<PatrolStationDTO> billGangedInfo = getBillGangedInfo(id,standardId);
         for (PatrolStationDTO dto : billGangedInfo) {
             //获取检修项
             List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
@@ -830,5 +810,23 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             }
         }
         return getPrint;
+    }
+    public List<PatrolStationDTO> getBillGangedInfo(String taskId, String standardId) {
+        List<PatrolBillDTO> billGangedInfo = patrolTaskDeviceMapper.getBillGanged(taskId,standardId);
+
+        Map<String, List<PatrolBillDTO>> collect = billGangedInfo.stream().filter((t) -> StrUtil.isNotBlank(t.getStationCode())).collect(Collectors.groupingBy(PatrolBillDTO::getStationCode));
+        List<PatrolStationDTO> stationList = new ArrayList<>();
+        for (Map.Entry<String, List<PatrolBillDTO>> entry : collect.entrySet()) {
+            String stationCode = entry.getKey();
+            if (ObjectUtil.isEmpty(stationCode)) {
+                continue;
+            }
+            PatrolStationDTO station = new PatrolStationDTO();
+            station.setStationCode(stationCode);
+            station.setStationName(patrolTaskDeviceMapper.getStationName(stationCode));
+            station.setBillInfo(entry.getValue());
+            stationList.add(station);
+        }
+        return stationList;
     }
 }

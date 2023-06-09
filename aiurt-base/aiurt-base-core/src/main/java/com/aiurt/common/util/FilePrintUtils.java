@@ -54,13 +54,13 @@ public class FilePrintUtils {
         imageData.setTop(5);
 //        imageData.setRight(1);
         imageData.setBottom(5);
-        imageData.setLeft(100);
+        imageData.setLeft(300);
 
         // 设置图片的位置：Relative表示相对于当前的单元格index，first是左上点，last是对角线的右下点，这样确定一个图片的位置和大小。
 //      imageData.setRelativeFirstRowIndex(0);
         imageData.setRelativeFirstColumnIndex(0);
 //      imageData.setRelativeLastRowIndex(0);
-        imageData.setRelativeLastColumnIndex(1);
+        imageData.setRelativeLastColumnIndex(2);
 
         return writeCellData;
     }
