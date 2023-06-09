@@ -161,38 +161,44 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
         FaultKnowledgeBaseType one = faultKnowledgeBaseTypeService.getOne(queryWrapper.eq(FaultKnowledgeBaseType::getCode, fault.getFaultPhenomenon()).eq(FaultKnowledgeBaseType::getDelFlag, 0));
-        // 自报自修,并且是中心班组故障（故障报修站点是控制中心站点）->跳过
+        // 自报自修跳过
         boolean b = StrUtil.equalsIgnoreCase(faultModeCode, SELF_FAULT_MODE_CODE);
-        // 获取故障报修站点信息
-        boolean isCenterFault;
-        JSONObject station = sysBaseAPI.getCsStationByCode(fault.getStationCode());
-        if (ObjectUtil.isEmpty(station)) {
-            throw new AiurtBootException("系统中不存在该站点，请确认故障站点是否正确");
-        }
-        Integer stationType = station.getInteger(FaultConstant.STATION_TYPE);
-        // 判断是否中心班组故障
-        isCenterFault = ObjectUtil.isNotEmpty(stationType) ? (ObjectUtil.equal(FaultConstant.STATION_TYPE_5, stationType) ? true : false) : false;
         // 根据配置决定是否需要审核
         SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_PROCESS);
         boolean value = "1".equals(paramModel.getValue());
-        if (b && isCenterFault) {
-            fault.setAppointUserName(user.getUsername());
-            fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
-            // 方便统计
-            fault.setApprovalPassTime(fault.getReceiveTime());
-            // 创建维修记录
-            FaultRepairRecord record = FaultRepairRecord.builder()
-                    // 做类型
-                    .faultCode(fault.getCode())
-                    // 故障现象
-                    .faultPhenomenon(one.getName())
-                    .startTime(new Date())
-                    .delFlag(CommonConstant.DEL_FLAG_0)
-                    // 负责人
-                    .appointUserName(user.getUsername())
-                    .build();
+        if (b) {
+            // 根据配置决定故障上报是否开启控制中心班组自检故障指派功能及权限
+            SysParamModel faultCenterAddParam = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_ADD);
+            boolean faultCenterAdd = FaultConstant.ENABLE.equals(faultCenterAddParam.getValue());
+            // 根据配置获取控制中心班组code,并判断当前登陆人所在班组是否是控制中心班组
+            SysParamModel faultCenterAddOrg = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_ADD_ORG);
+            boolean contains1 = StrUtil.splitTrim(faultCenterAddOrg.getValue(),',').contains(user.getOrgCode());
+            // 根据配置获取控制中心站点code，并判断故障站点是否时控制中心站点
+            SysParamModel faultCenterAddStation = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_ADD_STATION);
+            boolean contains2 = StrUtil.splitTrim(faultCenterAddStation.getValue(), ',').contains(fault.getStationCode());
+            if (faultCenterAdd && contains1 && !contains2 ) {
+                // 跳过到待指派
+                fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
+                fault.setApprovalPassTime(new Date());
+            } else {
+                fault.setAppointUserName(user.getUsername());
+                fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
+                // 方便统计
+                fault.setApprovalPassTime(fault.getReceiveTime());
+                // 创建维修记录
+                FaultRepairRecord record = FaultRepairRecord.builder()
+                        // 做类型
+                        .faultCode(fault.getCode())
+                        // 故障现象
+                        .faultPhenomenon(one.getName())
+                        .startTime(new Date())
+                        .delFlag(CommonConstant.DEL_FLAG_0)
+                        // 负责人
+                        .appointUserName(user.getUsername())
+                        .build();
 
-            repairRecordService.save(record);
+                repairRecordService.save(record);
+            }
         } else {
             if (value) {
                 if(ObjectUtil.isNotEmpty(fault.getIsFaultExternal())&&fault.getIsFaultExternal()){
