@@ -12,8 +12,6 @@ import com.aiurt.boot.check.service.IFixedAssetsCheckDetailService;
 import com.aiurt.boot.check.service.IFixedAssetsCheckService;
 import com.aiurt.boot.check.vo.FixedAssetsCheckDetailVO;
 import com.aiurt.boot.constant.FixedAssetsConstant;
-import com.aiurt.common.constant.CommonConstant;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -62,10 +60,8 @@ public class FixedAssetsCheckDetailServiceImpl extends ServiceImpl<FixedAssetsCh
             }
             pageList = fixedAssetsCheckDetailMapper.queryPageList(page, categoryCodes, orgCodes);
         } else {
-            LambdaQueryWrapper<FixedAssetsCheckDetail> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(FixedAssetsCheckDetail::getDelFlag, CommonConstant.DEL_FLAG_0)
-                    .eq(FixedAssetsCheckDetail::getCheckId, id);
-            Page<FixedAssetsCheckDetail> detailPage = this.page(new Page<>(page.getCurrent(), page.getSize()), wrapper);
+            //变更明细只有审核通过后账面数量和实盘数量不一致才有
+            Page<FixedAssetsCheckDetail> detailPage = fixedAssetsCheckDetailMapper.getList(page,id);
             List<FixedAssetsCheckDetail> records = detailPage.getRecords();
             FixedAssetsCheckDetailVO detailVO = null;
             List<FixedAssetsCheckDetailVO> detailList = new ArrayList<>();
