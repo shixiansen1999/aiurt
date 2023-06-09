@@ -192,4 +192,12 @@ public interface IFaultService extends IService<Fault> {
      * @return
      */
     List<RecPersonListDTO> queryRecPersonList(String faultCode);
+
+    /**
+     * 根据编码判断故障单是否存在
+     *
+     * @param code 故障编码
+     * @return
+     */
+     Fault isExist(String code);
 }
