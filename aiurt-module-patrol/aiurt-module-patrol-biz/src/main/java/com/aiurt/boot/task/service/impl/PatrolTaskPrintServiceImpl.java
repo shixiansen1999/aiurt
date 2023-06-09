@@ -286,7 +286,12 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
     }
 
 
-
+    /**
+     * 根据模板类型获取纵向合并列设置
+     * @param type
+     * @param cellByText
+     * @return
+     */
     @NotNull
     private static int[] getMergeColumnIndexArr(String type, CellAddress cellByText) {
         int[] mergeColumnIndex;
