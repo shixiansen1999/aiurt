@@ -5,10 +5,9 @@ import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import org.jeecg.common.system.vo.RadarNumberModel;
+import com.aiurt.modules.fault.dto.RadarNumberModelDTO;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @Description: 维修记录
@@ -71,7 +70,7 @@ public interface FaultRepairRecordMapper extends BaseMapper<FaultRepairRecord> {
      *
      * @return
      */
-    List<RadarNumberModel> getHandleNumber();
+    List<RadarNumberModelDTO> getHandleNumber();
 
     /**
      * 获取用户故障处理的平均响应时间和平均解决时间

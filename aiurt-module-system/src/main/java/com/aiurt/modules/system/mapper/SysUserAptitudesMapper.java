@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import com.aiurt.modules.system.entity.SysUserAptitudes;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.jeecg.common.system.vo.RadarAptitudeModel;
+import com.aiurt.modules.personnelportrait.dto.RadarAptitudeModelDTO;
 
 /**
  * @Description: sys_user_aptitudes
@@ -20,5 +20,5 @@ public interface SysUserAptitudesMapper extends BaseMapper<SysUserAptitudes> {
      * @param orgCode
      * @return
      */
-    List<RadarAptitudeModel> getAptitude(@Param("orgCode") String orgCode);
+    List<RadarAptitudeModelDTO> getAptitude(@Param("orgCode") String orgCode);
 }

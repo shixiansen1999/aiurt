@@ -1,4 +1,4 @@
-package org.jeecg.common.system.vo;
+package com.aiurt.modules.personnelportrait.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RadarModel {
+public class RadarModelDTO {
     /**
      * 当前值
      */

@@ -3,7 +3,7 @@ package com.aiurt.modules.system.mapper;
 import com.aiurt.modules.system.entity.SysUserPerf;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
-import org.jeecg.common.system.vo.RadarPerformanceModel;
+import com.aiurt.modules.personnelportrait.dto.RadarPerformanceModelDTO;
 
 import java.util.Date;
 import java.util.List;
@@ -19,7 +19,8 @@ public interface SysUserPerfMapper extends BaseMapper<SysUserPerf> {
      * 人员画像-获取用户的绩效信息
      *
      * @param date
+     * @param orgCode
      * @return
      */
-    List<RadarPerformanceModel> getPerformance(@Param("date") Date date);
+    List<RadarPerformanceModelDTO> getPerformance(@Param("date") Date date, @Param("orgCode") String orgCode);
 }

@@ -1,4 +1,4 @@
-package org.jeecg.common.system.vo;
+package com.aiurt.modules.fault.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RadarNumberModel {
+public class RadarNumberModelDTO {
 //    /**
 //     * 用户ID
 //     */

@@ -1,11 +1,12 @@
 package com.aiurt.modules.common.api;
 
+import com.aiurt.modules.fault.dto.EfficiencyDTO;
 import com.aiurt.modules.fault.dto.FaultDeviceDTO;
 import com.aiurt.modules.fault.dto.FaultHistoryDTO;
 import com.aiurt.modules.fault.dto.FaultMaintenanceDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import org.jeecg.common.system.vo.RadarModel;
+import com.aiurt.modules.fault.dto.RadarNumberModelDTO;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -56,18 +57,14 @@ public interface PersonnelPortraitFaultApi {
     /**
      * 获取故障处理总次数
      *
-     * @param userId
-     * @param usernames
      * @return
      */
-    RadarModel getHandleNumber(String userId, List<String> usernames);
+    List<RadarNumberModelDTO> getHandleNumber();
 
     /**
      * 获取故障解决效率
      *
-     * @param username
-     * @param usernames
      * @return
      */
-    RadarModel getEfficiency(String username, List<String> usernames);
+    List<EfficiencyDTO> getEfficiency();
 }
