@@ -10,6 +10,7 @@ import org.elasticsearch.action.bulk.BulkResponse;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public interface ElasticAPI {
 
@@ -61,4 +62,22 @@ public interface ElasticAPI {
      * @param ids
      */
     void removeBatchKnowledgeBase(List<String> ids);
+
+    /**
+     * 更新知识库记录
+     *
+     * @param docId  ID
+     * @param clazz  索引实体类
+     * @param source 更新数据内容
+     */
+    boolean update(String docId, Class<KnowledgeBase> clazz, Map<String, Object> source) throws IOException;
+
+    /**
+     * 判断知识库文档记录是否存在
+     *
+     * @param docId
+     * @param clazz
+     * @return
+     */
+    boolean exists(String docId, Class<KnowledgeBase> clazz) throws Exception;
 }

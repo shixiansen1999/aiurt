@@ -52,16 +52,16 @@ public class DashboardResDTO implements Serializable {
     @ApiModelProperty(value = "班组人数")
     private Integer orgTotal;
 
-    /**
-     * 专业排名
-     */
-    @ApiModelProperty(value = "专业排名")
-    private Integer majorRank;
-    /**
-     * 专业人数
-     */
-    @ApiModelProperty(value = "专业人数")
-    private Integer majorTotal;
+//    /**
+//     * 专业排名
+//     */
+//    @ApiModelProperty(value = "专业排名")
+//    private Integer majorRank;
+//    /**
+//     * 专业人数
+//     */
+//    @ApiModelProperty(value = "专业人数")
+//    private Integer majorTotal;
 
 //    /**
 //     * 绩效

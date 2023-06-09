@@ -51,7 +51,7 @@ public class SysUserPerf implements Serializable {
 	/**绩效分数*/
 	@Excel(name = "绩效分数", width = 15)
     @ApiModelProperty(value = "绩效分数")
-    private String score;
+    private Float score;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

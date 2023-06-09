@@ -2,6 +2,7 @@ package com.aiurt.modules.search.controller;
 
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.search.service.ISearchRecordsService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import search.dto.HotKeywordResDTO;
 import search.dto.SearchRecordResDTO;
@@ -48,6 +50,17 @@ public class SearchRecordsController extends BaseController<SearchRecords, ISear
     public Result<List<HotKeywordResDTO>> hotKeyword() {
         List<HotKeywordResDTO> hotKeywords = searchRecordsService.hotKeyword();
         return Result.OK(hotKeywords);
+    }
+
+    /**
+     * 智能助手热门关键词
+     */
+    @ApiOperation(value = "智能助手热门关键词", notes = "智能助手热门关键词")
+    @GetMapping(value = "/cutehand/keyword")
+    public Result<IPage<HotKeywordResDTO>> cuteHandHotKeyword(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                              @RequestParam(name = "pageSize", defaultValue = "6") Integer pageSize) {
+        IPage<HotKeywordResDTO> pageList = searchRecordsService.cuteHandHotKeyword(pageNo, pageSize);
+        return Result.OK(pageList);
     }
 
 }

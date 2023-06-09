@@ -95,7 +95,7 @@
         order by frr.end_time desc limit 2
     </select>
 
-    <select id="getHandleNumber" resultType="org.jeecg.common.system.vo.RadarNumberModel">
+    <select id="getHandleNumber" resultType="com.aiurt.modules.fault.dto.RadarNumberModelDTO">
         select appoint_user_name username,
                count(id)         number
         from fault_repair_record

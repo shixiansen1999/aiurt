@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.system.mapper.SysUserAptitudesMapper">
-    <select id="getAptitude" resultType="org.jeecg.common.system.vo.RadarAptitudeModel">
+    <select id="getAptitude" resultType="com.aiurt.modules.personnelportrait.dto.RadarAptitudeModelDTO">
         select sua.user_id     userId,
                sum(sua.number) number
         from sys_user_aptitudes sua

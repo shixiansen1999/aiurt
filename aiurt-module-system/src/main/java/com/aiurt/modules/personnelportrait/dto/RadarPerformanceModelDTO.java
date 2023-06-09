@@ -1,4 +1,4 @@
-package org.jeecg.common.system.vo;
+package com.aiurt.modules.personnelportrait.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RadarPerformanceModel {
+public class RadarPerformanceModelDTO {
     /**
      * 用户ID
      */
@@ -19,5 +19,5 @@ public class RadarPerformanceModel {
     /**
      * 绩效分数
      */
-    private String score;
+    private Double score;
 }

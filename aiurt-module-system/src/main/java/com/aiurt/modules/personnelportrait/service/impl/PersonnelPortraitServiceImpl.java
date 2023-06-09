@@ -13,9 +13,7 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.common.api.PersonnelPortraitFaultApi;
 import com.aiurt.modules.fault.constants.FaultConstant;
-import com.aiurt.modules.fault.dto.FaultDeviceDTO;
-import com.aiurt.modules.fault.dto.FaultHistoryDTO;
-import com.aiurt.modules.fault.dto.FaultMaintenanceDTO;
+import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.personnelportrait.dto.*;
 import com.aiurt.modules.personnelportrait.service.PersonnelPortraitService;
@@ -224,8 +222,6 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
      * @return
      */
     private List<UserInfoResDTO> setUserInfo(List<SysUser> users, Map<String, List<SysRole>> userRoleMap) {
-        List<UserInfoResDTO> userInfos = new ArrayList<>();
-        UserInfoResDTO userInfo = null;
         Map<String, String> jobGradeMap = iSysBaseApi.getDictItems(JOB_GRADE)
                 .stream()
                 .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText()));
@@ -233,6 +229,11 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         List<String> usernames = users.stream().map(SysUser::getUsername).distinct().collect(Collectors.toList());
         List<ScheduleUserWorkDTO> todayUserWork = iBaseApi.getTodayUserWork(userIds);
         List<FaultMaintenanceDTO> faultMaintenances = personnelPortraitFaultApi.personnelPortraitStatic(usernames);
+
+        List<UserInfoResDTO> userInfos = new ArrayList<>();
+        UserInfoResDTO userInfo = null;
+        // fixme 后期需要通过故障模块的常量值进行获取，不在此处定义
+        final String working = "当班";
         for (SysUser user : users) {
             String seniority = null;
             String role = null;
@@ -256,7 +257,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
                             && "1".equals(l.getWork()))
                     .findFirst().orElseGet(ScheduleUserWorkDTO::new);
             if (StrUtil.isNotEmpty(scheduleUserWork.getWork())) {
-                dutyStatus = "值班中";
+                dutyStatus = working;
             }
             FaultMaintenanceDTO faultMaintenance = faultMaintenances.stream()
                     .filter(l -> user.getUsername().equals(l.getUsername())).findFirst()
@@ -278,6 +279,19 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
             userInfo.setSpeciality(speciality);
             userInfos.add(userInfo);
         }
+        // 值班中的排在前
+        userInfos = userInfos.stream().sorted((a, b) -> {
+            if (working.equals(a.getDutyStatus()) && !working.equals(b.getDutyStatus())) {
+                // a排在前面
+                return -1;
+            } else if (!working.equals(a.getDutyStatus()) && working.equals(b.getDutyStatus())) {
+                // b排在前面
+                return 1;
+            } else {
+                // 保持原有顺序
+                return 0;
+            }
+        }).collect(Collectors.toList());
         return userInfos;
     }
 
@@ -401,15 +415,13 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         // 同一班组用户
         List<LoginUser> loginUsers = iSysBaseApi.getUserByDeptCode(sysUser.getOrgCode());
         List<String> usernames = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.toList());
-        List<String> userIds = loginUsers.stream().map(LoginUser::getId).collect(Collectors.toList());
-
         String orgCode = sysUser.getOrgCode();
-        RadarModel handleRadar = personnelPortraitFaultApi.getHandleNumber(userId, usernames);
-        RadarModel performanceRadar = this.getPerformance(userId, userIds);
-        RadarModel aptitudeRadar = this.getAptitude(userId, orgCode);
-        // 用户工龄可以直接根据所属组织机构查询过滤
-        RadarModel seniorityRadar = this.getUserSeniority(userId, orgCode);
-        RadarModel efficiencyRadar = personnelPortraitFaultApi.getEfficiency(sysUser.getUsername(), usernames);
+
+        RadarModelDTO handleRadar = this.getHandleNumber(sysUser.getUsername(), usernames);
+        RadarModelDTO performanceRadar = this.getPerformance(userId, sysUser.getOrgCode());
+        RadarModelDTO aptitudeRadar = this.getAptitude(userId, orgCode);
+        RadarModelDTO seniorityRadar = this.getUserSeniority(userId, orgCode);
+        RadarModelDTO efficiencyRadar = this.getEfficiency(sysUser.getUsername(), usernames);
 
         // 故障处理总次数
         double handle = this.calculateScore(handleRadar.getCurrentValue(), handleRadar.getMaxValue(), handleRadar.getMinValue());
@@ -432,18 +444,91 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
     }
 
     /**
+     * 雷达图-获取用户解决效率
+     *
+     * @param username
+     * @param usernames
+     * @return
+     */
+    private RadarModelDTO getEfficiency(String username, List<String> usernames) {
+        List<EfficiencyDTO> efficiencys = personnelPortraitFaultApi.getEfficiency();
+        // 同一所属班组的
+        if (CollUtil.isNotEmpty(usernames) && CollUtil.isNotEmpty(efficiencys)) {
+            efficiencys = efficiencys.stream().filter(l -> usernames.contains(l.getUsername())).collect(Collectors.toList());
+        }
+        RadarModelDTO radarModel = new RadarModelDTO();
+        if (CollUtil.isNotEmpty(efficiencys)) {
+            double currentValue = 0;
+            List<Double> values = new ArrayList<>();
+            for (EfficiencyDTO e : efficiencys) {
+                double value = e.getResponseTime() + e.getResolveTime();
+                values.add(value);
+                if (username.equals(e.getUsername())) {
+                    currentValue = value;
+                }
+            }
+            // 班组其他成员有数据，但是查询的用户不一定有数据
+            if (0 == currentValue) {
+                return radarModel;
+            }
+            double maxValue = Collections.max(values);
+            double minValue = Collections.min(values);
+            radarModel.setCurrentValue(currentValue);
+            radarModel.setMaxValue(maxValue);
+            radarModel.setMinValue(minValue);
+        }
+        return radarModel;
+    }
+
+    /**
+     * 雷达图-获取用户故障处理总数
+     *
+     * @param username
+     * @param usernames
+     * @return
+     */
+    private RadarModelDTO getHandleNumber(String username, List<String> usernames) {
+        List<RadarNumberModelDTO> handles = personnelPortraitFaultApi.getHandleNumber();
+        if (CollUtil.isNotEmpty(usernames) && CollUtil.isNotEmpty(handles)) {
+            // 相同的班组
+            handles = handles.stream().filter(l -> usernames.contains(l.getUsername())).collect(Collectors.toList());
+        }
+        List<Integer> values = handles.stream().map(RadarNumberModelDTO::getNumber).collect(Collectors.toList());
+
+        RadarModelDTO radarModel = new RadarModelDTO();
+        RadarNumberModelDTO radarNumberModel = handles.stream()
+                .filter(l -> username.equals(l.getUsername()))
+                .findFirst()
+                .orElse(null);
+        // 班组其他成员有数据，但是查询的用户不一定有数据
+        if (ObjectUtil.isEmpty(radarNumberModel)) {
+            return radarModel;
+        }
+
+        Integer currentValue = radarNumberModel.getNumber();
+        radarModel.setCurrentValue(Double.valueOf(currentValue));
+        if (CollUtil.isNotEmpty(values)) {
+            Integer maxValue = Collections.max(values);
+            Integer minValue = Collections.min(values);
+            radarModel.setMaxValue(Double.valueOf(maxValue));
+            radarModel.setMinValue(Double.valueOf(minValue));
+        }
+        return radarModel;
+    }
+
+    /**
      * 雷达图-获取用户的资质信息
      *
      * @param userId
      * @param orgCode
      * @return
      */
-    private RadarModel getAptitude(String userId, String orgCode) {
-        List<RadarAptitudeModel> aptitudes = sysUserAptitudesMapper.getAptitude(orgCode);
-        List<Integer> numbers = aptitudes.stream().map(RadarAptitudeModel::getNumber).collect(Collectors.toList());
+    private RadarModelDTO getAptitude(String userId, String orgCode) {
+        List<RadarAptitudeModelDTO> aptitudes = sysUserAptitudesMapper.getAptitude(orgCode);
+        List<Integer> numbers = aptitudes.stream().map(RadarAptitudeModelDTO::getNumber).collect(Collectors.toList());
 
-        RadarModel radarModel = new RadarModel();
-        RadarAptitudeModel radarAptitudeModel = aptitudes.stream()
+        RadarModelDTO radarModel = new RadarModelDTO();
+        RadarAptitudeModelDTO radarAptitudeModel = aptitudes.stream()
                 .filter(l -> userId.equals(l.getUserId()))
                 .findFirst()
                 .orElse(null);
@@ -466,18 +551,19 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
      * 雷达图-获取用户的绩效信息
      *
      * @param userId
-     * @param userIds
+     * @param orgCode
      */
-    private RadarModel getPerformance(String userId, List<String> userIds) {
+    private RadarModelDTO getPerformance(String userId, String orgCode) {
         // 近一年
         Date date = DateUtil.offsetMonth(new Date(), -12);
-        List<RadarPerformanceModel> performances = sysUserPerfMapper.getPerformance(date);
-        if (CollUtil.isNotEmpty(userIds) && CollUtil.isNotEmpty(performances)) {
-            performances = performances.stream().filter(l -> userIds.contains(l.getUserId())).collect(Collectors.toList());
-        }
+        List<RadarPerformanceModelDTO> performances = sysUserPerfMapper.getPerformance(date, orgCode);
+//        List<RadarPerformanceModel> performances = sysUserPerfMapper.getPerformance(date, userIds);
+//        if (CollUtil.isNotEmpty(userIds) && CollUtil.isNotEmpty(performances)) {
+//            performances = performances.stream().filter(l -> userIds.contains(l.getUserId())).collect(Collectors.toList());
+//        }
 
-        RadarModel radarModel = new RadarModel();
-        RadarPerformanceModel radarPerformanceModel = performances.stream()
+        RadarModelDTO radarModel = new RadarModelDTO();
+        RadarPerformanceModelDTO radarPerformanceModel = performances.stream()
                 .filter(l -> userId.equals(l.getUserId()))
                 .findFirst()
                 .orElse(null);
@@ -485,11 +571,11 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         if (ObjectUtil.isEmpty(radarPerformanceModel)) {
             return radarModel;
         }
-        double currentValue = Double.parseDouble(radarPerformanceModel.getScore());
+        double currentValue = radarPerformanceModel.getScore();
         radarModel.setCurrentValue(currentValue);
 
         List<Double> scores = performances.stream()
-                .map(performance -> Double.parseDouble(performance.getScore()))
+                .map(RadarPerformanceModelDTO::getScore)
                 .collect(Collectors.toList());
         if (CollUtil.isNotEmpty(scores)) {
             Double maxValue = Collections.max(scores);
@@ -506,9 +592,9 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
      * @param userId
      * @param orgCode
      */
-    private RadarModel getUserSeniority(String userId, String orgCode) {
+    private RadarModelDTO getUserSeniority(String userId, String orgCode) {
         List<LoginUser> seniorityNumber = sysUserMapper.getSeniorityNumber(orgCode);
-        RadarModel radarModel = new RadarModel();
+        RadarModelDTO radarModel = new RadarModelDTO();
         LoginUser maxDateUser = seniorityNumber.stream()
                 .max(Comparator.comparing(LoginUser::getEntryDate))
                 .orElse(null);
@@ -568,23 +654,48 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         if (ObjectUtil.isEmpty(user)) {
             throw new AiurtBootException("未找到对应的用户信息！");
         }
+        String orgCode = user.getOrgCode();
         // 获取班组的成员
         List<SysUser> userList = sysUserService.lambdaQuery()
                 .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .eq(SysUser::getOrgCode, user.getOrgCode())
                 .list();
+        List<String> usernames = userList.stream().map(SysUser::getUsername).collect(Collectors.toList());
 
         // 根据ID找到了用户的话至少会有一个用户
         if (CollUtil.isEmpty(userList)) {
             throw new AiurtBootException("数据存在异常！");
         }
+
+        // 故障处理总次数
+        List<RadarNumberModelDTO> handles = personnelPortraitFaultApi.getHandleNumber();
+        Map<String, Integer> handlesMap = handles.stream()
+                .filter(l -> usernames.contains(l.getUsername()))
+                .collect(Collectors.toMap(k -> k.getUsername(), v -> v.getNumber()));
+        // 效率
+        List<EfficiencyDTO> efficiencys = personnelPortraitFaultApi.getEfficiency();
+        Map<String, Double> efficiencysMap = efficiencys.stream()
+                .filter(l -> usernames.contains(l.getUsername()))
+                .collect(Collectors.toMap(k -> k.getUsername(), v -> v.getResponseTime() + v.getResolveTime()));
+        // 近一年班组成员绩效
+        Date date = DateUtil.offsetMonth(new Date(), -12);
+        List<RadarPerformanceModelDTO> performances = sysUserPerfMapper.getPerformance(date, orgCode);
+        Map<String, Double> performancesMap = performances.stream().collect(Collectors.toMap(k -> k.getUserId(), v -> v.getScore()));
+        // 资质
+        List<RadarAptitudeModelDTO> aptitudes = sysUserAptitudesMapper.getAptitude(orgCode);
+        Map<String, Integer> aptitudesMap = aptitudes.stream().collect(Collectors.toMap(k -> k.getUserId(), v -> v.getNumber()));
+        // 工龄
+        List<LoginUser> senioritys = sysUserMapper.getSeniorityNumber(orgCode);
+        Map<String, Date> senioritysMap = senioritys.stream().collect(Collectors.toMap(k -> k.getId(), v -> v.getEntryDate()));
+
         List<RankingDTO> rankings = new ArrayList<>();
         RankingDTO ranking = null;
-        // fixme 里面的分数获取需批量查询后获取数据
         for (SysUser sysUser : userList) {
             ranking = new RankingDTO();
             // 计算班组成员的分数
-            RadarResDTO radarRes = this.radarMap(sysUser.getId());
+            String id = sysUser.getId();
+            String username = sysUser.getUsername();
+            RadarResDTO radarRes = this.getRadarData(id, username, handlesMap, efficiencysMap, performancesMap, aptitudesMap, senioritysMap);
             double evaluationScore = this.evaluationScore(radarRes);
             ranking.setUserId(sysUser.getId());
             ranking.setUsername(sysUser.getUsername());
@@ -592,19 +703,23 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
             rankings.add(ranking);
         }
 
-        // 最后对成员进行排名
+        // 对成员进行排名
         Comparator<RankingDTO> comparator = Comparator.comparingDouble(RankingDTO::getScore).reversed();
         List<RankingDTO> sortedRankings = rankings.stream().sorted(comparator).collect(Collectors.toList());
         // 排名标识，存在并列排名则后续的排名需跳过
-        int rank = 0;
+        int rank = 1;
+        int previousRank = 1;
         double previousValue = Double.MAX_VALUE;
         for (RankingDTO sortedRanking : sortedRankings) {
             Double score = sortedRanking.getScore();
-            if (previousValue != score) {
-                rank++;
+            if (previousValue == score) {
+                sortedRanking.setRank(previousRank);
+            } else {
+                sortedRanking.setRank(rank);
             }
-            sortedRanking.setRank(rank);
             previousValue = score;
+            previousRank = sortedRanking.getRank();
+            rank++;
         }
 
         RankingDTO rankingDTO = sortedRankings.stream()
@@ -640,6 +755,70 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         data.setOrgTotal(total);
         data.setGrade(grade);
         return data;
+    }
+
+    /**
+     * 获取雷达图转换后的数据
+     *
+     * @param id              用户Id
+     * @param username        用户账号
+     * @param handlesMap
+     * @param efficiencysMap
+     * @param performancesMap
+     * @param aptitudesMap
+     * @param senioritysMap
+     * @return
+     */
+    private RadarResDTO getRadarData(String id,
+                                     String username,
+                                     Map<String, Integer> handlesMap,
+                                     Map<String, Double> efficiencysMap,
+                                     Map<String, Double> performancesMap,
+                                     Map<String, Integer> aptitudesMap,
+                                     Map<String, Date> senioritysMap) {
+        // 初始化最低分
+        Double handle = 60.0;
+        Double efficiency = 60.0;
+        Double performance = 60.0;
+        Double aptitude = 60.0;
+        Double seniority = 60.0;
+        if (ObjectUtil.isNotEmpty(handlesMap.get(username))) {
+            double currentValue = (double) handlesMap.get(username);
+            List<Integer> values = handlesMap.values().stream().collect(Collectors.toList());
+            double maxValue = (double) Collections.max(values);
+            double minValue = (double) Collections.min(values);
+            handle = this.calculateScore(currentValue, maxValue, minValue);
+        }
+        if (ObjectUtil.isNotEmpty(efficiencysMap.get(username))) {
+            double currentValue = efficiencysMap.get(username);
+            List<Double> values = efficiencysMap.values().stream().collect(Collectors.toList());
+            double maxValue = Collections.max(values);
+            double minValue = Collections.min(values);
+            efficiency = this.calculateScore(currentValue, maxValue, minValue);
+        }
+        if (ObjectUtil.isNotEmpty(performancesMap.get(id))) {
+            double currentValue = performancesMap.get(id);
+            List<Double> values = performancesMap.values().stream().collect(Collectors.toList());
+            double maxValue = Collections.max(values);
+            double minValue = Collections.min(values);
+            performance = this.calculateScore(currentValue, maxValue, minValue);
+        }
+        if (ObjectUtil.isNotEmpty(aptitudesMap.get(id))) {
+            double currentValue = aptitudesMap.get(id);
+            List<Integer> values = aptitudesMap.values().stream().collect(Collectors.toList());
+            double maxValue = (double) Collections.max(values);
+            double minValue = (double) Collections.min(values);
+            aptitude = this.calculateScore(currentValue, maxValue, minValue);
+        }
+        if (ObjectUtil.isNotEmpty(senioritysMap.get(id))) {
+            Date now = new Date();
+            double currentValue = DateUtil.between(senioritysMap.get(id), now, DateUnit.DAY);
+            List<Date> values = senioritysMap.values().stream().collect(Collectors.toList());
+            double maxValue = DateUtil.between(Collections.max(values), now, DateUnit.DAY);
+            double minValue = DateUtil.between(Collections.min(values), now, DateUnit.DAY);
+            seniority = this.calculateScore(currentValue, maxValue, minValue);
+        }
+        return new RadarResDTO(handle, efficiency, performance, aptitude, seniority);
     }
 
     /**
