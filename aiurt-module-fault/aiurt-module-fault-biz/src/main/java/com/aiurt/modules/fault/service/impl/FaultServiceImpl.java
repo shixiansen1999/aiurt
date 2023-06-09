@@ -18,10 +18,12 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.CommonUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.base.PageOrderGenerator;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.common.api.IBaseApi;
+import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.*;
 import com.aiurt.modules.fault.enums.FaultStatesEnum;
@@ -29,7 +31,6 @@ import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.fault.service.*;
-import com.aiurt.modules.faultalarm.entity.OnAlmEquDevice;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
 import com.aiurt.modules.faultcauseusagerecords.entity.FaultCauseUsageRecords;
@@ -2037,46 +2038,214 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     @Override
     public List<RecPersonListDTO> queryRecPersonList(String faultCode) {
-        List<RecPersonListDTO> result = faultMapper.getManagedDepartmentUsers(getLoginUser().getId());
+        List<RecPersonListDTO> result = faultMapper.getManagedDepartmentUsers(new Date(), getLoginUser().getId());
         if (CollUtil.isEmpty(result)) {
             return result;
         }
 
-        // 算出人员当日排班情况
+        // 故障现象
+        Fault fault = faultMapper.selectByCode(faultCode);
+        if (ObjectUtil.isEmpty(fault)) {
+            throw new AiurtBootException("未查询到此项记录");
+        }
         List<String> userIds = result.stream().map(RecPersonListDTO::getUserId).collect(Collectors.toList());
-        List<ScheduleUserWorkDTO> todayUserWork = baseApi.getTodayUserWork(userIds);
-        if (CollUtil.isNotEmpty(todayUserWork)) {
-            Map<String, String> workMap = todayUserWork.stream()
-                    .filter(work -> work.getUserId() != null && work.getWork() != null)
-                    .collect(Collectors.toMap(ScheduleUserWorkDTO::getUserId, ScheduleUserWorkDTO::getWork, (v1, v2) -> v1));
+        List<String> userNames = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
 
-            long countScheduleStatusOne = result.stream()
-                    .map(re -> {
-                        re.setScheduleStatus(workMap.get(re.getUserId()));
-                        return re;
+        // 筛选人员当日排班情况
+        result = filterAndProcessUserWork(result, userIds);
+
+        // 筛选人员是否处理相同故障
+        result = isSameFaultHandled(result, fault.getKnowledgeId());
+
+        // 筛选人员的任务情况
+        result = taskSituation(result);
+
+        // 筛选人员的距离故障站点有多少个站
+        result = countDistanceToFaultStation(result, fault.getStationCode());
+
+        // 计算评估得分
+        result = calculateEvaluationScore(result, userIds, userNames);
+
+        // 排序,去前5条数据
+
+        // 补充其他数据
+
+        return result;
+    }
+
+    /**
+     * 计算人员距离故障站点的站点数量
+     *
+     * @param result      待筛选的人员列表
+     * @param stationCode 故障站点的站点代码
+     * @return 筛选后的人员列表，其中每个人员的站点数量表示其距离故障站点的距离
+     */
+    private List<RecPersonListDTO> countDistanceToFaultStation(List<RecPersonListDTO> result, String stationCode) {
+        return null;
+    }
+
+    /**
+     * 计算评估得分
+     *
+     * @param result    待计算评估得分的人员列表
+     * @param userIds
+     * @param userNames
+     * @return 计算评估得分后的人员列表
+     */
+    private List<RecPersonListDTO> calculateEvaluationScore(List<RecPersonListDTO> result, List<String> userIds, List<String> userNames) {
+        // 筛选后的人员信息
+        List<String> userNameList = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
+        List<String> userIdList = result.stream().map(RecPersonListDTO::getUserId).collect(Collectors.toList());
+
+        // 故障处理总次数
+        CommonMaxMinNumDTO commonMaxMinNumDTO = faultMapper.getHandleNumberMaxAndMin(userNames);
+        List<RadarNumberModel> handleNumberList = faultMapper.getHandleNumber(userNameList);
+        Map<String, Integer> handleNumberMap = Optional.ofNullable(handleNumberList).orElse(CollUtil.newArrayList()).stream()
+                .filter(radarNumberModel -> radarNumberModel.getUsername() != null && radarNumberModel.getNumber() != null)
+                .collect(Collectors.toMap(RadarNumberModel::getUsername, RadarNumberModel::getNumber, (v1, v2) -> v1));
+
+        // 解决效率
+        List<EfficiencyDTO> efficiency = faultMapper.getEfficiency(userNames);
+
+        Map<String, EfficiencyDTO> efficiencyMap = Optional.ofNullable(efficiency).orElse(CollUtil.newArrayList()).stream()
+                .filter(efficiencyDTO -> efficiencyDTO.getUsername() != null && efficiencyDTO.getResolveTime() != null)
+                .collect(Collectors.toMap(EfficiencyDTO::getUsername, Function.identity(), (v1, v2) -> v1));
+
+        // 工龄
+        CommonMaxMinNumDTO userExperienceMaxMinNum = faultMapper.getUserExperienceRange(new Date(), userIds);
+
+        // 资质
+        CommonMaxMinNumDTO aptitudeMaxMinNum = faultMapper.getAptitudeMaxAndMin(userIds);
+        List<RadarAptitudeModel> aptitudeList = faultMapper.getAptitude(userIdList);
+        Map<String, Integer> aptitudeMap = Optional.ofNullable(aptitudeList).orElse(CollUtil.newArrayList()).stream()
+                .filter(radarAptitudeModel -> radarAptitudeModel.getUserId() != null && radarAptitudeModel.getNumber() != null)
+                .collect(Collectors.toMap(RadarAptitudeModel::getUserId, RadarAptitudeModel::getNumber, (v1, v2) -> v1));
+
+        // 绩效
+        List<RadarPerformanceModel> performanceList = faultMapper.getPerformance(DateUtil.offsetMonth(new Date(), -12), userIds);
+//        Optional.ofNullable(performanceList).orElse(CollUtil.newArrayList()).stream().map(RadarPerformanceModel::getScore)
+        Map<String, String> performanceMap = Optional.ofNullable(performanceList).orElse(CollUtil.newArrayList()).stream()
+                .filter(radarPerformanceModel -> radarPerformanceModel.getUserId() != null && radarPerformanceModel.getScore() != null)
+                .collect(Collectors.toMap(RadarPerformanceModel::getUserId, RadarPerformanceModel::getScore, (v1, v2) -> v1));
+
+        for (RecPersonListDTO recPersonListDTO : result) {
+            recPersonListDTO.setFaultHandCount(handleNumberMap.get(recPersonListDTO.getUserName()));
+            CommonUtils.calculateScore(handleNumberMap.get(recPersonListDTO.getUserName()),commonMaxMinNumDTO.getMaxNum(),commonMaxMinNumDTO.getMinNum());
+
+
+        }
+        return result;
+    }
+
+    /**
+     * 任务情况统计
+     *
+     * @param result 待统计任务情况的人员列表
+     * @return 统计后的任务情况人员列表
+     */
+    private List<RecPersonListDTO> taskSituation(List<RecPersonListDTO> result) {
+        List<String> userNames = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(userNames)) {
+            Map<String, String> sameFaultMap = Optional.ofNullable(faultMapper.taskSituation(userNames)).orElse(CollUtil.newArrayList())
+                    .stream()
+                    .filter(sameFault -> sameFault.getUserName() != null && sameFault.getValue() != null)
+                    .collect(Collectors.toMap(SameFaultDTO::getUserName, SameFaultDTO::getValue, (v1, v2) -> v1));
+
+            // 使用是否处理过相同故障映射设置每个结果对象
+            result = result.stream()
+                    .peek(re -> {
+                        String taskStatus = sameFaultMap.getOrDefault(re.getUserName(), "");
+                        re.setTaskStatus(FaultConstant.IN_MAINTENANCE_NAME.equals(taskStatus) ? taskStatus : FaultConstant.FREE_NAME);
                     })
-                    .filter(re -> re.getScheduleStatus().equals("是"))
+                    .collect(Collectors.toList());
+
+            // 计算任务情况为空闲的人员数量
+            long freeNum = result.stream()
+                    .filter(re -> re.getTaskStatus().equals(FaultConstant.FREE_NAME))
                     .count();
 
+            // 如果空闲的人员数量大于等于5人，则只返回空闲的人员人员，否则返回全部人员
+            return result.stream()
+                    .filter(re -> re.getTaskStatus().equals(FaultConstant.FREE_NAME) || freeNum < 5)
+                    .collect(Collectors.toList());
+        }
+        return result;
+    }
+
+    /**
+     * 检查是否处理了相同的故障。
+     *
+     * @param result      需要检查的故障处理列表。
+     * @param knowledgeId 待检查的故障知识点ID。
+     * @return 处理了相同故障的故障处理列表。
+     */
+    private List<RecPersonListDTO> isSameFaultHandled(List<RecPersonListDTO> result, String knowledgeId) {
+        List<String> userNames = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
+        if (StrUtil.isNotEmpty(knowledgeId) && CollUtil.isNotEmpty(userNames)) {
+            Map<String, String> sameFaultMap = Optional.ofNullable(faultMapper.isSameFaultHandled(userNames, knowledgeId)).orElse(CollUtil.newArrayList())
+                    .stream()
+                    .filter(sameFault -> sameFault.getUserName() != null && sameFault.getValue() != null)
+                    .collect(Collectors.toMap(SameFaultDTO::getUserName, SameFaultDTO::getValue, (v1, v2) -> v1));
+
+            // 使用是否处理过相同故障映射设置每个结果对象
             result = result.stream()
-                    .map(re -> {
-                        re.setScheduleStatus(workMap.get(re.getUserId()));
-                        return re;
+                    .peek(re -> {
+                        String isSameFaultHandled = sameFaultMap.getOrDefault(re.getUserName(), "");
+                        re.setHandledSameFault(CommonConstant.SHI.equals(isSameFaultHandled) ? isSameFaultHandled : CommonConstant.FOU);
                     })
-                    .filter(re -> re.getScheduleStatus().equals("是") || countScheduleStatusOne < 5)
+                    .collect(Collectors.toList());
+
+            // 计算处理过相同故障的人员数量
+            long countHandledSameFaultNum = result.stream()
+                    .filter(re -> re.getHandledSameFault().equals(CommonConstant.SHI))
+                    .count();
+
+            // 如果处理过相同故障的人员数量大于等于5人，则只返回处理过相同故障的人员，否则返回全部人员
+            return result.stream()
+                    .filter(re -> re.getHandledSameFault().equals(CommonConstant.SHI) || countHandledSameFaultNum < 5)
                     .collect(Collectors.toList());
         }
 
-        // 是否处理相同故障
+        return result;
+    }
 
+    /**
+     * 筛选和处理用户工作的方法。
+     *
+     * @param result  需要筛选和处理的用户列表。
+     * @param userIds 用于筛选用户排班情况的用户ID列表。
+     * @return 筛选和处理后的用户列表。
+     */
+    private List<RecPersonListDTO> filterAndProcessUserWork(List<RecPersonListDTO> result, List<String> userIds) {
+        List<ScheduleUserWorkDTO> todayUserWork = baseApi.getTodayUserWork(userIds);
+        if (CollUtil.isNotEmpty(todayUserWork)) {
+            // 创建一个用户ID到值班情况的映射
+            Map<String, String> workMap = Optional.ofNullable(
+                    todayUserWork.stream()
+                            .filter(work -> work.getUserId() != null && work.getWork() != null)
+                            .collect(Collectors.toMap(ScheduleUserWorkDTO::getUserId, ScheduleUserWorkDTO::getWork, (v1, v2) -> v1))
+            ).orElse(CollUtil.newHashMap());
 
-        // 任务情况
+            // 使用工作内容映射设置每个结果对象的计划状态
+            result = result.stream()
+                    .peek(re -> {
+                        String work = workMap.getOrDefault(re.getUserId(), "");
+                        String workName = FaultConstant.ON_DUTY_1.equals(work) ? FaultConstant.ON_DUTY_NAME : FaultConstant.REST_NAME;
+                        re.setScheduleStatus(workName);
+                    })
+                    .collect(Collectors.toList());
 
-        // 当前距离站点
+            // 计算人员的排班情况为当班的数量
+            long countScheduleStatusNum = result.stream()
+                    .filter(re -> re.getScheduleStatus().equals(FaultConstant.ON_DUTY_NAME))
+                    .count();
 
-        // 计算评估得分
-
-        return null;
+            // 如果当班人员数量大于等于5人，则只返回当班人员，否则返回全部人员
+            return result.stream()
+                    .filter(re -> re.getScheduleStatus().equals(FaultConstant.ON_DUTY_NAME) || countScheduleStatusNum < 5)
+                    .collect(Collectors.toList());
+        }
+        return result;
     }
 
     /**
@@ -2464,5 +2633,4 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
         return loginUser;
     }
-
 }

@@ -4,8 +4,7 @@ import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.basic.entity.CsWork;
-import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
-import com.aiurt.modules.fault.dto.RecPersonListDTO;
+import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
@@ -13,9 +12,13 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.PortraitTaskModel;
+import org.jeecg.common.system.vo.RadarAptitudeModel;
+import org.jeecg.common.system.vo.RadarNumberModel;
+import org.jeecg.common.system.vo.RadarPerformanceModel;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: fault
@@ -157,8 +160,83 @@ public interface FaultMapper extends BaseMapper<Fault> {
     /**
      * 查询管理的部门的所有人员
      *
+     * @param date 当前时间
      * @param userId 用户id
      * @return
      */
-    List<RecPersonListDTO> getManagedDepartmentUsers(String userId);
+    List<RecPersonListDTO> getManagedDepartmentUsers(@Param("date") Date date,@Param("userId")String userId);
+
+    /**
+     * 用户是否处理了相同的故障映射表
+     * @param userNames
+     * @param knowledgeId
+     * @return
+     */
+    List<SameFaultDTO> isSameFaultHandled(@Param("userNames") List<String> userNames,@Param("knowledgeId")String knowledgeId);
+
+    /**
+     * 查询人员的任务情况
+     * @param userNames
+     * @return
+     */
+    List<SameFaultDTO> taskSituation(List<String> userNames);
+
+    /**
+     * 根据用户id获取故障处理总次数的最大值和最小值
+     * @param userNames
+     * @return
+     */
+    CommonMaxMinNumDTO getHandleNumberMaxAndMin(List<String> userNames);
+
+    /**
+     * 根据用户id获取用户故障处理的平均响应时间和平均解决时间
+     * @param userNames
+     * @return
+     */
+    List<EfficiencyDTO> getEfficiency(List<String> userNames);
+
+    /**
+     * 根据用户id获取工龄最大值和最小值
+     * @param date
+     * @param userIds
+     * @return
+     */
+    CommonMaxMinNumDTO getUserExperienceRange(Date date,List<String> userIds);
+
+    /**
+     * 获取用户对应的故障处理总次数
+     * @param userNames
+     * @return
+     */
+    List<RadarNumberModel> getHandleNumber(List<String> userNames);
+
+    /**
+     * 获取用户对应的工龄
+     * @param userIds
+     * @return
+     */
+    List<RadarNumberModel> getUserExperienceList(List<String> userIds);
+
+    /**
+     * 雷达图-获取用户的资质信息
+     *
+     * @param userIds
+     * @return
+     */
+    List<RadarAptitudeModel> getAptitude(List<String> userIds);
+    /**
+     * 获取用户的资质信息的最大值和最小值
+     *
+     * @param userIds
+     * @return
+     */
+    CommonMaxMinNumDTO getAptitudeMaxAndMin(List<String> userIds);
+
+    /**
+     * 获取用户的绩效信息
+     * @param date
+     * @param userIds
+     * @return
+     */
+    List<RadarPerformanceModel> getPerformance(@Param("date") Date date,@Param("userIds") List<String> userIds);
 }
