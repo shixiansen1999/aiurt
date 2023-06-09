@@ -1,5 +1,6 @@
 package com.aiurt.modules.schedule.dto;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -25,6 +26,10 @@ public class SysUserTeamDTO {
 
     @ApiModelProperty(value = "角色")
     private String roleName;
+
+    @ApiModelProperty(value = "岗位")
+    @Dict(dicCode = "sys_post")
+    private String jobName;
 
     @ApiModelProperty(value = "班组")
     private String teamName;

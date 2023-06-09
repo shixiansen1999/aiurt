@@ -324,6 +324,7 @@
         sr.item_name AS scheduleItemName,
         su.realname AS realName,
         su.username,
+        su.job_name,
         su.avatar,
         su.permit_code,
         su.salary_code,
@@ -358,6 +359,7 @@
         su.avatar,
         su.realname AS realName,
         su.username,
+        su.job_name,
         su.permit_code,
         su.salary_code,
         su.org_name as teamName
