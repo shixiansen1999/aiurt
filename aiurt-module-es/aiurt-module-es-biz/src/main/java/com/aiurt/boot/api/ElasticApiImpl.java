@@ -258,7 +258,9 @@ public class ElasticApiImpl implements ElasticAPI {
         if (ObjectUtil.isNotEmpty(knowledgeBaseMatchDTO)) {
             List<String> devices = knowledgeBaseMatchDTO.getDevices();
             List<String> phenomenons = knowledgeBaseMatchDTO.getPhenomenons();
+            Integer status = knowledgeBaseMatchDTO.getStatus();
             AtomicReference<BoolQueryBuilder> boolQueryBuilder = new AtomicReference<>();
+            boolQueryBuilder.set(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("status", status)));
             Optional.ofNullable(knowledgeBaseMatchDTO.getMajor())
                     .ifPresent(major -> {
                         if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {

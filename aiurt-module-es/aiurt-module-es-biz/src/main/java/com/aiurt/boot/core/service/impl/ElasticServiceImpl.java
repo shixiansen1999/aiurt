@@ -156,25 +156,33 @@ public class ElasticServiceImpl<T, M> implements ElasticService<T, M> {
             searchSourceBuilder.from(currentPage);
             searchSourceBuilder.size(pageSize);
         }
-
         // 高亮
         //https://www.elastic.co/guide/en/elasticsearch/reference/7.12/highlighting.html
         //https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.12/java-rest-high-search.html#java-rest-high-search-request-highlighting
+        String[] preTags = new String[0];
+        String[] postTags = new String[0];
         if (ObjectUtil.isNotEmpty(highLight) && ObjectUtil.isNotEmpty(highLight.getHighlightBuilder())) {
-            searchSourceBuilder.highlighter(highLight.getHighlightBuilder());
+            HighlightBuilder highlightBuilder = highLight.getHighlightBuilder();
+            searchSourceBuilder.highlighter(highlightBuilder);
+            preTags = highlightBuilder.preTags();
+            postTags = highlightBuilder.postTags();
         } else if (ObjectUtil.isNotEmpty(highLight) && CollUtil.isNotEmpty(highLight.getHighLightList())) {
             HighlightBuilder highlightBuilder = new HighlightBuilder();
             if (StrUtil.isNotEmpty(highLight.getPreTag()) && StrUtil.isNotEmpty(highLight.getPostTag())) {
                 highlightBuilder.preTags(highLight.getPreTag());
                 highlightBuilder.postTags(highLight.getPostTag());
+                preTags = new String[]{highLight.getPreTag()};
+                postTags = new String[]{highLight.getPreTag()};
             }
             for (String highLightField : highLight.getHighLightList()) {
                 // You can set fragment_size to 0 to never split any sentence.
                 // 不对高亮结果进行拆分
-                // highlightBuilder.field(highLightField, 0);
+//                highlightBuilder.field(highLightField, 0);
                 highlightBuilder.field(highLightField);
                 searchSourceBuilder.highlighter(highlightBuilder);
             }
+        } else {
+            preTags = null;
         }
 
         // 排序
@@ -221,14 +229,14 @@ public class ElasticServiceImpl<T, M> implements ElasticService<T, M> {
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
         SearchHits hits = searchResponse.getHits();
         SearchHit[] searchHits = hits.getHits();
-        // todo 处理高亮字段
+        // 处理高亮字段
         List<String> fieldList = ElasticTools.getHighlightField(clazz);
         List<Map<String, Object>> replaceList = new ArrayList<>();
         for (SearchHit hit : searchHits) {
             Map<String, HighlightField> highlightFields = hit.getHighlightFields();
             // 原来的结果
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
-            fieldList.forEach(field -> {
+            for (String field : fieldList) {
                 HighlightField highlightField = highlightFields.get(field);
                 // 将原来的字段替换为高亮字段即可
                 if (ObjectUtil.isNotEmpty(highlightField)) {
@@ -239,22 +247,48 @@ public class ElasticServiceImpl<T, M> implements ElasticService<T, M> {
                     if (2 <= names.length) {
                         Object obj = sourceAsMap.get(names[0]);
                         if (obj instanceof List) {
-                            for (int i = 0; i < ((List<?>) obj).size(); i++) {
+                            for (int i = 0; i < fragments.length; i++) {
                                 Map<String, Object> objectMap = (Map<String, Object>) ((List<?>) obj).get(i);
-                                objectMap.put(names[1], fragments[i].toString());
+                                String fragment = fragments[i].toString();
+                                String oldFragment = fragments[i].toString();
+                                for (String preTag : preTags) {
+                                    oldFragment = StrUtil.replace(oldFragment, preTag, "");
+                                }
+                                for (String postTag : postTags) {
+                                    oldFragment = StrUtil.replace(oldFragment, postTag, "");
+                                }
+                                Object object = objectMap.get(names[1]);
+                                String replaceJson = StrUtil.replace(JSON.toJSONString(object), oldFragment, fragment);
+                                objectMap.put(names[1], JSON.parseObject(replaceJson, object.getClass()));
                             }
+//                            for (int i = 0; i < ((List<?>) obj).size(); i++) {
+//                                Map<String, Object> objectMap = (Map<String, Object>) ((List<?>) obj).get(i);
+//                                objectMap.put(names[1], fragments[i].toString());
+//                            }
                         }
                     } else {
-                        String newTitle = "";
-                        for (Text text : fragments) {
-                            newTitle += text;
+                        for (Text fragment : fragments) {
+                            Object object = sourceAsMap.get(field);
+                            String oldFragment = fragment.toString();
+                            for (String preTag : preTags) {
+                                oldFragment = StrUtil.replace(oldFragment, preTag, "");
+                            }
+                            for (String postTag : postTags) {
+                                oldFragment = StrUtil.replace(oldFragment, postTag, "");
+                            }
+                            String replaceJson = StrUtil.replace(JSON.toJSONString(object), oldFragment, fragment.toString());
+                            // 替换掉原来的内容
+                            sourceAsMap.put(field, JSON.parseObject(replaceJson, object.getClass()));
                         }
-                        // 替换掉原来的内容
-                        sourceAsMap.put(field, newTitle);
-
+//                        String newTitle = "";
+//                        for (Text text : fragments) {
+//                            newTitle += text;
+//                        }
+//                        // 替换掉原来的内容
+//                        sourceAsMap.put(field, newTitle);
                     }
                 }
-            });
+            }
             replaceList.add(sourceAsMap);
         }
 
