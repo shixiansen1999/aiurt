@@ -327,7 +327,8 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
     <select id="getAllSystemCode" resultType="com.aiurt.modules.fault.dto.FaultDataStatisticsDTO">
         SELECT
                 system_code AS subSystemCode,
-                system_name AS subSystemName
+                system_name AS subSystemName,
+                shortened_form AS shortenedForm
         FROM
                 cs_subsystem
         WHERE
