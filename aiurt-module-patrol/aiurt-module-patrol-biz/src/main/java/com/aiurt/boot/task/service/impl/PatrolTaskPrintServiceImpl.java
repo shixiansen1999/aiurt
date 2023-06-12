@@ -710,9 +710,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             List<String> wirelessSystem = patrolCheckResultMapper.getDictItems(strName).stream().map(w-> w.getText()).collect(Collectors.toList());
             List<String> result = wirelessSystem.stream().filter(w -> !checkResultAll.stream().anyMatch(c -> c.getContent().equals(w))).collect(Collectors.toList());
             if (!result.isEmpty()){
-                str =  result.stream().filter(s -> s.contains("：") || s.contains(":") )
-                        .map(s -> s.split("[：:]")[0])
-                        .collect(Collectors.joining(",")) + "( 无 )";
+                str =   String.join(",", result)+"(无)";
                 set.add(str);
             }
             checkDTOs.forEach(c-> {
