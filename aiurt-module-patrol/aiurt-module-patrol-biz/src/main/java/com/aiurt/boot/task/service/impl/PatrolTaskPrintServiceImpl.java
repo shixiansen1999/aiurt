@@ -399,7 +399,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     });
                     if(flag.get()){
                         stringBuffer.deleteCharAt(stringBuffer.length()-1);
-                        headerMap.put(str,stringBuffer);
+                        headerMap.put(str,stringBuffer.toString());
                     }else{
                         headerMap.put(str,null);
                     }
@@ -750,12 +750,14 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                      }
                 }
             }
+            int num = 0;
             for (int i = 0; i < checkDTOs.size(); i++) {
                 if (i==0){
                     text.append("\n \n 异常情况:");
                 }
                 if(Objects.nonNull(checkDTOs.get(i).getCheckResult())&&checkDTOs.get(i).getCheckResult()==0){
-                    text.append("\n").append(i+1).append(".").append(checkDTOs.get(i).getContent()).append(":异常");
+                    text.append("\n").append(num+1).append(".").append(checkDTOs.get(i).getContent()).append(":异常");
+                    num++;
                 }
                 if (i+1 == checkDTOs.size()){
                     text.append("\n 其他正常");
