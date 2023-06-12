@@ -23,6 +23,7 @@ import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
 import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.faultanalysisreport.constants.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
@@ -1347,10 +1348,17 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             if (CollUtil.isNotEmpty(records)) {
                 List<String> knowledgeBaseIds = records.stream().map(KnowledgeBaseResDTO::getId).collect(Collectors.toList());
                 Map<String, Map<String, String>> dataMap = this.buildCauseNumberMap(knowledgeBaseIds);
+                // 采用数
+                QueryWrapper<Fault> wrapper = new QueryWrapper<>();
+                wrapper.lambda().in(Fault::getKnowledgeId, knowledgeBaseIds)
+                        .select(Fault::getKnowledgeId);
+                List<Fault> faults = faultMapper.selectList(wrapper);
+                Map<String, Long> useMap = faults.stream()
+                        .collect(Collectors.groupingBy(Fault::getKnowledgeId, Collectors.counting()));
                 pageList.getRecords().forEach(knowledgeBaseRes -> {
+                    String id = knowledgeBaseRes.getId();
                     List<CauseSolution> reasonSolutions = knowledgeBaseRes.getReasonSolutions();
                     if (CollUtil.isNotEmpty(reasonSolutions)) {
-                        String id = knowledgeBaseRes.getId();
                         Map<String, String> happenRateMap = CollUtil.isEmpty(dataMap.get(id)) ?
                                 Collections.emptyMap() : dataMap.get(id);
                         for (CauseSolution reasonSolution : reasonSolutions) {
@@ -1361,6 +1369,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                             reasonSolution.setHappenRate(happenRate);
                         }
                     }
+                    // 采用数
+                    int use = ObjectUtil.isEmpty(useMap.get(id)) ? 0 : useMap.get(id).intValue();
+                    knowledgeBaseRes.setUse(use);
                 });
             }
         } catch (Exception e) {
@@ -1393,7 +1404,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     .collect(Collectors.toMap(k -> k.getCode(), v -> v.getName()));
             knowledgeBases.forEach(knowledgeBase -> knowledgeBase.setFaultLevelName(levelMap.get(knowledgeBase.getFaultLevelCode())));
         }
-        // todo 采用率的计算，为空则给0
+        // 采用率默认给0，高级查询的时候会分别进行计算
         knowledgeBases.forEach(knowledgeBase -> {
             Integer use = knowledgeBase.getUse();
             if (ObjectUtil.isEmpty(use)) {
