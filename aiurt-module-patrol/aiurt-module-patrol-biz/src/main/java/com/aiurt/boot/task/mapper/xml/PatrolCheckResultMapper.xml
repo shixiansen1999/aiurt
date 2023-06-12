@@ -141,7 +141,7 @@
             and pcr.parent_id = #{parentId}
         </if>
         GROUP BY  pcr.id
-        ORDER BY  pcr.`code`,pts.subsystem_code
+        order by pcr.order
     </select>
 
     <select id="getCheckResultAllByTaskId" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
