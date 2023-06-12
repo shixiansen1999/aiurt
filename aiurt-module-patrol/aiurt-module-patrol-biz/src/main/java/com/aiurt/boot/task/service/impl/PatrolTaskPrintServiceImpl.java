@@ -139,6 +139,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
 
         // 填充数据后的文件路径
         String fileName = patrolTask.getName() + System.currentTimeMillis() + ".xlsx";
+        fileName = fileName.replaceAll("[/*?:\"<>|]", "-");
         String relatiePath = "/" + "patrol" + "/" + "print" + "/" + fileName;
         String filePath = path +"/" +  fileName;
         //获取头部数据
@@ -344,6 +345,9 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
        } else if("cctv_system.xlsx".equals(excelName)){
            patrolData = getCctvSystem(taskId,headerMap,standardId);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
+       }else if("network_manage.xlsx".equals(excelName)){
+           patrolData = printPatrolTaskByNetworkManage(taskId,standardId);
+           excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
        }
 
        return excelWriter;
@@ -359,6 +363,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             }
             List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
             List<PatrolCheckResultDTO> checkResultAll = patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
+            //子级
             List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
             //父级
             List<PatrolCheckResultDTO> parentDTOList = checkResultAll.stream()
@@ -409,20 +414,47 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
      * @param id
      * @return
      */
-    public String printPatrolTaskByNetworkManage(String id){
-        Map<String, Object> fillDataMap = MapUtils.newHashMap();
-        fillDataMap.put("设备指示灯-设备指示灯","⬜正常");
-
-        List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(id);
+    public  List<PrintDTO> printPatrolTaskByNetworkManage(String id,String standardId){
+        List<PrintDTO> getNetworkManage = new ArrayList<>();
+        List<PatrolStationDTO> billGangedInfo = getBillGangedInfo(id,standardId);
         for (PatrolStationDTO dto : billGangedInfo) {
             //获取检修项
             List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
-            List<PatrolCheckResultDTO> checkResultAll =  patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
+            List<PatrolCheckResultDTO> checkResultAll = patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
             List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
-
+            //父级
+            List<PatrolCheckResultDTO> parentDTOList = checkResultAll.stream()
+                    .filter(c -> Objects.nonNull(c)
+                            &&Objects.nonNull(c.getCheck())&& c.getCheck() == 0)
+                    .collect(Collectors.toList());
+            List<String> networkManage = patrolCheckResultMapper.getDictItems("network_manage").stream().map(w-> w.getText()).collect(Collectors.toList());
+            PrintDTO printDTO = new PrintDTO();
+            networkManage.forEach(str-> {
+                PatrolCheckResultDTO patrolCheckResultDTO = parentDTOList.stream().filter(p -> p.getOldCode().equals(str)).findFirst().orElse(null);
+                if (ObjectUtil.isEmpty(patrolCheckResultDTO)){
+                    printDTO.setResult("☐正常 ☐异常");
+                }else {
+                    String oldId = patrolCheckResultDTO.getOldId();
+                    AtomicBoolean flag = new AtomicBoolean(false);
+                    //子级
+                    List<PatrolCheckResultDTO> childDTOs =  checkDTOs.stream()
+                            .filter(c -> c.getParentId().equals(oldId))
+                            .collect(Collectors.toList());
+                    childDTOs.forEach(c->{
+                        if(c.getCheckResult().equals(0)){
+                            flag.set(true);
+                        }
+                    });
+                    if(flag.get()){
+                        printDTO.setResult("☐正常 ☑异常");
+                    }else{
+                        printDTO.setResult("☑正常 ☐异常");
+                    }
+                }
+                getNetworkManage.add(printDTO);
+            });
         }
-          return null;
-     //   return sysAttachment.getId()+"?fileName="+sysAttachment.getFileName();
+        return getNetworkManage;
     }
 
     /**
@@ -710,9 +742,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             List<String> wirelessSystem = patrolCheckResultMapper.getDictItems(strName).stream().map(w-> w.getText()).collect(Collectors.toList());
             List<String> result = wirelessSystem.stream().filter(w -> !checkResultAll.stream().anyMatch(c -> c.getContent().equals(w))).collect(Collectors.toList());
             if (!result.isEmpty()){
-                str =  result.stream().filter(s -> s.contains("：") || s.contains(":") )
-                        .map(s -> s.split("[：:]")[0])
-                        .collect(Collectors.joining(",")) + "( 无 )";
+                str =   String.join(",", result)+"(无)";
                 set.add(str);
             }
             checkDTOs.forEach(c-> {
