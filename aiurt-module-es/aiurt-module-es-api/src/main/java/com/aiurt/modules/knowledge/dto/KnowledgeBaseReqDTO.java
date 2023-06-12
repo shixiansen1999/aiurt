@@ -21,6 +21,12 @@ public class KnowledgeBaseReqDTO implements Serializable {
     private String keyword;
 
     /**
+     * 故障现象分类编号
+     */
+    @ApiModelProperty(value = "故障现象分类编号")
+    private String knowledgeBaseTypeCode;
+
+    /**
      * 专业编号
      */
     @ApiModelProperty(value = "专业编号")

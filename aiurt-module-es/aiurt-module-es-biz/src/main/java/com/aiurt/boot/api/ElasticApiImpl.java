@@ -75,6 +75,7 @@ public class ElasticApiImpl implements ElasticAPI {
         Sort sort = null;
         if (ObjectUtil.isNotEmpty(knowledgeBaseReqDTO)) {
             String keyword = knowledgeBaseReqDTO.getKeyword();
+            String knowledgeBaseTypeCode = knowledgeBaseReqDTO.getKnowledgeBaseTypeCode();
             String majorCode = knowledgeBaseReqDTO.getMajorCode();
             String systemCode = knowledgeBaseReqDTO.getSystemCode();
             String deviceTypeCode = knowledgeBaseReqDTO.getDeviceTypeCode();
@@ -99,6 +100,13 @@ public class ElasticApiImpl implements ElasticAPI {
                         ScoreMode.Total)
                 );
             }
+            // 故障现象分类编号
+            Optional.ofNullable(knowledgeBaseTypeCode).ifPresent(code -> {
+                if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                    boolQueryBuilder.set(QueryBuilders.boolQuery());
+                }
+                boolQueryBuilder.get().must(QueryBuilders.termQuery("knowledgeBaseTypeCode", code));
+            });
             // 专业编号
             Optional.ofNullable(majorCode).ifPresent(major -> {
                 if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
@@ -331,6 +339,6 @@ public class ElasticApiImpl implements ElasticAPI {
 
     @Override
     public boolean exists(String docId, Class<KnowledgeBase> clazz) throws Exception {
-        return elasticService.exists(docId,clazz);
+        return elasticService.exists(docId, clazz);
     }
 }
