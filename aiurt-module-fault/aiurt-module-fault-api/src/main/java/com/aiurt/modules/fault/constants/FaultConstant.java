@@ -74,4 +74,8 @@ public class FaultConstant {
      *  表示人员的任务情况为维修中
      */
     public static final String IN_MAINTENANCE_NAME = "维修中";
+    /**
+     *  表示取数据的前5条
+     */
+    public static final int FIRST_5 = 5;
 }

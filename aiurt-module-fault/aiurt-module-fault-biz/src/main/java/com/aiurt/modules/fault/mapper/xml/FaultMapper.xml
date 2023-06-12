@@ -300,11 +300,12 @@
             su.working_time,
             su.avatar AS picturePath,
             su.org_code,
+            su.job_grade,
             DATEDIFF(
                     #{date},
                     IFNULL(
                             working_time,
-                            CURDATE())) AS tenure
+                            #{date})) AS tenure
         FROM
             sys_user su
         WHERE
@@ -362,7 +363,7 @@
         GROUP BY
             f.appoint_user_name
     </select>
-    <select id="getHandleNumberMaxAndMin" resultType="com.aiurt.modules.fault.dto.CommonMaxMinNumDTO">
+    <select id="getFaultHandleNumberMaxMin" resultType="com.aiurt.modules.fault.dto.CommonMaxMinNumDTO">
         SELECT
         IFNULL( MAX( num ), 0 ) AS maxNum,
         IFNULL( MIN( num ), 0 ) AS minNum
@@ -376,16 +377,14 @@
         </if>
         GROUP BY appoint_user_name ) AS subquery;
     </select>
-    <select id="getEfficiency" resultType="com.aiurt.modules.fault.dto.EfficiencyDTO">
+    <select id="getEfficiencyList" resultType="com.aiurt.modules.fault.dto.EfficiencyDTO">
         select frr.appoint_user_name username,
-        avg(time_to_sec(timediff(frr.start_time, f.assign_time))) responseTime,
-        avg(time_to_sec(timediff(frr.end_time, frr.start_time))) resolveTime,
+        IFNULL(AVG(TIME_TO_SEC(TIMEDIFF(frr.start_time, f.assign_time))), 0) AS responseTime,
+        IFNULL(AVG(TIME_TO_SEC(TIMEDIFF(frr.end_time, frr.start_time))), 0) AS resolveTime,
         (
-        avg(
-        time_to_sec(
-        timediff( frr.start_time, f.assign_time )))+ avg(
-        time_to_sec(
-        timediff( frr.end_time, frr.start_time )))) AS sumResponseTimeResolveTime
+        IFNULL(AVG(TIME_TO_SEC(TIMEDIFF(frr.start_time, f.assign_time))), 0) +
+        IFNULL(AVG(TIME_TO_SEC(TIMEDIFF(frr.end_time, frr.start_time))), 0)
+        ) AS sumResponseTimeResolveTime
         from fault_repair_record frr
         join fault f on frr.fault_code = f.code
         where frr.del_flag = 0
@@ -400,52 +399,31 @@
         </if>
         group by f.appoint_user_name
     </select>
-    <select id="getUserExperienceRange" resultType="com.aiurt.modules.fault.dto.CommonMaxMinNumDTO">
+    <select id="getTenureMaxMin" resultType="com.aiurt.modules.fault.dto.CommonMaxMinNumDTO">
         SELECT
-            MAX(workExperience) as maxNum,
-            MIN(workExperience) as minNum
+            IFNULL(MAX(workExperience),0) as maxNum,
+            IFNULL(MIN(workExperience),0) as minNum
         FROM
-            ( SELECT DATEDIFF(#{date}, IFNULL( working_time, CURDATE())) AS workExperience FROM sys_user GROUP BY id ) AS temp
+            ( SELECT DATEDIFF(#{date}, IFNULL( working_time, #{date})) AS workExperience FROM sys_user GROUP BY id ) AS temp
     </select>
-    <select id="getHandleNumber" resultType="org.jeecg.common.system.vo.RadarNumberModel">
+    <select id="getHandleNumberList" resultType="com.aiurt.modules.fault.dto.RadarNumberDTO">
         SELECT
             appoint_user_name AS username,
-            count( id ) AS number
+            IFNULL(count( id ),0) AS number
         FROM
             fault_repair_record
         WHERE
             del_flag = 0
-        <if test="userNames!=null and userNames.size()>0">
+        <if test="userNameList!=null and userNameList.size()>0">
             AND appoint_user_name in
-            <foreach collection="userNames" separator="," open="(" close=")" item="username">
+            <foreach collection="userNameList" separator="," open="(" close=")" item="username">
                 #{username}
             </foreach>
         </if>
         GROUP BY
             appoint_user_name
     </select>
-    <select id="getUserExperienceList" resultType="org.jeecg.common.system.vo.RadarNumberModel">
-        SELECT
-            username,
-            DATEDIFF(
-                    CURDATE(),
-                    IFNULL(
-                            working_time,
-                            CURDATE())) AS number
-        FROM
-            sys_user
-        <where>
-            <if test="userIds!=null and userIds.size()>0">
-                 id in
-                <foreach collection="userIds" separator="," open="(" close=")" item="userId">
-                    #{userId}
-                </foreach>
-            </if>
-        </where>
-        GROUP BY
-            id
-    </select>
-    <select id="getAptitude" resultType="org.jeecg.common.system.vo.RadarAptitudeModel">
+    <select id="getAptitude" resultType="com.aiurt.modules.fault.dto.RadarAptitudeDTO">
         select sua.user_id     userId,
                sum(sua.number) number
         from sys_user_aptitudes sua
@@ -461,10 +439,10 @@
         </where>
         group by sua.user_id
     </select>
-    <select id="getAptitudeMaxAndMin" resultType="com.aiurt.modules.fault.dto.CommonMaxMinNumDTO">
+    <select id="getAptitudeMaxMin" resultType="com.aiurt.modules.fault.dto.CommonMaxMinNumDTO">
         SELECT
-        MAX(number) as maxNum,
-        MIN(number) as minNum
+        IFNULL(MAX(number),0) as maxNum,
+        IFNULL(MIN(number),0) as minNum
         FROM
         (select
         ifnull(sum(sua.number),0) number
@@ -481,8 +459,8 @@
         </where>
         group by sua.user_id) AS subquery;
     </select>
-    <select id="getPerformance" resultType="org.jeecg.common.system.vo.RadarPerformanceModel">
-        select sup.user_id, sum(sup.score) score
+    <select id="getPerformanceList" resultType="com.aiurt.modules.fault.dto.RadarPerformanceDTO">
+        select sup.user_id, IFNULL(sum(sup.score),0) score
         from sys_user_perf sup
         join sys_user su on (sup.user_id = su.id and su.del_flag = 0)
         <where>
@@ -497,5 +475,77 @@
             </if>
         </where>
         group by sup.user_id
+    </select>
+    <select id="getFaultHandCountListByFaultPhenomenon" resultType="com.aiurt.modules.fault.dto.RadarNumberDTO">
+        SELECT
+        appoint_user_name AS username,
+        ifnull(count( id ),0) AS number
+        FROM
+        fault_repair_record
+        WHERE
+        del_flag = 0
+          AND knowledge_id = #{knowledgeId}
+        <if test="userNameList!=null and userNameList.size()>0">
+            AND appoint_user_name in
+            <foreach collection="userNameList" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY
+        appoint_user_name
+    </select>
+    <select id="getFaultHandCountListByDeviceType" resultType="com.aiurt.modules.fault.dto.RadarNumberDTO">
+        SELECT
+        frr.appoint_user_name AS username,
+        ifnull(count( frr.id ),0) AS number
+        FROM
+        fault_repair_record frr
+        LEFT JOIN  fault_device fd ON fd.fault_code = frr.fault_code
+        LEFT JOIN  device d ON (d.code = fd.device_code AND d.device_type_code = #{deviceTypeCode})
+        WHERE
+        frr.del_flag = 0
+        <if test="userNameList!=null and userNameList.size()>0">
+            AND frr.appoint_user_name in
+            <foreach collection="userNameList" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY
+        frr.appoint_user_name
+    </select>
+    <select id="getRoleNameByUserIdList" resultType="com.aiurt.modules.fault.dto.RoleNameDTO">
+        SELECT
+            sur.user_id,
+            GROUP_CONCAT(ifnull(sr.role_name,'')) AS roleName
+        FROM
+            sys_user_role sur
+        left join sys_role sr on sr.id = sur.role_id
+        <where>
+            <if test="userIdList!=null and userIdList.size()>0">
+                user_id in
+                <foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+        group by sur.user_id
+    </select>
+    <select id="getAptitudeList" resultType="com.aiurt.modules.fault.dto.AptitudeDTO">
+        SELECT
+            sua.user_id,
+            GROUP_CONCAT(CONCAT( sua.NAME, '-', vd.item_text )) AS aptitudeName
+        FROM
+            sys_user_aptitudes sua
+        LEFT JOIN view_dict vd ON(vd.dict_code = 'aptitude_level' AND sua.`level` = vd.item_value)
+        <where>
+            <if test="userIdList!=null and userIdList.size()>0">
+                sua.user_id in
+                <foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
+            sua.user_id
     </select>
 </mapper>

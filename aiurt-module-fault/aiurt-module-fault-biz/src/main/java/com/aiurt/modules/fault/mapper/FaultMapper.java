@@ -12,13 +12,9 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.PortraitTaskModel;
-import org.jeecg.common.system.vo.RadarAptitudeModel;
-import org.jeecg.common.system.vo.RadarNumberModel;
-import org.jeecg.common.system.vo.RadarPerformanceModel;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @Description: fault
@@ -160,22 +156,24 @@ public interface FaultMapper extends BaseMapper<Fault> {
     /**
      * 查询管理的部门的所有人员
      *
-     * @param date 当前时间
+     * @param date   当前时间
      * @param userId 用户id
      * @return
      */
-    List<RecPersonListDTO> getManagedDepartmentUsers(@Param("date") Date date,@Param("userId")String userId);
+    List<RecPersonListDTO> getManagedDepartmentUsers(@Param("date") Date date, @Param("userId") String userId);
 
     /**
      * 用户是否处理了相同的故障映射表
+     *
      * @param userNames
      * @param knowledgeId
      * @return
      */
-    List<SameFaultDTO> isSameFaultHandled(@Param("userNames") List<String> userNames,@Param("knowledgeId")String knowledgeId);
+    List<SameFaultDTO> isSameFaultHandled(@Param("userNames") List<String> userNames, @Param("knowledgeId") String knowledgeId);
 
     /**
      * 查询人员的任务情况
+     *
      * @param userNames
      * @return
      */
@@ -183,39 +181,36 @@ public interface FaultMapper extends BaseMapper<Fault> {
 
     /**
      * 根据用户id获取故障处理总次数的最大值和最小值
+     *
      * @param userNames
      * @return
      */
-    CommonMaxMinNumDTO getHandleNumberMaxAndMin(List<String> userNames);
+    CommonMaxMinNumDTO getFaultHandleNumberMaxMin(List<String> userNames);
 
     /**
      * 根据用户id获取用户故障处理的平均响应时间和平均解决时间
+     *
      * @param userNames
      * @return
      */
-    List<EfficiencyDTO> getEfficiency(List<String> userNames);
+    List<EfficiencyDTO> getEfficiencyList(List<String> userNames);
 
     /**
      * 根据用户id获取工龄最大值和最小值
+     *
      * @param date
      * @param userIds
      * @return
      */
-    CommonMaxMinNumDTO getUserExperienceRange(Date date,List<String> userIds);
+    CommonMaxMinNumDTO getTenureMaxMin(Date date, List<String> userIds);
 
     /**
      * 获取用户对应的故障处理总次数
-     * @param userNames
+     *
+     * @param userNameList
      * @return
      */
-    List<RadarNumberModel> getHandleNumber(List<String> userNames);
-
-    /**
-     * 获取用户对应的工龄
-     * @param userIds
-     * @return
-     */
-    List<RadarNumberModel> getUserExperienceList(List<String> userIds);
+    List<RadarNumberDTO> getHandleNumberList(List<String> userNameList);
 
     /**
      * 雷达图-获取用户的资质信息
@@ -223,20 +218,56 @@ public interface FaultMapper extends BaseMapper<Fault> {
      * @param userIds
      * @return
      */
-    List<RadarAptitudeModel> getAptitude(List<String> userIds);
+    List<RadarAptitudeDTO> getAptitude(List<String> userIds);
+
     /**
      * 获取用户的资质信息的最大值和最小值
      *
      * @param userIds
      * @return
      */
-    CommonMaxMinNumDTO getAptitudeMaxAndMin(List<String> userIds);
+    CommonMaxMinNumDTO getAptitudeMaxMin(List<String> userIds);
 
     /**
      * 获取用户的绩效信息
+     *
      * @param date
      * @param userIds
      * @return
      */
-    List<RadarPerformanceModel> getPerformance(@Param("date") Date date,@Param("userIds") List<String> userIds);
+    List<RadarPerformanceDTO> getPerformanceList(@Param("date") Date date, @Param("userIds") List<String> userIds);
+
+    /**
+     * 获取同种故障现象的处理次数列表
+     *
+     * @param userNameList 用户名列表
+     * @param knowledgeId  知识id
+     * @return 同种故障现象的处理次数列表
+     */
+    List<RadarNumberDTO> getFaultHandCountListByFaultPhenomenon(@Param("userNameList") List<String> userNameList, @Param("knowledgeId") String knowledgeId);
+
+    /**
+     * 获取同种设备类型的处理次数列表
+     *
+     * @param userNameList   用户名列表
+     * @param deviceTypeCode 设备类型编码
+     * @return 同种设备类型的处理次数列表
+     */
+    List<RadarNumberDTO> getFaultHandCountListByDeviceType(@Param("userNameList") List<String> userNameList, String deviceTypeCode);
+
+    /**
+     * 根据用户id集合查询角色名称
+     *
+     * @param userIdList 用户id集合
+     * @return
+     */
+    List<RoleNameDTO> getRoleNameByUserIdList(List<String> userIdList);
+
+    /**
+     * 获取用户资质列表
+     *
+     * @param userIdList 用户ID列表
+     * @return 用户资质列表
+     */
+    List<AptitudeDTO> getAptitudeList(List<String> userIdList);
 }

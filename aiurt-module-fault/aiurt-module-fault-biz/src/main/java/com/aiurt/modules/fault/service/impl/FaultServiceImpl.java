@@ -2038,18 +2038,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     @Override
     public List<RecPersonListDTO> queryRecPersonList(String faultCode) {
-        List<RecPersonListDTO> result = faultMapper.getManagedDepartmentUsers(new Date(), getLoginUser().getId());
+        List<RecPersonListDTO> result = faultMapper.getManagedDepartmentUsers(new Date(), checkLogin().getId());
         if (CollUtil.isEmpty(result)) {
             return result;
         }
 
         // 故障现象
-        Fault fault = faultMapper.selectByCode(faultCode);
-        if (ObjectUtil.isEmpty(fault)) {
-            throw new AiurtBootException("未查询到此项记录");
-        }
+        Fault fault = isExist(faultCode);
         List<String> userIds = result.stream().map(RecPersonListDTO::getUserId).collect(Collectors.toList());
         List<String> userNames = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
+        String deviceTypeCode = Optional.ofNullable(faultDeviceService.queryByFaultCode(faultCode)).orElse(CollUtil.newArrayList()).get(0).getDeviceTypeCode();
 
         // 筛选人员当日排班情况
         result = filterAndProcessUserWork(result, userIds);
@@ -2064,13 +2062,101 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         result = countDistanceToFaultStation(result, fault.getStationCode());
 
         // 计算评估得分
-        result = calculateEvaluationScore(result, userIds, userNames);
+        result = calculateEvaluationScore(result, userIds, userNames, fault.getKnowledgeId(), deviceTypeCode);
 
-        // 排序,去前5条数据
+        // 排序，取前5条数据
+        result = sortAndTakeFirstN(result, FaultConstant.FIRST_5);
 
         // 补充其他数据
+        result = addAdditionalDataToResultList(result);
 
         return result;
+    }
+
+    /**
+     * 向推荐人员结果列表中添加额外的数据
+     *
+     * @param resultList 结果列表
+     */
+    private List<RecPersonListDTO> addAdditionalDataToResultList(List<RecPersonListDTO> resultList) {
+        if (CollUtil.isEmpty(resultList)) {
+            return resultList;
+        }
+
+        // 角色名称
+        List<String> userIdList = resultList.stream().map(RecPersonListDTO::getUserId).collect(Collectors.toList());
+        List<RoleNameDTO> roleNameList = faultMapper.getRoleNameByUserIdList(userIdList);
+        Map<String, String> roleNameMap = convertRoleNameListToMap(roleNameList);
+
+        // 历史维修任务
+
+        // 资质
+        List<AptitudeDTO> aptitudeNameList = faultMapper.getAptitudeList(userIdList);
+        Map<String, String> aptitudeMap = convertAptitudeNameListToMap(aptitudeNameList);
+
+        for (RecPersonListDTO recPersonListDTO : resultList) {
+            recPersonListDTO.setRoleName(StrUtil.split(roleNameMap.getOrDefault(recPersonListDTO.getUserId(), ""), ','));
+            recPersonListDTO.setQualification(StrUtil.split(aptitudeMap.getOrDefault(recPersonListDTO.getUserId(), ""), ','));
+        }
+        return null;
+    }
+
+    /**
+     * 将用户资质列表转换为Map
+     *
+     * @param aptitudeNameList 用户资质列表
+     * @return 用户资质的Map，键为用户ID，值为用户资质名称
+     */
+    private Map<String, String> convertAptitudeNameListToMap(List<AptitudeDTO> aptitudeNameList) {
+
+        // 使用 Optional.ofNullable() 方法确保 handleNumberList 不为 null
+        // 如果 roleNameList 为 null，则创建一个空列表
+        List<AptitudeDTO> list = Optional.ofNullable(aptitudeNameList).orElse(new ArrayList<>());
+
+        // 使用流处理对列表进行过滤和转换
+        Map<String, String> aptitudeNameMap = list.stream()
+                .filter(aptitudeDTO -> aptitudeDTO.getUserId() != null && aptitudeDTO.getAptitudeName() != null)
+                .collect(Collectors.toMap(AptitudeDTO::getUserId, AptitudeDTO::getAptitudeName, (v1, v2) -> v1));
+
+        return aptitudeNameMap;
+    }
+
+    /**
+     * 将角色名称列表转换为映射关系的 Map
+     *
+     * @param roleNameList 角色名称列表
+     * @return 用户id与角色名称的映射关系的 Map
+     */
+    private Map<String, String> convertRoleNameListToMap(List<RoleNameDTO> roleNameList) {
+        // 使用 Optional.ofNullable() 方法确保 handleNumberList 不为 null
+        // 如果 roleNameList 为 null，则创建一个空列表
+        List<RoleNameDTO> list = Optional.ofNullable(roleNameList).orElse(new ArrayList<>());
+
+        // 使用流处理对列表进行过滤和转换
+        Map<String, String> roleNameMap = list.stream()
+                .filter(roleNameDTO -> roleNameDTO.getUserId() != null && roleNameDTO.getRoleName() != null)
+                .collect(Collectors.toMap(RoleNameDTO::getUserId, RoleNameDTO::getRoleName, (v1, v2) -> v1));
+
+        return roleNameMap;
+    }
+
+    /**
+     * 对列表进行排序，并返回前n条数据。
+     *
+     * @param list 要排序的列表
+     * @param n    前n条数据
+     * @return 排序后的前n条数据列表
+     */
+    private List<RecPersonListDTO> sortAndTakeFirstN(List<RecPersonListDTO> list, int n) {
+        List<RecPersonListDTO> sortedList = list.stream()
+                .sorted(Comparator.comparing(RecPersonListDTO::getScheduleStatus).reversed()
+                        .thenComparing(Comparator.comparing(RecPersonListDTO::getHandledSameFault).reversed())
+                        .thenComparing(RecPersonListDTO::getTaskStatus)
+                        .thenComparing(RecPersonListDTO::getStationNum)
+                        .thenComparing(Comparator.comparing(RecPersonListDTO::getEvaluationScore).reversed()))
+                .limit(n)
+                .collect(Collectors.toList());
+        return sortedList;
     }
 
     /**
@@ -2081,60 +2167,339 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 筛选后的人员列表，其中每个人员的站点数量表示其距离故障站点的距离
      */
     private List<RecPersonListDTO> countDistanceToFaultStation(List<RecPersonListDTO> result, String stationCode) {
+
         return null;
     }
 
     /**
      * 计算评估得分
      *
-     * @param result    待计算评估得分的人员列表
-     * @param userIds
-     * @param userNames
-     * @return 计算评估得分后的人员列表
+     * @param result         待计算评估得分的人员列表
+     * @param userIds        用户ID列表
+     * @param userNames      用户名列表
+     * @param knowledgeId    知识ID
+     * @param deviceTypeCode 设备类型编码
+     * @return 计算评估得分后的结果列表
      */
-    private List<RecPersonListDTO> calculateEvaluationScore(List<RecPersonListDTO> result, List<String> userIds, List<String> userNames) {
+    private List<RecPersonListDTO> calculateEvaluationScore(List<RecPersonListDTO> result, List<String> userIds, List<String> userNames, String knowledgeId, String deviceTypeCode) {
         // 筛选后的人员信息
         List<String> userNameList = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
         List<String> userIdList = result.stream().map(RecPersonListDTO::getUserId).collect(Collectors.toList());
 
+        // 故障处理次数（匹配的故障现象）
+        List<RadarNumberDTO> faultHandCountListByFaultPhenomenon = null;
+        if (StrUtil.isNotEmpty(knowledgeId)) {
+            faultHandCountListByFaultPhenomenon = faultMapper.getFaultHandCountListByFaultPhenomenon(userNameList, knowledgeId);
+        }
+        Map<String, Integer> faultPhenomenonCountMap = convertFaultHandCountListByFaultPhenomenonToMap(faultHandCountListByFaultPhenomenon);
+
+        // 故障处理次数（同设备类型）
+        List<RadarNumberDTO> faultHandCountListByDeviceType = null;
+        if (StrUtil.isNotEmpty(deviceTypeCode)) {
+            faultHandCountListByDeviceType = faultMapper.getFaultHandCountListByDeviceType(userNameList, deviceTypeCode);
+        }
+        Map<String, Integer> deviceTypeCountMap = convertFaultHandCountListByDeviceTypeToMap(faultHandCountListByDeviceType);
+
         // 故障处理总次数
-        CommonMaxMinNumDTO commonMaxMinNumDTO = faultMapper.getHandleNumberMaxAndMin(userNames);
-        List<RadarNumberModel> handleNumberList = faultMapper.getHandleNumber(userNameList);
-        Map<String, Integer> handleNumberMap = Optional.ofNullable(handleNumberList).orElse(CollUtil.newArrayList()).stream()
-                .filter(radarNumberModel -> radarNumberModel.getUsername() != null && radarNumberModel.getNumber() != null)
-                .collect(Collectors.toMap(RadarNumberModel::getUsername, RadarNumberModel::getNumber, (v1, v2) -> v1));
+        List<RadarNumberDTO> handleNumberList = faultMapper.getHandleNumberList(userNameList);
+        CommonMaxMinNumDTO handleNumberMaxMinDTO = faultMapper.getFaultHandleNumberMaxMin(userNames);
+        Map<String, Integer> handleNumberMap = convertHandleNumberListToMap(handleNumberList);
 
         // 解决效率
-        List<EfficiencyDTO> efficiency = faultMapper.getEfficiency(userNames);
+        List<EfficiencyDTO> efficiency = faultMapper.getEfficiencyList(userNames);
+        Double[] efficiencyScoreMaxMin = getEfficiencyScoreMaxMin(efficiency);
+        Map<String, EfficiencyDTO> efficiencyMap = convertEfficiencyListToMap(efficiency);
 
-        Map<String, EfficiencyDTO> efficiencyMap = Optional.ofNullable(efficiency).orElse(CollUtil.newArrayList()).stream()
+        // 工龄
+        CommonMaxMinNumDTO userExperienceMaxMin = faultMapper.getTenureMaxMin(new Date(), userIds);
+
+        // 资质
+        List<RadarAptitudeDTO> aptitudeList = faultMapper.getAptitude(userIdList);
+        CommonMaxMinNumDTO aptitudeMaxMinNum = faultMapper.getAptitudeMaxMin(userIds);
+        Map<String, Integer> aptitudeMap = convertAptitudeListToMap(aptitudeList);
+
+        // 绩效
+        List<RadarPerformanceDTO> performanceList = faultMapper.getPerformanceList(DateUtil.offsetMonth(new Date(), -12), userIds);
+        Double[] performanceScoreMaxMin = getPerformanceScoreMaxMin(performanceList);
+        Map<String, Double> performanceMap = convertPerformanceListToMap(performanceList);
+
+        // 新结果列表中的各个字段值，并计算评估得分
+        updateResultList(
+                result, handleNumberMap,
+                handleNumberMaxMinDTO,
+                faultPhenomenonCountMap,
+                deviceTypeCountMap,
+                efficiencyMap,
+                efficiencyScoreMaxMin,
+                userExperienceMaxMin,
+                aptitudeMap, aptitudeMaxMinNum,
+                performanceMap,
+                performanceScoreMaxMin
+        );
+
+        return result;
+    }
+
+    /**
+     * 更新结果列表中的各个字段值，并计算评估得分
+     *
+     * @param result                  结果列表
+     * @param handleNumberMap         同种故障现象的处理次数映射
+     * @param handleNumberMaxMinDTO   故障处理总次数的最大值和最小值
+     * @param faultPhenomenonCountMap 同种故障现象的出现次数映射
+     * @param deviceTypeCountMap      同种设备类型的处理次数映射
+     * @param efficiencyMap           效率映射（包含响应时间、解决时间和总响应解决时间）
+     * @param efficiencyScoreMaxMin   效率的最大值和最小值
+     * @param userExperienceMaxMin    工龄的最大值和最小值
+     * @param aptitudeMap             资质映射
+     * @param aptitudeMaxMinNum       资质的最大值和最小值
+     * @param performanceMap          绩效映射
+     * @param performanceScoreMaxMin  绩效的最大值和最小值
+     */
+    private void updateResultList(List<RecPersonListDTO> result,
+                                  Map<String, Integer> handleNumberMap,
+                                  CommonMaxMinNumDTO handleNumberMaxMinDTO,
+                                  Map<String, Integer> faultPhenomenonCountMap,
+                                  Map<String, Integer> deviceTypeCountMap,
+                                  Map<String, EfficiencyDTO> efficiencyMap,
+                                  Double[] efficiencyScoreMaxMin,
+                                  CommonMaxMinNumDTO userExperienceMaxMin,
+                                  Map<String, Integer> aptitudeMap,
+                                  CommonMaxMinNumDTO aptitudeMaxMinNum,
+                                  Map<String, Double> performanceMap,
+                                  Double[] performanceScoreMaxMin) {
+        for (RecPersonListDTO recPersonListDTO : result) {
+            // 设置故障处理总次数
+            recPersonListDTO.setTotalFaultHandlingCount(handleNumberMap.getOrDefault(recPersonListDTO.getUserName(), 0));
+
+            // 设置故障数量得分
+            recPersonListDTO.setFaultNumScore(CommonUtils.calculateScore(handleNumberMap.getOrDefault(recPersonListDTO.getUserName(), 0),
+                    handleNumberMaxMinDTO.getMaxNum(), handleNumberMaxMinDTO.getMinNum()));
+
+            // 设置同种故障现象的处理次数
+            recPersonListDTO.setFaultHandCount(faultPhenomenonCountMap.getOrDefault(recPersonListDTO.getUserName(), 0));
+
+            // 设置同种设备类型的处理次数
+            recPersonListDTO.setFaultHandDeviceTypeCount(deviceTypeCountMap.getOrDefault(recPersonListDTO.getUserName(), 0));
+
+            // 设置平均解决时间
+            Double resolveTime = efficiencyMap.getOrDefault(recPersonListDTO.getUserName(), new EfficiencyDTO()).getResolveTime();
+            recPersonListDTO.setAverageResolutionTime(resolveTime == null ? 0 : resolveTime / 60);
+
+            // 设置平均响应时间
+            Double responseTime = efficiencyMap.getOrDefault(recPersonListDTO.getUserName(), new EfficiencyDTO()).getResponseTime();
+            recPersonListDTO.setAverageResponseTime(responseTime == null ? 0 : responseTime / 60);
+
+            // 设置解决效率得分
+            Double sumResponseTimeResolveTime = efficiencyMap.getOrDefault(recPersonListDTO.getUserName(), new EfficiencyDTO()).getSumResponseTimeResolveTime();
+            recPersonListDTO.setSolutionEfficiencyScore(CommonUtils.calculateScore(sumResponseTimeResolveTime == null ? 0 : sumResponseTimeResolveTime,
+                    efficiencyScoreMaxMin[0], efficiencyScoreMaxMin[1]));
+
+            // 设置工龄得分
+            recPersonListDTO.setTenureScore(CommonUtils.calculateScore(recPersonListDTO.getTenureScore(),
+                    userExperienceMaxMin.getMaxNum(), userExperienceMaxMin.getMinNum()));
+
+            // 设置资质得分
+            recPersonListDTO.setQualificationScore(CommonUtils.calculateScore(aptitudeMap.getOrDefault(recPersonListDTO.getUserId(), 0),
+                    aptitudeMaxMinNum.getMaxNum(), aptitudeMaxMinNum.getMinNum()));
+
+            // 设置绩效得分
+            Double performance = performanceMap.getOrDefault(recPersonListDTO.getUserId(), 0d);
+            recPersonListDTO.setPerformance(performance);
+            recPersonListDTO.setPerformanceScore(CommonUtils.calculateScore(performance,
+                    performanceScoreMaxMin[0], performanceScoreMaxMin[1]));
+
+            // 根据故障处理总次数、解决效率、工龄、资质分数和绩效的加权平均值计算得出评估得分
+            recPersonListDTO.setEvaluationScore(calculateOverallEvaluationScore(recPersonListDTO));
+        }
+    }
+
+    /**
+     * 计算用户的综合评估得分
+     * 根据故障处理总次数、解决效率、工龄、资质分数和绩效的加权平均值计算出用户的综合评估得分。
+     * 每个属性的得分按照设定的权重进行加权计算，并将加权平均值作为最终的综合评估得分。
+     *
+     * @param recPersonListDTO 用户对象，包含故障处理总次数、解决效率、工龄、资质分数和绩效等属性
+     * @return 计算得到的综合评估得分
+     */
+    private double calculateOverallEvaluationScore(RecPersonListDTO recPersonListDTO) {
+        // 设置每个属性的权重
+        double faultNumScoreWeight = 0.3;
+        double solutionEfficiencyScoreWeight = 0.3;
+        double tenureScoreWeight = 0.2;
+        double qualificationScoreWeight = 0.1;
+        double performanceScoreWeight = 0.1;
+
+        // 计算加权平均值
+        double evaluationScore = (recPersonListDTO.getFaultNumScore() * faultNumScoreWeight
+                + recPersonListDTO.getSolutionEfficiencyScore() * solutionEfficiencyScoreWeight
+                + recPersonListDTO.getTenureScore() * tenureScoreWeight
+                + recPersonListDTO.getQualificationScore() * qualificationScoreWeight
+                + recPersonListDTO.getPerformanceScore() * performanceScoreWeight) / 5;
+
+        // 返回综合评估得分
+        return evaluationScore;
+    }
+
+    /**
+     * 将设备类型的处理次数列表转换为映射关系的 Map
+     *
+     * @param faultHandCountListByDeviceType 设备类型的处理次数列表
+     * @return 设备类型与处理次数的映射关系的 Map
+     */
+    private Map<String, Integer> convertFaultHandCountListByDeviceTypeToMap(List<RadarNumberDTO> faultHandCountListByDeviceType) {
+        // 使用 Optional.ofNullable() 方法确保 handleNumberList 不为 null
+        // 如果 handleNumberList 为 null，则创建一个空列表
+        List<RadarNumberDTO> list = Optional.ofNullable(faultHandCountListByDeviceType).orElse(new ArrayList<>());
+
+        // 使用流处理对列表进行过滤和转换
+        Map<String, Integer> handleNumberMap = list.stream()
+                .filter(radarNumberDto -> radarNumberDto.getUsername() != null && radarNumberDto.getNumber() != null)
+                .collect(Collectors.toMap(RadarNumberDTO::getUsername, RadarNumberDTO::getNumber, (v1, v2) -> v1));
+
+        return handleNumberMap;
+    }
+
+    /**
+     * 将同种故障现象的处理次数列表转换为映射关系的 Map
+     *
+     * @param faultHandCountListByFaultPhenomenon 同种故障现象的处理次数列表
+     * @return 故障现象与处理次数的映射关系的 Map
+     */
+    private Map<String, Integer> convertFaultHandCountListByFaultPhenomenonToMap(List<RadarNumberDTO> faultHandCountListByFaultPhenomenon) {
+        // 使用 Optional.ofNullable() 方法确保 handleNumberList 不为 null
+        // 如果 handleNumberList 为 null，则创建一个空列表
+        List<RadarNumberDTO> list = Optional.ofNullable(faultHandCountListByFaultPhenomenon).orElse(CollUtil.newArrayList());
+
+        // 使用流处理对列表进行过滤和转换
+        Map<String, Integer> handleNumberMap = list.stream()
+                .filter(radarNumberDto -> radarNumberDto.getUsername() != null && radarNumberDto.getNumber() != null)
+                .collect(Collectors.toMap(RadarNumberDTO::getUsername, RadarNumberDTO::getNumber, (v1, v2) -> v1));
+
+        return handleNumberMap;
+
+    }
+
+    /**
+     * 获取 RadarPerformanceDTO 列表中的性能得分的最大值和最小值。
+     *
+     * @param performanceList RadarPerformanceDTO 列表
+     * @return 包含最大值和最小值的 Double 数组，索引 0 为最大值，索引 1 为最小值
+     */
+    public Double[] getPerformanceScoreMaxMin(List<RadarPerformanceDTO> performanceList) {
+        // 使用流处理对 RadarPerformanceDTO 列表进行转换和收集
+        List<Double> performanceScore = Optional.ofNullable(performanceList)
+                .orElse(CollUtil.newArrayList())
+                .stream()
+                .map(RadarPerformanceDTO::getScore)
+                .collect(Collectors.toList());
+
+        // 获取最大值和最小值，默认值为 null
+        Double performanceScoreMax = Optional.ofNullable(CollUtil.max(performanceScore)).orElse(0d);
+        Double performanceScoreMin = Optional.ofNullable(CollUtil.min(performanceScore)).orElse(0d);
+
+        // 创建包含最大值和最小值的 Double 数组并返回
+        return new Double[]{performanceScoreMax, performanceScoreMin};
+    }
+
+
+    /**
+     * 获取 EfficiencyDTO 列表中的效率得分的最大值和最小值。
+     *
+     * @param efficiencyList EfficiencyDTO 列表
+     * @return 包含最大值和最小值的 Double 数组，索引 0 为最大值，索引 1 为最小值
+     */
+    public Double[] getEfficiencyScoreMaxMin(List<EfficiencyDTO> efficiencyList) {
+        // 使用流处理对 EfficiencyDTO 列表进行转换和收集
+        List<Double> efficiencyScore = Optional.ofNullable(efficiencyList)
+                .orElse(CollUtil.newArrayList())
+                .stream()
+                .map(EfficiencyDTO::getSumResponseTimeResolveTime)
+                .collect(Collectors.toList());
+
+        // 获取最大值和最小值，默认值为 null
+        Double efficiencyScoreMax = Optional.ofNullable(CollUtil.max(efficiencyScore)).orElse(0d);
+        Double efficiencyScoreMin = Optional.ofNullable(CollUtil.min(efficiencyScore)).orElse(0d);
+
+        // 创建包含最大值和最小值的 Double 数组并返回
+        return new Double[]{efficiencyScoreMax, efficiencyScoreMin};
+    }
+
+    /**
+     * 将 RadarPerformanceDTO 列表转换为 Map，以用户ID为键，得分为值。
+     *
+     * @param performanceList RadarPerformanceDTO 列表
+     * @return 转换后的 Map
+     */
+    public Map<String, Double> convertPerformanceListToMap(List<RadarPerformanceDTO> performanceList) {
+        // 使用 Optional.ofNullable() 方法确保 performanceList 不为 null
+        // 如果 performanceList 为 null，则创建一个空列表
+        List<RadarPerformanceDTO> list = Optional.ofNullable(performanceList).orElse(CollUtil.newArrayList());
+
+        // 使用流处理对列表进行过滤和转换
+        Map<String, Double> performanceMap = list.stream()
+                .filter(radarPerformanceModel -> radarPerformanceModel.getUserId() != null && radarPerformanceModel.getScore() != null)
+                .collect(Collectors.toMap(RadarPerformanceDTO::getUserId, RadarPerformanceDTO::getScore, (v1, v2) -> v1));
+
+        return performanceMap;
+    }
+
+    /**
+     * 将 EfficiencyDTO 列表转换为 Map，以用户名为键，EfficiencyDTO 对象为值。
+     *
+     * @param efficiencyList EfficiencyDTO 列表
+     * @return 转换后的 Map
+     */
+    public Map<String, EfficiencyDTO> convertEfficiencyListToMap(List<EfficiencyDTO> efficiencyList) {
+        // 使用 Optional.ofNullable() 方法确保 efficiencyList 不为 null
+        // 如果 efficiencyList 为 null，则创建一个空列表
+        List<EfficiencyDTO> list = Optional.ofNullable(efficiencyList).orElse(CollUtil.newArrayList());
+
+        // 使用流处理对列表进行过滤和转换
+        Map<String, EfficiencyDTO> efficiencyMap = list.stream()
                 .filter(efficiencyDTO -> efficiencyDTO.getUsername() != null && efficiencyDTO.getResolveTime() != null)
                 .collect(Collectors.toMap(EfficiencyDTO::getUsername, Function.identity(), (v1, v2) -> v1));
 
-        // 工龄
-        CommonMaxMinNumDTO userExperienceMaxMinNum = faultMapper.getUserExperienceRange(new Date(), userIds);
+        return efficiencyMap;
+    }
 
-        // 资质
-        CommonMaxMinNumDTO aptitudeMaxMinNum = faultMapper.getAptitudeMaxAndMin(userIds);
-        List<RadarAptitudeModel> aptitudeList = faultMapper.getAptitude(userIdList);
-        Map<String, Integer> aptitudeMap = Optional.ofNullable(aptitudeList).orElse(CollUtil.newArrayList()).stream()
+    /**
+     * 将 RadarAptitudeDTO 列表转换为 Map，以用户ID为键，数值为值。
+     *
+     * @param aptitudeList RadarAptitudeDTO 列表
+     * @return 转换后的 Map
+     */
+    public Map<String, Integer> convertAptitudeListToMap(List<RadarAptitudeDTO> aptitudeList) {
+        // 使用 Optional.ofNullable() 方法确保 aptitudeList 不为 null
+        // 如果 aptitudeList 为 null，则创建一个空列表
+        List<RadarAptitudeDTO> list = Optional.ofNullable(aptitudeList).orElse(CollUtil.newArrayList());
+
+        // 使用流处理对列表进行过滤和转换
+        Map<String, Integer> aptitudeMap = list.stream()
                 .filter(radarAptitudeModel -> radarAptitudeModel.getUserId() != null && radarAptitudeModel.getNumber() != null)
-                .collect(Collectors.toMap(RadarAptitudeModel::getUserId, RadarAptitudeModel::getNumber, (v1, v2) -> v1));
+                .collect(Collectors.toMap(RadarAptitudeDTO::getUserId, RadarAptitudeDTO::getNumber, (v1, v2) -> v1));
 
-        // 绩效
-        List<RadarPerformanceModel> performanceList = faultMapper.getPerformance(DateUtil.offsetMonth(new Date(), -12), userIds);
-//        Optional.ofNullable(performanceList).orElse(CollUtil.newArrayList()).stream().map(RadarPerformanceModel::getScore)
-        Map<String, String> performanceMap = Optional.ofNullable(performanceList).orElse(CollUtil.newArrayList()).stream()
-                .filter(radarPerformanceModel -> radarPerformanceModel.getUserId() != null && radarPerformanceModel.getScore() != null)
-                .collect(Collectors.toMap(RadarPerformanceModel::getUserId, RadarPerformanceModel::getScore, (v1, v2) -> v1));
-
-        for (RecPersonListDTO recPersonListDTO : result) {
-            recPersonListDTO.setFaultHandCount(handleNumberMap.get(recPersonListDTO.getUserName()));
-            CommonUtils.calculateScore(handleNumberMap.get(recPersonListDTO.getUserName()),commonMaxMinNumDTO.getMaxNum(),commonMaxMinNumDTO.getMinNum());
+        return aptitudeMap;
+    }
 
 
-        }
-        return result;
+    /**
+     * 将 RadarNumberDTO 列表转换为 Map，以用户名为键，数值为值。
+     *
+     * @param handleNumberList RadarNumberDTO 列表
+     * @return 转换后的 Map
+     */
+    public Map<String, Integer> convertHandleNumberListToMap(List<RadarNumberDTO> handleNumberList) {
+        // 使用 Optional.ofNullable() 方法确保 handleNumberList 不为 null
+        // 如果 handleNumberList 为 null，则创建一个空列表
+        List<RadarNumberDTO> list = Optional.ofNullable(handleNumberList).orElse(CollUtil.newArrayList());
+
+        // 使用流处理对列表进行过滤和转换
+        Map<String, Integer> handleNumberMap = list.stream()
+                .filter(radarNumberDto -> radarNumberDto.getUsername() != null && radarNumberDto.getNumber() != null)
+                .collect(Collectors.toMap(RadarNumberDTO::getUsername, RadarNumberDTO::getNumber, (v1, v2) -> v1));
+
+        return handleNumberMap;
     }
 
     /**
@@ -2621,16 +2986,4 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
     }
 
-    /**
-     * 获取当前登录人信息
-     *
-     * @return
-     */
-    public LoginUser getLoginUser() {
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (ObjectUtil.isEmpty(loginUser)) {
-            throw new AiurtBootException("请重新登录");
-        }
-        return loginUser;
-    }
 }

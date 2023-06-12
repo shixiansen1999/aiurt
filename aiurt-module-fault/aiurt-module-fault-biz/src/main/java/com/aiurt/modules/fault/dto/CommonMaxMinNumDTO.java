@@ -11,5 +11,4 @@ import lombok.Data;
 public class CommonMaxMinNumDTO {
     private Integer minNum;
     private Integer maxNum;
-
 }
