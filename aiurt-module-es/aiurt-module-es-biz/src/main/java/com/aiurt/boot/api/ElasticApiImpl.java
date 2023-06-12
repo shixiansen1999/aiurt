@@ -147,11 +147,16 @@ public class ElasticApiImpl implements ElasticAPI {
             }
             // 根据浏览次数降序排序
             if (ObjectUtil.isNotEmpty(sortFlag)) {
-                Sort.Order sortOrder = new Sort.Order(SortOrder.DESC, "scanNum");
+                Sort.Order sortOrder = null;
+                if (1 == sortFlag) {
+                    sortOrder = new Sort.Order(SortOrder.DESC, "scanNum");
+                }
                 if (2 == sortFlag) {
                     sortOrder = new Sort.Order(SortOrder.DESC, "updateTime");
                 }
-                sort = new Sort(sortOrder);
+                if (ObjectUtil.isNotEmpty(sortOrder)) {
+                    sort = new Sort(sortOrder);
+                }
             }
         }
         IPage<KnowledgeBase> pageList = elasticService.search(new Page(page.getCurrent(), page.getSize()), queryBuilder, indexs, KnowledgeBase.class, highLight, sort);
