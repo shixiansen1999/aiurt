@@ -17,7 +17,7 @@ public class MacDto {
     private List<StationAndMacModel> stationMac;
 
     @ApiModelProperty(value = "当前mac地址")
-    private List<String> localMac;
+    private List<StationAndMacModel> localMac;
 
     @ApiModelProperty(value = "异常工单")
     private List<String> errorMac;
