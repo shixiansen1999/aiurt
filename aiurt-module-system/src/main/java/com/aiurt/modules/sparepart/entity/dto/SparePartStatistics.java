@@ -38,7 +38,10 @@ public class SparePartStatistics {
     @ApiModelProperty(value = "子系统名称")
     @TableField(exist = false)
     private String systemName;
-
+    /**名称*/
+    @Excel(name = "简称", width = 15)
+    @ApiModelProperty(value = "简称")
+    private String shortenedForm;
 
     /**分类名称*/
     @Excel(name = "备件类型", width = 15)

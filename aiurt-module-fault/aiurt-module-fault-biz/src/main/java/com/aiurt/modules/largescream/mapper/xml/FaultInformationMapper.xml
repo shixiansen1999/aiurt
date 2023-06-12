@@ -429,6 +429,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
             rwt.line_code as lineCode,
             rwt.system_code as systemCode,
             cs.system_name as systemName,
+            cs.shortened_form as shortenedForm,
             rwt.should_work_time as shouldWorkTime
          from reliability_work_time rwt
          left join cs_subSystem cs  on rwt.system_code = cs.system_code

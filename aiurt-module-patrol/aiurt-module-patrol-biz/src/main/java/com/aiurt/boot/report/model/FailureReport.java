@@ -32,6 +32,11 @@ public class FailureReport {
     @Excel(name = "子系统名称", width = 15)
     private String systemName;
 
+    /**名称*/
+    @Excel(name = "简称", width = 15)
+    @ApiModelProperty(value = "简称")
+    private String shortenedForm;
+
     private String code;
     /**
      * 故障总数

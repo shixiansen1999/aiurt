@@ -836,6 +836,7 @@
         SELECT
         a.id,
         a.system_name,
+        a.shortened_form,
         a.system_code as code,
         count(c.id) AS failureNum,
         count(c.id AND c.fault_mode_code = 1 OR NOT NULL) AS repairNum,
@@ -1119,7 +1120,7 @@
         where 1 = 1
     </select>
     <select id="selectMonth" resultType="com.aiurt.boot.report.model.dto.MonthDTO">
-        select a.system_name,
+        select a.system_name,a.shortened_form,
         COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '01' or not NULL) as january,
         COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '02' or not NULL) as february,
         COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '03' or not NULL) as march,

@@ -1,10 +1,8 @@
 package com.aiurt.modules.fault.dto;
 
-import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
@@ -12,12 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.hibernate.validator.constraints.Length;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
@@ -44,6 +38,9 @@ public class FaultLargeInfoDTO extends DictEntity {
 
     @ApiModelProperty(value = "专业子系统编码")
     private String systemName;
+
+    @ApiModelProperty(value = "简称")
+    private String shortenedForm;
 
     /**报修方式*/
     @ApiModelProperty(value = "报修方式",example = "")
