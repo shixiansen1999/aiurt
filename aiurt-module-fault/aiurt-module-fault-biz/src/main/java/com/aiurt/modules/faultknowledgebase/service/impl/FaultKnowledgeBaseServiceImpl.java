@@ -1506,6 +1506,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     public List<String> phenomenonMatching(HttpServletRequest request, HttpServletResponse response, KnowledgeBaseMatchDTO knowledgeBaseMatchDTO) {
         List<String> list = null;
         try {
+            knowledgeBaseMatchDTO.setStatus(FaultConstant.APPROVED);
             list = elasticApi.phenomenonMatching(knowledgeBaseMatchDTO);
         } catch (Exception e) {
             log.error("智能助手故障现象匹配搜索异常：{}", e.getMessage());

@@ -34,4 +34,8 @@ public class KnowledgeBaseMatchDTO {
      */
     @ApiModelProperty("子系统")
     private String subsystem;
+    /**
+     * 状态(0:待审批,1:已审批,2:已驳回)
+     */
+    private Integer status;
 }
