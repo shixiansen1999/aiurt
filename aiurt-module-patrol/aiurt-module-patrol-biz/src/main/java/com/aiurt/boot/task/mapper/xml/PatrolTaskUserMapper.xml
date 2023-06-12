@@ -36,7 +36,7 @@
     <select id="getScreenUserDuration" resultType="com.aiurt.boot.screen.model.ScreenDurationTask">
         SELECT
         ptu.user_id,
-        SUM(IFNULL(pt.duration,'0') * 60) duration
+        SUM(IFNULL(pt.duration,'0')) duration
         FROM
         patrol_task pt
         JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
@@ -55,7 +55,7 @@
         (
         SELECT
         pa.user_id,
-        SUM(IFNULL(pt.duration,'0') * 60) duration
+        SUM(IFNULL(pt.duration,'0')) duration
         FROM patrol_task pt
         JOIN patrol_task_device ptd ON pt.id = ptd.task_id
         AND ptd.del_flag = 0
@@ -156,7 +156,7 @@ JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
     <select id="getScreenDuration" resultType="com.aiurt.boot.screen.model.ScreenDurationTask">
         SELECT
         pt.id as taskId,
-        SUM(IFNULL(pt.duration,'0') * 60) duration
+        SUM(IFNULL(pt.duration,'0')) duration
         FROM
         patrol_task pt
         JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
@@ -180,7 +180,7 @@ JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
     <select id="getScreentPeerDuration" resultType="com.aiurt.boot.screen.model.ScreenDurationTask">
         SELECT
         pt.id as taskId,
-        SUM(IFNULL(pt.duration,'0') * 60) duration
+        SUM(IFNULL(pt.duration,'0')) duration
         FROM patrol_task pt
         JOIN patrol_task_device ptd ON pt.id = ptd.task_id
         AND ptd.del_flag = 0

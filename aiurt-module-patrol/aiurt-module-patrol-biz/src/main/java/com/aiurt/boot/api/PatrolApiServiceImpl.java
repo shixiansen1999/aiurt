@@ -217,8 +217,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
     }
 
     @Override
-    public Map<String, BigDecimal> getPatrolUserHours(int type, String teamId) {
-        Map<String, BigDecimal> userDurationMap = new HashMap<>(16);
+    public Map<String, Integer> getPatrolUserHours(int type, String teamId) {
+        Map<String, Integer> userDurationMap = new HashMap<>(16);
         // 班组的人员
         List<LoginUser> userList = sysBaseApi.getUserPersonnel(teamId);
         String dateTime = ScreenDateUtil.getDateTime(type);
@@ -244,15 +244,17 @@ public class PatrolApiServiceImpl implements PatrolApi {
                 timeTwo = 0L;
             }
             // 展示需要以小时数展示，并保留两位小数
-            double time = 1.0 * (timeOne + timeTwo) / 3600;
-            BigDecimal decimal = new BigDecimal(time).setScale(2, BigDecimal.ROUND_HALF_UP);
-            userDurationMap.put(userId, decimal);
+            // 2023-06-12通信6期 改为单位秒
+            // double time = 1.0 * (timeOne + timeTwo) / 3600;
+            // BigDecimal decimal = new BigDecimal(time).setScale(2, BigDecimal.ROUND_HALF_UP);
+            int time = Math.toIntExact(timeOne + timeTwo);
+            userDurationMap.put(userId, time);
         });
         return userDurationMap;
     }
 
     @Override
-    public BigDecimal getPatrolHours(int type, String teamId) {
+    public Integer getPatrolHours(int type, String teamId) {
         // 班组的人员
         List<LoginUser> userList = sysBaseApi.getUserPersonnel(teamId);
         if (CollUtil.isNotEmpty(userList)) {
@@ -272,15 +274,18 @@ public class PatrolApiServiceImpl implements PatrolApi {
             List<ScreenDurationTask> dtos = new ArrayList<>();
             dtos.addAll(screentPeerDuration);
             dtos.addAll(screenDuration);
-            BigDecimal sum = new BigDecimal("0.00");
+
+            // 2023-06-12 通信6期 单位改成秒
+            int sum = 0;
             for (ScreenDurationTask dto : dtos) {
-                sum = sum.add(new BigDecimal(dto.getDuration()));
+                sum = sum + Math.toIntExact(dto.getDuration());
             }
             //秒转时
-            BigDecimal decimal = sum.divide(new BigDecimal("3600"), 1, BigDecimal.ROUND_HALF_UP);
-            return decimal;
+            // BigDecimal decimal = sum.divide(new BigDecimal("3600"), 2, BigDecimal.ROUND_HALF_UP);
+            // 2023-06-12 通信6期 后端都是传秒给前端，让前端转化
+            return sum;
         }
-        return new BigDecimal("0.00");
+        return 0;
     }
 
     @Override
