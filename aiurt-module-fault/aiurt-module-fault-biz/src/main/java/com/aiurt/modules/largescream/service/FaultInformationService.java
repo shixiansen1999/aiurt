@@ -863,6 +863,7 @@ public class FaultInformationService {
                 FaultSystemReliabilityDTO faultSystemReliabilityDTO = new FaultSystemReliabilityDTO();
                 faultSystemReliabilityDTO.setSystemName(faultSystemDeviceSumDTO.getSystemName());
                 faultSystemReliabilityDTO.setSubSystemCode(faultSystemDeviceSumDTO.getSystemCode());
+                faultSystemReliabilityDTO.setShortenedForm(faultSystemDeviceSumDTO.getShortenedForm());
                 //计划时长
                 if (StrUtil.isNotBlank(faultSystemDeviceSumDTO.getShouldWorkTime())){
                     planTime = Double.valueOf(faultSystemDeviceSumDTO.getShouldWorkTime());

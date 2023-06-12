@@ -153,7 +153,7 @@
     </select>
 
     <select id="getSubsystemByUserId" resultType="com.aiurt.modules.sparepart.entity.dto.SparePartStatistics">
-        select cs.system_code as systemCode,cs.system_name as systemName,cs.id as id
+        select cs.system_code as systemCode,cs.system_name as systemName,cs.id as id,cs.shortened_form
         from cs_user_subsystem cus
         left join cs_subsystem cs on cs.id = cus.system_id
         where cs.del_flag = 0
