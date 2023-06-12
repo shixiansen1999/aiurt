@@ -499,6 +499,7 @@ public class FaultInformationService {
             dto.setId(String.valueOf(i));
             dto.setSubSystemCode(allSystemCode.get(i).getSubSystemCode());
             dto.setSubSystemName(allSystemCode.get(i).getSubSystemName());
+            dto.setShortenedForm(allSystemCode.get(i).getShortenedForm());
             dto.setFaultSum(yearFault);
             dtoList.add(dto);
         }
