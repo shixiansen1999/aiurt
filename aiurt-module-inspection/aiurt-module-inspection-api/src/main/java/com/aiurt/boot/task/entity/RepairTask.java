@@ -211,6 +211,11 @@ public class RepairTask extends BaseEntity {
 
     @ApiModelProperty(value = "检修任务附件")
     private String url;
+
+    /**检修任务的检修时长，提交任务时赋值*/
+    @ApiModelProperty(value = "检修任务的检修时长")
+    private Integer duration;
+
     /**组织机构名称*/
     @ApiModelProperty(value = "组织机构名称")
     @TableField(exist = false)
