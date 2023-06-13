@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import cn.hutool.core.collection.CollUtil;
@@ -393,7 +393,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     childDTOs.forEach(c->{
                         if(Objects.nonNull(c) && ObjectUtil.isNotEmpty(c.getCheckResult()) && c.getCheckResult().equals(0)){
                             flag.set(true);
-                            stringBuffer.append(c.getQualityStandard()).append(":异常");
+                            stringBuffer.append(c.getQualityStandard()).append(":异常").append("\n (").append(c.getRemark()).append(")");
                             stringBuffer.append(",");
                         }
                     });
@@ -431,23 +431,25 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                             &&Objects.nonNull(c.getCheck())&& c.getCheck() == 1)
                     .collect(Collectors.toList());
             List<String> networkManage = sysBaseApi.getDictItems("network_manage").stream().map(w-> w.getText()).collect(Collectors.toList());
-            PrintDTO printDTO = new PrintDTO();
+            StringBuilder remark = new StringBuilder(); AtomicInteger i = new AtomicInteger(1);
             networkManage.forEach(str-> {
                 PatrolCheckResultDTO patrolCheckResultDTO = checkDTOs.stream().filter(p -> p.getOldCode().equals(str)).findFirst().orElse(null);
                 if (ObjectUtil.isEmpty(patrolCheckResultDTO)){
                     headerMap.put(str,"☐正常 ☐异常");
                   //  printDTO.setResult("☐正常 ☐异常");
                 }else if(ObjectUtil.isNotEmpty(patrolCheckResultDTO.getCheckResult())){
-                    String remark ="";
                     if(patrolCheckResultDTO.getCheckResult().equals(0)){
-                        remark = patrolCheckResultDTO.getRemark();
-                        headerMap.put(str," ☑异常 "+remark);
+                        remark.append(i).append(".").append(patrolCheckResultDTO.getContent()).append("-")
+                                .append(patrolCheckResultDTO.getQualityStandard()).append(":").append(patrolCheckResultDTO.getRemark()).append("\n");
+                        headerMap.put(str,"☐正常 ☑异常");
+                        i.getAndIncrement();
                     }else {
-                        headerMap.put(str," ☑正常 ");
+                        headerMap.put(str,"☑正常 ☐异常");
                     }
                 }
                 //getNetworkManage.add(printDTO);
             });
+            headerMap.put("remark",remark.toString());
         }
         return getNetworkManage;
     }
@@ -626,7 +628,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                 map.put("isFalse","☐无");
             }else {
                 map.put("isFalse","☑无");
-                map.put("isTure","☐有");
+                map.put("isTrue","☐有");
             }
             safty.add(7,null);
             safty.forEach(s ->{
@@ -691,7 +693,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     childDTOs.forEach(c->{
                         if(ObjectUtil.isNotEmpty(c)&& ObjectUtil.isNotEmpty(c.getCheckResult()) && c.getCheckResult().equals(0)){
                             flag.set(true);
-                            stringBuffer.append(c.getQualityStandard()).append(":异常");
+                            stringBuffer.append(c.getQualityStandard()).append(":异常").append("\n (").append(patrolCheckResultDTO.getRemark()).append(")");
                             stringBuffer.append(",");
                         }
                     });
@@ -709,7 +711,12 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                         map.put("result"+str,"☑是 ☐否");
                         map.put("resultTrue"+str,"☑正常");
                         map.put("resultFalse"+str,"☐异常");
-                        map.put("remark"+str,null);
+                        if (ObjectUtil.isNotEmpty(patrolCheckResultDTO.getRemark())){
+                            map.put("remark"+str,patrolCheckResultDTO.getContent()+"("+patrolCheckResultDTO.getRemark()+")");
+                        }else {
+                            map.put("remark"+str,null);
+                        }
+
 //                        printDTO.setResult("☑是 ☐否");
 //                        printDTO.setResultTrue("☑正常");
 //                        printDTO.setResultFalse("☐异常");
@@ -750,7 +757,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     text.append("\n \n 异常情况:");
                 }
                 if(Objects.nonNull(checkDTOs.get(i).getCheckResult())&&checkDTOs.get(i).getCheckResult()==0){
-                    text.append("\n").append(num+1).append(".").append(checkDTOs.get(i).getContent()).append(":异常");
+                    text.append("\n").append(num+1).append(".").append(checkDTOs.get(i).getContent()).append(":异常").append("\n (").append(checkDTOs.get(i).getRemark()).append(")");
                     num++;
                 }
                 if (i+1 == checkDTOs.size()){
