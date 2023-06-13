@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.aspect.annotation.PermissionData;
@@ -11,6 +12,7 @@ import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.base.PageOrderGenerator;
 import com.aiurt.modules.basic.entity.CsWork;
+import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultDevice;
@@ -38,8 +40,10 @@ import org.apache.ibatis.annotations.Param;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -89,6 +93,9 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     @Autowired
     private IFaultKnowledgeBaseTypeService faultKnowledgeBaseTypeService;
+
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
     /**
      * 分页列表查询
      *
@@ -210,7 +217,25 @@ public class FaultController extends BaseController<Fault, IFaultService> {
                 .stream().collect(Collectors.toMap(FaultAnalysisReport::getFaultCode, Function.identity()));
 
         Map<String, Integer> finalWeightMap = weightMap;
+        // 根据配置决定控制中心成员能否领取正线站点故障，开启时表示不能领取
+        SysParamModel faultCenterReceiveParam = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_RECEIVE);
+        boolean faultCenterReceive = FaultConstant.ENABLE.equals(faultCenterReceiveParam.getValue());
+        // 根据配置获取控制中心班组code,并判断当前登陆人所在班组是否是控制中心班组
+        SysParamModel faultCenterAddOrg = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_ADD_ORG);
+        boolean contains1 = StrUtil.splitTrim(faultCenterAddOrg.getValue(),',').contains(user.getOrgCode());
         records.parallelStream().forEach(fault1 -> {
+            // 通过站点获取工区部门
+            List<String> departs = sysBaseAPI.getWorkAreaByCode(fault1.getStationCode())
+                    .stream()
+                    .flatMap(csWorkAreaModel -> csWorkAreaModel.getOrgCodeList().stream())
+                    .collect(Collectors.toList());
+            boolean contains2 = !(ObjectUtil.isNotEmpty(departs) && departs.contains(user.getOrgCode()));
+            // 设置是否能领取
+            if (faultCenterReceive && contains1 && contains2) {
+                fault1.setCanReceive(false);
+            } else {
+                fault1.setCanReceive(true);
+            }
 
             if(StrUtil.equalsIgnoreCase(user.getUsername(), fault1.getAppointUserName())){
                 fault1.setIsFault(true);

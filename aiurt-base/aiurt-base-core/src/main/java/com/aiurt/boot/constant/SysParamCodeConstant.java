@@ -294,4 +294,8 @@ public interface SysParamCodeConstant {
      * 根据配置获取控制中心站点
      */
     String FAULT_CENTER_ADD_STATION = "fault_center_add_station";
+    /**
+     * 根据配置决定控制中心成员能否领取正线站点故障，开启时表示不能
+     */
+    String FAULT_CENTER_RECEIVE = "fault_center_receive";
 }
