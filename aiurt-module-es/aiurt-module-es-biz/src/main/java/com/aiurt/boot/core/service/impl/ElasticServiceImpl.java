@@ -47,8 +47,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Service
@@ -159,20 +161,27 @@ public class ElasticServiceImpl<T, M> implements ElasticService<T, M> {
         // 高亮
         //https://www.elastic.co/guide/en/elasticsearch/reference/7.12/highlighting.html
         //https://www.elastic.co/guide/en/elasticsearch/client/java-rest/7.12/java-rest-high-search.html#java-rest-high-search-request-highlighting
-        String[] preTags = new String[0];
-        String[] postTags = new String[0];
+        List<String> tags = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(highLight) && ObjectUtil.isNotEmpty(highLight.getHighlightBuilder())) {
             HighlightBuilder highlightBuilder = highLight.getHighlightBuilder();
             searchSourceBuilder.highlighter(highlightBuilder);
-            preTags = highlightBuilder.preTags();
-            postTags = highlightBuilder.postTags();
+            String[] preTags = highlightBuilder.preTags();
+            String[] postTags = highlightBuilder.postTags();
+            if (ObjectUtil.isNotEmpty(preTags)) {
+                tags.addAll(Arrays.asList(preTags));
+            }
+            if (ObjectUtil.isNotEmpty(postTags)) {
+                tags.addAll(Arrays.asList(postTags));
+            }
         } else if (ObjectUtil.isNotEmpty(highLight) && CollUtil.isNotEmpty(highLight.getHighLightList())) {
             HighlightBuilder highlightBuilder = new HighlightBuilder();
-            if (StrUtil.isNotEmpty(highLight.getPreTag()) && StrUtil.isNotEmpty(highLight.getPostTag())) {
-                highlightBuilder.preTags(highLight.getPreTag());
-                highlightBuilder.postTags(highLight.getPostTag());
-                preTags = new String[]{highLight.getPreTag()};
-                postTags = new String[]{highLight.getPreTag()};
+            String preTag = highLight.getPreTag();
+            String postTag = highLight.getPostTag();
+            if (StrUtil.isNotEmpty(preTag) && StrUtil.isNotEmpty(postTag)) {
+                highlightBuilder.preTags(preTag);
+                highlightBuilder.postTags(postTag);
+                tags.add(preTag);
+                tags.add(postTag);
             }
             for (String highLightField : highLight.getHighLightList()) {
                 // You can set fragment_size to 0 to never split any sentence.
@@ -181,10 +190,7 @@ public class ElasticServiceImpl<T, M> implements ElasticService<T, M> {
                 highlightBuilder.field(highLightField);
                 searchSourceBuilder.highlighter(highlightBuilder);
             }
-        } else {
-            preTags = null;
         }
-
         // 排序
         if (ObjectUtil.isNotEmpty(sort)) {
             List<Sort.Order> orders = sort.listOrders();
@@ -238,54 +244,38 @@ public class ElasticServiceImpl<T, M> implements ElasticService<T, M> {
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
             for (String field : fieldList) {
                 HighlightField highlightField = highlightFields.get(field);
+                // fixme 高亮嵌套替換此部分后期需优化为更通用的
                 // 将原来的字段替换为高亮字段即可
                 if (ObjectUtil.isNotEmpty(highlightField)) {
                     Text[] fragments = highlightField.fragments();
-                    // fixme 高亮嵌套替換此部分后期需优化为更通用的
                     String name = highlightField.getName();
                     String[] names = StrUtil.split(name, ".");
                     if (2 <= names.length) {
                         Object obj = sourceAsMap.get(names[0]);
                         if (obj instanceof List) {
+                            // 去除标签后用于字符替换
+                            String[] fragmentsRep = new String[fragments.length];
                             for (int i = 0; i < fragments.length; i++) {
-                                Map<String, Object> objectMap = (Map<String, Object>) ((List<?>) obj).get(i);
-                                String fragment = fragments[i].toString();
-                                String oldFragment = fragments[i].toString();
-                                for (String preTag : preTags) {
-                                    oldFragment = StrUtil.replace(oldFragment, preTag, "");
-                                }
-                                for (String postTag : postTags) {
-                                    oldFragment = StrUtil.replace(oldFragment, postTag, "");
-                                }
+                                AtomicReference<String> fragment = new AtomicReference<>(fragments[i].toString());
+                                tags.forEach(tag -> fragment.set(StrUtil.replace(fragment.get(), tag, "")));
+                                fragmentsRep[i] = fragment.get();
+                            }
+                            for (Object o : ((List<?>) obj)) {
+                                Map<String, Object> objectMap = (Map<String, Object>) o;
                                 Object object = objectMap.get(names[1]);
-                                String replaceJson = StrUtil.replace(JSON.toJSONString(object), oldFragment, fragment);
+                                String replaceJson = JSON.toJSONString(object);
+                                for (int i = 0; i < fragments.length; i++) {
+                                    replaceJson = StrUtil.replace(replaceJson, fragmentsRep[i], fragments[i].toString());
+                                }
                                 objectMap.put(names[1], JSON.parseObject(replaceJson, object.getClass()));
                             }
-//                            for (int i = 0; i < ((List<?>) obj).size(); i++) {
-//                                Map<String, Object> objectMap = (Map<String, Object>) ((List<?>) obj).get(i);
-//                                objectMap.put(names[1], fragments[i].toString());
-//                            }
                         }
                     } else {
+                        StringBuilder stringBuilder = new StringBuilder();
                         for (Text fragment : fragments) {
-                            Object object = sourceAsMap.get(field);
-                            String oldFragment = fragment.toString();
-                            for (String preTag : preTags) {
-                                oldFragment = StrUtil.replace(oldFragment, preTag, "");
-                            }
-                            for (String postTag : postTags) {
-                                oldFragment = StrUtil.replace(oldFragment, postTag, "");
-                            }
-                            String replaceJson = StrUtil.replace(JSON.toJSONString(object), oldFragment, fragment.toString());
-                            // 替换掉原来的内容
-                            sourceAsMap.put(field, JSON.parseObject(replaceJson, object.getClass()));
+                            stringBuilder.append(fragment);
                         }
-//                        String newTitle = "";
-//                        for (Text text : fragments) {
-//                            newTitle += text;
-//                        }
-//                        // 替换掉原来的内容
-//                        sourceAsMap.put(field, newTitle);
+                        sourceAsMap.put(field, stringBuilder.toString());
                     }
                 }
             }
