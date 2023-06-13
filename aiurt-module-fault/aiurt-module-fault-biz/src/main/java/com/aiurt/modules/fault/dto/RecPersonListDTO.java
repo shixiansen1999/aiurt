@@ -77,7 +77,7 @@ public class RecPersonListDTO implements Serializable {
     private Integer faultHandCount;
     @ApiModelProperty(value = "列表：故障处理次数（同设备类型）", position = 22)
     private Integer faultHandDeviceTypeCount;
-    @ApiModelProperty(value = "列表：工龄", position = 23)
+    @ApiModelProperty(value = "列表：工龄（单位为年）", position = 23)
     private Double tenure;
     @ApiModelProperty(value = "列表：绩效", position = 24)
     private Double performance;
