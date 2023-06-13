@@ -534,7 +534,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @ApiOperation(value = "备件更换回填", notes = "备件更换回填")
     @GetMapping(value = "/querySparePartReplaceList")
     public Result<List<SparePartReplaceDTO>> querySparePartReplaceList(@RequestParam(value = "oldSparePartCode", required = false) String oldSparePartCode,
-                                                                       @RequestParam(value = "faultCauseSolutionIdList", required = false) List<String> faultCauseSolutionIdList,
+                                                                       @RequestParam(value = "faultCauseSolutionIdList[]", required = false) String[] faultCauseSolutionIdList,
                                                                        @RequestParam(value = "deviceCode", required = false) String deviceCode) {
         List<SparePartReplaceDTO> result = faultService.querySparePartReplaceList(oldSparePartCode, faultCauseSolutionIdList, deviceCode);
         return Result.OK(result);
