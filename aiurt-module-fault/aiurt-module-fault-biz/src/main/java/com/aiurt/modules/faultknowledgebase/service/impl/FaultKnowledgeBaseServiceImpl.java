@@ -1261,7 +1261,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 FaultLevel faultLevel = faultLevelService.lambdaQuery()
                         .eq(FaultLevel::getDelFlag, CommonConstant.DEL_FLAG_0)
                         .eq(FaultLevel::getCode, faultLevelCode).last("limit 1").one();
-                knowledgeBase.setFaultLevelName(faultLevel.getName());
+                if (ObjectUtil.isNotEmpty(faultLevel)) {
+                    knowledgeBase.setFaultLevelName(faultLevel.getName());
+                }
             });
             if (CollUtil.isNotEmpty(causeSolutions)) {
                 if (CollUtil.isNotEmpty(sparePartInfos)) {
