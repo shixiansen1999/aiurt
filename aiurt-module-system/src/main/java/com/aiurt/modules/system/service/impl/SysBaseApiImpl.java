@@ -3413,4 +3413,21 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
         // 处理
     }
+
+    @Override
+    public List<LoginUser> queryAllUsers() {
+        QueryWrapper<SysUser> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0).select(SysUser::getId,SysUser::getRealname);
+        List<SysUser> users = userMapper.selectList(wrapper);
+        if (CollectionUtil.isEmpty(users)) {
+            return Collections.emptyList();
+        }
+        List<LoginUser> loginUsers = new ArrayList<>();
+        for (SysUser user : users) {
+            LoginUser loginUser = new LoginUser();
+            BeanUtils.copyProperties(user, loginUser);
+            loginUsers.add(loginUser);
+        }
+        return loginUsers;
+    }
 }
