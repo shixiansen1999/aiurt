@@ -80,6 +80,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @Description: fault
@@ -2155,6 +2156,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             if (CollUtil.isNotEmpty(faultDeviceList)) {
                 List<String> collect = faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.toList());
                 fault1.setDeviceName(CollUtil.join(collect, ","));
+                fault1.setDeviceId(Optional.ofNullable(faultDeviceList.get(0)).orElse(new FaultDevice()).getDeviceId());
             }
 
             // 时长
@@ -2202,11 +2204,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return
      */
     @Override
-    public List<SparePartReplaceDTO> querySparePartReplaceList(String oldSparePartCode, List<String> faultCauseSolutionIdList, String deviceCode) {
+    public List<SparePartReplaceDTO> querySparePartReplaceList(String oldSparePartCode, String[] faultCauseSolutionIdList, String deviceCode) {
         // 查询
         List<SparePartReplaceDTO> list = new ArrayList<>();
         // 非标准的
-        if (StrUtil.isNotBlank(oldSparePartCode) && CollUtil.isEmpty(faultCauseSolutionIdList) && StrUtil.isNotBlank(deviceCode)) {
+        if (StrUtil.isNotBlank(oldSparePartCode) && ObjectUtil.isEmpty(faultCauseSolutionIdList) && StrUtil.isNotBlank(deviceCode)) {
 
             SparePartReplaceDTO replaceDTO = baseMapper.querySparePart(deviceCode, oldSparePartCode);
             if (Objects.isNull(replaceDTO) || StrUtil.isBlank(replaceDTO.getMaterialCode())) {
@@ -2235,15 +2237,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             return list;
         }
         // 标准&采用维修建议的
-        if (StrUtil.isNotBlank(deviceCode) && CollUtil.isNotEmpty(faultCauseSolutionIdList) && StrUtil.isNotBlank(oldSparePartCode)) {
 
+        if (StrUtil.isNotBlank(deviceCode) && ObjectUtil.isNotEmpty(faultCauseSolutionIdList) && StrUtil.isNotBlank(oldSparePartCode)) {
+            List<String> idList = Stream.of(faultCauseSolutionIdList).collect(Collectors.toList());
             SparePartReplaceDTO replaceDTO = baseMapper.querySparePart(deviceCode, oldSparePartCode);
             if (Objects.isNull(replaceDTO) || StrUtil.isBlank(replaceDTO.getMaterialCode())) {
                 return list;
             }
             String materialCode = replaceDTO.getMaterialCode();
             // 解决方案的中备件与旧组件的物资编码相同的备件更换数据
-            List<FaultSparePart> faultSparePartList = baseMapper.queryFaultSparePart(materialCode, faultCauseSolutionIdList);
+            List<FaultSparePart> faultSparePartList = baseMapper.queryFaultSparePart(materialCode, idList);
             if (CollUtil.isNotEmpty(faultSparePartList)) {
                 FaultSparePart faultSparePart = faultSparePartList.get(0);
                 // 查询最大编码数数据

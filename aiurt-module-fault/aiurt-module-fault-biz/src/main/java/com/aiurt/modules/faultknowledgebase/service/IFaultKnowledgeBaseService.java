@@ -150,5 +150,5 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @param faultCauseSolutionIdList
      * @return
      */
-    List<FaultSparePart> getStandardRepairRequirements(List<String> faultCauseSolutionIdList);
+    List<FaultSparePart> getStandardRepairRequirements(String[] faultCauseSolutionIdList);
 }

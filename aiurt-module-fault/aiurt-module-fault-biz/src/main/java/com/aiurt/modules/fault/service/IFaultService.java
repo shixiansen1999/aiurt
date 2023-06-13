@@ -208,5 +208,5 @@ public interface IFaultService extends IService<Fault> {
      * @param deviceCode
      * @return
      */
-    List<SparePartReplaceDTO> querySparePartReplaceList(String oldSparePartCode, List<String> faultCauseSolutionIdList, String deviceCode);
+    List<SparePartReplaceDTO> querySparePartReplaceList(String oldSparePartCode, String[] faultCauseSolutionIdList, String deviceCode);
 }

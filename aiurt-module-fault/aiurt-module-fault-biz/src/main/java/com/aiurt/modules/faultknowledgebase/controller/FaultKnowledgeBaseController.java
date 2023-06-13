@@ -482,7 +482,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 */
 	@GetMapping("/getStandardRepairRequirements")
 	@ApiOperation(value="标准维修方案要求查询", notes="标准维修方案要求查询")
-	public Result<List<FaultSparePart>> getStandardRepairRequirements(@RequestParam(value = "faultCauseSolutionIdList", required = false) List<String> faultCauseSolutionIdList) {
+	public Result<List<FaultSparePart>> getStandardRepairRequirements(@RequestParam(value = "faultCauseSolutionIdList[]", required = false) String[] faultCauseSolutionIdList) {
 		List<FaultSparePart> list = faultKnowledgeBaseService.getStandardRepairRequirements(faultCauseSolutionIdList);
 		return Result.OK(list);
 	}

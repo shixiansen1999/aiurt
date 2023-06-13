@@ -93,6 +93,7 @@ import java.io.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @Description: 故障知识库
@@ -1583,10 +1584,11 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
      * @return
      */
     @Override
-    public List<FaultSparePart> getStandardRepairRequirements(List<String> faultCauseSolutionIdList) {
-        if (CollUtil.isEmpty(faultCauseSolutionIdList)) {
+    public List<FaultSparePart> getStandardRepairRequirements(String[]  faultCauseSolutionIdList) {
+        if (ObjectUtil.isEmpty(faultCauseSolutionIdList)) {
             return Collections.emptyList();
         }
-        return baseMapper.getStandardRepairRequirements(faultCauseSolutionIdList);
+        List<String> list = Stream.of(faultCauseSolutionIdList).collect(Collectors.toList());
+        return baseMapper.getStandardRepairRequirements(list);
     }
 }

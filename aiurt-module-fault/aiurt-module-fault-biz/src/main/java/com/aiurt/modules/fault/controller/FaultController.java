@@ -18,7 +18,10 @@ import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.api.vo.Result;
@@ -26,7 +29,6 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -517,9 +519,11 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @ApiOperation(value = "备件更换回填", notes = "备件更换回填")
     @GetMapping(value = "/querySparePartReplaceList")
     public Result<List<SparePartReplaceDTO>> querySparePartReplaceList(@RequestParam(value = "oldSparePartCode", required = false) String oldSparePartCode,
-                                                                 @RequestParam(value = "faultCauseSolutionIdList", required = false) List<String> faultCauseSolutionIdList,
+                                                                 @RequestParam(name = "faultCauseSolutionIdList[]", required = false) String[] faultCauseSolutionIdList,
                                                                  @RequestParam(value = "deviceCode", required = false) String deviceCode) {
         List<SparePartReplaceDTO> result = faultService.querySparePartReplaceList(oldSparePartCode,faultCauseSolutionIdList,deviceCode);
         return Result.OK(result);
     }
+
+
 }

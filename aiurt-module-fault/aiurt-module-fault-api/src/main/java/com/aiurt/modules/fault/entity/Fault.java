@@ -270,6 +270,11 @@ public class Fault extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String deviceNames;
 
+    @Excel(name = "设备id", width = 15)
+    @ApiModelProperty(value = "设备id", required = true)
+    @TableField(exist = false)
+    private String deviceId;
+
 	@ApiModelProperty(value = "作废用户")
 	private String cancelUserName;
 
