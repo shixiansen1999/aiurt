@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.basic.entity.CsWork;
+import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
 import com.aiurt.modules.fault.dto.RecPersonListDTO;
 import com.aiurt.modules.fault.dto.SparePartReplaceDTO;
@@ -194,4 +195,132 @@ public interface FaultMapper extends BaseMapper<Fault> {
      * @return
      */
     List<FaultSparePart> queryFaultSparePart(@Param("materialCode")String materialCode, @Param("faultCauseSolutionIdList") List<String> faultCauseSolutionIdList);
+    List<RecPersonListDTO> getManagedDepartmentUsers(@Param("date") Date date, @Param("userId") String userId);
+
+    /**
+     * 用户是否处理了相同的故障映射表
+     *
+     * @param userNames
+     * @param knowledgeId
+     * @return
+     */
+    List<SameFaultDTO> isSameFaultHandled(@Param("userNames") List<String> userNames, @Param("knowledgeId") String knowledgeId);
+
+    /**
+     * 查询人员的任务情况
+     *
+     * @param userNames
+     * @return
+     */
+    List<SameFaultDTO> taskSituation(List<String> userNames);
+
+    /**
+     * 根据用户id获取故障处理总次数的最大值和最小值
+     *
+     * @param userNames
+     * @return
+     */
+    CommonMaxMinNumDTO getFaultHandleNumberMaxMin(List<String> userNames);
+
+    /**
+     * 根据用户id获取用户故障处理的平均响应时间和平均解决时间
+     *
+     * @param userNames
+     * @return
+     */
+    List<EfficiencyDTO> getEfficiencyList(List<String> userNames);
+
+    /**
+     * 根据用户id获取工龄最大值和最小值
+     *
+     * @param date
+     * @param userIds
+     * @return
+     */
+    CommonMaxMinNumDTO getTenureMaxMin(Date date, List<String> userIds);
+
+    /**
+     * 获取用户对应的故障处理总次数
+     *
+     * @param userNameList
+     * @return
+     */
+    List<RadarNumberDTO> getHandleNumberList(List<String> userNameList);
+
+    /**
+     * 雷达图-获取用户的资质信息
+     *
+     * @param userIds
+     * @return
+     */
+    List<RadarAptitudeDTO> getAptitude(List<String> userIds);
+
+    /**
+     * 获取用户的资质信息的最大值和最小值
+     *
+     * @param userIds
+     * @return
+     */
+    CommonMaxMinNumDTO getAptitudeMaxMin(List<String> userIds);
+
+    /**
+     * 获取用户的绩效信息
+     *
+     * @param date
+     * @param userIds
+     * @return
+     */
+    List<RadarPerformanceDTO> getPerformanceList(@Param("date") Date date, @Param("userIds") List<String> userIds);
+
+    /**
+     * 获取同种故障现象的处理次数列表
+     *
+     * @param userNameList 用户名列表
+     * @param knowledgeId  知识id
+     * @return 同种故障现象的处理次数列表
+     */
+    List<RadarNumberDTO> getFaultHandCountListByFaultPhenomenon(@Param("userNameList") List<String> userNameList, @Param("knowledgeId") String knowledgeId);
+
+    /**
+     * 获取同种设备类型的处理次数列表
+     *
+     * @param userNameList   用户名列表
+     * @param deviceTypeCode 设备类型编码
+     * @return 同种设备类型的处理次数列表
+     */
+    List<RadarNumberDTO> getFaultHandCountListByDeviceType(@Param("userNameList") List<String> userNameList, String deviceTypeCode);
+
+    /**
+     * 根据用户id集合查询角色名称
+     *
+     * @param userIdList 用户id集合
+     * @return
+     */
+    List<RoleNameDTO> getRoleNameByUserIdList(List<String> userIdList);
+
+    /**
+     * 获取用户资质列表
+     *
+     * @param userIdList 用户ID列表
+     * @return 用户资质列表
+     */
+    List<AptitudeDTO> getAptitudeList(List<String> userIdList);
+
+    /**
+     * 根据用户账号查询历史维修任务
+     *
+     * @param userName        用户账号
+     * @param symptoms 故障现象
+     * @param deviceTypeCode  设备类型编码
+     * @return
+     */
+    List<FaultRecDTO> getFaultRecList(@Param("userName") String userName, @Param("symptoms") String symptoms, @Param("deviceTypeCode") String deviceTypeCode);
+    /**
+     * 补充用户当前所在站点
+     *
+     * @param userName 用户账号
+     * @param tenMinutesAgo 10分钟前的时间
+     * @return
+     */
+    String getUserStationName(@Param("userName") String userName, @Param("tenMinutesAgo")Date tenMinutesAgo);
 }

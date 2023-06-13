@@ -342,4 +342,33 @@ public class CommonUtils {
         log.info("-----Common getBaseUrl----- : " + baseDomainPath);
         return baseDomainPath;
     }
+    /**
+     * 雷达图分数转化计算
+     *
+     * @param currentValue 当前值
+     * @param minValue 最小值
+     * @param maxValue 最大值
+     * @return
+     */
+    public static double calculateScore(double currentValue, double maxValue, double minValue) {
+        // 最高分为
+        final int topScore = 100;
+        final int lowestScore = 60;
+
+        if (maxValue == minValue) {
+            if (0 != currentValue && currentValue == maxValue) {
+                return topScore;
+            } else {
+                return lowestScore;
+            }
+        }
+        // 计算当前值相对于最小值和最大值的百分比
+        double percentage = 1.0 * (currentValue - minValue) / (maxValue - minValue);
+        // 将百分比映射到分数范围
+        double score = percentage * (topScore - lowestScore) + lowestScore;
+        // 如果小数较多则保留3位小数
+        score = Double.parseDouble(String.format("%.3f", score));
+        return score;
+    }
+
 }
