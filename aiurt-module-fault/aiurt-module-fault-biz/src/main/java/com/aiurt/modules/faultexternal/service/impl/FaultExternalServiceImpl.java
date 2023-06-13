@@ -3,6 +3,7 @@ package com.aiurt.modules.faultexternal.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.enums.RepairWayEnum;
 import com.aiurt.common.exception.AiurtBootException;
@@ -26,7 +27,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -66,7 +69,9 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
     @Autowired
     private FaultExternalMapper faultExternalMapper;
     @Autowired
-    private ISysBaseAPI iSysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private ISysParamAPI sysParamApi;
 
 
     @Override
@@ -163,7 +168,7 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
         String stationId = faultExternal.getStationId();
         if (StrUtil.isNotBlank(stationId)) {
             List<String> strings = StrUtil.splitTrim(stationId, ",");
-            List<CsStation> stations = iSysBaseAPI.queryAllStation();
+            List<CsStation> stations = sysBaseApi.queryAllStation();
             List<String> stationCode=  stations.stream().filter(e->strings.contains(e.getId())).map(CsStation::getStationCode).collect(Collectors.toList());
             faultExternal.setStationCodes(stationCode);
         }
@@ -207,6 +212,8 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
     public void complete(RepairRecordDTO dto,Date endTime, LoginUser user) {
         //如果是调度推送过来的故障，发送推送数据至调度系统
         //通过faultCode找到对应的faultExternal
+        SysParamModel systemIdParam = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_EXTERNAL_SYSTEM_ID);
+        String systemId = systemIdParam.getValue();
         FaultRepairRecord faultRecord = recordMapper.selectById(dto.getId());
         String code = faultRecord.getFaultCode();
         FaultExternal faultExternal = faultExternalMapper.selectOne(new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getFaultcode, code)
@@ -237,12 +244,14 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
             param.put("code", 200);
             param.put("message", "success");
             param.put("data", data);
-            param.put("systemid", "TXSYS");
+            param.put("systemid", systemId);
             try {
                 JSONObject json = (JSONObject) JSONObject.toJSON(param);
-//                String url = "http://123.57.62.172:30235/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
-//               String url = "http://mtrain-cc.lucksoft.com.cn/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
-                String url = "http://10.3.2.2:30300/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
+                 //String url = "http://123.57.62.172:30235/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
+                 //String url = "http://mtrain-cc.lucksoft.com.cn/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
+                 //String url = "http://10.3.2.2:30300/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
+                SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_EXTERNAL_URL);
+                String url = sysParamModel.getValue();
                restTemplate.postForObject(url, json, JSONObject.class);
                 log.info("故障推送,请求结果",url);
             } catch (Exception e) {
@@ -262,7 +271,7 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
             FaultExternal external = this.getOne(new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getIndocno, faultExternal.getIndocno()));
             if (external == null) {
                 faultExternalMapper.insert(faultExternal);
-                iSysBaseAPI.sendAllMessage();
+                sysBaseApi.sendAllMessage();
             } else {
                 faultExternalMapper.update(faultExternal, new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getIndocno, faultExternal.getIndocno()));
             }
