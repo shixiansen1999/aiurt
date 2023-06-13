@@ -638,7 +638,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             safty.forEach(s ->{
                 PrintDTO printDTO = new PrintDTO();
 
-                PatrolCheckResultDTO patrolCheckResultDTO = checkDTOs.stream().filter(p -> p.getContent().equals(s)).findFirst().orElse(null);
+                PatrolCheckResultDTO patrolCheckResultDTO = checkDTOs.stream().filter(p -> p.getContent().replaceAll(" |-", "").equals(s)).findFirst().orElse(null);
                 if (ObjectUtil.isEmpty(patrolCheckResultDTO)){
                     printDTO.setResult("☐是 ☐否");
                     getPrint.add(printDTO);
@@ -695,7 +695,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                             .filter(c -> c.getParentId().equals(oldId))
                             .collect(Collectors.toList());
                     childDTOs.forEach(c->{
-                        if(Objects.nonNull(c) && c.getCheckResult().equals(0)){
+                        if(ObjectUtil.isNotEmpty(c)&& ObjectUtil.isNotEmpty(c.getCheckResult()) && c.getCheckResult().equals(0)){
                             flag.set(true);
                             stringBuffer.append(c.getQualityStandard()).append(":异常");
                             stringBuffer.append(",");
@@ -760,7 +760,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     num++;
                 }
                 if (i+1 == checkDTOs.size()){
-                    text.append("\n 其他正常");
+                    text.append("\n \n 其他正常");
                 }
             }
         }
