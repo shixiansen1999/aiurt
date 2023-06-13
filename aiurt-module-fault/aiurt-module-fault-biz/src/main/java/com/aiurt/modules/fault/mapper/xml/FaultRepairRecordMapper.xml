@@ -81,7 +81,7 @@
                fd.device_code                                                   deviceCode,
                d.name                                                           deviceName,
                concat_ws('/', cl.line_name, cs.station_name, csp.position_name) `position`,
-               frr.fault_phenomenon                                             faultPhenomenon,
+               frr.symptoms                                                     faultPhenomenon,
                frr.end_time                                                     endTime
         from fault_repair_record frr
                  join fault_device fd

@@ -2,6 +2,7 @@ package com.aiurt.modules.common.api;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.dto.*;
@@ -21,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author
@@ -65,6 +67,19 @@ public class PersonnelPortraitFaultApiImpl implements PersonnelPortraitFaultApi 
             throw new AiurtBootException("未查询到用户信息！");
         }
         List<FaultDeviceDTO> deviceInfo = faultRepairRecordMapper.deviceInfo(loginUser.getUsername());
+        if (CollUtil.isNotEmpty(deviceInfo)) {
+            List<String> codes = deviceInfo.stream().map(FaultDeviceDTO::getCode).collect(Collectors.toList());
+            // 设备的位置信息为空则拿故障站点信息
+            List<Fault> faults = faultService.lambdaQuery().in(Fault::getCode, codes).list();
+            List<String> stationCodes = faults.stream().map(Fault::getStationCode).collect(Collectors.toList());
+            Map<String, String> stationMap = iSysBaseApi.getFullNameByStationCode(stationCodes);
+            for (FaultDeviceDTO device : deviceInfo) {
+                if (StrUtil.isEmpty(device.getPosition())) {
+                    Fault fault = faults.stream().filter(l -> device.getCode().equals(l.getCode())).findFirst().orElseGet(Fault::new);
+                    device.setPosition(stationMap.get(fault.getStationCode()));
+                }
+            }
+        }
         return deviceInfo;
     }
 

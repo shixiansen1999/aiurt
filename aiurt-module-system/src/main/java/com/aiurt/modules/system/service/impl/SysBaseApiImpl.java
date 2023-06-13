@@ -2151,6 +2151,31 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return stationMap;
     }
 
+    @Override
+    public Map<String, String> getFullNameByStationCode(List<String> stationCodes) {
+        if (CollUtil.isEmpty(stationCodes)) {
+            return Collections.emptyMap();
+        }
+        QueryWrapper<CsStation> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .in(CsStation::getStationCode, stationCodes);
+        List<CsStation> stations = csStationMapper.selectList(wrapper);
+        if (CollUtil.isEmpty(stations)) {
+            return Collections.emptyMap();
+        }
+        Map<String, String> stationMap = stations.stream()
+                .collect(Collectors.toMap(CsStation::getStationCode, v -> {
+                    if (StrUtil.isEmpty(v.getStationName())) {
+                        return v.getLineName();
+                    }
+                    if (StrUtil.isEmpty(v.getStationName())) {
+                        return v.getStationName();
+                    }
+                    return StrUtil.join("/", v.getLineName(), v.getStationName());
+                }));
+        return stationMap;
+    }
+
     /**
      * 根据用户名或者用户账号查询用户信息
      *
