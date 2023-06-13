@@ -2128,26 +2128,39 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             recPersonListDTO.setQualification(StrUtil.split(aptitudeMap.getOrDefault(recPersonListDTO.getUserId(), ""), ','));
             // 历史维修任务
             recPersonListDTO.setFaultRecList(faultMapper.getFaultRecList(recPersonListDTO.getUserName(), symptoms, deviceTypeCode));
-            // 工龄按年单位来计算
-            recPersonListDTO.setTenure(convertDaysToYears(recPersonListDTO.getTenure(), 2));
 
-            // 保留两位小数
-            recPersonListDTO.setEvaluationScore(NumberUtil.round(recPersonListDTO.getEvaluationScore(), 2).doubleValue());
-            recPersonListDTO.setSolutionEfficiencyScore(NumberUtil.round(recPersonListDTO.getSolutionEfficiencyScore(), 2).doubleValue());
-            recPersonListDTO.setPerformanceScore(NumberUtil.round(recPersonListDTO.getPerformanceScore(), 2).doubleValue());
+            // 四舍五入至小数点后两位
+            roundEvaluationScores(recPersonListDTO);
 
             // 所在站点
             recPersonListDTO.setStationName(setUserStationName(recPersonListDTO.getUserName()));
 
             // 翻译人员等级
-            recPersonListDTO.setJobGradeName(jobGradeMap.getOrDefault(String.valueOf(recPersonListDTO.getJobGrade()),""));
+            recPersonListDTO.setJobGradeName(jobGradeMap.getOrDefault(String.valueOf(recPersonListDTO.getJobGrade()), ""));
         }
 
         return resultList;
     }
 
     /**
+     * 将 RecPersonListDTO 对象的评估得分等字段四舍五入至小数点后两位。
+     *
+     * @param recPersonListDTO 需要进行四舍五入的 RecPersonListDTO 对象。
+     */
+    private void roundEvaluationScores(RecPersonListDTO recPersonListDTO) {
+        // 工龄按年单位来计算
+        recPersonListDTO.setTenure(convertDaysToYears(recPersonListDTO.getTenure(), 2));
+
+        recPersonListDTO.setEvaluationScore(NumberUtil.round(recPersonListDTO.getEvaluationScore(), 2).doubleValue());
+        recPersonListDTO.setSolutionEfficiencyScore(NumberUtil.round(recPersonListDTO.getSolutionEfficiencyScore(), 2).doubleValue());
+        recPersonListDTO.setPerformanceScore(NumberUtil.round(recPersonListDTO.getPerformanceScore(), 2).doubleValue());
+        recPersonListDTO.setFaultNumScore(NumberUtil.round(recPersonListDTO.getFaultNumScore(), 2).doubleValue());
+        recPersonListDTO.setTenureScore(NumberUtil.round(recPersonListDTO.getTenureScore(), 2).doubleValue());
+    }
+
+    /**
      * 获取人员等级字典映射
+     *
      * @return 映射的 Map
      */
     private Map<String, String> getJobGradeMap() {
@@ -2611,12 +2624,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 计算任务情况为空闲的人员数量
         long freeNum = result.stream()
-                .filter(re -> re.getTaskStatus().equals(FaultConstant.FREE_NAME))
+                .filter(re -> FaultConstant.FREE_NAME.equals(re.getTaskStatus()))
                 .count();
 
         // 如果空闲的人员数量大于等于5人，则只返回空闲的人员人员，否则返回全部人员
         return result.stream()
-                .filter(re -> re.getTaskStatus().equals(FaultConstant.FREE_NAME) || freeNum < 5)
+                .filter(re -> FaultConstant.FREE_NAME.equals(re.getTaskStatus()) || freeNum < 5)
                 .collect(Collectors.toList());
     }
 
@@ -2652,12 +2665,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 计算处理过相同故障的人员数量
         long countHandledSameFaultNum = result.stream()
-                .filter(re -> re.getHandledSameFault().equals(CommonConstant.SHI))
+                .filter(re -> CommonConstant.SHI.equals(re.getHandledSameFault()))
                 .count();
 
         // 如果处理过相同故障的人员数量大于等于5人，则只返回处理过相同故障的人员，否则返回全部人员
         return result.stream()
-                .filter(re -> re.getHandledSameFault().equals(CommonConstant.SHI) || countHandledSameFaultNum < 5)
+                .filter(re -> CommonConstant.SHI.equals(re.getHandledSameFault()) || countHandledSameFaultNum < 5)
                 .collect(Collectors.toList());
     }
 
@@ -2691,12 +2704,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 计算人员的排班情况为当班的数量
         long countScheduleStatusNum = result.stream()
-                .filter(re -> re.getScheduleStatus().equals(FaultConstant.ON_DUTY_NAME))
+                .filter(re -> FaultConstant.ON_DUTY_NAME.equals(re.getScheduleStatus()))
                 .count();
 
         // 如果当班人员数量大于等于5人，则只返回当班人员，否则返回全部人员
         return result.stream()
-                .filter(re -> re.getScheduleStatus().equals(FaultConstant.ON_DUTY_NAME) || countScheduleStatusNum < 5)
+                .filter(re -> FaultConstant.ON_DUTY_NAME.equals(re.getScheduleStatus()) || countScheduleStatusNum < 5)
                 .collect(Collectors.toList());
     }
 
