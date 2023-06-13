@@ -2,7 +2,6 @@ package com.aiurt.modules.subsystem.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.jeecgframework.poi.excel.annotation.Excel;
 
 /**
  * @projectName: aiurt-platform
@@ -17,6 +16,8 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 public class SystemByCodeDTO {
     @ApiModelProperty(value = "子系统名称")
     private String systemName;
+    @ApiModelProperty(value = "简称")
+    private String shortenedForm;
     @ApiModelProperty(value = "子系统Code")
     private String systemCode;
     @ApiModelProperty(value = "系统概括")

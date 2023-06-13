@@ -32,6 +32,9 @@ public class FaultFrequencyDTO implements Serializable {
     @TableField(exist = false)
     private String subSystemName;
 
+    @ApiModelProperty(value = "简称")
+    @TableField(exist = false)
+    private String shortenedForm;
 
     @ApiModelProperty(value = "次数")
     @TableField(exist = false)

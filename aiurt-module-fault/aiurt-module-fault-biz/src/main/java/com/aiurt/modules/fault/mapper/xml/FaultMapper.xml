@@ -130,9 +130,10 @@
     </select>
 
     <select id="selectBySubSystemCode" resultType="com.aiurt.modules.fault.dto.FaultFrequencyDTO">
-        SELECT f.sub_system_code as subSystemCode,
+        SELECT f.sub_system_code as subSystemCode,cs.shortened_form,
                count(*) AS number
         FROM fault f
+        left join cs_subsystem cs on cs.system_code = f.sub_system_code
         <where>
             1 = 1
             <if test="startDate != null">
