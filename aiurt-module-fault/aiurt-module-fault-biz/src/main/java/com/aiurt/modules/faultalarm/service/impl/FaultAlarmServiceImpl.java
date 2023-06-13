@@ -113,6 +113,10 @@ public class FaultAlarmServiceImpl extends ServiceImpl<AlmRecordMapper, AlmRecor
         AlmRecordHistory almRecordHistory = createAlmRecordHistory(almRecord, null, "已上报故障", FaultAlarmConstant.ALM_DEAL_STATE_3, onFailureReportedReqDTO.getFaultCode());
         almRecordHistoryMapper.insert(almRecordHistory);
 
+        // 设置redis的缓存时间为30分钟
+        String redisKey = FaultAlarmConstant.FAULT_ALARM_ID + almRecord.getId();
+        redisUtil.set(redisKey, almRecord.getId(), 30 * 60);
+
         // 删除原来的记录
         almRecordMapper.deleteById(almRecord.getId());
     }
