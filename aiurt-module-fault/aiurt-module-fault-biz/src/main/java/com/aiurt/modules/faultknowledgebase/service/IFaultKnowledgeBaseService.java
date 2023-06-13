@@ -6,6 +6,7 @@ import com.aiurt.modules.faultknowledgebase.dto.RepairSolRecDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseMatchDTO;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseReqDTO;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseResDTO;
@@ -143,4 +144,11 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @return
      */
     List<String> phenomenonMatching(HttpServletRequest request, HttpServletResponse response, KnowledgeBaseMatchDTO knowledgeBaseMatchDTO);
+
+    /**
+     *  标准维修方案要求查询
+     * @param faultCauseSolutionIdList
+     * @return
+     */
+    List<FaultSparePart> getStandardRepairRequirements(List<String> faultCauseSolutionIdList);
 }

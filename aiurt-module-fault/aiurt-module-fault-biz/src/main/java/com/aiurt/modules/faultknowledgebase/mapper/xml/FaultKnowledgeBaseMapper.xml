@@ -461,7 +461,7 @@
                 t1.knowledge_base_id
         FROM
                 fault_cause_solution t1
-        LEFT JOIN fault_cause_usage_records t2 ON ( t1.id = t2.fault_cause_solution_id AND t2.del_flag = 0 )
+        JOIN fault_cause_usage_records t2 ON ( t1.id = t2.fault_cause_solution_id AND t2.del_flag = 0 )
         WHERE
                 EXISTS (SELECT 1 FROM fault_knowledge_base WHERE 1=1 and id IN
                         <foreach collection="idList" item="item" separator="," open="(" close=")" >
@@ -500,5 +500,39 @@
                  left join cs_subsystem cs on (fkb.system_code = cs.system_code and cs.del_flag = 0)
                  left join device_type dt on (fkb.device_type_code = dt.code and dt.del_flag = 0)
         where fkb.del_flag = 0
+    </select>
+
+    <select id="getStandardRepairRequirements" resultType="com.aiurt.modules.faultsparepart.entity.FaultSparePart">
+        select t1.id,t1.spare_part_code,t1.cause_solution_id,t1.number,t1.specification,t2.name as spare_part_name, t3.solution,
+        t3.fault_cause
+        from fault_spare_part t1
+        left join material_base t2 on (t1.spare_part_code = t2.code and t2.del_flag = 0)
+        left join fault_cause_solution t3 on (t1.cause_solution_id = t3.id and t3.del_flag =0)
+        where t1.del_flag = 0
+        <if test="idList != null and idList.size() != 0">
+           and t1.cause_solution_id in
+            <foreach collection="idList" close=")" open="(" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="countFaultCauseByIdSeV2" resultType="com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO">
+        SELECT
+        count(t2.id) num,
+        t1.id,
+        t1.fault_cause,
+        t1.knowledge_base_id
+        FROM
+        fault_cause_solution t1
+        LEFT JOIN fault_cause_usage_records t2 ON ( t1.id = t2.fault_cause_solution_id AND t2.del_flag = 0 )
+        WHERE
+        EXISTS (SELECT 1 FROM fault_knowledge_base WHERE 1=1 and id IN
+        <foreach collection="idList" item="item" separator="," open="(" close=")" >
+            #{item}
+        </foreach>
+        AND id = t1.knowledge_base_id)
+        GROUP BY
+        t1.id
     </select>
 </mapper>

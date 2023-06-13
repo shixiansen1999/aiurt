@@ -20,6 +20,7 @@ import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.CommonUtils;
+import com.aiurt.common.util.RedisUtil;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.base.PageOrderGenerator;
 import com.aiurt.modules.basic.entity.CsWork;
@@ -45,6 +46,7 @@ import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.service.IFaultKnowledgeBaseTypeService;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.faultlevel.service.IFaultLevelService;
+import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.aiurt.modules.schedule.dto.ScheduleUserWorkDTO;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
@@ -58,6 +60,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import javassist.bytecode.LineNumberAttribute;
 import lombok.extern.slf4j.Slf4j;
 import org.ansj.domain.Result;
 import org.ansj.domain.Term;
@@ -109,6 +112,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     @Autowired
     private ISysBaseAPI sysBaseAPI;
+
     @Autowired
     private IBaseApi baseApi;
 
@@ -127,25 +131,18 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Autowired
     private IFaultKnowledgeBaseTypeService faultKnowledgeBaseTypeService;
 
-    @Autowired
-    private IFaultKnowledgeBaseService faultKnowledgeBaseService;
 
     @Autowired
     private ISTodoBaseAPI todoBaseApi;
+
     @Autowired
     private ISysParamAPI iSysParamAPI;
 
-    @Autowired
-    private FaultRepairRecordMapper recordMapper;
 
     @Autowired
     private FaultMapper faultMapper;
 
-    @Autowired
-    private FaultExternalMapper faultExternalMapper;
 
-    @Autowired
-    private RestTemplate restTemplate;
     @Autowired
     private IFaultExternalService faultExternalService;
 
@@ -160,6 +157,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     @Autowired
     private IFaultCauseUsageRecordsService faultCauseUsageRecordsService;
+
+    @Autowired
+    private RedisUtil redisUtil;
 
 
     /**
@@ -659,7 +659,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         fault.setFaultDeviceList(faultDeviceList);
         if (CollUtil.isNotEmpty(faultDeviceList)) {
             fault.setDeviceCodes(StrUtil.join(",", faultDeviceList.stream().map(FaultDevice::getDeviceCode).collect(Collectors.toList())));
+            fault.setDeviceCode(StrUtil.join(",", faultDeviceList.stream().map(FaultDevice::getDeviceCode).collect(Collectors.toList())));
             fault.setDeviceName(StrUtil.join(",", faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.toList())));
+            fault.setDeviceNames(StrUtil.join(",", faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.toList())));
             fault.setDeviceTypeCode(faultDeviceList.get(0).getDeviceTypeCode());
         }
 
@@ -1721,6 +1723,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
                 // FaultRepairRecord faultRepairRecord = getFaultRepairRecord(faultCode, null);
                 fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
+                fault.setState(FaultStatesEnum.DOING.getStatus());
                 saveLog(loginUser, "维修结果驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), resultDTO.getApprovalRejection());
                 // 审核
                 sendTodo(faultCode, null, fault.getAppointUserName(), "故障维修处理", TodoBusinessTypeEnum.FAULT_DEAL.getType(), todoDTO, faultMessageDTO);
@@ -1987,6 +1990,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (StrUtil.isNotBlank(f)) {
             fault.setFaultLevel(null);
         }
+        // 故障现象
+        String phnamon = fault.getPhnamon();
+        if (StrUtil.isNotBlank(phnamon)) {
+            fault.setPhnamon(null);
+        }
 
         //获取app输入故障现象查询内容，转换为code
         LambdaQueryWrapper<FaultKnowledgeBaseType> wrapper = new LambdaQueryWrapper<>();
@@ -2011,6 +2019,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
         queryWrapper.apply(StrUtil.isNotBlank(stationCode), "(line_code = {0} or station_code = {0} or station_position_code = {0})", stationCode);
         queryWrapper.apply(StrUtil.isNotBlank(fault.getDevicesIds()), "(code in (select fault_code from fault_device where device_code like  concat('%', {0}, '%')))", fault.getDevicesIds());
+        queryWrapper.apply(StrUtil.isNotBlank(fault.getDeviceCode()), "(code in (select fault_code from fault_device where device_code =  {0}))", fault.getDeviceCode());
         // 负责人查询
         queryWrapper.apply(StrUtil.isNotBlank(appointUserName), "( appoint_user_name in (select username from sys_user where (username like concat('%', {0}, '%') or realname like concat('%', {0}, '%'))))", appointUserName);
         queryWrapper.orderByDesc("create_time");
@@ -2020,6 +2029,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (StrUtil.isNotBlank(fault.getUsername())) {
             queryWrapper.lambda().eq(Fault::getAppointUserName, fault.getUsername());
         }
+        queryWrapper.lambda().like(StrUtil.isNotBlank(phnamon), Fault::getSymptoms, phnamon);
 
         // 故障等级
         queryWrapper.eq(StrUtil.isNotBlank(f), "fault_level", f);
@@ -2670,8 +2680,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
         // 查询故障设备列表
-        Map<String, List<FaultDevice>> faultDeviceMap = faultDeviceService.list(new LambdaQueryWrapper<FaultDevice>()
-                        .in(FaultDevice::getDeviceCode, records.stream().map(Fault::getCode).collect(Collectors.toList())))
+        Map<String, List<FaultDevice>> faultDeviceMap = faultDeviceService.queryListByFaultCodeList(records.stream().map(Fault::getCode).collect(Collectors.toList()))
                 .stream().collect(Collectors.groupingBy(FaultDevice::getFaultCode));
         Map<String, Integer> weightMap = new HashMap<>();
         List<String> faultLevelList = records.stream().map(Fault::getFaultLevel).filter(StrUtil::isNotBlank).distinct().collect(Collectors.toList());
@@ -2727,6 +2736,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 List<String> collect = faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.toList());
                 fault1.setDeviceName(CollUtil.join(collect, ","));
             }
+
+            // 时长
         });
     }
 
@@ -2760,6 +2771,85 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
         return fault;
+    }
+
+    /**
+     * 备件自动回填
+     *
+     * @param oldSparePartCode 组件编码
+     * @param faultCauseSolutionIdList 故障解决原因
+     * @param deviceCode 设备编码
+     * @return
+     */
+    @Override
+    public List<SparePartReplaceDTO> querySparePartReplaceList(String oldSparePartCode, List<String> faultCauseSolutionIdList, String deviceCode) {
+        // 查询
+        List<SparePartReplaceDTO> list = new ArrayList<>();
+        // 非标准的
+        if (StrUtil.isNotBlank(oldSparePartCode) && CollUtil.isEmpty(faultCauseSolutionIdList) && StrUtil.isNotBlank(deviceCode)) {
+
+            SparePartReplaceDTO replaceDTO = baseMapper.querySparePart(deviceCode, oldSparePartCode);
+            if (Objects.isNull(replaceDTO) || StrUtil.isBlank(replaceDTO.getMaterialCode())) {
+                return list;
+            }
+            // 查询最大编码数数据
+            String materialCode = replaceDTO.getMaterialCode();
+            Long num = baseMapper.countNumBymaterialCode(materialCode);
+            num = Optional.ofNullable(num).orElse(0L);
+            Boolean flag = true;
+            String newSparePartCode = "";
+            while (flag) {
+                num += 1L;
+                String serialCode = String.format("%06d", num);
+                newSparePartCode = materialCode + serialCode;
+                Long assemblyNum = baseMapper.existDeviceAssemblyCode(newSparePartCode);
+                String str = redisUtil.getStr("fault:sparepart:" + newSparePartCode);
+                flag = ( Objects.nonNull(assemblyNum) && assemblyNum>0 )  || StrUtil.isNotBlank(str);
+            }
+            redisUtil.set("fault:sparepart:"+newSparePartCode, newSparePartCode, 7 * 24 * 60 * 60);
+            replaceDTO.setNewSparePartCode(newSparePartCode);
+            replaceDTO.setNewSparePartSplitCode(newSparePartCode);
+            replaceDTO.setNewSparePartNum(1);
+            // 新编码
+            list.add(replaceDTO);
+            return list;
+        }
+        // 标准&采用维修建议的
+        if (StrUtil.isNotBlank(deviceCode) && CollUtil.isNotEmpty(faultCauseSolutionIdList) && StrUtil.isNotBlank(oldSparePartCode)) {
+
+            SparePartReplaceDTO replaceDTO = baseMapper.querySparePart(deviceCode, oldSparePartCode);
+            if (Objects.isNull(replaceDTO) || StrUtil.isBlank(replaceDTO.getMaterialCode())) {
+                return list;
+            }
+            String materialCode = replaceDTO.getMaterialCode();
+            // 解决方案的中备件与旧组件的物资编码相同的备件更换数据
+            List<FaultSparePart> faultSparePartList = baseMapper.queryFaultSparePart(materialCode, faultCauseSolutionIdList);
+            if (CollUtil.isNotEmpty(faultSparePartList)) {
+                FaultSparePart faultSparePart = faultSparePartList.get(0);
+                // 查询最大编码数数据
+                replaceDTO.setNewSparePartNum(faultSparePart.getNumber());
+                Long num = baseMapper.countNumBymaterialCode(materialCode);
+                num = Optional.ofNullable(num).orElse(0L);
+                Boolean flag = true;
+                String newSparePartCode = "";
+                while (flag) {
+                    num += 1L;
+                    String serialCode = String.format("%06d", num);
+                    newSparePartCode = materialCode + serialCode;
+                    Long assemblyNum = baseMapper.existDeviceAssemblyCode(newSparePartCode);
+                    String str = redisUtil.getStr("fault:sparepart:" + newSparePartCode);
+                    flag = ( Objects.nonNull(assemblyNum) && assemblyNum>0 )  || StrUtil.isNotBlank(str);
+                }
+                redisUtil.set("fault:sparepart:"+newSparePartCode, newSparePartCode, 7 * 24 * 60 * 60);
+                replaceDTO.setNewSparePartCode(newSparePartCode);
+                replaceDTO.setNewSparePartSplitCode(newSparePartCode);
+
+                // 新编码
+                list.add(replaceDTO);
+                return list;
+            }
+        }
+        return list;
     }
 
     /**
@@ -3035,9 +3125,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     /**
      * 将天数转换为年数，并保留指定小数位数（四舍五入）。
      *
-     * @param days          天数
-     * @param decimalPlaces 保留的小数位数
-     * @return 转换后的年数
+     * @return
      */
     public static double convertDaysToYears(double days, int decimalPlaces) {
         BigDecimal years = BigDecimal.valueOf(days)

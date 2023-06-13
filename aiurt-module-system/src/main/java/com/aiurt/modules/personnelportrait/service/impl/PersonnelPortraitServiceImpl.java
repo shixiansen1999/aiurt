@@ -424,15 +424,15 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         RadarModelDTO efficiencyRadar = this.getEfficiency(sysUser.getUsername(), usernames);
 
         // 故障处理总次数
-        double handle = this.calculateScore(handleRadar.getCurrentValue(), handleRadar.getMaxValue(), handleRadar.getMinValue());
+        double handle = this.calculateScore(handleRadar.getCurrentValue(), handleRadar.getMaxValue(), handleRadar.getMinValue(), false);
         // 绩效
-        double performance = this.calculateScore(performanceRadar.getCurrentValue(), performanceRadar.getMaxValue(), performanceRadar.getMinValue());
+        double performance = this.calculateScore(performanceRadar.getCurrentValue(), performanceRadar.getMaxValue(), performanceRadar.getMinValue(), false);
         // 资质
-        double aptitude = this.calculateScore(aptitudeRadar.getCurrentValue(), aptitudeRadar.getMaxValue(), aptitudeRadar.getMinValue());
+        double aptitude = this.calculateScore(aptitudeRadar.getCurrentValue(), aptitudeRadar.getMaxValue(), aptitudeRadar.getMinValue(), false);
         // 工龄
-        double seniority = this.calculateScore(seniorityRadar.getCurrentValue(), seniorityRadar.getMaxValue(), seniorityRadar.getMinValue());
-        // 解决效率
-        double efficiency = this.calculateScore(efficiencyRadar.getCurrentValue(), efficiencyRadar.getMaxValue(), efficiencyRadar.getMinValue());
+        double seniority = this.calculateScore(seniorityRadar.getCurrentValue(), seniorityRadar.getMaxValue(), seniorityRadar.getMinValue(), false);
+        // 解决效率，效率花费的时间越小，则对应的效率越高，对应的分数也因越高
+        double efficiency = this.calculateScore(efficiencyRadar.getCurrentValue(), efficiencyRadar.getMaxValue(), efficiencyRadar.getMinValue(), true);
 
         RadarResDTO data = new RadarResDTO();
         data.setHandle(handle);
@@ -622,12 +622,13 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
     /**
      * 雷达图分数转化计算
      *
-     * @param currentValue
-     * @param minValue
-     * @param maxValue
+     * @param currentValue 当前值
+     * @param maxValue     最大值
+     * @param minValue     最小值
+     * @param flag         解决效率标识
      * @return
      */
-    private double calculateScore(double currentValue, double maxValue, double minValue) {
+    private double calculateScore(double currentValue, double maxValue, double minValue, boolean flag) {
         // 最高分为
         final int topScore = 100;
         final int lowestScore = 60;
@@ -641,6 +642,10 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         }
         // 计算当前值相对于最小值和最大值的百分比
         double percentage = 1.0 * (currentValue - minValue) / (maxValue - minValue);
+        // 解决效率标志
+        if (flag) {
+            percentage = 1.0 - percentage;
+        }
         // 将百分比映射到分数范围
         double score = percentage * (topScore - lowestScore) + lowestScore;
         // 如果小数较多则保留3位小数
@@ -787,28 +792,28 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
             List<Integer> values = handlesMap.values().stream().collect(Collectors.toList());
             double maxValue = (double) Collections.max(values);
             double minValue = (double) Collections.min(values);
-            handle = this.calculateScore(currentValue, maxValue, minValue);
+            handle = this.calculateScore(currentValue, maxValue, minValue, false);
         }
         if (ObjectUtil.isNotEmpty(efficiencysMap.get(username))) {
             double currentValue = efficiencysMap.get(username);
             List<Double> values = efficiencysMap.values().stream().collect(Collectors.toList());
             double maxValue = Collections.max(values);
             double minValue = Collections.min(values);
-            efficiency = this.calculateScore(currentValue, maxValue, minValue);
+            efficiency = this.calculateScore(currentValue, maxValue, minValue, true);
         }
         if (ObjectUtil.isNotEmpty(performancesMap.get(id))) {
             double currentValue = performancesMap.get(id);
             List<Double> values = performancesMap.values().stream().collect(Collectors.toList());
             double maxValue = Collections.max(values);
             double minValue = Collections.min(values);
-            performance = this.calculateScore(currentValue, maxValue, minValue);
+            performance = this.calculateScore(currentValue, maxValue, minValue, false);
         }
         if (ObjectUtil.isNotEmpty(aptitudesMap.get(id))) {
             double currentValue = aptitudesMap.get(id);
             List<Integer> values = aptitudesMap.values().stream().collect(Collectors.toList());
             double maxValue = (double) Collections.max(values);
             double minValue = (double) Collections.min(values);
-            aptitude = this.calculateScore(currentValue, maxValue, minValue);
+            aptitude = this.calculateScore(currentValue, maxValue, minValue, false);
         }
         if (ObjectUtil.isNotEmpty(senioritysMap.get(id))) {
             Date now = new Date();
@@ -816,7 +821,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
             List<Date> values = senioritysMap.values().stream().collect(Collectors.toList());
             double maxValue = DateUtil.between(Collections.max(values), now, DateUnit.DAY);
             double minValue = DateUtil.between(Collections.min(values), now, DateUnit.DAY);
-            seniority = this.calculateScore(currentValue, maxValue, minValue);
+            seniority = this.calculateScore(currentValue, maxValue, minValue, false);
         }
         return new RadarResDTO(handle, efficiency, performance, aptitude, seniority);
     }

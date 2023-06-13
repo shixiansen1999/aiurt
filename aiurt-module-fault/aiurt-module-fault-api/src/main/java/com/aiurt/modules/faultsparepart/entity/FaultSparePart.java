@@ -35,6 +35,14 @@ public class FaultSparePart implements Serializable {
     @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
     private String id;
+
+    @ApiModelProperty(value = "故障原因")
+    @TableField(exist = false)
+    private String faultCause;
+
+    @ApiModelProperty(value = "解决方案")
+    @TableField(exist = false)
+    private String solution;
     /**
      * 故障原因及解决方案表ID
      */

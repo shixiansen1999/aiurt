@@ -3,12 +3,14 @@ package com.aiurt.modules.faultknowledgebase.dto;
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
+import com.aiurt.modules.faultcausesolution.dto.FaultCauseSolutionDTO;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author 支持前端单元格合并的知识库DTO
@@ -129,6 +131,11 @@ public class FaultKnowledgeBaseBuildDTO extends DictEntity implements Serializab
      */
     @ApiModelProperty(value = "组别(相同的故障现象编号为一组)")
     private Integer group;
+    /**
+     * 故障原因及解决方案集(列表提交审核时需要用到此集合)
+     */
+    @ApiModelProperty(value = "故障原因及解决方案集")
+    private List<FaultCauseSolutionDTO> faultCauseSolutions;
     /**
      * 方案数量，没有则为1
      */

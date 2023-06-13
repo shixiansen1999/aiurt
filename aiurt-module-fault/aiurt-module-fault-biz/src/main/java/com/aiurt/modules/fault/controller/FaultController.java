@@ -274,9 +274,9 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @AutoLog(value = "查询填写维修记录详情")
     @ApiOperation(value = "查询填写维修记录详情", notes = "查询填写维修记录详情")
     @GetMapping("/queryRepairRecord")
-    @ApiResponses({
+   /* @ApiResponses({
             @ApiResponse(code = 200, response = RepairRecordDTO.class, message = "成功")
-    })
+    })*/
     @ApiImplicitParams({
             @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query")
     })
@@ -500,5 +500,26 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
         List<RecPersonListDTO> list = faultService.queryRecPersonList(faultCode);
         return Result.OK(list);
+    }
+
+    /**
+     * 备件更换回填
+     * @param oldSparePartCode
+     * @param faultCauseSolutionIdList
+     * @param deviceCode
+     * @return
+     */
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "oldSparePartCode", value = "原组件编码", required = false, paramType = "query"),
+            @ApiImplicitParam(name = "faultCauseSolutionIdList", value = "故障原因及解决方案id", required = false, paramType = "query"),
+            @ApiImplicitParam(name = "deviceCode", value = "设备编码", required = false, paramType = "query"),
+    })
+    @ApiOperation(value = "备件更换回填", notes = "备件更换回填")
+    @GetMapping(value = "/querySparePartReplaceList")
+    public Result<List<SparePartReplaceDTO>> querySparePartReplaceList(@RequestParam(value = "oldSparePartCode", required = false) String oldSparePartCode,
+                                                                 @RequestParam(value = "faultCauseSolutionIdList", required = false) List<String> faultCauseSolutionIdList,
+                                                                 @RequestParam(value = "deviceCode", required = false) String deviceCode) {
+        List<SparePartReplaceDTO> result = faultService.querySparePartReplaceList(oldSparePartCode,faultCauseSolutionIdList,deviceCode);
+        return Result.OK(result);
     }
 }

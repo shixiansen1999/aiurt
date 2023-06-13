@@ -75,6 +75,7 @@ public class ElasticApiImpl implements ElasticAPI {
         Sort sort = null;
         if (ObjectUtil.isNotEmpty(knowledgeBaseReqDTO)) {
             String keyword = knowledgeBaseReqDTO.getKeyword();
+            String knowledgeBaseTypeCode = knowledgeBaseReqDTO.getKnowledgeBaseTypeCode();
             String majorCode = knowledgeBaseReqDTO.getMajorCode();
             String systemCode = knowledgeBaseReqDTO.getSystemCode();
             String deviceTypeCode = knowledgeBaseReqDTO.getDeviceTypeCode();
@@ -99,6 +100,13 @@ public class ElasticApiImpl implements ElasticAPI {
                         ScoreMode.Total)
                 );
             }
+            // 故障现象分类编号
+            Optional.ofNullable(knowledgeBaseTypeCode).ifPresent(code -> {
+                if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                    boolQueryBuilder.set(QueryBuilders.boolQuery());
+                }
+                boolQueryBuilder.get().must(QueryBuilders.termQuery("knowledgeBaseTypeCode", code));
+            });
             // 专业编号
             Optional.ofNullable(majorCode).ifPresent(major -> {
                 if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
@@ -147,11 +155,16 @@ public class ElasticApiImpl implements ElasticAPI {
             }
             // 根据浏览次数降序排序
             if (ObjectUtil.isNotEmpty(sortFlag)) {
-                Sort.Order sortOrder = new Sort.Order(SortOrder.DESC, "scanNum");
+                Sort.Order sortOrder = null;
+                if (1 == sortFlag) {
+                    sortOrder = new Sort.Order(SortOrder.DESC, "scanNum");
+                }
                 if (2 == sortFlag) {
                     sortOrder = new Sort.Order(SortOrder.DESC, "updateTime");
                 }
-                sort = new Sort(sortOrder);
+                if (ObjectUtil.isNotEmpty(sortOrder)) {
+                    sort = new Sort(sortOrder);
+                }
             }
         }
         IPage<KnowledgeBase> pageList = elasticService.search(new Page(page.getCurrent(), page.getSize()), queryBuilder, indexs, KnowledgeBase.class, highLight, sort);
@@ -245,7 +258,9 @@ public class ElasticApiImpl implements ElasticAPI {
         if (ObjectUtil.isNotEmpty(knowledgeBaseMatchDTO)) {
             List<String> devices = knowledgeBaseMatchDTO.getDevices();
             List<String> phenomenons = knowledgeBaseMatchDTO.getPhenomenons();
+            Integer status = knowledgeBaseMatchDTO.getStatus();
             AtomicReference<BoolQueryBuilder> boolQueryBuilder = new AtomicReference<>();
+            boolQueryBuilder.set(QueryBuilders.boolQuery().must(QueryBuilders.termQuery("status", status)));
             Optional.ofNullable(knowledgeBaseMatchDTO.getMajor())
                     .ifPresent(major -> {
                         if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
@@ -326,6 +341,6 @@ public class ElasticApiImpl implements ElasticAPI {
 
     @Override
     public boolean exists(String docId, Class<KnowledgeBase> clazz) throws Exception {
-        return elasticService.exists(docId,clazz);
+        return elasticService.exists(docId, clazz);
     }
 }

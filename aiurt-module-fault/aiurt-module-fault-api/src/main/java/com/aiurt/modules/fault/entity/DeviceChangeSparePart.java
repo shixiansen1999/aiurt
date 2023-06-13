@@ -149,4 +149,6 @@ public class DeviceChangeSparePart implements Serializable {
     @ApiModelProperty("规格")
     @TableField(exist = false)
     private String specifications;
+
+
 }

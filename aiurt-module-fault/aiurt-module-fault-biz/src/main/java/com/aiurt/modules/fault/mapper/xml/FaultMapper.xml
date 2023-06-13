@@ -582,4 +582,38 @@
             sup.upload_time DESC
             LIMIT 1
     </select>
+
+
+    <select id="querySparePart" resultType="com.aiurt.modules.fault.dto.SparePartReplaceDTO">
+        select t1.device_code,t3.name as device_name,t2.name as new_spare_part_name, t2.specifications,t2.code as material_code
+        from device_assembly t1
+        left join material_base t2 ON (t1.material_code = t2.code and  t2.del_flag =0 )
+        left join device t3 ON (t1.device_code = t3.code and  t3.del_flag =0 )
+        where t1.del_flag = 0 and t1.device_code = #{deviceCode} and  t1.code = #{oldSparePartCode} limit 1
+    </select>
+
+    <select id="countNumBymaterialCode" resultType="java.lang.Long">
+        select  count(1)  from device_assembly t1 where t1.del_flag = 0 and  t1.material_code = #{materialCode}
+   </select>
+
+    <select id="existDeviceAssemblyCode" resultType="java.lang.Long">
+        select  count(1)  from device_assembly t1 where t1.del_flag = 0 and t1.code = #{newSparePartCode}
+        union
+        select count(1) from device_change_spare_part t2 where t2.del_flag =0 and t2.new_spare_part_code = #{newSparePartCode}
+    </select>
+
+    <select id="queryFaultSparePart" resultType="com.aiurt.modules.faultsparepart.entity.FaultSparePart">
+        select  t1.* from fault_spare_part t1
+        where t1.del_flag = 0
+        <if test="materialCode != null and materialCode != ''">
+            and t1.spare_part_code = #{materialCode}
+        </if>
+        <if test="faultCauseSolutionIdList != null and faultCauseSolutionIdList.size() != 0">
+            and t1.cause_solution_id in
+            <foreach collection="faultCauseSolutionIdList" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        order by t1.number
+    </select>
 </mapper>

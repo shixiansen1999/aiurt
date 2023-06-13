@@ -23,6 +23,7 @@ import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
 import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.faultanalysisreport.constants.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
@@ -50,6 +51,7 @@ import com.aiurt.modules.knowledge.entity.KnowledgeBase;
 import com.aiurt.modules.knowledge.entity.SparePart;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.aiurt.modules.search.service.ISearchRecordsService;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -70,6 +72,7 @@ import org.apache.shiro.SecurityUtils;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.SpringContextUtils;
@@ -215,6 +218,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     faultKnowledgeBaseBuild.setVideoUrl(solution.getVideoUrl());
                     // 百分比
                     faultKnowledgeBaseBuild.setHappenRate(solution.getHappenRate());
+                    faultKnowledgeBaseBuild.setFaultCauseSolutions(solutions);
                     faultKnowledgeBaseBuild.setVirId(String.valueOf(virId));
                     faultKnowledgeBaseBuild.setFirst(first);
                     faultKnowledgeBaseBuild.setSize(solutions.size());
@@ -285,9 +289,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             Map<String, String> happenRateMap = CollUtil.isEmpty(dataMap.get(id)) ? Collections.emptyMap() : dataMap.get(id);
             for (FaultCauseSolutionDTO faultCauseSolutionDTO : faultCauseSolutionList) {
                 String happenRate = happenRateMap.get(faultCauseSolutionDTO.getId());
-                if (ObjectUtil.isEmpty(happenRate)) {
-                    happenRate = "0%";
-                }
+//                if (ObjectUtil.isEmpty(happenRate)) {
+//                    happenRate = "0%";
+//                }
                 faultCauseSolutionDTO.setHappenRate(happenRate);
             }
             knowledgeBase.setFaultCauseSolutions(faultCauseSolutionList);
@@ -667,9 +671,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 Map<String, String> happenRateMap = CollUtil.isEmpty(dataMap.get(id)) ? Collections.emptyMap() : dataMap.get(id);
                 for (FaultCauseSolutionDTO faultCauseSolutionDTO : faultCauseSolutionList) {
                     String happenRate = happenRateMap.get(faultCauseSolutionDTO.getId());
-                    if (ObjectUtil.isEmpty(happenRate)) {
-                        happenRate = "0%";
-                    }
+//                    if (ObjectUtil.isEmpty(happenRate)) {
+//                        happenRate = "0%";
+//                    }
                     faultCauseSolutionDTO.setHappenRate(happenRate);
                 }
             }
@@ -725,6 +729,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
      * @return Map<knowledgeBaseId, < causeSolutionId, 百分比>>
      */
     private Map<String, Map<String, String>> buildCauseNumberMap(List<String> knowledgeBaseIds) {
+        // 故障原因（针对录入标准化故障现象的故障工单，各[故障原因&解决方案]被采用的次数，占故障现象所有[故障原因&解决方案]被采用总次数的百分比）
         if (CollUtil.isEmpty(knowledgeBaseIds)) {
             return Collections.emptyMap();
         }
@@ -733,23 +738,24 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         if (CollUtil.isNotEmpty(analyzeFaultCauses)) {
             Map<String, List<AnalyzeFaultCauseResDTO>> baseIdMap = analyzeFaultCauses.stream()
                     .collect(Collectors.groupingBy(AnalyzeFaultCauseResDTO::getKnowledgeBaseId));
-            for (Map.Entry<String, List<AnalyzeFaultCauseResDTO>> entry : baseIdMap.entrySet()) {
-                List<AnalyzeFaultCauseResDTO> value = entry.getValue();
-                // 同一知识库下方案的总数
-                final int total = value.size();
-                Map<String, List<AnalyzeFaultCauseResDTO>> causeSolutionIdMap = value.stream()
-                        .collect(Collectors.groupingBy(AnalyzeFaultCauseResDTO::getId));
-                Map<String, String> hashMap = new HashMap<>(16);
-                causeSolutionIdMap.forEach((k, v) -> {
-                    double size = v.size();
-                    if (CollUtil.isEmpty(v)) {
-                        size = 0;
-                    }
-                    double number = size / total * 100;
-                    String percentage = String.format("%.2f", number) + "%";
-                    hashMap.put(k, percentage);
-                });
-                dataMap.put(entry.getKey(), hashMap);
+            for (String knowledgeBaseId : knowledgeBaseIds) {
+                List<AnalyzeFaultCauseResDTO> causes = baseIdMap.get(knowledgeBaseId);
+                if (CollUtil.isNotEmpty(causes)) {
+                    // 解决方案总数
+                    Long sum = causes.stream().filter(Objects::nonNull)
+                            .map(AnalyzeFaultCauseResDTO::getNum)
+                            .reduce(0L, Long::sum);
+                    Map<String, String> percentageMap = new HashMap<>(16);
+                    // 遍历每个解决方案，计算原因出现率百分比
+                    causes.forEach(cause -> {
+                        double number = 1.0 * cause.getNum() / sum * 100;
+                        String percentage = String.format("%.2f", number) + "%";
+                        percentageMap.put(cause.getId(), percentage);
+                    });
+                    dataMap.put(knowledgeBaseId, percentageMap);
+                } else {
+                    dataMap.put(knowledgeBaseId, Collections.emptyMap());
+                }
             }
         }
         return dataMap;
@@ -793,7 +799,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         // 查询故障记录使用的记录数
         Map<String, List<AnalyzeFaultCauseResDTO>> dataMap = new HashMap<>();
         if (CollUtil.isNotEmpty(idSet)) {
-            List<AnalyzeFaultCauseResDTO> causeResDTOList = baseMapper.countFaultCauseByIdSet(new ArrayList<>(idSet));
+            List<AnalyzeFaultCauseResDTO> causeResDTOList = baseMapper.countFaultCauseByIdSeV2(new ArrayList<>(idSet));
             if (CollUtil.isNotEmpty(causeResDTOList)) {
                 Map<String, List<AnalyzeFaultCauseResDTO>> map = causeResDTOList.stream().collect(Collectors.groupingBy(AnalyzeFaultCauseResDTO::getKnowledgeBaseId));
                 map.forEach((knowledgeId, resList) -> {
@@ -1194,10 +1200,69 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         }
 
         /*搜索引擎数据构造*/
+        this.knowledgeBaseElasticData(faultKnowledgeBase, causeSolutions, sparePartInfos);
+        /*搜索引擎数据构造*/
+    }
+
+    /**
+     * 添加或编辑是同步数据至Elasticsearch
+     *
+     * @param faultKnowledgeBase
+     * @param causeSolutions
+     * @param sparePartInfos
+     */
+    private void knowledgeBaseElasticData(FaultKnowledgeBase faultKnowledgeBase,
+                                          List<CauseSolution> causeSolutions,
+                                          List<FaultSparePart> sparePartInfos) {
         AsyncThreadPoolExecutorUtil executor = AsyncThreadPoolExecutorUtil.getExecutor();
         executor.submitTask(() -> {
             KnowledgeBase knowledgeBase = new KnowledgeBase();
             BeanUtils.copyProperties(faultKnowledgeBase, knowledgeBase);
+            knowledgeBase.setUpdateTime(new Date());
+            // 故障知识分类编码
+            Optional.ofNullable(knowledgeBase.getKnowledgeBaseTypeCode())
+                    .ifPresent(knowledgeBaseTypeCode -> {
+                        QueryWrapper<FaultKnowledgeBaseType> wrapper = new QueryWrapper<>();
+                        wrapper.lambda().eq(FaultKnowledgeBaseType::getDelFlag, CommonConstant.DEL_FLAG_0)
+                                .eq(FaultKnowledgeBaseType::getCode, knowledgeBaseTypeCode)
+                                .last("limit 1");
+                        FaultKnowledgeBaseType knowledgeBaseType = faultKnowledgeBaseTypeMapper.selectOne(wrapper);
+                        knowledgeBase.setKnowledgeBaseTypeName(knowledgeBaseType.getName());
+                    });
+            // 专业
+            Optional.ofNullable(knowledgeBase.getMajorCode())
+                    .ifPresent(majorCode -> {
+                        JSONObject major = sysBaseApi.getCsMajorByCode(majorCode);
+                        CsUserMajorModel csUserMajorModel = JSON.toJavaObject(major, CsUserMajorModel.class);
+                        knowledgeBase.setMajorName(csUserMajorModel.getMajorName());
+                    });
+            // 子系统
+            Optional.ofNullable(knowledgeBase.getSystemCode()).ifPresent(systemCode -> {
+                List<String> systemNames = sysBaseApi.getSystemNames(Collections.singletonList(systemCode));
+                if (CollUtil.isNotEmpty(systemNames)) {
+                    knowledgeBase.setSystemName(systemNames.get(0));
+                }
+            });
+            // 组件部位
+            Optional.ofNullable(knowledgeBase.getMaterialCode()).ifPresent(materialCode -> {
+                Map<String, String> composeMap = sysBaseApi.getDeviceComposeNameByCode(Arrays.asList(materialCode));
+                knowledgeBase.setMaterialName(composeMap.get(materialCode));
+            });
+            // 设备类型
+            Optional.ofNullable(knowledgeBase.getDeviceTypeCode()).ifPresent(deviceTypeCode -> {
+                List<DeviceType> deviceTypes = sysBaseApi.selectDeviceTypeByCodes(Collections.singleton(deviceTypeCode));
+                if (CollUtil.isNotEmpty(deviceTypes)) {
+                    DeviceType deviceType = deviceTypes.stream().findFirst().orElseGet(DeviceType::new);
+                    knowledgeBase.setDeviceTypeName(deviceType.getName());
+                }
+            });
+            // 故障等级
+            Optional.ofNullable(knowledgeBase.getFaultLevelCode()).ifPresent(faultLevelCode -> {
+                FaultLevel faultLevel = faultLevelService.lambdaQuery()
+                        .eq(FaultLevel::getDelFlag, CommonConstant.DEL_FLAG_0)
+                        .eq(FaultLevel::getCode, faultLevelCode).last("limit 1").one();
+                knowledgeBase.setFaultLevelName(faultLevel.getName());
+            });
             if (CollUtil.isNotEmpty(causeSolutions)) {
                 if (CollUtil.isNotEmpty(sparePartInfos)) {
                     List<String> sparePartCodes = sparePartInfos.stream().map(FaultSparePart::getSparePartCode).collect(Collectors.toList());
@@ -1227,7 +1292,6 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             elasticApi.saveBatch(Arrays.asList(knowledgeBase));
             return null;
         });
-        /*搜索引擎数据构造*/
     }
 
     /**
@@ -1347,20 +1411,30 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             if (CollUtil.isNotEmpty(records)) {
                 List<String> knowledgeBaseIds = records.stream().map(KnowledgeBaseResDTO::getId).collect(Collectors.toList());
                 Map<String, Map<String, String>> dataMap = this.buildCauseNumberMap(knowledgeBaseIds);
+                // 采用数
+                QueryWrapper<Fault> wrapper = new QueryWrapper<>();
+                wrapper.lambda().in(Fault::getKnowledgeId, knowledgeBaseIds)
+                        .select(Fault::getKnowledgeId);
+                List<Fault> faults = faultMapper.selectList(wrapper);
+                Map<String, Long> useMap = faults.stream()
+                        .collect(Collectors.groupingBy(Fault::getKnowledgeId, Collectors.counting()));
                 pageList.getRecords().forEach(knowledgeBaseRes -> {
+                    String id = knowledgeBaseRes.getId();
                     List<CauseSolution> reasonSolutions = knowledgeBaseRes.getReasonSolutions();
                     if (CollUtil.isNotEmpty(reasonSolutions)) {
-                        String id = knowledgeBaseRes.getId();
                         Map<String, String> happenRateMap = CollUtil.isEmpty(dataMap.get(id)) ?
                                 Collections.emptyMap() : dataMap.get(id);
                         for (CauseSolution reasonSolution : reasonSolutions) {
                             String happenRate = happenRateMap.get(reasonSolution.getId());
-                            if (ObjectUtil.isEmpty(happenRate)) {
-                                happenRate = "0%";
-                            }
+//                            if (ObjectUtil.isEmpty(happenRate)) {
+//                                happenRate = "0%";
+//                            }
                             reasonSolution.setHappenRate(happenRate);
                         }
                     }
+                    // 采用数
+                    int use = ObjectUtil.isEmpty(useMap.get(id)) ? 0 : useMap.get(id).intValue();
+                    knowledgeBaseRes.setUse(use);
                 });
             }
         } catch (Exception e) {
@@ -1393,7 +1467,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     .collect(Collectors.toMap(k -> k.getCode(), v -> v.getName()));
             knowledgeBases.forEach(knowledgeBase -> knowledgeBase.setFaultLevelName(levelMap.get(knowledgeBase.getFaultLevelCode())));
         }
-        // todo 采用率的计算，为空则给0
+        // 采用率默认给0，高级查询的时候会分别进行计算
         knowledgeBases.forEach(knowledgeBase -> {
             Integer use = knowledgeBase.getUse();
             if (ObjectUtil.isEmpty(use)) {
@@ -1454,7 +1528,8 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
                 Map<String, String> map = causeNumberMap.get(knowledgeBaseId);
                 if (CollUtil.isNotEmpty(map)) {
-                    String happenRate = ObjectUtil.isEmpty(map.get(id)) ? "0%" : map.get(id);
+//                    String happenRate = ObjectUtil.isEmpty(map.get(id)) ? "0%" : map.get(id);
+                    String happenRate = map.get(id);
                     solution.setHappenRate(happenRate);
                 }
             }
@@ -1492,11 +1567,26 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     public List<String> phenomenonMatching(HttpServletRequest request, HttpServletResponse response, KnowledgeBaseMatchDTO knowledgeBaseMatchDTO) {
         List<String> list = null;
         try {
+            knowledgeBaseMatchDTO.setStatus(FaultConstant.APPROVED);
             list = elasticApi.phenomenonMatching(knowledgeBaseMatchDTO);
         } catch (Exception e) {
             log.error("智能助手故障现象匹配搜索异常：{}", e.getMessage());
             throw new AiurtBootException("搜索异常！");
         }
         return list;
+    }
+
+    /**
+     * 标准维修方案要求查询
+     *
+     * @param faultCauseSolutionIdList
+     * @return
+     */
+    @Override
+    public List<FaultSparePart> getStandardRepairRequirements(List<String> faultCauseSolutionIdList) {
+        if (CollUtil.isEmpty(faultCauseSolutionIdList)) {
+            return Collections.emptyList();
+        }
+        return baseMapper.getStandardRepairRequirements(faultCauseSolutionIdList);
     }
 }

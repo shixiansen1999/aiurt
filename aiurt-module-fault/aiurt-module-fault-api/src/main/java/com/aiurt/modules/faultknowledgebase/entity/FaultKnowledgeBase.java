@@ -121,7 +121,8 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
 	/**设备组件*/
 	@Excel(name = "设备组件", width = 15)
     @ApiModelProperty(value = "设备组件")
-    @Dict(dictTable ="device_assembly",dicText = "material_name",dicCode = "material_code")
+//    @Dict(dictTable ="device_assembly",dicText = "material_name",dicCode = "material_code")
+    @Dict(dictTable ="device_compose",dicText = "material_name",dicCode = "material_code")
     private String materialCode;
 	/**审核人*/
 	@Excel(name = "审核人", width = 15)

@@ -1,8 +1,6 @@
 package com.aiurt.modules.fault.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.common.aspect.annotation.MajorFilterColumn;
-import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.entity.FaultRepairParticipants;
@@ -13,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;

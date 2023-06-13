@@ -200,4 +200,13 @@ public interface IFaultService extends IService<Fault> {
      * @return
      */
      Fault isExist(String code);
+
+    /**
+     * 备件自动回填
+     * @param oldSparePartCode
+     * @param faultCauseSolutionIdList
+     * @param deviceCode
+     * @return
+     */
+    List<SparePartReplaceDTO> querySparePartReplaceList(String oldSparePartCode, List<String> faultCauseSolutionIdList, String deviceCode);
 }

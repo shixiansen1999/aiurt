@@ -21,6 +21,7 @@ import com.aiurt.modules.faultknowledgebase.dto.*;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
+import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -40,6 +41,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -474,13 +476,14 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 
 
 	/**
-	 *  维修建议
-	 * @param knowledgeId 知识库id
+	 *  根据故障原因id 标准维修方案要求
+	 * @param faultCauseSolutionIdList
 	 * @return
 	 */
-
-	public Result<RepairSolRecDTO> queryRepairSolRecDTO(@RequestParam(value = "knowledgeId", required = false) String knowledgeId) {
-		RepairSolRecDTO repairSolRecDTO = faultKnowledgeBaseService.queryRepairSolRecDTO(knowledgeId);
-		return Result.OK(repairSolRecDTO);
+	@GetMapping("/getStandardRepairRequirements")
+	@ApiOperation(value="标准维修方案要求查询", notes="标准维修方案要求查询")
+	public Result<List<FaultSparePart>> getStandardRepairRequirements(@RequestParam(value = "faultCauseSolutionIdList", required = false) List<String> faultCauseSolutionIdList) {
+		List<FaultSparePart> list = faultKnowledgeBaseService.getStandardRepairRequirements(faultCauseSolutionIdList);
+		return Result.OK(list);
 	}
  }

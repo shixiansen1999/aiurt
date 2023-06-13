@@ -1,9 +1,11 @@
 package com.aiurt.modules.fault.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.BetweenFormater;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.DeviceChangeSparePart;
 import com.aiurt.modules.fault.entity.Fault;
@@ -14,8 +16,11 @@ import com.aiurt.modules.fault.service.IDeviceChangeSparePartService;
 import com.aiurt.modules.fault.service.IFaultRepairParticipantsService;
 import com.aiurt.modules.fault.service.IFaultRepairRecordService;
 import com.aiurt.modules.fault.service.IFaultService;
+import com.aiurt.modules.faultcauseusagerecords.entity.FaultCauseUsageRecords;
+import com.aiurt.modules.faultcauseusagerecords.service.IFaultCauseUsageRecordsService;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
@@ -56,6 +61,9 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
 
     @Autowired
     private IDeviceChangeSparePartService sparePartService;
+
+    @Autowired
+    private IFaultCauseUsageRecordsService faultCauseUsageRecordsService;
 
     @Override
     public RecordDetailDTO queryDetailByFaultCode(String faultCode) {
@@ -158,6 +166,18 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
                     return build;
                 }).collect(Collectors.toList());
         deviceChangeRecordDTO.setConsumableList(consumableList);
+
+        // 查询使用的解决原件
+        LambdaQueryWrapper<FaultCauseUsageRecords> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(FaultCauseUsageRecords::getFaultCode, faultCode).eq(FaultCauseUsageRecords::getDelFlag, CommonConstant.DEL_FLAG_0);
+        List<FaultCauseUsageRecords> list = faultCauseUsageRecordsService.list(queryWrapper);
+
+        if (CollUtil.isNotEmpty(list)) {
+            deviceChangeRecordDTO.setFaultCauseSolutionId(list.stream().map(FaultCauseUsageRecords::getFaultCauseSolutionId).collect(Collectors.toList()));
+        }
+
+        // 判断是否异常
+        
         return deviceChangeRecordDTO;
     }
 }
