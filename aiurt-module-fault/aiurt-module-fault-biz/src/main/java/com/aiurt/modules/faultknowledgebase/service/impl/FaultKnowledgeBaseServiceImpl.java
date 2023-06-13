@@ -36,7 +36,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import liquibase.pro.packaged.I;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -121,6 +120,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 }
             }
             for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {
+                String lineCode = faultKnowledgeBaseMapper.selectById(knowledgeBase.getId()).getLineCode();
+                knowledgeBase.setLineCode(lineCode);
+                knowledgeBase.setLineName(faultKnowledgeBaseMapper.translateLine(lineCode));
                 knowledgeBase.setHaveButton(false);
                 if (StrUtil.isNotBlank(knowledgeBase.getProcessInstanceId()) && StrUtil.isNotBlank(knowledgeBase.getTaskId())) {
                     dealAuthButton(sysUser, knowledgeBase);
@@ -142,8 +144,22 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 knowledgeBase.setDeviceTypeName(deviceType.getName());
             }
         }
+        List<FaultKnowledgeBase> collect=new ArrayList<>();
+        collect.addAll(faultKnowledgeBases);
+        //            筛选站点（暂时）
+        if(faultKnowledgeBase.getLineCode()!=null){
+            collect = faultKnowledgeBases.stream()
+                    .filter(l -> {
+                        String lineCode = l.getLineCode();
+                        String faultLineCode = faultKnowledgeBase.getLineCode();
+                        return lineCode != null && faultLineCode != null && lineCode.equals(faultLineCode);
+                    })
+                    .collect(Collectors.toList());
+        }
+//            collect = faultKnowledgeBases.stream()
+//                    .filter(l -> l.getLineCode().equals(faultKnowledgeBase.getLineCode())||l.getLineCode()!=null).collect(Collectors.toList());
         GlobalThreadLocal.setDataFilter(b);
-        return page.setRecords(faultKnowledgeBases);
+        return page.setRecords(collect);
     }
 
     private void dealAuthButton(LoginUser sysUser, FaultKnowledgeBase knowledgeBase) {

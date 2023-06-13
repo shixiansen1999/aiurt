@@ -228,5 +228,10 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String modelKey;
 
-
+    /**
+     * 线路line
+     */
+    @ApiModelProperty(value = "线路line")
+    @TableField(exist = false)
+    private String lineName;
 }

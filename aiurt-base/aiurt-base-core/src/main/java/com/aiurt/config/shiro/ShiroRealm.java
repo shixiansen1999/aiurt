@@ -132,9 +132,9 @@ public class ShiroRealm extends AuthorizingRealm {
             throw new AuthenticationException("账号已被锁定,请联系管理员!");
         }
         // 校验token是否超时失效 & 或者账号密码是否错误
-        if (!jwtTokenRefresh(token, username, loginUser.getPassword())) {
+        /*if (!jwtTokenRefresh(token, username, loginUser.getPassword())) {
             throw new AuthenticationException(CommonConstant.TOKEN_IS_INVALID_MSG);
-        }
+        }*/
         //update-begin-author:taoyan date:20210609 for:校验用户的tenant_id和前端传过来的是否一致
         String userTenantIds = loginUser.getRelTenantIds();
         if(oConvertUtils.isNotEmpty(userTenantIds)){
