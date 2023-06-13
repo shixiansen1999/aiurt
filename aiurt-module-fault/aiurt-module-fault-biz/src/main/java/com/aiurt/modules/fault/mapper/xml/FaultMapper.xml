@@ -299,7 +299,13 @@
             su.realname,
             su.working_time,
             su.avatar AS picturePath,
-            su.org_code
+            su.org_code,
+            su.job_grade,
+            DATEDIFF(
+                    #{date},
+                    IFNULL(
+                            working_time,
+                            #{date})) AS tenure
         FROM
             sys_user su
         WHERE
@@ -315,6 +321,266 @@
             )
         GROUP BY
             su.id
+    </select>
+    <select id="isSameFaultHandled" resultType="com.aiurt.modules.fault.dto.SameFaultDTO">
+        SELECT
+            f.appoint_user_name AS userName,
+            CASE
+                WHEN COUNT(*) > 0 THEN '是' ELSE '否'
+            END AS value
+        FROM
+            fault f
+        WHERE
+            f.knowledge_id = #{knowledgeId}
+          AND f.state = 2
+          AND f.appoint_user_name is not null
+        <if test="userNames!=null and userNames.size()>0">
+            AND f.appoint_user_name in
+            <foreach collection="userNames" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY f.appoint_user_name
+    </select>
+    <select id="taskSituation" resultType="com.aiurt.modules.fault.dto.SameFaultDTO">
+        SELECT
+            f.appoint_user_name AS userName,
+            CASE
+                WHEN COUNT(*) > 0 THEN
+                    '维修中' ELSE '空闲'
+            END AS value
+        FROM
+            fault f
+        WHERE
+            f.state = 1
+            and f.appoint_user_name is not null
+        <if test="userNames!=null and userNames.size()>0">
+            AND f.appoint_user_name in
+            <foreach collection="userNames" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY
+            f.appoint_user_name
+    </select>
+    <select id="getFaultHandleNumberMaxMin" resultType="com.aiurt.modules.fault.dto.CommonMaxMinNumDTO">
+        SELECT
+        IFNULL( MAX( num ), 0 ) AS maxNum,
+        IFNULL( MIN( num ), 0 ) AS minNum
+        FROM
+        ( SELECT COUNT(DISTINCT id ) AS num FROM fault_repair_record WHERE del_flag = 0
+        <if test="userNames!=null and userNames.size()>0">
+            AND appoint_user_name in
+            <foreach collection="userNames" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY appoint_user_name ) AS subquery;
+    </select>
+    <select id="getEfficiencyList" resultType="com.aiurt.modules.fault.dto.EfficiencyDTO">
+        select frr.appoint_user_name username,
+        IFNULL(AVG(TIME_TO_SEC(TIMEDIFF(frr.start_time, f.assign_time))), 0) AS responseTime,
+        IFNULL(AVG(TIME_TO_SEC(TIMEDIFF(frr.end_time, frr.start_time))), 0) AS resolveTime,
+        (
+        IFNULL(AVG(TIME_TO_SEC(TIMEDIFF(frr.start_time, f.assign_time))), 0) +
+        IFNULL(AVG(TIME_TO_SEC(TIMEDIFF(frr.end_time, frr.start_time))), 0)
+        ) AS sumResponseTimeResolveTime
+        from fault_repair_record frr
+        join fault f on frr.fault_code = f.code
+        where frr.del_flag = 0
+        and frr.start_time is not null
+        and frr.end_time is not null
+        and f.assign_time is not null
+        <if test="userNames!=null and userNames.size()>0">
+            AND f.appoint_user_name in
+            <foreach collection="userNames" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        group by f.appoint_user_name
+    </select>
+    <select id="getTenureMaxMin" resultType="com.aiurt.modules.fault.dto.CommonMaxMinNumDTO">
+        SELECT
+            IFNULL(MAX(workExperience),0) as maxNum,
+            IFNULL(MIN(workExperience),0) as minNum
+        FROM
+            ( SELECT DATEDIFF(#{date}, IFNULL( working_time, #{date})) AS workExperience FROM sys_user GROUP BY id ) AS temp
+    </select>
+    <select id="getHandleNumberList" resultType="com.aiurt.modules.fault.dto.RadarNumberDTO">
+        SELECT
+            appoint_user_name AS username,
+            IFNULL(count(DISTINCT id ),0) AS number
+        FROM
+            fault_repair_record
+        WHERE
+            del_flag = 0
+        <if test="userNameList!=null and userNameList.size()>0">
+            AND appoint_user_name in
+            <foreach collection="userNameList" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY
+            appoint_user_name
+    </select>
+    <select id="getAptitude" resultType="com.aiurt.modules.fault.dto.RadarAptitudeDTO">
+        select sua.user_id     userId,
+               ifnull(sum(sua.number),0) number
+        from sys_user_aptitudes sua
+        join sys_user su on (sua.user_id = su.id and sua.del_flag = 0)
+        <where>
+            sua.del_flag = 0
+            <if test="userIds!=null and userIds.size()>0">
+                and user_id in
+                <foreach collection="userIds" separator="," open="(" close=")" item="userId">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+        group by sua.user_id
+    </select>
+    <select id="getAptitudeMaxMin" resultType="com.aiurt.modules.fault.dto.CommonMaxMinNumDTO">
+        SELECT
+        IFNULL(MAX(number),0) as maxNum,
+        IFNULL(MIN(number),0) as minNum
+        FROM
+        (select
+        ifnull(sum(sua.number),0) number
+        from sys_user_aptitudes sua
+        join sys_user su on (sua.user_id = su.id and sua.del_flag = 0)
+        <where>
+            sua.del_flag = 0
+            <if test="userIds!=null and userIds.size()>0">
+                and user_id in
+                <foreach collection="userIds" separator="," open="(" close=")" item="userId">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+        group by sua.user_id) AS subquery;
+    </select>
+    <select id="getPerformanceList" resultType="com.aiurt.modules.fault.dto.RadarPerformanceDTO">
+        select sup.user_id, IFNULL(avg(sup.score),0) score
+        from sys_user_perf sup
+        join sys_user su on (sup.user_id = su.id and su.del_flag = 0)
+        <where>
+            sup.del_flag = 0
+            and date_format(str_to_date(concat(sup.year, lpad(sup.month, 2, '0'), '01'), '%Y%m%d'), '%Y%m') >=
+            date_format(#{date}, '%Y%m')
+            <if test="userIds!=null and userIds.size()>0">
+                and user_id in
+                <foreach collection="userIds" separator="," open="(" close=")" item="userId">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+        group by sup.user_id
+    </select>
+    <select id="getFaultHandCountListByFaultPhenomenon" resultType="com.aiurt.modules.fault.dto.RadarNumberDTO">
+        SELECT
+        frr.appoint_user_name AS username,
+        ifnull(count(DISTINCT frr.id ),0) AS number
+        FROM
+        fault_repair_record frr
+        LEFT JOIN fault f ON f.code = frr.fault_code
+        WHERE
+        frr.del_flag = 0
+        AND f.state = 2
+        AND frr.knowledge_id = #{knowledgeId}
+        <if test="userNameList!=null and userNameList.size()>0">
+            AND frr.appoint_user_name in
+            <foreach collection="userNameList" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY
+        frr.appoint_user_name
+    </select>
+    <select id="getFaultHandCountListByDeviceType" resultType="com.aiurt.modules.fault.dto.RadarNumberDTO">
+        SELECT
+        frr.appoint_user_name AS username,
+        ifnull(count(DISTINCT frr.id ),0) AS number
+        FROM
+        fault_repair_record frr
+        LEFT JOIN fault f ON f.code = frr.fault_code
+        LEFT JOIN  fault_device fd ON fd.fault_code = frr.fault_code
+        LEFT JOIN  device d ON (d.code = fd.device_code AND d.device_type_code = #{deviceTypeCode})
+        WHERE
+        frr.del_flag = 0
+        AND f.state = 2
+        <if test="userNameList!=null and userNameList.size()>0">
+            AND frr.appoint_user_name in
+            <foreach collection="userNameList" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY
+        frr.appoint_user_name
+    </select>
+    <select id="getRoleNameByUserIdList" resultType="com.aiurt.modules.fault.dto.RoleNameDTO">
+        SELECT
+            sur.user_id,
+            GROUP_CONCAT(ifnull(sr.role_name,'')) AS roleName
+        FROM
+            sys_user_role sur
+        left join sys_role sr on sr.id = sur.role_id
+        <where>
+            <if test="userIdList!=null and userIdList.size()>0">
+                user_id in
+                <foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+        group by sur.user_id
+    </select>
+    <select id="getAptitudeList" resultType="com.aiurt.modules.fault.dto.AptitudeDTO">
+        SELECT
+            sua.user_id,
+            GROUP_CONCAT(CONCAT( sua.NAME, '-', vd.item_text )) AS aptitudeName
+        FROM
+            sys_user_aptitudes sua
+        LEFT JOIN view_dict vd ON(vd.dict_code = 'aptitude_level' AND sua.`level` = vd.item_value)
+        <where>
+            <if test="userIdList!=null and userIdList.size()>0">
+                sua.user_id in
+                <foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
+            sua.user_id
+    </select>
+    <select id="getFaultRecList" resultType="com.aiurt.modules.fault.dto.FaultRecDTO">
+        SELECT
+            IFNULL( CONCAT( IFNULL(dt.`name`,''), '/', IFNULL(frr.symptoms,'') ), '' ) AS faultRec,
+            IF( frr.symptoms =#{symptoms}  AND d.device_type_code = #{deviceTypeCode}, 1, 0 ) AS isDeviceTypeAndPhenomenon
+        FROM
+            fault_repair_record AS frr
+                LEFT JOIN fault_device fd ON fd.fault_code = frr.fault_code
+                LEFT JOIN device d ON d.CODE = fd.device_code
+                LEFT JOIN device_type dt ON dt.`code` = d.device_type_code
+        WHERE
+            frr.del_flag = 0
+            AND frr.appoint_user_name = #{userName}
+            AND d.device_type_code = #{deviceTypeCode}
+        GROUP BY
+            faultRec
+    </select>
+    <select id="getUserStationName" resultType="java.lang.String">
+        SELECT
+            cs.station_name
+        FROM
+            sys_user_position sup
+        LEFT JOIN cs_position_wifi cpw ON cpw.mac = sup.bssid
+        LEFT JOIN cs_station cs ON cs.station_code = cpw.station_code
+        WHERE
+            sup.create_by =#{userName}
+          AND sup.upload_time >= #{tenMinutesAgo}
+        ORDER BY
+            sup.upload_time DESC
+            LIMIT 1
     </select>
 
 

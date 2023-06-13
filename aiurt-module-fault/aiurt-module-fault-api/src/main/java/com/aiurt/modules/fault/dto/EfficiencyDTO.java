@@ -20,4 +20,10 @@ public class EfficiencyDTO {
      * 平均解决时间
      */
     private Double resolveTime;
+
+    /**
+     * 平均响应时间+平均解决时间
+     */
+    private Double sumResponseTimeResolveTime;
+
 }

@@ -1262,7 +1262,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 FaultLevel faultLevel = faultLevelService.lambdaQuery()
                         .eq(FaultLevel::getDelFlag, CommonConstant.DEL_FLAG_0)
                         .eq(FaultLevel::getCode, faultLevelCode).last("limit 1").one();
-                knowledgeBase.setFaultLevelName(faultLevel.getName());
+                if (ObjectUtil.isNotEmpty(faultLevel)) {
+                    knowledgeBase.setFaultLevelName(faultLevel.getName());
+                }
             });
             if (CollUtil.isNotEmpty(causeSolutions)) {
                 if (CollUtil.isNotEmpty(sparePartInfos)) {
@@ -1413,12 +1415,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 List<String> knowledgeBaseIds = records.stream().map(KnowledgeBaseResDTO::getId).collect(Collectors.toList());
                 Map<String, Map<String, String>> dataMap = this.buildCauseNumberMap(knowledgeBaseIds);
                 // 采用数
-                QueryWrapper<Fault> wrapper = new QueryWrapper<>();
-                wrapper.lambda().in(Fault::getKnowledgeId, knowledgeBaseIds)
-                        .select(Fault::getKnowledgeId);
-                List<Fault> faults = faultMapper.selectList(wrapper);
-                Map<String, Long> useMap = faults.stream()
-                        .collect(Collectors.groupingBy(Fault::getKnowledgeId, Collectors.counting()));
+                List<AnalyzeFaultCauseResDTO> useNumbers = baseMapper.countFaultCauseByIdSet(knowledgeBaseIds);
+                Map<String, Long> useMap = useNumbers.stream()
+                        .collect(Collectors.toMap(k -> k.getKnowledgeBaseId(), v -> v.getNum(), Long::sum));
                 pageList.getRecords().forEach(knowledgeBaseRes -> {
                     String id = knowledgeBaseRes.getId();
                     List<CauseSolution> reasonSolutions = knowledgeBaseRes.getReasonSolutions();
