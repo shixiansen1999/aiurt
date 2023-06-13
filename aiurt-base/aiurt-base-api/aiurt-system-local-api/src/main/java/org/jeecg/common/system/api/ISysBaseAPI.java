@@ -1178,5 +1178,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     DictModel dictById(String id);
+
+    /**
+     * 根据线路code查询名称
+     * @param code
+     * @return
+     */
+    String getLineNameByCode(String code);
 }
 

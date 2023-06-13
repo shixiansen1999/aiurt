@@ -209,6 +209,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@GetMapping(value = "/queryById")
 	public Result<FaultKnowledgeBase> queryById(@RequestParam(name="id",required=true) String id) {
 		FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseMapper.readOne(id);
+		faultKnowledgeBase.setLineName(faultKnowledgeBaseMapper.translateLine(faultKnowledgeBase.getLineCode()));
 		if(faultKnowledgeBase==null) {
 			return Result.error("未找到对应数据");
 		}

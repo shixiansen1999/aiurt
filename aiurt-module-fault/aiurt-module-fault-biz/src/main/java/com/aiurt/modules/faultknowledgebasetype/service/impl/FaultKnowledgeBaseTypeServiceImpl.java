@@ -2,7 +2,6 @@ package com.aiurt.modules.faultknowledgebasetype.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.CommonAPI;
@@ -20,6 +19,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.CsUserSubsystemModel;
 import org.jeecg.common.system.vo.LoginUser;
@@ -49,11 +49,28 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
     @Lazy
     @Autowired
     private CommonAPI commonApi;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
 
     @Override
-    public List<MajorDTO> faultKnowledgeBaseTypeTreeList(String majorCode,String systemCode) {
+    public List<MajorDTO> faultKnowledgeBaseTypeTreeList(String majorCode,String systemCode,String lineCode) {
         LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, "0").orderByDesc(FaultKnowledgeBaseType::getCreateTime);
+        LambdaQueryWrapper<FaultKnowledgeBase> faultKnowledgeBaseWrapper = new LambdaQueryWrapper<>();
+        List<String> list = new ArrayList<>();
+        if (StrUtil.isNotBlank(lineCode)) {
+            String[] split = StrUtil.split(lineCode, ",");
+            List<String> stringList = Arrays.asList(split);
+            faultKnowledgeBaseWrapper.in(FaultKnowledgeBase::getLineCode, stringList);
+
+            List<FaultKnowledgeBase> faultKnowledgeBaseList = faultKnowledgeBaseMapper.selectList(faultKnowledgeBaseWrapper);
+            if (CollUtil.isNotEmpty(faultKnowledgeBaseList)) {
+                list = faultKnowledgeBaseList.stream().map(FaultKnowledgeBase::getKnowledgeBaseTypeCode).collect(Collectors.toList());
+            }
+        }
+        if (CollUtil.isNotEmpty(list)){
+            queryWrapper.in(FaultKnowledgeBaseType::getCode,list);
+        }
         List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(queryWrapper);
 
         //下面禁用数据过滤
@@ -179,19 +196,23 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
     }
 
     @Override
-    public List<SelectTableDTO> knowledgeBaseTypeTreeList(String majorCode,String systemCode,String classifyCode) {
+    public List<SelectTableDTO> knowledgeBaseTypeTreeList(String majorCode,String systemCode,String classifyCode,String lineCode) {
         List<String> list = new ArrayList<>();
+        LambdaQueryWrapper<FaultKnowledgeBase> faultKnowledgeBaseLambdaQueryWrapper = new LambdaQueryWrapper<>();
         if (StrUtil.isNotBlank(classifyCode)){
             String[] split = StrUtil.split(classifyCode, ",");
             List<String> stringList = Arrays.asList(split);
-            LambdaQueryWrapper<FaultKnowledgeBase> faultKnowledgeBaseLambdaQueryWrapper = new LambdaQueryWrapper<>();
             faultKnowledgeBaseLambdaQueryWrapper.in(FaultKnowledgeBase::getDeviceTypeCode,stringList).eq(FaultKnowledgeBase::getDelFlag, "0");
-            List<FaultKnowledgeBase> faultKnowledgeBaseList = faultKnowledgeBaseMapper.selectList(faultKnowledgeBaseLambdaQueryWrapper);
-            if (CollUtil.isNotEmpty(faultKnowledgeBaseList)){
-                list = faultKnowledgeBaseList.stream().map(FaultKnowledgeBase::getKnowledgeBaseTypeCode).collect(Collectors.toList());
-            }
         }
-
+        if (StrUtil.isNotBlank(lineCode)){
+            String[] split = StrUtil.split(lineCode, ",");
+            List<String> stringList = Arrays.asList(split);
+            faultKnowledgeBaseLambdaQueryWrapper.in(FaultKnowledgeBase::getLineCode,stringList);
+        }
+        List<FaultKnowledgeBase> faultKnowledgeBaseList = faultKnowledgeBaseMapper.selectList(faultKnowledgeBaseLambdaQueryWrapper);
+        if (CollUtil.isNotEmpty(faultKnowledgeBaseList)){
+            list = faultKnowledgeBaseList.stream().map(FaultKnowledgeBase::getKnowledgeBaseTypeCode).collect(Collectors.toList());
+        }
         LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, "0").orderByDesc(FaultKnowledgeBaseType::getCreateTime);
         if (CollUtil.isNotEmpty(list)){

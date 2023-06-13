@@ -5,6 +5,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.faultanalysisreport.constants.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
@@ -58,6 +59,8 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 private FaultKnowledgeBaseTypeMapper faultKnowledgeBaseTypeMapper;
 	 @Resource
 	 private ISysBaseAPI sysBaseAPI;
+	 @Resource
+	 private FaultMapper faultMapper;
 	/**
 	 * 分页列表查询
 	 *
@@ -219,16 +222,24 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 			 @ApiResponse(code = 200, message = "OK", response = FaultDTO.class)
 	 })
 	 public Result<FaultDTO> getDetail(String id) {
+		 FaultDTO detail=new FaultDTO();
+		 LambdaQueryWrapper<Fault> faultWrapper = new LambdaQueryWrapper<>();
+		 faultWrapper.eq(Fault::getId,id);
+		 Fault fault1 = faultMapper.selectOne(faultWrapper);
 		 FaultAnalysisReport report = faultAnalysisReportService.getById(id);
 		 if (ObjectUtil.isNotEmpty(report)) {
 			 LambdaQueryWrapper<Fault> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.eq(Fault::getCode, report.getFaultCode());
 			 Fault fault = faultService.getBaseMapper().selectOne(wrapper);
-			 FaultDTO detail = faultAnalysisReportService.getDetail(fault.getId());
+			 detail = faultAnalysisReportService.getDetail(fault.getId());
+			 detail.setLineCode(fault1.getLineCode());
+			 detail.setLineName(sysBaseAPI.getLineNameByCode(fault1.getLineCode()));
 			 return Result.OK(detail);
 		 }
 
-		 FaultDTO detail = faultAnalysisReportService.getDetail(id);
+		 detail = faultAnalysisReportService.getDetail(id);
+		 detail.setLineCode(fault1.getLineCode());
+		 detail.setLineName(sysBaseAPI.getLineNameByCode(fault1.getLineCode()));
 		 return Result.OK(detail);
 	 }
 

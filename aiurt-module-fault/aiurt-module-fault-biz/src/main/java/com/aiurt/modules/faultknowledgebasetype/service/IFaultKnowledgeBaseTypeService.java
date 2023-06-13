@@ -21,7 +21,7 @@ public interface IFaultKnowledgeBaseTypeService extends IService<FaultKnowledgeB
      * @param systemCode
      * @return
      */
-    List<MajorDTO> faultKnowledgeBaseTypeTreeList(String majorCode,String systemCode);
+    List<MajorDTO> faultKnowledgeBaseTypeTreeList(String majorCode,String systemCode,String lineCode);
     /**
      *   添加
      * @param faultKnowledgeBaseType
@@ -29,5 +29,5 @@ public interface IFaultKnowledgeBaseTypeService extends IService<FaultKnowledgeB
      */
     Result<String> add(FaultKnowledgeBaseType faultKnowledgeBaseType);
 
-    List<SelectTableDTO> knowledgeBaseTypeTreeList(String majorCode,String systemCode,String classifyCode);
+    List<SelectTableDTO> knowledgeBaseTypeTreeList(String majorCode,String systemCode,String classifyCode,String lineCode);
 }

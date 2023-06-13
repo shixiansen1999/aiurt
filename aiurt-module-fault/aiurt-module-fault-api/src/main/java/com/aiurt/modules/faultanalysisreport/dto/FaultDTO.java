@@ -78,6 +78,11 @@ public class FaultDTO extends DictEntity implements Serializable {
     @Dict(dictTable = "cs_line", dicText = "line_name", dicCode = "line_code")
     private String lineCode;
 
+    /**线路名称*/
+    @ApiModelProperty(value = "线路名称", required = true)
+    @Dict(dictTable = "cs_line", dicText = "line_name", dicCode = "line_code")
+    @TableField(exist = false)
+    private String lineName;
     /**设备编码*/
     @Excel(name = "设备编码", width = 15)
     @ApiModelProperty(value = "设备编码", required = true)
