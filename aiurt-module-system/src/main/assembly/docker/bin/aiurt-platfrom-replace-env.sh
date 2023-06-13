@@ -8,6 +8,12 @@ esurl=$ES_URL
 mysqlpassword=$MYSQL_PASSWORD
 uploadtype=$UPLOAD_TYPE
 miniourl=$MINIO_URL
+sqlserverip=$SQL_SERVER_IP
+sqlservername=$SQL_SERVER_DB_NAME
+sqlserverport=$SQL_SERVER_DB_PROT
+sqlserverusername=$SQL_SERVER_USERNAME
+sqlserverpassword=$SQL_SERVER_PASSWORD
+
 if [ ! $mysqlip ]; then
     mysqlip="127.0.0.1"
 fi
@@ -36,6 +42,21 @@ if [ ! $miniourl ]; then
     miniourl="http://127.0.0.1:9000"
 fi
 
+if [ ! $sqlserverip ]; then
+    sqlserverip="192.168.1.27"
+fi
+if [ ! $sqlservername ]; then
+    sqlservername="alarm"
+fi
+if [ ! $sqlserverport ]; then
+    sqlserverport="1433"
+fi
+if [ ! $sqlserverusername ]; then
+    sqlserverusername="sa"
+fi
+if [ ! $sqlserverpassword ]; then
+    sqlserverpassword="1qaz@2wsx"
+fi
 applicationYml="/aiurt-platfrom/aiurt-module-system/config/application-docker.yml"
 if [ ! -z "$miniourl" ] && [ ! -z "$uploadtype" ] && [ ! -z "$mysqlip" ] && [ ! -z "$mysqlname" ] && [ ! -z "$mysqlport" ]  && [ ! -z "$redisip" ]  && [ ! -z "$redisport" ] && [ ! -z "$esurl" ] && [ ! -z "$mysqlpassword" ]; then
   needReMySqlIpChar="\$MYSQL_IP"
@@ -47,6 +68,12 @@ if [ ! -z "$miniourl" ] && [ ! -z "$uploadtype" ] && [ ! -z "$mysqlip" ] && [ ! 
   needMysqlPasswordChar="\$MYSQL_PASSWORD"
   needUploadTypeChar="\$UPLOAD_TYPE"
   needMinioUrlChar="\$MINIO_URL"
+  needsqlserverip="\$SQL_SERVER_IP"
+  needsqlservername="\$SQL_SERVER_DB_NAME"
+  needsqlserverport="\$SQL_SERVER_DB_PROT"
+  needsqlserverusername="\$SQL_SERVER_USERNAME"
+  needsqlserverpassword="\$SQL_SERVER_PASSWORD"
+
   if [ -f "$applicationYml"  ]; then
     sed -i "s|$needReMySqlIpChar|$mysqlip|g" $applicationYml
     sed -i "s|$needReMySqlNameChar|$mysqlname|g" $applicationYml
@@ -57,6 +84,11 @@ if [ ! -z "$miniourl" ] && [ ! -z "$uploadtype" ] && [ ! -z "$mysqlip" ] && [ ! 
     sed -i "s|$needMysqlPasswordChar|$mysqlpassword|g" $applicationYml
     sed -i "s|$needUploadTypeChar|$uploadtype|g" $applicationYml
     sed -i "s|$needMinioUrlChar|$miniourl|g" $applicationYml
+    sed -i "s|$needsqlserverip|$sqlserverip|g" $applicationYml
+    sed -i "s|$needsqlservername|$sqlservername|g" $applicationYml
+    sed -i "s|$needsqlserverport|$sqlserverport|g" $applicationYml
+    sed -i "s|$needsqlserverusername|$sqlserverusername|g" $applicationYml
+    sed -i "s|$needsqlserverpassword|$sqlserverpassword|g" $applicationYml
   fi
 fi
 cd /aiurt-platfrom/aiurt-module-system
