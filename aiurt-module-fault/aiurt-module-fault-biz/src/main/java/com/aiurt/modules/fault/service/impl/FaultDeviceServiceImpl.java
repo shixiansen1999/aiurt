@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -131,6 +132,9 @@ private ISysBaseAPI sysBaseApi;
      */
     @Override
     public List<FaultDevice> queryListByFaultCodeList(List<String> faultCodeList) {
+        if (CollUtil.isEmpty(faultCodeList)) {
+            return Collections.emptyList();
+        }
         List<FaultDevice> faultDeviceList = baseMapper.queryListByFaultCodeList(faultCodeList);
         return faultDeviceList;
     }
