@@ -16,9 +16,9 @@ public class RecPersonDTO implements Serializable {
     @ApiModelProperty(value = "用户id")
     private String userId;
 
-    @ApiModelProperty
+    @ApiModelProperty(value = "用户账号")
     private String userName;
-
+    @ApiModelProperty(value = "用户名称")
     private String realName;
 
     private String key;

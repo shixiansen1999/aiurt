@@ -26,22 +26,20 @@ import com.aiurt.modules.base.PageOrderGenerator;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.fault.constants.FaultConstant;
+import com.aiurt.modules.fault.constants.FaultDictCodeConstant;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.*;
 import com.aiurt.modules.fault.enums.FaultStatesEnum;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
-import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.fault.service.*;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
 import com.aiurt.modules.faultcauseusagerecords.entity.FaultCauseUsageRecords;
 import com.aiurt.modules.faultcauseusagerecords.service.IFaultCauseUsageRecordsService;
-import com.aiurt.modules.faultexternal.mapper.FaultExternalMapper;
 import com.aiurt.modules.faultexternal.service.IFaultExternalService;
 import com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
-import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.service.IFaultKnowledgeBaseTypeService;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
@@ -60,7 +58,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import javassist.bytecode.LineNumberAttribute;
 import lombok.extern.slf4j.Slf4j;
 import org.ansj.domain.Result;
 import org.ansj.domain.Term;
@@ -76,7 +73,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
@@ -2051,6 +2047,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     @Override
     public List<RecPersonListDTO> queryRecPersonList(String faultCode) {
+        if (StrUtil.isEmpty(faultCode)) {
+            return new ArrayList<>();
+        }
+
         List<RecPersonListDTO> result = faultMapper.getManagedDepartmentUsers(new Date(), checkLogin().getId());
         if (CollUtil.isEmpty(result)) {
             return result;
@@ -2060,7 +2060,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         Fault fault = isExist(faultCode);
         List<String> userIds = result.stream().map(RecPersonListDTO::getUserId).collect(Collectors.toList());
         List<String> userNames = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
-        String deviceTypeCode = Optional.ofNullable(faultDeviceService.queryByFaultCode(faultCode)).orElse(CollUtil.newArrayList()).get(0).getDeviceTypeCode();
+        String deviceTypeCode = getDeviceTypeCodeByFaultCode(faultCode);
 
         // 筛选人员当日排班情况
         result = filterAndProcessUserWork(result, userIds);
@@ -2084,6 +2084,21 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     }
 
     /**
+     * 根据故障代码查询相关的故障设备，并获取第一个故障设备的设备类型代码。
+     *
+     * @param faultCode 故障代码
+     * @return 设备类型代码，如果查询结果为空，则返回null
+     */
+    public String getDeviceTypeCodeByFaultCode(String faultCode) {
+        List<FaultDevice> faultDevices = faultDeviceService.queryByFaultCode(faultCode);
+        if (CollUtil.isNotEmpty(faultDevices)) {
+            // 获取第一个故障设备的设备类型代码
+            return faultDevices.get(0).getDeviceTypeCode();
+        }
+        return "";
+    }
+
+    /**
      * 向推荐人员结果列表中添加额外的数据
      *
      * @param resultList     结果列表
@@ -2104,6 +2119,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<AptitudeDTO> aptitudeNameList = faultMapper.getAptitudeList(userIdList);
         Map<String, String> aptitudeMap = convertAptitudeNameListToMap(aptitudeNameList);
 
+        // 人员等级
+        Map<String, String> jobGradeMap = getJobGradeMap();
+
         for (RecPersonListDTO recPersonListDTO : resultList) {
             recPersonListDTO.setRoleName(StrUtil.split(roleNameMap.getOrDefault(recPersonListDTO.getUserId(), ""), ','));
             recPersonListDTO.setQualification(StrUtil.split(aptitudeMap.getOrDefault(recPersonListDTO.getUserId(), ""), ','));
@@ -2119,9 +2137,27 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
             // 所在站点
             recPersonListDTO.setStationName(setUserStationName(recPersonListDTO.getUserName()));
+
+            // 翻译人员等级
+            recPersonListDTO.setJobGradeName(jobGradeMap.getOrDefault(String.valueOf(recPersonListDTO.getJobGrade()),""));
         }
 
         return resultList;
+    }
+
+    /**
+     * 获取人员等级字典映射
+     * @return 映射的 Map
+     */
+    private Map<String, String> getJobGradeMap() {
+        List<DictModel> dictItems = sysBaseAPI.queryEnableDictItemsByCode(FaultDictCodeConstant.JOB_GRADE);
+        if (dictItems == null || dictItems.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return dictItems.stream()
+                .filter(dictModel -> dictModel.getValue() != null && dictModel.getText() != null)
+                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (v1, v2) -> v1));
     }
 
     /**
@@ -2144,7 +2180,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 获取减去10分钟后的时间
         Date tenMinutesAgo = calendar.getTime();
 
-        String stationName = faultMapper.getUserStationName(userName,tenMinutesAgo);
+        String stationName = faultMapper.getUserStationName(userName, tenMinutesAgo);
         if (StrUtil.isEmpty(stationName)) {
             stationName = "暂无位置信息";
         }
@@ -2558,31 +2594,29 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
         List<String> userNames = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
-        if (CollUtil.isNotEmpty(userNames)) {
-            Map<String, String> sameFaultMap = Optional.ofNullable(faultMapper.taskSituation(userNames)).orElse(CollUtil.newArrayList())
-                    .stream()
-                    .filter(sameFault -> sameFault.getUserName() != null && sameFault.getValue() != null)
-                    .collect(Collectors.toMap(SameFaultDTO::getUserName, SameFaultDTO::getValue, (v1, v2) -> v1));
 
-            // 使用是否处理过相同故障映射设置每个结果对象
-            result = result.stream()
-                    .peek(re -> {
-                        String taskStatus = sameFaultMap.getOrDefault(re.getUserName(), "");
-                        re.setTaskStatus(FaultConstant.IN_MAINTENANCE_NAME.equals(taskStatus) ? taskStatus : FaultConstant.FREE_NAME);
-                    })
-                    .collect(Collectors.toList());
+        Map<String, String> sameFaultMap = Optional.ofNullable(faultMapper.taskSituation(userNames)).orElse(CollUtil.newArrayList())
+                .stream()
+                .filter(sameFault -> sameFault.getUserName() != null && sameFault.getValue() != null)
+                .collect(Collectors.toMap(SameFaultDTO::getUserName, SameFaultDTO::getValue, (v1, v2) -> v1));
 
-            // 计算任务情况为空闲的人员数量
-            long freeNum = result.stream()
-                    .filter(re -> re.getTaskStatus().equals(FaultConstant.FREE_NAME))
-                    .count();
+        // 使用是否处理过相同故障映射设置每个结果对象
+        result = result.stream()
+                .peek(re -> {
+                    String taskStatus = sameFaultMap.getOrDefault(re.getUserName(), "");
+                    re.setTaskStatus(FaultConstant.IN_MAINTENANCE_NAME.equals(taskStatus) ? taskStatus : FaultConstant.FREE_NAME);
+                })
+                .collect(Collectors.toList());
 
-            // 如果空闲的人员数量大于等于5人，则只返回空闲的人员人员，否则返回全部人员
-            return result.stream()
-                    .filter(re -> re.getTaskStatus().equals(FaultConstant.FREE_NAME) || freeNum < 5)
-                    .collect(Collectors.toList());
-        }
-        return result;
+        // 计算任务情况为空闲的人员数量
+        long freeNum = result.stream()
+                .filter(re -> re.getTaskStatus().equals(FaultConstant.FREE_NAME))
+                .count();
+
+        // 如果空闲的人员数量大于等于5人，则只返回空闲的人员人员，否则返回全部人员
+        return result.stream()
+                .filter(re -> re.getTaskStatus().equals(FaultConstant.FREE_NAME) || freeNum < 5)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -2598,32 +2632,32 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
         List<String> userNames = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
-        if (StrUtil.isNotEmpty(knowledgeId) && CollUtil.isNotEmpty(userNames)) {
-            Map<String, String> sameFaultMap = Optional.ofNullable(faultMapper.isSameFaultHandled(userNames, knowledgeId)).orElse(CollUtil.newArrayList())
+        Map<String, String> sameFaultMap = CollUtil.newHashMap();
+        if (CollUtil.isNotEmpty(userNames) && StrUtil.isNotEmpty(knowledgeId)) {
+            sameFaultMap = Optional.ofNullable(faultMapper.isSameFaultHandled(userNames, knowledgeId)).orElse(CollUtil.newArrayList())
                     .stream()
                     .filter(sameFault -> sameFault.getUserName() != null && sameFault.getValue() != null)
                     .collect(Collectors.toMap(SameFaultDTO::getUserName, SameFaultDTO::getValue, (v1, v2) -> v1));
-
-            // 使用是否处理过相同故障映射设置每个结果对象
-            result = result.stream()
-                    .peek(re -> {
-                        String isSameFaultHandled = sameFaultMap.getOrDefault(re.getUserName(), "");
-                        re.setHandledSameFault(CommonConstant.SHI.equals(isSameFaultHandled) ? isSameFaultHandled : CommonConstant.FOU);
-                    })
-                    .collect(Collectors.toList());
-
-            // 计算处理过相同故障的人员数量
-            long countHandledSameFaultNum = result.stream()
-                    .filter(re -> re.getHandledSameFault().equals(CommonConstant.SHI))
-                    .count();
-
-            // 如果处理过相同故障的人员数量大于等于5人，则只返回处理过相同故障的人员，否则返回全部人员
-            return result.stream()
-                    .filter(re -> re.getHandledSameFault().equals(CommonConstant.SHI) || countHandledSameFaultNum < 5)
-                    .collect(Collectors.toList());
         }
 
-        return result;
+        // 使用是否处理过相同故障映射设置每个结果对象
+        Map<String, String> finalSameFaultMap = sameFaultMap;
+        result = result.stream()
+                .peek(re -> {
+                    String isSameFaultHandled = finalSameFaultMap.getOrDefault(re.getUserName(), "");
+                    re.setHandledSameFault(CommonConstant.SHI.equals(isSameFaultHandled) ? isSameFaultHandled : CommonConstant.FOU);
+                })
+                .collect(Collectors.toList());
+
+        // 计算处理过相同故障的人员数量
+        long countHandledSameFaultNum = result.stream()
+                .filter(re -> re.getHandledSameFault().equals(CommonConstant.SHI))
+                .count();
+
+        // 如果处理过相同故障的人员数量大于等于5人，则只返回处理过相同故障的人员，否则返回全部人员
+        return result.stream()
+                .filter(re -> re.getHandledSameFault().equals(CommonConstant.SHI) || countHandledSameFaultNum < 5)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -2639,34 +2673,30 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
         List<ScheduleUserWorkDTO> todayUserWork = baseApi.getTodayUserWork(userIds);
-        if (CollUtil.isNotEmpty(todayUserWork)) {
-            // 创建一个用户ID到值班情况的映射
-            Map<String, String> workMap = Optional.ofNullable(
-                    todayUserWork.stream()
-                            .filter(work -> work.getUserId() != null && work.getWork() != null)
-                            .collect(Collectors.toMap(ScheduleUserWorkDTO::getUserId, ScheduleUserWorkDTO::getWork, (v1, v2) -> v1))
-            ).orElse(CollUtil.newHashMap());
 
-            // 使用工作内容映射设置每个结果对象的计划状态
-            result = result.stream()
-                    .peek(re -> {
-                        String work = workMap.getOrDefault(re.getUserId(), "");
-                        String workName = FaultConstant.ON_DUTY_1.equals(work) ? FaultConstant.ON_DUTY_NAME : FaultConstant.REST_NAME;
-                        re.setScheduleStatus(workName);
-                    })
-                    .collect(Collectors.toList());
+        // 创建一个用户ID到值班情况的映射
+        Map<String, String> workMap = Optional.ofNullable(todayUserWork).orElse(CollUtil.newArrayList()).stream()
+                .filter(work -> work.getUserId() != null && work.getWork() != null)
+                .collect(Collectors.toMap(ScheduleUserWorkDTO::getUserId, ScheduleUserWorkDTO::getWork, (v1, v2) -> v1));
 
-            // 计算人员的排班情况为当班的数量
-            long countScheduleStatusNum = result.stream()
-                    .filter(re -> re.getScheduleStatus().equals(FaultConstant.ON_DUTY_NAME))
-                    .count();
+        // 使用工作内容映射设置每个结果对象的计划状态
+        result = result.stream()
+                .peek(re -> {
+                    String work = workMap.getOrDefault(re.getUserId(), "");
+                    String workName = FaultConstant.ON_DUTY_1.equals(work) ? FaultConstant.ON_DUTY_NAME : FaultConstant.REST_NAME;
+                    re.setScheduleStatus(workName);
+                })
+                .collect(Collectors.toList());
 
-            // 如果当班人员数量大于等于5人，则只返回当班人员，否则返回全部人员
-            return result.stream()
-                    .filter(re -> re.getScheduleStatus().equals(FaultConstant.ON_DUTY_NAME) || countScheduleStatusNum < 5)
-                    .collect(Collectors.toList());
-        }
-        return result;
+        // 计算人员的排班情况为当班的数量
+        long countScheduleStatusNum = result.stream()
+                .filter(re -> re.getScheduleStatus().equals(FaultConstant.ON_DUTY_NAME))
+                .count();
+
+        // 如果当班人员数量大于等于5人，则只返回当班人员，否则返回全部人员
+        return result.stream()
+                .filter(re -> re.getScheduleStatus().equals(FaultConstant.ON_DUTY_NAME) || countScheduleStatusNum < 5)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -2776,9 +2806,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     /**
      * 备件自动回填
      *
-     * @param oldSparePartCode 组件编码
+     * @param oldSparePartCode         组件编码
      * @param faultCauseSolutionIdList 故障解决原因
-     * @param deviceCode 设备编码
+     * @param deviceCode               设备编码
      * @return
      */
     @Override
@@ -2804,9 +2834,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 newSparePartCode = materialCode + serialCode;
                 Long assemblyNum = baseMapper.existDeviceAssemblyCode(newSparePartCode);
                 String str = redisUtil.getStr("fault:sparepart:" + newSparePartCode);
-                flag = ( Objects.nonNull(assemblyNum) && assemblyNum>0 )  || StrUtil.isNotBlank(str);
+                flag = (Objects.nonNull(assemblyNum) && assemblyNum > 0) || StrUtil.isNotBlank(str);
             }
-            redisUtil.set("fault:sparepart:"+newSparePartCode, newSparePartCode, 7 * 24 * 60 * 60);
+            redisUtil.set("fault:sparepart:" + newSparePartCode, newSparePartCode, 7 * 24 * 60 * 60);
             replaceDTO.setNewSparePartCode(newSparePartCode);
             replaceDTO.setNewSparePartSplitCode(newSparePartCode);
             replaceDTO.setNewSparePartNum(1);
@@ -2838,9 +2868,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     newSparePartCode = materialCode + serialCode;
                     Long assemblyNum = baseMapper.existDeviceAssemblyCode(newSparePartCode);
                     String str = redisUtil.getStr("fault:sparepart:" + newSparePartCode);
-                    flag = ( Objects.nonNull(assemblyNum) && assemblyNum>0 )  || StrUtil.isNotBlank(str);
+                    flag = (Objects.nonNull(assemblyNum) && assemblyNum > 0) || StrUtil.isNotBlank(str);
                 }
-                redisUtil.set("fault:sparepart:"+newSparePartCode, newSparePartCode, 7 * 24 * 60 * 60);
+                redisUtil.set("fault:sparepart:" + newSparePartCode, newSparePartCode, 7 * 24 * 60 * 60);
                 replaceDTO.setNewSparePartCode(newSparePartCode);
                 replaceDTO.setNewSparePartSplitCode(newSparePartCode);
 
@@ -2850,6 +2880,26 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
         }
         return list;
+    }
+
+    @Override
+    public List<RecPersonDTO> queryRecommendationPerson(String faultCode) {
+        List<RecPersonDTO> result = CollUtil.newArrayList();
+        List<RecPersonListDTO> recPersonListDTOS = this.queryRecPersonList(faultCode);
+
+        RecPersonDTO recPersonDTO = null;
+        if (CollUtil.isNotEmpty(recPersonListDTOS)) {
+            for (RecPersonListDTO recPersonListDTO : recPersonListDTOS) {
+                recPersonDTO = new RecPersonDTO();
+                BeanUtils.copyProperties(recPersonListDTO, recPersonDTO);
+                recPersonDTO.setKey(recPersonListDTO.getUserId());
+                recPersonDTO.setValue(recPersonListDTO.getUserName());
+                recPersonDTO.setLabel(recPersonListDTO.getRealName());
+                result.add(recPersonDTO);
+            }
+        }
+
+        return result;
     }
 
     /**

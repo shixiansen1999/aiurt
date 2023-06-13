@@ -18,7 +18,10 @@ import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.api.vo.Result;
@@ -26,7 +29,6 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -47,7 +49,7 @@ import java.util.List;
 @Slf4j
 public class FaultController extends BaseController<Fault, IFaultService> {
 
-    public static final String  PERMISSION_URL = "/fault/list";
+    public static final String PERMISSION_URL = "/fault/list";
 
 
     @Autowired
@@ -68,10 +70,10 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param req
      * @return
      */
-    @AutoLog(value = "查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = PERMISSION_URL)
+    @AutoLog(value = "查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "fault-分页列表查询", notes = "fault-分页列表查询")
     @GetMapping(value = "/list")
-    @PermissionData(pageComponent = "fault/FaultList", appComponent="Breakdown/BreakdownList")
+    @PermissionData(pageComponent = "fault/FaultList", appComponent = "Breakdown/BreakdownList")
     public Result<IPage<Fault>> queryPageList(Fault fault,
                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
@@ -81,18 +83,17 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     }
 
 
-
     /**
      * 添加
      *
      * @param fault
      * @return
      */
-    @AutoLog(value = "新增故障上报", operateType =  2, operateTypeAlias = "故障上报", permissionUrl = PERMISSION_URL)
+    @AutoLog(value = "新增故障上报", operateType = 2, operateTypeAlias = "故障上报", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "故障上报", notes = "故障上报")
     @PostMapping(value = "/add")
     @LimitSubmit(key = "add:#fault")
-    public Result<?> add( @RequestBody Fault fault) {
+    public Result<?> add(@RequestBody Fault fault) {
         String faultCode = faultService.add(fault);
         return Result.OK("故障上报成功", faultCode);
     }
@@ -105,7 +106,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      */
     @PutMapping("/approval")
     @ApiOperation(value = "故障审批", notes = "故障审批")
-    @AutoLog(value = "上报审批", operateType =  3, operateTypeAlias = "上报审批", permissionUrl = PERMISSION_URL)
+    @AutoLog(value = "上报审批", operateType = 3, operateTypeAlias = "上报审批", permissionUrl = PERMISSION_URL)
     public Result<?> approval(@RequestBody ApprovalDTO approvalDTO) {
 
         faultService.approval(approvalDTO);
@@ -119,7 +120,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param fault
      * @return
      */
-    @AutoLog(value = "编辑", operateType =  3, operateTypeAlias = "编辑故障单",  permissionUrl = PERMISSION_URL)
+    @AutoLog(value = "编辑", operateType = 3, operateTypeAlias = "编辑故障单", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "故障编辑", notes = "故障编辑")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<String> edit(@RequestBody Fault fault) {
@@ -135,7 +136,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      */
 
     @ApiOperation(value = "故障作废", notes = "故障作废")
-    @AutoLog(value = "作废", operateType =  3, operateTypeAlias = "作废故障单",  permissionUrl = PERMISSION_URL)
+    @AutoLog(value = "作废", operateType = 3, operateTypeAlias = "作废故障单", permissionUrl = PERMISSION_URL)
     @PutMapping(value = "/cancel")
     public Result<String> cancel(@Valid @RequestBody CancelDTO cancelDTO) {
         faultService.cancel(cancelDTO);
@@ -148,7 +149,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param code
      * @return
      */
-    @AutoLog(value = "详情", operateType =  3, operateTypeAlias = "查看故障详情",  permissionUrl = PERMISSION_URL)
+    @AutoLog(value = "详情", operateType = 3, operateTypeAlias = "查看故障详情", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "通过故障编码查询详情", notes = "通过故障编码查询详情")
     @GetMapping(value = "/queryByCode")
     @ApiImplicitParams({
@@ -164,10 +165,11 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     /**
      * 故障指派
+     *
      * @param assignDTO
      * @return
      */
-    @AutoLog(value = "指派", operateType =  3, operateTypeAlias = "故障指派", module = ModuleType.FAULT)
+    @AutoLog(value = "指派", operateType = 3, operateTypeAlias = "故障指派", module = ModuleType.FAULT)
     @ApiOperation(value = "故障指派", notes = "故障指派")
     @PutMapping("/assign")
     public Result<?> assign(@RequestBody AssignDTO assignDTO) {
@@ -177,10 +179,11 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     /**
      * 领取故障工单
+     *
      * @param assignDTO
      * @return
      */
-    @AutoLog(value = "领取故障工单", operateType = 3, operateTypeAlias = "领取故障工单",  permissionUrl = PERMISSION_URL)
+    @AutoLog(value = "领取故障工单", operateType = 3, operateTypeAlias = "领取故障工单", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "领取故障工单", notes = "领取故障工单")
     @PutMapping("/receive")
     public Result<?> receive(@RequestBody AssignDTO assignDTO) {
@@ -189,11 +192,10 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     }
 
     /**
-     *
      * @param assignDTO
      * @return
      */
-    @AutoLog(value = "接收指派", operateType = 3, operateTypeAlias = "接收指派工单",  permissionUrl = PERMISSION_URL)
+    @AutoLog(value = "接收指派", operateType = 3, operateTypeAlias = "接收指派工单", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "接收指派", notes = "接收指派")
     @PutMapping("/receiveAssignment")
     public Result<?> receiveAssignment(@RequestBody AssignDTO assignDTO) {
@@ -203,6 +205,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     /**
      * 拒收指派
+     *
      * @param refuseAssignmentDTO
      * @return
      */
@@ -216,6 +219,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     /**
      * 开始维修
+     *
      * @param refuseAssignmentDTO
      * @return
      */
@@ -229,6 +233,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     /**
      * 挂起
+     *
      * @param hangUpDTO
      * @return
      */
@@ -242,6 +247,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     /**
      * 审批挂起
+     *
      * @param approvalHangUpDTO
      * @return
      */
@@ -255,6 +261,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     /**
      * 取消挂起
+     *
      * @param hangUpDTO
      * @return
      */
@@ -268,6 +275,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     /**
      * 查询填写维修记录详情
+     *
      * @param faultCode 故障指派
      * @return
      */
@@ -281,12 +289,13 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query")
     })
     public Result<RepairRecordDTO> queryRepairRecord(@RequestParam(value = "faultCode") String faultCode) {
-        RepairRecordDTO repairRecordDTO =  faultService.queryRepairRecord(faultCode);
+        RepairRecordDTO repairRecordDTO = faultService.queryRepairRecord(faultCode);
         return Result.OK(repairRecordDTO);
     }
 
     /**
      * 填写维修记录
+     *
      * @param repairRecordDTO
      * @return
      */
@@ -297,8 +306,10 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         faultService.fillRepairRecord(repairRecordDTO);
         return Result.OK("操作成功");
     }
+
     /**
-     *  已驳回-保存
+     * 已驳回-保存
+     *
      * @param fault
      * @return
      */
@@ -311,19 +322,22 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     }
 
     /**
-     *  故障上报驳回-再次提交审核
+     * 故障上报驳回-再次提交审核
+     *
      * @param faultCode
      * @return
      */
-    @AutoLog(value = "故障提交审核", operateType =  3, operateTypeAlias = "提审",  permissionUrl = PERMISSION_URL)
+    @AutoLog(value = "故障提交审核", operateType = 3, operateTypeAlias = "提审", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "故障上报驳回-再次提交审核", notes = "故障上报驳回-再次提交审核")
     @PutMapping("/submitResult")
-    public Result<?> submitResult(@RequestParam  String faultCode) {
+    public Result<?> submitResult(@RequestParam String faultCode) {
         faultService.submitResult(faultCode);
         return Result.OK("操作成功");
     }
+
     /**
-     *  维修结果审核
+     * 维修结果审核
+     *
      * @param resultDTO
      * @return
      */
@@ -337,6 +351,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     /**
      * 解决方案， 推荐
+     *
      * @param
      * @return
      */
@@ -361,14 +376,13 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @GetMapping(value = "/KnowledgeList")
     @Deprecated
     public Result<IPage<FaultKnowledgeBase>> queryKnowledgePageList(FaultKnowledgeBase knowledgeBase,
-                                              @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+                                                                    @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                    @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
 
         Page<FaultKnowledgeBase> page = new Page<>(pageNo, pageSize);
-        IPage<FaultKnowledgeBase> pageList = faultService.pageList(page,knowledgeBase);
+        IPage<FaultKnowledgeBase> pageList = faultService.pageList(page, knowledgeBase);
         return Result.OK(pageList);
     }
-
 
 
     @AutoLog(value = "查询工作类型")
@@ -417,19 +431,19 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK("操作成功");
     }
 
-    @AutoLog(value = "查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = PERMISSION_URL)
+    @AutoLog(value = "查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "分页列表查询", notes = "fault-分页列表查询")
     @GetMapping(value = "/repairDeviceList")
     public Result<IPage<FaultDeviceRepairDTO>> queryPageList(FaultDeviceRepairDTO faultDeviceRepairDto,
-                                              @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                              HttpServletRequest req) {
+                                                             @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                             @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                             HttpServletRequest req) {
         Page<FaultDeviceRepairDTO> page = new Page<FaultDeviceRepairDTO>(pageNo, pageSize);
         IPage<FaultDeviceRepairDTO> faultDeviceRepairDtoList = faultDeviceService.queryRepairDeviceList(page, faultDeviceRepairDto);
         return Result.OK(faultDeviceRepairDtoList);
     }
 
-    @AutoLog(value = "设备返修", operateType =  3, operateTypeAlias = "设备返修",  permissionUrl = PERMISSION_URL)
+    @AutoLog(value = "设备返修", operateType = 3, operateTypeAlias = "设备返修", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "设备返修", notes = "设备返修")
     @RequestMapping(value = "/repairDeviceEdit", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<String> edit(@RequestBody FaultDeviceRepairDTO faultDeviceRepairDTO) {
@@ -440,7 +454,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK("返修成功!");
     }
 
-    @AutoLog(value = "设备验收", operateType =  3, operateTypeAlias = "设备验收",  permissionUrl = PERMISSION_URL)
+    @AutoLog(value = "设备验收", operateType = 3, operateTypeAlias = "设备验收", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "设备验收", notes = "设备验收")
     @RequestMapping(value = "/repairDeviceCheck", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<String> check(@RequestBody FaultDeviceRepairDTO faultDeviceRepairDTO) {
@@ -451,30 +465,32 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK("验收成功!");
     }
 
-    @AutoLog(value = "故障钻取", operateType =  1, operateTypeAlias = "故障钻取", permissionUrl = PERMISSION_URL)
+    @AutoLog(value = "故障钻取", operateType = 1, operateTypeAlias = "故障钻取", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "故障钻取", notes = "故障钻取")
     @GetMapping(value = "/getHitchDrilling")
-    public List<HitchDrillingDTO> getHitchDrilling(){
+    public List<HitchDrillingDTO> getHitchDrilling() {
         List<HitchDrillingDTO> hitchDrillingDTOList = new ArrayList<>();
         LambdaQueryWrapper<Fault> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         ArrayList<Integer> integers = CollectionUtil.newArrayList(5, 6, 7);
-        lambdaQueryWrapper.in(Fault::getStatus,integers);
+        lambdaQueryWrapper.in(Fault::getStatus, integers);
         List<Fault> list1 = faultService.list(lambdaQueryWrapper);
-        if (CollectionUtil.isEmpty(list1)){
+        if (CollectionUtil.isEmpty(list1)) {
             return hitchDrillingDTOList;
-        }else {
-            list1.forEach(e->{
+        } else {
+            list1.forEach(e -> {
                 HitchDrillingDTO hitchDrillingDTO = new HitchDrillingDTO();
                 String lineCode = e.getLineCode();
-                if (StrUtil.isNotBlank(lineCode)){
+                if (StrUtil.isNotBlank(lineCode)) {
                     String position = sysBaseAPI.getPosition(lineCode);
                     hitchDrillingDTO.setLine(position);
-                }if (StrUtil.isNotBlank(e.getSymptoms())){
+                }
+                if (StrUtil.isNotBlank(e.getSymptoms())) {
                     hitchDrillingDTO.setGzyy(e.getSymptoms());
-                }if (ObjectUtil.isNotNull(e.getHappenTime())){
+                }
+                if (ObjectUtil.isNotNull(e.getHappenTime())) {
                     hitchDrillingDTO.setGztime(e.getHappenTime());
                 }
-                    hitchDrillingDTO.setGzstate("解决中");
+                hitchDrillingDTO.setGzstate("解决中");
 
                 hitchDrillingDTOList.add(hitchDrillingDTO);
             });
@@ -488,7 +504,8 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query"),
     })
     public Result<List<RecPersonDTO>> queryRecommendationPerson(@RequestParam(value = "faultCode", required = false) String faultCode) {
-        return Result.OK();
+        List<RecPersonDTO> result = faultService.queryRecommendationPerson(faultCode);
+        return Result.OK(result);
     }
 
     @ApiOperation(value = "查询推荐人员列表", notes = "查询推荐人员列表")
@@ -497,13 +514,13 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query"),
     })
     public Result<List<RecPersonListDTO>> queryRecPersonList(@RequestParam(value = "faultCode", required = false) String faultCode) {
-
         List<RecPersonListDTO> list = faultService.queryRecPersonList(faultCode);
         return Result.OK(list);
     }
 
     /**
      * 备件更换回填
+     *
      * @param oldSparePartCode
      * @param faultCauseSolutionIdList
      * @param deviceCode
@@ -517,9 +534,9 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @ApiOperation(value = "备件更换回填", notes = "备件更换回填")
     @GetMapping(value = "/querySparePartReplaceList")
     public Result<List<SparePartReplaceDTO>> querySparePartReplaceList(@RequestParam(value = "oldSparePartCode", required = false) String oldSparePartCode,
-                                                                 @RequestParam(value = "faultCauseSolutionIdList", required = false) List<String> faultCauseSolutionIdList,
-                                                                 @RequestParam(value = "deviceCode", required = false) String deviceCode) {
-        List<SparePartReplaceDTO> result = faultService.querySparePartReplaceList(oldSparePartCode,faultCauseSolutionIdList,deviceCode);
+                                                                       @RequestParam(value = "faultCauseSolutionIdList", required = false) List<String> faultCauseSolutionIdList,
+                                                                       @RequestParam(value = "deviceCode", required = false) String deviceCode) {
+        List<SparePartReplaceDTO> result = faultService.querySparePartReplaceList(oldSparePartCode, faultCauseSolutionIdList, deviceCode);
         return Result.OK(result);
     }
 }

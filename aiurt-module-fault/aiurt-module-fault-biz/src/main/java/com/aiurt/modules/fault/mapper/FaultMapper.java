@@ -195,6 +195,13 @@ public interface FaultMapper extends BaseMapper<Fault> {
      * @return
      */
     List<FaultSparePart> queryFaultSparePart(@Param("materialCode")String materialCode, @Param("faultCauseSolutionIdList") List<String> faultCauseSolutionIdList);
+
+    /**
+     * 获取人员当前时间当班情况
+     * @param date
+     * @param userId
+     * @return
+     */
     List<RecPersonListDTO> getManagedDepartmentUsers(@Param("date") Date date, @Param("userId") String userId);
 
     /**
