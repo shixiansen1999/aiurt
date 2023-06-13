@@ -96,4 +96,12 @@ public class CsLine implements Serializable {
     @ApiModelProperty(value = "级别")
     @TableField(exist = false)
     private Integer level;
+    /**级别*/
+    @ApiModelProperty(value = "线路名称")
+    @TableField(exist = false)
+    private String label;
+    /**级别*/
+    @ApiModelProperty(value = "线路编号")
+    @TableField(exist = false)
+    private String value;
 }
