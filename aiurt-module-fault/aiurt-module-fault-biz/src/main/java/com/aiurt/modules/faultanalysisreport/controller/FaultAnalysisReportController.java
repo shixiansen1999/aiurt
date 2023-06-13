@@ -11,6 +11,8 @@ import com.aiurt.modules.faultanalysisreport.constants.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
+import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.modules.faulttype.entity.FaultType;
@@ -35,8 +37,9 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.stream.Collectors;
 
- /**
+/**
  * @Description: fault_analysis_report
  * @Author: aiurt
  * @Date:   2022-06-23
@@ -57,6 +60,8 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 private FaultTypeMapper faultTypeMapper;
 	 @Autowired
 	 private FaultKnowledgeBaseTypeMapper faultKnowledgeBaseTypeMapper;
+	 @Autowired
+	 private FaultKnowledgeBaseMapper faultKnowledgeBaseMapper;
 	 @Resource
 	 private ISysBaseAPI sysBaseAPI;
 	 @Resource
@@ -227,17 +232,36 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 		 faultWrapper.eq(Fault::getId,id);
 		 Fault fault1 = faultMapper.selectOne(faultWrapper);
 		 FaultAnalysisReport report = faultAnalysisReportService.getById(id);
+		 LambdaQueryWrapper<FaultKnowledgeBase> wrapper1 = new LambdaQueryWrapper<>();
 		 if (ObjectUtil.isNotEmpty(report)) {
 			 LambdaQueryWrapper<Fault> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.eq(Fault::getCode, report.getFaultCode());
 			 Fault fault = faultService.getBaseMapper().selectOne(wrapper);
 			 detail = faultAnalysisReportService.getDetail(fault.getId());
+//			 根据线路筛选故障现象
+			 String faultPhenomenon = detail.getFaultPhenomenon();
+			 wrapper1.eq(FaultKnowledgeBase::getLineCode,fault1.getLineCode());
+			 boolean flag = faultKnowledgeBaseMapper.selectList(wrapper1)
+					 .stream().map(FaultKnowledgeBase::getFaultPhenomenon)
+					 .collect(Collectors.toList()).contains(faultPhenomenon);
+			 if (!flag){
+				 detail.setFaultPhenomenon(null);
+			 }
 			 detail.setLineCode(fault1.getLineCode());
 			 detail.setLineName(sysBaseAPI.getLineNameByCode(fault1.getLineCode()));
 			 return Result.OK(detail);
 		 }
 
 		 detail = faultAnalysisReportService.getDetail(id);
+		 //			 根据线路筛选故障现象
+		 String faultPhenomenon = detail.getFaultPhenomenon();
+		 wrapper1.eq(FaultKnowledgeBase::getLineCode,fault1.getLineCode());
+		 boolean flag = faultKnowledgeBaseMapper.selectList(wrapper1)
+				 .stream().map(FaultKnowledgeBase::getFaultPhenomenon)
+				 .collect(Collectors.toList()).contains(faultPhenomenon);
+		 if (!flag){
+			 detail.setFaultPhenomenon(null);
+		 }
 		 detail.setLineCode(fault1.getLineCode());
 		 detail.setLineName(sysBaseAPI.getLineNameByCode(fault1.getLineCode()));
 		 return Result.OK(detail);
