@@ -571,7 +571,7 @@ public class BigscreenPlanService {
             getTotalTimes(teamPortraitDTO, userList, type, timeByType);
         } else {
             teamPortraitDTO.setAverageTime("0");
-            teamPortraitDTO.setPatrolTotalTime(new BigDecimal(0.0));
+            teamPortraitDTO.setPatrolTotalTime(0);
             teamPortraitDTO.setFaultTotalTime(new BigDecimal(0.0));
             teamPortraitDTO.setInspecitonTotalTime(new BigDecimal(0.0));
         }
@@ -656,7 +656,7 @@ public class BigscreenPlanService {
         //获取班组维修总工时
         AtomicReference<BigDecimal> faultHours = new AtomicReference<>(new BigDecimal("0.00"));
         //获取班组巡检总工时
-        AtomicReference<BigDecimal> patrolHours = new AtomicReference<>(new BigDecimal("0.00"));
+        AtomicReference<Integer> patrolHours = new AtomicReference<>(0);
         //获取班组检修总工时
         AtomicReference<BigDecimal> inspectionHours = new AtomicReference<>(new BigDecimal("0.00"));
 
@@ -734,7 +734,7 @@ public class BigscreenPlanService {
         //获取维修任务人员个人个人总工时
         Map<String, BigDecimal> faultUserHours = dailyFaultApi.getFaultUserHours(type, teamId);
         //获取巡检任务人员个人总工时和同行人个人总工时
-        Map<String, BigDecimal> patrolUserHours = patrolApi.getPatrolUserHours(type, teamId);
+        Map<String, Integer> patrolUserHours = patrolApi.getPatrolUserHours(type, teamId);
         //获取检修任务人员个人总工时和同行人个人总工时
         Date[] timeByType = getTimeByType(String.valueOf(type));
         Map<String, Long> collect1 = new HashMap<>(16);
@@ -779,8 +779,8 @@ public class BigscreenPlanService {
             teamUserDTO.setInspecitonTotalTime(decimal);
 
             //获取巡检个人总总工时
-            BigDecimal patrolTotalTime = patrolUserHours.get(teamUserDTO.getUserId());
-            teamUserDTO.setPatrolTotalTime(patrolTotalTime != null ? patrolTotalTime : new BigDecimal("0"));
+            Integer patrolTotalTime = patrolUserHours.get(teamUserDTO.getUserId());
+            teamUserDTO.setPatrolTotalTime(patrolTotalTime != null ? patrolTotalTime : 0);
 
         }
     }

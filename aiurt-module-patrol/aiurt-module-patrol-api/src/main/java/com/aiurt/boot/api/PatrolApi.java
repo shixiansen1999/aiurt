@@ -30,20 +30,20 @@ public interface PatrolApi {
     public HashMap<String, String> getUserTask(DateTime startTime, DateTime endTime);
 
     /**
-     * 大屏班组画像巡视工时统计，用户ID:巡视时长
+     * 大屏班组画像巡视工时统计，用户ID:巡视时长 2023-06-12通信6期改为单位秒
      * @param type
      * @param teamId
      * @return
      */
-    Map<String, BigDecimal> getPatrolUserHours(int type, String teamId);
+    Map<String, Integer> getPatrolUserHours(int type, String teamId);
 
     /**
-     * 大屏班组画像班组巡视总工时统计
+     * 大屏班组画像班组巡视总工时统计，2023-06-12 通信6期改成单位秒
      * @param type
      * @param teamId
      * @return
      */
-    BigDecimal getPatrolHours(int type, String teamId);
+    Integer getPatrolHours(int type, String teamId);
 
     /**
      * 统计报表-人员班组巡检参数接口返回

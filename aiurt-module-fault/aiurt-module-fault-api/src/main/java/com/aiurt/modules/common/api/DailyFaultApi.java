@@ -66,5 +66,5 @@ public interface DailyFaultApi {
      * @param userId
      * @return
      */
-    Map<String, FaultReportDTO> getFaultUserReport(List<String> teamId,String startTime,String endTime,String userId);
+    Map<String, FaultReportDTO> getFaultUserReport(List<String> teamId,String startTime,String endTime,String userId,List<String> userIds);
 }

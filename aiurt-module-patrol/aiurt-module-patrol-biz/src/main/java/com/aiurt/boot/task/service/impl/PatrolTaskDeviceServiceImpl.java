@@ -104,13 +104,15 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         List<PatrolTaskDeviceParam> records = patrolTaskDeviceForDeviceParamPage.getRecords();
         if (records != null && records.size() > 0) {
             for (PatrolTaskDeviceParam patrolTaskDeviceForDeviceParam : records) {
+                // 不用计算了，直接从数据库获取
                 // 计算巡检时长
-                Date startTime = patrolTaskDeviceForDeviceParam.getStartTime();
-                Date checkTime = patrolTaskDeviceForDeviceParam.getCheckTime();
-                if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
-                    long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
-                    patrolTaskDeviceForDeviceParam.setDuration(DateUtils.getTimeByMinute(duration));
-                }
+                // Date startTime = patrolTaskDeviceForDeviceParam.getStartTime();
+                // Date checkTime = patrolTaskDeviceForDeviceParam.getCheckTime();
+                // if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
+                //     long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
+                //     patrolTaskDeviceForDeviceParam.setDuration(DateUtils.getTimeByMinute(duration));
+                // }
+
                 // 查询同行人信息
                 QueryWrapper<PatrolAccompany> accompanyWrapper = new QueryWrapper<>();
                 accompanyWrapper.lambda().eq(PatrolAccompany::getTaskDeviceCode, patrolTaskDeviceForDeviceParam.getPatrolNumber());
@@ -268,6 +270,14 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 updateWrapper.set(PatrolTaskDevice::getMacStatus, 0);
             }
 
+            // 提交工单时，更新该工单的巡视时长
+            Date startTime = taskDevice.getStartTime();
+            int duration = 0;
+            if (ObjectUtil.isNotNull(startTime)) {
+                duration = (int) DateUtil.between(startTime, new Date(), DateUnit.SECOND);
+            }
+            updateWrapper.set(PatrolTaskDevice::getDuration, duration);
+
             patrolTaskDeviceMapper.update(patrolTaskDevice, updateWrapper);
             SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_SUBMIT_SIGNATURE);
             boolean value = "1".equals(paramModel.getValue());
@@ -332,7 +342,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 // 查看站点是否是工区->提交人所在的班组的工区站点，是否就是任务的站点
                 List<String> WorkAreaStationCodeList = sysBaseApi.getWorkAreaStationCodeByUserId(sysUser.getId());
                 boolean isWorkArea = WorkAreaStationCodeList.contains(stationCode);
-                // 巡视标准时长，单位：分钟
+                // 巡视标准时长，单位：秒
                 Integer standardDuration = queryTask.getStandardDuration();
                 if (isWorkArea) {
                     // 工区，巡视时长等于上限时长。
@@ -343,7 +353,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     if (ObjectUtil.isNull(recentConnectTime)) {
                         updateWrapper.set(PatrolTask::getDuration, standardDuration);
                     }else {
-                        int duration = (int) DateUtil.between(recentConnectTime, new Date(), DateUnit.MINUTE);
+                        int duration = (int) DateUtil.between(recentConnectTime, new Date(), DateUnit.SECOND);
                         // 上限时长(标准工时)判空
                         Integer realDuration = Optional.ofNullable(standardDuration).filter(s -> duration >= s).orElseGet(() -> duration);
                         updateWrapper.set(PatrolTask::getDuration, realDuration);
@@ -465,13 +475,14 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         List<PatrolTaskFault> faultList = patrolTaskFaultMapper.selectList(new LambdaQueryWrapper<PatrolTaskFault>().eq(PatrolTaskFault::getPatrolNumber, patrolNumber));
         List<String> faultCodeList = faultList.stream().map(f -> f.getFaultCode()).collect(Collectors.toList());
         taskDeviceParam.setFaultList(faultCodeList);
+        // 时长直接从数据库获取了
         // 计算巡检时长
-        Date startTime = taskDeviceParam.getStartTime();
-        Date checkTime = taskDeviceParam.getCheckTime();
-        if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
-            long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
-            taskDeviceParam.setDuration(DateUtils.getTimeByMinute(duration));
-        }
+        // Date startTime = taskDeviceParam.getStartTime();
+        // Date checkTime = taskDeviceParam.getCheckTime();
+        // if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
+        //     long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
+        //     taskDeviceParam.setDuration(DateUtils.getTimeByMinute(duration));
+        // }
         StationDTO stationDTO = new StationDTO();
         stationDTO.setLineCode(taskDeviceParam.getLineCode());
         stationDTO.setStationCode(taskDeviceParam.getStationCode());

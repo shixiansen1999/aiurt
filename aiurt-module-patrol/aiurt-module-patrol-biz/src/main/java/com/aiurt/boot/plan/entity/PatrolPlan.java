@@ -106,6 +106,6 @@ public class PatrolPlan extends DictEntity implements Serializable {
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
     /**标准工时*/
-    @ApiModelProperty(value = "标准工时：单位分钟")
+    @ApiModelProperty(value = "标准工时：单位秒")
     private java.lang.Integer standardDuration;
 }

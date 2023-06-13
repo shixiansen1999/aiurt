@@ -7,7 +7,6 @@ import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.personnelteam.mapper.PersonnelTeamMapper;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTO;
@@ -34,7 +33,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -76,40 +74,37 @@ public class OverhaulStatisticsService{
         //查询管理负责人检修班组的信息
         List<String> collect1 = records.stream().map(OverhaulStatisticsDTOS::getOrgCode).collect(Collectors.toList());
         condition.setOrgCodeList(collect1);
-        List<OverhaulStatisticsDTOS> statisticsDTOList = repairTaskMapper.readTeamList(condition);
+
+        List<OverhaulStatisticsDTOS> statisticsDTOList = repairTaskMapper.countTeamList(condition);
 
         //查询班组下所有人员
         List<OverhaulStatisticsDTO> dtoList1 = repairTaskMapper.realNameList(condition);
 
         //查询班组下检修人员
-        List<OverhaulStatisticsDTO> nameList = repairTaskMapper.readNameList(condition);
+        List<OverhaulStatisticsDTO> nameList = repairTaskMapper.countUserList(condition);
 
         if(CollectionUtil.isNotEmpty(statisticsDTOList)){
             for (OverhaulStatisticsDTOS statisticsDTOS : records) {
                 OverhaulStatisticsDTOS dtos = statisticsDTOList.stream().filter(s -> s.getOrgCode().equals(statisticsDTOS.getOrgCode())).findFirst().orElse(new OverhaulStatisticsDTOS());
-                if (ObjectUtil.isNotEmpty(dtos.getId())) {
+                if (ObjectUtil.isNotEmpty(dtos)) {
                     BeanUtil.copyProperties(dtos,statisticsDTOS);
                 }
             }
         }
         if(CollectionUtil.isNotEmpty(nameList)) {
+            dtoList1.removeAll(nameList);
             nameList.addAll(dtoList1);
         }
-        //去重处理
-        //ArrayList<OverhaulStatisticsDTOS> distinct1 = CollectionUtil.distinct(CollectionUtil.isNotEmpty(statisticsDTOList) ? statisticsDTOList : dtoList2);
 
-        //去重处理
-        ArrayList<OverhaulStatisticsDTO> distinct = CollectionUtil.distinct(CollectionUtil.isNotEmpty(nameList) ? nameList : dtoList1);
-
-        countOverhaulStatisticList(condition, distinct);
-        buildStatistic(condition, records, distinct);
+        countOverhaulStatisticList(condition, nameList);
+        buildStatistic(condition, records, nameList);
         return allTaskList;
     }
 
-    private void countOverhaulStatisticList(OverhaulStatisticsDTOS condition, ArrayList<OverhaulStatisticsDTO> distinct) {
+    private void countOverhaulStatisticList(OverhaulStatisticsDTOS condition, List<OverhaulStatisticsDTO> nameList) {
         ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
-        if (CollectionUtil.isNotEmpty(distinct)){
-            distinct.forEach(q->{
+        if (CollectionUtil.isNotEmpty(nameList)){
+            nameList.forEach(q->{
                 threadPoolExecutor.execute(() -> {
                     countOverhaulStatistic(condition, q);
                 });
@@ -126,7 +121,7 @@ public class OverhaulStatisticsService{
     }
 
     private void countOverhaulStatistic(OverhaulStatisticsDTOS condition, OverhaulStatisticsDTO q) {
-        OverhaulStatisticsDTO overhaulStatisticsDTO = new OverhaulStatisticsDTO();
+
 
         if (q.getUserId()!=null){
             //姓名
@@ -138,136 +133,58 @@ public class OverhaulStatisticsService{
             q.setOrgCode(orgCode);
         }
 
-        //查询已完成的人员信息
-        overhaulStatisticsDTO.setStatus(8L);
-        if (q.getOrgCode()!=null){
-            overhaulStatisticsDTO.setOrgCode(q.getOrgCode());
-        }
-        if (q.getUserId()!=null){
-            overhaulStatisticsDTO.setUserId(q.getUserId());
-        }
-        if (condition.getStartDate()!=null){
-            overhaulStatisticsDTO.setStartDate(condition.getStartDate());
-        }
-        if (condition.getEndDate()!=null){
-            overhaulStatisticsDTO.setEndDate(condition.getEndDate());
-        }
-
-        Long completedNumber = repairTaskMapper.countCompletedNumber(overhaulStatisticsDTO);
-        completedNumber = Optional.ofNullable(completedNumber).orElse(0L);
-        //已完成数
-        //int size5 = readNameList.size();
-        q.setCompletedNumber(completedNumber);
-
         if (q.getTaskTotal()!=null){
             //未完成数
-            long l = q.getTaskTotal()-completedNumber;
+            long l = q.getTaskTotal()-q.getCompletedNumber();
             q.setNotCompletedNumber(l);
         }else {
             q.setNotCompletedNumber(0L);
             q.setTaskTotal(0L);
         }
+        //作为同行人的工时
         PersonnelTeamDTO userPeerTime = personnelTeamMapper.getUserPeerTime(StrUtil.isNotEmpty(q.getUserId()) ? q.getUserId() : null, condition.getStartDate(), condition.getEndDate());
-
-        if (q.getMaintenanceDuration()!=0.0f && userPeerTime.getCounter()!=null){
-            q.setMaintenanceDuration(q.getMaintenanceDuration()+(float) userPeerTime.getCounter());
-        }else {
-            q.setMaintenanceDuration(0.0f);
-        }
+        BigDecimal time1 = q.getMaintenanceDuration() != null ? q.getMaintenanceDuration() : new BigDecimal(0);
+        BigDecimal time2 = userPeerTime.getCounter() != null ? userPeerTime.getInspecitonTotalTime() : new BigDecimal(0);
+        BigDecimal sum = time1.add(time2);
+        BigDecimal bigDecimal = sum.divide(new BigDecimal(3600), 2, BigDecimal.ROUND_HALF_UP);
+        q.setMaintenanceDuration(bigDecimal);
         //完成率
-        getCompletionRate(q, completedNumber.intValue());
+        getCompletionRate(q);
 
-        //异常数量
-        if (q.getTaskId()!=null) {
-            List<Integer> status1 = repairTaskMapper.getStatus(q.getTaskId());
-            long count = CollUtil.isNotEmpty(status1) ? status1.stream().filter(InspectionConstant.NO_RESULT_STATUS::equals).count() : 0L;
-            q.setAbnormalNumber(count);
-        }else {
-            q.setAbnormalNumber(0L);
-        }
     }
 
-    private void buildStatistic(OverhaulStatisticsDTOS condition, List<OverhaulStatisticsDTOS> records, ArrayList<OverhaulStatisticsDTO> distinct) {
+    private void buildStatistic(OverhaulStatisticsDTOS condition, List<OverhaulStatisticsDTOS> records, List<OverhaulStatisticsDTO> nameList) {
         if (CollectionUtil.isNotEmpty(records)){
-            OverhaulStatisticsDTOS overhaulStatisticsDTO = new OverhaulStatisticsDTOS();
-            records.forEach(e->{
-                //查询已完成的班组信息
-                overhaulStatisticsDTO.setStatus(8L);
-                if (e.getTaskId()!=null){
-                    overhaulStatisticsDTO.setTaskId(e.getTaskId());
-                }  if (e.getOrgCode()!=null){
-                    overhaulStatisticsDTO.setOrgCode(e.getOrgCode());
-                }if (condition.getStartDate()!=null){
-                    overhaulStatisticsDTO.setStartDate(condition.getStartDate());
-                }if (condition.getEndDate()!=null){
-                    overhaulStatisticsDTO.setEndDate(condition.getEndDate());
-                }
-                List<OverhaulStatisticsDTOS> dtoList = repairTaskMapper.readTeamLists(overhaulStatisticsDTO);
-                //查询管理负责人检修班组本周内的任务总数
-                Long tasksList = repairTaskMapper.readTaskList(overhaulStatisticsDTO);
-                e.setTaskTotal(tasksList);
-                //已完成数
-                int size2 = dtoList.size();
-                e.setCompletedNumber(Integer.valueOf(size2).longValue());
 
+            records.forEach(e->{
                 //未完成数
                 if (e.getTaskTotal()!=null){
-                    long l = e.getTaskTotal()-Integer.valueOf(size2).longValue();
+                    long l = e.getTaskTotal()-e.getCompletedNumber();
                     e.setNotCompletedNumber(l);
                 }else {
                     e.setNotCompletedNumber(0L);
                     e.setTaskTotal(0L);
                 }
-                if (e.getMaintenanceDuration()==0.0f){
-                    e.setMaintenanceDuration(0.0f);
+                if (e.getMaintenanceDuration()==null){
+                    e.setMaintenanceDuration(new BigDecimal(0));
                 }
                 //完成率
-                getCompletionRate(e, size2);
+                getCompletionRate(e);
 
-                //异常数量
-                if (e.getTaskId()!=null) {
-                    List<Integer> status = repairTaskMapper.getStatus(e.getTaskId());
-                    long count = CollUtil.isNotEmpty(status) ? status.stream().filter(InspectionConstant.NO_RESULT_STATUS::equals).count() : 0L;
-                    e.setAbnormalNumber(count);
-                }else {
-                    e.setAbnormalNumber(0L);
-                }
-                //人员是否属于该班组
-                List<OverhaulStatisticsDTO> collect = distinct.stream().filter(p->StrUtil.isNotBlank(p.getOrgCode())).filter(y -> y.getOrgCode().equals(e.getOrgCode())).collect(Collectors.toList());
+                //找出该班组的人员
+                List<OverhaulStatisticsDTO> collect = nameList.stream().filter(p->StrUtil.isNotBlank(p.getOrgCode())).filter(y -> y.getOrgCode().equals(e.getOrgCode())).collect(Collectors.toList());
                 if (CollectionUtil.isNotEmpty(collect)){
                     e.setNameList(collect);
-                }
-                List<OverhaulStatisticsDTO> nameList1 = e.getNameList();
-                if (CollUtil.isNotEmpty(nameList1)){
-                List<String> collect2 = nameList1.stream().map(OverhaulStatisticsDTO::getUserId).collect(Collectors.toList());
-                if (CollectionUtil.isNotEmpty(collect2)){
-                    /*//获取所有检修任务人员总工时和所有同行人总工时
-                    List<PersonnelTeamDTO> teamTime = personnelTeamMapper.getTeamTime(collect2, condition.getStartDate() , condition.getEndDate());
-                    List<PersonnelTeamDTO> teamPeerTime = personnelTeamMapper.getTeamPeerTime(collect2, condition.getStartDate(), condition.getEndDate());
-                    List<String> collect5 = teamTime.stream().map(PersonnelTeamDTO::getTaskId).collect(Collectors.toList());
-                    //若同行人和指派人同属一个班组，则该班组只取一次工时，不能累加
-                    List<PersonnelTeamDTO> dtos = teamPeerTime.stream().filter(t -> !collect5.contains(t.getTaskId())).collect(Collectors.toList());
-                    dtos.addAll(teamTime);
-                    BigDecimal sum = new BigDecimal("0.00");
-                    if (CollUtil.isNotEmpty(dtos)) {
-                        for (PersonnelTeamDTO dto : dtos) {
-                            if (ObjectUtil.isNotEmpty(dto.getInspecitonTotalTime())) {
-                                sum = sum.add(dto.getInspecitonTotalTime());
-                            }
-                        }
+                    List<String> collect2 = collect.stream().map(OverhaulStatisticsDTO::getUserId).collect(Collectors.toList());
+                    if (CollectionUtil.isNotEmpty(collect2)){
+                        //班组总工时等于所有人员工时累加
+                        BigDecimal reduce = collect.stream().map(OverhaulStatisticsDTO::getMaintenanceDuration).reduce(BigDecimal.ZERO, BigDecimal::add);
+                        e.setMaintenanceDuration(reduce);
+                    }else {
+                        e.setMaintenanceDuration(new BigDecimal(0));
                     }
-                    //秒转时
-                    BigDecimal decimal = sum.divide(new BigDecimal("3600"),1, BigDecimal.ROUND_HALF_UP);*/
-                    double sum = nameList1.stream().mapToDouble(OverhaulStatisticsDTO::getMaintenanceDuration).sum();
-                    BigDecimal bigDecimal = new BigDecimal(sum).setScale(2, BigDecimal.ROUND_HALF_UP);
-                    e.setMaintenanceDuration(bigDecimal.floatValue());
-                }else {
-                    e.setMaintenanceDuration(0L);
-                }
-                }else {
-                    e.setMaintenanceDuration(0L);
-                }
 
+                }
                 //父级编码id
                 if (e.getOrgCode()!=null){
                     e.setOrgCodeId(e.getOrgCode());
@@ -278,24 +195,24 @@ public class OverhaulStatisticsService{
         }
     }
 
-    private void getCompletionRate(OverhaulStatisticsDTO e, int size2) {
-        if (size2!=0 && e.getTaskTotal()!=0){
-            double div = NumberUtil.div(size2, e.getTaskTotal().longValue());
-            double i = div*100;
-            if (i==0){
+    private void getCompletionRate(OverhaulStatisticsDTO e) {
+        if (e.getCompletedNumber() != null && e.getTaskTotal() != null && e.getTaskTotal() != 0) {
+            double div = NumberUtil.div(e.getCompletedNumber().longValue(), e.getTaskTotal().longValue());
+            double i = div * 100;
+            if (i == 0) {
                 e.setCompletionRate("0");
-            }else {
+            } else {
                 String string = NumberUtil.round(i, 2).toString();
                 e.setCompletionRate(string);
             }
-        }else {
+        } else {
             e.setCompletionRate("0");
             e.setCompletedNumber(0L);
         }
     }
-    private void getCompletionRate(OverhaulStatisticsDTOS e, int size2) {
-        if (size2!=0 && e.getTaskTotal()!=0){
-            double div = NumberUtil.div(size2, e.getTaskTotal().longValue());
+    private void getCompletionRate(OverhaulStatisticsDTOS e) {
+        if (e.getCompletedNumber() != null && e.getTaskTotal() != null && e.getTaskTotal() != 0){
+            double div = NumberUtil.div(e.getCompletedNumber().longValue(), e.getTaskTotal().longValue());
             double i = div*100;
             if (i==0){
                 e.setCompletionRate("0");

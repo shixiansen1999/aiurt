@@ -372,6 +372,9 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "是否是调度列表的故障下发")
     @TableField(exist = false)
     private Boolean isFaultExternal;
+    @ApiModelProperty(value = "控制中心班组成员是否能领取正线班组的故障：false不能领取，true可以领取")
+    @TableField(exist = false)
+    private Boolean canReceive;
     public static void main(String[] args) {
         Fault fault = new Fault();
 

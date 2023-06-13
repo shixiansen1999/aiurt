@@ -94,6 +94,8 @@ public class PatrolTaskDeviceDTO {
     @ApiModelProperty(value = "巡检时长")
     @TableField(exist = false)
     private String inspectionTime;
+    /**工单的巡视时长，单位秒  不要上面的inspectionTime了，和检修有歧义*/
+    private String duration;
     /**备注说明*/
     @Excel(name = "备注说明", width = 15)
     @ApiModelProperty(value = "备注说明")

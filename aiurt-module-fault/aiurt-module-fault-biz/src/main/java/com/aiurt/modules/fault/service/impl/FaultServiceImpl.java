@@ -40,7 +40,6 @@ import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -671,7 +670,24 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         } else {
             fault.setWeight(0);
         }
-
+        // 根据配置决定控制中心成员能否领取正线站点故障，开启时表示不能领取
+        SysParamModel faultCenterReceiveParam = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_RECEIVE);
+        boolean faultCenterReceive = FaultConstant.ENABLE.equals(faultCenterReceiveParam.getValue());
+        // 根据配置获取控制中心班组code,并判断当前登陆人所在班组是否是控制中心班组
+        SysParamModel faultCenterAddOrg = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_ADD_ORG);
+        boolean contains1 = StrUtil.splitTrim(faultCenterAddOrg.getValue(),',').contains(user.getOrgCode());
+        // 通过站点获取工区部门
+        List<String> departs = sysBaseAPI.getWorkAreaByCode(fault.getStationCode())
+                .stream()
+                .flatMap(csWorkAreaModel -> csWorkAreaModel.getOrgCodeList().stream())
+                .collect(Collectors.toList());
+        boolean contains2 = !(ObjectUtil.isNotEmpty(departs) && departs.contains(user.getOrgCode()));
+        // 设置是否能领取
+        if (faultCenterReceive && contains1 && contains2) {
+            fault.setCanReceive(false);
+        } else {
+            fault.setCanReceive(true);
+        }
         // 按钮权限
         return fault;
     }
