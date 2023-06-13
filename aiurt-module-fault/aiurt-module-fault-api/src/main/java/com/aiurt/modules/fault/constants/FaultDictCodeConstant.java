@@ -30,4 +30,9 @@ public  interface FaultDictCodeConstant {
      */
     public static final String FAULT_MODE_CODE = "fault_mode_code";
 
+    /**
+     * 人员等级
+     */
+    public static final String JOB_GRADE = "job_grade";
+
 }

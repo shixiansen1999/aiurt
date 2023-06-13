@@ -209,4 +209,11 @@ public interface IFaultService extends IService<Fault> {
      * @return
      */
     List<SparePartReplaceDTO> querySparePartReplaceList(String oldSparePartCode, List<String> faultCauseSolutionIdList, String deviceCode);
+
+    /**
+     * 查询推荐人员
+     * @param faultCode
+     * @return
+     */
+    List<RecPersonDTO> queryRecommendationPerson(String faultCode);
 }

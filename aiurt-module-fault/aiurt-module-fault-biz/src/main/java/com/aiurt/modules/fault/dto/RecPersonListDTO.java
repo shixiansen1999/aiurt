@@ -14,7 +14,7 @@ import java.util.List;
  * @author fgw
  */
 @Data
-public class RecPersonListDTO extends DictEntity implements Serializable {
+public class RecPersonListDTO implements Serializable {
 
     private static final long serialVersionUID = 3858351883927412481L;
 
@@ -32,9 +32,12 @@ public class RecPersonListDTO extends DictEntity implements Serializable {
     private List<String> roleCode;
     @ApiModelProperty(value = "角色名称", position = 5)
     private List<String> roleName;
-    @ApiModelProperty(value = "人员等级", position = 5)
+    @ApiModelProperty(value = "人员等级编号", position = 5)
     @Dict(dicCode = "job_grade")
+    @JsonIgnore
     private Integer jobGrade;
+    @ApiModelProperty(value = "人员等级", position = 5)
+    private String jobGradeName;
     @ApiModelProperty(value = "班组编码", position = 6)
     private String orgCode;
     @ApiModelProperty(value = "排班情况", position = 7)
