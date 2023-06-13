@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import cn.hutool.core.collection.CollUtil;
@@ -348,7 +348,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
            patrolData = getCctvSystem(taskId,headerMap,standardId);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
        }else if("network_manage.xlsx".equals(excelName)){
-           patrolData = printPatrolTaskByNetworkManage(taskId,standardId);
+           patrolData = printPatrolTaskByNetworkManage(taskId,standardId,headerMap);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
        }
 
@@ -391,7 +391,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                             .filter(c -> c.getParentId().equals(oldId))
                             .collect(Collectors.toList());
                     childDTOs.forEach(c->{
-                        if(Objects.nonNull(c) && c.getCheckResult().equals(0)){
+                        if(Objects.nonNull(c) && ObjectUtil.isNotEmpty(c.getCheckResult()) && c.getCheckResult().equals(0)){
                             flag.set(true);
                             stringBuffer.append(c.getQualityStandard()).append(":异常");
                             stringBuffer.append(",");
@@ -412,10 +412,12 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
 
     /**
      * 网管模板
+     *
      * @param id
+     * @param headerMap
      * @return
      */
-    public  List<PrintDTO> printPatrolTaskByNetworkManage(String id,String standardId){
+    public  List<PrintDTO> printPatrolTaskByNetworkManage(String id, String standardId, Map<String, Object> headerMap){
         List<PrintDTO> getNetworkManage = new ArrayList<>();
         List<PatrolStationDTO> billGangedInfo = getBillGangedInfo(id,standardId);
         for (PatrolStationDTO dto : billGangedInfo) {
@@ -433,7 +435,8 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             networkManage.forEach(str-> {
                 PatrolCheckResultDTO patrolCheckResultDTO = parentDTOList.stream().filter(p -> p.getOldCode().equals(str)).findFirst().orElse(null);
                 if (ObjectUtil.isEmpty(patrolCheckResultDTO)){
-                    printDTO.setResult("☐正常 ☐异常");
+                    headerMap.put(str,"☐正常 ☐异常");
+                  //  printDTO.setResult("☐正常 ☐异常");
                 }else {
                     String oldId = patrolCheckResultDTO.getOldId();
                     AtomicBoolean flag = new AtomicBoolean(false);
@@ -441,18 +444,22 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     List<PatrolCheckResultDTO> childDTOs =  checkDTOs.stream()
                             .filter(c -> c.getParentId().equals(oldId))
                             .collect(Collectors.toList());
+                    AtomicReference<String> remark = new AtomicReference<>("");
                     childDTOs.forEach(c->{
                         if(Objects.nonNull(c) && c.getCheckResult().equals(0)){
+                            remark.set(c.getRemark());
                             flag.set(true);
                         }
                     });
                     if(flag.get()){
-                        printDTO.setResult("☐正常 ☑异常");
+                        headerMap.put(str," ☑异常 "+remark.get());
+                       // printDTO.setResult("");
                     }else{
-                        printDTO.setResult("☑正常 ☐异常");
+                        headerMap.put(str," ☑正常 ");
+                       // printDTO.setResult("");
                     }
                 }
-                getNetworkManage.add(printDTO);
+                //getNetworkManage.add(printDTO);
             });
         }
         return getNetworkManage;
