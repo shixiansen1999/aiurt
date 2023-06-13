@@ -1,6 +1,7 @@
 package com.aiurt.modules.fault.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,7 +14,7 @@ import java.util.List;
  * @author fgw
  */
 @Data
-public class RecPersonListDTO implements Serializable {
+public class RecPersonListDTO extends DictEntity implements Serializable {
 
     private static final long serialVersionUID = 3858351883927412481L;
 

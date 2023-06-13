@@ -368,9 +368,9 @@
         IFNULL( MAX( num ), 0 ) AS maxNum,
         IFNULL( MIN( num ), 0 ) AS minNum
         FROM
-        ( SELECT COUNT( id ) AS num FROM fault_repair_record WHERE del_flag = 0
+        ( SELECT COUNT(DISTINCT id ) AS num FROM fault_repair_record WHERE del_flag = 0
         <if test="userNames!=null and userNames.size()>0">
-            AND f.appoint_user_name in
+            AND appoint_user_name in
             <foreach collection="userNames" separator="," open="(" close=")" item="username">
                 #{username}
             </foreach>
@@ -409,7 +409,7 @@
     <select id="getHandleNumberList" resultType="com.aiurt.modules.fault.dto.RadarNumberDTO">
         SELECT
             appoint_user_name AS username,
-            IFNULL(count( id ),0) AS number
+            IFNULL(count(DISTINCT id ),0) AS number
         FROM
             fault_repair_record
         WHERE
@@ -425,9 +425,9 @@
     </select>
     <select id="getAptitude" resultType="com.aiurt.modules.fault.dto.RadarAptitudeDTO">
         select sua.user_id     userId,
-               sum(sua.number) number
+               ifnull(sum(sua.number),0) number
         from sys_user_aptitudes sua
-                 join sys_user su on (sua.user_id = su.id and sua.del_flag = 0)
+        join sys_user su on (sua.user_id = su.id and sua.del_flag = 0)
         <where>
             sua.del_flag = 0
             <if test="userIds!=null and userIds.size()>0">
@@ -460,7 +460,7 @@
         group by sua.user_id) AS subquery;
     </select>
     <select id="getPerformanceList" resultType="com.aiurt.modules.fault.dto.RadarPerformanceDTO">
-        select sup.user_id, IFNULL(sum(sup.score),0) score
+        select sup.user_id, IFNULL(avg(sup.score),0) score
         from sys_user_perf sup
         join sys_user su on (sup.user_id = su.id and su.del_flag = 0)
         <where>
@@ -478,32 +478,36 @@
     </select>
     <select id="getFaultHandCountListByFaultPhenomenon" resultType="com.aiurt.modules.fault.dto.RadarNumberDTO">
         SELECT
-        appoint_user_name AS username,
-        ifnull(count( id ),0) AS number
+        frr.appoint_user_name AS username,
+        ifnull(count(DISTINCT frr.id ),0) AS number
         FROM
-        fault_repair_record
+        fault_repair_record frr
+        LEFT JOIN fault f ON f.code = frr.fault_code
         WHERE
-        del_flag = 0
-          AND knowledge_id = #{knowledgeId}
+        frr.del_flag = 0
+        AND f.state = 2
+        AND frr.knowledge_id = #{knowledgeId}
         <if test="userNameList!=null and userNameList.size()>0">
-            AND appoint_user_name in
+            AND frr.appoint_user_name in
             <foreach collection="userNameList" separator="," open="(" close=")" item="username">
                 #{username}
             </foreach>
         </if>
         GROUP BY
-        appoint_user_name
+        frr.appoint_user_name
     </select>
     <select id="getFaultHandCountListByDeviceType" resultType="com.aiurt.modules.fault.dto.RadarNumberDTO">
         SELECT
         frr.appoint_user_name AS username,
-        ifnull(count( frr.id ),0) AS number
+        ifnull(count(DISTINCT frr.id ),0) AS number
         FROM
         fault_repair_record frr
+        LEFT JOIN fault f ON f.code = frr.fault_code
         LEFT JOIN  fault_device fd ON fd.fault_code = frr.fault_code
         LEFT JOIN  device d ON (d.code = fd.device_code AND d.device_type_code = #{deviceTypeCode})
         WHERE
         frr.del_flag = 0
+        AND f.state = 2
         <if test="userNameList!=null and userNameList.size()>0">
             AND frr.appoint_user_name in
             <foreach collection="userNameList" separator="," open="(" close=")" item="username">
@@ -547,5 +551,35 @@
         </where>
         GROUP BY
             sua.user_id
+    </select>
+    <select id="getFaultRecList" resultType="com.aiurt.modules.fault.dto.FaultRecDTO">
+        SELECT
+            IFNULL( CONCAT( IFNULL(dt.`name`,''), '/', IFNULL(frr.symptoms,'') ), '' ) AS faultRec,
+            IF( frr.symptoms =#{symptoms}  AND d.device_type_code = #{deviceTypeCode}, 1, 0 ) AS isDeviceTypeAndPhenomenon
+        FROM
+            fault_repair_record AS frr
+                LEFT JOIN fault_device fd ON fd.fault_code = frr.fault_code
+                LEFT JOIN device d ON d.CODE = fd.device_code
+                LEFT JOIN device_type dt ON dt.`code` = d.device_type_code
+        WHERE
+            frr.del_flag = 0
+            AND frr.appoint_user_name = #{userName}
+            AND d.device_type_code = #{deviceTypeCode}
+        GROUP BY
+            faultRec
+    </select>
+    <select id="getUserStationName" resultType="java.lang.String">
+        SELECT
+            cs.station_name
+        FROM
+            sys_user_position sup
+        LEFT JOIN cs_position_wifi cpw ON cpw.mac = sup.bssid
+        LEFT JOIN cs_station cs ON cs.station_code = cpw.station_code
+        WHERE
+            sup.create_by =#{userName}
+          AND sup.upload_time >= #{tenMinutesAgo}
+        ORDER BY
+            sup.upload_time DESC
+            LIMIT 1
     </select>
 </mapper>

@@ -10,6 +10,7 @@ import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import liquibase.pro.packaged.P;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.PortraitTaskModel;
 
@@ -270,4 +271,22 @@ public interface FaultMapper extends BaseMapper<Fault> {
      * @return 用户资质列表
      */
     List<AptitudeDTO> getAptitudeList(List<String> userIdList);
+
+    /**
+     * 根据用户账号查询历史维修任务
+     *
+     * @param userName        用户账号
+     * @param symptoms 故障现象
+     * @param deviceTypeCode  设备类型编码
+     * @return
+     */
+    List<FaultRecDTO> getFaultRecList(@Param("userName") String userName, @Param("symptoms") String symptoms, @Param("deviceTypeCode") String deviceTypeCode);
+    /**
+     * 补充用户当前所在站点
+     *
+     * @param userName 用户账号
+     * @param tenMinutesAgo 10分钟前的时间
+     * @return
+     */
+    String getUserStationName(@Param("userName") String userName, @Param("tenMinutesAgo")Date tenMinutesAgo);
 }

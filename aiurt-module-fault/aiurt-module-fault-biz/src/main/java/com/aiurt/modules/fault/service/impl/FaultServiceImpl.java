@@ -7,6 +7,7 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.InspectionApi;
@@ -75,6 +76,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -2058,9 +2061,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 筛选人员的任务情况
         result = taskSituation(result);
 
-        // 筛选人员的距离故障站点有多少个站
-        result = countDistanceToFaultStation(result, fault.getStationCode());
-
         // 计算评估得分
         result = calculateEvaluationScore(result, userIds, userNames, fault.getKnowledgeId(), deviceTypeCode);
 
@@ -2068,7 +2068,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         result = sortAndTakeFirstN(result, FaultConstant.FIRST_5);
 
         // 补充其他数据
-        result = addAdditionalDataToResultList(result);
+        result = addAdditionalDataToResultList(result, fault.getSymptoms(), deviceTypeCode);
 
         return result;
     }
@@ -2076,9 +2076,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     /**
      * 向推荐人员结果列表中添加额外的数据
      *
-     * @param resultList 结果列表
+     * @param resultList     结果列表
+     * @param symptoms       故障现象
+     * @param deviceTypeCode 设备类型编码
      */
-    private List<RecPersonListDTO> addAdditionalDataToResultList(List<RecPersonListDTO> resultList) {
+    private List<RecPersonListDTO> addAdditionalDataToResultList(List<RecPersonListDTO> resultList, String symptoms, String deviceTypeCode) {
         if (CollUtil.isEmpty(resultList)) {
             return resultList;
         }
@@ -2088,8 +2090,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<RoleNameDTO> roleNameList = faultMapper.getRoleNameByUserIdList(userIdList);
         Map<String, String> roleNameMap = convertRoleNameListToMap(roleNameList);
 
-        // 历史维修任务
-
         // 资质
         List<AptitudeDTO> aptitudeNameList = faultMapper.getAptitudeList(userIdList);
         Map<String, String> aptitudeMap = convertAptitudeNameListToMap(aptitudeNameList);
@@ -2097,8 +2097,48 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         for (RecPersonListDTO recPersonListDTO : resultList) {
             recPersonListDTO.setRoleName(StrUtil.split(roleNameMap.getOrDefault(recPersonListDTO.getUserId(), ""), ','));
             recPersonListDTO.setQualification(StrUtil.split(aptitudeMap.getOrDefault(recPersonListDTO.getUserId(), ""), ','));
+            // 历史维修任务
+            recPersonListDTO.setFaultRecList(faultMapper.getFaultRecList(recPersonListDTO.getUserName(), symptoms, deviceTypeCode));
+            // 工龄按年单位来计算
+            recPersonListDTO.setTenure(convertDaysToYears(recPersonListDTO.getTenure(), 2));
+
+            // 保留两位小数
+            recPersonListDTO.setEvaluationScore(NumberUtil.round(recPersonListDTO.getEvaluationScore(), 2).doubleValue());
+            recPersonListDTO.setSolutionEfficiencyScore(NumberUtil.round(recPersonListDTO.getSolutionEfficiencyScore(), 2).doubleValue());
+            recPersonListDTO.setPerformanceScore(NumberUtil.round(recPersonListDTO.getPerformanceScore(), 2).doubleValue());
+
+            // 所在站点
+            recPersonListDTO.setStationName(setUserStationName(recPersonListDTO.getUserName()));
         }
-        return null;
+
+        return resultList;
+    }
+
+    /**
+     * 补充用户当前所在站点
+     *
+     * @param userName 用户账号
+     * @return
+     */
+    private String setUserStationName(String userName) {
+        // 获取当前时间
+        Date currentTime = new Date();
+
+        // 创建Calendar对象，并将当前时间设置为日历的时间
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentTime);
+
+        // 将日历时间减去10分钟
+        calendar.add(Calendar.MINUTE, -10);
+
+        // 获取减去10分钟后的时间
+        Date tenMinutesAgo = calendar.getTime();
+
+        String stationName = faultMapper.getUserStationName(userName,tenMinutesAgo);
+        if (StrUtil.isEmpty(stationName)) {
+            stationName = "暂无位置信息";
+        }
+        return stationName;
     }
 
     /**
@@ -2148,27 +2188,18 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 排序后的前n条数据列表
      */
     private List<RecPersonListDTO> sortAndTakeFirstN(List<RecPersonListDTO> list, int n) {
+        if (CollUtil.isEmpty(list)) {
+            return list;
+        }
+
         List<RecPersonListDTO> sortedList = list.stream()
                 .sorted(Comparator.comparing(RecPersonListDTO::getScheduleStatus).reversed()
                         .thenComparing(Comparator.comparing(RecPersonListDTO::getHandledSameFault).reversed())
                         .thenComparing(RecPersonListDTO::getTaskStatus)
-                        .thenComparing(RecPersonListDTO::getStationNum)
                         .thenComparing(Comparator.comparing(RecPersonListDTO::getEvaluationScore).reversed()))
                 .limit(n)
                 .collect(Collectors.toList());
         return sortedList;
-    }
-
-    /**
-     * 计算人员距离故障站点的站点数量
-     *
-     * @param result      待筛选的人员列表
-     * @param stationCode 故障站点的站点代码
-     * @return 筛选后的人员列表，其中每个人员的站点数量表示其距离故障站点的距离
-     */
-    private List<RecPersonListDTO> countDistanceToFaultStation(List<RecPersonListDTO> result, String stationCode) {
-
-        return null;
     }
 
     /**
@@ -2182,6 +2213,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 计算评估得分后的结果列表
      */
     private List<RecPersonListDTO> calculateEvaluationScore(List<RecPersonListDTO> result, List<String> userIds, List<String> userNames, String knowledgeId, String deviceTypeCode) {
+        if (CollUtil.isEmpty(result)) {
+            return result;
+        }
         // 筛选后的人员信息
         List<String> userNameList = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
         List<String> userIdList = result.stream().map(RecPersonListDTO::getUserId).collect(Collectors.toList());
@@ -2218,7 +2252,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         CommonMaxMinNumDTO aptitudeMaxMinNum = faultMapper.getAptitudeMaxMin(userIds);
         Map<String, Integer> aptitudeMap = convertAptitudeListToMap(aptitudeList);
 
-        // 绩效
+        // 近一年平均绩效
         List<RadarPerformanceDTO> performanceList = faultMapper.getPerformanceList(DateUtil.offsetMonth(new Date(), -12), userIds);
         Double[] performanceScoreMaxMin = getPerformanceScoreMaxMin(performanceList);
         Map<String, Double> performanceMap = convertPerformanceListToMap(performanceList);
@@ -2296,7 +2330,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     efficiencyScoreMaxMin[0], efficiencyScoreMaxMin[1]));
 
             // 设置工龄得分
-            recPersonListDTO.setTenureScore(CommonUtils.calculateScore(recPersonListDTO.getTenureScore(),
+            recPersonListDTO.setTenureScore(CommonUtils.calculateScore(recPersonListDTO.getTenure(),
                     userExperienceMaxMin.getMaxNum(), userExperienceMaxMin.getMinNum()));
 
             // 设置资质得分
@@ -2335,7 +2369,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 + recPersonListDTO.getSolutionEfficiencyScore() * solutionEfficiencyScoreWeight
                 + recPersonListDTO.getTenureScore() * tenureScoreWeight
                 + recPersonListDTO.getQualificationScore() * qualificationScoreWeight
-                + recPersonListDTO.getPerformanceScore() * performanceScoreWeight) / 5;
+                + recPersonListDTO.getPerformanceScore() * performanceScoreWeight);
 
         // 返回综合评估得分
         return evaluationScore;
@@ -2509,6 +2543,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 统计后的任务情况人员列表
      */
     private List<RecPersonListDTO> taskSituation(List<RecPersonListDTO> result) {
+        if (CollUtil.isEmpty(result)) {
+            return result;
+        }
+
         List<String> userNames = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
         if (CollUtil.isNotEmpty(userNames)) {
             Map<String, String> sameFaultMap = Optional.ofNullable(faultMapper.taskSituation(userNames)).orElse(CollUtil.newArrayList())
@@ -2545,6 +2583,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 处理了相同故障的故障处理列表。
      */
     private List<RecPersonListDTO> isSameFaultHandled(List<RecPersonListDTO> result, String knowledgeId) {
+        if (CollUtil.isEmpty(result)) {
+            return result;
+        }
+
         List<String> userNames = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
         if (StrUtil.isNotEmpty(knowledgeId) && CollUtil.isNotEmpty(userNames)) {
             Map<String, String> sameFaultMap = Optional.ofNullable(faultMapper.isSameFaultHandled(userNames, knowledgeId)).orElse(CollUtil.newArrayList())
@@ -2582,6 +2624,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 筛选和处理后的用户列表。
      */
     private List<RecPersonListDTO> filterAndProcessUserWork(List<RecPersonListDTO> result, List<String> userIds) {
+        if (CollUtil.isEmpty(result)) {
+            return result;
+        }
+
         List<ScheduleUserWorkDTO> todayUserWork = baseApi.getTodayUserWork(userIds);
         if (CollUtil.isNotEmpty(todayUserWork)) {
             // 创建一个用户ID到值班情况的映射
@@ -2986,4 +3032,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
     }
 
+    /**
+     * 将天数转换为年数，并保留指定小数位数（四舍五入）。
+     *
+     * @param days          天数
+     * @param decimalPlaces 保留的小数位数
+     * @return 转换后的年数
+     */
+    public static double convertDaysToYears(double days, int decimalPlaces) {
+        BigDecimal years = BigDecimal.valueOf(days)
+                .divide(BigDecimal.valueOf(365), decimalPlaces, RoundingMode.HALF_UP);
+        return years.doubleValue();
+    }
 }
