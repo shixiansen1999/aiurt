@@ -13,6 +13,7 @@ import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.dto.UserTeamParameter;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
 import com.aiurt.boot.index.dto.TeamWorkAreaDTO;
+import com.aiurt.boot.statistics.service.PatrolStatisticsService;
 import com.aiurt.boot.task.dto.PersonnelTeamDTO;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.fault.dto.FaultReportDTO;
@@ -62,17 +63,20 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
     private OverhaulApi overhaulApi;
     @Autowired
     private ISysParamAPI sysParamApi;
+    @Autowired
+    private PatrolStatisticsService statisticsService;
     @Override
     public Page<GroupModel> queryGroupPageList(List<String> departIds, String startTime, String endTime, Page<GroupModel> page) {
         //获取当前登录用户管辖的班组
         List<String> ids = getDepartIds(departIds);
         if (CollUtil.isNotEmpty(ids)) {
             List<GroupModel> personnelGroupModels = personnelGroupStatisticsMapper.queryGroupPageList(ids, page);
+            List<String> list = personnelGroupModels.stream().map(GroupModel::getTeamId).collect(Collectors.toList());
             //获取所有班组巡检参数数据
             UserTeamParameter userTeamParameter = new UserTeamParameter();
             userTeamParameter.setStartDate(startTime);
             userTeamParameter.setEndDate(endTime);
-            userTeamParameter.setOrgIdList(ids);
+            userTeamParameter.setOrgIdList(list);
             Map<String, UserTeamPatrolDTO> teamParameter = new HashMap<>();
             //根据配置决定是否需要把工单数量作为任务数量
             SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
@@ -83,9 +87,9 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 teamParameter  = patrolApi.getUserTeamParameter(userTeamParameter);
             }
             //获取所有班组维修参数数据
-            Map<String, FaultReportDTO> faultOrgReport = dailyFaultApi.getFaultOrgReport(ids, startTime, endTime);
+            Map<String, FaultReportDTO> faultOrgReport = dailyFaultApi.getFaultOrgReport(list, startTime, endTime);
             ///获取所有班组检修参数数据
-            Map<String, PersonnelTeamDTO> teamInformation = overhaulApi.teamInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), ids);
+            Map<String, PersonnelTeamDTO> teamInformation = overhaulApi.teamInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), list);
 
             for (GroupModel model : personnelGroupModels) {
                 String teamId = model.getTeamId();
@@ -153,7 +157,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         List<String> ids = getDepartIds(departIds);
         if (CollUtil.isNotEmpty(ids)) {
             List<PersonnelModel> personnelModels = personnelGroupStatisticsMapper.queryUserPageList(ids, page);
-
+            List<String> userIds = personnelModels.stream().map(PersonnelModel::getUserId).collect(Collectors.toList());
             //获取所有人员巡检参数数据
             UserTeamParameter userTeamParameter = new UserTeamParameter();
             userTeamParameter.setStartDate(startTime);
@@ -171,9 +175,9 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             }
 
             //获取所有人员维修参数数据
-            Map<String, FaultReportDTO> faultUserReport = dailyFaultApi.getFaultUserReport(ids, startTime, endTime, null);
+            Map<String, FaultReportDTO> faultUserReport = dailyFaultApi.getFaultUserReport(ids, startTime, endTime, null,userIds);
             //获取所有人员检修参数数据
-            Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), ids, null);
+            Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), ids, null, userIds);
 
             for (PersonnelModel model : personnelModels) {
                 String userId = model.getUserId();
@@ -407,11 +411,11 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             userParameter = patrolApi.getUserParameter(userTeamParameter);
         }
         //获取人员维修参数数据
-        Map<String, FaultReportDTO> faultUserReport = dailyFaultApi.getFaultUserReport(null, DateUtil.formatDateTime(lastYear), DateUtil.formatDateTime(end), userId);
+        Map<String, FaultReportDTO> faultUserReport = dailyFaultApi.getFaultUserReport(null, DateUtil.formatDateTime(lastYear), DateUtil.formatDateTime(end), userId,null);
         //获取人员检修参数数据
         String startDate = DateUtil.formatDate(lastYear);
         String endDate = DateUtil.formatDate(end);
-        Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(DateUtil.parse(startDate), DateUtil.parse(endDate), null, userId);
+        Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(DateUtil.parse(startDate), DateUtil.parse(endDate), null, userId,null);
 
         TeamUserModel user = personnelGroupStatisticsMapper.getUser(userId);
 

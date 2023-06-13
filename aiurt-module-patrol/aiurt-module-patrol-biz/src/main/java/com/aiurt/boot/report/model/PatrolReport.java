@@ -53,9 +53,9 @@ public class PatrolReport {
 
     private String userId;
     /**
-     * 巡视工时
+     * 巡视工时 2023-06-12通信6期 单位改成秒
      */
-    private BigDecimal workHours;
+    private Integer workHours;
     /**
      * 巡视任务总数
      */
