@@ -300,6 +300,7 @@
             su.working_time,
             su.avatar AS picturePath,
             su.org_code,
+            sd.depart_name AS org_name,
             su.job_grade,
             DATEDIFF(
                     #{date},
@@ -308,6 +309,7 @@
                             #{date})) AS tenure
         FROM
             sys_user su
+        LEFT JOIN sys_depart sd ON sd.org_code = su.org_code
         WHERE
                 su.org_code IN (
                 SELECT
