@@ -27,9 +27,11 @@ import com.aiurt.modules.common.entity.SelectDeviceType;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
+import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceAssemblyMapper;
 import com.aiurt.modules.device.mapper.DeviceMapper;
+import com.aiurt.modules.device.service.IDeviceComposeService;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
@@ -3196,6 +3198,20 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             }
         }
         return list;
+    }
+
+    @Autowired
+    private IDeviceComposeService deviceComposeService;
+
+    @Override
+    public Map<String, String> getDeviceComposeNameByCode(List<String> materialCodes) {
+        List<DeviceCompose> deviceComposes = deviceComposeService.lambdaQuery()
+                .eq(DeviceCompose::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .in(DeviceCompose::getMaterialCode, materialCodes)
+                .list();
+        Map<String, String> map = deviceComposes.stream()
+                .collect(Collectors.toMap(k -> k.getMaterialCode(), v -> v.getMaterialName()));
+        return map;
     }
 
 

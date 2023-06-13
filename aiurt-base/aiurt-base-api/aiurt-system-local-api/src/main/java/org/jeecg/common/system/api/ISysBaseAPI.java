@@ -1143,6 +1143,12 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     List<String> getDepartByUser(Integer flag);
 
-
+    /**
+     * 根据组件部位编码获取名称
+     *
+     * @param materialCodes
+     * @return
+     */
+    Map<String, String> getDeviceComposeNameByCode(List<String> materialCodes);
 }
 

@@ -51,6 +51,7 @@ import com.aiurt.modules.knowledge.entity.KnowledgeBase;
 import com.aiurt.modules.knowledge.entity.SparePart;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.aiurt.modules.search.service.ISearchRecordsService;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -71,6 +72,7 @@ import org.apache.shiro.SecurityUtils;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.SpringContextUtils;
@@ -216,6 +218,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     faultKnowledgeBaseBuild.setVideoUrl(solution.getVideoUrl());
                     // 百分比
                     faultKnowledgeBaseBuild.setHappenRate(solution.getHappenRate());
+                    faultKnowledgeBaseBuild.setFaultCauseSolutions(solutions);
                     faultKnowledgeBaseBuild.setVirId(String.valueOf(virId));
                     faultKnowledgeBaseBuild.setFirst(first);
                     faultKnowledgeBaseBuild.setSize(solutions.size());
@@ -1197,10 +1200,69 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         }
 
         /*搜索引擎数据构造*/
+        this.knowledgeBaseElasticData(faultKnowledgeBase, causeSolutions, sparePartInfos);
+        /*搜索引擎数据构造*/
+    }
+
+    /**
+     * 添加或编辑是同步数据至Elasticsearch
+     *
+     * @param faultKnowledgeBase
+     * @param causeSolutions
+     * @param sparePartInfos
+     */
+    private void knowledgeBaseElasticData(FaultKnowledgeBase faultKnowledgeBase,
+                                          List<CauseSolution> causeSolutions,
+                                          List<FaultSparePart> sparePartInfos) {
         AsyncThreadPoolExecutorUtil executor = AsyncThreadPoolExecutorUtil.getExecutor();
         executor.submitTask(() -> {
             KnowledgeBase knowledgeBase = new KnowledgeBase();
             BeanUtils.copyProperties(faultKnowledgeBase, knowledgeBase);
+            knowledgeBase.setUpdateTime(new Date());
+            // 故障知识分类编码
+            Optional.ofNullable(knowledgeBase.getKnowledgeBaseTypeCode())
+                    .ifPresent(knowledgeBaseTypeCode -> {
+                        QueryWrapper<FaultKnowledgeBaseType> wrapper = new QueryWrapper<>();
+                        wrapper.lambda().eq(FaultKnowledgeBaseType::getDelFlag, CommonConstant.DEL_FLAG_0)
+                                .eq(FaultKnowledgeBaseType::getCode, knowledgeBaseTypeCode)
+                                .last("limit 1");
+                        FaultKnowledgeBaseType knowledgeBaseType = faultKnowledgeBaseTypeMapper.selectOne(wrapper);
+                        knowledgeBase.setKnowledgeBaseTypeName(knowledgeBaseType.getName());
+                    });
+            // 专业
+            Optional.ofNullable(knowledgeBase.getMajorCode())
+                    .ifPresent(majorCode -> {
+                        JSONObject major = sysBaseApi.getCsMajorByCode(majorCode);
+                        CsUserMajorModel csUserMajorModel = JSON.toJavaObject(major, CsUserMajorModel.class);
+                        knowledgeBase.setMajorName(csUserMajorModel.getMajorName());
+                    });
+            // 子系统
+            Optional.ofNullable(knowledgeBase.getSystemCode()).ifPresent(systemCode -> {
+                List<String> systemNames = sysBaseApi.getSystemNames(Collections.singletonList(systemCode));
+                if (CollUtil.isNotEmpty(systemNames)) {
+                    knowledgeBase.setSystemName(systemNames.get(0));
+                }
+            });
+            // 组件部位
+            Optional.ofNullable(knowledgeBase.getMaterialCode()).ifPresent(materialCode -> {
+                Map<String, String> composeMap = sysBaseApi.getDeviceComposeNameByCode(Arrays.asList(materialCode));
+                knowledgeBase.setMaterialName(composeMap.get(materialCode));
+            });
+            // 设备类型
+            Optional.ofNullable(knowledgeBase.getDeviceTypeCode()).ifPresent(deviceTypeCode -> {
+                List<DeviceType> deviceTypes = sysBaseApi.selectDeviceTypeByCodes(Collections.singleton(deviceTypeCode));
+                if (CollUtil.isNotEmpty(deviceTypes)) {
+                    DeviceType deviceType = deviceTypes.stream().findFirst().orElseGet(DeviceType::new);
+                    knowledgeBase.setDeviceTypeName(deviceType.getName());
+                }
+            });
+            // 故障等级
+            Optional.ofNullable(knowledgeBase.getFaultLevelCode()).ifPresent(faultLevelCode -> {
+                FaultLevel faultLevel = faultLevelService.lambdaQuery()
+                        .eq(FaultLevel::getDelFlag, CommonConstant.DEL_FLAG_0)
+                        .eq(FaultLevel::getCode, faultLevelCode).last("limit 1").one();
+                knowledgeBase.setFaultLevelName(faultLevel.getName());
+            });
             if (CollUtil.isNotEmpty(causeSolutions)) {
                 if (CollUtil.isNotEmpty(sparePartInfos)) {
                     List<String> sparePartCodes = sparePartInfos.stream().map(FaultSparePart::getSparePartCode).collect(Collectors.toList());
@@ -1230,7 +1292,6 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             elasticApi.saveBatch(Arrays.asList(knowledgeBase));
             return null;
         });
-        /*搜索引擎数据构造*/
     }
 
     /**
