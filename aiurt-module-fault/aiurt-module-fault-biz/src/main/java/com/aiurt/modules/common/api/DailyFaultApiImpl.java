@@ -377,7 +377,7 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                     if (fau.getNum1()==0){
                         faultReportDTO.setRepairTime(0);
                     }else {
-                        BigDecimal bigDecimal = new BigDecimal(faultReportDTO.getNum()).divide(new BigDecimal(faultReportDTO.getNum1()),0, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal bigDecimal = new BigDecimal(faultReportDTO.getNum()).divide(new BigDecimal(fau.getNum1()),0, BigDecimal.ROUND_HALF_UP);
                         faultReportDTO.setRepairTime(bigDecimal.intValue());
                     }
                     faultReportDTO.setConstructorsNum(fau.getConstructorsNum());

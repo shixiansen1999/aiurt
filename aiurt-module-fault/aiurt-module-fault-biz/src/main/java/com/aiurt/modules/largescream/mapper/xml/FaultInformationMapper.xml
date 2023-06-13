@@ -676,8 +676,9 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
           and date_format(submit_time ,'%Y-%m-%d')  BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
     </select>
     <select id="getUserConstructorsNum" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
-        select   count(id) as constructorsNum,
-                count(id) as num1
+        select
+        IFNULL(count(id),0) as constructorsNum,
+        IFNULL(count(id),0) as num1
         from t_work_log
         where del_flag = 0
           and confirm_status = 1
@@ -692,7 +693,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         where
            s.del_flag = 0 and s.org_id = #{orgId}
           AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
-        group by s.id
+        group by s.id,fr.id
     </select>
     <select id="getAccompanyTime" resultType="com.aiurt.modules.fault.dto.UserTimeDTO">
         select s.id as userId, fr.id as frrId,
@@ -705,7 +706,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         where
             s.del_flag = 0 and s.org_id = #{orgId}
           AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
-        group by s.id
+        group by s.id,fr.id
     </select>
     <select id="getUserTimes" resultType="java.lang.Integer">
         select
@@ -713,7 +714,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
              FROM operation_process op  WHERE op.fault_code = f.`code` and op.process_person = fr.appoint_user_name),0) as duration
         from  sys_user s
                   left join fault_repair_participants frp on s.username = frp.user_name
-                  left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id  and fr.del_flag = 0
+                  left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id  and fr.del_flag = 0 and s.username != fr.appoint_user_name
                   left join  fault f on f.code = fr.fault_code
         where
             s.del_flag = 0 and s.id = #{userId}
@@ -894,7 +895,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
            s.del_flag = 0 and s.org_id = #{orgId}
            and not EXISTS (select 1 from operation_process where fault_code = f.code and  process_code = 10)
           AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
-        group by s.id
+        group by s.id,fr.id
 </select>
 <select id="getFilterAccompanyTime" resultType="com.aiurt.modules.fault.dto.UserTimeDTO">
         select s.id as userId, fr.id as frrId,
@@ -907,7 +908,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
             s.del_flag = 0 and s.org_id = #{orgId}
            and not EXISTS (select 1 from operation_process where fault_code = f.code and  process_code = 10)
           AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
-        group by s.id
+        group by s.id,fr.id
 </select>
 <select id="getFilterFaultUserReport" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
   SELECT sys_user.id as userId,
@@ -937,7 +938,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
          IFNULL(sum(fr.repair_duration),0) as duration
         from  sys_user s
                   left join fault_repair_participants frp on s.username = frp.user_name
-                  left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id
+                  left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id and s.username != fr.appoint_user_name
                   left join  fault f on f.code = fr.fault_code
         where
             s.del_flag = 0 and s.id = #{userId}
