@@ -170,26 +170,18 @@ public class DailyFaultApiImpl implements DailyFaultApi {
          participantsDuration = faultInformationMapper.getFaultParticipantsDuration(startTime, endTime);
         }
 
-        Map<String, Long> durationMap = faultUserDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
-                v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
+        Map<String, Integer> durationMap = faultUserDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
+                v -> ObjectUtil.isEmpty(v.getDuration()) ? 0 : v.getDuration(), (a, b) -> a));
 
-        Map<String, Long> participantsMap = participantsDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
-                v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
+        Map<String, Integer> participantsMap = participantsDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
+                v -> ObjectUtil.isEmpty(v.getDuration()) ? 0 : v.getDuration(), (a, b) -> a));
 
         userList.stream().forEach(l -> {
             String userId = l.getId();
-            Long timeOne = durationMap.get(userId);
-            Long timeTwo = participantsMap.get(userId);
-            if (ObjectUtil.isEmpty(timeOne)) {
-                timeOne = 0L;
-            }
-            if (ObjectUtil.isEmpty(timeTwo)) {
-                timeTwo = 0L;
-            }
-            double time = 1.0 * (timeOne+timeTwo) / 3600;
-            // 展示需要以小时数展示，并保留两位小数
-            BigDecimal decimal = new BigDecimal(time).setScale(2, BigDecimal.ROUND_HALF_UP);
-            userDurationMap.put(userId, decimal);
+            Integer timeOne = durationMap.get(userId) != null ? durationMap.get(userId) : 0;
+            Integer timeTwo = participantsMap.get(userId)!= null ? participantsMap.get(userId) : 0;
+            int time = timeOne + timeTwo;
+            userDurationMap.put(userId, new BigDecimal(time));
         });
         return userDurationMap;
     }
@@ -223,28 +215,20 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                 // 获取参与人在指定时间范围内的每一个任务的任务时长(单位秒)
                  participantsByIdDuration = faultInformationMapper.getParticipantsDuration(startTime, endTime, userList);
             }
-            Map<String, Long> durationMap = faultByIdDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
-                    v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
+            Map<String, Integer> durationMap = faultByIdDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
+                    v -> ObjectUtil.isEmpty(v.getDuration()) ? 0 : v.getDuration(), (a, b) -> a));
 
-            Map<String, Long> participantsMap = participantsByIdDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
-                    v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
+            Map<String, Integer> participantsMap = participantsByIdDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
+                    v -> ObjectUtil.isEmpty(v.getDuration()) ? 0 : v.getDuration(), (a, b) -> a));
             BigDecimal sum = new BigDecimal("0.00");
             for (LoginUser user : userList) {
                 String userId = user.getId();
-                Long timeOne = durationMap.get(userId);
-                Long timeTwo = participantsMap.get(userId);
-                if (ObjectUtil.isEmpty(timeOne)) {
-                    timeOne = 0L;
-                }
-                if (ObjectUtil.isEmpty(timeTwo)) {
-                    timeTwo = 0L;
-                }
-                double time = 1.0 * (timeOne+timeTwo) / 3600;
-                // 展示需要以小时数展示，并保留两位小数
-                BigDecimal a = new BigDecimal(time).setScale(2, BigDecimal.ROUND_HALF_UP);
-                sum = sum.add(a);
+                Integer timeOne = durationMap.get(userId) != null ? durationMap.get(userId) : 0;
+                Integer timeTwo = participantsMap.get(userId)!= null ? participantsMap.get(userId) : 0;
+
+                int time =timeOne+timeTwo;
+                sum = sum.add(new BigDecimal(time));
             }
-            //秒转时
             return sum;
         }
     return new BigDecimal("0.00");
@@ -297,12 +281,14 @@ public class DailyFaultApiImpl implements DailyFaultApi {
             accompanyFaultList =faultInformationMapper.getAccompanyTime(f.getOrgId(),startTime,endTime);
         }
         f.setConstructorsNum(faultInformationMapper.getConstructorsNum(startTime,endTime,orgId));
-        List<String> collect = userFaultList.stream().map(UserTimeDTO::getFrrId).collect(Collectors.toList());
-        accompanyFaultList = accompanyFaultList.stream().parallel().filter(a -> !collect.contains(a.getFrrId())).collect(Collectors.toList());
-        userFaultList.addAll(accompanyFaultList);
-        Long sum = accompanyFaultList
+        //过滤掉维修负责人和同行人是同一个的工时
+        if (CollUtil.isNotEmpty(accompanyFaultList)) {
+            accompanyFaultList.removeAll(userFaultList);
+        }
+
+        int sum = accompanyFaultList
                 .stream().filter(w-> w.getDuration() !=null)
-                .mapToLong(w -> w.getDuration())
+                .mapToInt(UserTimeDTO::getDuration)
                 .sum();
         f.setNum(f.getNum()+sum);
         List<String> str = faultInformationMapper.getConstructionHours(f.getOrgId(),startTime,endTime);
@@ -326,17 +312,14 @@ public class DailyFaultApiImpl implements DailyFaultApi {
             });
         });
         if (f.getNum1()==0){
-            f.setRepairTime("0");
+            f.setRepairTime(0);
         }else {
-            Long s = (f.getNum()/f.getNum1())/60;
-            f.setRepairTime(s.toString());
+
+            BigDecimal bigDecimal = new BigDecimal(f.getNum()).divide(new BigDecimal(f.getNum1()),0, BigDecimal.ROUND_HALF_UP);
+            f.setRepairTime(bigDecimal.intValue());
         }
-        BigDecimal sumFailureTime = new BigDecimal("0.00");
-        for (UserTimeDTO userTimeDTO : userFaultList) {
-            BigDecimal decimal = new BigDecimal((1.0 * (userTimeDTO.getDuration()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP);
-            sumFailureTime = sumFailureTime.add(decimal);
-        }
-        f.setFailureTime(sumFailureTime);
+
+        f.setFailureTime(f.getNum());
         BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
         f.setConstructionHours(totalPrice.setScale(2,BigDecimal.ROUND_HALF_UP));
         map.put(f.getOrgId(),f);
@@ -363,7 +346,7 @@ public class DailyFaultApiImpl implements DailyFaultApi {
             users.forEach(id->{
                 threadPoolExecutor.execute(() -> {
                     FaultReportDTO faultReportDTO = new FaultReportDTO();
-                    Long sum = 0L;
+                    int sum = 0;
                     if(filterValue){
                         faultReportDTO = faultInformationMapper.getFilterFaultUserReport(teamId,startTime,endTime,null,id);
                         sum = faultInformationMapper.getFilterUserTimes(id,startTime,endTime);
@@ -392,13 +375,13 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                     });
                     FaultReportDTO  fau = faultInformationMapper.getUserConstructorsNum(id,startTime,endTime);
                     if (fau.getNum1()==0){
-                        faultReportDTO.setRepairTime("0");
+                        faultReportDTO.setRepairTime(0);
                     }else {
-                        Long s = (faultReportDTO.getNum()/fau.getNum1())/60;
-                        faultReportDTO.setRepairTime(s.toString());
+                        BigDecimal bigDecimal = new BigDecimal(faultReportDTO.getNum()).divide(new BigDecimal(faultReportDTO.getNum1()),0, BigDecimal.ROUND_HALF_UP);
+                        faultReportDTO.setRepairTime(bigDecimal.intValue());
                     }
                     faultReportDTO.setConstructorsNum(fau.getConstructorsNum());
-                    faultReportDTO.setFailureTime(new BigDecimal((1.0 * (faultReportDTO.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
+                    faultReportDTO.setFailureTime(faultReportDTO.getNum());
                     BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
                     faultReportDTO.setConstructionHours(totalPrice.setScale(2,BigDecimal.ROUND_HALF_UP));
                     map.put(id,faultReportDTO);

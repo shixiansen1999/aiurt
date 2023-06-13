@@ -18,5 +18,28 @@ public class UserTimeDTO {
 
     private String frrId;
 
-    private Long duration;
+    private Integer duration;
+
+    /**
+     * 重写equals方法
+     * @param o
+     * @return
+     */
+    @Override
+    public boolean equals(Object o){
+        if (o instanceof UserTimeDTO){
+            UserTimeDTO userTimeDTO = (UserTimeDTO) o ;
+            boolean equals = this.getUserId().equals(userTimeDTO.getUserId());
+            boolean equals1 = this.getFrrId().equals(userTimeDTO.getFrrId());
+            return (equals && equals1);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        String result = userId+frrId;
+        return result.hashCode();
+    }
+
 }

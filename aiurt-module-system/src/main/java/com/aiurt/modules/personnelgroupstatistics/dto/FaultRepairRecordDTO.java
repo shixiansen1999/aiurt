@@ -3,6 +3,7 @@ package com.aiurt.modules.personnelgroupstatistics.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
@@ -43,4 +44,8 @@ public class FaultRepairRecordDTO {
     @ApiModelProperty(value = "维修完成时间")
     private Date endTime;
 
+    /**维修响应时长*/
+    @Excel(name = "维修响应时长", width = 15)
+    @ApiModelProperty(value = "维修响应时长")
+    private Integer responseDuration;
 }

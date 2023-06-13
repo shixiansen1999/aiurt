@@ -2,7 +2,6 @@ package com.aiurt.boot.bigscreen.service;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.thread.ThreadUtil;
@@ -570,7 +569,7 @@ public class BigscreenPlanService {
             //获取总工时
             getTotalTimes(teamPortraitDTO, userList, type, timeByType);
         } else {
-            teamPortraitDTO.setAverageTime("0");
+            teamPortraitDTO.setAverageTime(0);
             teamPortraitDTO.setPatrolTotalTime(0);
             teamPortraitDTO.setFaultTotalTime(new BigDecimal(0.0));
             teamPortraitDTO.setInspecitonTotalTime(new BigDecimal(0.0));
@@ -579,31 +578,16 @@ public class BigscreenPlanService {
 
     public void getAverageTime(List<RepairRecordDetailDTO> repairDuration, TeamPortraitDTO teamPortraitDTO) {
         if (CollUtil.isNotEmpty(repairDuration)) {
-            long l = 0;
-            for (RepairRecordDetailDTO repairRecordDetailDTO : repairDuration) {
-                // 响应时长： 接收到任务，开始维修时长
-                Date receviceTime = repairRecordDetailDTO.getReceviceTime();
-                Date startTime = repairRecordDetailDTO.getStartTime();
-                Date time = repairRecordDetailDTO.getEndTime();
-                if (Objects.nonNull(startTime) && Objects.nonNull(receviceTime)) {
-                    long between = DateUtil.between(receviceTime, startTime, DateUnit.MINUTE);
-                    between = between == 0 ? 1 : between;
-                    l = l + between;
-                }
-                if (Objects.nonNull(startTime) && Objects.nonNull(time)) {
-                    long between = DateUtil.between(time, startTime, DateUnit.MINUTE);
-                    between = between == 0 ? 1 : between;
-                    l = l + between;
-                }
-            }
-            int size = repairDuration.size();
-            BigDecimal bigDecimal = new BigDecimal(l);
+            int l = repairDuration.stream().filter(w-> w.getDuration() !=null)
+                    .mapToInt(RepairRecordDetailDTO::getDuration)
+                    .sum();
 
-            BigDecimal bigDecimal1 = new BigDecimal(size);
-            String s = bigDecimal.divide(bigDecimal1, 0).toString();
-            teamPortraitDTO.setAverageTime(s);
+            BigDecimal bigDecimal = new BigDecimal(l);
+            BigDecimal bigDecimal1 = new BigDecimal(repairDuration.size());
+            BigDecimal divide = bigDecimal.divide(bigDecimal1, 0, BigDecimal.ROUND_HALF_UP);
+            teamPortraitDTO.setAverageTime(divide.intValue());
         } else {
-            teamPortraitDTO.setAverageTime("0");
+            teamPortraitDTO.setAverageTime(0);
         }
     }
 

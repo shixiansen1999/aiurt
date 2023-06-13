@@ -22,12 +22,12 @@ public class FaultReportDTO {
     String  orgCode;
     @ApiModelProperty(value = "班组Id")
     String  orgId;
-    Long  num;
+    Integer  num;
     Integer num1;
     @ApiModelProperty(value = "平均维修时间")
-    String repairTime;
+    Integer repairTime;
     @ApiModelProperty(value = "故障总工时")
-    BigDecimal failureTime;
+    Integer failureTime;
     @ApiModelProperty(value = "施工人数")
     Integer constructorsNum;
     @ApiModelProperty(value = "施工工时")

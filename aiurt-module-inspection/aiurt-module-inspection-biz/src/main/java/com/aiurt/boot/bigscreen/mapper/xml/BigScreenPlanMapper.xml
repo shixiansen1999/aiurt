@@ -74,7 +74,7 @@
     a.id,
     a.appoint_user_name,
     su.realname as appoint_real_name,
-    if(a.recevice_time is null, a.assign_time, a.recevice_time) as recevice_time,
+    ifnull(sum(a.response_duration), 0) as duration,
     a.start_time,
     a.end_time
     from

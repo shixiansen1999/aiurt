@@ -417,10 +417,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             } else {
                 f.setLastYearStr("-");
             }
-            List<Integer> num = patrolTaskMapper.selectNum(f.getCode(), null, lineCode, finalStationCode, finalStartTime, finalEndTime);
-            int s = num.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
-            f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
-            f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
+
             List<Integer> faultWortTime =  new ArrayList<>(0);
              if(filterValue){
                  Integer resolveNum = finalSystemCodeResolveMap.get(f.getCode());
@@ -431,8 +428,22 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
              }else {
                  faultWortTime = patrolTaskMapper.selectNum1(f.getCode(), null, lineCode, finalStationCode, finalStartTime, finalEndTime);
              }
-             int s1 = faultWortTime.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
-             f.setAverageResolution(f.getResolvedNum() == 0 ? 0 : s1 / f.getResolvedNum());
+
+
+             if (f.getResolvedNum() != null && f.getResolvedNum() != 0) {
+                 List<Integer> num = patrolTaskMapper.selectNum(f.getCode(), null, lineCode, finalStationCode, finalStartTime, finalEndTime);
+                 int s = num.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
+                 BigDecimal divide = new BigDecimal(s).divide(new BigDecimal(f.getResolvedNum()), 0, BigDecimal.ROUND_HALF_UP);
+                 f.setAverageResponse(divide.intValue());
+
+                 int s1 = faultWortTime.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
+                 BigDecimal bigDecimal = new BigDecimal(s1).divide(new BigDecimal(f.getResolvedNum()), 0, BigDecimal.ROUND_HALF_UP);
+                 f.setAverageResolution(bigDecimal.intValue());
+             } else {
+                 f.setAverageResponse(0);
+                 f.setAverageResolution(0);
+             }
+
          });
         return failureReportIpage;
     }
@@ -512,10 +523,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             } else {
                 f.setLastYearStr("-");
             }
-            List<Integer> num = patrolTaskMapper.selectNum(null, f.getOrgCode(), lineCode, finalStationCode, finalStartTime, finalEndTime);
-            int s = num.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
-            f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
-            f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
+
             List<Integer> faultWortTime =  new ArrayList<>(0);
             if(filterValue){
                 Integer resolveNum = finalOrgResolveMap.get(f.getOrgCode());
@@ -526,8 +534,20 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             }else {
                 faultWortTime = patrolTaskMapper.selectNum1(null, f.getOrgCode(), lineCode, finalStationCode, finalStartTime, finalEndTime);
             }
-            int s1 = faultWortTime.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
-            f.setAverageResolution(f.getResolvedNum() == 0 ? 0 : s1 / f.getResolvedNum());
+
+            if (f.getResolvedNum() != null && f.getResolvedNum() != 0) {
+                List<Integer> num = patrolTaskMapper.selectNum(null, f.getOrgCode(), lineCode, finalStationCode, finalStartTime, finalEndTime);
+                int s = num.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
+                BigDecimal divide = new BigDecimal(s).divide(new BigDecimal(f.getResolvedNum()), 0, BigDecimal.ROUND_HALF_UP);
+                f.setAverageResponse(divide.intValue());
+
+                int s1 = faultWortTime.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
+                BigDecimal bigDecimal = new BigDecimal(s1).divide(new BigDecimal(f.getResolvedNum()), 0, BigDecimal.ROUND_HALF_UP);
+                f.setAverageResolution(bigDecimal.intValue());
+            } else {
+                f.setAverageResponse(0);
+                f.setAverageResolution(0);
+            }
         });
                   return orgReport;
             }

@@ -177,25 +177,26 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 threadPoolExecutor.execute(() -> {
                     SubsystemFaultDTO subDTO = csUserSubsystemMapper.getSubsystemFaultDTO(time,s.getSystemCode());
                     if(filterValue){
-                        Long numDuration = csUserSubsystemMapper.getSubsystemFilterFaultDTO(time,s.getSystemCode());
+                        Integer numDuration = csUserSubsystemMapper.getSubsystemFilterFaultDTO(time,s.getSystemCode());
                         subDTO.setNum(numDuration);
                     }
                     subDTO.setFailureNum(subDTO.getCommonFaultNum()+subDTO.getSeriousFaultNum());
                     subDTO.setSystemCode(s.getSystemCode());subDTO.setSystemName(s.getSystemName());subDTO.setId(s.getId());
                     subDTO.setCode(subDTO.getSystemCode());subDTO.setName(subDTO.getSystemName());
-                    subDTO.setFailureDuration(new BigDecimal((1.0 * ( subDTO.getNum()) / 60)).setScale(2, BigDecimal.ROUND_HALF_UP));
+                    subDTO.setFailureDuration(subDTO.getNum());
+
                     List<SubsystemFaultDTO> list = csUserSubsystemMapper.getSubsystemByDeviceTypeCode(s.getSystemCode(),deviceTypeCode);
                     List<SubsystemFaultDTO> deviceTypeList = new ArrayList<>();
                     list.forEach(l->{
                         SubsystemFaultDTO deviceType = csUserSubsystemMapper.getSubsystemByDeviceType(time,s.getSystemCode(),l.getDeviceTypeCode());
-                        Long num = 0L;
+                        Integer num = 0;
                         if(filterValue){
                             num = csUserSubsystemMapper.getFilterNum(time,s.getSystemCode(),l.getDeviceTypeCode());
                         }else {
                             num = csUserSubsystemMapper.getNum(time,s.getSystemCode(),l.getDeviceTypeCode());
                         }
                         deviceType.setFailureNum(deviceType.getCommonFaultNum()+deviceType.getSeriousFaultNum());
-                        deviceType.setFailureDuration(new BigDecimal((1.0 * (num==null?0:num) / 60)).setScale(2, BigDecimal.ROUND_HALF_UP));
+                        deviceType.setFailureDuration(num);
                         deviceType.setDeviceTypeCode(l.getDeviceTypeCode());
                         deviceType.setDeviceTypeName(l.getDeviceTypeName());
                         deviceType.setName(l.getDeviceTypeName());deviceType.setCode(l.getDeviceTypeCode());deviceType.setId(l.getId());
@@ -272,7 +273,14 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         List<SubsystemFaultDTO> strings = csUserSubsystemMapper.selectByUserId(page, sysUser.getId());
         List<YearFaultDTO> yearFaultDtos = new ArrayList<>();
           strings.forEach(s->{
-              List<ListDTO> system = csUserSubsystemMapper.sysTemYearFault(s.getSystemCode());
+              List<ListDTO> system = new ArrayList<>();
+              SysParamModel filterParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_FILTER);
+              boolean filterValue = "1".equals(filterParamModel.getValue());
+              if (filterValue) {
+                  system  = csUserSubsystemMapper.sysTemYearFault(s.getSystemCode());
+              } else {
+                  system = csUserSubsystemMapper.sysTemYearAllFault(s.getSystemCode());
+              }
               YearFaultDTO yearFaultDTO = new YearFaultDTO();
               yearFaultDTO.setId(s.getId());
               yearFaultDTO.setName(s.getSystemName());yearFaultDTO.setCode(s.getSystemCode());
@@ -305,45 +313,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                       }
                   }
               });
-              /*List<SubsystemFaultDTO> list = csUserSubsystemMapper.getSubsystemByDeviceTypeCode(s.getSystemCode(),null);
-              List<YearFaultDTO> yearFaultDTOList =new ArrayList<>();
-              list.forEach(l->{
-                  YearFaultDTO devDTO = new YearFaultDTO();
-                  devDTO.setId(l.getId());
-                  devDTO.setCode(l.getDeviceTypeCode());devDTO.setName(l.getDeviceTypeName());
-                  List<ListDTO> listDtos = csUserSubsystemMapper.deviceTypeFault(s.getSystemCode(),l.getDeviceTypeCode());
-                  listDtos.forEach(ld->{
-                      if (ObjectUtils.isNotEmpty(ld.getMonth())) {
-                          if (ld.getMonth() == 1) {
-                              devDTO.setJanuary(new BigDecimal(Long.valueOf(devDTO.getJanuary())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
-                          } else if (ld.getMonth() == 2) {
-                              devDTO.setFebruary(new BigDecimal(Long.valueOf(devDTO.getFebruary())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
-                          } else if (ld.getMonth() == 3) {
-                              devDTO.setMarch(new BigDecimal(Long.valueOf(devDTO.getMarch())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
-                          } else if (ld.getMonth() == 4) {
-                              devDTO.setApril(new BigDecimal(Long.valueOf(devDTO.getApril())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
-                          } else if (ld.getMonth() == 5) {
-                              devDTO.setMay(new BigDecimal(Long.valueOf(devDTO.getMay())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
-                          } else if (ld.getMonth() == 6) {
-                              devDTO.setJune(new BigDecimal(Long.valueOf(devDTO.getJune())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
-                          } else if (ld.getMonth() == 7) {
-                              devDTO.setJuly(new BigDecimal(Long.valueOf(devDTO.getJuly())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
-                          } else if (ld.getMonth() == 8) {
-                              devDTO.setAugust(new BigDecimal(Long.valueOf(devDTO.getAugust())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
-                          } else if (ld.getMonth() == 9) {
-                              devDTO.setSeptember(new BigDecimal(Long.valueOf(devDTO.getSeptember())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
-                          } else if (ld.getMonth() == 10) {
-                              devDTO.setOctober(new BigDecimal(Long.valueOf(devDTO.getOctober())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
-                          } else if (ld.getMonth() == 11) {
-                              devDTO.setNovember(new BigDecimal(Long.valueOf(devDTO.getNovember())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
-                          } else if (ld.getMonth() == 12) {
-                              devDTO.setDecember(new BigDecimal(Long.valueOf(devDTO.getDecember())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
-                          }
-                      }
-                  });
-                  yearFaultDTOList.add(devDTO);
-              });
-              yearFaultDTO.setYearFaultDtos(yearFaultDTOList);*/
+
               yearFaultDtos.add(yearFaultDTO);
           });
           if(StrUtil.isNotBlank(name) && CollectionUtil.isNotEmpty(yearFaultDtos)){

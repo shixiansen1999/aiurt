@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.api.OverhaulApi;
@@ -42,7 +41,10 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -360,29 +362,16 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
 
     public void getAverageTime(List<FaultRepairRecordDTO> repairDuration,TeamPortraitModel depart) {
         if (CollUtil.isNotEmpty(repairDuration)) {
-            long l = 0;
-            for (FaultRepairRecordDTO repairRecordDTO : repairDuration) {
-                // 响应时长： 接收到任务，开始维修时长
-                Date receviceTime = repairRecordDTO.getReceviceTime();
-                Date startTime = repairRecordDTO.getStartTime();
-                Date time = repairRecordDTO.getEndTime();
-                if (Objects.nonNull(startTime) && Objects.nonNull(receviceTime)) {
-                    long between = DateUtil.between(receviceTime, startTime, DateUnit.MINUTE);
-                    between = between == 0 ? 1 : between;
-                    l = l + between;
-                }
-                if (Objects.nonNull(startTime) && Objects.nonNull(time)) {
-                    long between = DateUtil.between(time, startTime, DateUnit.MINUTE);
-                    between = between == 0 ? 1 : between;
-                    l = l + between;
-                }
-            }
+            int l = repairDuration.stream().filter(w-> w.getResponseDuration() !=null)
+                    .mapToInt(FaultRepairRecordDTO::getResponseDuration)
+                    .sum();
+
             BigDecimal bigDecimal = new BigDecimal(l);
             BigDecimal bigDecimal1 = new BigDecimal(repairDuration.size());
-            String s = bigDecimal.divide(bigDecimal1, 0).toString();
-            depart.setAverageTime(s);
+            BigDecimal divide = bigDecimal.divide(bigDecimal1, 0, BigDecimal.ROUND_HALF_UP);
+            depart.setAverageTime(divide.intValue());
         } else {
-            depart.setAverageTime("0");
+            depart.setAverageTime(0);
         }
     }
 
@@ -445,29 +434,16 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         //获取人员维修响应时长
         List<FaultRepairRecordDTO> repairDuration = personnelGroupStatisticsMapper.getRepairDuration(userList, lastYear, end);
         if (CollUtil.isNotEmpty(repairDuration)) {
-            long l = 0;
-            for (FaultRepairRecordDTO repairRecordDTO : repairDuration) {
-                // 响应时长： 接收到任务，开始维修时长
-                Date receviceTime = repairRecordDTO.getReceviceTime();
-                Date startTime = repairRecordDTO.getStartTime();
-                Date time = repairRecordDTO.getEndTime();
-                if (Objects.nonNull(startTime) && Objects.nonNull(receviceTime)) {
-                    long between = DateUtil.between(receviceTime, startTime, DateUnit.MINUTE);
-                    between = between == 0 ? 1 : between;
-                    l = l + between;
-                }
-                if (Objects.nonNull(startTime) && Objects.nonNull(time)) {
-                    long between = DateUtil.between(time, startTime, DateUnit.MINUTE);
-                    between = between == 0 ? 1 : between;
-                    l = l + between;
-                }
-            }
+            int l = repairDuration.stream().filter(w-> w.getResponseDuration() !=null)
+                    .mapToInt(FaultRepairRecordDTO::getResponseDuration)
+                    .sum();
+
             BigDecimal bigDecimal = new BigDecimal(l);
             BigDecimal bigDecimal1 = new BigDecimal(repairDuration.size());
-            String s = bigDecimal.divide(bigDecimal1, 0).toString();
-            user.setAverageTime(s);
+            BigDecimal divide = bigDecimal.divide(bigDecimal1, 0, BigDecimal.ROUND_HALF_UP);
+            user.setAverageTime(divide.intValue());
         }else {
-            user.setAverageTime("0");
+            user.setAverageTime(0);
         }
 
         return user;

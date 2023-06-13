@@ -1047,8 +1047,7 @@
         GROUP BY pto.org_code
     </select>
     <select id="selectNum" resultType="java.lang.Integer">
-        select ifnull((TIME_TO_SEC(a.time) / 60), 0) as times from
-        (SELECT timediff(c.arrive_time, IFNULL(c.recevice_time, c.assign_time)) as time
+        select ifnull(sum(a.response_duration), 0) as times
         FROM
         fault a
         LEFT JOIN fault_repair_record c
@@ -1078,13 +1077,11 @@
                 #{item}
             </foreach>
         </if>
-        and (a.end_time
-        or not NULL) ) as a
-        where 1 = 1
+        and a.status = 12
+
     </select>
     <select id="selectNum1" resultType="java.lang.Integer">
-        select ifnull((TIME_TO_SEC(abc.time) / 60), 0) as times from
-        (SELECT timediff(c.end_time, IFNULL(c.recevice_time, c.assign_time)) as time
+        select ifnull(sum(a.resolution_duration), 0) as times
         FROM
         fault a
         LEFT JOIN fault_repair_record c
@@ -1114,9 +1111,7 @@
                 #{item}
             </foreach>
         </if>
-        and (a.end_time
-        or not NULL) ) as abc
-        where 1 = 1
+        and a.status = 12
     </select>
     <select id="selectMonth" resultType="com.aiurt.boot.report.model.dto.MonthDTO">
         select a.system_name,
@@ -1736,8 +1731,7 @@
         group by a.id
 </select>
 <select id="selectFaultWorkTime" resultType="java.lang.Integer">
- select ifnull((TIME_TO_SEC(abc.time) / 60), 0) as times from
-        (SELECT timediff(c.end_time,IFNULL( IFNULL( c.recevice_time, c.assign_time ),c.start_time)) AS time
+ select ifnull(sum(a.resolution_duration), 0) as times
         FROM
         fault a
         LEFT JOIN fault_repair_record c
@@ -1768,9 +1762,7 @@
                 #{item}
             </foreach>
         </if>
-        and (a.end_time
-        or not NULL) ) as abc
-        where 1 = 1
+        and a.status = 12
 </select>
 <select id="getFilterOrgReport" resultType="com.aiurt.boot.report.model.FailureOrgReport">
   SELECT
