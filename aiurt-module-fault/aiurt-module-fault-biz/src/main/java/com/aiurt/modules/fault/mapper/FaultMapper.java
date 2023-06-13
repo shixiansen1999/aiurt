@@ -6,11 +6,14 @@ import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
 import com.aiurt.modules.fault.dto.RecPersonListDTO;
+import com.aiurt.modules.fault.dto.SparePartReplaceDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import liquibase.pro.packaged.P;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.PortraitTaskModel;
 
@@ -161,4 +164,34 @@ public interface FaultMapper extends BaseMapper<Fault> {
      * @return
      */
     List<RecPersonListDTO> getManagedDepartmentUsers(String userId);
+
+    /**
+     *
+     * @param deviceCode
+     * @param oldSparePartCode
+     * @return
+     */
+    SparePartReplaceDTO querySparePart(@Param("deviceCode") String deviceCode, @Param("oldSparePartCode") String oldSparePartCode);
+
+    /**
+     * 查询同种
+     * @param materialCode
+     * @return
+     */
+    Long countNumBymaterialCode(@Param("materialCode")String materialCode);
+
+    /**
+     *
+     * @param newSparePartCode
+     * @return
+     */
+    Long existDeviceAssemblyCode(@Param("newSparePartCode") String newSparePartCode);
+
+    /**
+     * 查询FaultSparePar
+     * @param materialCode
+     * @param faultCauseSolutionIdList
+     * @return
+     */
+    List<FaultSparePart> queryFaultSparePart(@Param("materialCode")String materialCode, @Param("faultCauseSolutionIdList") List<String> faultCauseSolutionIdList);
 }

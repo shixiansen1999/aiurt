@@ -501,4 +501,15 @@
                  left join device_type dt on (fkb.device_type_code = dt.code and dt.del_flag = 0)
         where fkb.del_flag = 0
     </select>
+
+    <select id="getStandardRepairRequirements" resultType="com.aiurt.modules.faultsparepart.entity.FaultSparePart">
+        select t1.id,t1.spare_part_code,t1.cause_solution_id,t1.number,t1.specification,t2.name as spare_part_name  from fault_spare_part t1 left join material_base t2 on (t1.spare_part_code = t2.code and t2.del_flag = 0)
+        where t1.del_flag = 0
+        <if test="idList != null and idList.size() != 0">
+           and t1.cause_solution_id in
+            <foreach collection="idList" close=")" open="(" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
 </mapper>

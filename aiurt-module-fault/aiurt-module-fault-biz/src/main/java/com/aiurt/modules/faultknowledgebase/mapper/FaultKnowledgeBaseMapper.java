@@ -7,6 +7,7 @@ import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
 import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.aiurt.modules.knowledge.entity.KnowledgeBase;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -109,4 +110,11 @@ public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase>
      * @return
      */
     List<KnowledgeBase> synchrodata();
+
+    /**
+     *
+     * @param faultCauseSolutionIdList
+     * @return
+     */
+    List<FaultSparePart> getStandardRepairRequirements(@Param("idList") List<String> faultCauseSolutionIdList);
 }

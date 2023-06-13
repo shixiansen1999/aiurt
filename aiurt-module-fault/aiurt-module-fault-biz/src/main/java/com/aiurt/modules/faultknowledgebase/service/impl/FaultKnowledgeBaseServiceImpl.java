@@ -1575,4 +1575,15 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         }
         return list;
     }
+
+    /**
+     * 标准维修方案要求查询
+     *
+     * @param faultCauseSolutionIdList
+     * @return
+     */
+    @Override
+    public List<FaultSparePart> getStandardRepairRequirements(List<String> faultCauseSolutionIdList) {
+        return null;
+    }
 }
