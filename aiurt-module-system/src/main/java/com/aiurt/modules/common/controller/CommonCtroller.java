@@ -415,6 +415,10 @@ public class CommonCtroller {
         LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(CsLine::getDelFlag, 0);
         List<CsLine> csLines = lineService.getBaseMapper().selectList(wrapper);
+        for (CsLine csLine : csLines) {
+            csLine.setLabel(csLine.getLineName());
+            csLine.setValue(csLine.getLineCode());
+        }
         return Result.OK(csLines);
     }
 

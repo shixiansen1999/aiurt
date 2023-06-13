@@ -147,11 +147,11 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         List<FaultKnowledgeBase> collect=new ArrayList<>();
         collect.addAll(faultKnowledgeBases);
         //            筛选站点（暂时）
+        String faultLineCode = faultKnowledgeBase.getLineCode();
         if(faultKnowledgeBase.getLineCode()!=null){
             collect = faultKnowledgeBases.stream()
                     .filter(l -> {
                         String lineCode = l.getLineCode();
-                        String faultLineCode = faultKnowledgeBase.getLineCode();
                         return lineCode != null && faultLineCode != null && lineCode.equals(faultLineCode);
                     })
                     .collect(Collectors.toList());

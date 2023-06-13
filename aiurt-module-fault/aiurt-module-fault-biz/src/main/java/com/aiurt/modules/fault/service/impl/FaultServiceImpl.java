@@ -1865,6 +1865,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
 
         List<FaultKnowledgeBase> baseList = baseMapper.pageList(page, knowledgeBase);
+        for (FaultKnowledgeBase faultKnowledgeBase : baseList) {
+            if (faultKnowledgeBase.getLineCode()!=null&&!faultKnowledgeBase.getLineCode().equals("")){
+                String lineName = sysBaseAPI.getLineNameByCode(faultKnowledgeBase.getLineCode());
+                faultKnowledgeBase.setLineName(lineName);
+            }
+        }
         page.setRecords(baseList);
         return page;
     }
