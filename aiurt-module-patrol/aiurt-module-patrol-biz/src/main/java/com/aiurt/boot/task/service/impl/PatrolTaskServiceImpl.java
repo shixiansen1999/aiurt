@@ -2172,8 +2172,17 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
         MacDto macDto = new MacDto();
         if (CollUtil.isNotEmpty(mac)) {
-            List<String> macs = mac.stream().map(PatrolTaskDeviceDTO::getMac).filter(StrUtil::isNotEmpty).distinct().collect(Collectors.toList());
-            macDto.setLocalMac(macs);
+            List<StationAndMacModel> arrayList = new ArrayList<>();
+            for (PatrolTaskDeviceDTO dto : mac) {
+                if (StrUtil.isNotEmpty(dto.getMac())) {
+                    StationAndMacModel stationAndMacModel = new StationAndMacModel();
+                    stationAndMacModel.setMac(dto.getMac());
+                    stationAndMacModel.setStationName(StrUtil.isNotEmpty(dto.getStationName())?dto.getStationName():"不存在该mac地址");
+                    arrayList.add(stationAndMacModel);
+                }
+
+            }
+            macDto.setLocalMac(arrayList);
             macDto.setStationMac(wifiMac);
         }
         return macDto;

@@ -19,6 +19,7 @@ public class YearFaultDTO {
     private String id;
     private String code;
     private String name;
+    private String shortenedForm;
     private String color;
     @ApiModelProperty(value = "一月")
     private String january ="0";

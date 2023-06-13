@@ -3,7 +3,6 @@ package com.aiurt.modules.subsystem.dto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
-import org.jeecgframework.poi.excel.annotation.ExcelCollection;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -23,6 +22,7 @@ public class SubsystemFaultDTO {
     @ApiModelProperty(value = "子系统名称")
     @Excel(name = "子系统名称", width = 15)
     private String systemName;
+    private String shortenedForm;
     private String systemCode;
     private String deviceTypeCode;
     @ApiModelProperty(value = "设备类型名称")

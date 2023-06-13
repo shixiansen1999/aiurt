@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * 功能描述
@@ -40,6 +39,7 @@ public class FaultSystemReliabilityDTO implements Serializable {
     @ApiModelProperty(value = "专业子系统名称")
     private String systemName;
 
-
+    @ApiModelProperty(value = "简称")
+    private String shortenedForm;
 
 }

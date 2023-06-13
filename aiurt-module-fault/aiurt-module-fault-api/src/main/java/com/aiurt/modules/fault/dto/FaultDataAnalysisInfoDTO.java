@@ -1,6 +1,5 @@
 package com.aiurt.modules.fault.dto;
 
-import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -41,6 +40,8 @@ public class FaultDataAnalysisInfoDTO extends DictEntity {
     @ApiModelProperty(value = "专业子系统编码")
     private String systemName;
 
+    @ApiModelProperty(value = "简称")
+    private String shortenedForm;
 
     /**站点*/
     @ApiModelProperty(value = "站点",  required = true)

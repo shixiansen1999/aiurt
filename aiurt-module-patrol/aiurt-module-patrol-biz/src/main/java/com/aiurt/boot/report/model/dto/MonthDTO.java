@@ -16,6 +16,7 @@ import lombok.Data;
 public class MonthDTO {
     private String orgName;
     private String systemName;
+    private String shortenedForm;
     @ApiModelProperty(value = "一月")
     private Integer january;
     @ApiModelProperty(value = "二月")
