@@ -65,10 +65,5 @@ public interface PatrolCheckResultMapper extends BaseMapper<PatrolCheckResult> {
      */
     List<PatrolCheckResultDTO> getCheckResultAllByTaskId(@Param("collect") List<String> collect);
 
-    /**
-     * 翻译
-     * @param code
-     * @return
-     */
-    List<DictModel> getDictItems(@Param("code") String code);
+
 }
