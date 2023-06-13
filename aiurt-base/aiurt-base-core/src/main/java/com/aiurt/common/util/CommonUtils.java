@@ -346,11 +346,12 @@ public class CommonUtils {
      * 雷达图分数转化计算
      *
      * @param currentValue 当前值
-     * @param minValue 最小值
-     * @param maxValue 最大值
+     * @param maxValue     最大值
+     * @param minValue     最小值
+     * @param flag         是否为解决效率标识
      * @return
      */
-    public static double calculateScore(double currentValue, double maxValue, double minValue) {
+    public static double calculateScore(double currentValue, double maxValue, double minValue, boolean flag) {
         // 最高分为
         final int topScore = 100;
         final int lowestScore = 60;
@@ -364,6 +365,10 @@ public class CommonUtils {
         }
         // 计算当前值相对于最小值和最大值的百分比
         double percentage = 1.0 * (currentValue - minValue) / (maxValue - minValue);
+        // 解决效率标志
+        if (flag) {
+            percentage = 1.0 - percentage;
+        }
         // 将百分比映射到分数范围
         double score = percentage * (topScore - lowestScore) + lowestScore;
         // 如果小数较多则保留3位小数

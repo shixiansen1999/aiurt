@@ -10,9 +10,11 @@ import com.aiurt.boot.api.PersonnelPortraitPatrolApi;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.CommonUtils;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.common.api.PersonnelPortraitFaultApi;
 import com.aiurt.modules.fault.constants.FaultConstant;
+import com.aiurt.modules.fault.constants.FaultDictCodeConstant;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.personnelportrait.dto.*;
@@ -73,7 +75,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
     private final SysUserAptitudesMapper sysUserAptitudesMapper;
 
     // 用户职级字典编码
-    private final String JOB_GRADE = "job_grade";
+    private final String JOB_GRADE = FaultDictCodeConstant.JOB_GRADE;
 
 
     @Override
@@ -232,13 +234,12 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
 
         List<UserInfoResDTO> userInfos = new ArrayList<>();
         UserInfoResDTO userInfo = null;
-        // fixme 后期需要通过故障模块的常量值进行获取，不在此处定义
-        final String working = "当班";
+        final String working = FaultConstant.ON_DUTY_NAME;
         for (SysUser user : users) {
             String seniority = null;
             String role = null;
             String level = null;
-            String dutyStatus = "休息";
+            String dutyStatus = FaultConstant.REST_NAME;
             Date workingTime = user.getWorkingTime();
             // 判断工龄显示方式
             String speciality = this.getSeniority(workingTime);
@@ -254,7 +255,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
             ScheduleUserWorkDTO scheduleUserWork = todayUserWork.stream()
                     .filter(l -> user.getId().equals(l.getUserId()))
                     .filter(l -> DateUtil.isIn(new Date(), l.getStartTime(), l.getEndTime())
-                            && "1".equals(l.getWork()))
+                            && FaultConstant.ON_DUTY_1.equals(l.getWork()))
                     .findFirst().orElseGet(ScheduleUserWorkDTO::new);
             if (StrUtil.isNotEmpty(scheduleUserWork.getWork())) {
                 dutyStatus = working;
@@ -424,15 +425,15 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         RadarModelDTO efficiencyRadar = this.getEfficiency(sysUser.getUsername(), usernames);
 
         // 故障处理总次数
-        double handle = this.calculateScore(handleRadar.getCurrentValue(), handleRadar.getMaxValue(), handleRadar.getMinValue(), false);
+        double handle = CommonUtils.calculateScore(handleRadar.getCurrentValue(), handleRadar.getMaxValue(), handleRadar.getMinValue(), false);
         // 绩效
-        double performance = this.calculateScore(performanceRadar.getCurrentValue(), performanceRadar.getMaxValue(), performanceRadar.getMinValue(), false);
+        double performance = CommonUtils.calculateScore(performanceRadar.getCurrentValue(), performanceRadar.getMaxValue(), performanceRadar.getMinValue(), false);
         // 资质
-        double aptitude = this.calculateScore(aptitudeRadar.getCurrentValue(), aptitudeRadar.getMaxValue(), aptitudeRadar.getMinValue(), false);
+        double aptitude = CommonUtils.calculateScore(aptitudeRadar.getCurrentValue(), aptitudeRadar.getMaxValue(), aptitudeRadar.getMinValue(), false);
         // 工龄
-        double seniority = this.calculateScore(seniorityRadar.getCurrentValue(), seniorityRadar.getMaxValue(), seniorityRadar.getMinValue(), false);
+        double seniority = CommonUtils.calculateScore(seniorityRadar.getCurrentValue(), seniorityRadar.getMaxValue(), seniorityRadar.getMinValue(), false);
         // 解决效率，效率花费的时间越小，则对应的效率越高，对应的分数也因越高
-        double efficiency = this.calculateScore(efficiencyRadar.getCurrentValue(), efficiencyRadar.getMaxValue(), efficiencyRadar.getMinValue(), true);
+        double efficiency = CommonUtils.calculateScore(efficiencyRadar.getCurrentValue(), efficiencyRadar.getMaxValue(), efficiencyRadar.getMinValue(), true);
 
         RadarResDTO data = new RadarResDTO();
         data.setHandle(handle);
@@ -619,39 +620,6 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         return radarModel;
     }
 
-    /**
-     * 雷达图分数转化计算
-     *
-     * @param currentValue 当前值
-     * @param maxValue     最大值
-     * @param minValue     最小值
-     * @param flag         解决效率标识
-     * @return
-     */
-    private double calculateScore(double currentValue, double maxValue, double minValue, boolean flag) {
-        // 最高分为
-        final int topScore = 100;
-        final int lowestScore = 60;
-
-        if (maxValue == minValue) {
-            if (0 != currentValue && currentValue == maxValue) {
-                return topScore;
-            } else {
-                return lowestScore;
-            }
-        }
-        // 计算当前值相对于最小值和最大值的百分比
-        double percentage = 1.0 * (currentValue - minValue) / (maxValue - minValue);
-        // 解决效率标志
-        if (flag) {
-            percentage = 1.0 - percentage;
-        }
-        // 将百分比映射到分数范围
-        double score = percentage * (topScore - lowestScore) + lowestScore;
-        // 如果小数较多则保留3位小数
-        score = Double.parseDouble(String.format("%.3f", score));
-        return score;
-    }
 
     @Override
     public DashboardResDTO dashboard(String userId) {
@@ -792,28 +760,28 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
             List<Integer> values = handlesMap.values().stream().collect(Collectors.toList());
             double maxValue = (double) Collections.max(values);
             double minValue = (double) Collections.min(values);
-            handle = this.calculateScore(currentValue, maxValue, minValue, false);
+            handle = CommonUtils.calculateScore(currentValue, maxValue, minValue, false);
         }
         if (ObjectUtil.isNotEmpty(efficiencysMap.get(username))) {
             double currentValue = efficiencysMap.get(username);
             List<Double> values = efficiencysMap.values().stream().collect(Collectors.toList());
             double maxValue = Collections.max(values);
             double minValue = Collections.min(values);
-            efficiency = this.calculateScore(currentValue, maxValue, minValue, true);
+            efficiency = CommonUtils.calculateScore(currentValue, maxValue, minValue, true);
         }
         if (ObjectUtil.isNotEmpty(performancesMap.get(id))) {
             double currentValue = performancesMap.get(id);
             List<Double> values = performancesMap.values().stream().collect(Collectors.toList());
             double maxValue = Collections.max(values);
             double minValue = Collections.min(values);
-            performance = this.calculateScore(currentValue, maxValue, minValue, false);
+            performance = CommonUtils.calculateScore(currentValue, maxValue, minValue, false);
         }
         if (ObjectUtil.isNotEmpty(aptitudesMap.get(id))) {
             double currentValue = aptitudesMap.get(id);
             List<Integer> values = aptitudesMap.values().stream().collect(Collectors.toList());
             double maxValue = (double) Collections.max(values);
             double minValue = (double) Collections.min(values);
-            aptitude = this.calculateScore(currentValue, maxValue, minValue, false);
+            aptitude = CommonUtils.calculateScore(currentValue, maxValue, minValue, false);
         }
         if (ObjectUtil.isNotEmpty(senioritysMap.get(id))) {
             Date now = new Date();
@@ -821,7 +789,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
             List<Date> values = senioritysMap.values().stream().collect(Collectors.toList());
             double maxValue = DateUtil.between(Collections.max(values), now, DateUnit.DAY);
             double minValue = DateUtil.between(Collections.min(values), now, DateUnit.DAY);
-            seniority = this.calculateScore(currentValue, maxValue, minValue, false);
+            seniority = CommonUtils.calculateScore(currentValue, maxValue, minValue, false);
         }
         return new RadarResDTO(handle, efficiency, performance, aptitude, seniority);
     }

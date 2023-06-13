@@ -2354,7 +2354,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
             // 设置故障数量得分
             recPersonListDTO.setFaultNumScore(CommonUtils.calculateScore(handleNumberMap.getOrDefault(recPersonListDTO.getUserName(), 0),
-                    handleNumberMaxMinDTO.getMaxNum(), handleNumberMaxMinDTO.getMinNum()));
+                    handleNumberMaxMinDTO.getMaxNum(), handleNumberMaxMinDTO.getMinNum(), false));
 
             // 设置同种故障现象的处理次数
             recPersonListDTO.setFaultHandCount(faultPhenomenonCountMap.getOrDefault(recPersonListDTO.getUserName(), 0));
@@ -2373,21 +2373,21 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             // 设置解决效率得分
             Double sumResponseTimeResolveTime = efficiencyMap.getOrDefault(recPersonListDTO.getUserName(), new EfficiencyDTO()).getSumResponseTimeResolveTime();
             recPersonListDTO.setSolutionEfficiencyScore(CommonUtils.calculateScore(sumResponseTimeResolveTime == null ? 0 : sumResponseTimeResolveTime,
-                    efficiencyScoreMaxMin[0], efficiencyScoreMaxMin[1]));
+                    efficiencyScoreMaxMin[0], efficiencyScoreMaxMin[1], true));
 
             // 设置工龄得分
             recPersonListDTO.setTenureScore(CommonUtils.calculateScore(recPersonListDTO.getTenure(),
-                    userExperienceMaxMin.getMaxNum(), userExperienceMaxMin.getMinNum()));
+                    userExperienceMaxMin.getMaxNum(), userExperienceMaxMin.getMinNum(), false));
 
             // 设置资质得分
             recPersonListDTO.setQualificationScore(CommonUtils.calculateScore(aptitudeMap.getOrDefault(recPersonListDTO.getUserId(), 0),
-                    aptitudeMaxMinNum.getMaxNum(), aptitudeMaxMinNum.getMinNum()));
+                    aptitudeMaxMinNum.getMaxNum(), aptitudeMaxMinNum.getMinNum(), false));
 
             // 设置绩效得分
             Double performance = performanceMap.getOrDefault(recPersonListDTO.getUserId(), 0d);
             recPersonListDTO.setPerformance(performance);
             recPersonListDTO.setPerformanceScore(CommonUtils.calculateScore(performance,
-                    performanceScoreMaxMin[0], performanceScoreMaxMin[1]));
+                    performanceScoreMaxMin[0], performanceScoreMaxMin[1], false));
 
             // 根据故障处理总次数、解决效率、工龄、资质分数和绩效的加权平均值计算得出评估得分
             recPersonListDTO.setEvaluationScore(calculateOverallEvaluationScore(recPersonListDTO));
