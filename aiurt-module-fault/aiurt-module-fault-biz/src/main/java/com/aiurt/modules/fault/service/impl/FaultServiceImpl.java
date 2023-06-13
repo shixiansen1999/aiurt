@@ -2142,7 +2142,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     }
 
     /**
-     * 将 RecPersonListDTO 对象的评估得分等字段四舍五入至小数点后两位。
+     * 将 RecPersonListDTO 对象的评估得分、工龄、解决效率得分、绩效得分、故障处理总次数得分、工龄得分等字段四舍五入至小数点后两位。
      *
      * @param recPersonListDTO 需要进行四舍五入的 RecPersonListDTO 对象。
      */
@@ -2617,7 +2617,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         result = result.stream()
                 .peek(re -> {
                     String taskStatus = sameFaultMap.getOrDefault(re.getUserName(), "");
-                    re.setTaskStatus(FaultConstant.IN_MAINTENANCE_NAME.equals(taskStatus) ? taskStatus : FaultConstant.FREE_NAME);
+                    re.setTaskStatus(FaultConstant.IN_MAINTENANCE_NAME.equals(taskStatus) ? FaultConstant.IN_MAINTENANCE_NAME : FaultConstant.FREE_NAME);
                 })
                 .collect(Collectors.toList());
 
