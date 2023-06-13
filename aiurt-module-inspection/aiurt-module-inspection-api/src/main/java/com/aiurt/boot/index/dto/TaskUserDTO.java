@@ -11,5 +11,5 @@ public class TaskUserDTO {
     private String taskId;
 
     @ApiModelProperty("检修工时")
-    private BigDecimal inspecitonTotalTime;
+    private Integer inspecitonTotalTime;
 }

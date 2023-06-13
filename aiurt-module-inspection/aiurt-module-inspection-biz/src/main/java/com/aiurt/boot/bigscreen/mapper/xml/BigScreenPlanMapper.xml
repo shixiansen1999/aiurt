@@ -95,20 +95,16 @@
 <select id="getInspecitonTotalTime" resultType="com.aiurt.boot.index.dto.TaskUserDTO">
     SELECT
     rt.id as taskId,
-    TIMESTAMPDIFF(
-    SECOND,
-    rt.begin_time,
-    IF
-    ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
-    ) inspecitonTotalTime
+    rt.duration as inspecitonTotalTime
     FROM
     repair_pool rp
     LEFT JOIN repair_task rt ON rp.`code` = rt.`code`
     LEFT JOIN repair_task_user rts ON rts.repair_task_code = rt.`code`
-    where rt.status = 8
-    AND rt.del_flag = 0
-    AND  DATE_FORMAT(rp.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
-    AND  DATE_FORMAT(rp.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    where rt.del_flag = 0 AND
+    CASE
+    WHEN rp.is_manual=0 THEN DATE_FORMAT(rp.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rp.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    WHEN rp.is_manual=1 THEN DATE_FORMAT(rt.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rt.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    END
     AND  rts.user_id in
     <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
         #{item.id}
@@ -119,20 +115,15 @@
 <select id="getInspecitonTotalTimeByPeer" resultType="com.aiurt.boot.index.dto.TaskUserDTO">
     SELECT
     rt.id as taskId,
-    TIMESTAMPDIFF(
-    SECOND,
-    rt.begin_time,
-    IF
-    ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
-    ) inspecitonTotalTime
+    rt.duration as inspecitonTotalTime
     FROM
     repair_pool rp
     LEFT JOIN repair_task rt ON rp.`code` = rt.`code`
-    WHERE
-    rt.STATUS = 8
-    AND rt.del_flag = 0
-    AND  DATE_FORMAT(rp.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
-    AND  DATE_FORMAT(rp.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    WHERE rt.del_flag = 0 AND
+    CASE
+    WHEN rp.is_manual=0 THEN DATE_FORMAT(rp.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rp.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    WHEN rp.is_manual=1 THEN DATE_FORMAT(rt.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rt.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    END
     AND rt.id IN
     ( SELECT rtdr.repair_task_id
     FROM repair_task_peer_rel rtpr
@@ -226,18 +217,15 @@
 <select id="getReconditionTime" resultType="com.aiurt.boot.index.dto.TeamUserDTO">
     SELECT
     rts.user_id,
-    sum(
-    TIMESTAMPDIFF(
-    SECOND,
-    rt.task_confirmation_time,
-    rt.submit_time
-    )) time
+    SUM(rt.duration) AS time
     FROM
     repair_pool rp
     LEFT JOIN repair_task rt ON rp.`code` = rt.`code` LEFT JOIN repair_task_user rts ON rts.repair_task_code = rt.`code`
-    where rt.status = 8
-    AND  DATE_FORMAT(rp.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
-    AND  DATE_FORMAT(rp.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    WHERE
+    CASE
+    WHEN rp.is_manual=0 THEN DATE_FORMAT(rp.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rp.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    WHEN rp.is_manual=1 THEN DATE_FORMAT(rt.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rt.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    END
     <if test="userList != null and userList.size() != 0">
         AND  rts.user_id in
         <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
@@ -250,20 +238,17 @@
 <select id="getReconditionTimeByPeer" resultType="com.aiurt.boot.index.dto.TeamUserDTO">
     SELECT
     rtpr.user_id,
-    sum(
-    TIMESTAMPDIFF(
-    SECOND ,
-    rt.task_confirmation_time,
-    rt.submit_time
-    )) time
+    SUM(rt.duration) AS time
     FROM
     repair_task_peer_rel rtpr
     LEFT JOIN repair_task_device_rel rtdr ON rtpr.repair_task_device_code = rtdr.`code`
     LEFT JOIN repair_task rt ON rtdr.repair_task_id = rt.id
     LEFT JOIN repair_pool rp ON rp.`code` = rt.`code`
-    where rt.status = 8
-    AND  DATE_FORMAT(rp.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
-    AND  DATE_FORMAT(rp.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    WHERE
+    CASE
+    WHEN rp.is_manual=0 THEN DATE_FORMAT(rp.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rp.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    WHEN rp.is_manual=1 THEN DATE_FORMAT(rt.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rt.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    END
     <if test="userList != null and userList.size() != 0">
         AND  rtpr.user_id in
         <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">

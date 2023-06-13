@@ -2,6 +2,7 @@ package com.aiurt.boot.bigscreen.service;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.thread.ThreadUtil;
@@ -572,7 +573,7 @@ public class BigscreenPlanService {
             teamPortraitDTO.setAverageTime(0);
             teamPortraitDTO.setPatrolTotalTime(0);
             teamPortraitDTO.setFaultTotalTime(new BigDecimal(0.0));
-            teamPortraitDTO.setInspecitonTotalTime(new BigDecimal(0.0));
+            teamPortraitDTO.setInspecitonTotalTime(0);
         }
     }
 
@@ -642,7 +643,7 @@ public class BigscreenPlanService {
         //获取班组巡检总工时
         AtomicReference<Integer> patrolHours = new AtomicReference<>(0);
         //获取班组检修总工时
-        AtomicReference<BigDecimal> inspectionHours = new AtomicReference<>(new BigDecimal("0.00"));
+        AtomicReference<Integer> inspectionHours = new AtomicReference<>(0);
 
         executor.execute(() -> {
             faultHours.set(dailyFaultApi.getFaultHours(type, teamPortraitDTO.getTeamId()));
@@ -660,19 +661,25 @@ public class BigscreenPlanService {
                 List<TaskUserDTO> inspecitonTotalTime = bigScreenPlanMapper.getInspecitonTotalTime(userList, timeByType[0], timeByType[1]);
                 //获取本班组同行人在指定时间范围内的所有任务时长(单位秒)
                 List<TaskUserDTO> inspecitonTotalTimeByPeer = bigScreenPlanMapper.getInspecitonTotalTimeByPeer(userList, timeByType[0], timeByType[1]);
-                List<String> collect = inspecitonTotalTime.stream().map(TaskUserDTO::getTaskId).collect(Collectors.toList());
+                // List<String> collect = inspecitonTotalTime.stream().map(TaskUserDTO::getTaskId).collect(Collectors.toList());
                 //若同行人和指派人同属一个班组，则该班组只取一次工时，不能累加
-                List<TaskUserDTO> dtos = inspecitonTotalTimeByPeer.stream().filter(t -> !collect.contains(t.getTaskId())).collect(Collectors.toList());
-                dtos.addAll(inspecitonTotalTime);
-                BigDecimal sum = new BigDecimal("0.00");
+                // 通信6期，累加
+                //List<TaskUserDTO> dtos = inspecitonTotalTimeByPeer.stream().filter(t -> !collect.contains(t.getTaskId())).collect(Collectors.toList());
+                //dtos.addAll(inspecitonTotalTime);
+                List<TaskUserDTO> dtos = new ArrayList<>(inspecitonTotalTime);
+                dtos.addAll(inspecitonTotalTimeByPeer);
+                // 通信6期，单位改为秒
+                // BigDecimal sum = new BigDecimal("0.00");
+                int sum = 0;
                 for (TaskUserDTO dto : dtos) {
                     if (ObjectUtil.isNotNull(dto.getInspecitonTotalTime())) {
-                        sum = sum.add(dto.getInspecitonTotalTime());
+                        // sum = sum.add(dto.getInspecitonTotalTime());
+                        sum = sum + dto.getInspecitonTotalTime();
                     }
                 }
                 //秒转时
-                BigDecimal decimal = sum.divide(new BigDecimal("3600"), 1, BigDecimal.ROUND_HALF_UP);
-                inspectionHours.set(decimal);
+                // BigDecimal decimal = sum.divide(new BigDecimal("3600"), 1, BigDecimal.ROUND_HALF_UP);
+                inspectionHours.set(sum);
             }
             latch.countDown();
         });
@@ -759,8 +766,9 @@ public class BigscreenPlanService {
             if (peerHours != null) {
                 time = time + peerHours;
             }
-            BigDecimal decimal = new BigDecimal(1.0 * time / 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
-            teamUserDTO.setInspecitonTotalTime(decimal);
+            // 2023-06 通信6期 检修时长单位秒
+            // BigDecimal decimal = new BigDecimal(1.0 * time / 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
+            teamUserDTO.setInspecitonTotalTime((int)time);
 
             //获取巡检个人总总工时
             Integer patrolTotalTime = patrolUserHours.get(teamUserDTO.getUserId());
