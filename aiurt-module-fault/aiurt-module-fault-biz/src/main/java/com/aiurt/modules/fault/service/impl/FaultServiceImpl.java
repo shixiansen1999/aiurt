@@ -2443,7 +2443,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     private Map<String, Integer> convertFaultHandCountListByDeviceTypeToMap(List<RadarNumberDTO> faultHandCountListByDeviceType) {
         // 使用 Optional.ofNullable() 方法确保 handleNumberList 不为 null
-        // 如果 handleNumberList 为 null，则创建一个空列表
+        // 如果 faultHandCountListByDeviceType 为 null，则创建一个空列表
         List<RadarNumberDTO> list = Optional.ofNullable(faultHandCountListByDeviceType).orElse(new ArrayList<>());
 
         // 使用流处理对列表进行过滤和转换
@@ -2462,7 +2462,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     private Map<String, Integer> convertFaultHandCountListByFaultPhenomenonToMap(List<RadarNumberDTO> faultHandCountListByFaultPhenomenon) {
         // 使用 Optional.ofNullable() 方法确保 handleNumberList 不为 null
-        // 如果 handleNumberList 为 null，则创建一个空列表
+        // 如果 faultHandCountListByFaultPhenomenon 为 null，则创建一个空列表
         List<RadarNumberDTO> list = Optional.ofNullable(faultHandCountListByFaultPhenomenon).orElse(CollUtil.newArrayList());
 
         // 使用流处理对列表进行过滤和转换

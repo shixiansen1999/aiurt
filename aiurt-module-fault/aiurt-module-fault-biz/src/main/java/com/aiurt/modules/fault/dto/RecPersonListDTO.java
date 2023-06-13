@@ -39,7 +39,10 @@ public class RecPersonListDTO implements Serializable {
     @ApiModelProperty(value = "人员等级", position = 5)
     private String jobGradeName;
     @ApiModelProperty(value = "班组编码", position = 6)
+    @JsonIgnore
     private String orgCode;
+    @ApiModelProperty(value = "班组名称", position = 6)
+    private String orgName;
     @ApiModelProperty(value = "排班情况", position = 7)
     private String scheduleStatus;
     @ApiModelProperty(value = "是否处理相同的故障", position = 8)
