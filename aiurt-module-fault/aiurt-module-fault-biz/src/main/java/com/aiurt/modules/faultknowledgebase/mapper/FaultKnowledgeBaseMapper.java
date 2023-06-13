@@ -104,6 +104,14 @@ public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase>
      */
     List<AnalyzeFaultCauseResDTO> countFaultCauseByIdSet(@Param("idList") List<String> idList);
 
+
+    /**
+     * 统计故障原因的数量
+     * @param idList
+     * @return
+     */
+    List<AnalyzeFaultCauseResDTO> countFaultCauseByIdSeV2(@Param("idList") List<String> idList);
+
     /**
      * 同步故障知识库数据到ES
      *

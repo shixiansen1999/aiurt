@@ -799,7 +799,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         // 查询故障记录使用的记录数
         Map<String, List<AnalyzeFaultCauseResDTO>> dataMap = new HashMap<>();
         if (CollUtil.isNotEmpty(idSet)) {
-            List<AnalyzeFaultCauseResDTO> causeResDTOList = baseMapper.countFaultCauseByIdSet(new ArrayList<>(idSet));
+            List<AnalyzeFaultCauseResDTO> causeResDTOList = baseMapper.countFaultCauseByIdSeV2(new ArrayList<>(idSet));
             if (CollUtil.isNotEmpty(causeResDTOList)) {
                 Map<String, List<AnalyzeFaultCauseResDTO>> map = causeResDTOList.stream().collect(Collectors.groupingBy(AnalyzeFaultCauseResDTO::getKnowledgeBaseId));
                 map.forEach((knowledgeId, resList) -> {
@@ -1584,6 +1584,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
      */
     @Override
     public List<FaultSparePart> getStandardRepairRequirements(List<String> faultCauseSolutionIdList) {
-        return null;
+        if (CollUtil.isEmpty(faultCauseSolutionIdList)) {
+            return Collections.emptyList();
+        }
+        return baseMapper.getStandardRepairRequirements(faultCauseSolutionIdList);
     }
 }

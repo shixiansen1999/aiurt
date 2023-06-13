@@ -104,7 +104,6 @@ public class Fault extends DictEntity implements Serializable {
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm" )
     @ApiModelProperty(value = "故障发生时间yyyy-MM-dd HH:mm",  required = true)
-
     private Date happenTime;
 
 	/**故障现象*/
@@ -266,6 +265,11 @@ public class Fault extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String deviceName;
 
+    @Excel(name = "设备名称", width = 15)
+    @ApiModelProperty(value = "设备名称", required = true)
+    @TableField(exist = false)
+    private String deviceNames;
+
 	@ApiModelProperty(value = "作废用户")
 	private String cancelUserName;
 
@@ -398,5 +402,9 @@ public class Fault extends DictEntity implements Serializable {
 
     @TableField(exist = false)
     private String deviceTypeCode;
+
+    @ApiModelProperty("前端故障现象查询参数")
+    @TableField(exist = false)
+    private String phnamon;
 }
 

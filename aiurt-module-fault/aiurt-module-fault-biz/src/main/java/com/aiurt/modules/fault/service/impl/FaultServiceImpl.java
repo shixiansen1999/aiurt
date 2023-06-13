@@ -655,7 +655,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         fault.setFaultDeviceList(faultDeviceList);
         if (CollUtil.isNotEmpty(faultDeviceList)) {
             fault.setDeviceCodes(StrUtil.join(",", faultDeviceList.stream().map(FaultDevice::getDeviceCode).collect(Collectors.toList())));
+            fault.setDeviceCode(StrUtil.join(",", faultDeviceList.stream().map(FaultDevice::getDeviceCode).collect(Collectors.toList())));
             fault.setDeviceName(StrUtil.join(",", faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.toList())));
+            fault.setDeviceNames(StrUtil.join(",", faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.toList())));
             fault.setDeviceTypeCode(faultDeviceList.get(0).getDeviceTypeCode());
         }
 
@@ -1984,6 +1986,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (StrUtil.isNotBlank(f)) {
             fault.setFaultLevel(null);
         }
+        // 故障现象
+        String phnamon = fault.getPhnamon();
+        if (StrUtil.isNotBlank(phnamon)) {
+            fault.setPhnamon(null);
+        }
 
         //获取app输入故障现象查询内容，转换为code
         LambdaQueryWrapper<FaultKnowledgeBaseType> wrapper = new LambdaQueryWrapper<>();
@@ -2008,6 +2015,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
         queryWrapper.apply(StrUtil.isNotBlank(stationCode), "(line_code = {0} or station_code = {0} or station_position_code = {0})", stationCode);
         queryWrapper.apply(StrUtil.isNotBlank(fault.getDevicesIds()), "(code in (select fault_code from fault_device where device_code like  concat('%', {0}, '%')))", fault.getDevicesIds());
+        queryWrapper.apply(StrUtil.isNotBlank(fault.getDeviceCode()), "(code in (select fault_code from fault_device where device_code =  {0}))", fault.getDeviceCode());
         // 负责人查询
         queryWrapper.apply(StrUtil.isNotBlank(appointUserName), "( appoint_user_name in (select username from sys_user where (username like concat('%', {0}, '%') or realname like concat('%', {0}, '%'))))", appointUserName);
         queryWrapper.orderByDesc("create_time");
@@ -2017,6 +2025,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (StrUtil.isNotBlank(fault.getUsername())) {
             queryWrapper.lambda().eq(Fault::getAppointUserName, fault.getUsername());
         }
+        queryWrapper.lambda().like(StrUtil.isNotBlank(phnamon), Fault::getSymptoms, phnamon);
 
         // 故障等级
         queryWrapper.eq(StrUtil.isNotBlank(f), "fault_level", f);
@@ -2091,8 +2100,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
         // 查询故障设备列表
-        Map<String, List<FaultDevice>> faultDeviceMap = faultDeviceService.list(new LambdaQueryWrapper<FaultDevice>()
-                        .in(FaultDevice::getDeviceCode, records.stream().map(Fault::getCode).collect(Collectors.toList())))
+        Map<String, List<FaultDevice>> faultDeviceMap = faultDeviceService.queryListByFaultCodeList(records.stream().map(Fault::getCode).collect(Collectors.toList()))
                 .stream().collect(Collectors.groupingBy(FaultDevice::getFaultCode));
         Map<String, Integer> weightMap = new HashMap<>();
         List<String> faultLevelList = records.stream().map(Fault::getFaultLevel).filter(StrUtil::isNotBlank).distinct().collect(Collectors.toList());
@@ -2148,6 +2156,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 List<String> collect = faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.toList());
                 fault1.setDeviceName(CollUtil.join(collect, ","));
             }
+
+            // 时长
         });
     }
 
