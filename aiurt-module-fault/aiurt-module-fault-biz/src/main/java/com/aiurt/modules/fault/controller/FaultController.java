@@ -197,8 +197,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
         // 查询故障设备列表
-        Map<String, List<FaultDevice>> faultDeviceMap = faultDeviceService.list(new LambdaQueryWrapper<FaultDevice>()
-                .in(FaultDevice::getDeviceCode,records.stream().map(Fault::getCode).collect(Collectors.toList())))
+        Map<String, List<FaultDevice>> faultDeviceMap = faultDeviceService.queryListByFaultCodeList(records.stream().map(Fault::getCode).collect(Collectors.toList()))
                 .stream().collect(Collectors.groupingBy(FaultDevice::getFaultCode));
         Map<String, Integer> weightMap = new HashMap<>();
         List<String> faultLevelList = records.stream().map(Fault::getFaultLevel).filter(StrUtil::isNotBlank).distinct().collect(Collectors.toList());
