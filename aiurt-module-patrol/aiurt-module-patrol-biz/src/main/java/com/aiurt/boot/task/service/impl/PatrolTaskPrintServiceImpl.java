@@ -428,35 +428,22 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             //父级
             List<PatrolCheckResultDTO> parentDTOList = checkResultAll.stream()
                     .filter(c -> Objects.nonNull(c)
-                            &&Objects.nonNull(c.getCheck())&& c.getCheck() == 0)
+                            &&Objects.nonNull(c.getCheck())&& c.getCheck() == 1)
                     .collect(Collectors.toList());
             List<String> networkManage = sysBaseApi.getDictItems("network_manage").stream().map(w-> w.getText()).collect(Collectors.toList());
             PrintDTO printDTO = new PrintDTO();
             networkManage.forEach(str-> {
-                PatrolCheckResultDTO patrolCheckResultDTO = parentDTOList.stream().filter(p -> p.getOldCode().equals(str)).findFirst().orElse(null);
+                PatrolCheckResultDTO patrolCheckResultDTO = checkDTOs.stream().filter(p -> p.getOldCode().equals(str)).findFirst().orElse(null);
                 if (ObjectUtil.isEmpty(patrolCheckResultDTO)){
                     headerMap.put(str,"☐正常 ☐异常");
                   //  printDTO.setResult("☐正常 ☐异常");
-                }else {
-                    String oldId = patrolCheckResultDTO.getOldId();
-                    AtomicBoolean flag = new AtomicBoolean(false);
-                    //子级
-                    List<PatrolCheckResultDTO> childDTOs =  checkDTOs.stream()
-                            .filter(c -> c.getParentId().equals(oldId))
-                            .collect(Collectors.toList());
-                    AtomicReference<String> remark = new AtomicReference<>("");
-                    childDTOs.forEach(c->{
-                        if(Objects.nonNull(c) && c.getCheckResult().equals(0)){
-                            remark.set(c.getRemark());
-                            flag.set(true);
-                        }
-                    });
-                    if(flag.get()){
-                        headerMap.put(str," ☑异常 "+remark.get());
-                       // printDTO.setResult("");
-                    }else{
+                }else if(ObjectUtil.isNotEmpty(patrolCheckResultDTO.getCheckResult())){
+                    String remark ="";
+                    if(patrolCheckResultDTO.getCheckResult().equals(0)){
+                        remark = patrolCheckResultDTO.getRemark();
+                        headerMap.put(str," ☑异常 "+remark);
+                    }else {
                         headerMap.put(str," ☑正常 ");
-                       // printDTO.setResult("");
                     }
                 }
                 //getNetworkManage.add(printDTO);
