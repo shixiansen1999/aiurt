@@ -393,6 +393,12 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
             majorName = majors.stream().map(CsUserMajorModel::getMajorName).collect(Collectors.joining(","));
         }
 
+        String orgName = Arrays.asList(majorName, sysUser.getOrgName()).stream()
+                .filter(Objects::nonNull).collect(Collectors.joining("/"));
+        // 用户表上的岗位字段没用上，因为没有维护，确认过先用角色
+        String post = Arrays.asList(roleName, level).stream()
+                .filter(Objects::nonNull).collect(Collectors.joining("-"));
+
         userDetail.setUserId(sysUser.getId());
         userDetail.setPicurl(sysUser.getAvatar());
         userDetail.setUsername(sysUser.getRealname());
@@ -404,13 +410,14 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         userDetail.setMajorCode(majorCode);
         userDetail.setMajorName(majorName);
         userDetail.setOrgCode(sysUser.getOrgCode());
-        userDetail.setOrgName(sysUser.getOrgName());
+        userDetail.setOrgName(orgName);
         userDetail.setRoleCode(roleCode);
         userDetail.setRoleName(roleName);
         userDetail.setLevel(level);
         userDetail.setJobNumber(sysUser.getWorkNo());
         userDetail.setCertificateNumber(sysUser.getPermitCode());
         userDetail.setPhone(sysUser.getPhone());
+        userDetail.setPost(post);
         return userDetail;
     }
 

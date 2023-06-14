@@ -87,7 +87,7 @@ public class UserDetailResDTO implements Serializable {
     private String orgCode;
 
     /**
-     * 用户部门名称
+     * 用户部门名称(专业名/部门名)
      */
     @ApiModelProperty(value = "用户部门名称")
     private String orgName;
@@ -126,4 +126,10 @@ public class UserDetailResDTO implements Serializable {
      */
     @ApiModelProperty(value = "手机号码")
     private String phone;
+
+    /**
+     * 岗位(角色名-用户职级)
+     */
+    @ApiModelProperty(value = "岗位")
+    private String post;
 }
