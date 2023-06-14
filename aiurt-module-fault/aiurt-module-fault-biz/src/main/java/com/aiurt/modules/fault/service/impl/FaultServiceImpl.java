@@ -667,6 +667,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             fault.setDeviceName(StrUtil.join(",", faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.toList())));
             fault.setDeviceNames(StrUtil.join(",", faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.toList())));
             fault.setDeviceTypeCode(faultDeviceList.get(0).getDeviceTypeCode());
+            fault.setDeviceTypeName(faultDeviceList.get(0).getDeviceTypeName());
         }
 
         // 故障等级,权重登记
@@ -2079,6 +2080,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         queryWrapper.eq(StrUtil.isNotBlank(f), "fault_level", f);
 
         // 时长统计
+        Date date = new Date();
+
+       // queryWrapper.apply(StrUtil.isNotBlank(fault.getFaultDuration()), "(duration b)");
+
         IPage<Fault> pageList = this.page(page, queryWrapper);
 
         List<Fault> records = pageList.getRecords();

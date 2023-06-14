@@ -414,5 +414,9 @@ public class Fault extends DictEntity implements Serializable {
 
     @ApiModelProperty("异常，0 正常， 1异常")
     private Integer exception;
+
+    @ApiModelProperty("设备类型， app使用")
+    @TableField(exist = false)
+    private String deviceTypeName;
 }
 
