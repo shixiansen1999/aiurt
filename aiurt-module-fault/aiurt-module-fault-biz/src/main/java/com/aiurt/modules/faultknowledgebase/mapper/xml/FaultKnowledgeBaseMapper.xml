@@ -329,24 +329,27 @@
 
 <select id="readOne" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">
     SELECT
-            fkb.id,
-            fkb.device_type_code,
-            fkb.knowledge_base_type_code,
-            fkb.material_code,
-            fkb.fault_codes,
-            fkb.fault_phenomenon,
-            fkb.fault_reason,
-            fkb.method,
-            fkb.solution,
-            fkb.create_time,
-            fkb.status,
-            fkb.file_path,
-            fkb.tools,
-            (SELECT name from device_type WHERE `code` = fkb.device_type_code and del_flag = 0) as deviceTypeName,
-            (SELECT material_name from device_assembly WHERE material_code = fkb.material_code group by material_code) as materialName
-    FROM
-            fault_knowledge_base fkb WHERE del_flag = 0 and fkb.id = #{id}
-
+        fkb.id,
+        fkb.device_type_code,
+        fkb.knowledge_base_type_code,
+        fkb.material_code,
+        fkb.fault_codes,
+        fkb.fault_phenomenon,
+        fkb.fault_reason,
+        fkb.method,
+        fkb.solution,
+        fkb.create_time,
+        fkb.status,
+        fkb.file_path,
+        fkb.tools,
+        fkb.line_code,
+        (SELECT name from device_type WHERE `code` = fkb.device_type_code and del_flag = 0) as deviceTypeName,
+        (SELECT material_name from device_assembly WHERE material_code = fkb.material_code group by material_code) as materialName
+    FROM fault_knowledge_base fkb
+    WHERE
+        fkb.del_flag = 0
+      AND fkb.id = #{id}
+    limit 1
     </select>
 
 <select id="getDeviceAssembly" resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO">
@@ -397,4 +400,15 @@
             and da.material_name = #{deviceAssemblyName} limit 1
         </if>
     </select>
+    <select id="translateLine" resultType="java.lang.String">
+        select line_name from cs_line where del_flag = 0 and line_code = #{code}
+    </select>
+    <select id="getLineByStation" resultType="com.aiurt.modules.faultanalysisreport.dto.FaultDTO">
+        select line_code,
+               line_name from cs_station
+        where del_flag = 0 and station_code = #{code}
+    </select>
+    <!--    <select id="getLineByStation" resultType="java.lang.String">-->
+<!--        select line_name from cs_station where del_flag = 0 and station_code = #{code}-->
+<!--    </select>-->
 </mapper>

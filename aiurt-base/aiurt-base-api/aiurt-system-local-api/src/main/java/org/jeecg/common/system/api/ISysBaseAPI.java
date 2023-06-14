@@ -1221,5 +1221,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<StationAndMacModel> getStationAndMacByCode(List<String> stationCodes);
+
+    /**
+     * 根据线路code查询名称
+     * @param code
+     * @return
+     */
+    String getLineNameByCode(String code);
 }
 
