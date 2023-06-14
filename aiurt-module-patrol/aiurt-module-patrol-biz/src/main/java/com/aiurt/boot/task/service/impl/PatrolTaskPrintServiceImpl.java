@@ -49,6 +49,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jetbrains.annotations.NotNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,8 +124,9 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                 .in(PatrolStandard::getId,standardId)
                 .orderByDesc(PatrolStandard::getPrintTemplate).last("LIMIT 1"));
         String excelName = null;
+        DictModel excelDictModel = sysBaseApi.dictById(patrolStandard.getPrintTemplate());
         if (StrUtil.isNotEmpty(patrolStandard.getPrintTemplate())){
-            excelName = sysBaseApi.dictById(patrolStandard.getPrintTemplate()).getValue();
+            excelName = excelDictModel.getValue();
         }else {
             excelName = "telephone_system.xlsx";
         }
@@ -146,8 +148,13 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         PrintPatrolTaskDTO taskDTO = getHeaderData(patrolTask);
         //填充头部Map
         Map<String, Object> headerMap = getHeaderMap(patrolTask, taskDTO);
+        //获取显示图片位置
+        List<String> imageList = null;
+        if (ObjectUtil.isNotEmpty(excelDictModel.getDescription())&&excelDictModel.getDescription().contains(",")){
+            imageList = Arrays.asList(excelDictModel.getDescription().split(","));
+        }
         //文件打印签名
-        Map<String, Object> imageMap = getSignImageMap(taskDTO);
+        Map<String, Object> imageMap = getSignImageMap(taskDTO,imageList);
 
         InputStream minioFile2 = MinioUtil.getMinioFile("platform", templateFileName);
         ExcelWriter excelWriter = null;
@@ -164,7 +171,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             //填充图片
             excelWriter.fill(imageMap, writeSheet);
             excelWriter.finish();
-            //对已填充数据的文件进行后出来
+            //对已填充数据的文件进行后处理
             processFilledFile(filePath);
 
             MinioUtil.upload(new FileInputStream(filePath),relatiePath);
@@ -196,8 +203,9 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                 .in(PatrolStandard::getId,standardId)
                 .orderByDesc(PatrolStandard::getPrintTemplate).last("LIMIT 1"));
         String excelName = null;
+        DictModel excelDictModel = sysBaseApi.dictById(patrolStandard.getPrintTemplate());
         if (StrUtil.isNotEmpty(patrolStandard.getPrintTemplate())){
-            excelName = sysBaseApi.dictById(patrolStandard.getPrintTemplate()).getValue();
+            excelName = excelDictModel.getValue();
         }else {
             excelName = "telephone_system.xlsx";
         }
@@ -239,7 +247,12 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         //填充头部Map
         Map<String, Object> headerMap = getHeaderMap(patrolTask, taskDTO);
         //获取签字图片Map
-        Map<String, Object> imageMap = getSignImageMap(taskDTO);
+        //获取显示图片位置
+        List<String> imageList = null;
+        if (ObjectUtil.isNotEmpty(excelDictModel.getDescription())&&excelDictModel.getDescription().contains(",")){
+            imageList = Arrays.asList(excelDictModel.getDescription().split(","));
+        }
+        Map<String, Object> imageMap = getSignImageMap(taskDTO,imageList);
 
         //查询巡视标准详情
         List<PrintDTO> patrolData = print(id,standardId);
@@ -509,11 +522,13 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
 
     /**
      * 获取签字图片Map
+     *
      * @param taskDTO
+     * @param columnRangeList
      * @return
      */
     @NotNull
-    private Map<String, Object> getSignImageMap(PrintPatrolTaskDTO taskDTO) {
+    private Map<String, Object> getSignImageMap(PrintPatrolTaskDTO taskDTO, List<String> columnRangeList) {
         Map<String, Object> imageMap = MapUtils.newHashMap();
         if(StrUtil.isNotEmpty(taskDTO.getSignUrl())&& taskDTO.getSignUrl().indexOf("?")!=-1){
             int index =  taskDTO.getSignUrl().indexOf("?");
@@ -524,7 +539,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             } else {
                 try {
                     byte[] convert = FilePrintUtils.convert(inputStream);
-                    WriteCellData writeImageData = FilePrintUtils.writeCellImageData(convert);
+                    WriteCellData writeImageData = FilePrintUtils.writeCellImageData(convert,columnRangeList);
                     imageMap.put("signImage",writeImageData);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -576,10 +591,19 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             //设置第一列列宽
             FilePrintUtils.setColumnWidth(sheet,0,10);
         }
-
+        OutputStream outputStream = null;
         // 保存修改后的Excel文件
-        try (OutputStream outputStream = new FileOutputStream(filePath)) {
+        try{
+            outputStream = new FileOutputStream(filePath);
             workbook.write(outputStream);
+        }finally {
+            if (null!=outputStream){
+                outputStream.close();
+            }
+
+            if (null!=workbook){
+                workbook.close();
+            }
         }
     }
 
@@ -693,7 +717,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     childDTOs.forEach(c->{
                         if(ObjectUtil.isNotEmpty(c)&& ObjectUtil.isNotEmpty(c.getCheckResult()) && c.getCheckResult().equals(0)){
                             flag.set(true);
-                            stringBuffer.append(c.getQualityStandard()).append(":异常").append("\n (").append(patrolCheckResultDTO.getRemark()).append(")");
+                            stringBuffer.append(c.getQualityStandard()).append(":异常").append("\n (").append(c.getRemark()).append(")");
                             stringBuffer.append(",");
                         }
                     });

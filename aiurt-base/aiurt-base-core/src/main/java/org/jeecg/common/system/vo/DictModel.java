@@ -39,6 +39,7 @@ public class DictModel implements Serializable{
 	 * 字典文本
 	 */
 	private String text;
+	private String description;
 
 	/**
 	 * 特殊用途： JgEditableTable
