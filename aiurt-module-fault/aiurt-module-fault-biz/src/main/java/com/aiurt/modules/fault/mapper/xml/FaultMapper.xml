@@ -390,9 +390,6 @@
         from fault_repair_record frr
         join fault f on frr.fault_code = f.code
         where frr.del_flag = 0
-        and frr.start_time is not null
-        and frr.end_time is not null
-        and f.assign_time is not null
         <if test="userNames!=null and userNames.size()>0">
             AND f.appoint_user_name in
             <foreach collection="userNames" separator="," open="(" close=")" item="username">
@@ -569,6 +566,7 @@
             AND d.device_type_code = #{deviceTypeCode}
         GROUP BY
             faultRec
+        ORDER BY isDeviceTypeAndPhenomenon DESC
     </select>
     <select id="getUserStationName" resultType="java.lang.String">
         SELECT

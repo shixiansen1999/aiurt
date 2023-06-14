@@ -21,7 +21,6 @@ public class RecPersonListDTO implements Serializable {
     @ApiModelProperty(value = "用户id", position = 2)
     private String userId;
     @ApiModelProperty(value = "账号")
-    @JsonIgnore
     private String userName;
     @ApiModelProperty(value = "用户名", position = 3)
     private String realName;
