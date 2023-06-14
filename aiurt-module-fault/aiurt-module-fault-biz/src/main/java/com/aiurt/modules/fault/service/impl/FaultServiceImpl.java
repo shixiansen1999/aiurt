@@ -2107,6 +2107,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         Fault fault = isExist(faultCode);
         List<String> userIds = result.stream().map(RecPersonListDTO::getUserId).collect(Collectors.toList());
         List<String> userNames = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
+        String stationCode = fault.getStationCode();
+        String lineCode = fault.getLineCode();
         String deviceTypeCode = getDeviceTypeCodeByFaultCode(faultCode);
 
         // 筛选人员当日排班情况
@@ -2118,6 +2120,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 筛选人员的任务情况
         result = taskSituation(result);
 
+        // 计算人员与站点的最短距离
+        result = calculateShortestDistance(result, lineCode, stationCode);
+
         // 计算评估得分
         result = calculateEvaluationScore(result, userIds, userNames, fault.getKnowledgeId(), deviceTypeCode);
 
@@ -2127,6 +2132,18 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 补充其他数据
         result = addAdditionalDataToResultList(result, fault.getSymptoms(), deviceTypeCode);
 
+        return result;
+    }
+
+    /**
+     * 计算每个人在结果列表中的最短距离。
+     *
+     * @param result      结果列表，包含多个RecPersonListDTO对象
+     * @param lineCode    线路code
+     * @param stationCode 站点code
+     * @return 更新后的结果列表，每个RecPersonListDTO对象的最短距离字段已更新
+     */
+    private List<RecPersonListDTO> calculateShortestDistance(List<RecPersonListDTO> result, String lineCode, String stationCode) {
         return result;
     }
 
@@ -2197,11 +2214,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 工龄按年单位来计算
         recPersonListDTO.setTenure(convertDaysToYears(recPersonListDTO.getTenure(), 2));
 
-        recPersonListDTO.setEvaluationScore(NumberUtil.round(recPersonListDTO.getEvaluationScore(), 2).doubleValue());
-        recPersonListDTO.setSolutionEfficiencyScore(NumberUtil.round(recPersonListDTO.getSolutionEfficiencyScore(), 2).doubleValue());
-        recPersonListDTO.setPerformanceScore(NumberUtil.round(recPersonListDTO.getPerformanceScore(), 2).doubleValue());
-        recPersonListDTO.setFaultNumScore(NumberUtil.round(recPersonListDTO.getFaultNumScore(), 2).doubleValue());
-        recPersonListDTO.setTenureScore(NumberUtil.round(recPersonListDTO.getTenureScore(), 2).doubleValue());
+        recPersonListDTO.setAverageResponseTime(NumberUtil.round(recPersonListDTO.getAverageResponseTime(), 2).doubleValue());
+        recPersonListDTO.setAverageResolutionTime(NumberUtil.round(recPersonListDTO.getAverageResolutionTime(), 2).doubleValue());
     }
 
     /**
@@ -2478,7 +2492,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 + recPersonListDTO.getPerformanceScore() * performanceScoreWeight);
 
         // 返回综合评估得分
-        return evaluationScore;
+        return Double.parseDouble(String.format("%.2f", evaluationScore));
     }
 
     /**

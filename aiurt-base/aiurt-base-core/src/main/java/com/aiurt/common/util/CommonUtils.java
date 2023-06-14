@@ -371,8 +371,8 @@ public class CommonUtils {
         }
         // 将百分比映射到分数范围
         double score = percentage * (topScore - lowestScore) + lowestScore;
-        // 如果小数较多则保留3位小数
-        score = Double.parseDouble(String.format("%.3f", score));
+        // 如果小数较多则保留2位小数
+        score = Double.parseDouble(String.format("%.2f", score));
         return score;
     }
 
