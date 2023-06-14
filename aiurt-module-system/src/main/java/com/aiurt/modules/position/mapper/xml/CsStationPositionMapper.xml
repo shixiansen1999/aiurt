@@ -100,10 +100,10 @@
     </select>
 
     <select id="selectPosition" resultType="java.lang.String">
-        select distinct concat(csp.position_name, '(', position_code, ')') positionName
-        from cs_station_position csp
-                 join cs_station cs on (csp.staion_code = cs.station_code and cs.del_flag = 0)
-        where csp.del_flag = 0
-          and cs.sys_org_code = #{orgCode}
+        select distinct concat(wa.`name`, '(', wa.`code`, ')') workAreaName
+        from work_area wa
+                 join work_area_org wao on (wa.`code` = wao.work_area_code and wao.del_flag = 0)
+        where wa.del_flag = 0
+          and wao.org_code = #{orgCode}
     </select>
 </mapper>
