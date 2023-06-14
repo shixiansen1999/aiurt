@@ -2182,7 +2182,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
 
             }
-            macDto.setLocalMac(arrayList);
+            List<StationAndMacModel> collect = arrayList.stream().distinct().collect(Collectors.toList());
+            macDto.setLocalMac(collect);
             macDto.setStationMac(wifiMac);
         }
         return macDto;
