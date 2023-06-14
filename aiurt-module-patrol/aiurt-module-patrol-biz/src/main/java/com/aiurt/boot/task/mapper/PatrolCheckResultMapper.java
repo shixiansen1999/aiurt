@@ -4,7 +4,9 @@ import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
+import org.jeecg.common.system.vo.DictModel;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -62,4 +64,6 @@ public interface PatrolCheckResultMapper extends BaseMapper<PatrolCheckResult> {
      * @return
      */
     List<PatrolCheckResultDTO> getCheckResultAllByTaskId(@Param("collect") List<String> collect);
+
+
 }

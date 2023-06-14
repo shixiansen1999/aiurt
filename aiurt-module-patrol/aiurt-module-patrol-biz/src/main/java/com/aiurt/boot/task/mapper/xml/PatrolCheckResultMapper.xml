@@ -85,6 +85,11 @@
         pcr.remark
         FROM
         patrol_check_result pcr
+        LEFT JOIN patrol_task_device ptd ON pcr.task_device_id = ptd.id
+        LEFT JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
+        AND pts.del_flag = 0
+        LEFT JOIN cs_subsystem css ON css.system_code = pts.subsystem_code
+        AND css.del_flag = 0
         WHERE
         pcr.del_flag =0
         and pcr.`check` = 0
@@ -98,7 +103,8 @@
                 #{collect}
             </foreach>
         </if>)
-        order by pcr.content,pcr.order
+        GROUP BY  pcr.id
+        order by pcr.order
     </select>
     <select id="getQualityStandard" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
         SELECT
@@ -108,7 +114,8 @@
         pcr.quality_standard,
         pcr.check_result,
         pcr.remark,
-        css.system_name as subsystemName
+        css.system_name as subsystemName,
+        psi.proc_methods
         FROM
         patrol_check_result pcr
         LEFT JOIN patrol_task_device ptd ON pcr.task_device_id = ptd.id
@@ -116,6 +123,7 @@
         AND pts.del_flag = 0
         LEFT JOIN cs_subsystem css ON css.system_code = pts.subsystem_code
         AND css.del_flag = 0
+        LEFT JOIN patrol_standard_items psi on pcr.old_id=psi.id
         WHERE
         pcr.del_flag = 0
         AND pcr.`check` = 1
@@ -130,10 +138,10 @@
         </foreach>
         </if>)
         <if test="parentId != null and parentId !=''">
-            and parent_id = #{parentId}
+            and pcr.parent_id = #{parentId}
         </if>
         GROUP BY  pcr.id
-        ORDER BY pcr.content,pcr.ORDER
+        order by pcr.order
     </select>
 
     <select id="getCheckResultAllByTaskId" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
@@ -144,9 +152,12 @@
         pcr.quality_standard,
         pcr.check_result,
         pcr.remark,
-        pcr.`check`
+        pcr.`check`,
+        ps.`code` as oldCode,
+        pcr.parent_id
         FROM
         patrol_check_result pcr
+        LEFT JOIN patrol_standard_items ps on pcr.old_id = ps.id
         WHERE
         pcr.del_flag =0
         AND pcr.task_device_id IN (
@@ -160,4 +171,6 @@
             </foreach>
         </if>)
     </select>
+
+
 </mapper>

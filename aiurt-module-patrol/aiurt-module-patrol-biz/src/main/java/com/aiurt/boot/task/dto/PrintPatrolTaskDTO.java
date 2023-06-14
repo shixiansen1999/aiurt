@@ -23,7 +23,7 @@ public class PrintPatrolTaskDTO {
     @ApiModelProperty(value = "巡视人")
     private String userName;
 
-    @ApiModelProperty(value = "巡视人")
+    @ApiModelProperty(value = "抽检人")
     private String spotCheckUserName;
 
     @ApiModelProperty(value = "提交时间")

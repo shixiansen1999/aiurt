@@ -48,6 +48,8 @@ public class PatrolBillDTO {
     @ApiModelProperty(value = "巡检项目树")
     private List<PatrolCheckResultDTO> children;
 
+    private String id ;
+
 }
 //SELECT
 //	*

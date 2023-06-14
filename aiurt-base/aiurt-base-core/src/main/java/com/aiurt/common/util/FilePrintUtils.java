@@ -4,6 +4,7 @@ import com.alibaba.excel.metadata.data.ImageData;
 import com.alibaba.excel.metadata.data.WriteCellData;
 
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.ss.util.RegionUtil;
@@ -53,16 +54,25 @@ public class FilePrintUtils {
         imageData.setTop(5);
 //        imageData.setRight(1);
         imageData.setBottom(5);
-        imageData.setLeft(100);
+        imageData.setLeft(300);
 
         // 设置图片的位置：Relative表示相对于当前的单元格index，first是左上点，last是对角线的右下点，这样确定一个图片的位置和大小。
 //      imageData.setRelativeFirstRowIndex(0);
         imageData.setRelativeFirstColumnIndex(0);
 //      imageData.setRelativeLastRowIndex(0);
-        imageData.setRelativeLastColumnIndex(1);
+        imageData.setRelativeLastColumnIndex(2);
 
         return writeCellData;
     }
+
+    /**
+     * 文字竖向显示
+     * @param workbook
+     * @param startRow
+     * @param endRow
+     * @param startColumn
+     * @param endColumn
+     */
     public static void addReturn(Workbook workbook, int startRow, int endRow, int startColumn, int endColumn){
         Sheet sheet = workbook.getSheetAt(0);
         CellStyle cellStyle = workbook.createCellStyle();
@@ -102,6 +112,17 @@ public class FilePrintUtils {
         }
         return stringBuilder.toString();
     }
+
+    /**
+     * 换行设置
+     * @param workbook
+     * @param returnRowMaxLength
+     * @param startRow
+     * @param endRow
+     * @param startColumn
+     * @param endColumn
+     * @param isBoldFont
+     */
     public static void setWrapText(Workbook workbook, int returnRowMaxLength, int startRow, int endRow, int startColumn, int endColumn, boolean isBoldFont){
         Sheet sheet = workbook.getSheetAt(0);
         CellStyle cellStyle = workbook.createCellStyle();
@@ -120,7 +141,7 @@ public class FilePrintUtils {
         // 设置字体大小为9号
         font.setFontHeightInPoints((short) 9);
         cellStyle.setFont(font);
-        sheet.autoSizeColumn(0);
+//        sheet.autoSizeColumn(0);
         for (int row = startRow; row <= endRow; row++) {
             Row currentRow = sheet.getRow(row);
             for (int col = startColumn; col <= endColumn; col++) {
@@ -143,13 +164,13 @@ public class FilePrintUtils {
     }
     /**
      * 合并多行范围的单元格
-     * @param returnRowMaxLength
+     * @param isSetFont
      * @param startRow
      * @param endRow
      * @param startColumn
      * @param endColumn
      */
-    public static void mergeCellsInColumnRange(Workbook workbook, int returnRowMaxLength, int startRow, int endRow, int startColumn, int endColumn) {
+    public static void mergeCellsInColumnRange(Workbook workbook, boolean isSetFont, int startRow, int endRow, int startColumn, int endColumn) {
         // 获取要操作的Sheet对象
         Sheet sheet = workbook.getSheetAt(0);
         CellStyle cellStyle = workbook.createCellStyle();
@@ -157,17 +178,20 @@ public class FilePrintUtils {
         cellStyle.setBorderBottom(BorderStyle.THIN);
         cellStyle.setBorderLeft(BorderStyle.THIN);
         cellStyle.setBorderRight(BorderStyle.THIN);
-        Font font = workbook.createFont();
-        // 设置字体为宋体
-        font.setFontName("宋体");
-        // 设置字体大小为9号
-        font.setFontHeightInPoints((short) 9);
-        cellStyle.setFont(font);
-        sheet.autoSizeColumn(0);
+        if (isSetFont){
+            Font font = workbook.createFont();
+            // 设置字体为宋体
+            font.setFontName("宋体");
+            // 设置字体大小为9号
+            font.setFontHeightInPoints((short) 9);
+            cellStyle.setFont(font);
+        }
+
         cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
+//        cellStyle.setAlignment(HorizontalAlignment.LEFT);
         //设置自动换行
         cellStyle.setWrapText(true);
-
+        sheet.autoSizeColumn(0);
         for (int row = startRow; row <= endRow; row++) {
             CellRangeAddress cellRangeAddress = new CellRangeAddress(row, row, startColumn, endColumn);
             sheet.addMergedRegion(cellRangeAddress);
@@ -185,7 +209,7 @@ public class FilePrintUtils {
                 }
                 cell.setCellStyle(cellStyle);
                 String cellValue = cell.getStringCellValue();
-                returnRowMaxLength = getReturnRowMaxLengthForRegion(sheet, cellRangeAddress);
+                int returnRowMaxLength = getReturnRowMaxLengthForRegion(sheet, cellRangeAddress);
                 if (Objects.nonNull(cellValue)&&cellValue.length() > returnRowMaxLength ){
                     //当字符数大于RowMaxLength的时候，长度除以RowMaxLength+1 就是倍数，默认高度乘倍数即可计算出高度
 //                    int foldRowNum = (cellValue.length() / returnRowMaxLength) + 1;
@@ -199,6 +223,10 @@ public class FilePrintUtils {
 
     }
 
+    /**
+     * 打印设置
+     * @param sheet
+     */
     public static void printSet(Sheet sheet) {
         PrintSetup printSetup = sheet.getPrintSetup();
         printSetup.setFitHeight((short)0);
@@ -257,6 +285,12 @@ public class FilePrintUtils {
         return returnRowMaxLength;
     }
 
+    /**
+     * 获取某列最大显示的字符数
+     * @param sheet
+     * @param columnIndex
+     * @return
+     */
     private static int getReturnRowMaxLengthForColumn(Sheet sheet, int columnIndex) {
         int returnRowMaxLength;
         int columnWidth = sheet.getColumnWidth(columnIndex);
@@ -265,6 +299,12 @@ public class FilePrintUtils {
         return returnRowMaxLength;
     }
 
+    /**
+     * 将输入流转换成字节流
+     * @param inputStream
+     * @return
+     * @throws IOException
+     */
     public static byte[] convert(InputStream inputStream) throws IOException {
         ByteArrayOutputStream byteOutput = new ByteArrayOutputStream();
         byte[] buffer = new byte[4096];
@@ -278,10 +318,15 @@ public class FilePrintUtils {
         return byteOutput.toByteArray();
     }
 
-    public static CellRangeAddress findMergeRegions(Sheet sheet, String searchValue){
-        int startRow = 1;
-        int endRow = 3;
-
+    /**
+     * 查找某个字符串所在的合并区域
+     * @param sheet
+     * @param startRow
+     * @param endRow
+     * @param searchValue
+     * @return
+     */
+    public static CellRangeAddress findMergeRegions(Sheet sheet,int startRow,int endRow, String searchValue){
         CellReference cellRef = searchCellWithMergedRegion(sheet, searchValue, startRow, endRow);
         CellRangeAddress mergedRegion = null;
         if (cellRef != null) {
@@ -308,16 +353,29 @@ public class FilePrintUtils {
         return mergedRegion;
     }
 
-
-    //删除合并区域
-    private List<CellRangeAddress> removeMergedRegions(Sheet sheet){
-        List<CellRangeAddress> mergeRegions = sheet.getMergedRegions();
-        for (int i = 0; i < mergeRegions.size(); i++) {
-            sheet.removeMergedRegion(i);
+    /**
+     * 查找某个字符串所在的单元格
+     * @param sheet
+     * @param searchText
+     * @return
+     */
+    public static CellAddress findCellByText(Sheet sheet, int startRow, int endRow, String searchText) {
+        for (int rowIndex = startRow; rowIndex <= endRow; rowIndex++) {
+            Row row = sheet.getRow(rowIndex);
+            if (row != null) {
+                for (Cell cell : row) {
+                    CellType cellType = cell.getCellType();
+                    if (cellType == CellType.STRING) {
+                        String cellValue = cell.getStringCellValue();
+                        if (cellValue.equals(searchText)) {
+                            return cell.getAddress();
+                        }
+                    }
+                }
+            }
         }
-        return mergeRegions;
+        return null;
     }
-
 
     private static CellReference searchCellWithMergedRegion(Sheet sheet, String searchValue, int startRow, int endRow) {
         for (int rowIndex = startRow; rowIndex <= endRow; rowIndex++) {
