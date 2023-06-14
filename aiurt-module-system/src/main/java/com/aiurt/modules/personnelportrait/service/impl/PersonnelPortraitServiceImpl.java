@@ -21,6 +21,7 @@ import com.aiurt.modules.personnelportrait.dto.*;
 import com.aiurt.modules.personnelportrait.service.PersonnelPortraitService;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.position.mapper.CsStationPositionMapper;
 import com.aiurt.modules.position.service.ICsLineService;
 import com.aiurt.modules.position.service.ICsStationService;
@@ -34,9 +35,12 @@ import com.aiurt.modules.system.mapper.SysUserMapper;
 import com.aiurt.modules.system.mapper.SysUserPerfMapper;
 import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.train.task.dto.TrainExperienceDTO;
+import com.aiurt.modules.workarea.mapper.WorkAreaOrgMapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.*;
 import org.springframework.stereotype.Service;
@@ -73,6 +77,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
     private final SysUserMapper sysUserMapper;
     private final SysUserPerfMapper sysUserPerfMapper;
     private final SysUserAptitudesMapper sysUserAptitudesMapper;
+    private final WorkAreaOrgMapper workAreaOrgMapper;
 
     // 用户职级字典编码
     private final String JOB_GRADE = FaultDictCodeConstant.JOB_GRADE;
@@ -181,21 +186,23 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
     }
 
     /**
-     * 统计班组下的站点个数
+     * 统计班组对应的工区下的站点信息
      *
      * @param orgCode
      * @return
      */
     private List<String> selectStation(String orgCode) {
-        List<CsStation> stations = csStationService.lambdaQuery()
-                .eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0)
-                .eq(CsStation::getSysOrgCode, orgCode)
-                .list();
-        if (CollUtil.isEmpty(stations)) {
+        if (StrUtil.isEmpty(orgCode)) {
             Collections.emptyList();
         }
-        List<String> stationNames = stations.stream().map(CsStation::getStationName).collect(Collectors.toList());
-        return stationNames;
+        List<String> lineStationName = workAreaOrgMapper.getLineStationName(orgCode);
+        return lineStationName;
+//        List<CsStation> stations = csStationService.lambdaQuery()
+//                .eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0)
+//                .eq(CsStation::getSysOrgCode, orgCode)
+//                .list();
+//        List<String> stationNames = stations.stream().map(CsStation::getStationName).collect(Collectors.toList());
+//        return stationNames;
     }
 
     /**
