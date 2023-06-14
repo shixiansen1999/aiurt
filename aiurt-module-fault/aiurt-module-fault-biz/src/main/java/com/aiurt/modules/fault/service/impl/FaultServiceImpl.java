@@ -40,6 +40,7 @@ import com.aiurt.modules.faultcauseusagerecords.service.IFaultCauseUsageRecordsS
 import com.aiurt.modules.faultexternal.service.IFaultExternalService;
 import com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.service.IFaultKnowledgeBaseTypeService;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
@@ -71,6 +72,7 @@ import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -157,6 +159,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     @Autowired
     private RedisUtil redisUtil;
+
+    @Autowired
+    @Lazy
+    private IFaultKnowledgeBaseService faultKnowledgeBaseService;
 
 
     /**
@@ -1399,16 +1405,17 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         fault.setStationCode(repairRecordDTO.getStationCode());
         fault.setStationPositionCode(repairRecordDTO.getStationPositionCode());
         //判断是否要删除
-        repairRecordDTO.getDeviceChangeList();
+        List<SparePartStockDTO> deviceChangeList = repairRecordDTO.getDeviceChangeList();
         //非|是易耗品
         //sysBaseAPI.addSparePartOutOrder(repairRecordDTO.getNonConsumablesList());
         //  Map<String, Integer> updateMap = buildSparePartNumMap(repairRecordDTO, faultCode);
 
-        // 更新备件出库未使用的数量
-        List<SparePartStockDTO> list = repairRecordDTO.getDeviceChangeList();
-        list.addAll(repairRecordDTO.getConsumableList());
+        // 更新备件出库未使用的数量，目前只有易耗品， 智能化提升没有关联出去库；
+        List<SparePartStockDTO> list = repairRecordDTO.getConsumableList();
         sparePartBaseApi.addSparePartOutOrder(list, faultCode);
         //sparePartBaseApi.updateSparePartOutOrder(updateMap);
+
+        // 先删除，再新增
 
         one.setProcessing(repairRecordDTO.getProcessing());
         one.setArriveTime(repairRecordDTO.getArriveTime());
@@ -1436,9 +1443,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             // 重新指派
             fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
             one.setEndTime(new Date());
-
-
-            // 重新指派
             // 仅需要发送消息，不需要更新待办
             try {
                 TodoDTO todoDTO = new TodoDTO();
@@ -1489,7 +1493,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 处理采用的解决方案, 先删除，在插入
         LambdaQueryWrapper<FaultCauseUsageRecords> recordsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        recordsLambdaQueryWrapper.eq(FaultCauseUsageRecords::getFaultRepairRecordId, one.getId());
+        recordsLambdaQueryWrapper.eq(FaultCauseUsageRecords::getFaultCode, one.getFaultCode());
         faultCauseUsageRecordsService.remove(recordsLambdaQueryWrapper);
 
         List<FaultCauseUsageRecords> recordsList = repairRecordDTO.getRecordsList();
@@ -1505,6 +1509,45 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         repairRecordService.updateById(one);
 
+        if (CollUtil.isEmpty(deviceChangeList)) {
+
+            List<DeviceChangeSparePart> sparePartList = deviceChangeList.stream().map(sparePartStockDTO -> {
+                DeviceChangeSparePart part = DeviceChangeSparePart.builder()
+                        .newSparePartNum(sparePartStockDTO.getNewSparePartNum())
+                        .newSparePartCode(sparePartStockDTO.getNewSparePartCode())
+                        .oldSparePartCode(sparePartStockDTO.getOldSparePartCode())
+                        .deviceCode(sparePartStockDTO.getDeviceCode())
+                        .repairRecordId(one.getId())
+                        .code(faultCode)
+                        .consumables("0")
+                        .type(2)
+                        .build();
+                return part;
+            }).collect(Collectors.toList());
+            sparePartService.saveBatch(sparePartList);
+            // 对比标准是否异常
+            if (CollUtil.isNotEmpty(recordsList)) {
+                List<String> faultCauseSolutionIdList = recordsList.stream().map(FaultCauseUsageRecords::getFaultCauseSolutionId).collect(Collectors.toList());
+                String[] array = faultCauseSolutionIdList.stream().toArray(String[]::new);
+                List<FaultSparePart> faultSparePartList = faultKnowledgeBaseService.getStandardRepairRequirements(array);
+
+                if (deviceChangeList.size() != faultSparePartList.size()) {
+                    // 异常
+                    fault.setException(1);
+                }else {
+                    Map<String, Integer> sparePartMap = faultSparePartList.stream().collect(Collectors.toMap(FaultSparePart::getSparePartCode, FaultSparePart::getNumber, (t1, t2) -> t2));
+                    deviceChangeList.stream().forEach(sparePartStockDTO->{
+                        String materialCode = sparePartStockDTO.getMaterialCode();
+                        Integer newSparePartNum = sparePartStockDTO.getNewSparePartNum();
+                        Integer sparePartNum = sparePartMap.getOrDefault(materialCode, 0);
+                        if (sparePartNum.equals(newSparePartNum)) {
+                            fault.setException(1);
+                            return;
+                        }
+                    });
+                }
+            }
+        }
         updateById(fault);
 
 

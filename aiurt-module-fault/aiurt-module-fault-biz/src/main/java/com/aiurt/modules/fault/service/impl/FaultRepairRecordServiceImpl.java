@@ -126,6 +126,10 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
 
     @Override
     public DeviceChangeRecordDTO queryDeviceChangeRecord(String faultCode) {
+        Fault fault = faultService.queryByCode(faultCode);
+        if (Objects.isNull(fault)) {
+            return new DeviceChangeRecordDTO();
+        }
         DeviceChangeRecordDTO deviceChangeRecordDTO = new DeviceChangeRecordDTO();
         List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, null);
         List<SparePartStockDTO> deviceChangeList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("0", sparepart.getConsumables()))
@@ -177,7 +181,8 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
         }
 
         // 判断是否异常
-        
+        deviceChangeRecordDTO.setIsException(fault.getException()==1);
+
         return deviceChangeRecordDTO;
     }
 }
