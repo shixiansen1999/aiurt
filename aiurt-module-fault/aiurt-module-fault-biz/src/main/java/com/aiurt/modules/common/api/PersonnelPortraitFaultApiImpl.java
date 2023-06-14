@@ -52,7 +52,7 @@ public class PersonnelPortraitFaultApiImpl implements PersonnelPortraitFaultApi 
         if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("未查询到用户信息！");
         }
-        return faultRepairRecordMapper.repairDeviceTopFive(loginUser.getUsername());
+        return faultRepairRecordMapper.repairDeviceTopFive(loginUser.getUsername(), FaultConstant.FAULT_STATUS);
     }
 
     @Override

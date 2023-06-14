@@ -53,9 +53,10 @@ public interface FaultRepairRecordMapper extends BaseMapper<FaultRepairRecord> {
      * 处理的设备TOP5
      *
      * @param username
+     * @param faultStatus 故障单已完成状态
      * @return
      */
-    List<FaultHistoryDTO> repairDeviceTopFive(@Param("username") String username);
+    List<FaultHistoryDTO> repairDeviceTopFive(@Param("username") String username, @Param("faultStatus") Integer faultStatus);
 
     /**
      * 历史维修记录-设备故障信息列表
