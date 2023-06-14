@@ -37,7 +37,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @Description: fault_analysis_report
@@ -238,30 +237,12 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 			 wrapper.eq(Fault::getCode, report.getFaultCode());
 			 Fault fault = faultService.getBaseMapper().selectOne(wrapper);
 			 detail = faultAnalysisReportService.getDetail(fault.getId());
-//			 根据线路筛选故障现象
-			 String faultPhenomenon = detail.getFaultPhenomenon();
-			 wrapper1.eq(FaultKnowledgeBase::getLineCode,fault1.getLineCode());
-			 boolean flag = faultKnowledgeBaseMapper.selectList(wrapper1)
-					 .stream().map(FaultKnowledgeBase::getFaultPhenomenon)
-					 .collect(Collectors.toList()).contains(faultPhenomenon);
-			 if (!flag){
-				 detail.setFaultPhenomenon(null);
-			 }
 			 detail.setLineCode(fault1.getLineCode());
 			 detail.setLineName(sysBaseAPI.getLineNameByCode(fault1.getLineCode()));
 			 return Result.OK(detail);
 		 }
 
 		 detail = faultAnalysisReportService.getDetail(id);
-		 //			 根据线路筛选故障现象
-		 String faultPhenomenon = detail.getFaultPhenomenon();
-		 wrapper1.eq(FaultKnowledgeBase::getLineCode,fault1.getLineCode());
-		 boolean flag = faultKnowledgeBaseMapper.selectList(wrapper1)
-				 .stream().map(FaultKnowledgeBase::getFaultPhenomenon)
-				 .collect(Collectors.toList()).contains(faultPhenomenon);
-		 if (!flag){
-			 detail.setFaultPhenomenon(null);
-		 }
 		 detail.setLineCode(fault1.getLineCode());
 		 detail.setLineName(sysBaseAPI.getLineNameByCode(fault1.getLineCode()));
 		 return Result.OK(detail);
