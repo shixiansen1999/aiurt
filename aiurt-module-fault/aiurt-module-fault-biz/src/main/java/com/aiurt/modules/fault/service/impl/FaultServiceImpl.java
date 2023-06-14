@@ -29,6 +29,7 @@ import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.constants.FaultDictCodeConstant;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.*;
+import com.aiurt.modules.fault.enums.FaultDurationEnum;
 import com.aiurt.modules.fault.enums.FaultStatesEnum;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
@@ -2082,7 +2083,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 时长统计
         Date date = new Date();
 
-       // queryWrapper.apply(StrUtil.isNotBlank(fault.getFaultDuration()), "(duration b)");
+        String faultDuration = fault.getFaultDuration();
+        if (StrUtil.isNotBlank(faultDuration)) {
+            FaultDurationEnum faultDurationEnum = FaultDurationEnum.getByCode(faultDuration);
+            queryWrapper.apply(Objects.nonNull(faultDurationEnum),
+                    "(( STATUS IN ( 11, 12 ) AND duration BETWEEN {0} AND {1} ) OR (`status` IN ( 3, 4, 5, 6, 7, 9, 10 ) AND TIMESTAMPDIFF(MINUTE,happen_time,{2}) BETWEEN {0} AND {1} ))",
+                    faultDurationEnum.getStartValue(), faultDurationEnum.getEndValue(), date);
+        }
+
+
+
 
         IPage<Fault> pageList = this.page(page, queryWrapper);
 
