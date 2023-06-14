@@ -203,7 +203,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 fault.setApprovalPassTime(new Date());
             }
         }
-
+        //故障的所属部门为站点通过工区关联的部门
+        List<String> departs = sysBaseAPI.getWorkAreaByCode(fault.getStationCode())
+                .stream()
+                .flatMap(csWorkAreaModel -> csWorkAreaModel.getOrgCodeList().stream())
+                .collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(departs)) {
+            fault.setSysOrgCode(departs.get(0));
+        }
         // 保存故障
         save(fault);
 
@@ -350,7 +357,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     .collect(Collectors.toList());
 
             for (String role : roles) {
-                if (StrUtil.equalsAnyIgnoreCase(role, RoleConstant.FOREMAN)) {
+                if (StrUtil.equalsAnyIgnoreCase(role, RoleConstant.FOREMAN) && CollUtil.isNotEmpty(departs)) {
                     for (String orgCode : departs) {
                         String userName = this.getUserNameByOrgCodeAndRoleCode(StrUtil.split(role, ','), null, null, null, orgCode);
                         userNames.add(userName);
