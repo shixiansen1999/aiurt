@@ -1556,6 +1556,24 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         IPage<KnowledgeBaseResDTO> pageList = null;
         try {
             pageList = elasticApi.knowledgeBaseMatching(page, knowledgeBaseMatchDTO);
+            List<KnowledgeBaseResDTO> records = pageList.getRecords();
+            if(CollUtil.isNotEmpty(records)){
+                // 原因出现率百分比
+                List<String> knowledgeBaseIds = records.stream().map(KnowledgeBaseResDTO::getId).collect(Collectors.toList());
+                Map<String, Map<String, String>> numberMap = this.buildCauseNumberMap(knowledgeBaseIds);
+                for (KnowledgeBaseResDTO record : records) {
+                    List<CauseSolution> reasonSolutions = record.getReasonSolutions();
+                    if(CollUtil.isNotEmpty(reasonSolutions)){
+                        String knowledgeBaseId = record.getId();
+                        Map<String, String> happenRateMap = CollUtil.isEmpty(numberMap.get(knowledgeBaseId)) ?
+                                Collections.emptyMap() : numberMap.get(knowledgeBaseId);
+                        for (CauseSolution solution : reasonSolutions) {
+                            String happenRate = happenRateMap.get(solution.getId());
+                            solution.setHappenRate(happenRate);
+                        }
+                    }
+                }
+            }
         } catch (IOException e) {
             log.error("知识库匹配搜索异常：{}", e.getMessage());
             throw new AiurtBootException("搜索异常！");
