@@ -1506,13 +1506,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 record.setFaultCode(faultCode);
                 record.setFaultRepairRecordId(one.getId());
             });
+            faultCauseUsageRecordsService.saveBatch(recordsList);
         }
-        faultCauseUsageRecordsService.saveBatch(recordsList);
+
 
 
         repairRecordService.updateById(one);
 
-        if (CollUtil.isEmpty(deviceChangeList)) {
+        if (CollUtil.isNotEmpty(deviceChangeList)) {
 
             List<DeviceChangeSparePart> sparePartList = deviceChangeList.stream().map(sparePartStockDTO -> {
                 DeviceChangeSparePart part = DeviceChangeSparePart.builder()
