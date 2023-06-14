@@ -373,10 +373,10 @@
 	</select>
 
 	<select id="getSeniorityNumber" resultType="org.jeecg.common.system.vo.LoginUser">
-		select su.id, su.username, su.entry_date
+		select su.id, su.username, su.working_time as entry_date
 		from sys_user su
 		where su.del_flag = 0
-		  and su.entry_date is not null
+		  and su.working_time is not null
 		  and su.org_code = #{orgCode}
 		group by su.id
 	</select>

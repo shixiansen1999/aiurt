@@ -1512,7 +1512,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
 
-
         repairRecordService.updateById(one);
 
         if (CollUtil.isNotEmpty(deviceChangeList)) {
@@ -2372,12 +2371,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 故障处理总次数
         List<RadarNumberDTO> handleNumberList = faultMapper.getHandleNumberList(userNameList);
-        CommonMaxMinNumDTO handleNumberMaxMinDTO = faultMapper.getFaultHandleNumberMaxMin(userNames);
+        Integer[] handleNumberMaxMin = getFaultHandleNumberMaxMin(handleNumberList, result);
         Map<String, Integer> handleNumberMap = convertHandleNumberListToMap(handleNumberList);
 
         // 解决效率
         List<EfficiencyDTO> efficiency = faultMapper.getEfficiencyList(userNames);
-        Double[] efficiencyScoreMaxMin = getEfficiencyScoreMaxMin(efficiency);
+        Double[] efficiencyMaxMin = getEfficiencyMaxMin(efficiency, result);
         Map<String, EfficiencyDTO> efficiencyMap = convertEfficiencyListToMap(efficiency);
 
         // 工龄
@@ -2385,29 +2384,85 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 资质
         List<RadarAptitudeDTO> aptitudeList = faultMapper.getAptitude(userIdList);
-        CommonMaxMinNumDTO aptitudeMaxMinNum = faultMapper.getAptitudeMaxMin(userIds);
+        Integer[] aptitudeMaxMin = getAptitudeMaxMin(aptitudeList, result);
         Map<String, Integer> aptitudeMap = convertAptitudeListToMap(aptitudeList);
 
         // 近一年平均绩效
         List<RadarPerformanceDTO> performanceList = faultMapper.getPerformanceList(DateUtil.offsetMonth(new Date(), -12), userIds);
-        Double[] performanceScoreMaxMin = getPerformanceScoreMaxMin(performanceList);
+        Double[] performanceMaxMin = getPerformanceMaxMin(performanceList, result);
         Map<String, Double> performanceMap = convertPerformanceListToMap(performanceList);
 
         // 新结果列表中的各个字段值，并计算评估得分
         updateResultList(
-                result, handleNumberMap,
-                handleNumberMaxMinDTO,
+                result,
+                handleNumberMap,
+                handleNumberMaxMin,
                 faultPhenomenonCountMap,
                 deviceTypeCountMap,
                 efficiencyMap,
-                efficiencyScoreMaxMin,
+                efficiencyMaxMin,
                 userExperienceMaxMin,
-                aptitudeMap, aptitudeMaxMinNum,
+                aptitudeMap,
+                aptitudeMaxMin,
                 performanceMap,
-                performanceScoreMaxMin
+                performanceMaxMin
         );
 
         return result;
+    }
+
+    /**
+     * 获取雷达资质的最大值和最小值
+     *
+     * @param aptitudeList 包含雷达资质信息的列表
+     * @param result       结果列表
+     * @return 包含最大值和最小值的整数数组，索引0为最大值，索引1为最小值
+     */
+    private Integer[] getAptitudeMaxMin(List<RadarAptitudeDTO> aptitudeList, List<RecPersonListDTO> result) {
+        // 使用流处理对 aptitudeList 列表进行转换和收集
+        List<Integer> aptitudeNumList = Optional.ofNullable(aptitudeList)
+                .orElse(CollUtil.newArrayList())
+                .stream()
+                .map(RadarAptitudeDTO::getNumber)
+                .collect(Collectors.toList());
+
+        // 获取最大值和最小值，默认值为 null
+        Integer aptitudeNumMax = Optional.ofNullable(CollUtil.max(aptitudeNumList)).orElse(0);
+        Integer aptitudeNumMin = Optional.ofNullable(CollUtil.min(aptitudeNumList)).orElse(0);
+
+        if (CollUtil.isNotEmpty(result) && result.size() != aptitudeNumList.size()) {
+            aptitudeNumMin = 0;
+        }
+
+        // 创建包含最大值和最小值的 Double 数组并返回
+        return new Integer[]{aptitudeNumMax, aptitudeNumMin};
+    }
+
+    /**
+     * 获取故障处理次数的最大值和最小值
+     *
+     * @param handleNumberList 包含故障处理次数的列表
+     * @param result
+     * @return 包含最大值和最小值的整数数组，索引0为最大值，索引1为最小值
+     */
+    private Integer[] getFaultHandleNumberMaxMin(List<RadarNumberDTO> handleNumberList, List<RecPersonListDTO> result) {
+        // 使用流处理对 handleNumberList 列表进行转换和收集
+        List<Integer> numberList = Optional.ofNullable(handleNumberList)
+                .orElse(CollUtil.newArrayList())
+                .stream()
+                .map(RadarNumberDTO::getNumber)
+                .collect(Collectors.toList());
+
+        // 获取最大值和最小值，默认值为 null
+        Integer handleNumberMax = Optional.ofNullable(CollUtil.max(numberList)).orElse(0);
+        Integer handleNumberMin = Optional.ofNullable(CollUtil.min(numberList)).orElse(0);
+
+        if (CollUtil.isNotEmpty(result) && result.size() != handleNumberList.size()) {
+            handleNumberMin = 0;
+        }
+
+        // 创建包含最大值和最小值的 Double 数组并返回
+        return new Integer[]{handleNumberMax, handleNumberMin};
     }
 
     /**
@@ -2415,36 +2470,36 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      *
      * @param result                  结果列表
      * @param handleNumberMap         同种故障现象的处理次数映射
-     * @param handleNumberMaxMinDTO   故障处理总次数的最大值和最小值
+     * @param handleNumberMaxMin      故障处理总次数的最大值和最小值
      * @param faultPhenomenonCountMap 同种故障现象的出现次数映射
      * @param deviceTypeCountMap      同种设备类型的处理次数映射
      * @param efficiencyMap           效率映射（包含响应时间、解决时间和总响应解决时间）
      * @param efficiencyScoreMaxMin   效率的最大值和最小值
      * @param userExperienceMaxMin    工龄的最大值和最小值
      * @param aptitudeMap             资质映射
-     * @param aptitudeMaxMinNum       资质的最大值和最小值
+     * @param aptitudeMaxMin          资质的最大值和最小值
      * @param performanceMap          绩效映射
-     * @param performanceScoreMaxMin  绩效的最大值和最小值
+     * @param performanceMaxMin       绩效的最大值和最小值
      */
     private void updateResultList(List<RecPersonListDTO> result,
                                   Map<String, Integer> handleNumberMap,
-                                  CommonMaxMinNumDTO handleNumberMaxMinDTO,
+                                  Integer[] handleNumberMaxMin,
                                   Map<String, Integer> faultPhenomenonCountMap,
                                   Map<String, Integer> deviceTypeCountMap,
                                   Map<String, EfficiencyDTO> efficiencyMap,
                                   Double[] efficiencyScoreMaxMin,
                                   CommonMaxMinNumDTO userExperienceMaxMin,
                                   Map<String, Integer> aptitudeMap,
-                                  CommonMaxMinNumDTO aptitudeMaxMinNum,
+                                  Integer[] aptitudeMaxMin,
                                   Map<String, Double> performanceMap,
-                                  Double[] performanceScoreMaxMin) {
+                                  Double[] performanceMaxMin) {
         for (RecPersonListDTO recPersonListDTO : result) {
             // 设置故障处理总次数
             recPersonListDTO.setTotalFaultHandlingCount(handleNumberMap.getOrDefault(recPersonListDTO.getUserName(), 0));
 
             // 设置故障数量得分
             recPersonListDTO.setFaultNumScore(CommonUtils.calculateScore(handleNumberMap.getOrDefault(recPersonListDTO.getUserName(), 0),
-                    handleNumberMaxMinDTO.getMaxNum(), handleNumberMaxMinDTO.getMinNum(), false));
+                    handleNumberMaxMin[0], handleNumberMaxMin[1], false));
 
             // 设置同种故障现象的处理次数
             recPersonListDTO.setFaultHandCount(faultPhenomenonCountMap.getOrDefault(recPersonListDTO.getUserName(), 0));
@@ -2471,13 +2526,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
             // 设置资质得分
             recPersonListDTO.setQualificationScore(CommonUtils.calculateScore(aptitudeMap.getOrDefault(recPersonListDTO.getUserId(), 0),
-                    aptitudeMaxMinNum.getMaxNum(), aptitudeMaxMinNum.getMinNum(), false));
+                    aptitudeMaxMin[0], aptitudeMaxMin[1], false));
 
             // 设置绩效得分
             Double performance = performanceMap.getOrDefault(recPersonListDTO.getUserId(), 0d);
             recPersonListDTO.setPerformance(performance);
             recPersonListDTO.setPerformanceScore(CommonUtils.calculateScore(performance,
-                    performanceScoreMaxMin[0], performanceScoreMaxMin[1], false));
+                    performanceMaxMin[0], performanceMaxMin[1], false));
 
             // 根据故障处理总次数、解决效率、工龄、资质分数和绩效的加权平均值计算得出评估得分
             recPersonListDTO.setEvaluationScore(calculateOverallEvaluationScore(recPersonListDTO));
@@ -2554,22 +2609,27 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * 获取 RadarPerformanceDTO 列表中的性能得分的最大值和最小值。
      *
      * @param performanceList RadarPerformanceDTO 列表
+     * @param result
      * @return 包含最大值和最小值的 Double 数组，索引 0 为最大值，索引 1 为最小值
      */
-    public Double[] getPerformanceScoreMaxMin(List<RadarPerformanceDTO> performanceList) {
+    public Double[] getPerformanceMaxMin(List<RadarPerformanceDTO> performanceList, List<RecPersonListDTO> result) {
         // 使用流处理对 RadarPerformanceDTO 列表进行转换和收集
-        List<Double> performanceScore = Optional.ofNullable(performanceList)
+        List<Double> performanceNumberList = Optional.ofNullable(performanceList)
                 .orElse(CollUtil.newArrayList())
                 .stream()
                 .map(RadarPerformanceDTO::getScore)
                 .collect(Collectors.toList());
 
         // 获取最大值和最小值，默认值为 null
-        Double performanceScoreMax = Optional.ofNullable(CollUtil.max(performanceScore)).orElse(0d);
-        Double performanceScoreMin = Optional.ofNullable(CollUtil.min(performanceScore)).orElse(0d);
+        Double performanceNumberMax = Optional.ofNullable(CollUtil.max(performanceNumberList)).orElse(0d);
+        Double performanceNumberMin = Optional.ofNullable(CollUtil.min(performanceNumberList)).orElse(0d);
+
+        if (CollUtil.isNotEmpty(result) && result.size() != performanceList.size()) {
+            performanceNumberMin = 0d;
+        }
 
         // 创建包含最大值和最小值的 Double 数组并返回
-        return new Double[]{performanceScoreMax, performanceScoreMin};
+        return new Double[]{performanceNumberMax, performanceNumberMin};
     }
 
 
@@ -2577,22 +2637,26 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * 获取 EfficiencyDTO 列表中的效率得分的最大值和最小值。
      *
      * @param efficiencyList EfficiencyDTO 列表
+     * @param result
      * @return 包含最大值和最小值的 Double 数组，索引 0 为最大值，索引 1 为最小值
      */
-    public Double[] getEfficiencyScoreMaxMin(List<EfficiencyDTO> efficiencyList) {
+    public Double[] getEfficiencyMaxMin(List<EfficiencyDTO> efficiencyList, List<RecPersonListDTO> result) {
         // 使用流处理对 EfficiencyDTO 列表进行转换和收集
-        List<Double> efficiencyScore = Optional.ofNullable(efficiencyList)
+        List<Double> efficiency = Optional.ofNullable(efficiencyList)
                 .orElse(CollUtil.newArrayList())
                 .stream()
                 .map(EfficiencyDTO::getSumResponseTimeResolveTime)
                 .collect(Collectors.toList());
 
         // 获取最大值和最小值，默认值为 null
-        Double efficiencyScoreMax = Optional.ofNullable(CollUtil.max(efficiencyScore)).orElse(0d);
-        Double efficiencyScoreMin = Optional.ofNullable(CollUtil.min(efficiencyScore)).orElse(0d);
+        Double efficiencyMax = Optional.ofNullable(CollUtil.max(efficiency)).orElse(0d);
+        Double efficiencyMin = Optional.ofNullable(CollUtil.min(efficiency)).orElse(0d);
 
+        if (CollUtil.isNotEmpty(result) && result.size() != efficiencyList.size()) {
+            efficiencyMin = 0d;
+        }
         // 创建包含最大值和最小值的 Double 数组并返回
-        return new Double[]{efficiencyScoreMax, efficiencyScoreMin};
+        return new Double[]{efficiencyMax, efficiencyMin};
     }
 
     /**
