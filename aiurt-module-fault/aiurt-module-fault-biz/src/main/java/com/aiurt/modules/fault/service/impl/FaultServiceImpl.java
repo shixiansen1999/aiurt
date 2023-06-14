@@ -1538,9 +1538,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 if (deviceChangeList.size() != faultSparePartList.size()) {
                     // 异常
                     fault.setException(1);
-                }else {
+                } else {
                     Map<String, Integer> sparePartMap = faultSparePartList.stream().collect(Collectors.toMap(FaultSparePart::getSparePartCode, FaultSparePart::getNumber, (t1, t2) -> t2));
-                    deviceChangeList.stream().forEach(sparePartStockDTO->{
+                    deviceChangeList.stream().forEach(sparePartStockDTO -> {
                         String materialCode = sparePartStockDTO.getMaterialCode();
                         Integer newSparePartNum = sparePartStockDTO.getNewSparePartNum();
                         Integer sparePartNum = sparePartMap.getOrDefault(materialCode, 0);
@@ -2676,22 +2676,22 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .collect(Collectors.toMap(SameFaultDTO::getUserName, SameFaultDTO::getValue, (v1, v2) -> v1));
 
         // 使用是否处理过相同故障映射设置每个结果对象
-        result = result.stream()
+        return result.stream()
                 .peek(re -> {
                     String taskStatus = sameFaultMap.getOrDefault(re.getUserName(), "");
                     re.setTaskStatus(FaultConstant.IN_MAINTENANCE_NAME.equals(taskStatus) ? FaultConstant.IN_MAINTENANCE_NAME : FaultConstant.FREE_NAME);
                 })
                 .collect(Collectors.toList());
 
-        // 计算任务情况为空闲的人员数量
-        long freeNum = result.stream()
-                .filter(re -> FaultConstant.FREE_NAME.equals(re.getTaskStatus()))
-                .count();
-
-        // 如果空闲的人员数量大于等于5人，则只返回空闲的人员人员，否则返回全部人员
-        return result.stream()
-                .filter(re -> FaultConstant.FREE_NAME.equals(re.getTaskStatus()) || freeNum < 5)
-                .collect(Collectors.toList());
+//        // 计算任务情况为空闲的人员数量
+//        long freeNum = result.stream()
+//                .filter(re -> FaultConstant.FREE_NAME.equals(re.getTaskStatus()))
+//                .count();
+//
+//        // 如果空闲的人员数量大于等于5人，则只返回空闲的人员人员，否则返回全部人员
+//        return result.stream()
+//                .filter(re -> (CommonConstant.SHI.equals(re.getHandledSameFault()) && FaultConstant.FREE_NAME.equals(re.getTaskStatus())) || freeNum < 5)
+//                .collect(Collectors.toList());
     }
 
     /**
@@ -2717,22 +2717,22 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 使用是否处理过相同故障映射设置每个结果对象
         Map<String, String> finalSameFaultMap = sameFaultMap;
-        result = result.stream()
+        return result.stream()
                 .peek(re -> {
                     String isSameFaultHandled = finalSameFaultMap.getOrDefault(re.getUserName(), "");
                     re.setHandledSameFault(CommonConstant.SHI.equals(isSameFaultHandled) ? isSameFaultHandled : CommonConstant.FOU);
                 })
                 .collect(Collectors.toList());
 
-        // 计算处理过相同故障的人员数量
-        long countHandledSameFaultNum = result.stream()
-                .filter(re -> CommonConstant.SHI.equals(re.getHandledSameFault()))
-                .count();
-
-        // 如果处理过相同故障的人员数量大于等于5人，则只返回处理过相同故障的人员，否则返回全部人员
-        return result.stream()
-                .filter(re -> CommonConstant.SHI.equals(re.getHandledSameFault()) || countHandledSameFaultNum < 5)
-                .collect(Collectors.toList());
+//        // 计算处理过相同故障的人员数量
+//        long countHandledSameFaultNum = result.stream()
+//                .filter(re -> CommonConstant.SHI.equals(re.getHandledSameFault()))
+//                .count();
+//
+//        // 如果处理过相同故障的人员数量大于等于5人，则只返回处理过相同故障的人员，否则返回全部人员
+//        return result.stream()
+//                .filter(re -> (CommonConstant.SHI.equals(re.getHandledSameFault()) && FaultConstant.ON_DUTY_NAME.equals(re.getScheduleStatus())) || countHandledSameFaultNum < 5)
+//                .collect(Collectors.toList());
     }
 
     /**
@@ -2755,7 +2755,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .collect(Collectors.toMap(ScheduleUserWorkDTO::getUserId, ScheduleUserWorkDTO::getWork, (v1, v2) -> v1));
 
         // 使用工作内容映射设置每个结果对象的计划状态
-        result = result.stream()
+        return result.stream()
                 .peek(re -> {
                     String work = workMap.getOrDefault(re.getUserId(), "");
                     String workName = FaultConstant.ON_DUTY_1.equals(work) ? FaultConstant.ON_DUTY_NAME : FaultConstant.REST_NAME;
@@ -2763,15 +2763,15 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 })
                 .collect(Collectors.toList());
 
-        // 计算人员的排班情况为当班的数量
-        long countScheduleStatusNum = result.stream()
-                .filter(re -> FaultConstant.ON_DUTY_NAME.equals(re.getScheduleStatus()))
-                .count();
-
-        // 如果当班人员数量大于等于5人，则只返回当班人员，否则返回全部人员
-        return result.stream()
-                .filter(re -> FaultConstant.ON_DUTY_NAME.equals(re.getScheduleStatus()) || countScheduleStatusNum < 5)
-                .collect(Collectors.toList());
+//        // 计算人员的排班情况为当班的数量
+//        long countScheduleStatusNum = result.stream()
+//                .filter(re -> FaultConstant.ON_DUTY_NAME.equals(re.getScheduleStatus()))
+//                .count();
+//
+//        // 如果当班人员数量大于等于5人，则只返回当班人员，否则返回全部人员
+//        return result.stream()
+//                .filter(re -> FaultConstant.ON_DUTY_NAME.equals(re.getScheduleStatus()) || countScheduleStatusNum < 5)
+//                .collect(Collectors.toList());
     }
 
     /**
@@ -2849,7 +2849,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 Integer status = fault1.getStatus();
                 if (FaultStatusEnum.NEW_FAULT.getStatus().equals(status) || FaultStatusEnum.CANCEL.getStatus().equals(status) || FaultStatusEnum.APPROVAL_REJECT.getStatus().equals(status)) {
                     fault1.setDuration(0L);
-                }else if (FaultStatusEnum.HANGUP.getStatus().equals(status)) {
+                } else if (FaultStatusEnum.HANGUP.getStatus().equals(status)) {
                     fault1.setDuration(DateUtil.between(fault1.getApprovalPassTime(), fault1.getHappenTime(), DateUnit.MINUTE));
                 } else {
                     fault1.setDuration(DateUtil.between(new Date(), fault1.getHappenTime(), DateUnit.MINUTE));

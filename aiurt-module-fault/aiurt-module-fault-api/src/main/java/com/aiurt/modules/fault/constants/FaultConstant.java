@@ -51,12 +51,12 @@ public class FaultConstant {
     /**
      *  1表示人员当班中的状态
      */
-    public static final Integer ON_DUTY_1 = 1;
+    public static final String ON_DUTY_1 = "1";
 
     /**
      *  0表示人员休息的状态
      */
-    public static final Integer REST_0 = 0;
+    public static final String REST_0 = "0";
     /**
      *  表示人员当班中
      */
