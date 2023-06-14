@@ -1710,7 +1710,7 @@
         a.system_code as code,
         count(c.id AND c.end_time is NOT NULL and c.status = 12 OR not null) AS resolvedNum
         FROM cs_subsystem a
-        LEFT JOIN fault c ON a.system_code = c.sub_system_code and c.`status` > 2
+        LEFT JOIN fault c ON a.system_code = c.sub_system_code and c.`status` > 2 and c.hang_up_time is null
         <if test="startTime != null and endTime != null">
             and DATE_FORMAT(c.happen_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
             AND DATE_FORMAT(#{endTime}, '%Y-%m-%d')
@@ -1725,7 +1725,7 @@
             </foreach>
         </if>
         where a.del_flag = 0
-         and not EXISTS (select 1 from operation_process where fault_code = c.code and  process_code = 10)
+         <!--and not EXISTS (select 1 from operation_process where fault_code = c.code and  process_code = 10)-->
         <if test="id != null">
             AND a.id in (select system_id from cs_user_subsystem where user_id = #{id})
         </if>
@@ -1740,7 +1740,8 @@
         WHERE
         a.`status`
         >0
-        and not EXISTS (select 1 from operation_process where fault_code = a.code and  process_code = 10)
+        and a.hang_up_time is null
+<!--        and not EXISTS (select 1 from operation_process where fault_code = a.code and  process_code = 10)-->
         <if test="code != null">
             and a.sub_system_code = #{code}
         </if>
@@ -1772,7 +1773,7 @@
         a.org_code,
         count(c.id AND c.end_time is NOT NULL and c.status = 12 OR not null) AS resolvedNum
         FROM sys_depart a
-        LEFT JOIN fault c ON a.org_code = c.sys_org_code and c.`status` > 2
+        LEFT JOIN fault c ON a.org_code = c.sys_org_code and c.`status` > 2 and c.hang_up_time is null
         <if test="startTime != null and endTime != null">
             and DATE_FORMAT(c.happen_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
             AND DATE_FORMAT(#{endTime}, '%Y-%m-%d')
@@ -1793,7 +1794,7 @@
             </foreach>
         </if>
         WHERE a.del_flag = 0
-        and not EXISTS (select 1 from operation_process where fault_code = c.code and  process_code = 10)
+    <!--    and not EXISTS (select 1 from operation_process where fault_code = c.code and  process_code = 10)-->
         <if test="ids != null and ids.size > 0">
             AND a.id IN
             <foreach collection="ids" item="ids" open="(" separator="," close=")">
