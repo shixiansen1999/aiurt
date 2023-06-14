@@ -1,13 +1,12 @@
 package com.aiurt.boot.check.mapper;
 
-import java.util.List;
-
+import com.aiurt.boot.check.entity.FixedAssetsCheckDetail;
 import com.aiurt.boot.check.vo.FixedAssetsCheckDetailVO;
-import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
-import com.aiurt.boot.check.entity.FixedAssetsCheckDetail;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * @Description: fixed_assets_check_detail
@@ -26,4 +25,6 @@ public interface FixedAssetsCheckDetailMapper extends BaseMapper<FixedAssetsChec
     Page<FixedAssetsCheckDetailVO> queryPageList(@Param("page") Page<FixedAssetsCheckDetailVO> page,
                                                  @Param("categoryCodes") List<String> categoryCodes,
                                                  @Param("orgCodes") List<String> orgCodes);
+
+    Page<FixedAssetsCheckDetail>  getList(@Param("page") Page<FixedAssetsCheckDetailVO> page,@Param("id") String id);
 }
