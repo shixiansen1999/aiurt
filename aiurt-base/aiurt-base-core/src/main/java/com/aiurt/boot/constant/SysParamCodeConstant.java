@@ -282,4 +282,12 @@ public interface SysParamCodeConstant {
      * 调度下发新的故障-需要响铃的中心班组
      */
     String FAULT_EXTERNAL_ORG = "fault_external_org";
+    /**
+     * 统计报表是否需要过滤通信分部
+     */
+    String 	FILTERING_TEAM = "filtering_team";
+    /**
+     * 通信分部编码
+     */
+    String 	SPECIAL_TEAM = "special_team";
 }

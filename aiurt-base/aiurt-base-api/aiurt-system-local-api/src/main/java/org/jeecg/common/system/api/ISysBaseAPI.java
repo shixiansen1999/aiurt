@@ -383,6 +383,14 @@ public interface ISysBaseAPI extends CommonAPI {
     List<String> queryOrgNamesByOrgCodes(List<String> orgCodes);
 
     /**
+     * 根据多个部门编码(集合)，查询返回多个部门id
+     * @param orgCodes
+     * @return
+     */
+    List<String> queryOrgIdsByOrgCodes(List<String> orgCodes);
+
+
+    /**
      * 39根据多个部门id(逗号分隔)，查询返回多个部门信息
      *
      * @param ids
@@ -970,6 +978,14 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<CsWorkAreaModel> getWorkAreaByCode(String stationCode);
+
+    /**
+     * 根据线路获取工区信息
+     *
+     * @param lineCode
+     * @return
+     */
+    List<CsWorkAreaModel> getWorkAreaByLineCode(String lineCode);
 
     /**
      * 通过code查询地点信息（这三个中的一个：线路、站点、位置）

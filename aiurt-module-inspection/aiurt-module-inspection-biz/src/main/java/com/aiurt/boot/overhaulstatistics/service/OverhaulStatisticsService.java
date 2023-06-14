@@ -7,6 +7,7 @@ import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.personnelteam.mapper.PersonnelTeamMapper;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTO;
@@ -17,9 +18,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserDepartModel;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.*;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -58,12 +58,24 @@ public class OverhaulStatisticsService{
 
     @Autowired
     private PersonnelTeamMapper personnelTeamMapper;
-
+    @Autowired
+    private ISysParamAPI sysParamApi;
 
     public Page<OverhaulStatisticsDTOS> getOverhaulList(Page<OverhaulStatisticsDTOS> pageList, OverhaulStatisticsDTOS condition) {
         List<OverhaulStatisticsDTOS> dtoList2 = this.selectDepart(condition.getOrgCode());
         if (CollUtil.isNotEmpty(dtoList2)) {
             List<String> collect1 = dtoList2.stream().map(OverhaulStatisticsDTOS::getOrgCode).collect(Collectors.toList());
+            //根据线路关联工区过滤班组
+            if (StrUtil.isNotEmpty(condition.getLineCode())) {
+                List<CsWorkAreaModel> workAreaByLineCode = sysBaseAPI.getWorkAreaByLineCode(condition.getLineCode());
+                if (CollUtil.isNotEmpty(workAreaByLineCode)) {
+                    List<String> orgCodeList = new ArrayList<>();
+                    for (CsWorkAreaModel csWorkAreaModel : workAreaByLineCode) {
+                        orgCodeList.addAll(csWorkAreaModel.getOrgCodeList());
+                    }
+                    collect1.retainAll(orgCodeList);
+                }
+            }
             condition.setOrgCodeList(collect1);
         } else {
             return pageList;
@@ -267,6 +279,15 @@ public class OverhaulStatisticsService{
                     }
                 }
             }
+        }
+
+        //过滤通信分部
+        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FILTERING_TEAM);
+        boolean b = "1".equals(sysParamModel.getValue());
+        if (b) {
+            SysParamModel code = sysParamApi.selectByCode(SysParamCodeConstant.SPECIAL_TEAM);
+            List<OverhaulStatisticsDTOS> dtoList = list.stream().filter(s -> !s.getOrgCode().equals(code.getValue())).collect(Collectors.toList());
+            return dtoList;
         }
         return list;
     }
