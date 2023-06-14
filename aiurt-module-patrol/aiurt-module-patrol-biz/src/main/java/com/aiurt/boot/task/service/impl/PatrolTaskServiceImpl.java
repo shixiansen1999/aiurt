@@ -2285,8 +2285,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             } else {
                 try {
                     byte[] convert = FilePrintUtils.convert(inputStream);
-                    WriteCellData writeImageData = FilePrintUtils.writeCellImageData(convert);
-                    imageMap.put("signImage",writeImageData);
+                //    WriteCellData writeImageData = FilePrintUtils.writeCellImageData(convert, excelDictModel);
+              //      imageMap.put("signImage",writeImageData);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
