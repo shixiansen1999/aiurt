@@ -65,5 +65,7 @@ public class SparePartReplaceDTO implements Serializable {
     @ApiModelProperty(value = "新组件拼接后的编码, 前端使用展示")
     private String newSparePartSplitCode;
 
+    private String specifications;
+
 
 }

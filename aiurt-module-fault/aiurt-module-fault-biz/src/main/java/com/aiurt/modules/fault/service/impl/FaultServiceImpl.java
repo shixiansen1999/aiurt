@@ -201,8 +201,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         String faultModeCode = fault.getFaultModeCode();
 
-        LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
-        FaultKnowledgeBaseType one = faultKnowledgeBaseTypeService.getOne(queryWrapper.eq(FaultKnowledgeBaseType::getCode, fault.getFaultPhenomenon()).eq(FaultKnowledgeBaseType::getDelFlag, 0));
+        /*LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
+        FaultKnowledgeBaseType one = faultKnowledgeBaseTypeService.getOne(queryWrapper.eq(FaultKnowledgeBaseType::getCode, fault.getFaultPhenomenon()).eq(FaultKnowledgeBaseType::getDelFlag, 0));*/
         // 自报自修跳过
         boolean b = StrUtil.equalsIgnoreCase(faultModeCode, SELF_FAULT_MODE_CODE);
         // 根据配置决定是否需要审核
@@ -218,7 +218,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     // 做类型
                     .faultCode(fault.getCode())
                     // 故障现象
-                    .faultPhenomenon(one.getName())
+                    //.faultPhenomenon(one.getName())
+                    .symptoms(fault.getSymptoms())
                     .startTime(new Date())
                     .delFlag(CommonConstant.DEL_FLAG_0)
                     // 负责人
@@ -748,6 +749,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 // 负责人
                 .appointUserName(assignDTO.getOperatorUserName())
                 // 附件
+                .symptoms(fault.getSymptoms())
                 .assignFilePath(assignDTO.getFilepath())
                 .knowledgeId(fault.getKnowledgeId())
                 .build();
@@ -820,6 +822,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .delFlag(CommonConstant.DEL_FLAG_0)
                 // 领取时间
                 .receviceTime(new Date())
+                .symptoms(fault.getSymptoms())
                 // 附件
                 .knowledgeId(fault.getKnowledgeId())
                 .assignFilePath(assignDTO.getFilepath())
@@ -2825,7 +2828,20 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 fault1.setDeviceId(Optional.ofNullable(faultDeviceList.get(0)).orElse(new FaultDevice()).getDeviceId());
             }
 
-            // 时长
+            // 时长计算，有值就是已提交
+            if (Objects.isNull(fault1.getDuration())) {
+                //
+                Integer status = fault1.getStatus();
+                if (FaultStatusEnum.NEW_FAULT.getStatus().equals(status) || FaultStatusEnum.CANCEL.getStatus().equals(status) || FaultStatusEnum.APPROVAL_REJECT.getStatus().equals(status)) {
+                    fault1.setDuration(0L);
+                }else if (FaultStatusEnum.HANGUP.getStatus().equals(status)) {
+                    fault1.setDuration(DateUtil.between(fault1.getApprovalPassTime(), fault1.getHappenTime(), DateUnit.MINUTE));
+                } else {
+                    fault1.setDuration(DateUtil.between(new Date(), fault1.getHappenTime(), DateUnit.MINUTE));
+                }
+
+            }
+            //
         });
     }
 
