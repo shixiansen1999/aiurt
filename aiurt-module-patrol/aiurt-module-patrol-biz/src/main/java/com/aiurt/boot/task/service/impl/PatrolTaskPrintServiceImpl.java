@@ -164,7 +164,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             //填充图片
             excelWriter.fill(imageMap, writeSheet);
             excelWriter.finish();
-            //对已填充数据的文件进行后出来
+            //对已填充数据的文件进行后处理
             processFilledFile(filePath);
 
             MinioUtil.upload(new FileInputStream(filePath),relatiePath);
@@ -576,10 +576,19 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             //设置第一列列宽
             FilePrintUtils.setColumnWidth(sheet,0,10);
         }
-
+        OutputStream outputStream = null;
         // 保存修改后的Excel文件
-        try (OutputStream outputStream = new FileOutputStream(filePath)) {
+        try{
+            outputStream = new FileOutputStream(filePath);
             workbook.write(outputStream);
+        }finally {
+            if (null!=outputStream){
+                outputStream.close();
+            }
+
+            if (null!=workbook){
+                workbook.close();
+            }
         }
     }
 
