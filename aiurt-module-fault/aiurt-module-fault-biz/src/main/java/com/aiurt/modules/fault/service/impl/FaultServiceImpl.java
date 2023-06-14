@@ -1464,7 +1464,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (flag.equals(solveStatus)) {
             fault.setStatus(FaultStatusEnum.RESULT_CONFIRM.getStatus());
             fault.setEndTime(new Date());
-            fault.setDuration(DateUtil.between(fault.getReceiveTime(), fault.getEndTime(), DateUnit.MINUTE));
+            long duration = DateUtil.between(fault.getReceiveTime(), fault.getEndTime(), DateUnit.MINUTE);
+            fault.setDuration(duration>0 ? duration : 1);
             one.setEndTime(new Date());
 
             // 审核
@@ -2928,12 +2929,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 Integer status = fault1.getStatus();
                 if (FaultStatusEnum.NEW_FAULT.getStatus().equals(status) || FaultStatusEnum.CANCEL.getStatus().equals(status) || FaultStatusEnum.APPROVAL_REJECT.getStatus().equals(status)) {
                     fault1.setDuration(0L);
-                } else if (FaultStatusEnum.HANGUP.getStatus().equals(status)) {
-                    fault1.setDuration(DateUtil.between(fault1.getApprovalPassTime(), fault1.getHappenTime(), DateUnit.MINUTE));
-                } else {
+                }  else {
                     fault1.setDuration(DateUtil.between(new Date(), fault1.getHappenTime(), DateUnit.MINUTE));
                 }
-
             }
             //
         });
