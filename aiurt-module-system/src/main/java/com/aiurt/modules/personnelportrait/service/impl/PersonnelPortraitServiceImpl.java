@@ -815,7 +815,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
                 + (radarRes.getSeniority() * seniorityWeight)
                 + (radarRes.getAptitude() * aptitudeWeight)
                 + (radarRes.getPerformance() * performanceWeight);
-        weightedSum = Double.parseDouble(String.format("%.3f", weightedSum));
+        weightedSum = Double.parseDouble(String.format("%.2f", weightedSum));
         return weightedSum;
     }
 
