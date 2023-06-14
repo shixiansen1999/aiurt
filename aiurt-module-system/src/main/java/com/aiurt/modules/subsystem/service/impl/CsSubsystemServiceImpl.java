@@ -173,6 +173,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             }
             subDTO.setFailureNum(subDTO.getCommonFaultNum()+subDTO.getSeriousFaultNum());
             subDTO.setSystemCode(s.getSystemCode());subDTO.setSystemName(s.getSystemName());subDTO.setId(s.getId());
+            subDTO.setShortenedForm(s.getShortenedForm());
             subDTO.setCode(subDTO.getSystemCode());subDTO.setName(subDTO.getSystemName());
             subDTO.setFailureDuration(new BigDecimal((1.0 * ( subDTO.getNum()) / 60)).setScale(2, BigDecimal.ROUND_HALF_UP));
             List<SubsystemFaultDTO> list = csUserSubsystemMapper.getSubsystemByDeviceTypeCode(s.getSystemCode(),deviceTypeCode);
@@ -257,7 +258,9 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
               List<ListDTO> system = csUserSubsystemMapper.sysTemYearFault(s.getSystemCode());
               YearFaultDTO yearFaultDTO = new YearFaultDTO();
               yearFaultDTO.setId(s.getId());
-              yearFaultDTO.setName(s.getSystemName());yearFaultDTO.setCode(s.getSystemCode());
+              yearFaultDTO.setName(s.getSystemName());
+              yearFaultDTO.setShortenedForm(s.getShortenedForm());
+              yearFaultDTO.setCode(s.getSystemCode());
               system.forEach(sys->{
                   if (ObjectUtils.isNotEmpty(sys.getMonth())) {
                       if (sys.getMonth() == 1) {

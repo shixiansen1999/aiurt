@@ -4,6 +4,7 @@ import com.aiurt.modules.positionwifi.entity.CsPositionWifi;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.jeecg.common.system.vo.StationAndMacModel;
 
 import java.util.List;
 
@@ -20,6 +21,13 @@ public interface CsPositionWifiMapper extends BaseMapper<CsPositionWifi> {
      * @return
      */
     List<String> getMac(@Param("stationCodes") List<String> stationCodes);
+
+    /**
+     * 根据站点code获取mac地址和站点名称
+     * @param stationCodes
+     * @return
+     */
+    List<StationAndMacModel> getStationAndMac(@Param("stationCodes") List<String> stationCodes);
 
     /**
      * 根据mac地址获取station_code

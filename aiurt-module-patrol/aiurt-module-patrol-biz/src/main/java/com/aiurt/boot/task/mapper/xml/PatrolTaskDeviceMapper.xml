@@ -324,9 +324,12 @@
                 ptd.patrol_number,
                 ptd.mac,
                 ptd.mac_status,
-                ptd.station_code
+                ptd.station_code,
+                cs.station_name
         FROM
                 patrol_task_device ptd
+        left join cs_position_wifi cpw on cpw.mac = ptd.mac and cpw.del_flag = 0
+        left join cs_station cs on cpw.station_code = cs.station_code  and cs.del_flag = 0
         WHERE 1=1 and
           ptd.task_id = #{id}
           AND ptd.del_flag = 0
@@ -363,9 +366,12 @@
         ptd.patrol_number,
         ptd.mac,
         ptd.mac_status,
-        ptd.station_code
+        ptd.station_code,
+        cs.station_name
         FROM
         patrol_task_device ptd
+        left join cs_position_wifi cpw on cpw.mac = ptd.mac and cpw.del_flag = 0
+        left join cs_station cs on cpw.station_code = cs.station_code  and cs.del_flag = 0
         WHERE 1=1 and
          ptd.id = #{id}
         AND ptd.del_flag = 0

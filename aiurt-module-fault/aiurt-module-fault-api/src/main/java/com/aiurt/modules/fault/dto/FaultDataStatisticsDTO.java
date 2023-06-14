@@ -53,6 +53,9 @@ public class FaultDataStatisticsDTO extends DictEntity implements Serializable {
     @ApiModelProperty(value = "专业子系统名称")
     private String subSystemName;
 
+    @ApiModelProperty(value = "简称")
+    private String shortenedForm;
+
     @ApiModelProperty("故障数量")
     private Integer faultSum;
 

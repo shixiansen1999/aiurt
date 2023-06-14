@@ -499,6 +499,7 @@ public class FaultInformationService {
             dto.setId(String.valueOf(i));
             dto.setSubSystemCode(allSystemCode.get(i).getSubSystemCode());
             dto.setSubSystemName(allSystemCode.get(i).getSubSystemName());
+            dto.setShortenedForm(allSystemCode.get(i).getShortenedForm());
             dto.setFaultSum(yearFault);
             dtoList.add(dto);
         }
@@ -863,6 +864,7 @@ public class FaultInformationService {
                 FaultSystemReliabilityDTO faultSystemReliabilityDTO = new FaultSystemReliabilityDTO();
                 faultSystemReliabilityDTO.setSystemName(faultSystemDeviceSumDTO.getSystemName());
                 faultSystemReliabilityDTO.setSubSystemCode(faultSystemDeviceSumDTO.getSystemCode());
+                faultSystemReliabilityDTO.setShortenedForm(faultSystemDeviceSumDTO.getShortenedForm());
                 //计划时长
                 if (StrUtil.isNotBlank(faultSystemDeviceSumDTO.getShouldWorkTime())){
                     planTime = Double.valueOf(faultSystemDeviceSumDTO.getShouldWorkTime());

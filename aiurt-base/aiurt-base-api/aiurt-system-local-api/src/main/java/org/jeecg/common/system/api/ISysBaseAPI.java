@@ -1200,5 +1200,10 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     JSONObject queryPageUserList(LoginUser loginUser, List<String> excludeUserIds, String isBelongOrg,
                                        String isPermissionOrg, Integer pageNo, Integer pageSize, HttpServletRequest req);
+    /**
+     * 根据站点code获取mac地址和站点名称
+     * @return
+     */
+    List<StationAndMacModel> getStationAndMacByCode(List<String> stationCodes);
 }
 

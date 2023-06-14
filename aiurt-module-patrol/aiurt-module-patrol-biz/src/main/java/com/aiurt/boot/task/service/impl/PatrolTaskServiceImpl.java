@@ -61,7 +61,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
@@ -70,8 +72,8 @@ import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
-import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.StationAndMacModel;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -2166,12 +2168,22 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 .map(IndexStationDTO::getStationCode)
                 .collect(Collectors.toList());
         //获取WiFi地址管理mac地址
-        List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(list);
+        List<StationAndMacModel> wifiMac = sysBaseApi.getStationAndMacByCode(list);
 
         MacDto macDto = new MacDto();
         if (CollUtil.isNotEmpty(mac)) {
-            List<String> macs = mac.stream().map(PatrolTaskDeviceDTO::getMac).filter(StrUtil::isNotEmpty).distinct().collect(Collectors.toList());
-            macDto.setLocalMac(macs);
+            List<StationAndMacModel> arrayList = new ArrayList<>();
+            for (PatrolTaskDeviceDTO dto : mac) {
+                if (StrUtil.isNotEmpty(dto.getMac())) {
+                    StationAndMacModel stationAndMacModel = new StationAndMacModel();
+                    stationAndMacModel.setMac(dto.getMac());
+                    stationAndMacModel.setStationName(StrUtil.isNotEmpty(dto.getStationName())?dto.getStationName():"不存在该mac地址");
+                    arrayList.add(stationAndMacModel);
+                }
+
+            }
+            List<StationAndMacModel> collect = arrayList.stream().distinct().collect(Collectors.toList());
+            macDto.setLocalMac(collect);
             macDto.setStationMac(wifiMac);
         }
         return macDto;
