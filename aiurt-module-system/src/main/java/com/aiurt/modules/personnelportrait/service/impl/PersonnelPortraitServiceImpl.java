@@ -20,8 +20,6 @@ import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.personnelportrait.dto.*;
 import com.aiurt.modules.personnelportrait.service.PersonnelPortraitService;
 import com.aiurt.modules.position.entity.CsLine;
-import com.aiurt.modules.position.entity.CsStation;
-import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.position.mapper.CsStationPositionMapper;
 import com.aiurt.modules.position.service.ICsLineService;
 import com.aiurt.modules.position.service.ICsStationService;
@@ -36,13 +34,12 @@ import com.aiurt.modules.system.mapper.SysUserPerfMapper;
 import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.train.task.dto.TrainExperienceDTO;
 import com.aiurt.modules.workarea.mapper.WorkAreaOrgMapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.*;
+import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -394,10 +391,10 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         }
 
         String orgName = Arrays.asList(majorName, sysUser.getOrgName()).stream()
-                .filter(Objects::nonNull).collect(Collectors.joining("/"));
+                .filter(StrUtil::isEmpty).collect(Collectors.joining("/"));
         // 用户表上的岗位字段没用上，因为没有维护，确认过先用角色
         String post = Arrays.asList(roleName, level).stream()
-                .filter(Objects::nonNull).collect(Collectors.joining("-"));
+                .filter(StrUtil::isEmpty).collect(Collectors.joining("-"));
 
         userDetail.setUserId(sysUser.getId());
         userDetail.setPicurl(sysUser.getAvatar());
