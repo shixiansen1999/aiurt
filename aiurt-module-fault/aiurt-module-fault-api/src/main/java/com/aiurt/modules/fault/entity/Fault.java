@@ -386,4 +386,24 @@ public class Fault extends DictEntity implements Serializable {
             System.out.println("2222222");
         }
     }
+
+    /**故障维修时长*/
+    @Excel(name = "故障维修时长", width = 15)
+    @ApiModelProperty(value = "故障维修时长")
+    private Integer repairDuration;
+
+    /**维修响应时长*/
+    @Excel(name = "维修响应时长", width = 15)
+    @ApiModelProperty(value = "维修响应时长")
+    private Integer responseDuration;
+
+    /**维修响应时长*/
+    @Excel(name = "故障时长", width = 15)
+    @ApiModelProperty(value = "故障时长")
+    private Integer faultDuration;
+
+    /**维修响应时长*/
+    @Excel(name = "故障解决时长", width = 15)
+    @ApiModelProperty(value = "故障解决时长")
+    private Integer resolutionDuration;
 }

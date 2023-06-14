@@ -22,7 +22,7 @@ public class TeamPortraitModel {
     @ApiModelProperty("班组负责人电话")
     private String teamLeaderPhone;
     @ApiModelProperty("班组平均维修响应时间")
-    private String averageTime;
+    private Integer averageTime;
     @ApiModelProperty("检修总工时")
     private String inspecitonTotalTime;
     @ApiModelProperty("巡检总工时")

@@ -136,4 +136,9 @@ where cm.major_code = #{majorCode} and cs.del_flag = 0 and cm.del_flag=0
         WHERE su.id = #{userId}
         AND wa.del_flag = 0
     </select>
+
+<select id="selectWorkAreaListByLineCode" resultType="com.aiurt.modules.workarea.entity.WorkArea">
+    select wa.id,wa.name,wa.code from work_area wa left join work_area_line wal on wal.work_area_code = wa.code
+    where wal.line_code = #{lineCode} and wal.del_flag = 0 and wa.del_flag = 0
+    </select>
 </mapper>

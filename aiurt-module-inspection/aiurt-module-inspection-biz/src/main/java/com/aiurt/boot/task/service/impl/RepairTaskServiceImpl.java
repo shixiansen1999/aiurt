@@ -1597,6 +1597,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairPoolMapper.updateById(repairPool);
             }
         }
+
+        // 提交检修任务就更新检修任务的检修时长
+        // 2023-06 通信6期 检修任务的检修时长是提交时间-开始时间，且单位秒
+        if (ObjectUtil.isNotNull(repairTask.getBeginTime())) {
+            repairTask.setDuration((int) DateUtil.between(repairTask.getBeginTime(), new Date(), DateUnit.SECOND));
+        }else {
+            repairTask.setDuration(0);
+        }
+
         repairTaskMapper.updateById(repairTask);
 
         // 更新待办任务状态为已完成
@@ -2549,9 +2558,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (ObjectUtil.isEmpty(repairTaskDeviceRel.getEndTime())) {
             repairTaskDeviceRel.setEndTime(submitTime);
             // 检修时长
-            if (ObjectUtil.isNotEmpty(repairTaskDeviceRel.getStartTime()) && ObjectUtil.isNotEmpty(repairTaskDeviceRel.getEndTime())) {
-                repairTaskDeviceRel.setDuration(DateUtil.between(repairTaskDeviceRel.getStartTime(), repairTaskDeviceRel.getEndTime(), DateUnit.MINUTE));
-            }
+            // if (ObjectUtil.isNotEmpty(repairTaskDeviceRel.getStartTime()) && ObjectUtil.isNotEmpty(repairTaskDeviceRel.getEndTime())) {
+            //     repairTaskDeviceRel.setDuration(DateUtil.between(repairTaskDeviceRel.getStartTime(), repairTaskDeviceRel.getEndTime(), DateUnit.MINUTE));
+            // }
+        }
+        // 2023-06 通信6期 检修工单的检修时长是提交时间-开始时间，且单位秒
+        if (ObjectUtil.isNotNull(repairTaskDeviceRel.getStartTime())) {
+            repairTaskDeviceRel.setDuration(DateUtil.between(repairTaskDeviceRel.getStartTime(), submitTime, DateUnit.SECOND));
+        }else {
+            repairTaskDeviceRel.setDuration(0L);
         }
 
         // 修改检修单的状态，已提交
@@ -2622,6 +2637,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairPoolMapper.updateById(repairPool);
             }
         }
+
+        // 提交检修任务就更新检修任务的检修时长
+        // 2023-06 通信6期 检修任务的检修时长是提交时间-开始时间，且单位秒
+        if (ObjectUtil.isNotNull(repairTask.getBeginTime())) {
+            repairTask.setDuration((int) DateUtil.between(repairTask.getBeginTime(), new Date(), DateUnit.SECOND));
+        }else {
+            repairTask.setDuration(0);
+        }
+
         repairTaskMapper.updateById(repairTask);
 
         // 更新待办任务状态为已完成

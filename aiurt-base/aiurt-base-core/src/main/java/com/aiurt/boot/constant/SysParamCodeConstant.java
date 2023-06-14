@@ -306,4 +306,12 @@ public interface SysParamCodeConstant {
      * 故障调度处理完，回调云轨的系统id
      */
     String FAULT_EXTERNAL_SYSTEM_ID = "fault_external_system_id";
+    /**
+     * 统计报表是否需要过滤通信分部
+     */
+    String 	FILTERING_TEAM = "filtering_team";
+    /**
+     * 通信分部编码
+     */
+    String 	SPECIAL_TEAM = "special_team";
 }

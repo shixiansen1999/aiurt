@@ -77,6 +77,7 @@ import com.aiurt.modules.system.util.SecurityUtil;
 import com.aiurt.modules.system.vo.SysUserDepVo;
 import com.aiurt.modules.workarea.entity.WorkArea;
 import com.aiurt.modules.workarea.entity.WorkAreaOrg;
+import com.aiurt.modules.workarea.mapper.WorkAreaLineMapper;
 import com.aiurt.modules.workarea.mapper.WorkAreaMapper;
 import com.aiurt.modules.workarea.mapper.WorkAreaOrgMapper;
 import com.aiurt.modules.workarea.service.IWorkAreaService;
@@ -278,10 +279,13 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Autowired
     private WorkAreaOrgMapper workAreaOrgMapper;
     @Autowired
+    private WorkAreaLineMapper workAreaLineMapper;
+    @Autowired
     private SensorInformationMapper sensorInformationMapper;
     @Autowired
     private CsPositionWifiMapper csPositionWifiMapper;
-
+    @Autowired
+    private ISysParamAPI sysParamApi;
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
     public LoginUser getUserByName(String username) {
@@ -1340,6 +1344,20 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         LambdaQueryWrapper<SysDepart> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(SysDepart::getOrgCode, orgCodes);
         List<String> collect = sysDepartService.list(queryWrapper).stream().map(SysDepart::getDepartName).collect(Collectors.toList());
+        return collect;
+    }
+
+    /**
+     * 根据多个部门编码，查询返回多个部门id
+     *
+     * @param orgCodes
+     * @return
+     */
+    @Override
+    public List<String> queryOrgIdsByOrgCodes(List<String> orgCodes) {
+        LambdaQueryWrapper<SysDepart> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(SysDepart::getOrgCode, orgCodes);
+        List<String> collect = sysDepartService.list(queryWrapper).stream().map(SysDepart::getId).collect(Collectors.toList());
         return collect;
     }
 
@@ -2640,6 +2658,23 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
+    public List<CsWorkAreaModel> getWorkAreaByLineCode(String lineCode) {
+        List<WorkArea> workAreas = workAreaMapper.selectWorkAreaListByLineCode(lineCode);
+        List<CsWorkAreaModel> csWorkAreaModels = new ArrayList<>();
+        if (CollUtil.isNotEmpty(workAreas)) {
+            for (WorkArea workArea : workAreas) {
+                CsWorkAreaModel csWorkAreaModel = new CsWorkAreaModel();
+                BeanUtils.copyProperties(workArea, csWorkAreaModel);
+                List<WorkAreaOrg> workAreaOrgList = workAreaOrgMapper.selectList(new LambdaQueryWrapper<WorkAreaOrg>().eq(WorkAreaOrg::getWorkAreaCode,workArea.getCode()));
+                List<String> orgCodeList = workAreaOrgList.stream().map(WorkAreaOrg::getOrgCode).collect(Collectors.toList());
+                csWorkAreaModel.setOrgCodeList(orgCodeList);
+                csWorkAreaModels.add(csWorkAreaModel);
+            }
+        }
+        return csWorkAreaModels;
+    }
+
+    @Override
     public JSONObject getPositionMessage(String code) {
         String json = null;
         CsLine line = csStationMapper.getLineName(code);
@@ -3229,6 +3264,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 }else {
                     list =allSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
                 }
+            }
+        }
+        //过滤通信分部
+        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FILTERING_TEAM);
+        boolean b = "1".equals(sysParamModel.getValue());
+        if (b) {
+            SysParamModel code = sysParamApi.selectByCode(SysParamCodeConstant.SPECIAL_TEAM);
+            String orgCode = code.getValue();
+            String departId = this.getDepartIdsByOrgCode(orgCode);
+            if (StrUtil.isNotEmpty(departId)&&flag == 0) {
+                list.remove(departId);
+            } else if (StrUtil.isNotEmpty(departId)&&flag == 1) {
+                list.remove(orgCode);
             }
         }
         return list;

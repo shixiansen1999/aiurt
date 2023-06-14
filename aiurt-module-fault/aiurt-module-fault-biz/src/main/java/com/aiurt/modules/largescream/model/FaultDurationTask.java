@@ -24,5 +24,5 @@ public class FaultDurationTask {
 
     private String taskId;
 
-    private Long duration;
+    private Integer duration;
 }

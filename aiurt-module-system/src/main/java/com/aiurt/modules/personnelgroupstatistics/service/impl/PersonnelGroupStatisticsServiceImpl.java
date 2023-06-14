@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.api.OverhaulApi;
@@ -91,6 +90,10 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             ///获取所有班组检修参数数据
             Map<String, PersonnelTeamDTO> teamInformation = overhaulApi.teamInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), list);
 
+            // 2023-06通信6期工时修改。由于之前获取检修工时的代码和其他的耦合的太厉害，单独写一个获取检修工时的代码
+            // teamInspecitonTotalTimeMap里面key是班组id，value是总检修时长
+            Map<String, Integer> teamInspecitonTotalTimeMap =  overhaulApi.getTeamInspecitonTotalTime(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), list);
+
             for (GroupModel model : personnelGroupModels) {
                 String teamId = model.getTeamId();
                 //获取每一个班组巡检参数数据
@@ -124,18 +127,21 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 //获取每一个班组检修参数数据
                 PersonnelTeamDTO personnelTeamDTO = teamInformation.get(teamId);
                 if (ObjectUtil.isNotEmpty(personnelTeamDTO)) {
-                    model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
+                    // model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
                     model.setInspecitonScheduledTasks(Convert.toStr(personnelTeamDTO.getPlanTaskNumber()));
                     model.setInspecitonCompletedTasks(Convert.toStr(personnelTeamDTO.getCompleteTaskNumber()));
                     model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate())+"%");
                     model.setInspecitonMissingChecks("-");
                 }else {
-                    model.setInspecitonTotalTime("0");
+                    // model.setInspecitonTotalTime("0");
                     model.setInspecitonScheduledTasks("0");
                     model.setInspecitonCompletedTasks("0");
                     model.setInspecitonPlanCompletion("0%");
                     model.setInspecitonMissingChecks("-");
                 }
+                // 班组的总检修时长
+                Integer inspecitonTotalTime = Optional.ofNullable(teamInspecitonTotalTimeMap.get(teamId)).orElseGet(() -> 0);
+                model.setInspecitonTotalTime(Convert.toStr(inspecitonTotalTime));
 
                 //培训完成次数
                 Integer integer = personnelGroupStatisticsMapper.groupTrainFinishedNum(model.getTeamId(), startTime, endTime);
@@ -179,6 +185,15 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             //获取所有人员检修参数数据
             Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), ids, null, userIds);
 
+            // 2023-06通信6期工时修改。由于之前获取检修工时的代码和其他的耦合的太厉害，单独写一个获取检修工时的代码
+            // 因为获取检修工时的代码是复用到大屏班组画像的，需要的是LoginUser的List对象
+            List<LoginUser> userList = userIds.stream().map(userId -> {
+                LoginUser loginUser = new LoginUser();
+                loginUser.setId(userId);
+                return loginUser;
+            }).collect(Collectors.toList());
+            Map<String, Integer> userInspecitonTotalTimeMap = overhaulApi.getUserInspecitonTotalTime(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), userList);
+
             for (PersonnelModel model : personnelModels) {
                 String userId = model.getUserId();
                 //获取每一个人员巡检参数数据
@@ -211,18 +226,22 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 //获取每一个人员检修参数数据
                 PersonnelTeamDTO personnelTeamDTO = personnelInformation.get(userId);
                 if (ObjectUtil.isNotEmpty(personnelTeamDTO)) {
-                    model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
+                    // model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
                     model.setInspecitonScheduledTasks(Convert.toStr(personnelTeamDTO.getPlanTaskNumber()));
                     model.setInspecitonCompletedTasks(Convert.toStr(personnelTeamDTO.getCompleteTaskNumber()));
                     model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate())+"%");
                     model.setInspecitonMissingChecks("-");
                 } else {
-                    model.setInspecitonTotalTime("0");
+                    // model.setInspecitonTotalTime("0");
                     model.setInspecitonScheduledTasks("0");
                     model.setInspecitonCompletedTasks("0");
                     model.setInspecitonPlanCompletion("0%");
                     model.setInspecitonMissingChecks("-");
                 }
+                // 个人的检修时长
+                Integer inspecitonTotalTime = Optional.ofNullable(userInspecitonTotalTimeMap.get(userId)).orElseGet(() -> 0);
+                model.setInspecitonTotalTime(Convert.toStr(inspecitonTotalTime));
+
                 //培训完成次数
                 List<TrainTaskDTO> trainTaskDtos = personnelGroupStatisticsMapper.userTrainFinishedNum(model.getUserId(), startTime, endTime);
                 int size = trainTaskDtos.size();
@@ -360,29 +379,16 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
 
     public void getAverageTime(List<FaultRepairRecordDTO> repairDuration,TeamPortraitModel depart) {
         if (CollUtil.isNotEmpty(repairDuration)) {
-            long l = 0;
-            for (FaultRepairRecordDTO repairRecordDTO : repairDuration) {
-                // 响应时长： 接收到任务，开始维修时长
-                Date receviceTime = repairRecordDTO.getReceviceTime();
-                Date startTime = repairRecordDTO.getStartTime();
-                Date time = repairRecordDTO.getEndTime();
-                if (Objects.nonNull(startTime) && Objects.nonNull(receviceTime)) {
-                    long between = DateUtil.between(receviceTime, startTime, DateUnit.MINUTE);
-                    between = between == 0 ? 1 : between;
-                    l = l + between;
-                }
-                if (Objects.nonNull(startTime) && Objects.nonNull(time)) {
-                    long between = DateUtil.between(time, startTime, DateUnit.MINUTE);
-                    between = between == 0 ? 1 : between;
-                    l = l + between;
-                }
-            }
+            int l = repairDuration.stream().filter(w-> w.getResponseDuration() !=null)
+                    .mapToInt(FaultRepairRecordDTO::getResponseDuration)
+                    .sum();
+
             BigDecimal bigDecimal = new BigDecimal(l);
             BigDecimal bigDecimal1 = new BigDecimal(repairDuration.size());
-            String s = bigDecimal.divide(bigDecimal1, 0).toString();
-            depart.setAverageTime(s);
+            BigDecimal divide = bigDecimal.divide(bigDecimal1, 0, BigDecimal.ROUND_HALF_UP);
+            depart.setAverageTime(divide.intValue());
         } else {
-            depart.setAverageTime("0");
+            depart.setAverageTime(0);
         }
     }
 
@@ -445,29 +451,16 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         //获取人员维修响应时长
         List<FaultRepairRecordDTO> repairDuration = personnelGroupStatisticsMapper.getRepairDuration(userList, lastYear, end);
         if (CollUtil.isNotEmpty(repairDuration)) {
-            long l = 0;
-            for (FaultRepairRecordDTO repairRecordDTO : repairDuration) {
-                // 响应时长： 接收到任务，开始维修时长
-                Date receviceTime = repairRecordDTO.getReceviceTime();
-                Date startTime = repairRecordDTO.getStartTime();
-                Date time = repairRecordDTO.getEndTime();
-                if (Objects.nonNull(startTime) && Objects.nonNull(receviceTime)) {
-                    long between = DateUtil.between(receviceTime, startTime, DateUnit.MINUTE);
-                    between = between == 0 ? 1 : between;
-                    l = l + between;
-                }
-                if (Objects.nonNull(startTime) && Objects.nonNull(time)) {
-                    long between = DateUtil.between(time, startTime, DateUnit.MINUTE);
-                    between = between == 0 ? 1 : between;
-                    l = l + between;
-                }
-            }
+            int l = repairDuration.stream().filter(w-> w.getResponseDuration() !=null)
+                    .mapToInt(FaultRepairRecordDTO::getResponseDuration)
+                    .sum();
+
             BigDecimal bigDecimal = new BigDecimal(l);
             BigDecimal bigDecimal1 = new BigDecimal(repairDuration.size());
-            String s = bigDecimal.divide(bigDecimal1, 0).toString();
-            user.setAverageTime(s);
+            BigDecimal divide = bigDecimal.divide(bigDecimal1, 0, BigDecimal.ROUND_HALF_UP);
+            user.setAverageTime(divide.intValue());
         }else {
-            user.setAverageTime("0");
+            user.setAverageTime(0);
         }
 
         return user;

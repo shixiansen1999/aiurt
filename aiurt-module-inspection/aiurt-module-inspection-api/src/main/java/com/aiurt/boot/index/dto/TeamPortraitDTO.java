@@ -30,9 +30,9 @@ public class TeamPortraitDTO {
     @ApiModelProperty("当前值班人员")
     private String staffOnDuty;
     @ApiModelProperty("班组平均维修响应时间")
-    private String averageTime;
+    private Integer averageTime;
     @ApiModelProperty("检修总工时")
-    private BigDecimal inspecitonTotalTime;
+    private Integer inspecitonTotalTime;
     /**巡检总工时，单位秒*/
     @ApiModelProperty("巡检总工时")
     private Integer patrolTotalTime;
