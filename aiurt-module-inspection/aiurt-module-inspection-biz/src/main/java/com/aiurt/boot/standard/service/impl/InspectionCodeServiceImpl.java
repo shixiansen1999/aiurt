@@ -133,10 +133,12 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                         .eq(InspectionStrRel::getInspectionStaCode, il.getCode())
                         .eq(InspectionStrRel::getInspectionStrCode,inspectionCodeDTO.getInspectionStrCode()));
                 // 判断是否指定了设备
-                List<InspectionStrDeviceRel> inspectionStrDeviceRels = inspectionStrDeviceRelMapper.selectList(
-                        new LambdaQueryWrapper<InspectionStrDeviceRel>()
-                                .eq(InspectionStrDeviceRel::getInspectionStrRelId, inspectionStrRel.getId()));
-                il.setSpecifyDevice(CollUtil.isNotEmpty(inspectionStrDeviceRels) ? "是" : "否");
+                if (ObjectUtil.isNotEmpty(inspectionStrRel)) {
+                    List<InspectionStrDeviceRel> inspectionStrDeviceRels = inspectionStrDeviceRelMapper.selectList(
+                            new LambdaQueryWrapper<InspectionStrDeviceRel>()
+                                    .eq(InspectionStrDeviceRel::getInspectionStrRelId, inspectionStrRel.getId()));
+                    il.setSpecifyDevice(CollUtil.isNotEmpty(inspectionStrDeviceRels) ? "是" : "否");
+                }
             }
         }
         return page.setRecords(inspectionCodeDTOS);
