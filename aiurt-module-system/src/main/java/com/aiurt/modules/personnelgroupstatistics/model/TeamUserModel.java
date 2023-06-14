@@ -47,7 +47,7 @@ public class TeamUserModel {
     private String faultTotalTime;
 
     @ApiModelProperty("平均维修响应时间")
-    private String averageTime;
+    private Integer averageTime;
 
     @ApiModelProperty("平均维修时间")
     private String averageFaultTime;

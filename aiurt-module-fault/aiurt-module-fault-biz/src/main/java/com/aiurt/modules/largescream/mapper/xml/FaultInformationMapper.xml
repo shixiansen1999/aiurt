@@ -63,8 +63,8 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         <where>
             status = 12
             <if test="weekStartDate!=null and weekEndDate!=null">
-                and date_format(end_time ,'%Y-%m-%d') &gt;=  date_format(#{weekStartDate},'%Y-%m-%d')
-                and date_format(end_time ,'%Y-%m-%d') &lt;= date_format(#{weekEndDate},'%Y-%m-%d')
+                and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{weekStartDate},'%Y-%m-%d')
+                and date_format(approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{weekEndDate},'%Y-%m-%d')
             </if>
             <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
@@ -511,8 +511,8 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
                fr.recevice_time,
                fr.end_time,
                fr.assign_time,
-        sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-(SELECT SUM(IFNUll(op.hang_up_time,0))
-        FROM operation_process op  WHERE op.fault_code = frp.`fault_code`) as duration
+        IFNUll(sum(fr.repair_duration)-(SELECT SUM(IFNUll(op.hang_up_time,0))
+        FROM operation_process op  WHERE op.fault_code = frp.`fault_code`  and op.process_person = fr.appoint_user_name ),0) as duration
         FROM
         fault_repair_participants frp
         LEFT JOIN sys_user s ON s.username = frp.user_name
@@ -536,8 +536,8 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         fr.recevice_time,
         fr.end_time,
         fr.assign_time,
-        sum(TIMESTAMPDIFF(second,IFNULL( IFNULL( fr.recevice_time, fr.assign_time ),f.happen_time),fr.end_time))-(SELECT SUM(IFNUll(op.hang_up_time,0))
-        FROM operation_process op  WHERE op.fault_code = fr.`fault_code`) as duration
+        IFNUll(sum(fr.repair_duration)-(SELECT SUM(IFNUll(op.hang_up_time,0))
+        FROM operation_process op  WHERE op.fault_code = fr.`fault_code` and op.process_person = fr.appoint_user_name),0) as duration
         from  fault_repair_record  fr
         left join sys_user s on s.username = fr.appoint_user_name
         left join  fault f on f.code = fr.fault_code
@@ -560,12 +560,11 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         fr.recevice_time,
         fr.end_time,
         fr.assign_time,
-        op.hang_up_time,
-        IFNULL(TIMESTAMPDIFF( SECOND, IFNULL( IFNULL( fr.recevice_time, fr.assign_time ),f.happen_time), fr.end_time ) - IFNUll( op.hang_up_time, '0' ),'0') AS duration
+        IFNULL(sum(fr.repair_duration)-(SELECT SUM(IFNUll(op.hang_up_time,0))
+        FROM operation_process op  WHERE op.fault_code = f.`code` and op.process_person = fr.appoint_user_name),0) AS duration
         from  fault_repair_record  fr
         left join sys_user s on s.username = fr.appoint_user_name
         left join  fault f on f.code = fr.fault_code
-        LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
         <where>
             fr.del_flag = 0
             <if test="startTime != null and endTime != null">
@@ -592,13 +591,12 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         fr.recevice_time,
         fr.end_time,
         fr.assign_time,
-        op.hang_up_time,
-        IFNULL(TIMESTAMPDIFF( SECOND, IFNULL( IFNULL( fr.recevice_time, fr.assign_time ),f.happen_time), fr.end_time ) - IFNUll( op.hang_up_time, '0' ),'0') AS duration
+        IFNULL(sum(fr.repair_duration)-(SELECT SUM(IFNUll(op.hang_up_time,0))
+        FROM operation_process op  WHERE op.fault_code = f.`code` and op.process_person = fr.appoint_user_name),0) AS duration
         FROM
         fault_repair_participants frp
         LEFT JOIN sys_user s ON s.username = frp.user_name
         LEFT JOIN fault f ON f.CODE = frp.fault_code
-        LEFT JOIN operation_process op ON op.fault_code = frp.fault_code
         left join fault_repair_record fr  on fr.id = frp.fault_repair_record_id
         <where>
             fr.del_flag = 0
@@ -619,7 +617,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         select  sys_depart.id as orgId ,aaa.*
         from
         (SELECT
-        IFNULL(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-(SELECT SUM(IFNUll(op.hang_up_time,0))
+        IFNULL(sum(fr.repair_duration)-(SELECT SUM(IFNUll(op.hang_up_time,0))
         FROM operation_process op  WHERE op.fault_code = f.`code`),0) as num,
         count(fr.id) as num1
         from sys_depart sd
@@ -652,8 +650,8 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         SELECT sys_user.id as userId,
         (
         SELECT
-        IFNULL(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-(SELECT SUM(IFNUll(op.hang_up_time,0))
-        FROM operation_process op  WHERE op.fault_code = f.`code`),0) as num
+        IFNULL(sum(fr.repair_duration)-(SELECT SUM(IFNUll(op.hang_up_time,0))
+        FROM operation_process op  WHERE op.fault_code = f.`code` and op.process_person = fr.appoint_user_name),0) as num
         FROM sys_user su
         left join  fault_repair_record fr on su.username = fr.appoint_user_name
         left join  fault f on f.code = fr.fault_code
@@ -680,8 +678,9 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
           and date_format(submit_time ,'%Y-%m-%d')  BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
     </select>
     <select id="getUserConstructorsNum" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
-        select   count(id) as constructorsNum,
-                count(id) as num1
+        select
+        IFNULL(count(id),0) as constructorsNum,
+        IFNULL(count(id),0) as num1
         from t_work_log
         where del_flag = 0
           and confirm_status = 1
@@ -696,12 +695,12 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         where
            s.del_flag = 0 and s.org_id = #{orgId}
           AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
-        group by s.id
+        group by s.id,fr.id
     </select>
     <select id="getAccompanyTime" resultType="com.aiurt.modules.fault.dto.UserTimeDTO">
         select s.id as userId, fr.id as frrId,
-               IFNULL(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-(SELECT SUM(IFNUll(op.hang_up_time,0))
-                                     FROM operation_process op  WHERE op.fault_code = f.`code`),0) as duration
+               IFNULL(sum(fr.repair_duration)-(SELECT SUM(IFNUll(op.hang_up_time,0))
+                                     FROM operation_process op  WHERE op.fault_code = f.`code` and fr.appoint_user_name = op.process_person),0) as duration
         from  sys_user s
                   left join fault_repair_participants frp on s.username = frp.user_name
                   left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id  and fr.del_flag = 0
@@ -709,15 +708,15 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         where
             s.del_flag = 0 and s.org_id = #{orgId}
           AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
-        group by s.id
+        group by s.id,fr.id
     </select>
-    <select id="getUserTimes" resultType="java.lang.Long">
+    <select id="getUserTimes" resultType="java.lang.Integer">
         select
-            IFNULL(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-(SELECT SUM(IFNUll(op.hang_up_time,0))
-             FROM operation_process op  WHERE op.fault_code = f.`code`),0) as duration
+            IFNULL(sum(fr.repair_duration)-(SELECT SUM(IFNUll(op.hang_up_time,0))
+             FROM operation_process op  WHERE op.fault_code = f.`code` and op.process_person = fr.appoint_user_name),0) as duration
         from  sys_user s
                   left join fault_repair_participants frp on s.username = frp.user_name
-                  left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id  and fr.del_flag = 0
+                  left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id  and fr.del_flag = 0 and s.username != fr.appoint_user_name
                   left join  fault f on f.code = fr.fault_code
         where
             s.del_flag = 0 and s.id = #{userId}
@@ -767,7 +766,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         fr.recevice_time,
         fr.end_time,
         fr.assign_time,
-        sum(TIMESTAMPDIFF(second,IFNULL( IFNULL( fr.recevice_time, fr.assign_time ),fr.start_time),fr.end_time))as duration
+        IFNUll(sum(fr.repair_duration),0)as duration
         from  fault_repair_record  fr
         left join sys_user s on s.username = fr.appoint_user_name
         left join  fault f on f.code = fr.fault_code
@@ -787,7 +786,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
                fr.recevice_time,
                fr.end_time,
                fr.assign_time,
-        sum(TIMESTAMPDIFF(second,IFNULL(IFNULL(fr.recevice_time,fr.assign_time),fr.start_time),fr.end_time)) as duration
+        IFNUll(sum(fr.repair_duration) ,0)as duration
         FROM
         fault_repair_participants frp
         LEFT JOIN sys_user s ON s.username = frp.user_name
@@ -868,7 +867,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         select  sys_depart.id as orgId ,aaa.*
         from
         (SELECT
-        IFNULL( sum( TIMESTAMPDIFF( SECOND, IFNULL(IFNULL( fr.recevice_time, fr.assign_time ),fr.start_time), fr.end_time )), 0 ) AS num,
+        IFNULL( sum( fr.repair_duration), 0 ) AS num,
         count(fr.id and fr.end_time is NOT NULL or not null) as num1
         from sys_depart sd
         left join  sys_user s on  s.org_code = sd.org_code
@@ -890,7 +889,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
 </select>
 <select id="getFilterUserTime" resultType="com.aiurt.modules.fault.dto.UserTimeDTO">
   select s.id as userId, fr.id as frrId,
-          IFNULL(sum(TIMESTAMPDIFF(second,IFNULL(IFNULL(fr.recevice_time, fr.assign_time ),fr.start_time),fr.end_time)),0) as duration
+          IFNULL(sum(fr.repair_duration),0) as duration
         from  sys_user s
                  left join fault_repair_record  fr on  s.username = fr.appoint_user_name
                  left join  fault f on f.code = fr.fault_code
@@ -898,11 +897,11 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
            s.del_flag = 0 and s.org_id = #{orgId}
            and not EXISTS (select 1 from operation_process where fault_code = f.code and  process_code = 10)
           AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
-        group by s.id
+        group by s.id,fr.id
 </select>
 <select id="getFilterAccompanyTime" resultType="com.aiurt.modules.fault.dto.UserTimeDTO">
         select s.id as userId, fr.id as frrId,
-               IFNULL(sum(TIMESTAMPDIFF(second,IFNULL(IFNULL(fr.recevice_time, fr.assign_time ),fr.start_time),fr.end_time)),0) as duration
+               IFNULL(sum(fr.repair_duration),0) as duration
         from  sys_user s
                   left join fault_repair_participants frp on s.username = frp.user_name
                   left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id
@@ -911,13 +910,13 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
             s.del_flag = 0 and s.org_id = #{orgId}
            and not EXISTS (select 1 from operation_process where fault_code = f.code and  process_code = 10)
           AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
-        group by s.id
+        group by s.id,fr.id
 </select>
 <select id="getFilterFaultUserReport" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
   SELECT sys_user.id as userId,
         (
         SELECT
-        IFNULL(sum(TIMESTAMPDIFF(second,IFNULL(IFNULL(fr.recevice_time, fr.assign_time ),fr.start_time),fr.end_time)),0) as num
+        IFNULL(sum(fr.repair_duration),0) as num
         FROM sys_user su
         left join  fault_repair_record fr on su.username = fr.appoint_user_name
         left join  fault f on f.code = fr.fault_code
@@ -936,12 +935,12 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         </if>
 </select>
 
-<select id="getFilterUserTimes" resultType="java.lang.Long">
+<select id="getFilterUserTimes" resultType="java.lang.Integer">
         select
-         IFNULL(sum(TIMESTAMPDIFF(second,IFNULL(IFNULL(fr.recevice_time, fr.assign_time ),fr.start_time),fr.end_time)),0) as duration
+         IFNULL(sum(fr.repair_duration),0) as duration
         from  sys_user s
                   left join fault_repair_participants frp on s.username = frp.user_name
-                  left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id
+                  left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id and s.username != fr.appoint_user_name
                   left join  fault f on f.code = fr.fault_code
         where
             s.del_flag = 0 and s.id = #{userId}

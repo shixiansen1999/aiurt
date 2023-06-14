@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.report.mapper.ReportMapper;
 import com.aiurt.boot.report.model.FailureOrgReport;
@@ -25,10 +26,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
-import org.jeecg.common.system.vo.CsUserDepartModel;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
-import org.jeecg.common.system.vo.SysParamModel;
+import org.jeecg.common.system.vo.*;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -74,9 +72,25 @@ public class PatrolReportService {
             orgCodes = orgCodes.stream().filter(u->report.getOrgCode().contains(u)).collect(Collectors.toList());
             orgIdList = orgIdList.stream().filter(u->departByOrgCode.getId().contains(u)).collect(Collectors.toList());
         }
+        //根据线路关联工区过滤班组
+        if (StrUtil.isNotEmpty(report.getLineCode())) {
+            List<CsWorkAreaModel> workAreaByLineCode = sysBaseApi.getWorkAreaByLineCode(report.getLineCode());
+            if (CollUtil.isNotEmpty(workAreaByLineCode)) {
+                List<String> orgCodeList = new ArrayList<>();
+                for (CsWorkAreaModel csWorkAreaModel : workAreaByLineCode) {
+                    orgCodeList.addAll(csWorkAreaModel.getOrgCodeList());
+                }
+                List<String> orgIds = sysBaseApi.queryOrgIdsByOrgCodes(orgCodeList);
+                orgCodes.retainAll(orgCodeList);
+                orgIdList.retainAll(orgIds);
+            }
+        }
+
         if(CollUtil.isEmpty(orgCodes)&&(!user.getRoleCodes().contains("admin")||!user.getRoleCodes().contains("director"))) {
             return  pageList.setRecords(new ArrayList<>());
         }
+
+
         report.setOrgCodeList(orgCodes);
         if(ObjectUtil.isNotEmpty(report.getLineCode()))
         {
@@ -106,8 +120,8 @@ public class PatrolReportService {
             List<Date> endList = statisticsService.getOmitDateScope(endDate);
             Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
             Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
-            omitModel.setStartDate(DateUtil.formatDate(startTime));
-            omitModel.setEndDate(DateUtil.formatDate(endTime));
+            omitModel.setStartDate(DateUtil.formatDateTime(startTime));
+            omitModel.setEndDate(DateUtil.formatDateTime(endTime));
         } else {
             boolean isNowWeek = isNowWeekDate(report.getStartDate(), report.getEndDate());
             isNullDate = isNowWeek;
@@ -115,8 +129,8 @@ public class PatrolReportService {
             List<Date> endList = statisticsService.getOmitDateScope(DateUtil.parse(report.getEndDate()));
             Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
             Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
-            omitModel.setStartDate(DateUtil.formatDate(startTime));
-            omitModel.setEndDate(DateUtil.formatDate(endTime));
+            omitModel.setStartDate(DateUtil.formatDateTime(startTime));
+            omitModel.setEndDate(DateUtil.formatDateTime(endTime));
         }
         //只查组织机构，做主数据返回，为了条件查询不影响组织机构显示
         List<PatrolReport> orgIdNameList = patrolTaskMapper.getReportTaskList(pageList,orgIdList);
@@ -417,10 +431,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             } else {
                 f.setLastYearStr("-");
             }
-            List<Integer> num = patrolTaskMapper.selectNum(f.getCode(), null, lineCode, finalStationCode, finalStartTime, finalEndTime);
-            int s = num.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
-            f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
-            f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
+
             List<Integer> faultWortTime =  new ArrayList<>(0);
              if(filterValue){
                  Integer resolveNum = finalSystemCodeResolveMap.get(f.getCode());
@@ -431,8 +442,22 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
              }else {
                  faultWortTime = patrolTaskMapper.selectNum1(f.getCode(), null, lineCode, finalStationCode, finalStartTime, finalEndTime);
              }
-             int s1 = faultWortTime.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
-             f.setAverageResolution(f.getResolvedNum() == 0 ? 0 : s1 / f.getResolvedNum());
+
+
+             if (f.getResolvedNum() != null && f.getResolvedNum() != 0) {
+                 List<Integer> num = patrolTaskMapper.selectNum(f.getCode(), null, lineCode, finalStationCode, finalStartTime, finalEndTime);
+                 int s = num.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
+                 BigDecimal divide = new BigDecimal(s).divide(new BigDecimal(f.getResolvedNum()), 0, BigDecimal.ROUND_HALF_UP);
+                 f.setAverageResponse(divide.intValue());
+
+                 int s1 = faultWortTime.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
+                 BigDecimal bigDecimal = new BigDecimal(s1).divide(new BigDecimal(f.getResolvedNum()), 0, BigDecimal.ROUND_HALF_UP);
+                 f.setAverageResolution(bigDecimal.intValue());
+             } else {
+                 f.setAverageResponse(0);
+                 f.setAverageResolution(0);
+             }
+
          });
         return failureReportIpage;
     }
@@ -469,6 +494,18 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
     public IPage<FailureOrgReport> getFailureOrgReport(Page<FailureOrgReport> page,String lineCode, List<String> stationCode, String startTime, String endTime, List<String> systemCode) {
         //根据当前登录人获取班组权限，管理员获取全部
         List<String> ids = sysBaseApi.getDepartByUser(0);
+        //根据线路关联工区过滤班组
+        if (StrUtil.isNotEmpty(lineCode)) {
+            List<CsWorkAreaModel> workAreaByLineCode = sysBaseApi.getWorkAreaByLineCode(lineCode);
+            if (CollUtil.isNotEmpty(workAreaByLineCode)) {
+                List<String> orgCodeList = new ArrayList<>();
+                for (CsWorkAreaModel csWorkAreaModel : workAreaByLineCode) {
+                    orgCodeList.addAll(csWorkAreaModel.getOrgCodeList());
+                }
+                List<String> orgIds = sysBaseApi.queryOrgIdsByOrgCodes(orgCodeList);
+                ids.retainAll(orgIds);
+            }
+        }
 
         if (CollectionUtil.isEmpty(ids)){
             return page.setRecords(new ArrayList<>()) ;
@@ -512,10 +549,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             } else {
                 f.setLastYearStr("-");
             }
-            List<Integer> num = patrolTaskMapper.selectNum(null, f.getOrgCode(), lineCode, finalStationCode, finalStartTime, finalEndTime);
-            int s = num.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
-            f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
-            f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
+
             List<Integer> faultWortTime =  new ArrayList<>(0);
             if(filterValue){
                 Integer resolveNum = finalOrgResolveMap.get(f.getOrgCode());
@@ -526,8 +560,20 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             }else {
                 faultWortTime = patrolTaskMapper.selectNum1(null, f.getOrgCode(), lineCode, finalStationCode, finalStartTime, finalEndTime);
             }
-            int s1 = faultWortTime.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
-            f.setAverageResolution(f.getResolvedNum() == 0 ? 0 : s1 / f.getResolvedNum());
+
+            if (f.getResolvedNum() != null && f.getResolvedNum() != 0) {
+                List<Integer> num = patrolTaskMapper.selectNum(null, f.getOrgCode(), lineCode, finalStationCode, finalStartTime, finalEndTime);
+                int s = num.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
+                BigDecimal divide = new BigDecimal(s).divide(new BigDecimal(f.getResolvedNum()), 0, BigDecimal.ROUND_HALF_UP);
+                f.setAverageResponse(divide.intValue());
+
+                int s1 = faultWortTime.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
+                BigDecimal bigDecimal = new BigDecimal(s1).divide(new BigDecimal(f.getResolvedNum()), 0, BigDecimal.ROUND_HALF_UP);
+                f.setAverageResolution(bigDecimal.intValue());
+            } else {
+                f.setAverageResponse(0);
+                f.setAverageResolution(0);
+            }
         });
                   return orgReport;
             }
@@ -647,6 +693,19 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             orgCodes = orgCodes.stream().filter(u->report.getOrgCode().contains(u)).collect(Collectors.toList());
             orgIdList = orgIdList.stream().filter(u->departByOrgCode.getId().contains(u)).collect(Collectors.toList());
         }
+        //根据线路关联工区过滤班组
+        if (StrUtil.isNotEmpty(report.getLineCode())) {
+            List<CsWorkAreaModel> workAreaByLineCode = sysBaseApi.getWorkAreaByLineCode(report.getLineCode());
+            if (CollUtil.isNotEmpty(workAreaByLineCode)) {
+                List<String> orgCodeList = new ArrayList<>();
+                for (CsWorkAreaModel csWorkAreaModel : workAreaByLineCode) {
+                    orgCodeList.addAll(csWorkAreaModel.getOrgCodeList());
+                }
+                List<String> orgIds = sysBaseApi.queryOrgIdsByOrgCodes(orgCodeList);
+                orgCodes.retainAll(orgCodeList);
+                orgIdList.retainAll(orgIds);
+            }
+        }
         if(CollUtil.isEmpty(orgCodes)&&(!user.getRoleCodes().contains("admin")||!user.getRoleCodes().contains("director"))) {
             return  pageList.setRecords(new ArrayList<>());
         }
@@ -672,8 +731,8 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             List<Date> endList = statisticsService.getOmitDateScope(endDate);
             Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
             Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
-            omitModel.setStartDate(DateUtil.formatDate(startTime));
-            omitModel.setEndDate(DateUtil.formatDate(endTime));
+            omitModel.setStartDate(DateUtil.formatDateTime(startTime));
+            omitModel.setEndDate(DateUtil.formatDateTime(endTime));
         } else {
             boolean isNowWeek = isNowWeekDate(report.getStartDate(), report.getEndDate());
             isNullDate = isNowWeek;
@@ -681,8 +740,8 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             List<Date> endList = statisticsService.getOmitDateScope(DateUtil.parse(report.getEndDate()));
             Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
             Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
-            omitModel.setStartDate(DateUtil.formatDate(startTime));
-            omitModel.setEndDate(DateUtil.formatDate(endTime));
+            omitModel.setStartDate(DateUtil.formatDateTime(startTime));
+            omitModel.setEndDate(DateUtil.formatDateTime(endTime));
         }
 
         //只查组织机构，做主数据返回，为了条件查询不影响组织机构显示

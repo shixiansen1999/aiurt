@@ -132,4 +132,8 @@ public class PatrolTaskDevice implements Serializable {
     @TableField(exist = false)
     private java.lang.String taskCode;
 
+    /**工单的巡视时长*/
+    @ApiModelProperty(value = "工单的巡视时长")
+    private Integer duration;
+
 }

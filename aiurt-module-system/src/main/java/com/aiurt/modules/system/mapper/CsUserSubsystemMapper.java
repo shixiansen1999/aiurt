@@ -73,7 +73,7 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
      * @param deviceTypeCode
      * @return
      */
-    Long getNum(@Param("time") String time,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
+    Integer getNum(@Param("time") String time,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
 
     /**
      * 年次数
@@ -132,7 +132,7 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
      * @param subsystemCode
      * @return
      */
-    Long getSubsystemFilterFaultDTO(@Param("time") String time, @Param("subsystemCode")String subsystemCode);
+    Integer getSubsystemFilterFaultDTO(@Param("time") String time, @Param("subsystemCode")String subsystemCode);
 
     /**
      * 查询子系统的下的设备分类的维修时长（过滤已挂起的）
@@ -141,5 +141,11 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
      * @param deviceTypeCode
      * @return
      */
-    Long getFilterNum(@Param("time") String time,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
+    Integer getFilterNum(@Param("time") String time,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
+    /**
+     * 年分钟
+     * @param systemCode
+     * @return
+     */
+    List<ListDTO> sysTemYearAllFault(@Param("systemCode") String systemCode);
 }

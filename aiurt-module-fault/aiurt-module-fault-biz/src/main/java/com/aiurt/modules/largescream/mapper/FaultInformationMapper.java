@@ -332,7 +332,7 @@ public interface FaultInformationMapper {
      * @param endTime
      * @return
      */
-    Long getUserTimes(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime") String endTime);
+    Integer getUserTimes(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime") String endTime);
 
     /**
      * 查询施工次数
@@ -428,5 +428,5 @@ public interface FaultInformationMapper {
      * @param endTime
      * @return
      */
-    Long getFilterUserTimes(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime") String endTime);
+    Integer getFilterUserTimes(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime") String endTime);
 }
