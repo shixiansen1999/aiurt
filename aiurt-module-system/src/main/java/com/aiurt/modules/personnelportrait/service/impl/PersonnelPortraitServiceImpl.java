@@ -391,10 +391,10 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         }
 
         String orgName = Arrays.asList(majorName, sysUser.getOrgName()).stream()
-                .filter(StrUtil::isEmpty).collect(Collectors.joining("/"));
+                .filter(StrUtil::isNotEmpty).collect(Collectors.joining("/"));
         // 用户表上的岗位字段没用上，因为没有维护，确认过先用角色
         String post = Arrays.asList(roleName, level).stream()
-                .filter(StrUtil::isEmpty).collect(Collectors.joining("-"));
+                .filter(StrUtil::isNotEmpty).collect(Collectors.joining("-"));
 
         userDetail.setUserId(sysUser.getId());
         userDetail.setPicurl(sysUser.getAvatar());
