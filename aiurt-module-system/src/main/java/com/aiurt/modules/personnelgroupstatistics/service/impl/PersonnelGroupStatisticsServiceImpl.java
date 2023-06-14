@@ -41,10 +41,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -93,6 +90,10 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             ///获取所有班组检修参数数据
             Map<String, PersonnelTeamDTO> teamInformation = overhaulApi.teamInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), list);
 
+            // 2023-06通信6期工时修改。由于之前获取检修工时的代码和其他的耦合的太厉害，单独写一个获取检修工时的代码
+            // teamInspecitonTotalTimeMap里面key是班组id，value是总检修时长
+            Map<String, Integer> teamInspecitonTotalTimeMap =  overhaulApi.getTeamInspecitonTotalTime(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), list);
+
             for (GroupModel model : personnelGroupModels) {
                 String teamId = model.getTeamId();
                 //获取每一个班组巡检参数数据
@@ -126,18 +127,21 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 //获取每一个班组检修参数数据
                 PersonnelTeamDTO personnelTeamDTO = teamInformation.get(teamId);
                 if (ObjectUtil.isNotEmpty(personnelTeamDTO)) {
-                    model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
+                    // model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
                     model.setInspecitonScheduledTasks(Convert.toStr(personnelTeamDTO.getPlanTaskNumber()));
                     model.setInspecitonCompletedTasks(Convert.toStr(personnelTeamDTO.getCompleteTaskNumber()));
                     model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate())+"%");
                     model.setInspecitonMissingChecks("-");
                 }else {
-                    model.setInspecitonTotalTime("0");
+                    // model.setInspecitonTotalTime("0");
                     model.setInspecitonScheduledTasks("0");
                     model.setInspecitonCompletedTasks("0");
                     model.setInspecitonPlanCompletion("0%");
                     model.setInspecitonMissingChecks("-");
                 }
+                // 班组的总检修时长
+                Integer inspecitonTotalTime = Optional.ofNullable(teamInspecitonTotalTimeMap.get(teamId)).orElseGet(() -> 0);
+                model.setInspecitonTotalTime(Convert.toStr(inspecitonTotalTime));
 
                 //培训完成次数
                 Integer integer = personnelGroupStatisticsMapper.groupTrainFinishedNum(model.getTeamId(), startTime, endTime);
@@ -181,6 +185,15 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             //获取所有人员检修参数数据
             Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), ids, null, userIds);
 
+            // 2023-06通信6期工时修改。由于之前获取检修工时的代码和其他的耦合的太厉害，单独写一个获取检修工时的代码
+            // 因为获取检修工时的代码是复用到大屏班组画像的，需要的是LoginUser的List对象
+            List<LoginUser> userList = userIds.stream().map(userId -> {
+                LoginUser loginUser = new LoginUser();
+                loginUser.setId(userId);
+                return loginUser;
+            }).collect(Collectors.toList());
+            Map<String, Integer> userInspecitonTotalTimeMap = overhaulApi.getUserInspecitonTotalTime(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), userList);
+
             for (PersonnelModel model : personnelModels) {
                 String userId = model.getUserId();
                 //获取每一个人员巡检参数数据
@@ -213,18 +226,22 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 //获取每一个人员检修参数数据
                 PersonnelTeamDTO personnelTeamDTO = personnelInformation.get(userId);
                 if (ObjectUtil.isNotEmpty(personnelTeamDTO)) {
-                    model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
+                    // model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
                     model.setInspecitonScheduledTasks(Convert.toStr(personnelTeamDTO.getPlanTaskNumber()));
                     model.setInspecitonCompletedTasks(Convert.toStr(personnelTeamDTO.getCompleteTaskNumber()));
                     model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate())+"%");
                     model.setInspecitonMissingChecks("-");
                 } else {
-                    model.setInspecitonTotalTime("0");
+                    // model.setInspecitonTotalTime("0");
                     model.setInspecitonScheduledTasks("0");
                     model.setInspecitonCompletedTasks("0");
                     model.setInspecitonPlanCompletion("0%");
                     model.setInspecitonMissingChecks("-");
                 }
+                // 个人的检修时长
+                Integer inspecitonTotalTime = Optional.ofNullable(userInspecitonTotalTimeMap.get(userId)).orElseGet(() -> 0);
+                model.setInspecitonTotalTime(Convert.toStr(inspecitonTotalTime));
+
                 //培训完成次数
                 List<TrainTaskDTO> trainTaskDtos = personnelGroupStatisticsMapper.userTrainFinishedNum(model.getUserId(), startTime, endTime);
                 int size = trainTaskDtos.size();

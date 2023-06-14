@@ -7,6 +7,7 @@ import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.api.OverhaulApi;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.personnelteam.mapper.PersonnelTeamMapper;
@@ -30,9 +31,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -60,6 +59,10 @@ public class OverhaulStatisticsService{
     private PersonnelTeamMapper personnelTeamMapper;
     @Autowired
     private ISysParamAPI sysParamApi;
+
+    @Autowired
+    private OverhaulApi overhaulApi;
+
 
     public Page<OverhaulStatisticsDTOS> getOverhaulList(Page<OverhaulStatisticsDTOS> pageList, OverhaulStatisticsDTOS condition) {
         List<OverhaulStatisticsDTOS> dtoList2 = this.selectDepart(condition.getOrgCode());
@@ -97,18 +100,24 @@ public class OverhaulStatisticsService{
 
         if(CollectionUtil.isNotEmpty(statisticsDTOList)){
             for (OverhaulStatisticsDTOS statisticsDTOS : records) {
-                OverhaulStatisticsDTOS dtos = statisticsDTOList.stream().filter(s -> s.getOrgCode().equals(statisticsDTOS.getOrgCode())).findFirst().orElse(new OverhaulStatisticsDTOS());
+                OverhaulStatisticsDTOS dtos = statisticsDTOList.stream().filter(s -> s.getOrgCode().equals(statisticsDTOS.getOrgCode())).findFirst().orElseGet(()->null);
                 if (ObjectUtil.isNotEmpty(dtos)) {
-                    BeanUtil.copyProperties(dtos,statisticsDTOS);
+                    BeanUtil.copyProperties(dtos,statisticsDTOS, "orgId", "orgName");
                 }
             }
         }
         if(CollectionUtil.isNotEmpty(nameList)) {
             dtoList1.removeAll(nameList);
             nameList.addAll(dtoList1);
+        }else{
+            nameList.addAll(dtoList1);
         }
 
         countOverhaulStatisticList(condition, nameList);
+
+        // 2023-06通信6期 工时修改，获取每个人的检修工时，并赋值回nameList
+        getMaintenanceDuration(condition, nameList);
+
         buildStatistic(condition, records, nameList);
         return allTaskList;
     }
@@ -153,16 +162,32 @@ public class OverhaulStatisticsService{
             q.setNotCompletedNumber(0L);
             q.setTaskTotal(0L);
         }
+
+        // 2023-06通信6期 工时修改了
         //作为同行人的工时
-        PersonnelTeamDTO userPeerTime = personnelTeamMapper.getUserPeerTime(StrUtil.isNotEmpty(q.getUserId()) ? q.getUserId() : null, condition.getStartDate(), condition.getEndDate());
-        BigDecimal time1 = q.getMaintenanceDuration() != null ? q.getMaintenanceDuration() : new BigDecimal(0);
-        BigDecimal time2 = userPeerTime.getCounter() != null ? userPeerTime.getInspecitonTotalTime() : new BigDecimal(0);
-        BigDecimal sum = time1.add(time2);
-        BigDecimal bigDecimal = sum.divide(new BigDecimal(3600), 2, BigDecimal.ROUND_HALF_UP);
-        q.setMaintenanceDuration(bigDecimal);
+        // PersonnelTeamDTO userPeerTime = personnelTeamMapper.getUserPeerTime(StrUtil.isNotEmpty(q.getUserId()) ? q.getUserId() : null, condition.getStartDate(), condition.getEndDate());
+        // BigDecimal time1 = q.getMaintenanceDuration() != null ? q.getMaintenanceDuration() : new BigDecimal(0);
+        // BigDecimal time2 = userPeerTime.getCounter() != null ? userPeerTime.getInspecitonTotalTime() : new BigDecimal(0);
+        // BigDecimal sum = time1.add(time2);
+        // BigDecimal bigDecimal = sum.divide(new BigDecimal(3600), 2, BigDecimal.ROUND_HALF_UP);
+        // q.setMaintenanceDuration(bigDecimal);
+
         //完成率
         getCompletionRate(q);
 
+    }
+
+    private void getMaintenanceDuration(OverhaulStatisticsDTOS condition, List<OverhaulStatisticsDTO> nameList){
+        List<LoginUser> userList = nameList.stream().map(overhaulStatisticsDTO -> {
+            LoginUser loginUser = new LoginUser();
+            loginUser.setId(overhaulStatisticsDTO.getUserId());
+            return loginUser;
+        }).collect(Collectors.toList());
+        Map<String, Integer> userInspecitonTotalTimeMap = overhaulApi.getUserInspecitonTotalTime(condition.getStartDate(), condition.getEndDate(), userList);
+        nameList.forEach(overhaulStatisticsDTO->{
+            Integer maintenanceDuration = Optional.ofNullable(userInspecitonTotalTimeMap.get(overhaulStatisticsDTO.getUserId())).orElseGet(() -> 0);
+            overhaulStatisticsDTO.setMaintenanceDuration(maintenanceDuration);
+        });
     }
 
     private void buildStatistic(OverhaulStatisticsDTOS condition, List<OverhaulStatisticsDTOS> records, List<OverhaulStatisticsDTO> nameList) {
@@ -178,7 +203,7 @@ public class OverhaulStatisticsService{
                     e.setTaskTotal(0L);
                 }
                 if (e.getMaintenanceDuration()==null){
-                    e.setMaintenanceDuration(new BigDecimal(0));
+                    e.setMaintenanceDuration(0);
                 }
                 //完成率
                 getCompletionRate(e);
@@ -190,10 +215,10 @@ public class OverhaulStatisticsService{
                     List<String> collect2 = collect.stream().map(OverhaulStatisticsDTO::getUserId).collect(Collectors.toList());
                     if (CollectionUtil.isNotEmpty(collect2)){
                         //班组总工时等于所有人员工时累加
-                        BigDecimal reduce = collect.stream().map(OverhaulStatisticsDTO::getMaintenanceDuration).reduce(BigDecimal.ZERO, BigDecimal::add);
+                        Integer reduce = collect.stream().map(OverhaulStatisticsDTO::getMaintenanceDuration).reduce(0, Integer::sum);
                         e.setMaintenanceDuration(reduce);
                     }else {
-                        e.setMaintenanceDuration(new BigDecimal(0));
+                        e.setMaintenanceDuration(0);
                     }
 
                 }

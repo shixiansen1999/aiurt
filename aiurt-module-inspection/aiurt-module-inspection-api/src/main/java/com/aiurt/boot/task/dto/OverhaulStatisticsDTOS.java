@@ -72,7 +72,7 @@ public class OverhaulStatisticsDTOS {
     @TableField(exist = false)
     @Excel(name = "总检修时长", width = 15)
     @ApiModelProperty(value = "总检修时长")
-    private BigDecimal maintenanceDuration;
+    private Integer maintenanceDuration;
 
     /**计划检修总数*/
     @TableField(exist = false)

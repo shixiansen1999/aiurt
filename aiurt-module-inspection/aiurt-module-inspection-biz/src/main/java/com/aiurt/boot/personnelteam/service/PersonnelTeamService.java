@@ -6,8 +6,12 @@ import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.api.OverhaulApi;
+import com.aiurt.boot.bigscreen.mapper.BigScreenPlanMapper;
+import com.aiurt.boot.index.dto.TaskUserDTO;
+import com.aiurt.boot.index.dto.TeamUserDTO;
 import com.aiurt.boot.personnelteam.mapper.PersonnelTeamMapper;
 import com.aiurt.boot.task.dto.PersonnelTeamDTO;
+import io.prometheus.client.Collector;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -15,10 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -35,6 +37,9 @@ public class PersonnelTeamService implements OverhaulApi {
 
     @Autowired
     private PersonnelTeamMapper personnelTeamMapper;
+
+    @Autowired
+    private BigScreenPlanMapper bigScreenPlanMapper;
 
       @Override
       public Map<String, PersonnelTeamDTO> personnelInformation (Date startDate, Date endDate, List<String> teamId,String userId,List<String> userIds){
@@ -162,6 +167,70 @@ public class PersonnelTeamService implements OverhaulApi {
         return new HashMap<>(16);
     }
 
+    @Override
+    public Map<String, Integer> getTeamInspecitonTotalTime(Date startTime, Date endTime, List<String> teamIdList) {
+        Map<String,Integer> teamInspecitonTotalTime = new ConcurrentHashMap<>();
+        // 获取班组下的成员列表，根据班组id为key组成一个map
+        Map<String, List<LoginUser>> userMap = sysBaseAPI.getUseList(teamIdList)
+                .stream()
+                .collect(Collectors.groupingBy(LoginUser::getOrgId));
+        //线程处理
+        ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
+        teamIdList.forEach(teamId->{
+            threadPoolExecutor.execute(()->{
+                List<LoginUser> userList = userMap.get(teamId);
+                Map<String, Integer> userInspecitonTotalTimeMap = getUserInspecitonTotalTime(startTime, endTime, userList);
+                int sum = userInspecitonTotalTimeMap.values().stream().mapToInt(Integer::intValue).sum();
+                teamInspecitonTotalTime.put(teamId, sum);
+            });
+        });
+        threadPoolExecutor.shutdown();
+        try {
+            // 等待线程池中的任务全部完成
+            threadPoolExecutor.awaitTermination(100, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            // 处理中断异常
+            log.info("循环方法的线程中断异常, {}", e.getMessage());
+        }
+
+        return teamInspecitonTotalTime;
+    }
+
+    @Override
+    public Map<String, Integer> getUserInspecitonTotalTime(Date startTime, Date endTime, List<LoginUser> userList) {
+        Map<String, Integer> userInspecitonTotalTimeMap = new HashMap<>();
+        //获取检修任务人员个人总工时和同行人个人总工时
+        Map<String, Long> collect1;
+        Map<String, Long> collect2;
+
+        // 使用大屏的统计工时的方法，需要转成TeamUserDTO类的user列表
+        List<TeamUserDTO> users = userList.stream().map(u -> {
+            TeamUserDTO teamUserDTO = new TeamUserDTO();
+            teamUserDTO.setUserId(u.getId());
+            return teamUserDTO;
+        }).collect(Collectors.toList());
+
+        List<TeamUserDTO> reconditionTime = bigScreenPlanMapper.getReconditionTime(users, startTime, endTime);
+        List<TeamUserDTO> reconditionTimeByPeer = bigScreenPlanMapper.getReconditionTimeByPeer(users, startTime, endTime);
+        collect1 = reconditionTime.stream().collect(Collectors.toMap(TeamUserDTO::getUserId,
+                v -> ObjectUtil.isEmpty(v.getTime()) ? 0L : v.getTime(), (a, b) -> a));
+        collect2 = reconditionTimeByPeer.stream().collect(Collectors.toMap(TeamUserDTO::getUserId,
+                v -> ObjectUtil.isEmpty(v.getTime()) ? 0L : v.getTime(), (a, b) -> a));
+        for (TeamUserDTO teamUserDTO : users){
+            //获取检修个人总总工时
+            Long hours = collect1.get(teamUserDTO.getUserId());
+            Long peerHours = collect2.get(teamUserDTO.getUserId());
+            long time = 0L;
+            if (hours != null) {
+                time = time + hours;
+            }
+            if (peerHours != null) {
+                time = time + peerHours;
+            }
+            userInspecitonTotalTimeMap.put(teamUserDTO.getUserId(), (int)time);
+        }
+        return userInspecitonTotalTimeMap;
+    }
 
 
     public Map<String, PersonnelTeamDTO> getTeamList(Date startDate, Date endDate, List<String> teamId , List<String> codeList){
