@@ -290,4 +290,20 @@ public interface SysParamCodeConstant {
      * 故障调度处理完，回调云轨的系统id
      */
     String FAULT_EXTERNAL_SYSTEM_ID = "fault_external_system_id";
+    /**
+     * 根据配置决定故障上报是否开启控制中心班组自检故障指派功能及权限
+     */
+    String FAULT_CENTER_ADD = "fault_center_add";
+    /**
+     * 根据配置获取控制中心班组
+     */
+    String FAULT_CENTER_ADD_ORG = "fault_center_add_org";
+    /**
+     * 根据配置获取控制中心站点
+     */
+    String FAULT_CENTER_ADD_STATION = "fault_center_add_station";
+    /**
+     * 根据配置决定控制中心成员能否领取正线站点故障，开启时表示不能
+     */
+    String FAULT_CENTER_RECEIVE = "fault_center_receive";
 }
