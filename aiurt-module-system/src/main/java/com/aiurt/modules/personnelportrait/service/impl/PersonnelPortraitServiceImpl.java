@@ -708,7 +708,10 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
 
         // 工龄
         List<LoginUser> senioritys = sysUserMapper.getSeniorityNumber(orgCode);
-        Map<String, Date> senioritysMap = senioritys.stream().collect(Collectors.toMap(k -> k.getId(), v -> v.getWorkingTime()));
+        Map<String, Date> senioritysMap = new HashMap<>(16);
+        for (LoginUser seniority : senioritys) {
+            senioritysMap.put(seniority.getId(), seniority.getWorkingTime());
+        }
         List<String> seniorityUserId = senioritys.stream()
                 .map(LoginUser::getId)
                 .filter(ObjectUtil::isNotEmpty)
@@ -841,9 +844,13 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         if (ObjectUtil.isNotEmpty(senioritysMap.get(id))) {
             Date now = new Date();
             double currentValue = DateUtil.between(senioritysMap.get(id), now, DateUnit.DAY);
-            List<Date> values = senioritysMap.values().stream().collect(Collectors.toList());
+            boolean existEmpty = senioritysMap.values().stream().distinct().anyMatch(ObjectUtil::isEmpty);
+            List<Date> values = senioritysMap.values().stream()
+                    .filter(ObjectUtil::isNotEmpty)
+                    .distinct()
+                    .collect(Collectors.toList());
             double maxValue = DateUtil.between(Collections.max(values), now, DateUnit.DAY);
-            double minValue = DateUtil.between(Collections.min(values), now, DateUnit.DAY);
+            double minValue = existEmpty ? 0 : DateUtil.between(Collections.min(values), now, DateUnit.DAY);
             seniority = CommonUtils.calculateScore(currentValue, maxValue, minValue, false);
         }
         return new RadarResDTO(handle, efficiency, performance, aptitude, seniority);
