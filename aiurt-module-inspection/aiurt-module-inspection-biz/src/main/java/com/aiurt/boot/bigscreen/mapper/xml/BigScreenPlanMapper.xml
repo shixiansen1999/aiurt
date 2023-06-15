@@ -95,7 +95,7 @@
 <select id="getInspecitonTotalTime" resultType="com.aiurt.boot.index.dto.TaskUserDTO">
     SELECT
     rt.id as taskId,
-    rt.duration as inspecitonTotalTime
+    sum(rt.duration) as inspecitonTotalTime
     FROM
     repair_pool rp
     LEFT JOIN repair_task rt ON rp.`code` = rt.`code`
@@ -115,24 +115,23 @@
 <select id="getInspecitonTotalTimeByPeer" resultType="com.aiurt.boot.index.dto.TaskUserDTO">
     SELECT
     rt.id as taskId,
-    rt.duration as inspecitonTotalTime
+    sum(rt.duration) as inspecitonTotalTime
     FROM
     repair_pool rp
-    LEFT JOIN repair_task rt ON rp.`code` = rt.`code`
+    INNER JOIN repair_task rt ON rp.`code` = rt.`code`
+    RIGHT JOIN (SELECT rtdr.repair_task_id
+    FROM repair_task_peer_rel rtpr
+    INNER JOIN repair_task_device_rel rtdr ON rtpr.repair_task_device_code = rtdr.`code`
+    AND rtpr.user_id in
+    <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
+        #{item.id}
+    </foreach>
+    ) AS t ON t.repair_task_id = rt.id
     WHERE rt.del_flag = 0 AND
     CASE
     WHEN rp.is_manual=0 THEN DATE_FORMAT(rp.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rp.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
     WHEN rp.is_manual=1 THEN DATE_FORMAT(rt.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rt.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
     END
-    AND rt.id IN
-    ( SELECT rtdr.repair_task_id
-    FROM repair_task_peer_rel rtpr
-    LEFT JOIN repair_task_device_rel rtdr ON rtpr.repair_task_device_code = rtdr.`code`
-    AND rtpr.user_id in
-    <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
-        #{item.id}
-    </foreach>
-    GROUP BY rtdr.repair_task_id )
     GROUP BY rt.id
     </select>
 
