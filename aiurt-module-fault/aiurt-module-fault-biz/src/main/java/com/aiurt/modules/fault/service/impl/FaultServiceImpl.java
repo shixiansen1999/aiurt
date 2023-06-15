@@ -959,7 +959,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             repairRecord.setRefuseAssignTime(new Date());
             repairRecord.setRefuseAssignRemark(refuseAssignmentDTO.getRefuseRemark());
         }
-
+        recordMapper.updateById(repairRecord);
 
 
         // 状态-已审批待指派
@@ -1480,22 +1480,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障重新指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
                 //String name = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null);
 
-                /*//发送通知
-                MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),name, "故障指派" + DateUtil.today(), null);
-
-                //业务类型，消息类型，消息模板编码，摘要，发布内容
-                faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-                messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-                messageDTO.setMsgAbstract("有一个新的故障维修任务");
-                messageDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
-
-                sendMessage(messageDTO,faultMessageDTO);*/
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        //获取故障任务的挂起时长
-        int faultHangUpTime= fault.getHangUpTime() != null ? fault.getHangUpTime() : 0;
 
         // 已解决
         SysParamModel submitParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_AUDIT);
@@ -1551,7 +1539,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         //维修时间减去挂起时长
         int repairDuration1 = fault.getRepairDuration() != null ? fault.getRepairDuration() : 0;
         long repairDuration = DateUtil.between(one.getEndTime(), one.getReceviceTime(), DateUnit.SECOND);
-
+        if (ObjectUtil.isNull(repairDuration)) {
+            repairDuration = 0L;
+        }
         one.setRepairDuration((int) repairDuration - oneHangUpTime);
 
         fault.setRepairDuration(one.getRepairDuration() + repairDuration1);

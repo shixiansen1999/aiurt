@@ -702,20 +702,32 @@ public class PatrolApiServiceImpl implements PatrolApi {
                 threadPoolExecutor.execute(() -> {
                     PatrolReport report1 = Optional.ofNullable(patrolReportList).orElse(Collections.emptyList()).stream().filter(p ->StrUtil.isNotEmpty(p.getUserId()) && p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
                     PatrolReport report2 = Optional.ofNullable(patrolReportAccompanyList).orElse(Collections.emptyList()).stream().filter(p ->StrUtil.isNotEmpty(p.getUserId()) && p.getUserId().equals(dto.getUserId())).findFirst().orElse(null);
-                    if (ObjectUtil.isNotNull(report1)) {
-                        dto.setPlanTaskNumber(report1.getTaskTotal());
-                        dto.setActualFinishTaskNumber(report1.getInspectedNumber());
-                        // 2023-06-12通信6期，单位改成秒
-                        // BigDecimal scale = NumberUtil.div(report1.getWorkHours(), 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
-                        dto.setWorkHours(report1.getWorkHours());
-                    }
-                    if (ObjectUtil.isNotNull(report1)&&ObjectUtil.isNotNull(report2)) {
-                        dto.setPlanTaskNumber(report1.getTaskTotal() + report2.getTaskTotal());
-                        dto.setActualFinishTaskNumber(report1.getInspectedNumber()+report2.getInspectedNumber());
-                        // 2023-06-12通信6期，单位改成秒
-                        //BigDecimal scale = NumberUtil.div(NumberUtil.add(report1.getWorkHours(),report2.getWorkHours()), 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
-                        dto.setWorkHours((report1.getWorkHours() + report2.getWorkHours()));
-                    }
+                    // if (ObjectUtil.isNotNull(report1)) {
+                    //     dto.setPlanTaskNumber(report1.getTaskTotal());
+                    //     dto.setActualFinishTaskNumber(report1.getInspectedNumber());
+                    //     // 2023-06-12通信6期，单位改成秒
+                    //     // BigDecimal scale = NumberUtil.div(report1.getWorkHours(), 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    //     dto.setWorkHours(report1.getWorkHours());
+                    // }
+                    // if (ObjectUtil.isNotNull(report1)&&ObjectUtil.isNotNull(report2)) {
+                    //     dto.setPlanTaskNumber(report1.getTaskTotal() + report2.getTaskTotal());
+                    //     dto.setActualFinishTaskNumber(report1.getInspectedNumber()+report2.getInspectedNumber());
+                    //     // 2023-06-12通信6期，单位改成秒
+                    //     //BigDecimal scale = NumberUtil.div(NumberUtil.add(report1.getWorkHours(),report2.getWorkHours()), 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    //     dto.setWorkHours((report1.getWorkHours() + report2.getWorkHours()));
+                    // }
+                    // 用户作为巡视人的
+                    Integer taskTotal1 = Optional.ofNullable(report1).map(r1 -> report1.getTaskTotal()).orElseGet(() -> 0);
+                    Integer inspectedNumbe1 = Optional.ofNullable(report1).map(r1 -> report1.getInspectedNumber()).orElseGet(() -> 0);
+                    Integer hour1 = Optional.ofNullable(report1).map(r1 -> report1.getWorkHours()).orElseGet(() -> 0);
+                    // 用户作为同行人的
+                    Integer taskTotal2 = Optional.ofNullable(report2).map(r2 -> report2.getTaskTotal()).orElseGet(() -> 0);
+                    Integer inspectedNumbe2 = Optional.ofNullable(report2).map(r2 -> report2.getInspectedNumber()).orElseGet(() -> 0);
+                    Integer hour2 = Optional.ofNullable(report2).map(r2 -> report2.getWorkHours()).orElseGet(() -> 0);
+
+                    dto.setPlanTaskNumber(taskTotal1 + taskTotal2);
+                    dto.setActualFinishTaskNumber(inspectedNumbe1 + inspectedNumbe2);
+                    dto.setWorkHours(hour1 + hour2);
 
                     dto.setPlanFinishRate(new BigDecimal(0));
                     //计算计划完成率
