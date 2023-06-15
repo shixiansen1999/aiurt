@@ -451,7 +451,8 @@ public class CommonCtroller {
     @GetMapping("/sysuser/queryDepartUserTree")
     @ApiOperation("根据机构人员树")
     public Result<List<SelectTable>> queryDepartUserTree(@RequestParam(value = "majorId",required = false) String majorId,
-                                                         @RequestParam(value = "mark",required = false) String mark) {
+                                                         @RequestParam(value = "mark",required = false) String mark,
+                                                         @RequestParam(value = "username", required = false) String username) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> list = new ArrayList<>();
         if(StrUtil.isNotBlank(mark)){
@@ -460,8 +461,15 @@ public class CommonCtroller {
                 list.add(orgId);
             }
         }
-        List<SelectTable> tables = commonService.queryDepartUserTree(list, null,majorId,null);
+        String ignoreUserId = null;
+        if (StrUtil.isNotEmpty(username)) {
+            ignoreUserId = sysBaseApi.getUserByUserName(username);
+        }
+
+        List<SelectTable> tables = commonService.queryDepartUserTree(list, ignoreUserId,majorId,null);
         return Result.OK(tables);
+
+
     }
 
     @GetMapping("/sysuser/filterDepartUserTree")
