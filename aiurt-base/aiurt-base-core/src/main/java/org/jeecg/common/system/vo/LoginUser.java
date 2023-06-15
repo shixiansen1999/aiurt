@@ -152,6 +152,12 @@ public class LoginUser {
 	/**签名*/
 	private String signatureUrl;
 	/**
+	 * 参加工作时间
+	 */
+	@JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	private Date workingTime;
+	/**
 	 * 入职日期
 	 */
 	@JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")

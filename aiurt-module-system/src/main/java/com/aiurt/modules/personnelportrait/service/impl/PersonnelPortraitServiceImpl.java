@@ -430,8 +430,8 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         String orgCode = sysUser.getOrgCode();
 
         RadarModelDTO handleRadar = this.getHandleNumber(sysUser.getUsername(), usernames);
-        RadarModelDTO performanceRadar = this.getPerformance(userId, sysUser.getOrgCode());
-        RadarModelDTO aptitudeRadar = this.getAptitude(userId, orgCode);
+        RadarModelDTO performanceRadar = this.getPerformance(userId, sysUser.getOrgCode(), loginUsers.size());
+        RadarModelDTO aptitudeRadar = this.getAptitude(userId, orgCode, loginUsers.size());
         RadarModelDTO seniorityRadar = this.getUserSeniority(userId, orgCode);
         RadarModelDTO efficiencyRadar = this.getEfficiency(sysUser.getUsername(), usernames);
 
@@ -463,12 +463,16 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
      * @return
      */
     private RadarModelDTO getEfficiency(String username, List<String> usernames) {
-        List<EfficiencyDTO> efficiencys = personnelPortraitFaultApi.getEfficiency();
-        // 同一所属班组的
-        if (CollUtil.isNotEmpty(usernames) && CollUtil.isNotEmpty(efficiencys)) {
-            efficiencys = efficiencys.stream().filter(l -> usernames.contains(l.getUsername())).collect(Collectors.toList());
-        }
         RadarModelDTO radarModel = new RadarModelDTO();
+        if (CollUtil.isEmpty(usernames)) {
+            return radarModel;
+        }
+        List<EfficiencyDTO> efficiencys = personnelPortraitFaultApi.getEfficiency();
+        if (CollUtil.isEmpty(efficiencys)) {
+            return radarModel;
+        }
+        // 同一所属班组的
+        efficiencys = efficiencys.stream().filter(l -> usernames.contains(l.getUsername())).collect(Collectors.toList());
         if (CollUtil.isNotEmpty(efficiencys)) {
             double currentValue = 0;
             List<Double> values = new ArrayList<>();
@@ -484,7 +488,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
                 return radarModel;
             }
             double maxValue = Collections.max(values);
-            double minValue = Collections.min(values);
+            double minValue = usernames.size() != efficiencys.size() ? 0 : Collections.min(values);
             radarModel.setCurrentValue(currentValue);
             radarModel.setMaxValue(maxValue);
             radarModel.setMinValue(minValue);
@@ -500,14 +504,18 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
      * @return
      */
     private RadarModelDTO getHandleNumber(String username, List<String> usernames) {
-        List<RadarNumberModelDTO> handles = personnelPortraitFaultApi.getHandleNumber();
-        if (CollUtil.isNotEmpty(usernames) && CollUtil.isNotEmpty(handles)) {
-            // 相同的班组
-            handles = handles.stream().filter(l -> usernames.contains(l.getUsername())).collect(Collectors.toList());
+        RadarModelDTO radarModel = new RadarModelDTO();
+        if (CollUtil.isEmpty(usernames)) {
+            return radarModel;
         }
+        List<RadarNumberModelDTO> handles = personnelPortraitFaultApi.getHandleNumber();
+        if (CollUtil.isEmpty(handles)) {
+            return radarModel;
+        }
+        // 相同的班组
+        handles = handles.stream().filter(l -> usernames.contains(l.getUsername())).collect(Collectors.toList());
         List<Integer> values = handles.stream().map(RadarNumberModelDTO::getNumber).collect(Collectors.toList());
 
-        RadarModelDTO radarModel = new RadarModelDTO();
         RadarNumberModelDTO radarNumberModel = handles.stream()
                 .filter(l -> username.equals(l.getUsername()))
                 .findFirst()
@@ -521,7 +529,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         radarModel.setCurrentValue(Double.valueOf(currentValue));
         if (CollUtil.isNotEmpty(values)) {
             Integer maxValue = Collections.max(values);
-            Integer minValue = Collections.min(values);
+            Integer minValue = usernames.size() != handles.size() ? 0 : Collections.min(values);
             radarModel.setMaxValue(Double.valueOf(maxValue));
             radarModel.setMinValue(Double.valueOf(minValue));
         }
@@ -533,9 +541,10 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
      *
      * @param userId
      * @param orgCode
+     * @param orgNumber
      * @return
      */
-    private RadarModelDTO getAptitude(String userId, String orgCode) {
+    private RadarModelDTO getAptitude(String userId, String orgCode, int orgNumber) {
         List<RadarAptitudeModelDTO> aptitudes = sysUserAptitudesMapper.getAptitude(orgCode);
         List<Integer> numbers = aptitudes.stream().map(RadarAptitudeModelDTO::getNumber).collect(Collectors.toList());
 
@@ -543,16 +552,13 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         RadarAptitudeModelDTO radarAptitudeModel = aptitudes.stream()
                 .filter(l -> userId.equals(l.getUserId()))
                 .findFirst()
-                .orElse(null);
-        // 班组其他成员有数据，但是查询的用户不一定有数据
-        if (ObjectUtil.isEmpty(radarAptitudeModel)) {
-            return radarModel;
-        }
-        Integer currentValue = radarAptitudeModel.getNumber();
+                .orElseGet(RadarAptitudeModelDTO::new);
+        Integer number = radarAptitudeModel.getNumber();
+        Integer currentValue = ObjectUtil.isEmpty(number) ? 0 : number;
         radarModel.setCurrentValue(Double.valueOf(currentValue));
         if (CollUtil.isNotEmpty(numbers)) {
             Integer maxValue = Collections.max(numbers);
-            Integer minValue = Collections.min(numbers);
+            Integer minValue = orgNumber != aptitudes.size() ? 0 : Collections.min(numbers);
             radarModel.setMaxValue(Double.valueOf(maxValue));
             radarModel.setMinValue(Double.valueOf(minValue));
         }
@@ -564,26 +570,20 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
      *
      * @param userId
      * @param orgCode
+     * @param orgNumber
      */
-    private RadarModelDTO getPerformance(String userId, String orgCode) {
+    private RadarModelDTO getPerformance(String userId, String orgCode, int orgNumber) {
         // 近一年
         Date date = DateUtil.offsetMonth(new Date(), -12);
         List<RadarPerformanceModelDTO> performances = sysUserPerfMapper.getPerformance(date, orgCode);
-//        List<RadarPerformanceModel> performances = sysUserPerfMapper.getPerformance(date, userIds);
-//        if (CollUtil.isNotEmpty(userIds) && CollUtil.isNotEmpty(performances)) {
-//            performances = performances.stream().filter(l -> userIds.contains(l.getUserId())).collect(Collectors.toList());
-//        }
 
         RadarModelDTO radarModel = new RadarModelDTO();
         RadarPerformanceModelDTO radarPerformanceModel = performances.stream()
                 .filter(l -> userId.equals(l.getUserId()))
                 .findFirst()
-                .orElse(null);
-        // 班组其他成员有数据，但是查询的用户不一定有数据
-        if (ObjectUtil.isEmpty(radarPerformanceModel)) {
-            return radarModel;
-        }
-        double currentValue = radarPerformanceModel.getScore();
+                .orElseGet(RadarPerformanceModelDTO::new);
+        Double score = radarPerformanceModel.getScore();
+        double currentValue = ObjectUtil.isEmpty(score) ? 0 : score;
         radarModel.setCurrentValue(currentValue);
 
         List<Double> scores = performances.stream()
@@ -591,7 +591,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
                 .collect(Collectors.toList());
         if (CollUtil.isNotEmpty(scores)) {
             Double maxValue = Collections.max(scores);
-            Double minValue = Collections.min(scores);
+            Double minValue = orgNumber != performances.size() ? 0.0 : Collections.min(scores);
             radarModel.setMaxValue(maxValue);
             radarModel.setMinValue(minValue);
         }
@@ -607,24 +607,31 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
     private RadarModelDTO getUserSeniority(String userId, String orgCode) {
         List<LoginUser> seniorityNumber = sysUserMapper.getSeniorityNumber(orgCode);
         RadarModelDTO radarModel = new RadarModelDTO();
-        LoginUser maxDateUser = seniorityNumber.stream()
-                .max(Comparator.comparing(LoginUser::getEntryDate))
-                .orElse(null);
-        LoginUser minDateUser = seniorityNumber.stream()
-                .min(Comparator.comparing(LoginUser::getEntryDate))
-                .orElse(null);
+        // 非空参加工作时间
+        List<Date> notEmptyWorkingTimes = seniorityNumber.stream()
+                .filter(l -> ObjectUtil.isNotEmpty(l) && ObjectUtil.isNotEmpty(l.getWorkingTime()))
+                .map(LoginUser::getWorkingTime)
+                .collect(Collectors.toList());
+        // 是否存在日期为空的数据
+        boolean match = seniorityNumber.stream()
+                .map(LoginUser::getWorkingTime)
+                .anyMatch(ObjectUtil::isEmpty);
+        // 都为空则没有所谓的最大值最小值
+        if(CollUtil.isEmpty(notEmptyWorkingTimes)){
+            return radarModel;
+        }
+        Date maxWorkingTime = Collections.max(notEmptyWorkingTimes);
+        Date minWorkingTime = Collections.min(notEmptyWorkingTimes);
         LoginUser currentUser = seniorityNumber.stream()
                 .filter(l -> userId.equals(l.getId()))
                 .findFirst()
-                .orElse(null);
-        if (ObjectUtil.isEmpty(maxDateUser) || ObjectUtil.isEmpty(minDateUser)
-                || ObjectUtil.isEmpty(currentUser)) {
-            return radarModel;
-        }
+                .orElseGet(LoginUser::new);
+        Date workingTime = currentUser.getWorkingTime();
+
         Date date = new Date();
-        long minValue = DateUtil.between(maxDateUser.getEntryDate(), date, DateUnit.DAY);
-        long maxValue = DateUtil.between(minDateUser.getEntryDate(), date, DateUnit.DAY);
-        long currentValue = DateUtil.between(currentUser.getEntryDate(), date, DateUnit.DAY);
+        long minValue = match ? 0 : DateUtil.between(maxWorkingTime, date, DateUnit.DAY);
+        long maxValue = DateUtil.between(minWorkingTime, date, DateUnit.DAY);
+        long currentValue = ObjectUtil.isEmpty(workingTime) ? 0 : DateUtil.between(workingTime, date, DateUnit.DAY);
         radarModel.setCurrentValue((double) currentValue);
         radarModel.setMaxValue((double) maxValue);
         radarModel.setMinValue((double) minValue);
@@ -645,6 +652,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
                 .eq(SysUser::getOrgCode, user.getOrgCode())
                 .list();
         List<String> usernames = userList.stream().map(SysUser::getUsername).collect(Collectors.toList());
+        List<String> userIds = userList.stream().map(SysUser::getId).collect(Collectors.toList());
 
         // 根据ID找到了用户的话至少会有一个用户
         if (CollUtil.isEmpty(userList)) {
@@ -656,21 +664,55 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         Map<String, Integer> handlesMap = handles.stream()
                 .filter(l -> usernames.contains(l.getUsername()))
                 .collect(Collectors.toMap(k -> k.getUsername(), v -> v.getNumber()));
+        List<String> handleUsernames = handles.stream()
+                .map(RadarNumberModelDTO::getUsername)
+                .filter(ObjectUtil::isNotEmpty)
+                .collect(Collectors.toList());
+        List<String> subHandleUsername = CollUtil.subtractToList(usernames, handleUsernames);
+        subHandleUsername.forEach(username -> handlesMap.put(username, 0));
+
         // 效率
         List<EfficiencyDTO> efficiencys = personnelPortraitFaultApi.getEfficiency();
         Map<String, Double> efficiencysMap = efficiencys.stream()
                 .filter(l -> usernames.contains(l.getUsername()))
                 .collect(Collectors.toMap(k -> k.getUsername(), v -> v.getResponseTime() + v.getResolveTime()));
+        List<String> efficiencyUsernames = efficiencys.stream()
+                .map(EfficiencyDTO::getUsername)
+                .filter(ObjectUtil::isNotEmpty)
+                .collect(Collectors.toList());
+        List<String> subEfficiencyUsername = CollUtil.subtractToList(usernames, efficiencyUsernames);
+        subEfficiencyUsername.forEach(username -> efficiencysMap.put(username, 0.0));
+
         // 近一年班组成员绩效
         Date date = DateUtil.offsetMonth(new Date(), -12);
         List<RadarPerformanceModelDTO> performances = sysUserPerfMapper.getPerformance(date, orgCode);
         Map<String, Double> performancesMap = performances.stream().collect(Collectors.toMap(k -> k.getUserId(), v -> v.getScore()));
+        List<String> performanceUserId = performances.stream()
+                .map(RadarPerformanceModelDTO::getUserId)
+                .filter(ObjectUtil::isNotEmpty)
+                .collect(Collectors.toList());
+        List<String> subPerformanceUserId = CollUtil.subtractToList(userIds, performanceUserId);
+        subPerformanceUserId.forEach(uid -> performancesMap.put(uid, 0.0));
+
         // 资质
         List<RadarAptitudeModelDTO> aptitudes = sysUserAptitudesMapper.getAptitude(orgCode);
         Map<String, Integer> aptitudesMap = aptitudes.stream().collect(Collectors.toMap(k -> k.getUserId(), v -> v.getNumber()));
+        List<String> aptitudesUserId = aptitudes.stream()
+                .map(RadarAptitudeModelDTO::getUserId)
+                .filter(ObjectUtil::isNotEmpty)
+                .collect(Collectors.toList());
+        List<String> subAptitudeUserId = CollUtil.subtractToList(userIds, aptitudesUserId);
+        subAptitudeUserId.forEach(uid -> aptitudesMap.put(uid, 0));
+
         // 工龄
         List<LoginUser> senioritys = sysUserMapper.getSeniorityNumber(orgCode);
-        Map<String, Date> senioritysMap = senioritys.stream().collect(Collectors.toMap(k -> k.getId(), v -> v.getEntryDate()));
+        Map<String, Date> senioritysMap = senioritys.stream().collect(Collectors.toMap(k -> k.getId(), v -> v.getWorkingTime()));
+        List<String> seniorityUserId = senioritys.stream()
+                .map(LoginUser::getId)
+                .filter(ObjectUtil::isNotEmpty)
+                .collect(Collectors.toList());
+        List<String> subSeniorityUserId = CollUtil.subtractToList(userIds, seniorityUserId);
+        subSeniorityUserId.forEach(uid -> senioritysMap.put(uid, null));
 
         List<RankingDTO> rankings = new ArrayList<>();
         RankingDTO ranking = null;
