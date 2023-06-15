@@ -1297,7 +1297,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             // 查看站点是否是工区->提交人所在的班组的工区站点，是否就是任务的站点
             List<String> WorkAreaStationCodeList = sysBaseApi.getWorkAreaStationCodeByUserId(sysUser.getId());
             boolean isWorkArea = WorkAreaStationCodeList.contains(stationCode);
-            // 巡视标准时长，单位：分钟
+            // 巡视标准时长，单位：秒
             Integer standardDuration = task.getStandardDuration();
             if (isWorkArea) {
                 // 工区，巡视时长等于上限时长。
@@ -1308,7 +1308,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 if (ObjectUtil.isNull(recentConnectTime)) {
                     updateWrapper.set(PatrolTask::getDuration, standardDuration);
                 }else {
-                    int duration = (int) DateUtil.between(recentConnectTime, new Date(), DateUnit.MINUTE);
+                    int duration = (int) DateUtil.between(recentConnectTime, new Date(), DateUnit.SECOND);
                     // 上限时长(标准工时)判空
                     Integer realDuration = Optional.ofNullable(standardDuration).filter(s -> duration >= s).orElseGet(() -> duration);
                     updateWrapper.set(PatrolTask::getDuration, realDuration);

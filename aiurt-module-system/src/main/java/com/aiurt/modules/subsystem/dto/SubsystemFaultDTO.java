@@ -4,7 +4,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -39,8 +38,8 @@ public class SubsystemFaultDTO {
     private Integer commonFaultNum;
     @ApiModelProperty(value = "故障时长")
     @Excel(name = "故障时长", width = 15)
-    private BigDecimal failureDuration;
-    Long num;
+    private Integer failureDuration;
+    Integer num;
     String name;
     String code;
     /**

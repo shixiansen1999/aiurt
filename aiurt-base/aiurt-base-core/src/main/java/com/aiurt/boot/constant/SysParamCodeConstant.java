@@ -306,4 +306,12 @@ public interface SysParamCodeConstant {
      * 根据配置决定控制中心成员能否领取正线站点故障，开启时表示不能
      */
     String FAULT_CENTER_RECEIVE = "fault_center_receive";
+    /**
+     * 统计报表是否需要过滤通信分部
+     */
+    String 	FILTERING_TEAM = "filtering_team";
+    /**
+     * 通信分部编码
+     */
+    String 	SPECIAL_TEAM = "special_team";
 }

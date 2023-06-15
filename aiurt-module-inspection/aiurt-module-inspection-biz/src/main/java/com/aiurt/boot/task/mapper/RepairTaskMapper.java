@@ -254,6 +254,13 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      */
     List<OverhaulStatisticsDTOS> readTeamList(@Param("condition") OverhaulStatisticsDTOS condition);
 
+    /**
+     * 查询班组所负责的检修的信息
+     * @param condition
+     * @return
+     */
+    List<OverhaulStatisticsDTOS> countTeamList(@Param("condition") OverhaulStatisticsDTOS condition);
+
     Long readTaskList(@Param("condition") OverhaulStatisticsDTOS condition);
 
     /**
@@ -391,4 +398,10 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @return
      */
     Page<OverhaulStatisticsDTOS> getAllTaskList(@Param("pageList") Page<OverhaulStatisticsDTOS> pageList, @Param("condition") OverhaulStatisticsDTOS condition);
+    /**
+     * 查询班组的人员所负责的检修的信息
+     * @param condition
+     * @return
+     */
+    List<OverhaulStatisticsDTO> countUserList(@Param("condition")OverhaulStatisticsDTOS condition);
 }

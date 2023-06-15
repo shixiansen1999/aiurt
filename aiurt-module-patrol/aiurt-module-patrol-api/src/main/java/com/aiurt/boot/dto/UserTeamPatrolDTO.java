@@ -21,8 +21,9 @@ public class UserTeamPatrolDTO {
     private String orgId;
     @ApiModelProperty(value = "班组Id")
     private String orgCode;
+    /**巡视工时 2023-06-12通信6期，单位改成秒*/
     @ApiModelProperty(value = "巡视工时")
-    private BigDecimal workHours;
+    private Integer workHours;
     @ApiModelProperty(value = "计划任务数")
     private Integer planTaskNumber;
     @ApiModelProperty(value = "实际完成任务数")

@@ -121,4 +121,10 @@ public interface WorkAreaMapper extends BaseMapper<WorkArea> {
      * @return
      */
     List<String> getWorkAreaStationCodeByUserId(String userId);
+    /**
+     * 根据线路列表查询
+     * @param lineCode
+     * @return
+     */
+    List<WorkArea> selectWorkAreaListByLineCode(String lineCode);
 }
