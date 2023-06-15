@@ -2753,7 +2753,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
             // 设置解决效率得分
             Double sumResponseTimeResolveTime = efficiencyMap.getOrDefault(recPersonListDTO.getUserName(), new EfficiencyDTO()).getSumResponseTimeResolveTime();
-            recPersonListDTO.setSolutionEfficiencyScore(CommonUtils.calculateScore(sumResponseTimeResolveTime == null ? 0 : sumResponseTimeResolveTime,
+            recPersonListDTO.setSolutionEfficiencyScore(CommonUtils.calculateScore(sumResponseTimeResolveTime == null ? efficiencyScoreMaxMin[0] : sumResponseTimeResolveTime,
                     efficiencyScoreMaxMin[0], efficiencyScoreMaxMin[1], true));
 
             // 设置工龄得分
@@ -2886,8 +2886,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         Double efficiencyMax = Optional.ofNullable(CollUtil.max(efficiency)).orElse(0d);
         Double efficiencyMin = Optional.ofNullable(CollUtil.min(efficiency)).orElse(0d);
 
+        Double multiples = 1.5d;
         if (CollUtil.isNotEmpty(result) && result.size() != efficiencyList.size()) {
-            efficiencyMin = 0d;
+            efficiencyMax = efficiencyMax * multiples;
         }
         // 创建包含最大值和最小值的 Double 数组并返回
         return new Double[]{efficiencyMax, efficiencyMin};
