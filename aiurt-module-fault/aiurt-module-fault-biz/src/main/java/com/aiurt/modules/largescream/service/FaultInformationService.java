@@ -320,7 +320,6 @@ public class FaultInformationService {
             //故障总数
             faultLargeLineInfoDTO.setSum(CollUtil.isNotEmpty(faults) ? faults.size() : 0L);
             for (Fault fault : faults) {
-                faultLargeLineInfoDTO.setLineName(fault.getLineName());
                 if (FaultStatusEnum.Close.getStatus().equals(fault.getStatus())) {
                     solveCount++;
                 }
