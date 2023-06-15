@@ -333,7 +333,7 @@
         FROM
             fault f
         WHERE
-            f.knowledge_id = #{knowledgeId}
+          FIND_IN_SET(#{knowledgeId}, f.knowledge_id) > 0
           AND f.state = 2
           AND f.appoint_user_name is not null
         <if test="userNames!=null and userNames.size()>0">
