@@ -276,7 +276,6 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
 
     <select id="getLargeLineFaultInfo" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault f
-        left join cs_line cl on (f.line_code = cl.line_code  and cl.del_flag = 0)
         <where>
             f.status > 2
             <if test="startDate!=null and endDate!=null">
@@ -849,7 +848,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
 <select id="getFilterFaultOrgReport" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
     select
     IFNULL( sum( f.repair_duration), 0 ) AS num,
-    count(f.id) as num1
+    IFNULL(count(f.id),0) as num1
     from
     fault f
     left join sys_depart sd on f.sys_org_code = sd.org_code and sd.del_flag = 0
@@ -894,7 +893,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
     select
     s.id as userId,
     IFNULL(sum(fr.repair_duration),0) as duration,
-    count(f.id) as num1
+    IFNULL(count(f.id),0) as num1
     from
     fault f
     left join sys_depart sd on f.sys_org_code = sd.org_code and sd.del_flag = 0
