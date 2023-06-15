@@ -1956,7 +1956,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public void submitResult(String faultCode) {
         // update status
         LambdaUpdateWrapper<Fault> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(Fault::getStatus, FaultStatusEnum.NEW_FAULT.getStatus()).eq(Fault::getCode, faultCode);
+        updateWrapper.set(Fault::getStatus, FaultStatusEnum.NEW_FAULT.getStatus())
+                .set(Fault::getState, FaultStatesEnum.DOING.getStatus())
+                .eq(Fault::getCode, faultCode);
         update(updateWrapper);
         Fault fault = isExist(faultCode);
         try {
