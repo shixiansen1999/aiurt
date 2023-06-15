@@ -267,30 +267,19 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         FaultReportDTO f = new FaultReportDTO();
         List<UserTimeDTO> userFaultList = new ArrayList<>();
         List<UserTimeDTO> accompanyFaultList = new ArrayList<>();
+
         if(filterValue){
             f = faultInformationMapper.getFilterFaultOrgReport(startTime,endTime,orgId);
-            //查询指派人任务时长
-            userFaultList = faultInformationMapper.getFilterUserTime(f.getOrgId(),startTime,endTime);
             //查询参与人任务时长
             accompanyFaultList =faultInformationMapper.getFilterAccompanyTime(f.getOrgId(),startTime,endTime);
         }else {
             f = faultInformationMapper.getFaultOrgReport(startTime,endTime,orgId);
-            //查询指派人任务时长
-            userFaultList = faultInformationMapper.getUserTime(f.getOrgId(),startTime,endTime);
             //查询参与人任务时长
             accompanyFaultList =faultInformationMapper.getAccompanyTime(f.getOrgId(),startTime,endTime);
         }
+        f.setOrgId(orgId);
         f.setConstructorsNum(faultInformationMapper.getConstructorsNum(startTime,endTime,orgId));
-        //过滤掉维修负责人和同行人是同一个的工时
-        if (CollUtil.isNotEmpty(accompanyFaultList)) {
-            accompanyFaultList.removeAll(userFaultList);
-        }
 
-        int sum = accompanyFaultList
-                .stream().filter(w-> w.getDuration() !=null)
-                .mapToInt(UserTimeDTO::getDuration)
-                .sum();
-        f.setNum(f.getNum()+sum);
         List<String> str = faultInformationMapper.getConstructionHours(f.getOrgId(),startTime,endTime);
         List<BigDecimal> doubles = new ArrayList<>();
         str.forEach(s -> {
@@ -314,12 +303,17 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         if (f.getNum1()==0){
             f.setRepairTime(0);
         }else {
-
+            // 平均维修时长不需要统计同行人
             BigDecimal bigDecimal = new BigDecimal(f.getNum()).divide(new BigDecimal(f.getNum1()),0, BigDecimal.ROUND_HALF_UP);
             f.setRepairTime(bigDecimal.intValue());
         }
 
-        f.setFailureTime(f.getNum());
+        // 总工时需要统计同行人
+        int sum = accompanyFaultList
+                .stream().filter(w-> w.getDuration() !=null)
+                .mapToInt(UserTimeDTO::getDuration)
+                .sum();
+        f.setFailureTime(f.getNum()+sum);
         BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
         f.setConstructionHours(totalPrice.setScale(2,BigDecimal.ROUND_HALF_UP));
         map.put(f.getOrgId(),f);
@@ -348,13 +342,12 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                     FaultReportDTO faultReportDTO = new FaultReportDTO();
                     int sum = 0;
                     if(filterValue){
-                        faultReportDTO = faultInformationMapper.getFilterFaultUserReport(teamId,startTime,endTime,null,id);
+                        faultReportDTO = faultInformationMapper.getFilterFaultUserReport(null,startTime,endTime,null,id);
                         sum = faultInformationMapper.getFilterUserTimes(id,startTime,endTime);
                     }else {
-                        faultReportDTO = faultInformationMapper.getFaultUserReport(teamId,startTime,endTime,null,id);
+                        faultReportDTO = faultInformationMapper.getFaultUserReport(null,startTime,endTime,null,id);
                         sum = faultInformationMapper.getUserTimes(id,startTime,endTime);
                     }
-                    faultReportDTO.setNum(faultReportDTO.getNum()+sum);
                     List<String> str = faultInformationMapper.getUserConstructionHours(id,startTime,endTime);
                     List<BigDecimal> doubles = new ArrayList<>();
                     str.forEach(s -> {
@@ -377,10 +370,13 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                     if (fau.getNum1()==0){
                         faultReportDTO.setRepairTime(0);
                     }else {
-                        BigDecimal bigDecimal = new BigDecimal(faultReportDTO.getNum()).divide(new BigDecimal(fau.getNum1()),0, BigDecimal.ROUND_HALF_UP);
+                        //平均维修时间不需要加上通信工时
+                        BigDecimal bigDecimal = new BigDecimal(faultReportDTO.getNum()).divide(new BigDecimal(faultReportDTO.getNum1()),0, BigDecimal.ROUND_HALF_UP);
                         faultReportDTO.setRepairTime(bigDecimal.intValue());
                     }
                     faultReportDTO.setConstructorsNum(fau.getConstructorsNum());
+                    //总工时需要加上同行人
+                    faultReportDTO.setNum(faultReportDTO.getNum()+sum);
                     faultReportDTO.setFailureTime(faultReportDTO.getNum());
                     BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
                     faultReportDTO.setConstructionHours(totalPrice.setScale(2,BigDecimal.ROUND_HALF_UP));

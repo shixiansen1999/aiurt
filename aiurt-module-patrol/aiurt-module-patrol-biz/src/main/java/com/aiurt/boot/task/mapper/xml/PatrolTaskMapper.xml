@@ -1051,11 +1051,8 @@
         select ifnull(sum(a.response_duration), 0) as times
         FROM
         fault a
-        LEFT JOIN fault_repair_record c
-        ON a.`code` = c.fault_code
         WHERE
-        a.`status`
-        >0
+        a.`status`>2
         <if test="code != null">
             and a.sub_system_code = #{code}
         </if>
@@ -1078,18 +1075,13 @@
                 #{item}
             </foreach>
         </if>
-        and a.status = 12
 
     </select>
     <select id="selectNum1" resultType="java.lang.Integer">
         select ifnull(sum(a.resolution_duration), 0) as times
         FROM
         fault a
-        LEFT JOIN fault_repair_record c
-        ON a.`code` = c.fault_code
-        WHERE
-        a.`status`
-        >0
+        WHERE 1=1
         <if test="code != null">
             and a.sub_system_code = #{code}
         </if>
@@ -1735,12 +1727,8 @@
  select ifnull(sum(a.resolution_duration), 0) as times
         FROM
         fault a
-        LEFT JOIN fault_repair_record c
-        ON a.`code` = c.fault_code
-        WHERE
-        a.`status`
-        >0
-        and a.hang_up_time is null
+        WHERE 1=1
+         and  a.hang_up_time is null
 <!--        and not EXISTS (select 1 from operation_process where fault_code = a.code and  process_code = 10)-->
         <if test="code != null">
             and a.sub_system_code = #{code}

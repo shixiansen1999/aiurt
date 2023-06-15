@@ -330,9 +330,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         getWorkAreaInformation(departId, depart);
 
         //获取班组维修响应时长
-        List<LoginUser> users= iSysBaseApi.getUserPersonnel(departId);
-        List<String> list = users.stream().map(LoginUser::getId).collect(Collectors.toList());
-        List<FaultRepairRecordDTO> repairDuration = personnelGroupStatisticsMapper.getRepairDuration(list, lastYear, end);
+        List<FaultRepairRecordDTO> repairDuration = personnelGroupStatisticsMapper.getRepairDurationByOrg(departId, lastYear, end);
         getAverageTime(repairDuration, depart);
         return depart;
     }

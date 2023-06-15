@@ -443,15 +443,15 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                  faultWortTime = patrolTaskMapper.selectNum1(f.getCode(), null, lineCode, finalStationCode, finalStartTime, finalEndTime);
              }
 
-
+             //平均响应为响应时间除于故障总数，平均维修为维修时间除于故障总数
              if (f.getResolvedNum() != null && f.getResolvedNum() != 0) {
                  List<Integer> num = patrolTaskMapper.selectNum(f.getCode(), null, lineCode, finalStationCode, finalStartTime, finalEndTime);
                  int s = num.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
-                 BigDecimal divide = new BigDecimal(s).divide(new BigDecimal(f.getResolvedNum()), 0, BigDecimal.ROUND_HALF_UP);
+                 BigDecimal divide = new BigDecimal(s).divide(new BigDecimal(f.getFailureNum()), 0, BigDecimal.ROUND_HALF_UP);
                  f.setAverageResponse(divide.intValue());
 
                  int s1 = faultWortTime.stream().mapToInt(Math::abs).reduce(Integer::sum).orElse(0);
-                 BigDecimal bigDecimal = new BigDecimal(s1).divide(new BigDecimal(f.getResolvedNum()), 0, BigDecimal.ROUND_HALF_UP);
+                 BigDecimal bigDecimal = new BigDecimal(s1).divide(new BigDecimal(f.getFailureNum()), 0, BigDecimal.ROUND_HALF_UP);
                  f.setAverageResolution(bigDecimal.intValue());
              } else {
                  f.setAverageResponse(0);
