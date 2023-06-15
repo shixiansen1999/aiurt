@@ -389,7 +389,7 @@
         ) AS sumResponseTimeResolveTime
         from fault_repair_record frr
         join fault f on frr.fault_code = f.code
-        where frr.del_flag = 0
+        where frr.del_flag = 0 AND f.state = 2
         <if test="userNames!=null and userNames.size()>0">
             AND f.appoint_user_name in
             <foreach collection="userNames" separator="," open="(" close=")" item="username">

@@ -849,8 +849,8 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
                     .filter(ObjectUtil::isNotEmpty)
                     .distinct()
                     .collect(Collectors.toList());
-            double maxValue = DateUtil.between(Collections.max(values), now, DateUnit.DAY);
-            double minValue = existEmpty ? 0 : DateUtil.between(Collections.min(values), now, DateUnit.DAY);
+            double maxValue = DateUtil.between(Collections.min(values), now, DateUnit.DAY);
+            double minValue = existEmpty ? 0 : DateUtil.between(Collections.max(values), now, DateUnit.DAY);
             seniority = CommonUtils.calculateScore(currentValue, maxValue, minValue, false);
         }
         return new RadarResDTO(handle, efficiency, performance, aptitude, seniority);
