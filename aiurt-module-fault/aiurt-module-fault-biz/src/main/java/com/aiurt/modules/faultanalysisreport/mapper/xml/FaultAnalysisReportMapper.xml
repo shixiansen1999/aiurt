@@ -105,6 +105,7 @@
     ( select group_concat(d.name) from
     (select device_code from fault_device where fault_code = f.`code`) a
     left join device d on d.`code` = a.device_code) as deviceName,
+    f.line_code,
     f.station_code,
     f.station_position_code,
     f.fault_phenomenon,

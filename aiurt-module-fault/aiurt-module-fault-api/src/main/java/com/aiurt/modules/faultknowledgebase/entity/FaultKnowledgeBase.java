@@ -144,7 +144,6 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     @ApiModelProperty(value = "状态(0:待审批,1:已审批,2:已驳回)")
     @Dict(dicCode = "fault_status")
     private Integer status;
-
     /**设备类型名称*/
     @Excel(name = "设备类型名称", width = 15)
     @ApiModelProperty(value = "设备类型名称")
@@ -228,5 +227,15 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String modelKey;
 
-
+    /**
+     * 线路line
+     */
+    @ApiModelProperty(value = "线路line")
+    private String lineCode;
+    /**
+     * 线路line
+     */
+    @ApiModelProperty(value = "线路line")
+    @TableField(exist = false)
+    private String lineName;
 }

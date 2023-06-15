@@ -23,8 +23,11 @@ public class FaultKnowledgeBaseModel {
     @TableField(exist = false)
     @ApiModelProperty(value = "专业编码")
     private java.lang.String majorCode;
-
-
+    /**线路名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "线路名称")
+    @Excel(name = "线路", width = 15)
+    private java.lang.String lineName;
     /**专业名称*/
     @TableField(exist = false)
     @ApiModelProperty(value = "专业名称")

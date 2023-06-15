@@ -1848,6 +1848,13 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return sysDictService.dictById(id);
     }
 
+    @Override
+    public String getLineNameByCode(String code) {
+        LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CsLine::getLineCode,code).eq(CsLine::getDelFlag,0);
+        return lineMapper.selectOne(wrapper).getLineName();
+    }
+
     /**
      * 添加定时任务
      *

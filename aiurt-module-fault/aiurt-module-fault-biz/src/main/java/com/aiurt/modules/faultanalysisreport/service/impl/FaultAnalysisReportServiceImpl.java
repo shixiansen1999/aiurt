@@ -9,7 +9,6 @@ import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
-import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.faultanalysisreport.constants.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
@@ -38,7 +37,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -144,6 +146,9 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
             FaultKnowledgeBase faultKnowledgeBase1 = new FaultKnowledgeBase();
             faultKnowledgeBase1.setFaultPhenomenon(faultDTO.getSymptoms());
             faultKnowledgeBase1.setSolution(faultDTO.getSolution());
+            if (faultDTO.getLineCode()!=null){
+                faultKnowledgeBase1.setLineName(faultKnowledgeBaseMapper.translateLine(faultDTO.getLineCode()));
+            }
             faultDTO.setFaultKnowledgeBase(faultKnowledgeBase1);
 
         }

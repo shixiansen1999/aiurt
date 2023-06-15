@@ -5,11 +5,14 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.faultanalysisreport.constants.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
+import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.modules.faulttype.entity.FaultType;
@@ -35,7 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
- /**
+/**
  * @Description: fault_analysis_report
  * @Author: aiurt
  * @Date:   2022-06-23
@@ -56,8 +59,12 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 private FaultTypeMapper faultTypeMapper;
 	 @Autowired
 	 private FaultKnowledgeBaseTypeMapper faultKnowledgeBaseTypeMapper;
+	 @Autowired
+	 private FaultKnowledgeBaseMapper faultKnowledgeBaseMapper;
 	 @Resource
 	 private ISysBaseAPI sysBaseAPI;
+	 @Resource
+	 private FaultMapper faultMapper;
 	/**
 	 * 分页列表查询
 	 *
@@ -219,16 +226,25 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 			 @ApiResponse(code = 200, message = "OK", response = FaultDTO.class)
 	 })
 	 public Result<FaultDTO> getDetail(String id) {
+		 FaultDTO detail=new FaultDTO();
+		 LambdaQueryWrapper<Fault> faultWrapper = new LambdaQueryWrapper<>();
+		 faultWrapper.eq(Fault::getId,id);
+		 Fault fault1 = faultMapper.selectOne(faultWrapper);
 		 FaultAnalysisReport report = faultAnalysisReportService.getById(id);
+		 LambdaQueryWrapper<FaultKnowledgeBase> wrapper1 = new LambdaQueryWrapper<>();
 		 if (ObjectUtil.isNotEmpty(report)) {
 			 LambdaQueryWrapper<Fault> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.eq(Fault::getCode, report.getFaultCode());
 			 Fault fault = faultService.getBaseMapper().selectOne(wrapper);
-			 FaultDTO detail = faultAnalysisReportService.getDetail(fault.getId());
+			 detail = faultAnalysisReportService.getDetail(fault.getId());
+			 detail.setLineCode(fault1.getLineCode());
+			 detail.setLineName(sysBaseAPI.getLineNameByCode(fault1.getLineCode()));
 			 return Result.OK(detail);
 		 }
 
-		 FaultDTO detail = faultAnalysisReportService.getDetail(id);
+		 detail = faultAnalysisReportService.getDetail(id);
+		 detail.setLineCode(fault1.getLineCode());
+		 detail.setLineName(sysBaseAPI.getLineNameByCode(fault1.getLineCode()));
 		 return Result.OK(detail);
 	 }
 

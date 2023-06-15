@@ -12,6 +12,7 @@ import com.aiurt.modules.fault.entity.DeviceChangeSparePart;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultRepairParticipants;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
+import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.fault.service.IDeviceChangeSparePartService;
 import com.aiurt.modules.fault.service.IFaultRepairParticipantsService;
@@ -19,6 +20,7 @@ import com.aiurt.modules.fault.service.IFaultRepairRecordService;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
@@ -43,12 +45,15 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
     @Autowired
     private ISysBaseAPI sysBaseAPI;
 
+
     /**
      * 避免循环依赖，代码解耦肯定是最优解
      */
     @Autowired
     @Lazy
     private IFaultService faultService;
+    @Autowired
+    private FaultMapper faultMapper;
 
     @Autowired
     private IFaultRepairParticipantsService participantsService;
@@ -64,6 +69,11 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
 
         RecordDetailDTO recordDetailDTO = new RecordDetailDTO();
         // 查询故障工单
+        LambdaQueryWrapper<Fault> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Fault::getCode,faultCode);
+        Fault fault1 = faultMapper.selectOne(wrapper);
+        recordDetailDTO.setLineCode(fault1.getLineCode());
+        recordDetailDTO.setLineName(sysBaseAPI.getLineNameByCode(fault1.getLineCode()));
 
         Fault fault = faultService.queryByCode(faultCode);
 
@@ -76,6 +86,7 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
         }
         // 故障历史
         recordDetailDTO.setStatus(fault.getStatus());
+//        recordDetailDT
         List<RepairRecordDetailDTO> detailDTOList = baseMapper.queryRecordByFaultCode(faultCode);
 
         // 参与人

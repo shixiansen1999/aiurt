@@ -36,7 +36,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import liquibase.pro.packaged.I;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -121,6 +120,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 }
             }
             for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {
+                String lineCode = faultKnowledgeBaseMapper.selectById(knowledgeBase.getId()).getLineCode();
+                knowledgeBase.setLineCode(lineCode);
+                knowledgeBase.setLineName(faultKnowledgeBaseMapper.translateLine(lineCode));
                 knowledgeBase.setHaveButton(false);
                 if (StrUtil.isNotBlank(knowledgeBase.getProcessInstanceId()) && StrUtil.isNotBlank(knowledgeBase.getTaskId())) {
                     dealAuthButton(sysUser, knowledgeBase);
@@ -142,8 +144,22 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 knowledgeBase.setDeviceTypeName(deviceType.getName());
             }
         }
+        List<FaultKnowledgeBase> collect=new ArrayList<>();
+        collect.addAll(faultKnowledgeBases);
+        //            筛选站点（暂时）
+        String faultLineCode = faultKnowledgeBase.getLineCode();
+        if(faultKnowledgeBase.getLineCode()!=null){
+            collect = faultKnowledgeBases.stream()
+                    .filter(l -> {
+                        String lineCode = l.getLineCode();
+                        return lineCode != null && faultLineCode != null && lineCode.equals(faultLineCode);
+                    })
+                    .collect(Collectors.toList());
+        }
+//            collect = faultKnowledgeBases.stream()
+//                    .filter(l -> l.getLineCode().equals(faultKnowledgeBase.getLineCode())||l.getLineCode()!=null).collect(Collectors.toList());
         GlobalThreadLocal.setDataFilter(b);
-        return page.setRecords(faultKnowledgeBases);
+        return page.setRecords(collect);
     }
 
     private void dealAuthButton(LoginUser sysUser, FaultKnowledgeBase knowledgeBase) {
@@ -279,35 +295,40 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
         CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
 
+        //线路下拉框
+        List<DictModel> dictModels5 = bean.queryTableDictItemsByCode("cs_line", "line_name", "line_code");
+        Map<String, DictModel> collect10 = dictModels5.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
+        List<DictModel> collect11 = collect10.values().stream().collect(Collectors.toList());
+        selectList(workbook, "线路", 0, 0, collect11);
         //专业下拉框
         List<DictModel> dictModels3 = bean.queryTableDictItemsByCode("cs_major", "major_name", "major_code");
         Map<String, DictModel> collect6 = dictModels3.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
         List<DictModel> collect7 = collect6.values().stream().collect(Collectors.toList());
-        selectList(workbook, "专业", 0, 0, collect7);
+        selectList(workbook, "专业", 1, 1, collect7);
 
         //子系统下拉框
         List<DictModel> dictModels4 = bean.queryTableDictItemsByCode("cs_subsystem", "system_name", "system_code");
         Map<String, DictModel> collect8 = dictModels4.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
         List<DictModel> collect9 = collect8.values().stream().collect(Collectors.toList());
-        selectList(workbook, "子系统", 1, 1, collect9);
+        selectList(workbook, "子系统", 2, 2, collect9);
 
         //知识库类别下拉框
         List<DictModel> dictModels = bean.queryTableDictItemsByCode("fault_knowledge_base_type", "name", "code");
         Map<String, DictModel> collect = dictModels.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
         List<DictModel> collect1 = collect.values().stream().collect(Collectors.toList());
-        selectList(workbook, "知识库类别", 2, 2, collect1);
+        selectList(workbook, "知识库类别", 3, 3, collect1);
 
         //设备类型下拉框
         List<DictModel> dictModels1 = bean.queryTableDictItemsByCode("device_Type", "name", "code");
         Map<String, DictModel> collect2 = dictModels1.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
         List<DictModel> collect3 = collect2.values().stream().collect(Collectors.toList());
-        selectList(workbook, "设备类型", 3, 3, collect3);
+        selectList(workbook, "设备类型", 4, 4, collect3);
 
         //设备组件下拉框
         List<DictModel> dictModels2 = bean.queryTableDictItemsByCode("device_assembly", "material_name", "material_code");
         Map<String, DictModel> collect4 = dictModels2.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
         List<DictModel> collect5 = collect4.values().stream().collect(Collectors.toList());
-        selectList(workbook, "设备组件", 4, 4, collect5);
+        selectList(workbook, "设备组件", 5, 5, collect5);
 
         String fileName = "故障知识库导入模板.xlsx";
 
@@ -420,6 +441,18 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
         String majorCode = null;
         String systemCode = null;
+        String lineCode = null;
+        if(StrUtil.isBlank(faultKnowledgeBaseModel.getLineName())){
+            stringBuilder.append("线路必填，");
+        }else {
+            JSONObject line = sysBaseApi.getLineByName(faultKnowledgeBaseModel.getLineName());
+            if (ObjectUtil.isNotNull(line)){
+                lineCode = line.getString("lineCode");
+                faultKnowledgeBase.setLineCode(lineCode);
+            }else {
+                stringBuilder.append("系统中不存在该线路，");
+            }
+        }
         if(StrUtil.isBlank(faultKnowledgeBaseModel.getMajorName())){
             stringBuilder.append("专业必填，");
         }else {
@@ -444,7 +477,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     stringBuilder.append("系统中该专业下不存在该子系统，");
                 }
             }else {
-                stringBuilder.append("请正确填写专业后，在填写子系统，");
+                stringBuilder.append("请正确填写专业后，再填写子系统，");
             }
 
         }
@@ -487,6 +520,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         if(StrUtil.isNotBlank(faultKnowledgeBaseModel.getMaterialName())){
             String materialName = faultKnowledgeBaseModel.getMaterialName();
             List<DeviceAssemblyDTO> deviceAssemblyCode = faultKnowledgeBaseMapper.getDeviceAssemblyCode(materialName);
+            deviceAssemblyCode.removeIf(Objects::isNull);
             if(CollUtil.isNotEmpty(deviceAssemblyCode)){
                 List<String> collect = deviceAssemblyCode.stream().map(DeviceAssemblyDTO::getMaterialCode).collect(Collectors.toList());
                 if(CollUtil.isNotEmpty(collect)){
@@ -553,6 +587,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             FaultKnowledgeBaseModel faultKnowledgeBaseModel = list.get(i);
             Map<String, String> lm = new HashMap<>(16);
             //错误报告获取信息
+            lm.put("lineName", faultKnowledgeBaseModel.getLineName());
             lm.put("majorName", faultKnowledgeBaseModel.getMajorName());
             lm.put("systemName", faultKnowledgeBaseModel.getSystemName());
             lm.put("knowledgeBaseTypeName", faultKnowledgeBaseModel.getKnowledgeBaseTypeName());

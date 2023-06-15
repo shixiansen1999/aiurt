@@ -87,6 +87,9 @@
         <if test="condition.systemCode != null and condition.systemCode != ''">
             and system_code = #{condition.systemCode}
         </if>
+        <if test="condition.lineCode != null and condition.lineCode != ''">
+            and line_code = #{condition.lineCode}
+        </if>
         <if test="condition.method != null and condition.method != ''">
             and method like concat('%'
               , #{condition.method}
