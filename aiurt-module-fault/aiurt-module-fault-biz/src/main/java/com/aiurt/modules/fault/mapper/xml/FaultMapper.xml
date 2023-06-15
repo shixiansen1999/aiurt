@@ -616,4 +616,58 @@
         </if>
         order by t1.number
     </select>
+    <select id="getStationGraphData" resultType="com.aiurt.modules.fault.dto.StationGraphDTO">
+    SELECT
+            s1.station_code AS source,
+            ifnull(
+                    ( GROUP_CONCAT( DISTINCT s2.station_code )),
+                    ( SELECT station_code FROM cs_station WHERE s1.line_code = line_code AND sort > s1.sort order by sort asc LIMIT 1 )
+	) AS targets
+        FROM
+            cs_station s1
+                LEFT JOIN ( SELECT station_code, line_code, sort, change_code FROM cs_station where  del_flag = 0) s2 ON (
+                    ( s1.line_code = s2.line_code AND s1.station_code != s2.station_code AND s1.sort + 1 = s2.sort )
+                    OR ( s1.change_code = s2.change_code AND s1.station_code != s2.station_code )
+                    OR ( s1.line_code = s2.line_code AND s1.station_code != s2.station_code AND s1.sort -1 = s2.sort )
+                )
+        WHERE
+            s1.station_code IS NOT NULL
+          AND s1.del_flag = 0
+        GROUP BY
+            s1.station_code
+    </select>
+    <select id="getUserStationCodeList" resultType="com.aiurt.modules.fault.dto.UserStationCodeDTO">
+        SELECT
+            sup.create_by AS userName,
+            cs.station_code AS stationCode,
+            cs.station_name AS stationName,
+            cs.line_code AS lineCode
+        FROM
+            sys_user_position sup
+                LEFT JOIN cs_position_wifi cpw ON cpw.mac = sup.bssid
+                LEFT JOIN cs_station cs ON cs.station_code = cpw.station_code
+        WHERE
+            sup.bssid IS NOT NULL AND sup.bssid != ''
+        <if test="userNames!=null and userNames.size()>0">
+            AND sup.create_by in
+            <foreach collection="userNames" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+          AND sup.upload_time >= #{tenMinutesAgo}
+        GROUP BY sup.create_by
+        ORDER BY sup.upload_time DESC
+    </select>
+    <select id="getStationChangeCodeList" resultType="com.aiurt.modules.fault.dto.ChangeCodeDTO">
+        SELECT
+            station_code,
+            change_code
+        FROM
+            cs_station
+        WHERE
+            change_code IS NOT NULL
+          AND change_code != ''
+        GROUP BY
+            station_code
+    </select>
 </mapper>

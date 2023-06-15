@@ -7,6 +7,7 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -71,6 +72,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.*;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -1491,7 +1493,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             fault.setStatus(FaultStatusEnum.RESULT_CONFIRM.getStatus());
             fault.setEndTime(new Date());
             long duration = DateUtil.between(fault.getReceiveTime(), fault.getEndTime(), DateUnit.MINUTE);
-            fault.setDuration(duration>0 ? duration : 1);
+            fault.setDuration(duration > 0 ? duration : 1);
             one.setEndTime(new Date());
 
             // 审核
@@ -2136,8 +2138,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
 
-
-
         IPage<Fault> pageList = this.page(page, queryWrapper);
 
         List<Fault> records = pageList.getRecords();
@@ -2168,7 +2168,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<String> userIds = result.stream().map(RecPersonListDTO::getUserId).collect(Collectors.toList());
         List<String> userNames = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
         String stationCode = fault.getStationCode();
-        String lineCode = fault.getLineCode();
         String deviceTypeCode = getDeviceTypeCodeByFaultCode(faultCode);
 
         // 筛选人员当日排班情况
@@ -2181,7 +2180,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         result = taskSituation(result);
 
         // 计算人员与站点的最短距离
-        result = calculateShortestDistance(result, lineCode, stationCode);
+        result = calculateShortestDistance(result, stationCode);
 
         // 计算评估得分
         result = calculateEvaluationScore(result, userIds, userNames, fault.getKnowledgeId(), deviceTypeCode);
@@ -2198,13 +2197,198 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     /**
      * 计算每个人在结果列表中的最短距离。
      *
-     * @param result      结果列表，包含多个RecPersonListDTO对象
-     * @param lineCode    线路code
-     * @param stationCode 站点code
+     * @param result     结果列表，包含多个RecPersonListDTO对象
+     * @param endStation 结束站点code
      * @return 更新后的结果列表，每个RecPersonListDTO对象的最短距离字段已更新
      */
-    private List<RecPersonListDTO> calculateShortestDistance(List<RecPersonListDTO> result, String lineCode, String stationCode) {
-        return result;
+    private List<RecPersonListDTO> calculateShortestDistance(List<RecPersonListDTO> result, String endStation) {
+        if (CollUtil.isEmpty(result) || StrUtil.isEmpty(endStation)) {
+            return result;
+        }
+
+        String endStationToLineCode = getLineCodeForStation(endStation);
+        List<String> userNames = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
+
+        // 构建站点图
+        Map<String, List<String>> graph = buildGraph();
+
+        // 查出所有换乘站点
+        List<ChangeCodeDTO> changeCodeList = faultMapper.getStationChangeCodeList();
+        Map<String, String> changeCodeMap = convertChangeCodeListToMap(changeCodeList);
+
+        // 用户当前所在站点映射
+        List<UserStationCodeDTO> userStationCodeDTOList = faultMapper.getUserStationCodeList(userNames, getTenMinutesAgo());
+        Map<String, UserStationCodeDTO> userStationCodeMap = convertUserStationCodeDTOListToMap(userStationCodeDTOList);
+
+        return result.stream()
+                .map(re -> {
+                    UserStationCodeDTO userStationCodeDTO = userStationCodeMap.get(re.getUserName());
+                    if (ObjectUtil.isEmpty(userStationCodeDTO)) {
+                        re.setStationName("暂无位置信息");
+                        re.setDistanceText("");
+                        re.setStationNum(Integer.MAX_VALUE);
+                        return re;
+                    }
+
+                    re.setStationName(StrUtil.isNotEmpty(userStationCodeDTO.getStationName()) ? userStationCodeDTO.getStationName() : "暂无位置信息");
+                    List<String> shortestPath = bfsShortestPath(graph, userStationCodeDTO.getStationCode(), endStation);
+                    int shortestDistance = shortestPath.size() - 1;
+
+                    // 如果起点和终点在同一条线上，无需进行换乘计算
+                    if (StrUtil.isNotEmpty(endStationToLineCode) && !endStationToLineCode.equals(userStationCodeDTO.getLineCode())) {
+                        Set<String> changeCodeSet = shortestPath.stream()
+                                .map(changeCodeMap::get)
+                                .filter(StrUtil::isNotEmpty)
+                                .collect(Collectors.toSet());
+                        shortestDistance -= changeCodeSet.size();
+                    }
+
+                    re.setStationNum(shortestDistance < 0 ? Integer.MAX_VALUE : shortestDistance);
+                    re.setDistanceText(shortestDistance < 0 ? "" : String.format("距离故障发生点%d个站", shortestDistance));
+
+                    return re;
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 获取指定站点的线路代码。
+     *
+     * @param endStation 结束站点代码
+     * @return 线路代码，如果未找到相关信息，则返回空字符串
+     */
+    private String getLineCodeForStation(String endStation) {
+        String lineCode = "";
+        JSONObject csStationByCode = sysBaseAPI.getCsStationByCode(endStation);
+        if (ObjectUtil.isNotEmpty(csStationByCode)) {
+            lineCode = csStationByCode.getString("lineCode");
+        }
+        return lineCode;
+    }
+
+    /**
+     * 将ChangeCodeDTO列表转换为Map<String, String>的私有方法。
+     *
+     * @param changeCodeList ChangeCodeDTO对象的列表
+     * @return 转换后的Map，其中键是ChangeCodeDTO的stationCode，值是ChangeCodeDTO的changeCode
+     */
+    private Map<String, String> convertChangeCodeListToMap(List<ChangeCodeDTO> changeCodeList) {
+        List<ChangeCodeDTO> list = Optional.ofNullable(changeCodeList).orElse(CollUtil.newArrayList());
+
+        // 使用流处理对列表进行过滤和转换
+        Map<String, String> changeCodeMap = list.stream()
+                .filter(dto -> dto.getStationCode() != null && dto.getChangeCode() != null)
+                .collect(Collectors.toMap(ChangeCodeDTO::getStationCode, ChangeCodeDTO::getChangeCode, (v1, v2) -> v1));
+
+        return changeCodeMap;
+    }
+
+    /**
+     * 将 UserStationCodeDTO 的列表转换为 Map<String, UserStationCodeDTO>
+     *
+     * @param userStationCodeDTOList 包含用户站点代码数据的列表
+     * @return 转换后的用户站点代码映射，以 Map 形式表示，键为用户名，值为 UserStationCodeDTO
+     */
+    private Map<String, UserStationCodeDTO> convertUserStationCodeDTOListToMap(List<UserStationCodeDTO> userStationCodeDTOList) {
+        List<UserStationCodeDTO> list = Optional.ofNullable(userStationCodeDTOList).orElse(CollUtil.newArrayList());
+
+        // 使用流处理对列表进行过滤和转换
+        Map<String, UserStationCodeDTO> userStationCodeMap = list.stream()
+                .filter(dto -> dto.getUserName() != null && dto.getStationCode() != null)
+                .collect(Collectors.toMap(UserStationCodeDTO::getUserName, dto -> dto));
+
+        return userStationCodeMap;
+    }
+
+    /**
+     * 将 List<StationGraphDTO> 转换为 Map<String, List<String>>
+     *
+     * @param stationGraphDTOList 包含站点图数据的列表
+     * @return 转换后的站点图，以 Map 形式表示，键为源站点，值为目标站点列表
+     */
+    private static Map<String, List<String>> convertToGraph(List<StationGraphDTO> stationGraphDTOList) {
+        Map<String, List<String>> graph = new HashMap<>();
+        if (CollUtil.isEmpty(stationGraphDTOList)) {
+            return CollUtil.newHashMap();
+        }
+
+        for (StationGraphDTO dto : stationGraphDTOList) {
+            String source = dto.getSource();
+            String targets = dto.getTargets();
+            List<String> targetList = new ArrayList<>();
+            if (targets != null && !targets.isEmpty()) {
+                targetList = StrUtil.split(targets, ',');
+            }
+            graph.put(source, targetList);
+        }
+        return graph;
+    }
+
+    /**
+     * 使用广度优先搜索（BFS）算法获取最短路径
+     *
+     * @param graph 图结构（邻接列表表示）
+     * @param start 起始站点
+     * @param end   终点站
+     * @return 最短路径
+     */
+    private static List<String> bfsShortestPath(Map<String, List<String>> graph, String start, String end) {
+        if (StrUtil.isEmpty(start) || StrUtil.isEmpty(end) || MapUtil.isEmpty(graph)) {
+            return CollUtil.newArrayList();
+        }
+
+        // 存储节点和路径的队列
+        Queue<Map.Entry<String, List<String>>> queue = new LinkedList<>();
+        // 记录已访问的节点和其前驱节点
+        Map<String, String> visited = new HashMap<>();
+        // 最短路径
+        List<String> shortestPath = new ArrayList<>();
+
+        // 将起始站点加入队列，并标记为已访问
+        queue.offer(new AbstractMap.SimpleEntry<>(start, new ArrayList<>()));
+        visited.put(start, null);
+
+        while (!queue.isEmpty()) {
+            Map.Entry<String, List<String>> entry = queue.poll();
+            String node = entry.getKey();
+            List<String> path = entry.getValue();
+            // 将当前节点添加到路径中
+            path.add(node);
+
+            if (StrUtil.isNotEmpty(node) && node.equals(end)) {
+                // 找到最短路径，更新最短路径变量
+                shortestPath = path;
+                break;
+            }
+
+            // 获取当前节点的邻居节点
+            List<String> neighbors = graph.get(node);
+            if (CollUtil.isNotEmpty(neighbors)) {
+                for (String neighbor : neighbors) {
+                    // 如果邻居节点未被访问过
+                    if (!visited.containsKey(neighbor)) {
+                        // 将邻居节点加入队列
+                        queue.offer(new AbstractMap.SimpleEntry<>(neighbor, new ArrayList<>(path)));
+                        // 标记邻居节点已访问，并记录其前驱节点
+                        visited.put(neighbor, node);
+                    }
+                }
+            }
+        }
+
+        return shortestPath;
+    }
+
+    /**
+     * 构建地铁线路图的图结构
+     *
+     * @return 地铁线路图的图结构（邻接列表表示）
+     */
+    private Map<String, List<String>> buildGraph() {
+        // 人员所在站点映射
+        List<StationGraphDTO> stationGraphList = faultMapper.getStationGraphData();
+        Map<String, List<String>> graph = convertToGraph(stationGraphList);
+        return graph;
     }
 
     /**
@@ -2255,8 +2439,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             // 四舍五入至小数点后两位
             roundEvaluationScores(recPersonListDTO);
 
-            // 所在站点
-            recPersonListDTO.setStationName(setUserStationName(recPersonListDTO.getUserName()));
+//            // 所在站点
+//            recPersonListDTO.setStationName(setUserStationName(recPersonListDTO.getUserName()));
 
             // 翻译人员等级
             recPersonListDTO.setJobGradeName(jobGradeMap.getOrDefault(String.valueOf(recPersonListDTO.getJobGrade()), ""));
@@ -2301,6 +2485,22 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return
      */
     private String setUserStationName(String userName) {
+        Date tenMinutesAgo = getTenMinutesAgo();
+
+        String stationName = faultMapper.getUserStationName(userName, tenMinutesAgo);
+        if (StrUtil.isEmpty(stationName)) {
+            stationName = "暂无位置信息";
+        }
+        return stationName;
+    }
+
+    /**
+     * 获取10分钟之前的时间
+     *
+     * @return
+     */
+    @NotNull
+    private Date getTenMinutesAgo() {
         // 获取当前时间
         Date currentTime = new Date();
 
@@ -2313,12 +2513,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 获取减去10分钟后的时间
         Date tenMinutesAgo = calendar.getTime();
-
-        String stationName = faultMapper.getUserStationName(userName, tenMinutesAgo);
-        if (StrUtil.isEmpty(stationName)) {
-            stationName = "暂无位置信息";
-        }
-        return stationName;
+        return tenMinutesAgo;
     }
 
     /**
@@ -2328,9 +2523,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 用户资质的Map，键为用户ID，值为用户资质名称
      */
     private Map<String, String> convertAptitudeNameListToMap(List<AptitudeDTO> aptitudeNameList) {
-
-        // 使用 Optional.ofNullable() 方法确保 handleNumberList 不为 null
-        // 如果 roleNameList 为 null，则创建一个空列表
         List<AptitudeDTO> list = Optional.ofNullable(aptitudeNameList).orElse(new ArrayList<>());
 
         // 使用流处理对列表进行过滤和转换
@@ -2348,8 +2540,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 用户id与角色名称的映射关系的 Map
      */
     private Map<String, String> convertRoleNameListToMap(List<RoleNameDTO> roleNameList) {
-        // 使用 Optional.ofNullable() 方法确保 handleNumberList 不为 null
-        // 如果 roleNameList 为 null，则创建一个空列表
         List<RoleNameDTO> list = Optional.ofNullable(roleNameList).orElse(new ArrayList<>());
 
         // 使用流处理对列表进行过滤和转换
@@ -2376,6 +2566,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .sorted(Comparator.comparing(RecPersonListDTO::getScheduleStatus).reversed()
                         .thenComparing(Comparator.comparing(RecPersonListDTO::getHandledSameFault).reversed())
                         .thenComparing(RecPersonListDTO::getTaskStatus)
+                        .thenComparing(RecPersonListDTO::getStationNum)
                         .thenComparing(Comparator.comparing(RecPersonListDTO::getEvaluationScore).reversed()))
                 .limit(n)
                 .collect(Collectors.toList());
@@ -2637,8 +2828,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 故障现象与处理次数的映射关系的 Map
      */
     private Map<String, Integer> convertFaultHandCountListByFaultPhenomenonToMap(List<RadarNumberDTO> faultHandCountListByFaultPhenomenon) {
-        // 使用 Optional.ofNullable() 方法确保 handleNumberList 不为 null
-        // 如果 faultHandCountListByFaultPhenomenon 为 null，则创建一个空列表
         List<RadarNumberDTO> list = Optional.ofNullable(faultHandCountListByFaultPhenomenon).orElse(CollUtil.newArrayList());
 
         // 使用流处理对列表进行过滤和转换
@@ -2711,8 +2900,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 转换后的 Map
      */
     public Map<String, Double> convertPerformanceListToMap(List<RadarPerformanceDTO> performanceList) {
-        // 使用 Optional.ofNullable() 方法确保 performanceList 不为 null
-        // 如果 performanceList 为 null，则创建一个空列表
         List<RadarPerformanceDTO> list = Optional.ofNullable(performanceList).orElse(CollUtil.newArrayList());
 
         // 使用流处理对列表进行过滤和转换
@@ -2730,8 +2917,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 转换后的 Map
      */
     public Map<String, EfficiencyDTO> convertEfficiencyListToMap(List<EfficiencyDTO> efficiencyList) {
-        // 使用 Optional.ofNullable() 方法确保 efficiencyList 不为 null
-        // 如果 efficiencyList 为 null，则创建一个空列表
         List<EfficiencyDTO> list = Optional.ofNullable(efficiencyList).orElse(CollUtil.newArrayList());
 
         // 使用流处理对列表进行过滤和转换
@@ -2749,8 +2934,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 转换后的 Map
      */
     public Map<String, Integer> convertAptitudeListToMap(List<RadarAptitudeDTO> aptitudeList) {
-        // 使用 Optional.ofNullable() 方法确保 aptitudeList 不为 null
-        // 如果 aptitudeList 为 null，则创建一个空列表
         List<RadarAptitudeDTO> list = Optional.ofNullable(aptitudeList).orElse(CollUtil.newArrayList());
 
         // 使用流处理对列表进行过滤和转换
@@ -2769,8 +2952,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 转换后的 Map
      */
     public Map<String, Integer> convertHandleNumberListToMap(List<RadarNumberDTO> handleNumberList) {
-        // 使用 Optional.ofNullable() 方法确保 handleNumberList 不为 null
-        // 如果 handleNumberList 为 null，则创建一个空列表
         List<RadarNumberDTO> list = Optional.ofNullable(handleNumberList).orElse(CollUtil.newArrayList());
 
         // 使用流处理对列表进行过滤和转换
@@ -2973,7 +3154,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 Integer status = fault1.getStatus();
                 if (FaultStatusEnum.NEW_FAULT.getStatus().equals(status) || FaultStatusEnum.CANCEL.getStatus().equals(status) || FaultStatusEnum.APPROVAL_REJECT.getStatus().equals(status)) {
                     fault1.setDuration(0L);
-                }  else {
+                } else {
                     fault1.setDuration(DateUtil.between(new Date(), fault1.getHappenTime(), DateUnit.MINUTE));
                 }
             }

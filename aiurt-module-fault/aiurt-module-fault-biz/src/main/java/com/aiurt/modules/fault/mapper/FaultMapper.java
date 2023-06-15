@@ -14,7 +14,6 @@ import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import liquibase.pro.packaged.P;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.PortraitTaskModel;
 
@@ -167,7 +166,6 @@ public interface FaultMapper extends BaseMapper<Fault> {
     List<RecPersonListDTO> getManagedDepartmentUsers(String userId);
 
     /**
-     *
      * @param deviceCode
      * @param oldSparePartCode
      * @return
@@ -176,13 +174,13 @@ public interface FaultMapper extends BaseMapper<Fault> {
 
     /**
      * 查询同种
+     *
      * @param materialCode
      * @return
      */
-    Long countNumBymaterialCode(@Param("materialCode")String materialCode);
+    Long countNumBymaterialCode(@Param("materialCode") String materialCode);
 
     /**
-     *
      * @param newSparePartCode
      * @return
      */
@@ -190,14 +188,16 @@ public interface FaultMapper extends BaseMapper<Fault> {
 
     /**
      * 查询FaultSparePar
+     *
      * @param materialCode
      * @param faultCauseSolutionIdList
      * @return
      */
-    List<FaultSparePart> queryFaultSparePart(@Param("materialCode")String materialCode, @Param("faultCauseSolutionIdList") List<String> faultCauseSolutionIdList);
+    List<FaultSparePart> queryFaultSparePart(@Param("materialCode") String materialCode, @Param("faultCauseSolutionIdList") List<String> faultCauseSolutionIdList);
 
     /**
      * 获取人员当前时间当班情况
+     *
      * @param date
      * @param userId
      * @return
@@ -316,18 +316,41 @@ public interface FaultMapper extends BaseMapper<Fault> {
     /**
      * 根据用户账号查询历史维修任务
      *
-     * @param userName        用户账号
-     * @param symptoms 故障现象
-     * @param deviceTypeCode  设备类型编码
+     * @param userName       用户账号
+     * @param symptoms       故障现象
+     * @param deviceTypeCode 设备类型编码
      * @return
      */
     List<FaultRecDTO> getFaultRecList(@Param("userName") String userName, @Param("symptoms") String symptoms, @Param("deviceTypeCode") String deviceTypeCode);
+
     /**
      * 补充用户当前所在站点
      *
-     * @param userName 用户账号
+     * @param userName      用户账号
      * @param tenMinutesAgo 10分钟前的时间
      * @return
      */
-    String getUserStationName(@Param("userName") String userName, @Param("tenMinutesAgo")Date tenMinutesAgo);
+    String getUserStationName(@Param("userName") String userName, @Param("tenMinutesAgo") Date tenMinutesAgo);
+
+    /**
+     * 获取站点之间的关联关系
+     *
+     * @return
+     */
+    List<StationGraphDTO> getStationGraphData();
+
+    /**
+     * 根据用户ID列表获取用户当前所在的站点代码列表
+     *
+     * @param userNames     用户账号列表
+     * @param tenMinutesAgo 当前时间-10分钟
+     * @return 用户站点代码列表，以 UserStationCodeDTO 的列表形式返回
+     */
+    List<UserStationCodeDTO> getUserStationCodeList(@Param("userNames") List<String> userNames, @Param("tenMinutesAgo") Date tenMinutesAgo);
+
+    /**
+     * 查询换乘站点对应的换乘编码
+     * @return
+     */
+    List<ChangeCodeDTO> getStationChangeCodeList();
 }
