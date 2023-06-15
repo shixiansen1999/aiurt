@@ -148,5 +148,8 @@ public class DeviceChangeSparePart implements Serializable {
     @TableField(exist = false)
     private String specifications;
 
+    @ApiModelProperty(value = "物资主编码")
+    private String materialBaseCode;
+
 
 }

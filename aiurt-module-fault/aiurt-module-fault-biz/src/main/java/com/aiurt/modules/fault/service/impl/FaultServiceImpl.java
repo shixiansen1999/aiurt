@@ -1321,10 +1321,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<SparePartStockDTO> deviceChangeList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("0", sparepart.getConsumables()))
                 .map(sparepart -> {
                     SparePartStockDTO build = SparePartStockDTO.builder()
+                            .materialCode(sparepart.getMaterialBaseCode())
                             .deviceCode(sparepart.getDeviceCode())
                             .newSparePartCode(sparepart.getNewSparePartCode())
                             .name(sparepart.getNewSparePartName())
-                            .materialCode(sparepart.getNewSparePartCode())
                             .newSparePartName(sparepart.getNewSparePartName())
                             .oldSparePartCode(sparepart.getOldSparePartCode())
                             .oldSparePartName(sparepart.getOldSparePartName())
@@ -1542,7 +1542,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
 
         repairRecordService.updateById(one);
-
+        sparePartService.remove(new LambdaQueryWrapper<DeviceChangeSparePart>().eq(DeviceChangeSparePart::getCode, faultCode));
         if (CollUtil.isNotEmpty(deviceChangeList)) {
 
             List<DeviceChangeSparePart> sparePartList = deviceChangeList.stream().map(sparePartStockDTO -> {
@@ -1555,11 +1555,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                         .code(faultCode)
                         .consumables("0")
                         .type(2)
+                        .materialBaseCode(sparePartStockDTO.getMaterialCode())
                         .build();
                 return part;
             }).collect(Collectors.toList());
             sparePartService.saveBatch(sparePartList);
             // 对比标准是否异常
+            fault.setException(0);
             if (CollUtil.isNotEmpty(recordsList)) {
                 List<String> faultCauseSolutionIdList = recordsList.stream().map(FaultCauseUsageRecords::getFaultCauseSolutionId).collect(Collectors.toList());
                 String[] array = faultCauseSolutionIdList.stream().toArray(String[]::new);
@@ -1574,7 +1576,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                         String materialCode = sparePartStockDTO.getMaterialCode();
                         Integer newSparePartNum = sparePartStockDTO.getNewSparePartNum();
                         Integer sparePartNum = sparePartMap.getOrDefault(materialCode, 0);
-                        if (sparePartNum.equals(newSparePartNum)) {
+                        if (!sparePartNum.equals(newSparePartNum)) {
                             fault.setException(1);
                             return;
                         }

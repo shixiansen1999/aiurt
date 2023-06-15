@@ -597,9 +597,10 @@
    </select>
 
     <select id="existDeviceAssemblyCode" resultType="java.lang.Long">
-        select  count(1)  from device_assembly t1 where t1.del_flag = 0 and t1.code = #{newSparePartCode}
+         select SUM(a.num)  from (
+        select  count(1) num from device_assembly t1 where t1.del_flag = 0 and t1.code = #{newSparePartCode}
         union
-        select count(1) from device_change_spare_part t2 where t2.del_flag =0 and t2.new_spare_part_code = #{newSparePartCode}
+        select count(1) num from device_change_spare_part t2 where t2.del_flag =0 and t2.new_spare_part_code = #{newSparePartCode}) a
     </select>
 
     <select id="queryFaultSparePart" resultType="com.aiurt.modules.faultsparepart.entity.FaultSparePart">
