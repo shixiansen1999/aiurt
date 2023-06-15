@@ -43,6 +43,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -471,9 +472,11 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         if (CollUtil.isEmpty(efficiencys)) {
             return radarModel;
         }
-        // 同一所属班组的
+        // 同一所属班组的处理过故障的信息
         efficiencys = efficiencys.stream().filter(l -> usernames.contains(l.getUsername())).collect(Collectors.toList());
         if (CollUtil.isNotEmpty(efficiencys)) {
+            // 最大值的倍数
+            final double multiples = 1.5;
             double currentValue = 0;
             List<Double> values = new ArrayList<>();
             for (EfficiencyDTO e : efficiencys) {
@@ -483,12 +486,10 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
                     currentValue = value;
                 }
             }
-            // 班组其他成员有数据，但是查询的用户不一定有数据
-            if (0 == currentValue) {
-                return radarModel;
-            }
-            double maxValue = Collections.max(values);
-            double minValue = usernames.size() != efficiencys.size() ? 0 : Collections.min(values);
+            // 解决效率的列表数不等于班组用户的人数
+            boolean equality = usernames.size() != efficiencys.size();
+            double maxValue = equality ? Collections.max(values) * multiples : Collections.max(values);
+            double minValue = Collections.min(values);
             radarModel.setCurrentValue(currentValue);
             radarModel.setMaxValue(maxValue);
             radarModel.setMinValue(minValue);
@@ -618,7 +619,7 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
                 .map(LoginUser::getWorkingTime)
                 .anyMatch(ObjectUtil::isEmpty);
         // 都为空则没有所谓的最大值最小值
-        if(CollUtil.isEmpty(notEmptyWorkingTimes)){
+        if (CollUtil.isEmpty(notEmptyWorkingTimes)) {
             return radarModel;
         }
         Date maxWorkingTime = Collections.max(notEmptyWorkingTimes);

@@ -367,7 +367,15 @@ public class CommonUtils {
         double percentage = 1.0 * (currentValue - minValue) / (maxValue - minValue);
         // 解决效率标志
         if (flag) {
-            percentage = 1.0 - percentage;
+            final double one = 1.0;
+            final double zero = 0.0;
+            if (one == percentage) {
+                percentage = zero;
+            } else if (zero == percentage) {
+                percentage = one;
+            } else {
+                percentage = 1.0 - percentage;
+            }
         }
         // 将百分比映射到分数范围
         double score = percentage * (topScore - lowestScore) + lowestScore;
