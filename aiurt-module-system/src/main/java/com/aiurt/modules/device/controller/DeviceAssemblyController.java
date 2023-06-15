@@ -3,6 +3,7 @@ package com.aiurt.modules.device.controller;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.device.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.device.service.IDeviceService;
@@ -11,6 +12,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
@@ -131,5 +134,15 @@ public class DeviceAssemblyController {
             result.success("删除成功!");
         }
         return result;
+    }
+
+    @ApiOperation(value = "根据设备编码查询组件", notes = "根据设备编码查询组件")
+    @GetMapping("/queryDeviceAssemblyByDeviceCode")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "deviceCode", value = "设备编码", required = true, paramType = "query"),
+    })
+    public Result<List<DeviceAssemblyDTO>> queryDeviceAssemblyByDeviceCode(@RequestParam(value = "device", required = false) String deviceCode) {
+        List<DeviceAssemblyDTO> list = iDeviceAssemblyService.queryDeviceAssemblyByDeviceCode(deviceCode);
+        return Result.OK(list);
     }
 }
