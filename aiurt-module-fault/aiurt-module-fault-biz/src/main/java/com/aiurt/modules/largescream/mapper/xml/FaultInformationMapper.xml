@@ -203,8 +203,8 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
                 and f.status = 12
             </if>
             <if test=" condition.weekSolve != null and condition.weekSolve !=''">
-                and date_format(f.end_time ,'%Y-%m-%d') &gt;=  date_format(#{condition.startDate},'%Y-%m-%d')
-                and date_format(f.end_time ,'%Y-%m-%d') &lt;= date_format(#{condition.endDate},'%Y-%m-%d')
+                and date_format(f.approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{condition.startDate},'%Y-%m-%d')
+                and date_format(f.approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{condition.endDate},'%Y-%m-%d')
             </if>
             <if test="condition.todayAdd != null and condition.todayAdd !=''">
                 and date_format(f.happen_time ,'%Y-%m-%d') &gt;=  date_format(#{condition.todayStartDate},'%Y-%m-%d')
@@ -473,6 +473,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         from fault f
         left join fault_knowledge_base_type fk on f.fault_phenomenon = fk.code
         <where>
+             status > 2
             <if test="level == 1">
                 AND f.status &lt;&gt; 12
                 and TIMESTAMPDIFF(HOUR,f.happen_time,now()) &gt;=#{lv1hours}
