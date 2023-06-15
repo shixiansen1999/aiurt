@@ -20,11 +20,11 @@ public class UserTimeDTO {
 
     private Integer duration;
 
-    /**
+  /*  *//**
      * 重写equals方法
      * @param o
      * @return
-     */
+     *//*
     @Override
     public boolean equals(Object o){
         if (o instanceof UserTimeDTO){
@@ -40,6 +40,6 @@ public class UserTimeDTO {
     public int hashCode() {
         String result = userId+frrId;
         return result.hashCode();
-    }
+    }*/
 
 }
