@@ -271,11 +271,11 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         if(filterValue){
             f = faultInformationMapper.getFilterFaultOrgReport(startTime,endTime,orgId);
             //查询参与人任务时长
-            accompanyFaultList =faultInformationMapper.getFilterAccompanyTime(f.getOrgId(),startTime,endTime);
+            accompanyFaultList =faultInformationMapper.getFilterAccompanyTime(orgId,startTime,endTime);
         }else {
             f = faultInformationMapper.getFaultOrgReport(startTime,endTime,orgId);
             //查询参与人任务时长
-            accompanyFaultList =faultInformationMapper.getAccompanyTime(f.getOrgId(),startTime,endTime);
+            accompanyFaultList =faultInformationMapper.getAccompanyTime(orgId,startTime,endTime);
         }
         f.setOrgId(orgId);
         f.setConstructorsNum(faultInformationMapper.getConstructorsNum(startTime,endTime,orgId));
@@ -367,6 +367,8 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                         });
                     });
                     FaultReportDTO  fau = faultInformationMapper.getUserConstructorsNum(id,startTime,endTime);
+
+
                     if (fau.getNum1()==0){
                         faultReportDTO.setRepairTime(0);
                     }else {
