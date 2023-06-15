@@ -573,8 +573,8 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 }
             }
         } else {
-            List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(new LambdaQueryWrapper<DeviceChangeSparePart>().eq(DeviceChangeSparePart::getCode, faultCode));
-            recoverSparePart(deviceChangeSparePartList);
+            /*List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(new LambdaQueryWrapper<DeviceChangeSparePart>().eq(DeviceChangeSparePart::getCode, faultCode));
+            recoverSparePart(deviceChangeSparePartList);*/
         }
 
     }

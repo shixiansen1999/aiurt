@@ -226,6 +226,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     // 负责人
                     .appointUserName(user.getUsername())
                     .knowledgeId(fault.getKnowledgeId())
+                    .faultLevel(fault.getFaultLevel())
+                    .faultLevelCode(fault.getFaultLevel())
                     .build();
 
             repairRecordService.save(record);
@@ -583,9 +585,20 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             saveLog(loginUser, "修改故障工单", fault.getCode(), FaultStatusEnum.APPROVAL_PASS.getStatus(), null);
         }
 
-
-        // 待办任务池，指派
-        //sendTodo(fault.getCode(), RoleConstant.PRODUCTION, null, "故障上报审核", );
+        // 删除
+        faultCauseDetailService.remove(new LambdaQueryWrapper<FaultCauseDetail>().eq(FaultCauseDetail::getFaultCode, fault.getCode()));
+        // 记录使用的故障模板的解决原因
+        List<AnalyzeFaultCauseResDTO> analyzeFaultCauseResDTOList = fault.getAnalyzeFaultCauseResDTOList();
+        if (CollUtil.isNotEmpty(analyzeFaultCauseResDTOList)) {
+            List<FaultCauseDetail> causeDetailList = analyzeFaultCauseResDTOList.stream().map(analyzeFaultCauseResDTO -> {
+                FaultCauseDetail causeDetail = BeanUtil.copyProperties(analyzeFaultCauseResDTO, FaultCauseDetail.class, "id");
+                causeDetail.setFaultCauseSolutionId(analyzeFaultCauseResDTO.getId());
+                causeDetail.setFaultKnowledgeBaseId(analyzeFaultCauseResDTO.getKnowledgeBaseId());
+                causeDetail.setFaultCode(fault.getCode());
+                return causeDetail;
+            }).collect(Collectors.toList());
+            faultCauseDetailService.saveBatch(causeDetailList);
+        }
     }
 
 
@@ -754,6 +767,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .symptoms(fault.getSymptoms())
                 .assignFilePath(assignDTO.getFilepath())
                 .knowledgeId(fault.getKnowledgeId())
+                .faultLevel(fault.getFaultLevel())
                 .build();
 
         // 修改状态
@@ -828,6 +842,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 // 附件
                 .knowledgeId(fault.getKnowledgeId())
                 .assignFilePath(assignDTO.getFilepath())
+                .faultLevel(fault.getFaultLevel())
                 .build();
 
         updateById(fault);
@@ -1361,6 +1376,17 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<FaultCauseUsageRecords> records = faultCauseUsageRecordsService.list(recordsLambdaQueryWrapper);
         repairRecordDTO.setRecordsList(records);
 
+        // 故障原因百分比
+        LambdaQueryWrapper<FaultCauseDetail> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(FaultCauseDetail::getFaultCode, fault.getCode());
+        List<FaultCauseDetail> causeDetailList = faultCauseDetailService.list(queryWrapper);
+        List<AnalyzeFaultCauseResDTO> analyzeFaultCauseResDTOList = causeDetailList.stream().map(faultCauseDetail -> {
+            AnalyzeFaultCauseResDTO resDTO = BeanUtil.copyProperties(faultCauseDetail, AnalyzeFaultCauseResDTO.class);
+            resDTO.setKnowledgeBaseId(faultCauseDetail.getFaultKnowledgeBaseId());
+            return resDTO;
+        }).collect(Collectors.toList());
+        repairRecordDTO.setAnalyzeFaultCauseResDTOList(analyzeFaultCauseResDTOList);
+
 
 //        one.setFaultAnalysis(repairRecordDTO.getFaultAnalysis());
 //        one.setMaintenanceMeasures(repairRecordDTO.getMaintenanceMeasures());
@@ -1554,6 +1580,22 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 }
             }
         }
+
+        // 删除
+        faultCauseDetailService.remove(new LambdaQueryWrapper<FaultCauseDetail>().eq(FaultCauseDetail::getFaultCode, fault.getCode()));
+        // 记录使用的故障模板的解决原因
+        List<AnalyzeFaultCauseResDTO> analyzeFaultCauseResDTOList = repairRecordDTO.getAnalyzeFaultCauseResDTOList();
+        if (CollUtil.isNotEmpty(analyzeFaultCauseResDTOList)) {
+            List<FaultCauseDetail> causeDetailList = analyzeFaultCauseResDTOList.stream().map(analyzeFaultCauseResDTO -> {
+                FaultCauseDetail causeDetail = BeanUtil.copyProperties(analyzeFaultCauseResDTO, FaultCauseDetail.class, "id");
+                causeDetail.setFaultCauseSolutionId(analyzeFaultCauseResDTO.getId());
+                causeDetail.setFaultKnowledgeBaseId(analyzeFaultCauseResDTO.getKnowledgeBaseId());
+                causeDetail.setFaultCode(fault.getCode());
+                return causeDetail;
+            }).collect(Collectors.toList());
+            faultCauseDetailService.saveBatch(causeDetailList);
+        }
+
         updateById(fault);
 
 
