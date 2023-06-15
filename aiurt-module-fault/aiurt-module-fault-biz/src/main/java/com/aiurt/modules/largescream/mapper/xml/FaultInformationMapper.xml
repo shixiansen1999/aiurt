@@ -893,7 +893,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
 <select id="getFilterFaultUserReport" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
     select
     s.id as userId,
-    IFNULL(sum(fr.repair_duration),0) as duration,
+    IFNULL(sum(fr.repair_duration),0) as num,
     IFNULL(count(f.id),0) as num1
     from
     fault f
