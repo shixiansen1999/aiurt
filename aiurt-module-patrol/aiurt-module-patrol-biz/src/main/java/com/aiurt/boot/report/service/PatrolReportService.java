@@ -681,6 +681,15 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 }
             }
         }
+
+        //过滤通信分部
+        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FILTERING_TEAM);
+        boolean b = "1".equals(sysParamModel.getValue());
+        if (b) {
+            SysParamModel code = sysParamApi.selectByCode(SysParamCodeConstant.SPECIAL_TEAM);
+            List<LineOrStationDTO> dtoList = list.stream().filter(s -> !s.getCode().equals(code.getValue())).collect(Collectors.toList());
+            return dtoList;
+        }
         return list;
     }
 

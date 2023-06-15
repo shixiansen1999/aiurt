@@ -533,6 +533,15 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 list.addAll(allSysDepart);
             }
         }
+
+        //过滤通信分部
+        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FILTERING_TEAM);
+        boolean b = "1".equals(sysParamModel.getValue());
+        if (b) {
+            SysParamModel code = sysParamApi.selectByCode(SysParamCodeConstant.SPECIAL_TEAM);
+            List<SysDepartModel> dtoList = list.stream().filter(s -> !s.getOrgCode().equals(code.getValue())).collect(Collectors.toList());
+            return dtoList;
+        }
         return list;
     }
 
