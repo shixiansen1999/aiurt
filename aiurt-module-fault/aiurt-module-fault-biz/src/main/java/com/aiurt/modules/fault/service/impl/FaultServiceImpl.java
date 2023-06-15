@@ -181,6 +181,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
                 fault.setApprovalPassTime(new Date());
             } else {
+                Date date = new Date();
                 fault.setAppointUserName(user.getUsername());
                 fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
                 // 方便统计
@@ -195,6 +196,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                         .delFlag(CommonConstant.DEL_FLAG_0)
                         // 负责人
                         .appointUserName(user.getUsername())
+                        //方便统计，接收时间
+                        .receviceTime(date)
                         .build();
 
                 repairRecordService.save(record);
