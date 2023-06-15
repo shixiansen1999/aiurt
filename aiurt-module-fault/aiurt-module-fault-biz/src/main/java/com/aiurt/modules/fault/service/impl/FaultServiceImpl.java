@@ -153,7 +153,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         fault.setCode(builder.toString());
 
         // 接报人
-        //fault.setReceiveTime();
+        fault.setReceiveTime(new Date());
         fault.setReceiveUserName(user.getUsername());
 
         String faultModeCode = fault.getFaultModeCode();
@@ -172,7 +172,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             //fault.setApprovalPassTime(fault.getReceiveTime());
             Date date = new Date();
             fault.setApprovalPassTime(date);
-            fault.setReceiveTime(date);
             //响应时长为0
             fault.setResponseDuration(0);
             // 创建维修记录
@@ -720,15 +719,21 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .build();
 
         // 修改状态
+
         //更新响应时间,区分是否是调度过来的
-        Date faultExternalTime = getFaultExternalTime(faultCode);
-        if (ObjectUtil.isNotNull(faultExternalTime)) {
-            long responseDuration = DateUtil.between(fault.getAssignTime(), faultExternalTime, DateUnit.SECOND);
-            fault.setResponseDuration((int) responseDuration);
-        } else {
-            long responseDuration = DateUtil.between(fault.getAssignTime(), fault.getApprovalPassTime(), DateUnit.SECOND);
-            fault.setResponseDuration((int) responseDuration);
+        //如果是重新指派，则响应时间不需要更新
+        Integer responseDuration1 = fault.getResponseDuration();
+        if (responseDuration1 == null) {
+            Date faultExternalTime = getFaultExternalTime(faultCode);
+            if (ObjectUtil.isNotNull(faultExternalTime)) {
+                long responseDuration = DateUtil.between(fault.getAssignTime(), faultExternalTime, DateUnit.SECOND);
+                fault.setResponseDuration((int) responseDuration);
+            } else {
+                long responseDuration = DateUtil.between(fault.getAssignTime(), fault.getApprovalPassTime(), DateUnit.SECOND);
+                fault.setResponseDuration((int) responseDuration);
+            }
         }
+
         updateById(fault);
 
         // 保存维修记录
@@ -799,15 +804,20 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 // 附件
                 .assignFilePath(assignDTO.getFilepath())
                 .build();
-        fault.setReceiveTime(record.getReceviceTime());
+
+
         //更新响应时间,区分是否是调度过来的
-        Date faultExternalTime = getFaultExternalTime(faultCode);
-        if (ObjectUtil.isNotNull(faultExternalTime)) {
-            long responseDuration = DateUtil.between(fault.getReceiveTime(), faultExternalTime, DateUnit.SECOND);
-            fault.setResponseDuration((int) responseDuration);
-        } else {
-            long responseDuration = DateUtil.between(fault.getReceiveTime(), fault.getApprovalPassTime(), DateUnit.SECOND);
-            fault.setResponseDuration((int) responseDuration);
+        //如果是重新领取，则不需要更新响应时间
+        Integer responseDuration1 = fault.getResponseDuration();
+        if (responseDuration1 == null) {
+            Date faultExternalTime = getFaultExternalTime(faultCode);
+            if (ObjectUtil.isNotNull(faultExternalTime)) {
+                long responseDuration = DateUtil.between(record.getReceviceTime(), faultExternalTime, DateUnit.SECOND);
+                fault.setResponseDuration((int) responseDuration);
+            } else {
+                long responseDuration = DateUtil.between(record.getReceviceTime(), fault.getApprovalPassTime(), DateUnit.SECOND);
+                fault.setResponseDuration((int) responseDuration);
+            }
         }
         updateById(fault);
 
@@ -872,7 +882,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
         repairRecord.setReceviceTime(new Date());
-        fault.setReceiveTime(repairRecord.getReceviceTime());
         updateById(fault);
 
         repairRecordService.updateById(repairRecord);
@@ -922,7 +931,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             repairRecord.setRefuseAssignTime(new Date());
             repairRecord.setRefuseAssignRemark(refuseAssignmentDTO.getRefuseRemark());
         }
-
+        recordMapper.updateById(repairRecord);
 
 
         // 状态-已审批待指派
@@ -1096,7 +1105,17 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             // 驳回-维修中
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
             fault.setApprovalRejection(approvalHangUpDTO.getApprovalRejection());
-            saveLog(user, "挂起审批驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), approvalHangUpDTO.getApprovalRejection());
+
+            //发起过挂起就算有挂起时长
+            Date reqHangupTime = faultRepairRecord.getReqHangupTime();
+            long between = DateUtil.between(reqHangupTime, new Date(), DateUnit.SECOND);
+            int i = faultRepairRecord.getHangUpTime() != null ? faultRepairRecord.getHangUpTime() : 0;
+            faultRepairRecord.setHangUpTime((int) between + i);
+            //获取故障任务的挂起时长,并且更新故障任务的挂起时长
+            int faultHangUpTime= fault.getHangUpTime() != null ? fault.getHangUpTime() : 0;
+            fault.setHangUpTime(faultHangUpTime + faultRepairRecord.getHangUpTime());
+
+            saveLog(user, "挂起审批驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), approvalHangUpDTO.getApprovalRejection(),(int) between);
         }
 
         faultRepairRecord.setApprovalHangUpRemark(approvalHangUpDTO.getApprovalRejection());
@@ -1176,9 +1195,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 更新状态-维修中
         fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
-        // 挂起时间
 
-        updateById(fault);
 
         //
         FaultRepairRecord faultRepairRecord = getFaultRepairRecord(code, loginUser);
@@ -1186,8 +1203,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         Date reqHangupTime = faultRepairRecord.getReqHangupTime();
 
         long between = DateUtil.between(reqHangupTime, new Date(), DateUnit.SECOND);
+        int i = faultRepairRecord.getHangUpTime() != null ? faultRepairRecord.getHangUpTime() : 0;
+        faultRepairRecord.setHangUpTime((int) between + i);
+        saveLog(loginUser, "取消挂起", code, FaultStatusEnum.REPAIR.getStatus(), null, (int) between);
+        repairRecordService.updateById(faultRepairRecord);
 
-        saveLog(loginUser, "取消挂起", code, FaultStatusEnum.REPAIR.getStatus(), null, between);
+        // 挂起时间
+        //获取故障任务的挂起时长,并且更新故障任务的挂起时长
+        int faultHangUpTime= fault.getHangUpTime() != null ? fault.getHangUpTime() : 0;
+        fault.setHangUpTime(faultHangUpTime + faultRepairRecord.getHangUpTime());
+        updateById(fault);
 
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_HANG_UP.getType(), code, null, "1");
 
@@ -1208,7 +1233,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     }
 
-    private void saveLog(LoginUser loginUser, String context, String faultCode, Integer status, String remark, long between) {
+    private void saveLog(LoginUser loginUser, String context, String faultCode, Integer status, String remark, int between) {
         OperationProcess operationProcess = OperationProcess.builder()
                 .processLink(context)
                 .processTime(new Date())
@@ -1427,27 +1452,18 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障重新指派", TodoBusinessTypeEnum.FAULT_ASSIGN.getType(),todoDTO,faultMessageDTO);
                 //String name = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), null, null, null);
 
-                /*//发送通知
-                MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(),name, "故障指派" + DateUtil.today(), null);
-
-                //业务类型，消息类型，消息模板编码，摘要，发布内容
-                faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-                messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
-                messageDTO.setMsgAbstract("有一个新的故障维修任务");
-                messageDTO.setPublishingContent("有一个新的故障维修任务，请尽快确认");
-
-                sendMessage(messageDTO,faultMessageDTO);*/
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+
         // 已解决
         SysParamModel submitParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_AUDIT);
         boolean submitValue = "1".equals(submitParamModel.getValue());
         if (flag.equals(solveStatus)) {
             Date date = new Date();
             fault.setEndTime(date);
-            fault.setDuration(DateUtil.between(fault.getReceiveTime(), fault.getEndTime(), DateUnit.MINUTE));
+            fault.setDuration(DateUtil.between(fault.getHappenTime(), fault.getEndTime(), DateUnit.SECOND));
             one.setEndTime(date);
             if(submitValue){
                 fault.setStatus(FaultStatusEnum.RESULT_CONFIRM.getStatus());
@@ -1468,6 +1484,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
             //推送数据到调度系统
             faultExternalService.complete(repairRecordDTO,one.getEndTime(),loginUser);
+
+            //更新故障时长,更新解决时长
+            long faultDuration = DateUtil.between(fault.getEndTime(), fault.getHappenTime(), DateUnit.SECOND);
+            fault.setFaultDuration((int) faultDuration);
+            fault.setResolutionDuration((int) faultDuration);
         }
 
         // 使用的解决方案
@@ -1484,25 +1505,21 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             one.setSignPath(repairRecordDTO.getSignPath());
         }
 
-        //更新维修时长,区分是否是调度过来的
+        //更新维修时长
+        //获取维修单的挂起时长
+        int oneHangUpTime= one.getHangUpTime() != null ? one.getHangUpTime() : 0;
+        //维修时间减去挂起时长
         int repairDuration1 = fault.getRepairDuration() != null ? fault.getRepairDuration() : 0;
         long repairDuration = DateUtil.between(one.getEndTime(), one.getReceviceTime(), DateUnit.SECOND);
-        fault.setRepairDuration((int) repairDuration + repairDuration1);
-        one.setRepairDuration((int) repairDuration);
+        if (ObjectUtil.isNull(repairDuration)) {
+            repairDuration = 0L;
+        }
+        one.setRepairDuration((int) repairDuration - oneHangUpTime);
+
+        fault.setRepairDuration(one.getRepairDuration() + repairDuration1);
 
         repairRecordService.updateById(one);
 
-        //更新故障时长,更新解决时长,区分是否是调度过来的
-        Date faultExternalTime = getFaultExternalTime(faultCode);
-        if (ObjectUtil.isNotNull(faultExternalTime)) {
-            long faultDuration = DateUtil.between(fault.getEndTime(), faultExternalTime, DateUnit.SECOND);
-            fault.setFaultDuration((int) faultDuration);
-            fault.setResolutionDuration((int) faultDuration);
-        } else {
-            long faultDuration = DateUtil.between(fault.getEndTime(), fault.getApprovalPassTime(), DateUnit.SECOND);
-            fault.setFaultDuration((int) faultDuration);
-            fault.setResolutionDuration((int) faultDuration);
-        }
         updateById(fault);
 
         // 备件更换记录

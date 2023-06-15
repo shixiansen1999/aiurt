@@ -67,11 +67,11 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
 
         Fault fault = faultService.queryByCode(faultCode);
 
-        Date receiveTime = fault.getReceiveTime();
+        Date happenTime = fault.getHappenTime();
         Date endTime = fault.getEndTime();
-        if (Objects.nonNull(endTime) && Objects.nonNull(receiveTime)) {
+        if (Objects.nonNull(endTime) && Objects.nonNull(happenTime)) {
             recordDetailDTO.setEndTime(endTime);
-            long between = DateUtil.between(receiveTime, endTime, DateUnit.MS);
+            long between = DateUtil.between(happenTime, endTime, DateUnit.MS);
             recordDetailDTO.setRecoveryDuration(DateUtil.formatBetween(between, BetweenFormater.Level.SECOND));
         }
         // 故障历史
