@@ -519,13 +519,14 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
         RadarNumberModelDTO radarNumberModel = handles.stream()
                 .filter(l -> username.equals(l.getUsername()))
                 .findFirst()
-                .orElse(null);
-        // 班组其他成员有数据，但是查询的用户不一定有数据
-        if (ObjectUtil.isEmpty(radarNumberModel)) {
-            return radarModel;
-        }
+                .orElseGet(RadarNumberModelDTO::new);
+//        // 班组其他成员有数据，但是查询的用户不一定有数据
+//        if (ObjectUtil.isEmpty(radarNumberModel)) {
+//            return radarModel;
+//        }
 
-        Integer currentValue = radarNumberModel.getNumber();
+        Integer number = radarNumberModel.getNumber();
+        Integer currentValue = ObjectUtil.isEmpty(number) ? 0 : number;
         radarModel.setCurrentValue(Double.valueOf(currentValue));
         if (CollUtil.isNotEmpty(values)) {
             Integer maxValue = Collections.max(values);
