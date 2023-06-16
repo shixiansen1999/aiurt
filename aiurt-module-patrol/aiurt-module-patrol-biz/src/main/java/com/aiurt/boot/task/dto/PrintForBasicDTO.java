@@ -40,7 +40,7 @@ public class PrintForBasicDTO {
     @ApiModelProperty(value = "抽检日")
     private  String daySpot;
     @ApiModelProperty(value = "图片字节流")
-    private InputStream inputStream;
+    private Object inputStream;
     @ApiModelProperty(value = "打印标准和检查结果")
     private List<PrintDTO> printDTOList;
 }

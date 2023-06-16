@@ -927,6 +927,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             if(ObjectUtil.isEmpty(inputStream)){
                printForBasicDTO.setInputStream(null);
             } else {
+                //存的obj
                 printForBasicDTO.setInputStream(inputStream);
             }
         }else{
