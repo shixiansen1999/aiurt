@@ -1,4 +1,7 @@
 package com.aiurt.modules.faultknowledgebase.service.impl;
+import cn.hutool.core.bean.BeanUtil;
+import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
+import com.google.common.collect.Maps;
 
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
@@ -42,6 +45,7 @@ import com.aiurt.modules.faultlevel.service.IFaultLevelService;
 import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.aiurt.modules.faultsparepart.service.IFaultSparePartService;
 import com.aiurt.modules.flow.api.FlowBaseApi;
+import com.aiurt.modules.flow.dto.StartBpmnDTO;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseMatchDTO;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseReqDTO;
@@ -135,6 +139,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     @Autowired
     private ElasticAPI elasticApi;
+
 
 
     @Override
@@ -1607,5 +1612,24 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         }
         List<String> list = Stream.of(faultCauseSolutionIdList).collect(Collectors.toList());
         return baseMapper.getStandardRepairRequirements(list);
+    }
+
+    /**
+     * 添加
+     *
+     * @param faultKnowledgeBase
+     * @return
+     */
+    @Override
+    public void addFaultKnowledgeBase(FaultKnowledgeBase faultKnowledgeBase) {
+        StartBpmnDTO startBpmnDTO = new StartBpmnDTO();
+        startBpmnDTO.setModelKey("fault_knowledge_base");
+        Map<String, Object> data = BeanUtil.beanToMap(faultKnowledgeBase);
+        startBpmnDTO.setBusData(data);
+        FlowTaskCompleteCommentDTO flowTaskCompleteCommentDTO = new FlowTaskCompleteCommentDTO();
+        flowTaskCompleteCommentDTO.setApprovalType("agree");
+        startBpmnDTO.setFlowTaskCompleteDTO(flowTaskCompleteCommentDTO);
+        startBpmnDTO.setUserName(faultKnowledgeBase.getUserName());
+        flowBaseApi.startAndTakeFirst(startBpmnDTO);
     }
 }

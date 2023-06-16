@@ -257,5 +257,7 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
 //    @ApiModelProperty(value = "解决方案数据")
 //    @TableField(exist = false)
 //    private String solutions;
+    @TableField(exist = false)
+    private String userName;
 
 }

@@ -37,6 +37,8 @@ import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.service.*;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
+import com.aiurt.modules.faultcausesolution.dto.FaultCauseSolutionDTO;
+import com.aiurt.modules.faultcausesolution.entity.FaultCauseSolution;
 import com.aiurt.modules.faultcauseusagerecords.entity.FaultCauseUsageRecords;
 import com.aiurt.modules.faultcauseusagerecords.service.IFaultCauseUsageRecordsService;
 import com.aiurt.modules.faultexternal.service.IFaultExternalService;
@@ -1799,6 +1801,55 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            // 如果非标准方案这新增一个标准库
+            List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultCode);
+            if (StrUtil.isBlank(fault.getKnowledgeId()) && CollUtil.isNotEmpty(faultDeviceList)) {
+                LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(FaultRepairRecord::getFaultCode, faultCode)
+                        .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
+                        .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1");
+                FaultRepairRecord repairRecord = repairRecordService.getBaseMapper().selectOne(wrapper);
+                FaultKnowledgeBase faultKnowledgeBase = new FaultKnowledgeBase();
+                faultKnowledgeBase.setFaultCodeList(Collections.singletonList(faultCode));
+                // 查询设备类型， 编码
+                String deviceTypeCode = faultDeviceList.get(0).getDeviceTypeCode();
+                faultKnowledgeBase.setDeviceTypeCode(deviceTypeCode);
+                faultKnowledgeBase.setFaultPhenomenon(fault.getSymptoms());
+                faultKnowledgeBase.setFaultLevelCode(fault.getFaultLevel());
+                faultKnowledgeBase.setSystemCode(fault.getSubSystemCode());
+                faultKnowledgeBase.setMajorCode(fault.getMajorCode());
+                faultKnowledgeBase.setProcessInitiator(0);
+                faultKnowledgeBase.setMethod(repairRecord.getMethod());
+                faultKnowledgeBase.setKnowledgeBaseTypeCode("001");
+
+                List<FaultCauseSolutionDTO> list = new ArrayList<>();
+                FaultCauseSolutionDTO faultCauseSolution = new FaultCauseSolutionDTO();
+                faultCauseSolution.setFaultCause(repairRecord.getFaultCauseSolution());
+                faultCauseSolution.setSolution(repairRecord.getMaintenanceMeasures());
+
+                List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, repairRecord.getId());
+
+                List<FaultSparePart> faultSpareParts = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("0", sparepart.getConsumables()))
+                        .map(sparepart -> {
+                            FaultSparePart faultSparePart = new FaultSparePart();
+                            faultSparePart.setSparePartCode(sparepart.getMaterialBaseCode());
+                            faultSparePart.setSpecification(sparepart.getSpecifications());
+                            faultSparePart.setNumber(sparepart.getNewSparePartNum());
+                            return faultSparePart;
+                        }).collect(Collectors.toList());
+                faultCauseSolution.setSpareParts(faultSpareParts);
+                list.add(faultCauseSolution);
+                faultKnowledgeBase.setFaultCauseSolutions(list);
+                faultKnowledgeBase.setUserName(fault.getAppointUserName());
+
+                try {
+                    faultKnowledgeBaseService.addFaultKnowledgeBase(faultKnowledgeBase);
+                } catch (Exception e) {
+                   log.error(e.getMessage(), e);
+                }
+            }
+            //
         } else {
             try {
                 FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
