@@ -193,10 +193,15 @@ public class FlowApiServiceImpl implements FlowApiService {
     public void startAndTakeFirst(StartBpmnDTO startBpmnDTO) {
 
         log.info("启动流程请求参数：[{}]", JSON.toJSONString(startBpmnDTO));
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (Objects.isNull(loginUser)) {
-            throw new AiurtBootException("无法启动流程，请重新登录！");
+        String loginName = startBpmnDTO.getUserName();
+        if (StrUtil.isBlank(loginName)) {
+            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            if (Objects.isNull(loginUser)) {
+                throw new AiurtBootException("无法启动流程，请重新登录！");
+            }
+            loginName = loginUser.getUsername();
         }
+
         // 验证流程定义数据的合法性。
         Result<ProcessDefinition> processDefinitionResult = flowElementUtil.verifyAndGetFlowEntry(startBpmnDTO.getModelKey());
         if (!processDefinitionResult.isSuccess()) {
@@ -241,7 +246,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
 
 
-        String loginName = loginUser.getUsername();
+
         Authentication.setAuthenticatedUserId(loginName);
         // 启动流程
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), Objects.isNull(businessKey) ? null : (String) businessKey, variableData);
