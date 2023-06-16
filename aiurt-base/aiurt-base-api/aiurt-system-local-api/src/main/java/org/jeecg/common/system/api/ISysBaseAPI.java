@@ -1203,13 +1203,6 @@ public interface ISysBaseAPI extends CommonAPI {
     DictModel dictById(String id);
 
     /**
-     * 根据线路code查询名称
-     * @param code
-     * @return
-     */
-    String getLineNameByCode(String code);
-
-    /**
      * 用户的分页列表查询，做一个新的过滤方法
      * 这个方法是 /sys/user/list 接口的进一步封装
      * @param loginUser user中查询过滤添加
@@ -1228,5 +1221,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<StationAndMacModel> getStationAndMacByCode(List<String> stationCodes);
+
+    /**
+     * 根据线路code查询名称
+     * @param code
+     * @return
+     */
+    String getLineNameByCode(String code);
 }
 

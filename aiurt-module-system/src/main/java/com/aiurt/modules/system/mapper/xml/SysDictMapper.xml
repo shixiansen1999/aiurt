@@ -216,7 +216,7 @@
 	where sd.dict_code = #{dictCode}
 	</select>
     <select id="dictByid" resultType="org.jeecg.common.system.vo.DictModel">
-		select item_text as text ,item_value as value from sys_dict_item
+		select item_text as text ,item_value as value ,description from sys_dict_item
 		<where>
 		<if test="id != null and id != ''">
 			id = #{id}

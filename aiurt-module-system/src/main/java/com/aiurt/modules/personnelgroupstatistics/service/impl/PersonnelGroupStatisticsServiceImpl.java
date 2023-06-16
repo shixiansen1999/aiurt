@@ -330,9 +330,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         getWorkAreaInformation(departId, depart);
 
         //获取班组维修响应时长
-        List<LoginUser> users= iSysBaseApi.getUserPersonnel(departId);
-        List<String> list = users.stream().map(LoginUser::getId).collect(Collectors.toList());
-        List<FaultRepairRecordDTO> repairDuration = personnelGroupStatisticsMapper.getRepairDuration(list, lastYear, end);
+        List<FaultRepairRecordDTO> repairDuration = personnelGroupStatisticsMapper.getRepairDurationByOrg(departId, lastYear, end);
         getAverageTime(repairDuration, depart);
         return depart;
     }
@@ -532,6 +530,15 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             if (CollUtil.isNotEmpty(allSysDepart)) {
                 list.addAll(allSysDepart);
             }
+        }
+
+        //过滤通信分部
+        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FILTERING_TEAM);
+        boolean b = "1".equals(sysParamModel.getValue());
+        if (b) {
+            SysParamModel code = sysParamApi.selectByCode(SysParamCodeConstant.SPECIAL_TEAM);
+            List<SysDepartModel> dtoList = list.stream().filter(s -> !s.getOrgCode().equals(code.getValue())).collect(Collectors.toList());
+            return dtoList;
         }
         return list;
     }

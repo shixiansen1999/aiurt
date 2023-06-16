@@ -87,6 +87,7 @@ public class FaultCountServiceImpl implements IFaultCountService {
         queryWrapper.ge(Fault::getApprovalPassTime, DateUtil.beginOfDay(startDate));
         queryWrapper.le(Fault::getApprovalPassTime, DateUtil.endOfDay(endDate));
 
+        queryWrapper.gt(Fault::getStatus, 2);
 //        if (CollUtil.isNotEmpty(ordCode)) {
 //            queryWrapper.in(Fault::getSysOrgCode, ordCode);
 //        }

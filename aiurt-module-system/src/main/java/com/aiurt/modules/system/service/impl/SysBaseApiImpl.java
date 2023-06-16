@@ -3477,6 +3477,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
         // 处理
     }
+
     @Override
     public List<LoginUser> queryAllUsers() {
         QueryWrapper<SysUser> wrapper = new QueryWrapper<>();

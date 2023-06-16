@@ -107,4 +107,13 @@ public interface PersonnelGroupStatisticsMapper {
      * @return List<TeamWorkAreaDTO>
      */
     List<TeamWorkAreaDTO> getStationDetails(@Param("workAreaCode")String workAreaCode);
+    /**
+     * 获取班组的维修任务的信息
+     *
+     * @param orgId 用户集合
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return List<FaultRepairRecordDTO>
+     */
+    List<FaultRepairRecordDTO> getRepairDurationByOrg(@Param("orgId")String orgId, @Param("startTime")DateTime startTime, @Param("endTime")DateTime endTime);
 }

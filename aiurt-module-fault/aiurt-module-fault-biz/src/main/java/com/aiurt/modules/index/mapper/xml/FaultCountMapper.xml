@@ -31,9 +31,11 @@
     <select id="getFaultCountInfo" resultType="com.aiurt.modules.fault.dto.FaultCountInfoDTO">
             select * from fault
         <where>
+
                     <if test="faultCountInfoReq.type == 1">
                         AND 1 = 1
                     </if>
+                     and status > 2
                     <if test="faultCountInfoReq.type == 2">
                         AND status = 12
                     </if>
@@ -80,6 +82,7 @@
     <select id="getFaultCountInfos" resultType="com.aiurt.modules.fault.dto.FaultCountInfosDTO">
         select * from fault
             <where>
+                status > 2
                 <if test="faultCountInfoReq.type == 3">
                     AND status &lt;&gt; 12
                 </if>
@@ -131,6 +134,7 @@
     <select id="getFaultData" resultType="com.aiurt.modules.fault.dto.FaultTimeoutLevelDTO">
         select * from fault
             <where>
+                status > 2
                 <if test="level == 1">
                     AND status &lt;&gt; 12
                     and TIMESTAMPDIFF(HOUR,happen_time,#{date}) &gt;=#{lv1Hours}
