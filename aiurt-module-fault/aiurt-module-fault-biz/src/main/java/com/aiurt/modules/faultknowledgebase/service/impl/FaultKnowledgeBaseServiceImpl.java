@@ -23,11 +23,11 @@ import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
 import com.aiurt.modules.device.entity.DeviceType;
-import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.faultanalysisreport.constants.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
+import com.aiurt.modules.faultcausesolution.dto.FaultCauseProportionNumDTO;
 import com.aiurt.modules.faultcausesolution.dto.FaultCauseSolutionDTO;
 import com.aiurt.modules.faultcausesolution.entity.FaultCauseSolution;
 import com.aiurt.modules.faultcausesolution.service.IFaultCauseSolutionService;
@@ -281,23 +281,80 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             }
         }
 
-        Map<String, Map<String, String>> dataMap = this.buildCauseNumberMap(baseIds);
+        Map<String, Map<String, FaultCauseProportionNumDTO>> dataMap = this.buildCauseNumberMap(baseIds);
         for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {
             String id = knowledgeBase.getId();
             List<FaultCauseSolution> list = CollUtil.isEmpty(faultCauseSolutionMap.get(id)) ? new ArrayList<>() : faultCauseSolutionMap.get(id);
             List<FaultCauseSolutionDTO> faultCauseSolutionList = this.buildCauseSolutions(list, spareParts);
             // 原因出现率百分比
-            Map<String, String> happenRateMap = CollUtil.isEmpty(dataMap.get(id)) ? Collections.emptyMap() : dataMap.get(id);
+            Map<String, FaultCauseProportionNumDTO> happenRateMap = CollUtil.isEmpty(dataMap.get(id)) ? Collections.emptyMap() : dataMap.get(id);
             for (FaultCauseSolutionDTO faultCauseSolutionDTO : faultCauseSolutionList) {
-                String happenRate = happenRateMap.get(faultCauseSolutionDTO.getId());
+                FaultCauseProportionNumDTO causeProportionNum = Optional.ofNullable(happenRateMap.get(faultCauseSolutionDTO.getId()))
+                        .orElseGet(FaultCauseProportionNumDTO::new);
+                String happenRate = causeProportionNum.getHappenRate();
+                Integer causeNum = causeProportionNum.getCauseNum();
 //                if (ObjectUtil.isEmpty(happenRate)) {
 //                    happenRate = "0%";
 //                }
                 faultCauseSolutionDTO.setHappenRate(happenRate);
+                faultCauseSolutionDTO.setCauseNum(causeNum);
             }
             knowledgeBase.setFaultCauseSolutions(faultCauseSolutionList);
         }
         return faultKnowledgeBases;
+    }
+
+    @Override
+    public IPage<FaultKnowledgeBase> queryPageList(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //下面禁用数据过滤
+        boolean b = GlobalThreadLocal.setDataFilter(false);
+        String id = faultKnowledgeBase.getId();
+        //根据id条件查询时，jeecg前端会传一个id结尾带逗号的id，所以先去掉结尾id
+        if (StringUtils.isNotBlank(id)) {
+            String substring = id.substring(0, id.length() - 1);
+            faultKnowledgeBase.setId(substring);
+        }
+        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase, null, sysUser.getUsername());
+        page.setRecords(faultKnowledgeBases);
+        //解决不是审核人去除审核按钮
+        if (CollUtil.isNotEmpty(faultKnowledgeBases)) {
+            Set<String> deviceTypeCodeSet = faultKnowledgeBases.stream().map(FaultKnowledgeBase::getDeviceTypeCode).collect(Collectors.toSet());
+            Map<String, DeviceType> deviceTypeMap = new HashMap<>();
+            if (CollUtil.isNotEmpty(deviceTypeCodeSet)) {
+                List<DeviceType> typeList = sysBaseApi.selectDeviceTypeByCodes(deviceTypeCodeSet);
+                if (CollUtil.isNotEmpty(typeList)) {
+                    deviceTypeMap = typeList.stream().collect(Collectors.toMap(DeviceType::getCode, Function.identity()));
+                }
+            }
+
+            for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {
+                knowledgeBase.setHaveButton(false);
+                if (StrUtil.isNotBlank(knowledgeBase.getProcessInstanceId()) && StrUtil.isNotBlank(knowledgeBase.getTaskId())) {
+                    dealAuthButton(sysUser, knowledgeBase);
+                }
+                //当前登录人不是创建人，则为false
+                if (knowledgeBase.getCreateBy().equals(sysUser.getUsername())) {
+                    knowledgeBase.setIsCreateUser(true);
+                } else {
+                    knowledgeBase.setIsCreateUser(false);
+                }
+                String faultCodes = knowledgeBase.getFaultCodes();
+                if (StrUtil.isNotBlank(faultCodes)) {
+                    String[] split = faultCodes.split(",");
+                    List<String> list = Arrays.asList(split);
+                    knowledgeBase.setFaultCodeList(list);
+                }
+
+                DeviceType deviceType = deviceTypeMap.getOrDefault(knowledgeBase.getDeviceTypeCode(), new DeviceType());
+                knowledgeBase.setDeviceTypeName(deviceType.getName());
+            }
+            // 获取故障原因和解决方案
+            List<FaultKnowledgeBase> newFaultKnowledgeBases = this.setFaultCauseSolution(faultKnowledgeBases);
+            page.setRecords(faultKnowledgeBases);
+        }
+        GlobalThreadLocal.setDataFilter(b);
+        return page;
     }
 
     private void dealAuthButton(LoginUser sysUser, FaultKnowledgeBase knowledgeBase) {
@@ -668,14 +725,18 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     .distinct()
                     .collect(Collectors.toList());
             if (CollUtil.isNotEmpty(knowledgeBaseIds)) {
-                Map<String, Map<String, String>> dataMap = this.buildCauseNumberMap(knowledgeBaseIds);
-                Map<String, String> happenRateMap = CollUtil.isEmpty(dataMap.get(id)) ? Collections.emptyMap() : dataMap.get(id);
+                Map<String, Map<String, FaultCauseProportionNumDTO>> dataMap = this.buildCauseNumberMap(knowledgeBaseIds);
+                Map<String, FaultCauseProportionNumDTO> happenRateMap = CollUtil.isEmpty(dataMap.get(id)) ? Collections.emptyMap() : dataMap.get(id);
                 for (FaultCauseSolutionDTO faultCauseSolutionDTO : faultCauseSolutionList) {
-                    String happenRate = happenRateMap.get(faultCauseSolutionDTO.getId());
+                    FaultCauseProportionNumDTO causeProportionNum = Optional.ofNullable(happenRateMap.get(faultCauseSolutionDTO.getId()))
+                            .orElseGet(FaultCauseProportionNumDTO::new);
+                    String happenRate = causeProportionNum.getHappenRate();
+                    Integer causeNum = causeProportionNum.getCauseNum();
 //                    if (ObjectUtil.isEmpty(happenRate)) {
 //                        happenRate = "0%";
 //                    }
                     faultCauseSolutionDTO.setHappenRate(happenRate);
+                    faultCauseSolutionDTO.setCauseNum(causeNum);
                 }
             }
             faultKnowledgeBase.setFaultCauseSolutions(faultCauseSolutionList);
@@ -727,14 +788,15 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
      * 构造故障原因数量Map
      *
      * @param knowledgeBaseIds 知识库ID
-     * @return Map<knowledgeBaseId, < causeSolutionId, 百分比>>
+     * @return Map<knowledgeBaseId, < causeSolutionId, FaultCauseProportionNumDTO>>
      */
-    private Map<String, Map<String, String>> buildCauseNumberMap(List<String> knowledgeBaseIds) {
+//    private Map<String, Map<String, String>> buildCauseNumberMap(List<String> knowledgeBaseIds) {
+    private Map<String, Map<String, FaultCauseProportionNumDTO>> buildCauseNumberMap(List<String> knowledgeBaseIds) {
         // 故障原因（针对录入标准化故障现象的故障工单，各[故障原因&解决方案]被采用的次数，占故障现象所有[故障原因&解决方案]被采用总次数的百分比）
         if (CollUtil.isEmpty(knowledgeBaseIds)) {
             return Collections.emptyMap();
         }
-        Map<String, Map<String, String>> dataMap = new HashMap<>(16);
+        Map<String, Map<String, FaultCauseProportionNumDTO>> dataMap = new HashMap<>(16);
         List<AnalyzeFaultCauseResDTO> analyzeFaultCauses = baseMapper.countFaultCauseByIdSet(knowledgeBaseIds);
         if (CollUtil.isNotEmpty(analyzeFaultCauses)) {
             Map<String, List<AnalyzeFaultCauseResDTO>> baseIdMap = analyzeFaultCauses.stream()
@@ -746,12 +808,14 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     Long sum = causes.stream().filter(Objects::nonNull)
                             .map(AnalyzeFaultCauseResDTO::getNum)
                             .reduce(0L, Long::sum);
-                    Map<String, String> percentageMap = new HashMap<>(16);
+                    Map<String, FaultCauseProportionNumDTO> percentageMap = new HashMap<>(16);
                     // 遍历每个解决方案，计算原因出现率百分比
                     causes.forEach(cause -> {
-                        double number = 1.0 * cause.getNum() / sum * 100;
+                        Long causeNum = cause.getNum();
+                        double number = 1.0 * causeNum / sum * 100;
                         String percentage = String.format("%.2f", number) + "%";
-                        percentageMap.put(cause.getId(), percentage);
+//                        percentageMap.put(cause.getId(), percentage);
+                        percentageMap.put(cause.getId(), new FaultCauseProportionNumDTO(percentage, causeNum.intValue()));
                     });
                     dataMap.put(knowledgeBaseId, percentageMap);
                 } else {
@@ -1413,7 +1477,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             List<KnowledgeBaseResDTO> records = pageList.getRecords();
             if (CollUtil.isNotEmpty(records)) {
                 List<String> knowledgeBaseIds = records.stream().map(KnowledgeBaseResDTO::getId).collect(Collectors.toList());
-                Map<String, Map<String, String>> dataMap = this.buildCauseNumberMap(knowledgeBaseIds);
+                Map<String, Map<String, FaultCauseProportionNumDTO>> dataMap = this.buildCauseNumberMap(knowledgeBaseIds);
                 // 采用数
                 List<AnalyzeFaultCauseResDTO> useNumbers = baseMapper.countFaultCauseByIdSet(knowledgeBaseIds);
                 Map<String, Long> useMap = useNumbers.stream()
@@ -1422,10 +1486,12 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     String id = knowledgeBaseRes.getId();
                     List<CauseSolution> reasonSolutions = knowledgeBaseRes.getReasonSolutions();
                     if (CollUtil.isNotEmpty(reasonSolutions)) {
-                        Map<String, String> happenRateMap = CollUtil.isEmpty(dataMap.get(id)) ?
+                        Map<String, FaultCauseProportionNumDTO> happenRateMap = CollUtil.isEmpty(dataMap.get(id)) ?
                                 Collections.emptyMap() : dataMap.get(id);
                         for (CauseSolution reasonSolution : reasonSolutions) {
-                            String happenRate = happenRateMap.get(reasonSolution.getId());
+                            FaultCauseProportionNumDTO causeProportionNum = Optional.ofNullable(happenRateMap.get(reasonSolution.getId()))
+                                    .orElseGet(FaultCauseProportionNumDTO::new);
+                            String happenRate = causeProportionNum.getHappenRate();
 //                            if (ObjectUtil.isEmpty(happenRate)) {
 //                                happenRate = "0%";
 //                            }
@@ -1519,17 +1585,19 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             if (CollUtil.isNotEmpty(spareParts)) {
                 sparePartMap = spareParts.stream().collect(Collectors.groupingBy(SparePart::getCauseSolutionId));
             }
-            Map<String, Map<String, String>> causeNumberMap = this.buildCauseNumberMap(knowledgeBaseIds);
+            Map<String, Map<String, FaultCauseProportionNumDTO>> causeNumberMap = this.buildCauseNumberMap(knowledgeBaseIds);
             for (CauseSolution solution : causeSolutions) {
                 String id = solution.getId();
                 String knowledgeBaseId = solution.getKnowledgeBaseId();
                 List<SparePart> sparePartList = ObjectUtil.isEmpty(sparePartMap.get(id)) ? Collections.emptyList() : sparePartMap.get(id);
                 solution.setSpareParts(sparePartList);
 
-                Map<String, String> map = causeNumberMap.get(knowledgeBaseId);
+                Map<String, FaultCauseProportionNumDTO> map = causeNumberMap.get(knowledgeBaseId);
                 if (CollUtil.isNotEmpty(map)) {
 //                    String happenRate = ObjectUtil.isEmpty(map.get(id)) ? "0%" : map.get(id);
-                    String happenRate = map.get(id);
+                    FaultCauseProportionNumDTO causeProportionNum = Optional.ofNullable(map.get(id))
+                            .orElseGet(FaultCauseProportionNumDTO::new);
+                    String happenRate = causeProportionNum.getHappenRate();
                     solution.setHappenRate(happenRate);
                 }
             }
@@ -1557,18 +1625,20 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         try {
             pageList = elasticApi.knowledgeBaseMatching(page, knowledgeBaseMatchDTO);
             List<KnowledgeBaseResDTO> records = pageList.getRecords();
-            if(CollUtil.isNotEmpty(records)){
+            if (CollUtil.isNotEmpty(records)) {
                 // 原因出现率百分比
                 List<String> knowledgeBaseIds = records.stream().map(KnowledgeBaseResDTO::getId).collect(Collectors.toList());
-                Map<String, Map<String, String>> numberMap = this.buildCauseNumberMap(knowledgeBaseIds);
+                Map<String, Map<String, FaultCauseProportionNumDTO>> numberMap = this.buildCauseNumberMap(knowledgeBaseIds);
                 for (KnowledgeBaseResDTO record : records) {
                     List<CauseSolution> reasonSolutions = record.getReasonSolutions();
-                    if(CollUtil.isNotEmpty(reasonSolutions)){
+                    if (CollUtil.isNotEmpty(reasonSolutions)) {
                         String knowledgeBaseId = record.getId();
-                        Map<String, String> happenRateMap = CollUtil.isEmpty(numberMap.get(knowledgeBaseId)) ?
+                        Map<String, FaultCauseProportionNumDTO> happenRateMap = CollUtil.isEmpty(numberMap.get(knowledgeBaseId)) ?
                                 Collections.emptyMap() : numberMap.get(knowledgeBaseId);
                         for (CauseSolution solution : reasonSolutions) {
-                            String happenRate = happenRateMap.get(solution.getId());
+                            FaultCauseProportionNumDTO causeProportionNum = Optional.ofNullable(happenRateMap.get(solution.getId()))
+                                    .orElseGet(FaultCauseProportionNumDTO::new);
+                            String happenRate = causeProportionNum.getHappenRate();
                             solution.setHappenRate(happenRate);
                         }
                     }
@@ -1601,7 +1671,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
      * @return
      */
     @Override
-    public List<FaultSparePart> getStandardRepairRequirements(String[]  faultCauseSolutionIdList) {
+    public List<FaultSparePart> getStandardRepairRequirements(String[] faultCauseSolutionIdList) {
         if (ObjectUtil.isEmpty(faultCauseSolutionIdList)) {
             return Collections.emptyList();
         }

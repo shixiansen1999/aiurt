@@ -114,6 +114,12 @@ public class FaultKnowledgeBaseBuildDTO extends DictEntity implements Serializab
     @ApiModelProperty(value = "原因出现率百分比")
     private String happenRate;
     /**
+     * 原因占比数量
+     */
+    @Excel(name = "原因占比数量", width = 15)
+    @ApiModelProperty(value = "原因占比数量")
+    private Integer causeNum;
+    /**
      * 状态
      */
     @Excel(name = "状态(0:待审批,1:已审批,2:已驳回)", width = 15)

@@ -51,6 +51,12 @@ public class FaultCauseSolutionDTO implements Serializable {
     @ApiModelProperty(value = "原因出现率百分比")
     private String happenRate;
     /**
+     * 原因占比数量
+     */
+    @Excel(name = "原因占比数量", width = 15)
+    @ApiModelProperty(value = "原因占比数量")
+    private Integer causeNum;
+    /**
      * 备件信息
      */
     @ApiModelProperty(value = "备件信息")

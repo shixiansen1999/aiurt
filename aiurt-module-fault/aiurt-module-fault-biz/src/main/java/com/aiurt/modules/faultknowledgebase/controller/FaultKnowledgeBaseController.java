@@ -25,7 +25,10 @@ import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -41,7 +44,6 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -86,6 +88,27 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 								   HttpServletRequest req) {
 		Page<FaultKnowledgeBase> page = new Page<FaultKnowledgeBase>(pageNo, pageSize);
 		IPage<FaultKnowledgeBaseBuildDTO> faultKnowledgeBasePage = faultKnowledgeBaseService.readAll(page, faultKnowledgeBase);
+		return Result.OK(faultKnowledgeBasePage);
+	}
+
+	/**
+	 * 分页列表查询(未拆分数据)
+	 *
+	 * @param faultKnowledgeBase
+	 * @param pageNo
+	 * @param pageSize
+	 * @param request
+	 * @return
+	 */
+	@ApiOperation(value = "故障知识库-分页列表查询(未拆分数据)", notes = "故障知识库-分页列表查询(未拆分数据)")
+	@GetMapping(value = "/unbuilt/list")
+	@PermissionData(pageComponent = "fault/FaultKnowledgeBaseListChange")
+	public Result<IPage<FaultKnowledgeBase>> queryPageList(FaultKnowledgeBase faultKnowledgeBase,
+														   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+														   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+														   HttpServletRequest request, HttpServletResponse response) {
+		Page<FaultKnowledgeBase> page = new Page<FaultKnowledgeBase>(pageNo, pageSize);
+		IPage<FaultKnowledgeBase> faultKnowledgeBasePage = faultKnowledgeBaseService.queryPageList(page, faultKnowledgeBase);
 		return Result.OK(faultKnowledgeBasePage);
 	}
 
