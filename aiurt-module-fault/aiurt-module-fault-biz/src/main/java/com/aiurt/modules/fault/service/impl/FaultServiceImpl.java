@@ -2227,13 +2227,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         result = filterAndProcessUserWork(result, userIds);
 
         // 筛选人员是否处理相同故障
-        result = isSameFaultHandled(result, fault.getKnowledgeId());
+        result = isSameFaultHandled(result, fault.getKnowledgeId(), userNames);
 
         // 筛选人员的任务情况
-        result = taskSituation(result);
+        result = taskSituation(result, userNames);
 
         // 计算人员与站点的最短距离
-        result = calculateShortestDistance(result, stationCode);
+        result = calculateShortestDistance(result, stationCode, userNames);
 
         // 计算评估得分
         result = calculateEvaluationScore(result, userIds, userNames, fault.getKnowledgeId(), deviceTypeCode);
@@ -2242,7 +2242,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         result = sortAndTakeFirstN(result, FaultConstant.FIRST_5);
 
         // 补充其他数据
-        result = addAdditionalDataToResultList(result, fault.getSymptoms(), deviceTypeCode);
+        result = addAdditionalDataToResultList(result, userIds, fault.getSymptoms(), deviceTypeCode);
 
         return result;
     }
@@ -2252,38 +2252,36 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      *
      * @param result     结果列表，包含多个RecPersonListDTO对象
      * @param endStation 结束站点code
+     * @param userNames
      * @return 更新后的结果列表，每个RecPersonListDTO对象的最短距离字段已更新
      */
-    private List<RecPersonListDTO> calculateShortestDistance(List<RecPersonListDTO> result, String endStation) {
+    private List<RecPersonListDTO> calculateShortestDistance(List<RecPersonListDTO> result, String endStation, List<String> userNames) {
         if (CollUtil.isEmpty(result) || StrUtil.isEmpty(endStation)) {
             return result;
         }
 
         String endStationToLineCode = getLineCodeForStation(endStation);
-        List<String> userNames = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
 
         // 构建站点图
         Map<String, List<String>> graph = buildGraph();
 
         // 查出所有换乘站点
-        List<ChangeCodeDTO> changeCodeList = faultMapper.getStationChangeCodeList();
-        Map<String, String> changeCodeMap = convertChangeCodeListToMap(changeCodeList);
+        Map<String, String> changeCodeMap = convertChangeCodeListToMap(faultMapper.getStationChangeCodeList());
 
         // 用户当前所在站点映射
-        List<UserStationCodeDTO> userStationCodeDTOList = faultMapper.getUserStationCodeList(userNames, getTenMinutesAgo());
-        Map<String, UserStationCodeDTO> userStationCodeMap = convertUserStationCodeDTOListToMap(userStationCodeDTOList);
+        Map<String, UserStationCodeDTO> userStationCodeMap = convertUserStationCodeDTOListToMap(faultMapper.getUserStationCodeList(userNames, getTenMinutesAgo()));
 
         return result.stream()
                 .map(re -> {
                     UserStationCodeDTO userStationCodeDTO = userStationCodeMap.get(re.getUserName());
                     if (ObjectUtil.isEmpty(userStationCodeDTO)) {
-                        re.setStationName("暂无位置信息");
+                        re.setStationName(FaultConstant.UNKNOWN_LOCATION);
                         re.setDistanceText("");
                         re.setStationNum(Integer.MAX_VALUE);
                         return re;
                     }
 
-                    re.setStationName(StrUtil.isNotEmpty(userStationCodeDTO.getStationName()) ? userStationCodeDTO.getStationName() : "暂无位置信息");
+                    re.setStationName(StrUtil.isNotEmpty(userStationCodeDTO.getStationName()) ? userStationCodeDTO.getStationName() : FaultConstant.UNKNOWN_LOCATION);
                     List<String> shortestPath = bfsShortestPath(graph, userStationCodeDTO.getStationCode(), endStation);
                     int shortestDistance = shortestPath.size() - 1;
 
@@ -2463,21 +2461,21 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * 向推荐人员结果列表中添加额外的数据
      *
      * @param resultList     结果列表
+     * @param userIds        用户id列表
      * @param symptoms       故障现象
      * @param deviceTypeCode 设备类型编码
      */
-    private List<RecPersonListDTO> addAdditionalDataToResultList(List<RecPersonListDTO> resultList, String symptoms, String deviceTypeCode) {
+    private List<RecPersonListDTO> addAdditionalDataToResultList(List<RecPersonListDTO> resultList, List<String> userIds, String symptoms, String deviceTypeCode) {
         if (CollUtil.isEmpty(resultList)) {
             return resultList;
         }
 
         // 角色名称
-        List<String> userIdList = resultList.stream().map(RecPersonListDTO::getUserId).collect(Collectors.toList());
-        List<RoleNameDTO> roleNameList = faultMapper.getRoleNameByUserIdList(userIdList);
+        List<RoleNameDTO> roleNameList = faultMapper.getRoleNameByUserIdList(userIds);
         Map<String, String> roleNameMap = convertRoleNameListToMap(roleNameList);
 
         // 资质
-        List<AptitudeDTO> aptitudeNameList = faultMapper.getAptitudeList(userIdList);
+        List<AptitudeDTO> aptitudeNameList = faultMapper.getAptitudeList(userIds);
         Map<String, String> aptitudeMap = convertAptitudeNameListToMap(aptitudeNameList);
 
         // 人员等级
@@ -2491,9 +2489,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
             // 四舍五入至小数点后两位
             roundEvaluationScores(recPersonListDTO);
-
-//            // 所在站点
-//            recPersonListDTO.setStationName(setUserStationName(recPersonListDTO.getUserName()));
 
             // 翻译人员等级
             recPersonListDTO.setJobGradeName(jobGradeMap.getOrDefault(String.valueOf(recPersonListDTO.getJobGrade()), ""));
@@ -2640,26 +2635,23 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (CollUtil.isEmpty(result)) {
             return result;
         }
-        // 筛选后的人员信息
-        List<String> userNameList = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
-        List<String> userIdList = result.stream().map(RecPersonListDTO::getUserId).collect(Collectors.toList());
 
         // 故障处理次数（匹配的故障现象）
         List<RadarNumberDTO> faultHandCountListByFaultPhenomenon = null;
         if (StrUtil.isNotEmpty(knowledgeId)) {
-            faultHandCountListByFaultPhenomenon = faultMapper.getFaultHandCountListByFaultPhenomenon(userNameList, knowledgeId);
+            faultHandCountListByFaultPhenomenon = faultMapper.getFaultHandCountListByFaultPhenomenon(userNames, knowledgeId);
         }
         Map<String, Integer> faultPhenomenonCountMap = convertFaultHandCountListByFaultPhenomenonToMap(faultHandCountListByFaultPhenomenon);
 
         // 故障处理次数（同设备类型）
         List<RadarNumberDTO> faultHandCountListByDeviceType = null;
         if (StrUtil.isNotEmpty(deviceTypeCode)) {
-            faultHandCountListByDeviceType = faultMapper.getFaultHandCountListByDeviceType(userNameList, deviceTypeCode);
+            faultHandCountListByDeviceType = faultMapper.getFaultHandCountListByDeviceType(userNames, deviceTypeCode);
         }
         Map<String, Integer> deviceTypeCountMap = convertFaultHandCountListByDeviceTypeToMap(faultHandCountListByDeviceType);
 
         // 故障处理总次数
-        List<RadarNumberDTO> handleNumberList = faultMapper.getHandleNumberList(userNameList);
+        List<RadarNumberDTO> handleNumberList = faultMapper.getHandleNumberList(userNames);
         Integer[] handleNumberMaxMin = getFaultHandleNumberMaxMin(handleNumberList, result);
         Map<String, Integer> handleNumberMap = convertHandleNumberListToMap(handleNumberList);
 
@@ -2672,7 +2664,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         CommonMaxMinNumDTO userExperienceMaxMin = faultMapper.getTenureMaxMin(new Date(), userIds);
 
         // 资质
-        List<RadarAptitudeDTO> aptitudeList = faultMapper.getAptitude(userIdList);
+        List<RadarAptitudeDTO> aptitudeList = faultMapper.getAptitude(userIds);
         Integer[] aptitudeMaxMin = getAptitudeMaxMin(aptitudeList, result);
         Map<String, Integer> aptitudeMap = convertAptitudeListToMap(aptitudeList);
 
@@ -3019,15 +3011,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     /**
      * 任务情况统计
      *
-     * @param result 待统计任务情况的人员列表
+     * @param result    待统计任务情况的人员列表
+     * @param userNames 用户账号列表
      * @return 统计后的任务情况人员列表
      */
-    private List<RecPersonListDTO> taskSituation(List<RecPersonListDTO> result) {
+    private List<RecPersonListDTO> taskSituation(List<RecPersonListDTO> result, List<String> userNames) {
         if (CollUtil.isEmpty(result)) {
             return result;
         }
-
-        List<String> userNames = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
 
         Map<String, String> sameFaultMap = Optional.ofNullable(faultMapper.taskSituation(userNames)).orElse(CollUtil.newArrayList())
                 .stream()
@@ -3041,16 +3032,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     re.setTaskStatus(FaultConstant.IN_MAINTENANCE_NAME.equals(taskStatus) ? FaultConstant.IN_MAINTENANCE_NAME : FaultConstant.FREE_NAME);
                 })
                 .collect(Collectors.toList());
-
-//        // 计算任务情况为空闲的人员数量
-//        long freeNum = result.stream()
-//                .filter(re -> FaultConstant.FREE_NAME.equals(re.getTaskStatus()))
-//                .count();
-//
-//        // 如果空闲的人员数量大于等于5人，则只返回空闲的人员人员，否则返回全部人员
-//        return result.stream()
-//                .filter(re -> (CommonConstant.SHI.equals(re.getHandledSameFault()) && FaultConstant.FREE_NAME.equals(re.getTaskStatus())) || freeNum < 5)
-//                .collect(Collectors.toList());
     }
 
     /**
@@ -3058,14 +3039,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      *
      * @param result      需要检查的故障处理列表。
      * @param knowledgeId 待检查的故障知识点ID。
+     * @param userNames   用户账号列表
      * @return 处理了相同故障的故障处理列表。
      */
-    private List<RecPersonListDTO> isSameFaultHandled(List<RecPersonListDTO> result, String knowledgeId) {
+    private List<RecPersonListDTO> isSameFaultHandled(List<RecPersonListDTO> result, String knowledgeId, List<String> userNames) {
         if (CollUtil.isEmpty(result)) {
             return result;
         }
 
-        List<String> userNames = result.stream().map(RecPersonListDTO::getUserName).collect(Collectors.toList());
         Map<String, String> sameFaultMap = CollUtil.newHashMap();
         if (CollUtil.isNotEmpty(userNames) && StrUtil.isNotEmpty(knowledgeId)) {
             sameFaultMap = Optional.ofNullable(faultMapper.isSameFaultHandled(userNames, knowledgeId)).orElse(CollUtil.newArrayList())
@@ -3079,27 +3060,17 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         return result.stream()
                 .peek(re -> {
                     String isSameFaultHandled = finalSameFaultMap.getOrDefault(re.getUserName(), "");
-                    re.setHandledSameFault(CommonConstant.SHI.equals(isSameFaultHandled) ? isSameFaultHandled : CommonConstant.FOU);
+                    re.setHandledSameFault(CommonConstant.SHI.equals(isSameFaultHandled) ? CommonConstant.SHI : CommonConstant.FOU);
                 })
                 .collect(Collectors.toList());
-
-//        // 计算处理过相同故障的人员数量
-//        long countHandledSameFaultNum = result.stream()
-//                .filter(re -> CommonConstant.SHI.equals(re.getHandledSameFault()))
-//                .count();
-//
-//        // 如果处理过相同故障的人员数量大于等于5人，则只返回处理过相同故障的人员，否则返回全部人员
-//        return result.stream()
-//                .filter(re -> (CommonConstant.SHI.equals(re.getHandledSameFault()) && FaultConstant.ON_DUTY_NAME.equals(re.getScheduleStatus())) || countHandledSameFaultNum < 5)
-//                .collect(Collectors.toList());
     }
 
     /**
-     * 筛选和处理用户工作的方法。
+     * 处理用户排班信息。
      *
      * @param result  需要筛选和处理的用户列表。
      * @param userIds 用于筛选用户排班情况的用户ID列表。
-     * @return 筛选和处理后的用户列表。
+     * @return 处理后的用户列表。
      */
     private List<RecPersonListDTO> filterAndProcessUserWork(List<RecPersonListDTO> result, List<String> userIds) {
         if (CollUtil.isEmpty(result)) {
@@ -3121,16 +3092,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     re.setScheduleStatus(workName);
                 })
                 .collect(Collectors.toList());
-
-//        // 计算人员的排班情况为当班的数量
-//        long countScheduleStatusNum = result.stream()
-//                .filter(re -> FaultConstant.ON_DUTY_NAME.equals(re.getScheduleStatus()))
-//                .count();
-//
-//        // 如果当班人员数量大于等于5人，则只返回当班人员，否则返回全部人员
-//        return result.stream()
-//                .filter(re -> FaultConstant.ON_DUTY_NAME.equals(re.getScheduleStatus()) || countScheduleStatusNum < 5)
-//                .collect(Collectors.toList());
     }
 
     /**

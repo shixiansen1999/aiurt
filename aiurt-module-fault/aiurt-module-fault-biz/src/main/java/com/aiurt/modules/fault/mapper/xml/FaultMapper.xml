@@ -321,6 +321,7 @@
                     sd.del_flag = 0
                   AND cud.user_id = #{userId}
             )
+            AND  su.del_flag = 0
         GROUP BY
             su.id
     </select>
@@ -335,7 +336,7 @@
         WHERE
           FIND_IN_SET(#{knowledgeId}, f.knowledge_id) > 0
           AND f.state = 2
-          AND f.appoint_user_name is not null
+          AND f.appoint_user_name is not null AND f.appoint_user_name!=''
         <if test="userNames!=null and userNames.size()>0">
             AND f.appoint_user_name in
             <foreach collection="userNames" separator="," open="(" close=")" item="username">
@@ -645,17 +646,17 @@
             cs.line_code AS lineCode
         FROM
             sys_user_position sup
-                LEFT JOIN cs_position_wifi cpw ON cpw.mac = sup.bssid
-                LEFT JOIN cs_station cs ON cs.station_code = cpw.station_code
+        LEFT JOIN cs_position_wifi cpw ON cpw.mac = sup.bssid
+        LEFT JOIN cs_station cs ON cs.station_code = cpw.station_code
         WHERE
-            sup.bssid IS NOT NULL AND sup.bssid != ''
+        sup.bssid IS NOT NULL AND sup.bssid != ''
+        AND sup.upload_time >= #{tenMinutesAgo}
         <if test="userNames!=null and userNames.size()>0">
             AND sup.create_by in
             <foreach collection="userNames" separator="," open="(" close=")" item="username">
                 #{username}
             </foreach>
         </if>
-          AND sup.upload_time >= #{tenMinutesAgo}
         GROUP BY sup.create_by
         ORDER BY sup.upload_time DESC
     </select>

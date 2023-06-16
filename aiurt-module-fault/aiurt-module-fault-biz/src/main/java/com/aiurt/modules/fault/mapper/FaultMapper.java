@@ -196,11 +196,11 @@ public interface FaultMapper extends BaseMapper<Fault> {
     List<FaultSparePart> queryFaultSparePart(@Param("materialCode") String materialCode, @Param("faultCauseSolutionIdList") List<String> faultCauseSolutionIdList);
 
     /**
-     * 获取人员当前时间当班情况
+     * 获取指定日期下，由指定用户管理的部门用户列表
      *
-     * @param date
-     * @param userId
-     * @return
+     * @param date   指定日期，用于筛选符合条件的用户列表
+     * @param userId 指定用户的ID，用于确定管理者身份
+     * @return 符合条件的用户列表
      */
     List<RecPersonListDTO> getManagedDepartmentUsers(@Param("date") Date date, @Param("userId") String userId);
 
@@ -350,6 +350,7 @@ public interface FaultMapper extends BaseMapper<Fault> {
 
     /**
      * 查询换乘站点对应的换乘编码
+     *
      * @return
      */
     List<ChangeCodeDTO> getStationChangeCodeList();

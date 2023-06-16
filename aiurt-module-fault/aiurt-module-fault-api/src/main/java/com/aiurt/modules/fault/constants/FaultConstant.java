@@ -78,4 +78,9 @@ public class FaultConstant {
      *  表示取数据的前5条
      */
     public static final int FIRST_5 = 5;
+    /**
+     * 表示当前人员没有位置信息
+     */
+    public static final String UNKNOWN_LOCATION = "暂无位置信息";
+
 }
