@@ -57,6 +57,18 @@ public class EmergencyRehearsalMonthController extends BaseController<EmergencyR
         return Result.OK(pageList);
     }
 
+    @AutoLog(value = "app查询月度演练计划")
+    @ApiOperation(value = "app查询月度演练计划", notes = "app查询月度演练计划")
+    @GetMapping(value = "queryMonthList")
+    public Result<IPage<EmergencyRehearsalMonthVO>> queryMonthList(EmergencyRehearsalMonthDTO emergencyRehearsalMonthDTO,
+                                                                      @RequestParam(name = "pageNo",defaultValue = "1") Integer pageNo,
+                                                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                                      HttpServletRequest req) {
+        Page<EmergencyRehearsalMonthVO> page = new Page<>(pageNo, pageSize);
+        IPage<EmergencyRehearsalMonthVO> pageList =  emergencyRehearsalMonthService.queryMonthList(page, emergencyRehearsalMonthDTO);
+        return Result.ok(pageList);
+    }
+
     /**
      * 添加
      *
