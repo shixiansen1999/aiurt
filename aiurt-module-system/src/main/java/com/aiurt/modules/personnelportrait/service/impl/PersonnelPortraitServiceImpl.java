@@ -490,6 +490,9 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
             boolean equality = usernames.size() != efficiencys.size();
             double maxValue = equality ? Collections.max(values) * multiples : Collections.max(values);
             double minValue = Collections.min(values);
+            if (currentValue == 0) {
+                currentValue = maxValue;
+            }
             radarModel.setCurrentValue(currentValue);
             radarModel.setMaxValue(maxValue);
             radarModel.setMinValue(minValue);
