@@ -314,4 +314,9 @@ public interface SysParamCodeConstant {
      * 通信分部编码
      */
     String 	SPECIAL_TEAM = "special_team";
+
+    /**
+     * app端检修工单填写同行人是否可选全部班组
+     */
+    String INSPECTION_PEER_ALL_USER = "inspection_peer_all_user";
 }

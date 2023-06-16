@@ -56,6 +56,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -2710,8 +2711,19 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
         }
 
-        // 查询登录人部门下所有的人员
-        orgDto = manager.queryUserByOrdCode(loginUser.getOrgCode());
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_PEER_ALL_USER);
+        boolean value = "1".equals(paramModel.getValue());
+        // value为true，则选择同行人时可以选择全部班组的成员
+        if(value){
+            // 获取全部部门
+            List<SysDepartModel> allDepartList = sysBaseApi.getAllSysDepart();
+            String allOrgCodes = allDepartList.stream().map(SysDepartModel::getOrgCode).collect(Collectors.joining(","));
+            // 查询全部部门的人员
+            orgDto = manager.queryUserByOrdCode(allOrgCodes);
+        }else{
+            // 查询登录人部门下所有的人员
+            orgDto = manager.queryUserByOrdCode(loginUser.getOrgCode());
+        }
 
         // 过滤掉检修人
         if (CollUtil.isNotEmpty(orgDto)) {
