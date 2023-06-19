@@ -82,6 +82,9 @@ public class PatrolTaskDTO extends DictEntity implements Serializable
     @Excel(name = "站点名称", width = 15)
     @ApiModelProperty(value = "站点名称")
     private String stationName;
+    @Excel(name = "巡检人的id列表", width = 15)
+    @ApiModelProperty(value = "巡检人的id列表")
+    private List<String> patrolUserIdList;
     @Excel(name = "巡检人名称", width = 15)
     @ApiModelProperty(value = "巡检人名称")
     private String patrolUserName;
