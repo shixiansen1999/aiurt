@@ -107,14 +107,27 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
 
                     }
                     majorDTO.setChildren(selectTableDTOList);
-                } else {
-                    //获取子节点
-                    List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getMajorCode().equals(majorDTO.getMajorCode())).filter(f-> "0".equals(f.getSystemCode())).collect(Collectors.toList());
-                    if (CollectionUtils.isNotEmpty(baseTypeList)) {
-                        List<SelectTableDTO> childrenTress = getDetail(majorDTO, baseTypeList);
-                        List<SelectTableDTO> treeRes = getTreeRes(childrenTress, "0");
-                        majorDTO.setChildren(treeRes);
+                }
+//                } else {
+//                    //获取子节点
+//                    List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getMajorCode().equals(majorDTO.getMajorCode())).filter(f-> "0".equals(f.getSystemCode())).collect(Collectors.toList());
+//                    if (CollectionUtils.isNotEmpty(baseTypeList)) {
+//                        List<SelectTableDTO> childrenTress = getDetail(majorDTO, baseTypeList);
+//                        List<SelectTableDTO> treeRes = getTreeRes(childrenTress, "0");
+//                        majorDTO.setChildren(treeRes);
+//                    }
+//                    majorDTO.setChildren(children);
+//                }
+                //获取子节点
+                List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getMajorCode().equals(majorDTO.getMajorCode())).filter(f -> "0".equals(f.getSystemCode())).collect(Collectors.toList());
+                if (CollectionUtils.isNotEmpty(baseTypeList)) {
+                    List<SelectTableDTO> childrenTress = getDetail(majorDTO, baseTypeList);
+                    List<SelectTableDTO> treeRes = getTreeRes(childrenTress, "0");
+                    List<SelectTableDTO> children = majorDTO.getChildren();
+                    if (CollUtil.isNotEmpty(children)) {
+                        children.addAll(treeRes);
                     }
+                    majorDTO.setChildren(children);
                 }
             }
             return allMajor;
