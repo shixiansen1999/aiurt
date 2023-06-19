@@ -702,7 +702,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
             }
 
             DeviceAssembly assembly = BeanUtil.copyProperties(deviceAssembly, DeviceAssembly.class, "id");
-            assembly.setCode(deviceChangeSparePartDTO.getCode());
+            assembly.setCode(deviceChangeSparePartDTO.getNewSparePartCode());
             assembly.setCreateTime(new Date());
 
             deviceAssembly.setStatus("1");
