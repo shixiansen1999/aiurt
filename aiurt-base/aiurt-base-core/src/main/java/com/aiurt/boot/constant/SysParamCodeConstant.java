@@ -314,4 +314,5 @@ public interface SysParamCodeConstant {
      * 通信分部编码
      */
     String 	SPECIAL_TEAM = "special_team";
+    String APP_PATROL_TASK_POOL_SORT = "app_patrol_task_pool_sort";
 }
