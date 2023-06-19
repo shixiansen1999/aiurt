@@ -319,4 +319,6 @@ public interface SysParamCodeConstant {
      * app端检修工单填写同行人是否可选全部班组
      */
     String INSPECTION_PEER_ALL_USER = "inspection_peer_all_user";
+
+    String INSPECTION_SIGN_MULTI = "inspection_sign_multi";
 }

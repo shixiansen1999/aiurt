@@ -160,6 +160,28 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             return pageList.setRecords(lists);
         }
 
+        // 站台门四期、有多同行人签名的情况的话，预览要是多人的签名图片，给RepairTask的confirmUrl赋值，多个以","分隔
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_SIGN_MULTI);
+        boolean value = "1".equals(paramModel.getValue());
+        // value为true，则检修任务展示签名是包括同行人在内的多签名
+        if(value){
+            // 查询lists的所有task任务的所有签名
+            LambdaQueryWrapper<RepairTaskSignUser> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(RepairTaskSignUser::getRepairTaskId, repairTaskIds);
+            queryWrapper.eq(RepairTaskSignUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+            List<RepairTaskSignUser> taskSignUserList = repairTaskSignUserService.list(queryWrapper);
+            // 将所有签名做成一个map,key是任务id，value是使用”,“分隔的多个签名url
+            Map<String, String> taskSignUrlMap = taskSignUserList.stream().filter(taskSignUser -> StrUtil.isNotEmpty(taskSignUser.getSignUrl()))
+                    .collect(Collectors.toMap(RepairTaskSignUser::getRepairTaskId, RepairTaskSignUser::getSignUrl, (oldValue, newValue) -> oldValue + "," + newValue));
+            // 给任务列表的签名url重新赋值为多签名的url
+            lists.forEach(task->{
+                String signUrl = taskSignUrlMap.get(task.getId());
+                if (StrUtil.isNotEmpty(signUrl)) {
+                    task.setConfirmUrl(signUrl);
+                }
+            });
+        }
+
         Map<String, String> taskStateMap = getTaskStateMap();
         Map<String, String> taskTypeMap = getTaskTypeMap();
         Map<String, String> isConfirmMap = getIsConfirmMap();
