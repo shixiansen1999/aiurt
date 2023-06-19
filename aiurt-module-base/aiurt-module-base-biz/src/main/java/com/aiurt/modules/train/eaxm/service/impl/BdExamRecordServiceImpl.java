@@ -112,14 +112,6 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
                 }
              });
         }
-        List<BdExamRecord> bdExamRecords = getBdExamRecodes(bdExamRecordList);
-        List<BdExamRecord> recordList = new ArrayList();
-        bdExamRecords.forEach(e -> {
-            if ("3".equals(e.getIsRelease())){
-                recordList.add(e);
-            }
-        });
-        bdExamRecords.removeAll(recordList);
         return pageList.setRecords(bdExamRecordList);
     }
 
