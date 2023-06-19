@@ -70,8 +70,8 @@
     LEFT JOIN sys_user su on a.appoint_user_name = su.username
     where 1=1
     and f.status > 2
-    AND  DATE_FORMAT(f.happen_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d')
-    AND  DATE_FORMAT(f.happen_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d')
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
     <if test="userList != null and userList.size() != 0">
         AND  su.id in
         <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
@@ -124,8 +124,8 @@
     left join sys_depart sd on f.sys_org_code = sd.org_code
     where 1=1
     and f.status > 2
-    AND  DATE_FORMAT(f.happen_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d')
-    AND  DATE_FORMAT(f.happen_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d')
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
     AND  sd.id = #{orgId}
     </select>
 </mapper>

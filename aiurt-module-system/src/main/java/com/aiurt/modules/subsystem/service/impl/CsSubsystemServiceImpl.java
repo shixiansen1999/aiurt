@@ -182,6 +182,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                     }
                     subDTO.setFailureNum(subDTO.getCommonFaultNum()+subDTO.getSeriousFaultNum());
                     subDTO.setSystemCode(s.getSystemCode());subDTO.setSystemName(s.getSystemName());subDTO.setId(s.getId());
+                    subDTO.setShortenedForm(s.getShortenedForm());
                     subDTO.setCode(subDTO.getSystemCode());subDTO.setName(subDTO.getSystemName());
                     subDTO.setFailureDuration(subDTO.getNum());
 

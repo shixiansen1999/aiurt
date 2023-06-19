@@ -185,7 +185,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 fault.setAppointUserName(user.getUsername());
                 fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
                 // 方便统计
-                fault.setApprovalPassTime(fault.getReceiveTime());
+                //fault.setApprovalPassTime(fault.getReceiveTime());
+                Date date = new Date();
+                fault.setApprovalPassTime(date);
+                //响应时长为0
+                fault.setResponseDuration(0);
                 // 创建维修记录
                 FaultRepairRecord record = FaultRepairRecord.builder()
                         // 做类型

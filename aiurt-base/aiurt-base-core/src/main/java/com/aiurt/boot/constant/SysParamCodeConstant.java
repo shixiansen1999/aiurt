@@ -282,6 +282,7 @@ public interface SysParamCodeConstant {
      * 调度下发新的故障-需要响铃的中心班组
      */
     String FAULT_EXTERNAL_ORG = "fault_external_org";
+
     /**
      * 根据配置决定故障上报是否开启控制中心班组自检故障指派功能及权限
      */
