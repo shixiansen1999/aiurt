@@ -97,6 +97,9 @@
             </choose>
         </if>
         ORDER BY
+            <if test="b">
+                t1.`status` = 4 DESC,
+            </if>
         t1.creatTime DESC,
         t1.lineSort ASC,
         t1.stationSort ASC;
