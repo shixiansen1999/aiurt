@@ -60,4 +60,43 @@
         where erm.del_flag = 0
           and erm.plan_id = #{planId}
     </select>
+    <select id="queryMonthList" resultType="com.aiurt.boot.rehearsal.vo.EmergencyRehearsalMonthVO">
+        SELECT
+            erm.*,
+            ery.year,
+            ery.`code` emergencyRehearsalYearCode,
+            ery.`name` emergencyRehearsalYearName,
+            ep.emergency_plan_name AS schemeName
+        FROM
+            emergency_rehearsal_month erm
+                LEFT JOIN emergency_rehearsal_year ery ON erm.plan_id = ery.id
+                AND ery.del_flag = 0
+                LEFT JOIN emergency_plan ep ON erm.scheme_id = ep.id
+                AND ep.del_flag = 0
+                LEFT JOIN (
+                    SELECT plan_id
+                    FROM emergency_implementation_record
+                    WHERE del_flag = 0
+                    <if test="condition.orgCode != null and condition.orgCode != ''">
+                        AND org_code = #{condition.orgCode}
+                    </if>
+                ) t ON erm.id = t.plan_id
+        WHERE
+            erm.del_flag = 0
+            AND ery.status = 3
+            AND t.plan_id IS NULL
+            <if test="condition.id != null and condition.id != ''">
+                AND erm.id = #{condition.id}
+            </if>
+            <if test="condition.code != null and condition.code != ''">
+                AND erm.code LIKE CONCAT("%", #{condition.code}, "%")
+            </if>
+            <if test="condition.orgCodes != null and condition.orgCodes.size() > 0">
+                AND erm.org_code IN
+                <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        ORDER BY erm.create_time DESC
+    </select>
 </mapper>
