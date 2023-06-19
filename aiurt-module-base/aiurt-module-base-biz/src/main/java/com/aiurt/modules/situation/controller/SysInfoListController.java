@@ -15,6 +15,7 @@ import com.aiurt.modules.situation.entity.SysAnnouncementSend;
 import com.aiurt.modules.situation.mapper.SysInfoListMapper;
 import com.aiurt.modules.situation.service.SysInfoListService;
 import com.aiurt.modules.situation.service.SysInfoSendService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -37,10 +38,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -128,6 +126,8 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
             String replace1 = StrUtil.replace(replace, "</p>", "");
             announcement.setMsgContent(replace1);
             bdInfoListService.getUserNames(announcement);
+            List<SysAnnouncementSend> sendList = sysInfoSendService.list(new LambdaQueryWrapper<SysAnnouncementSend>().eq(SysAnnouncementSend::getAnntId, announcement.getId()));
+            announcement.setSendList(sendList);
         }
         result.setSuccess(true);
         result.setResult(pageList);
@@ -318,7 +318,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
     })
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<String> edit(@RequestBody SysAnnouncementSend sysAnnouncementSend) {
-        sysInfoListMapper.updateReadFlag(sysAnnouncementSend.getId(),new Date());
+        sysInfoSendService.updateReadFlag(sysAnnouncementSend);
         return Result.OK("编辑成功!");
     }
 
