@@ -14,6 +14,7 @@ import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.service.IFaultDeviceService;
 import com.aiurt.modules.fault.service.IFaultService;
+import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -533,11 +534,25 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     })
     @ApiOperation(value = "备件更换回填", notes = "备件更换回填")
     @GetMapping(value = "/querySparePartReplaceList")
-    public Result<List<SparePartReplaceDTO>> querySparePartReplaceList(@RequestParam(value = "oldSparePartCode", required = false) String oldSparePartCode,
+    public Result<List<SparePartReplaceDTO>> querySparePartReplaceList(@RequestParam(value = "oldSparePartCode[]", required = false) String[] oldSparePartCode,
                                                                        @RequestParam(value = "faultCauseSolutionIdList[]", required = false) String[] faultCauseSolutionIdList,
                                                                        @RequestParam(value = "deviceCode", required = false) String deviceCode) {
         List<SparePartReplaceDTO> result = faultService.querySparePartReplaceList(oldSparePartCode, faultCauseSolutionIdList, deviceCode);
         return Result.OK(result);
+    }
+
+
+
+    @ApiOperation(value = "根据设备编码查询组件", notes = "根据设备编码查询组件")
+    @GetMapping("/queryDeviceAssemblyByDeviceCode")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "deviceCode", value = "设备编码", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "faultCauseSolutionIdList[]", value = "故障原因及解决方案id", required = false, paramType = "query")
+    })
+    public Result<List<DeviceAssemblyDTO>> queryDeviceAssemblyByDeviceCode(@RequestParam(value = "deviceCode", required = false) String deviceCode,
+                                                                           @RequestParam(value = "faultCauseSolutionIdList[]", required = false) String[] faultCauseSolutionIdList) {
+        List<DeviceAssemblyDTO> list = faultService.queryDeviceAssemblyByDeviceCode(deviceCode, faultCauseSolutionIdList);
+        return Result.OK(list);
     }
 
 

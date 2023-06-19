@@ -5,6 +5,7 @@ import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
+import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -208,7 +209,7 @@ public interface IFaultService extends IService<Fault> {
      * @param deviceCode
      * @return
      */
-    List<SparePartReplaceDTO> querySparePartReplaceList(String oldSparePartCode, String[] faultCauseSolutionIdList, String deviceCode);
+    List<SparePartReplaceDTO> querySparePartReplaceList(String[]  oldSparePartCode, String[] faultCauseSolutionIdList, String deviceCode);
 
     /**
      * 查询推荐人员
@@ -217,4 +218,11 @@ public interface IFaultService extends IService<Fault> {
      */
     List<RecPersonDTO> queryRecommendationPerson(String faultCode);
 
+    /**
+     * 查询
+     * @param deviceCode
+     * @param faultCauseSolutionIdList
+     * @return
+     */
+    List<DeviceAssemblyDTO> queryDeviceAssemblyByDeviceCode(String deviceCode, String[] faultCauseSolutionIdList);
 }

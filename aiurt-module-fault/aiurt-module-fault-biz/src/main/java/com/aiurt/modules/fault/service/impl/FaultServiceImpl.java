@@ -43,6 +43,7 @@ import com.aiurt.modules.faultcauseusagerecords.entity.FaultCauseUsageRecords;
 import com.aiurt.modules.faultcauseusagerecords.service.IFaultCauseUsageRecordsService;
 import com.aiurt.modules.faultexternal.service.IFaultExternalService;
 import com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO;
+import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
@@ -1829,8 +1830,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 faultCauseSolution.setSolution(repairRecord.getMaintenanceMeasures());
 
                 List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, repairRecord.getId());
+                // 同一种类型需要合并数据
+                List<DeviceChangeSparePart> result = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("0", sparepart.getConsumables()))
+                        .collect(Collectors.toMap(DeviceChangeSparePart::getMaterialBaseCode, t -> t, (o1,o2)-> {
+                            o1.setNewSparePartNum(o1.getNewSparePartNum() + o2.getNewSparePartNum());
+                            return o1;
+                        })).values().stream().collect(Collectors.toList());
 
-                List<FaultSparePart> faultSpareParts = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("0", sparepart.getConsumables()))
+                List<FaultSparePart> faultSpareParts = result.stream()
                         .map(sparepart -> {
                             FaultSparePart faultSparePart = new FaultSparePart();
                             faultSparePart.setSparePartCode(sparepart.getMaterialBaseCode());
@@ -3218,53 +3225,19 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return
      */
     @Override
-    public List<SparePartReplaceDTO> querySparePartReplaceList(String oldSparePartCode, String[] faultCauseSolutionIdList, String deviceCode) {
+    public List<SparePartReplaceDTO> querySparePartReplaceList(String[] oldSparePartCode, String[] faultCauseSolutionIdList, String deviceCode) {
         // 查询
         List<SparePartReplaceDTO> list = new ArrayList<>();
         // 非标准的
-        if (StrUtil.isNotBlank(oldSparePartCode) && ObjectUtil.isEmpty(faultCauseSolutionIdList) && StrUtil.isNotBlank(deviceCode)) {
-
-            SparePartReplaceDTO replaceDTO = baseMapper.querySparePart(deviceCode, oldSparePartCode);
-            if (Objects.isNull(replaceDTO) || StrUtil.isBlank(replaceDTO.getMaterialCode())) {
-                return list;
-            }
-            // 查询最大编码数数据
-            String materialCode = replaceDTO.getMaterialCode();
-            Long num = baseMapper.countNumBymaterialCode(materialCode);
-            num = Optional.ofNullable(num).orElse(0L);
-            Boolean flag = true;
-            String newSparePartCode = "";
-            while (flag) {
-                num += 1L;
-                String serialCode = String.format("%06d", num);
-                newSparePartCode = materialCode + serialCode;
-                Long assemblyNum = baseMapper.existDeviceAssemblyCode(newSparePartCode);
-                String str = redisUtil.getStr("fault:sparepart:" + newSparePartCode);
-                flag = (Objects.nonNull(assemblyNum) && assemblyNum > 0) || StrUtil.isNotBlank(str);
-            }
-            redisUtil.set("fault:sparepart:" + newSparePartCode, newSparePartCode, 7 * 24 * 60 * 60);
-            replaceDTO.setNewSparePartCode(newSparePartCode);
-            replaceDTO.setNewSparePartSplitCode(newSparePartCode);
-            replaceDTO.setNewSparePartNum(1);
-            // 新编码
-            list.add(replaceDTO);
-            return list;
-        }
-        // 标准&采用维修建议的
-
-        if (StrUtil.isNotBlank(deviceCode) && ObjectUtil.isNotEmpty(faultCauseSolutionIdList) && StrUtil.isNotBlank(oldSparePartCode)) {
-            List<String> idList = Stream.of(faultCauseSolutionIdList).collect(Collectors.toList());
-            SparePartReplaceDTO replaceDTO = baseMapper.querySparePart(deviceCode, oldSparePartCode);
-            if (Objects.isNull(replaceDTO) || StrUtil.isBlank(replaceDTO.getMaterialCode())) {
-                return list;
-            }
-            String materialCode = replaceDTO.getMaterialCode();
-            // 解决方案的中备件与旧组件的物资编码相同的备件更换数据
-            List<FaultSparePart> faultSparePartList = baseMapper.queryFaultSparePart(materialCode, idList);
-            if (CollUtil.isNotEmpty(faultSparePartList)) {
-                FaultSparePart faultSparePart = faultSparePartList.get(0);
+        if (ObjectUtil.isNotEmpty(oldSparePartCode) && ObjectUtil.isEmpty(faultCauseSolutionIdList) && StrUtil.isNotBlank(deviceCode)) {
+            for (int i = 0; i < oldSparePartCode.length; i++) {
+                String sparePartCode = oldSparePartCode[i];
+                SparePartReplaceDTO replaceDTO = baseMapper.querySparePart(deviceCode, sparePartCode);
+                if (Objects.isNull(replaceDTO) || StrUtil.isBlank(replaceDTO.getMaterialCode())) {
+                   continue;
+                }
                 // 查询最大编码数数据
-                replaceDTO.setNewSparePartNum(faultSparePart.getNumber());
+                String materialCode = replaceDTO.getMaterialCode();
                 Long num = baseMapper.countNumBymaterialCode(materialCode);
                 num = Optional.ofNullable(num).orElse(0L);
                 Boolean flag = true;
@@ -3280,9 +3253,49 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 redisUtil.set("fault:sparepart:" + newSparePartCode, newSparePartCode, 7 * 24 * 60 * 60);
                 replaceDTO.setNewSparePartCode(newSparePartCode);
                 replaceDTO.setNewSparePartSplitCode(newSparePartCode);
-
+                replaceDTO.setNewSparePartNum(1);
                 // 新编码
                 list.add(replaceDTO);
+            }
+
+
+            return list;
+        }
+        // 标准&采用维修建议的
+        if (StrUtil.isNotBlank(deviceCode) && ObjectUtil.isNotEmpty(faultCauseSolutionIdList) && ObjectUtil.isNotEmpty(oldSparePartCode)) {
+            List<String> idList = Stream.of(faultCauseSolutionIdList).collect(Collectors.toList());
+            for (int i = 0; i < oldSparePartCode.length; i++) {
+                String sparePartCode = oldSparePartCode[i];
+                SparePartReplaceDTO replaceDTO = baseMapper.querySparePart(deviceCode, sparePartCode);
+                if (Objects.isNull(replaceDTO) || StrUtil.isBlank(replaceDTO.getMaterialCode())) {
+                    continue;
+                }
+                String materialCode = replaceDTO.getMaterialCode();
+                // 解决方案的中备件与旧组件的物资编码相同的备件更换数据
+                List<FaultSparePart> faultSparePartList = baseMapper.queryFaultSparePart(materialCode, idList);
+                if (CollUtil.isNotEmpty(faultSparePartList)) {
+                    FaultSparePart faultSparePart = faultSparePartList.get(0);
+                    // 查询最大编码数数据
+                    replaceDTO.setNewSparePartNum(faultSparePart.getNumber());
+                    Long num = baseMapper.countNumBymaterialCode(materialCode);
+                    num = Optional.ofNullable(num).orElse(0L);
+                    Boolean flag = true;
+                    String newSparePartCode = "";
+                    while (flag) {
+                        num += 1L;
+                        String serialCode = String.format("%06d", num);
+                        newSparePartCode = materialCode + serialCode;
+                        Long assemblyNum = baseMapper.existDeviceAssemblyCode(newSparePartCode);
+                        String str = redisUtil.getStr("fault:sparepart:" + newSparePartCode);
+                        flag = (Objects.nonNull(assemblyNum) && assemblyNum > 0) || StrUtil.isNotBlank(str);
+                    }
+                    redisUtil.set("fault:sparepart:" + newSparePartCode, newSparePartCode, 7 * 24 * 60 * 60);
+                    replaceDTO.setNewSparePartCode(newSparePartCode);
+                    replaceDTO.setNewSparePartSplitCode(newSparePartCode);
+
+                    // 新编码
+                    list.add(replaceDTO);
+            }
                 return list;
             }
         }
@@ -3307,6 +3320,37 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
         return result;
+    }
+
+
+    /**
+     * 查询设备
+     *
+     * @param deviceCode
+     * @param faultCauseSolutionIdList
+     * @return
+     */
+    @Override
+    public List<DeviceAssemblyDTO> queryDeviceAssemblyByDeviceCode(String deviceCode, String[] faultCauseSolutionIdList) {
+
+        if (StrUtil.isBlank(deviceCode)) {
+            return Collections.emptyList();
+        }
+
+        List<String> list = null;
+        if (ObjectUtil.isNotEmpty(faultCauseSolutionIdList)) {
+            list = Stream.of(faultCauseSolutionIdList).collect(Collectors.toList());
+        }
+
+        List<DeviceAssemblyDTO> deviceAssemblyDTOS = baseMapper.queryDeviceAssemblyByDeviceCode(deviceCode, list);
+        deviceAssemblyDTOS.stream().forEach(dto->{
+            dto.setKey(dto.getAssemblyId());
+            dto.setValue(dto.getCode());
+            dto.setLabel(String.format("%s-%s", dto.getMaterialName(), dto.getCode()));
+            dto.setTitle(String.format("%s-%s", dto.getMaterialName(), dto.getCode()));
+        });
+
+        return deviceAssemblyDTOS;
     }
 
     /**

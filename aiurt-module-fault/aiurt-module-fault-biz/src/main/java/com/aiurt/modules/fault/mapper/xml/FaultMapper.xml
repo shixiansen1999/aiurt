@@ -672,4 +672,19 @@
         GROUP BY
             station_code
     </select>
+
+    <select id="queryDeviceAssemblyByDeviceCode"
+            resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO">
+        select
+            code, material_name, id as assembly_id
+        from device_assembly where status = 0 and del_flag = 0 and  device_code = #{deviceCode}
+        <if test="list != null and list.size() != 0">
+            and material_code in (
+            select spare_part_code from fault_spare_part where cause_solution_id in
+            <foreach collection="list" close=")" open="(" separator="," item="item">
+                #{item}
+            </foreach>
+            )
+        </if>
+    </select>
 </mapper>

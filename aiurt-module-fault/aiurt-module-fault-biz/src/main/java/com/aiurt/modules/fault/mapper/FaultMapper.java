@@ -10,6 +10,7 @@ import com.aiurt.modules.fault.dto.RecPersonListDTO;
 import com.aiurt.modules.fault.dto.SparePartReplaceDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
+import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -240,6 +241,8 @@ public interface FaultMapper extends BaseMapper<Fault> {
     /**
      * 根据用户id获取工龄最大值和最小值
      *
+     *
+     *
      * @param date
      * @param userIds
      * @return
@@ -354,4 +357,15 @@ public interface FaultMapper extends BaseMapper<Fault> {
      * @return
      */
     List<ChangeCodeDTO> getStationChangeCodeList();
+
+
+    /**
+     * 查询组件
+     *
+     * @param deviceCode
+     * @param faultCauseSolutionIdList
+     * @return
+     */
+    List<DeviceAssemblyDTO> queryDeviceAssemblyByDeviceCode(@Param("deviceCode") String deviceCode, @Param("list") List<String> faultCauseSolutionIdList);
 }
+
