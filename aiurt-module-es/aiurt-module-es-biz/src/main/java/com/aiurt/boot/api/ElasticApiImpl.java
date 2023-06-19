@@ -206,26 +206,36 @@ public class ElasticApiImpl implements ElasticAPI {
                         if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
                             boolQueryBuilder.set(QueryBuilders.boolQuery());
                         }
-                        boolQueryBuilder.get().must(QueryBuilders.matchQuery("majorName", major));
+                        boolQueryBuilder.get().must(QueryBuilders.matchQuery("majorName", major).boost(2.0f));
                     });
             Optional.ofNullable(knowledgeBaseMatchDTO.getSubsystem())
                     .ifPresent(subsystem -> {
                         if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
                             boolQueryBuilder.set(QueryBuilders.boolQuery());
                         }
-                        boolQueryBuilder.get().must(QueryBuilders.matchQuery("systemName", subsystem));
+                        boolQueryBuilder.get().must(QueryBuilders.matchQuery("systemName", subsystem).boost(2.0f));
                     });
             if (CollUtil.isNotEmpty(devices)) {
                 if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
                     boolQueryBuilder.set(QueryBuilders.boolQuery());
                 }
-                boolQueryBuilder.get().must(QueryBuilders.matchQuery("deviceTypeName", devices.stream().collect(Collectors.joining(" "))));
+                boolQueryBuilder.get().must(
+                        QueryBuilders.matchQuery(
+                                "deviceTypeName",
+                                devices.stream().collect(Collectors.joining(" "))
+                        ).boost(2.0f)
+                );
             }
             if (CollUtil.isNotEmpty(phenomenons)) {
                 if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
                     boolQueryBuilder.set(QueryBuilders.boolQuery());
                 }
-                boolQueryBuilder.get().must(QueryBuilders.matchQuery("faultPhenomenon", phenomenons.stream().collect(Collectors.joining(" "))));
+                boolQueryBuilder.get().must(
+                        QueryBuilders.matchQuery(
+                                "faultPhenomenon",
+                                phenomenons.stream().collect(Collectors.joining(" "))
+                        ).boost(1.0f)
+                );
             }
             if (ObjectUtil.isNotEmpty(boolQueryBuilder.get())) {
                 queryBuilder = boolQueryBuilder.get();
@@ -266,28 +276,28 @@ public class ElasticApiImpl implements ElasticAPI {
                         if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
                             boolQueryBuilder.set(QueryBuilders.boolQuery());
                         }
-                        boolQueryBuilder.get().must(QueryBuilders.matchQuery("majorName", major));
+                        boolQueryBuilder.get().must(QueryBuilders.matchQuery("majorName", major).boost(2.0f));
                     });
             Optional.ofNullable(knowledgeBaseMatchDTO.getSubsystem())
                     .ifPresent(subsystem -> {
                         if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
                             boolQueryBuilder.set(QueryBuilders.boolQuery());
                         }
-                        boolQueryBuilder.get().must(QueryBuilders.matchQuery("systemName", subsystem));
+                        boolQueryBuilder.get().must(QueryBuilders.matchQuery("systemName", subsystem).boost(2.0f));
                     });
             if (CollUtil.isNotEmpty(devices)) {
                 if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
                     boolQueryBuilder.set(QueryBuilders.boolQuery());
                 }
                 String device = devices.stream().collect(Collectors.joining(" "));
-                boolQueryBuilder.get().must(QueryBuilders.matchQuery("deviceTypeName", device));
+                boolQueryBuilder.get().must(QueryBuilders.matchQuery("deviceTypeName", device).boost(2.0f));
             }
             if (CollUtil.isNotEmpty(phenomenons)) {
                 if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
                     boolQueryBuilder.set(QueryBuilders.boolQuery());
                 }
                 String phenomenon = phenomenons.stream().collect(Collectors.joining(" "));
-                boolQueryBuilder.get().must(QueryBuilders.matchQuery("faultPhenomenon", phenomenon));
+                boolQueryBuilder.get().must(QueryBuilders.matchQuery("faultPhenomenon", phenomenon).boost(1.0f));
             }
             if (ObjectUtil.isNotEmpty(boolQueryBuilder.get())) {
                 queryBuilder = boolQueryBuilder.get();
