@@ -5,6 +5,7 @@ import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.manager.dto.OrgDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
+import com.aiurt.boot.task.dto.SignUserDTO;
 import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
@@ -141,6 +142,18 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     public Result<String> appRepairInExecution(@RequestBody ExamineDTO examineDTO) {
         repairTaskService.inExecution(examineDTO);
         return Result.OK("执行成功！");
+    }
+
+    /**
+     * 根据检修任务id获取需要签名的人员列表
+     * @param taskId 检修任务id
+     * @return 返回使用Result封装的SignUserDTO列表
+     */
+    @ApiOperation(value = "app检修任务-根据检修任务id获取需要签名的人员列表", notes = "app检修任务-根据检修任务id获取需要签名的人员列表")
+    @GetMapping("/appGetSignUserList")
+    public Result<?> appGetSignUserList(String taskId){
+        List<SignUserDTO> list = repairTaskService.appGetSignUserList(taskId);
+        return Result.ok(list);
     }
 
     /**
