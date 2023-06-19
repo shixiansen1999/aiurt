@@ -1,5 +1,6 @@
 package com.aiurt.common.util;
 
+import cn.hutool.core.date.DateUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.DataBaseConstant;
 import com.aiurt.common.constant.SymbolConstant;
@@ -25,6 +26,7 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -384,4 +386,16 @@ public class CommonUtils {
         return score;
     }
 
+    /**
+     * 日期拼接
+     *
+     * @param yearDate 保留yearDate的年月日
+     * @param timeDate 保留timeDate的时分秒
+     * @return 保留的年月日时分秒拼接后的日期
+     */
+    public static Date dateConcatenation(Date yearDate, Date timeDate) {
+        String yms = DateUtil.format(yearDate, "yyyy-MM-dd");
+        String hms = DateUtil.format(timeDate, "HH:mm:ss");
+        return DateUtil.parse(yms + " " + hms, "yyyy-MM-dd HH:mm:ss");
+    }
 }

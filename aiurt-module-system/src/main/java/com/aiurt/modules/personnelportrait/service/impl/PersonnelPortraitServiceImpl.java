@@ -259,8 +259,13 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
             }
             ScheduleUserWorkDTO scheduleUserWork = todayUserWork.stream()
                     .filter(l -> user.getId().equals(l.getUserId()))
-                    .filter(l -> DateUtil.isIn(new Date(), l.getStartTime(), l.getEndTime())
-                            && FaultConstant.ON_DUTY_1.equals(l.getWork()))
+                    .filter(l -> {
+                        Date startTime = CommonUtils.dateConcatenation(l.getDate(), l.getStartTime());
+                        Date endTime = CommonUtils.dateConcatenation(l.getDate(), l.getEndTime());
+                        boolean isIn = DateUtil.isIn(new Date(), startTime, endTime);
+                        boolean onDuty = FaultConstant.ON_DUTY_1.equals(l.getWork());
+                        return isIn & onDuty;
+                    })
                     .findFirst().orElseGet(ScheduleUserWorkDTO::new);
             if (StrUtil.isNotEmpty(scheduleUserWork.getWork())) {
                 dutyStatus = working;
