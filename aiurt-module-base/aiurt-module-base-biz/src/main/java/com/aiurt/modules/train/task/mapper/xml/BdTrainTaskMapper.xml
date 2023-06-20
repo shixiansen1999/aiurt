@@ -328,6 +328,7 @@ and er.exam_classify=1
         task_name,
         classify,
         plan_sub_name,
+        create_time,
         task_team_code
         FROM
         bd_train_task
