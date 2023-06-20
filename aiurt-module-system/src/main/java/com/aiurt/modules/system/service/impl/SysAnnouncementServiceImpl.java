@@ -405,9 +405,14 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 					record.setIntervalTime(record.getReceiveTime());
 				}
 				//系统公告和系统消息，特情取消去办理
-				if(StrUtil.isNotEmpty(record.getMsgCategory()) && StrUtil.isEmpty(record.getTaskType())
-						|| SysAnnmentTypeEnum.SITUATION.getType().equals(record.getTaskType())
-						|| SysAnnmentTypeEnum.FAULT_EXTERNAL.getType().equals(record.getTaskType())){
+				SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.NO_DEAL_MESSAGE_TYPE);
+				boolean contains = false;
+				if (ObjectUtil.isNotEmpty(sysParamModel)) {
+					List<String> cancelTypeList = StrUtil.splitTrim(sysParamModel.getValue(), ",");
+					contains = CollUtil.isNotEmpty(cancelTypeList) && cancelTypeList.contains(record.getTaskType());
+				}
+				boolean b = StrUtil.isNotEmpty(record.getMsgCategory()) && StrUtil.isEmpty(record.getTaskType()) || contains;
+				if(b){
 					record.setDeal(false);
 				}else{
 					record.setDeal(true);

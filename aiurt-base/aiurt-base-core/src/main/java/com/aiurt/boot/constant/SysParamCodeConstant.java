@@ -326,4 +326,8 @@ public interface SysParamCodeConstant {
      * 	工作内容是否需要查出所有未完成故障
      */
     String 	WORKLOG_UNFINISH_FAULT = "worklog_unfinish_fault";
+    /**
+     * 取消去办理的消息类型
+     */
+    String NO_DEAL_MESSAGE_TYPE = "no_deal_message_type";
 }
