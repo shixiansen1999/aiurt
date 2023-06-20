@@ -211,7 +211,18 @@ public class BdTrainTaskPage {
 	@ApiModelProperty(value = "试卷名称")
 	@TableField(exist = false)
 	private String examName;
-
+	/**任务Code*/
+	@ApiModelProperty(value = "任务Code")
+	private String taskCode;
+	/**培训分级*/
+	@ApiModelProperty(value = "培训分级")
+	@Dict(dicCode = "training_classification")
+	private Integer taskGrade;
+	/**是否为计划内容*/
+	@Excel(name = "是否为计划内容", width = 15)
+	@ApiModelProperty(value = "是否为计划内容")
+	@Dict(dicCode = "is_annual_plan")
+	private Integer isAnnualPlan;
 	/**培训对象ids*/
 	@Excel(name = "培训对象ids", width = 15)
 	@ApiModelProperty(value = "培训对象ids")

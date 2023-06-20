@@ -1,6 +1,8 @@
 package com.aiurt.modules.train.task.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
@@ -22,6 +24,7 @@ import com.aiurt.modules.train.task.mapper.*;
 import com.aiurt.modules.train.task.service.IBdTrainTaskService;
 import com.aiurt.modules.train.task.service.IBdTrainTaskSignService;
 import com.aiurt.modules.train.task.vo.BdTrainTaskPage;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang.StringUtils;
@@ -86,6 +89,23 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void saveMain(BdTrainTask bdTrainTask, List<BdTrainTaskSign> bdTrainTaskSignList) {
+		int year = DateUtil.year(new Date());
+		int month = DateUtil.month(new Date());
+		String taskCode = "YY-THXH-"+month+"-"+year+"-";
+		List<BdTrainTask> bdTrainTasks = bdTrainTaskMapper.selectList(new LambdaQueryWrapper<BdTrainTask>());
+		if(CollUtil.isNotEmpty(bdTrainTasks)){
+			List<String> taskCodes = bdTrainTasks.stream().filter(e->ObjectUtil.isNotEmpty(e.getTaskCode())).map(BdTrainTask::getTaskCode).collect(Collectors.toList());
+			if(CollUtil.isNotEmpty(taskCodes)){
+				Integer number = 1;
+				do{
+					String format = String.format("%02d",number );
+					taskCode = taskCode+format;
+					number++;
+				}
+				while (taskCodes.contains(taskCode));
+			}
+		}
+		bdTrainTask.setTaskCode(taskCode);
 		bdTrainTaskMapper.insert(bdTrainTask);
 		if(bdTrainTaskSignList!=null && bdTrainTaskSignList.size()>0) {
 			for(BdTrainTaskSign entity:bdTrainTaskSignList) {
