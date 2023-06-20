@@ -429,6 +429,39 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 FaultKnowledgeBaseType faultKnowledgeBaseType = faultKnowledgeBaseTypeMapper.selectOne(queryWrapper);
                 fault.setFaultPhenomenon(faultKnowledgeBaseType != null ? faultKnowledgeBaseType.getName() : null);
             }
+            // 查询故障的设备信息
+            final String commaSeparator = ",";
+            List<String> deviceCodes = faults.stream()
+                    .map(FaultDTO::getDeviceCode)
+                    .filter(StrUtil::isNotEmpty)
+                    .flatMap(deviceCode -> {
+                        if (",".contains(deviceCode)) {
+                            return Arrays.stream(deviceCode.split(commaSeparator));
+                        } else {
+                            return Stream.of(deviceCode);
+                        }
+                    })
+                    .distinct()
+                    .collect(Collectors.toList());
+            if (CollUtil.isNotEmpty(deviceCodes)) {
+                Map<String, String> deviceNameMap = sysBaseApi.getDeviceNameByCode(deviceCodes);
+                for (FaultDTO fault : faults) {
+                    String deviceCode = fault.getDeviceCode();
+                    if (StrUtil.isNotEmpty(deviceCode)) {
+                        List<String> codes = Arrays.asList(StrUtil.split(deviceCode, commaSeparator));
+                        List<String> names = new ArrayList<>();
+                        for (String code : codes) {
+                            String deviceName = deviceNameMap.get(code);
+                            if (StrUtil.isEmpty(deviceName)) {
+                                continue;
+                            }
+                            names.add(deviceName);
+                        }
+                        String deviceName = names.stream().collect(Collectors.joining(commaSeparator));
+                        fault.setDeviceName(deviceName);
+                    }
+                }
+            }
         }
         return page.setRecords(faults);
     }

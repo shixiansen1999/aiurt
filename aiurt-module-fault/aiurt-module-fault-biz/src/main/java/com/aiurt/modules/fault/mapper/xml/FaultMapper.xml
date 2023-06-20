@@ -240,9 +240,11 @@
         fault.create_time,
         fault.hang_up_reason,
         fault.fault_phenomenon,
-        fault.symptoms
+        fault.symptoms,
+        GROUP_CONCAT( DISTINCT fd.device_code ) deviceCode
         FROM
         fault fault
+        LEFT JOIN fault_device fd ON ( fault.`code` = fd.fault_code AND fd.del_flag = 0 )
         <!--left join fault_device fd on fault.`code` = fd.fault_code
         left join device de on de.`code` = fd.device_code-->
         <where>
