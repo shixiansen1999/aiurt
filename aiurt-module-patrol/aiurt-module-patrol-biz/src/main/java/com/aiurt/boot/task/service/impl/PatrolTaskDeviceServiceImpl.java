@@ -258,10 +258,11 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             //mac地址匹配
             List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(Collections.singletonList(taskDevice.getStationCode()));
             if (CollUtil.isNotEmpty(wifiMac) && StrUtil.isNotEmpty(patrolTaskDevice.getMac())) {
-                //忽略大小写全匹配
+                //忽略大小写，只匹配前11位数字
                 String mac1 = patrolTaskDevice.getMac();
+                String substring1 = mac1.substring(0, mac1.length() - 1);
                 String join = CollUtil.join(wifiMac, ",");
-                if (join.toLowerCase().contains(mac1.toLowerCase())) {
+                if (join.toLowerCase().contains(substring1.toLowerCase())) {
                     updateWrapper.set(PatrolTaskDevice::getMacStatus, 1);
                 } else {
                     updateWrapper.set(PatrolTaskDevice::getMacStatus, 0);
