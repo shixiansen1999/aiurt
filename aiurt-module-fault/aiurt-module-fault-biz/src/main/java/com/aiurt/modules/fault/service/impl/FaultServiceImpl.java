@@ -1648,8 +1648,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     log.error(e.getMessage(), e);
                 }
             }else {
+                fault.setState(FaultStatesEnum.FINISH.getStatus());
                 fault.setStatus(FaultStatusEnum.Close.getStatus());
                 noAudit(faultCode);
+                // 如果非标准方案这新增一个标准库
+                addFaultKnowledgeBase(faultCode, fault);
             }
             //推送数据到调度系统
             faultExternalService.complete(repairRecordDTO,one.getEndTime(),loginUser);
@@ -1968,58 +1971,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
 
             // 如果非标准方案这新增一个标准库
-            List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultCode);
-            if (StrUtil.isBlank(fault.getKnowledgeId()) && CollUtil.isNotEmpty(faultDeviceList)) {
-                LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
-                wrapper.eq(FaultRepairRecord::getFaultCode, faultCode)
-                        .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
-                        .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1");
-                FaultRepairRecord repairRecord = repairRecordService.getBaseMapper().selectOne(wrapper);
-                FaultKnowledgeBase faultKnowledgeBase = new FaultKnowledgeBase();
-                faultKnowledgeBase.setFaultCodeList(Collections.singletonList(faultCode));
-                // 查询设备类型， 编码
-                String deviceTypeCode = faultDeviceList.get(0).getDeviceTypeCode();
-                faultKnowledgeBase.setDeviceTypeCode(deviceTypeCode);
-                faultKnowledgeBase.setFaultPhenomenon(fault.getSymptoms());
-                faultKnowledgeBase.setFaultLevelCode(fault.getFaultLevel());
-                faultKnowledgeBase.setSystemCode(fault.getSubSystemCode());
-                faultKnowledgeBase.setMajorCode(fault.getMajorCode());
-                faultKnowledgeBase.setProcessInitiator(0);
-                faultKnowledgeBase.setMethod(repairRecord.getMethod());
-                faultKnowledgeBase.setKnowledgeBaseTypeCode("001");
+            addFaultKnowledgeBase(faultCode, fault);
 
-                List<FaultCauseSolutionDTO> list = new ArrayList<>();
-                FaultCauseSolutionDTO faultCauseSolution = new FaultCauseSolutionDTO();
-                faultCauseSolution.setFaultCause(repairRecord.getFaultCauseSolution());
-                faultCauseSolution.setSolution(repairRecord.getMaintenanceMeasures());
-
-                List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, repairRecord.getId());
-                // 同一种类型需要合并数据
-                List<DeviceChangeSparePart> result = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("0", sparepart.getConsumables()))
-                        .collect(Collectors.toMap(DeviceChangeSparePart::getMaterialBaseCode, t -> t, (o1,o2)-> {
-                            o1.setNewSparePartNum(o1.getNewSparePartNum() + o2.getNewSparePartNum());
-                            return o1;
-                        })).values().stream().collect(Collectors.toList());
-
-                List<FaultSparePart> faultSpareParts = result.stream()
-                        .map(sparepart -> {
-                            FaultSparePart faultSparePart = new FaultSparePart();
-                            faultSparePart.setSparePartCode(sparepart.getMaterialBaseCode());
-                            faultSparePart.setSpecification(sparepart.getSpecifications());
-                            faultSparePart.setNumber(sparepart.getNewSparePartNum());
-                            return faultSparePart;
-                        }).collect(Collectors.toList());
-                faultCauseSolution.setSpareParts(faultSpareParts);
-                list.add(faultCauseSolution);
-                faultKnowledgeBase.setFaultCauseSolutions(list);
-                faultKnowledgeBase.setUserName(fault.getAppointUserName());
-
-                try {
-                    faultKnowledgeBaseService.addFaultKnowledgeBase(faultKnowledgeBase);
-                } catch (Exception e) {
-                   log.error(e.getMessage(), e);
-                }
-            }
             //
         } else {
             try {
@@ -2061,6 +2014,63 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_RESULT.getType(), faultCode, loginUser.getUsername(), "1");
     }
+
+    private void addFaultKnowledgeBase(String faultCode, Fault fault) {
+        List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultCode);
+        if (StrUtil.isBlank(fault.getKnowledgeId()) && CollUtil.isNotEmpty(faultDeviceList)) {
+            LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(FaultRepairRecord::getFaultCode, faultCode)
+                    .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1");
+            FaultRepairRecord repairRecord = repairRecordService.getBaseMapper().selectOne(wrapper);
+            FaultKnowledgeBase faultKnowledgeBase = new FaultKnowledgeBase();
+            faultKnowledgeBase.setFaultCodeList(Collections.singletonList(faultCode));
+            // 查询设备类型， 编码
+            String deviceTypeCode = faultDeviceList.get(0).getDeviceTypeCode();
+            faultKnowledgeBase.setDeviceTypeCode(deviceTypeCode);
+            faultKnowledgeBase.setLineCode(fault.getLineCode());
+            faultKnowledgeBase.setFaultPhenomenon(fault.getSymptoms());
+            faultKnowledgeBase.setFaultLevelCode(fault.getFaultLevel());
+            faultKnowledgeBase.setSystemCode(fault.getSubSystemCode());
+            faultKnowledgeBase.setMajorCode(fault.getMajorCode());
+            faultKnowledgeBase.setProcessInitiator(0);
+            faultKnowledgeBase.setMethod(repairRecord.getMethod());
+            faultKnowledgeBase.setKnowledgeBaseTypeCode("001");
+
+            List<FaultCauseSolutionDTO> list = new ArrayList<>();
+            FaultCauseSolutionDTO faultCauseSolution = new FaultCauseSolutionDTO();
+            faultCauseSolution.setFaultCause(repairRecord.getFaultCauseSolution());
+            faultCauseSolution.setSolution(repairRecord.getMaintenanceMeasures());
+
+            List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, repairRecord.getId());
+            // 同一种类型需要合并数据
+            List<DeviceChangeSparePart> result = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("0", sparepart.getConsumables()))
+                    .collect(Collectors.toMap(DeviceChangeSparePart::getMaterialBaseCode, t -> t, (o1,o2)-> {
+                        o1.setNewSparePartNum(o1.getNewSparePartNum() + o2.getNewSparePartNum());
+                        return o1;
+                    })).values().stream().collect(Collectors.toList());
+
+            List<FaultSparePart> faultSpareParts = result.stream()
+                    .map(sparepart -> {
+                        FaultSparePart faultSparePart = new FaultSparePart();
+                        faultSparePart.setSparePartCode(sparepart.getMaterialBaseCode());
+                        faultSparePart.setSpecification(sparepart.getSpecifications());
+                        faultSparePart.setNumber(sparepart.getNewSparePartNum());
+                        return faultSparePart;
+                    }).collect(Collectors.toList());
+            faultCauseSolution.setSpareParts(faultSpareParts);
+            list.add(faultCauseSolution);
+            faultKnowledgeBase.setFaultCauseSolutions(list);
+            faultKnowledgeBase.setUserName(fault.getAppointUserName());
+
+            try {
+                faultKnowledgeBaseService.addFaultKnowledgeBase(faultKnowledgeBase);
+            } catch (Exception e) {
+               log.error(e.getMessage(), e);
+            }
+        }
+    }
+
     /**
      * 不需要工班长审核
      *
@@ -2920,6 +2930,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 包含最大值和最小值的整数数组，索引0为最大值，索引1为最小值
      */
     private Integer[] getAptitudeMaxMin(List<RadarAptitudeDTO> aptitudeList, List<RecPersonListDTO> result) {
+        if (CollUtil.isEmpty(aptitudeList)) {
+            return new Integer[]{0, 0};
+        }
         // 使用流处理对 aptitudeList 列表进行转换和收集
         List<Integer> aptitudeNumList = Optional.ofNullable(aptitudeList)
                 .orElse(CollUtil.newArrayList())
@@ -2947,6 +2960,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 包含最大值和最小值的整数数组，索引0为最大值，索引1为最小值
      */
     private Integer[] getFaultHandleNumberMaxMin(List<RadarNumberDTO> handleNumberList, List<RecPersonListDTO> result) {
+        if (CollUtil.isEmpty(handleNumberList)) {
+            return new Integer[]{0, 0};
+        }
         // 使用流处理对 handleNumberList 列表进行转换和收集
         List<Integer> numberList = Optional.ofNullable(handleNumberList)
                 .orElse(CollUtil.newArrayList())
@@ -3112,6 +3128,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 包含最大值和最小值的 Double 数组，索引 0 为最大值，索引 1 为最小值
      */
     public Double[] getPerformanceMaxMin(List<RadarPerformanceDTO> performanceList, List<RecPersonListDTO> result) {
+        if (CollUtil.isEmpty(performanceList)) {
+            return new Double[]{0d, 0d};
+        }
         // 使用流处理对 RadarPerformanceDTO 列表进行转换和收集
         List<Double> performanceNumberList = Optional.ofNullable(performanceList)
                 .orElse(CollUtil.newArrayList())
@@ -3140,6 +3159,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return 包含最大值和最小值的 Double 数组，索引 0 为最大值，索引 1 为最小值
      */
     public Double[] getEfficiencyMaxMin(List<EfficiencyDTO> efficiencyList, List<RecPersonListDTO> result) {
+        if (CollUtil.isEmpty(efficiencyList)) {
+            return new Double[]{0d, 0d};
+        }
         // 使用流处理对 EfficiencyDTO 列表进行转换和收集
         List<Double> efficiency = Optional.ofNullable(efficiencyList)
                 .orElse(CollUtil.newArrayList())
@@ -3348,7 +3370,27 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .stream().collect(Collectors.toMap(FaultAnalysisReport::getFaultCode, Function.identity()));
 
         Map<String, Integer> finalWeightMap = weightMap;
+
+        // 根据配置决定控制中心成员能否领取正线站点故障，开启时表示不能领取
+        SysParamModel faultCenterReceiveParam = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_RECEIVE);
+        boolean faultCenterReceive = FaultConstant.ENABLE.equals(faultCenterReceiveParam.getValue());
+        // 根据配置获取控制中心班组code,并判断当前登陆人所在班组是否是控制中心班组
+        SysParamModel faultCenterAddOrg = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_ADD_ORG);
+        boolean contains1 = StrUtil.splitTrim(faultCenterAddOrg.getValue(),',').contains(user.getOrgCode());
         records.parallelStream().forEach(fault1 -> {
+
+            // 通过站点获取工区部门
+            List<String> departs = sysBaseAPI.getWorkAreaByCode(fault1.getStationCode())
+                    .stream()
+                    .flatMap(csWorkAreaModel -> csWorkAreaModel.getOrgCodeList().stream())
+                    .collect(Collectors.toList());
+            boolean contains2 = !(ObjectUtil.isNotEmpty(departs) && departs.contains(user.getOrgCode()));
+            // 设置是否能领取
+            if (faultCenterReceive && contains1 && contains2) {
+                fault1.setCanReceive(false);
+            } else {
+                fault1.setCanReceive(true);
+            }
 
             if (StrUtil.equalsIgnoreCase(user.getUsername(), fault1.getAppointUserName())) {
                 fault1.setIsFault(true);
