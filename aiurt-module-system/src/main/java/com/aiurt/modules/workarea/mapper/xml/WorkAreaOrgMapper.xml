@@ -12,4 +12,19 @@ WHERE
 	wao.work_area_code =  #{code}
 	and sd.del_flag = 0
 </select>
+
+	<select id="getLineStationName" resultType="java.lang.String">
+		select concat_ws("/", cs.line_name, cs.station_name) as linestationname
+		from work_area_station was
+		left join cs_station cs on (was.station_code = cs.station_code and cs.del_flag = 0)
+		where was.del_flag = 0
+		and was.work_area_code in (
+		select distinct wao.work_area_code
+		from work_area_org wao
+		where wao.del_flag = 0
+		<if test="orgCode != null and orgCode != ''">
+			and wao.org_code = #{orgCode}
+		</if>
+		)
+	</select>
 </mapper>

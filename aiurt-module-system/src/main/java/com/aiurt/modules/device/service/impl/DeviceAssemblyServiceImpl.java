@@ -1,12 +1,15 @@
 package com.aiurt.modules.device.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.device.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.mapper.DeviceAssemblyMapper;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.material.entity.MaterialBase;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.ObjectUtils;
@@ -14,9 +17,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Set;
+
 
 /**
  * @Description: 设备
@@ -92,5 +98,32 @@ public class DeviceAssemblyServiceImpl extends ServiceImpl<DeviceAssemblyMapper,
             }
         }
         return deviceAssemblyList;
+    }
+
+    /**
+     * 根据设备编码查询组件
+     *
+     * @param deviceCode
+     * @return
+     */
+    @Override
+    public List<DeviceAssemblyDTO> queryDeviceAssemblyByDeviceCode(String deviceCode) {
+        if (StrUtil.isBlank(deviceCode)) {
+            return Collections.emptyList();
+        }
+        LambdaQueryWrapper<DeviceAssembly> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(DeviceAssembly::getDelFlag, CommonConstant.DEL_FLAG_0).eq(DeviceAssembly::getStatus, 0)
+        .eq(DeviceAssembly::getDeviceCode, deviceCode);
+        List<DeviceAssembly> list = list(queryWrapper);
+        List<DeviceAssemblyDTO> resultList = list.stream().map(deviceAssembly -> {
+           DeviceAssemblyDTO build = DeviceAssemblyDTO.builder()
+                    .key(deviceAssembly.getId())
+                    .code(deviceAssembly.getCode())
+                    .label(String.format("%s-%s", deviceAssembly.getMaterialName(), deviceAssembly.getCode()))
+                    .title(String.format("%s-%s", deviceAssembly.getMaterialName(), deviceAssembly.getCode()))
+                    .materialName(deviceAssembly.getMaterialName()).value(deviceAssembly.getCode()).build();
+            return build;
+        }).collect(Collectors.toList());
+        return resultList;
     }
 }

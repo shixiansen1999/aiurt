@@ -29,4 +29,19 @@ where sign_time is not NULL and train_task_id = #{trainTaskId}
 		WHERE
 		train_task_id = #{trainTaskId} and user_id = #{userId}
 	</select>
+
+	<select id="getTrainExperience" resultType="com.aiurt.modules.train.task.dto.TrainExperienceDTO">
+		select
+		btts.user_id,
+		btt.start_time,
+		btt.end_time,
+		btt.task_name
+		from bd_train_task_sign btts
+		join bd_train_task btt on btts.train_task_id = btt.id
+		<where>
+			<if test="userId != null and userId != ''">
+				btts.user_id = #{userId}
+			</if>
+		</where>
+	</select>
 </mapper>

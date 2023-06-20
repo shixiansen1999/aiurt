@@ -26,7 +26,9 @@
         fkb.approved_remark,
         fkb.status,
         fkb.del_flag,
-        fkb.tools
+        fkb.tools,
+        fkb.fault_level_code,
+        fkb.fault_phenomenon_code
         FROM fault_knowledge_base fkb
         left join sys_user su on su.username = fkb.create_by
         Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fkb.id
@@ -329,27 +331,30 @@
 
 <select id="readOne" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">
     SELECT
-        fkb.id,
-        fkb.device_type_code,
-        fkb.knowledge_base_type_code,
-        fkb.material_code,
-        fkb.fault_codes,
-        fkb.fault_phenomenon,
-        fkb.fault_reason,
-        fkb.method,
-        fkb.solution,
-        fkb.create_time,
-        fkb.status,
-        fkb.file_path,
-        fkb.tools,
-        fkb.line_code,
-        (SELECT name from device_type WHERE `code` = fkb.device_type_code and del_flag = 0) as deviceTypeName,
-        (SELECT material_name from device_assembly WHERE material_code = fkb.material_code group by material_code) as materialName
-    FROM fault_knowledge_base fkb
-    WHERE
-        fkb.del_flag = 0
-      AND fkb.id = #{id}
-    limit 1
+            fkb.id,
+            fkb.device_type_code,
+            fkb.knowledge_base_type_code,
+            fkb.material_code,
+            fkb.fault_codes,
+            fkb.fault_phenomenon,
+            fkb.fault_reason,
+            fkb.method,
+            fkb.solution,
+            fkb.scan_num,
+            fkb.create_time,
+            fkb.status,
+            fkb.file_path,
+            fkb.tools,
+            fkb.fault_phenomenon_code,
+            fkb.major_code,
+            fkb.system_code,
+            fkb.fault_level_code,
+            fkb.line_code,
+            (SELECT name from device_type WHERE `code` = fkb.device_type_code and del_flag = 0) as deviceTypeName,
+            (SELECT material_name from device_assembly WHERE material_code = fkb.material_code group by material_code) as materialName
+    FROM
+            fault_knowledge_base fkb WHERE del_flag = 0 and fkb.id = #{id}
+
     </select>
 
 <select id="getDeviceAssembly" resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO">
@@ -411,4 +416,124 @@
     <!--    <select id="getLineByStation" resultType="java.lang.String">-->
 <!--        select line_name from cs_station where del_flag = 0 and station_code = #{code}-->
 <!--    </select>-->
+    <select id="querySymptomTemplate" resultType="com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO">
+        select
+        t1.id,
+        t1.major_code,
+        t1.system_code,
+        t1.knowledge_base_type_code,
+        t1.device_type_code,
+        t1.fault_level_code,
+        t1.material_code,
+        t1.fault_phenomenon,
+        t2.name as material_name,
+        t3.base_type_name,
+        t1.create_time
+        from fault_knowledge_base t1
+        Left join material_base t2 ON (t1.material_code = t2.code and t2.del_flag = 0)
+        Left join material_base_type t3 ON (t2.base_type_code = t3.base_type_code and t3.del_flag = 0)
+        where t1.del_flag = 0 and t1.status = 1
+        <if test="condition.majorCode != null and condition.majorCode != ''">
+            and t1.major_code = #{condition.majorCode}
+        </if>
+        <if test="condition.systemCode != null and condition.systemCode != ''">
+            and t1.system_code = #{condition.systemCode}
+        </if>
+        <if test="condition.deviceTypeCode != null and condition.deviceTypeCode != ''">
+            and t1.device_type_code = #{condition.deviceTypeCode}
+        </if>
+        <if test="condition.faultLevelCode != null and condition.faultLevelCode != ''">
+            and t1.fault_level_code = #{condition.faultLevelCode}
+        </if>
+        <if test="condition.materialCode != null and condition.materialCode != ''">
+            and t1.material_code = #{condition.materialCode}
+        </if>
+        <if test="condition.faultPhenomenon != null and condition.faultPhenomenon != ''">
+            and t1.fault_phenomenon like concat('%',#{condition.faultPhenomenon}, '%')
+        </if>
+        order by t1.major_code, t1.system_code , t1.device_type_code, t1.material_code , t1.fault_level_code
+    </select>
+
+    <select id="countFaultCauseByIdSet" resultType="com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO">
+        SELECT
+        count(t1.id) num,
+        t1.id,
+        t1.fault_cause,
+        t1.knowledge_base_id
+        FROM
+        fault_cause_solution t1
+        JOIN fault_cause_usage_records t2 ON ( t1.id = t2.fault_cause_solution_id AND t2.del_flag = 0 )
+        WHERE
+        EXISTS (SELECT 1 FROM fault_knowledge_base WHERE 1=1 and id IN
+        <foreach collection="idList" item="item" separator="," open="(" close=")" >
+            #{item}
+        </foreach>
+        AND id = t1.knowledge_base_id)
+        GROUP BY
+        t1.id
+    </select>
+
+    <select id="synchrodata" resultType="com.aiurt.modules.knowledge.entity.KnowledgeBase">
+        select fkb.id                       id,
+               fkb.fault_phenomenon_code    faultPhenomenonCode,
+               fkb.fault_phenomenon         faultPhenomenon,
+               fkb.knowledge_base_type_code knowledgeBaseTypeCode,
+               fkbt.name                    knowledgeBaseTypeName,
+               fkb.major_code               majorCode,
+               cm.major_name                majorName,
+               fkb.system_code              systemCode,
+               cs.system_name               systemName,
+               fkb.material_code            materialCode,
+               dc.material_name             materialName,
+               fkb.device_type_code         deviceTypeCode,
+               dt.name                      deviceTypeName,
+               fkb.fault_level_code         faultLevelCode,
+               fkb.status                   `status`,
+               fkb.scan_num                 scanNum,
+               fkb.method                   method,
+               fkb.create_time              createTime,
+               fkb.update_time              updateTime
+        from fault_knowledge_base fkb
+                     left join fault_knowledge_base_type fkbt
+                on (fkb.knowledge_base_type_code = fkbt.code and fkbt.del_flag = 0)
+                     left join device_compose dc on (fkb.material_code = dc.material_code and dc.del_flag = 0)
+                     left join cs_major cm on (fkb.major_code = cm.major_code and cm.del_flag = 0)
+                     left join cs_subsystem cs on (fkb.system_code = cs.system_code and cs.del_flag = 0)
+                     left join device_type dt on (fkb.device_type_code = dt.code and dt.del_flag = 0)
+        where fkb.del_flag = 0
+    </select>
+
+    <select id="getStandardRepairRequirements" resultType="com.aiurt.modules.faultsparepart.entity.FaultSparePart">
+        select t1.id,t1.spare_part_code,t1.cause_solution_id,t1.number,t1.specification,t2.name as spare_part_name, t3.solution,
+        t3.fault_cause
+        from fault_spare_part t1
+        left join material_base t2 on (t1.spare_part_code = t2.code and t2.del_flag = 0)
+        left join fault_cause_solution t3 on (t1.cause_solution_id = t3.id and t3.del_flag =0)
+        where t1.del_flag = 0
+        <if test="idList != null and idList.size() != 0">
+            and t1.cause_solution_id in
+            <foreach collection="idList" close=")" open="(" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="countFaultCauseByIdSeV2" resultType="com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO">
+        SELECT
+        count(t2.id) num,
+        t1.id,
+        t1.fault_cause,
+        t1.knowledge_base_id
+        FROM
+        fault_cause_solution t1
+        LEFT JOIN fault_cause_usage_records t2 ON ( t1.id = t2.fault_cause_solution_id AND t2.del_flag = 0 )
+        WHERE
+        EXISTS (SELECT 1 FROM fault_knowledge_base WHERE 1=1 and id IN
+        <foreach collection="idList" item="item" separator="," open="(" close=")" >
+            #{item}
+        </foreach>
+        AND id = t1.knowledge_base_id)
+        GROUP BY
+        t1.id
+    </select>
 </mapper>

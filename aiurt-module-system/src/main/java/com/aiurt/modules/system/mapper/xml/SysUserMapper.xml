@@ -371,4 +371,12 @@
 			</if>
 		</where>
 	</select>
+
+	<select id="getSeniorityNumber" resultType="org.jeecg.common.system.vo.LoginUser">
+		select su.id, su.username, su.working_time
+		from sys_user su
+		where su.del_flag = 0
+		  and su.org_code = #{orgCode}
+		group by su.id
+	</select>
 </mapper>

@@ -29,7 +29,6 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@ApiModel(value="spare_part_stock对象", description="spare_part_stock")
 public class SparePartStockDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 

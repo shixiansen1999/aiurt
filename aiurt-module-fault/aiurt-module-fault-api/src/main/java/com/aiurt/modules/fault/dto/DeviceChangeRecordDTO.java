@@ -19,4 +19,10 @@ public class DeviceChangeRecordDTO implements Serializable {
 
     @ApiModelProperty(value = "易耗品")
     private List<SparePartStockDTO> consumableList;
+
+    @ApiModelProperty(value = "是否合并 true 异常， false 正常")
+    private Boolean isException;
+
+    @ApiModelProperty(value = "故障原因id")
+    private List<String> faultCauseSolutionId;
 }

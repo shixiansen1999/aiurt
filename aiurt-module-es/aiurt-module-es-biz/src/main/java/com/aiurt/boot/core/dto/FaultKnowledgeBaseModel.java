@@ -1,0 +1,118 @@
+package com.aiurt.boot.core.dto;
+
+import cn.afterturn.easypoi.excel.annotation.Excel;
+import com.baomidou.mybatisplus.annotation.TableField;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+
+@Data
+/**
+ * @author zwl
+ * @version 1.0
+ * @date 2022/1/5
+ * @desc
+ */
+public class FaultKnowledgeBaseModel {
+
+    /**主键id*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "主键id")
+    private String id;
+
+    /**专业编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "专业编码")
+    private String majorCode;
+
+
+    /**专业名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "专业名称")
+    @Excel(name = "专业", width = 15)
+    private String majorName;
+
+
+    /**子系统编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "子系统编码")
+    private String systemCode;
+
+
+    /**子系统名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "子系统名称")
+    @Excel(name = "子系统", width = 15)
+    private String systemName;
+
+    /**知识库编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "知识库编码")
+    private String knowledgeBaseTypeCode;
+
+    /**知识库名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "知识库名称")
+    @Excel(name = "故障现象分类", width = 15)
+    private String knowledgeBaseTypeName;
+
+    /**设备类型编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "设备类型编码")
+    private String deviceTypeCode;
+
+    /**设备类型名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "设备类型名称")
+    @Excel(name = "设备类型", width = 15)
+    private String deviceTypeName;
+
+    /**设备组件编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "设备组件编码")
+    private String materialCode;
+
+    /**设备组件名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "设备组件名称")
+    @Excel(name = "设备组件", width = 15)
+    private String materialName;
+
+    /**设备组件名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "故障现象")
+    @Excel(name = "故障现象", width = 15)
+    private String faultPhenomenon;
+
+
+    /**设备组件名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "故障原因")
+    @Excel(name = "故障原因", width = 15)
+    private String faultReason;
+
+
+    /**解决方案*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "解决方案")
+    @Excel(name = "解决方案", width = 15)
+    private String solution;
+
+    /**排查方法*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "排查方法")
+    @Excel(name = "排查方法", width = 15)
+    private String method;
+
+    /**携带工具*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "携带工具")
+    @Excel(name = "携带工具", width = 15)
+    private String tools;
+
+    /**错误原因*/
+    @ApiModelProperty(value = "错误原因")
+    @TableField(exist = false)
+    private  String  deviceMistake;
+
+
+}

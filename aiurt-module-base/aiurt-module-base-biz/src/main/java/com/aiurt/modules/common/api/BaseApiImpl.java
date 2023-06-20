@@ -2,8 +2,12 @@ package com.aiurt.modules.common.api;
 
 import com.aiurt.modules.dailyschedule.entity.DailySchedule;
 import com.aiurt.modules.dailyschedule.service.IDailyScheduleService;
+import com.aiurt.modules.schedule.dto.ScheduleUserWorkDTO;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.schedule.service.IScheduleRecordService;
+import com.aiurt.modules.train.task.dto.TrainExperienceDTO;
+import com.aiurt.modules.train.task.entity.BdTrainTask;
+import com.aiurt.modules.train.task.mapper.BdTrainTaskSignMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +22,8 @@ public class BaseApiImpl implements IBaseApi {
     private IDailyScheduleService dailyScheduleService;
     @Autowired
     private IScheduleRecordService scheduleRecordService;
+    @Autowired
+    private BdTrainTaskSignMapper bdTrainTaskSignMapper;
 
     @Override
     public Map<String, List<DailySchedule>> queryDailyScheduleList(Integer year, Integer month) {
@@ -34,5 +40,15 @@ public class BaseApiImpl implements IBaseApi {
     @Override
     public List<SysUserTeamDTO> getTodayOndutyDetailNoPage(List<String> orgCodes, Date date) {
         return scheduleRecordService.getTodayOndutyDetailNoPage(orgCodes, date);
+    }
+
+    @Override
+    public List<ScheduleUserWorkDTO> getTodayUserWork(List<String> userIds) {
+        return scheduleRecordService.getTodayUserWork(userIds);
+    }
+
+    @Override
+    public List<TrainExperienceDTO> getTrainExperience(String userId) {
+        return bdTrainTaskSignMapper.getTrainExperience(userId);
     }
 }

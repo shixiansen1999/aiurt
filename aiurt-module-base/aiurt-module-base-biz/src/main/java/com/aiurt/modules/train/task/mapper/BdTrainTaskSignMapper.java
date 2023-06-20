@@ -1,8 +1,9 @@
 package com.aiurt.modules.train.task.mapper;
 
+import com.aiurt.modules.train.task.dto.TrainExperienceDTO;
+import com.aiurt.modules.train.task.entity.BdTrainTaskSign;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
-import com.aiurt.modules.train.task.entity.BdTrainTaskSign;
 
 import java.util.List;
 
@@ -51,4 +52,12 @@ public interface BdTrainTaskSignMapper extends BaseMapper<BdTrainTaskSign> {
 	 * @return
 	 */
 	BdTrainTaskSign getSign(@Param("trainTaskId") String trainTaskId, @Param("userId") String userId);
+
+	/**
+	 * 获取用户的培训经历
+	 *
+	 * @param userId
+	 * @return
+	 */
+	List<TrainExperienceDTO> getTrainExperience(@Param("userId") String userId);
 }

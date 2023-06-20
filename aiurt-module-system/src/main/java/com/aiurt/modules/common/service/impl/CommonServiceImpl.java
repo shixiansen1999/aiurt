@@ -136,6 +136,7 @@ public class CommonServiceImpl implements ICommonService {
             SelectTable table = new SelectTable();
             table.setLabel(String.format("%s(%s)", device.getName(), device.getCode()));
             table.setValue(device.getCode());
+            table.setDeviceTypeCode(device.getDeviceTypeCode());
             return table;
         }).collect(Collectors.toList());
 
