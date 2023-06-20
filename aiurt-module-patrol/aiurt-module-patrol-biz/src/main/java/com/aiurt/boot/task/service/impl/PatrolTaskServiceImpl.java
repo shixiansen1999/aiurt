@@ -44,7 +44,6 @@ import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.metadata.data.WriteCellData;
 import com.alibaba.excel.util.MapUtils;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
@@ -779,7 +778,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 //            return pageList;
 //        }
 
-        List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskPoolList(pageList, patrolTaskDTO);
+        // 根据配置进行排序
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.APP_PATROL_TASK_POOL_SORT);
+        boolean b = ObjectUtil.isNotEmpty(sysParamModel) && "1".equals(sysParamModel.getValue());
+        List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskPoolList(pageList, patrolTaskDTO, b);
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("app_patrolTaskPool-%d").build();
         ExecutorService patrolTask = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
                 0L, TimeUnit.MILLISECONDS,

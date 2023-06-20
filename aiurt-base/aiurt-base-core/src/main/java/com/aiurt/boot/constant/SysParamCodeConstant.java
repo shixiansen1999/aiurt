@@ -321,4 +321,5 @@ public interface SysParamCodeConstant {
     String INSPECTION_PEER_ALL_USER = "inspection_peer_all_user";
 
     String INSPECTION_SIGN_MULTI = "inspection_sign_multi";
+    String APP_PATROL_TASK_POOL_SORT = "app_patrol_task_pool_sort";
 }
