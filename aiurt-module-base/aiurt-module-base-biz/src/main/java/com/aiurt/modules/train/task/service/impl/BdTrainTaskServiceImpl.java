@@ -90,8 +90,9 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	@Transactional(rollbackFor = Exception.class)
 	public void saveMain(BdTrainTask bdTrainTask, List<BdTrainTaskSign> bdTrainTaskSignList) {
 		int year = DateUtil.year(new Date());
-		int month = DateUtil.month(new Date());
+		int month = DateUtil.month(new Date())+1;
 		String taskCode = "YY-THXH-"+month+"-"+year+"-";
+		String formatTaskCode = "";
 		List<BdTrainTask> bdTrainTasks = bdTrainTaskMapper.selectList(new LambdaQueryWrapper<BdTrainTask>());
 		if(CollUtil.isNotEmpty(bdTrainTasks)){
 			List<String> taskCodes = bdTrainTasks.stream().filter(e->ObjectUtil.isNotEmpty(e.getTaskCode())).map(BdTrainTask::getTaskCode).collect(Collectors.toList());
@@ -99,13 +100,15 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 				Integer number = 1;
 				do{
 					String format = String.format("%02d",number );
-					taskCode = taskCode+format;
+					formatTaskCode = taskCode+format;
 					number++;
 				}
-				while (taskCodes.contains(taskCode));
+				while (taskCodes.contains(formatTaskCode));
+			}else {
+				formatTaskCode = taskCode+"01";
 			}
 		}
-		bdTrainTask.setTaskCode(taskCode);
+		bdTrainTask.setTaskCode(formatTaskCode);
 		bdTrainTaskMapper.insert(bdTrainTask);
 		if(bdTrainTaskSignList!=null && bdTrainTaskSignList.size()>0) {
 			for(BdTrainTaskSign entity:bdTrainTaskSignList) {
