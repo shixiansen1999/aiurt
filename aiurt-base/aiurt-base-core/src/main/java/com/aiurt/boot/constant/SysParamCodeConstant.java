@@ -314,4 +314,8 @@ public interface SysParamCodeConstant {
      * 通信分部编码
      */
     String 	SPECIAL_TEAM = "special_team";
+    /**
+     * 取消去办理的消息类型
+     */
+    String NO_DEAL_MESSAGE_TYPE = "no_deal_message_type";
 }
