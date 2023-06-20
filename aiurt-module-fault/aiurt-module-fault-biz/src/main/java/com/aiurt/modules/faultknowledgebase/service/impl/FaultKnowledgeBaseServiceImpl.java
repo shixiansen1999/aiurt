@@ -96,6 +96,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1216,6 +1217,13 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     public String startProcess(FaultKnowledgeBase faultKnowledgeBase) {
         String id = faultKnowledgeBase.getId();
+        String faultPhenomenon = faultKnowledgeBase.getFaultPhenomenon();
+        if (StrUtil.isNotEmpty(faultPhenomenon)) {
+            /* \n 回车(\u000a)、\t 水平制表符(\u0009)、\s 空格(\u0008)、\r 换行(\u000d) */
+            Pattern pattern = Pattern.compile("\\s*|\t|\r|\n");
+            String replacePhenomenon = StrUtil.replace(faultPhenomenon, pattern, matcher -> "");
+            faultKnowledgeBase.setFaultPhenomenon(replacePhenomenon);
+        }
         if (StrUtil.isEmpty(id)) {
             //list转string
             getFaultCodeList(faultKnowledgeBase);
