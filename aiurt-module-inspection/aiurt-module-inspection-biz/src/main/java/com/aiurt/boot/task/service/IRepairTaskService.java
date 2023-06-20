@@ -257,4 +257,11 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @return
      */
     List<PrintRepairTaskDTO> printRepairTaskById(String ids);
+
+    /**
+     * 根据检修任务id获取需要签名的人员列表
+     * @param taskId 检修任务id
+     * @return 返回SignUserDTO列表
+     */
+    List<SignUserDTO> appGetSignUserList(String taskId);
 }

@@ -1,11 +1,13 @@
 package com.aiurt.boot.manager.dto;
 
+import com.aiurt.boot.task.dto.SignUserDTO;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author zwl
@@ -48,4 +50,8 @@ public class ExamineDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "检修任务状态")
     private Integer inspectionStatus;
+
+    /**签名的用户列表，这个主要是用于站台门多同行人签名的*/
+    @ApiModelProperty(value = "签名的用户列表")
+    private List<SignUserDTO> signUserDTOList;
 }
