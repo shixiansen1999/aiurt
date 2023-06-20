@@ -3330,7 +3330,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         ).stream().map(RepairTaskDeviceRel::getCode).collect(Collectors.toSet());
 
         // 4.2 根据检修工单code，获取同行人，并转化为SignUserDTO对象
-        List<SignUserDTO> PeerSignUserDTOList = repairTaskPeerRelMapper.selectList(
+        List<SignUserDTO> peerSignUserDTOList = repairTaskPeerRelMapper.selectList(
                 new LambdaQueryWrapper<RepairTaskPeerRel>()
                         .select(RepairTaskPeerRel::getUserId, RepairTaskPeerRel::getRealName)
                         .in(RepairTaskPeerRel::getRepairTaskDeviceCode, repairTaskDeviceRelCodeList)
@@ -3339,8 +3339,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         ).stream().map(peerUser -> new SignUserDTO(peerUser.getUserId(), peerUser.getRealName(), 1, null))
                 .collect(Collectors.toList());
 
+        // 同行人过滤，当不同的工单是可以选择同一个同行人的。检修人不用过滤，因为同行人选不到检修人，检修人多选时也不能重复
+        List<SignUserDTO> filterPeerSignUserDTOList = new ArrayList<>(
+                peerSignUserDTOList.stream()
+                        .collect(Collectors.toMap(SignUserDTO::getUserId, signUser -> signUser, (oldValue, newValue) -> oldValue))
+                        .values()
+        );
+
         // 返回检修人和同行人的列表
-        taskSignUserDTOList.addAll(PeerSignUserDTOList);
+        taskSignUserDTOList.addAll(filterPeerSignUserDTOList);
         return taskSignUserDTOList;
     }
 
