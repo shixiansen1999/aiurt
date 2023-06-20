@@ -47,4 +47,18 @@
         </if>
         order by eir.create_time desc
     </select>
+    <select id="queryLedger" resultType="com.aiurt.boot.rehearsal.dto.EmergencyLedgerDTO">
+        SELECT eir.rehearsal_time, erm.`subject`,erq.description,erq.process_mode
+        FROM emergency_implementation_record eir
+        INNER JOIN emergency_rehearsal_month erm ON erm.id = eir.plan_id
+        LEFT JOIN emergency_record_question erq ON erq.record_id = eir.id
+        WHERE
+        erq.description IS NOT NULL AND erq.description != ''
+        <if test="recodeIdList != null and recodeIdList.size() != 0">
+            AND eir.id in
+            <foreach collection="recodeIdList" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
 </mapper>
