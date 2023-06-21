@@ -45,6 +45,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -175,16 +176,21 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                     return;
                 }
                 Integer newSparePartNum = Optional.ofNullable(deviceChange.getNewSparePartNum()).orElse(1);
-
+                List<String> splitCodes = new ArrayList<>();
                 for (int i = 0; i < newSparePartNum; i++) {
                     String key = codes.get(i);
-//                    int num = 0;
-//                    do {
-//                        String number = String.format("%03d", num);
-//                        key = newSparePartCode + number;
-//                        num = num + 1;
-//                    } while (assemblyCodeSet.contains(key));
-//                    assemblyCodeSet.add(key);
+                    if (assemblyCodeSet.contains(key)) {
+                        int num = 1;
+                        String format = "";
+                        do {
+                            String number = String.format("%04d", num);
+                            format = materialBase.getCode() + number;
+                            num = num + 1;
+                        } while (assemblyCodeSet.contains(format));
+                        assemblyCodeSet.add(format);
+                        key = format;
+                    }
+                    splitCodes.add(key);
                     // 组件
                     DeviceAssembly deviceAssembly = new DeviceAssembly();
                     deviceAssembly.setBaseTypeCode(materialBase.getBaseTypeCode());
@@ -205,6 +211,11 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
 
                    // list.add(replace);
                 }
+                DeviceChangeSparePart deviceChangeSparePart = new DeviceChangeSparePart();
+                String newSpitCode = CollUtil.join(splitCodes, ",");
+                deviceChange.setNewSparePartSplitCode(newSpitCode);
+                BeanUtils.copyProperties(deviceChange,deviceChangeSparePart);
+                sparePartService.updateById(deviceChangeSparePart);
                 // spare_part_replace备件更换记录表
                 SparePartReplace replace = new SparePartReplace();
                 replace.setMaintenanceRecord(faultCode);
@@ -213,7 +224,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 replace.setDelFlag(CommonConstant.DEL_FLAG_0);
                 // 被替换的组件
                 replace.setReplaceSubassemblyCode(oldSparePartCode);
-                replace.setSubassemblyCode(newSparePartSplitCode);
+                replace.setSubassemblyCode(newSpitCode);
                 partReplaceService.save(replace);
                 if (StrUtil.isNotBlank(oldSparePartCode)) {
 
