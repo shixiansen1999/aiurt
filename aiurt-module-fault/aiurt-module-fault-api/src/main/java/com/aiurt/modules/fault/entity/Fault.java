@@ -305,7 +305,7 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "作废说明")
     private String cancelRemark;
 
-    @ApiModelProperty(value = "故障报修时长 min")
+    @ApiModelProperty(value = "故障报修时长 second")
     private Long duration;
 
     @ApiModelProperty(value = "app, 故障上报设备编码，逗号隔开")
@@ -386,4 +386,29 @@ public class Fault extends DictEntity implements Serializable {
             System.out.println("2222222");
         }
     }
+
+    /**故障维修时长*/
+    @Excel(name = "故障维修时长", width = 15)
+    @ApiModelProperty(value = "故障维修时长")
+    private Integer repairDuration;
+
+    /**维修响应时长*/
+    @Excel(name = "维修响应时长", width = 15)
+    @ApiModelProperty(value = "维修响应时长")
+    private Integer responseDuration;
+
+    /**故障时长*/
+    @Excel(name = "故障时长", width = 15)
+    @ApiModelProperty(value = "故障时长")
+    private Integer faultDuration;
+
+    /**故障解决时长*/
+    @Excel(name = "故障解决时长", width = 15)
+    @ApiModelProperty(value = "故障解决时长")
+    private Integer resolutionDuration;
+
+    /**挂起时间*/
+    @Excel(name = "挂起时间", width = 15)
+    @ApiModelProperty(value = "挂起时间")
+    private Integer hangUpTime;
 }

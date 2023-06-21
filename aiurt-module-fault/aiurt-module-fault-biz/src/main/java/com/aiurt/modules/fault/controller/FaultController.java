@@ -2,6 +2,8 @@ package com.aiurt.modules.fault.controller;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
@@ -197,8 +199,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
         // 查询故障设备列表
-        Map<String, List<FaultDevice>> faultDeviceMap = faultDeviceService.list(new LambdaQueryWrapper<FaultDevice>()
-                .in(FaultDevice::getDeviceCode,records.stream().map(Fault::getCode).collect(Collectors.toList())))
+        Map<String, List<FaultDevice>> faultDeviceMap = faultDeviceService.queryListByFaultCodeList(records.stream().map(Fault::getCode).collect(Collectors.toList()))
                 .stream().collect(Collectors.groupingBy(FaultDevice::getFaultCode));
         Map<String, Integer> weightMap = new HashMap<>();
         List<String> faultLevelList = records.stream().map(Fault::getFaultLevel).filter(StrUtil::isNotBlank).distinct().collect(Collectors.toList());
@@ -228,6 +229,10 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         SysParamModel faultCenterAddOrg = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_ADD_ORG);
         boolean contains1 = StrUtil.splitTrim(faultCenterAddOrg.getValue(),',').contains(user.getOrgCode());
         records.parallelStream().forEach(fault1 -> {
+            //如果故障报修时长为空，则返回实时数据
+            if (ObjectUtil.isNull(fault1.getDuration())) {
+                fault1.setDuration(DateUtil.between(fault1.getHappenTime(), new Date(), DateUnit.SECOND));
+            }
             // 通过站点获取工区部门
             List<String> departs = sysBaseAPI.getWorkAreaByCode(fault1.getStationCode())
                     .stream()

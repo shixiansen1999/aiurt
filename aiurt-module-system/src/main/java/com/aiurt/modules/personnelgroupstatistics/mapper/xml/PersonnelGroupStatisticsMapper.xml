@@ -58,17 +58,18 @@
 
 <select id="getRepairDuration" resultType="com.aiurt.modules.personnelgroupstatistics.dto.FaultRepairRecordDTO">
     select
+    f.response_duration as responseDuration,
     a.id,
     a.appoint_user_name,
     su.realname as appoint_real_name,
-    if(a.recevice_time is null, a.assign_time, a.recevice_time) as recevice_time,
     a.start_time,
     a.end_time
     from
-    fault_repair_record a
-    LEFT JOIN fault f ON f.`code` = a.fault_code
+    fault f
+    LEFT JOIN fault_repair_record a ON f.`code` = a.fault_code
     LEFT JOIN sys_user su on a.appoint_user_name = su.username
     where 1=1
+    and f.status > 2
     AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d')
     AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
     <if test="userList != null and userList.size() != 0">
@@ -77,7 +78,6 @@
             #{item}
         </foreach>
     </if>
-
     </select>
 
 <select id="getDepart" resultType="com.aiurt.modules.personnelgroupstatistics.model.TeamPortraitModel">
@@ -113,5 +113,19 @@
     `work_area_station` was
     LEFT JOIN cs_station cs ON cs.station_code = was.station_code
     WHERE was.work_area_code = #{workAreaCode}
+    </select>
+
+<select id="getRepairDurationByOrg"
+            resultType="com.aiurt.modules.personnelgroupstatistics.dto.FaultRepairRecordDTO">
+    select
+    f.response_duration as responseDuration
+    from
+    fault f
+    left join sys_depart sd on f.sys_org_code = sd.org_code
+    where 1=1
+    and f.status > 2
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d')
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
+    AND  sd.id = #{orgId}
     </select>
 </mapper>

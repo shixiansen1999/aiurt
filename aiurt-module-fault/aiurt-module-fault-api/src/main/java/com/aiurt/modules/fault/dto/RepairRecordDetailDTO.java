@@ -119,4 +119,8 @@ public class RepairRecordDetailDTO implements Serializable {
     private Integer processing;
     @ApiModelProperty(value = "处理方式:0维修，1委外维修，2委外送修")
     private String processingName;
+
+    /**维修响应时长*/
+    @ApiModelProperty(value = "维修响应时长(秒)")
+    private Integer duration;
 }

@@ -2,17 +2,26 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper">
     <select id="list" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
-         SELECT
+        SELECT t.* from ( SELECT
+         DISTINCT
 	       t2.id as trainTaskId,
            t2.exam_plan_time as examTime,
 	       t2.exam_task_name as examTaskName,
 	       t2.task_state as taskState,
            t2.exam_paper_id as examPaperId,
            t2.exam_status as examStatus,
+           IFNULL(t1.is_release, case
+            when  t2.task_state in (0,1,2,3) then 0
+            when  t2.task_state = 4 then  1
+            when  t2.task_state = 5 then  2
+            else 3
+            end)
+            as isRelease,
            t3.user_id as userId
          FROM
            bd_train_task t2
            LEFT JOIN bd_train_task_user t3 ON t2.id = t3.train_task_id
+           LEFT JOIN bd_exam_record t1 on (t1.train_task_id =t2.id and t3.user_id = t1.user_id)
          <where>
              t2.exam_status =1
              AND t2.exam_classify =0
@@ -24,7 +33,9 @@
                   AND t3.user_id = #{condition.userId}
              </if>
          </where>
-        order by t2.update_time desc
+        order by t2.update_time desc) as t
+        where
+        t.isRelease!=3
     </select>
     <select id="selectOnes" resultType="java.lang.String">
         SELECT is_release from  bd_exam_record WHERE user_id = #{userId} ANd  train_task_id = #{trainTaskId} and exam_paper_id = #{examPaperId}  order by exam_time desc

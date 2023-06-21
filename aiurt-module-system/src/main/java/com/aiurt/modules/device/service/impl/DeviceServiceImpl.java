@@ -82,6 +82,7 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -363,9 +364,10 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 						if (ObjectUtil.isNotEmpty(one)) {
 							stringBuilder.append("数据库已存在该数据,");
 						}
-
 						//组件数据校验
-						List<DeviceAssemblyModel> deviceAssemblyModels = deviceAssemblyCheck(deviceModel, errorLines);
+						AtomicInteger atomicInteger =new AtomicInteger(0);
+						atomicInteger.set(errorLines);
+						List<DeviceAssemblyModel> deviceAssemblyModels = deviceAssemblyCheck(deviceModel,atomicInteger);
 
 						if (stringBuilder.length() > 0) {
 							// 截取字符
@@ -373,6 +375,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 							deviceModel.setDeviceMistake(stringBuilder.toString());
 							errorLines++;
 						}
+						errorLines = errorLines +atomicInteger.get();
 						List<DeviceAssembly> deviceAssemblies = new ArrayList<>();
 						if (CollUtil.isNotEmpty(deviceAssemblyModels)) {
 							//有组件
@@ -853,7 +856,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		return XlsUtil.importReturnRes(errorLines, successLines, errorMessage,true,url);
 	}
 
-	private List<DeviceAssemblyModel> deviceAssemblyCheck(DeviceModel deviceModel,int errorLines) {
+	private List<DeviceAssemblyModel> deviceAssemblyCheck(DeviceModel deviceModel,AtomicInteger atomicInteger) {
 		List<DeviceAssemblyModel> deviceAssemblyList = deviceModel.getDeviceAssemblyModelList();
 		Iterator<DeviceAssemblyModel> iterator = deviceAssemblyList.iterator();
 		while (iterator.hasNext()) {
@@ -863,6 +866,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				iterator.remove();
 			}
 		}
+		Integer errorNumber = 0;
 		if (CollUtil.isNotEmpty(deviceAssemblyList)) {
 			Map<Object, Integer> duplicateData = new HashMap<>();
 			int i = 0;
@@ -900,16 +904,27 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				} else {
 					stringBuilder.append("该数据存在相同数据,");
 				}
-
+				//文件、数据中，是否存在相同的组件编码
+				if(ObjectUtil.isNotEmpty(deviceAssembly.getAssemblyCode())){
+					List<DeviceAssemblyModel> fileList = deviceAssemblyList.stream().filter(d -> deviceAssembly.getAssemblyCode().equals(d.getAssemblyCode()) && !deviceAssembly.equals(d)).collect(Collectors.toList());
+					List<DeviceAssembly> sqlList = deviceAssemblyMapper.selectList(new LambdaQueryWrapper<DeviceAssembly>().eq(DeviceAssembly::getDelFlag, CommonConstant.DEL_FLAG_0).eq(DeviceAssembly::getCode, deviceAssembly.getAssemblyCode()));
+					if(CollUtil.isNotEmpty(fileList)){
+						stringBuilder.append("文件中存在相同组件编码，");
+					}
+					if(CollUtil.isNotEmpty(sqlList)){
+						stringBuilder.append("系统中已添加相同组件编码，");
+					}
+				}
 				if (stringBuilder.length() > 0) {
 					// 截取字符
 					stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 					deviceAssembly.setMistake(stringBuilder.toString());
-					errorLines++;
+					errorNumber++;
 				}
 				deviceAssembly.setDeviceCode(deviceModel.getCode());
 				i++;
 			}
+			atomicInteger.set(errorNumber);
 		}
 		return deviceAssemblyList;
 	}

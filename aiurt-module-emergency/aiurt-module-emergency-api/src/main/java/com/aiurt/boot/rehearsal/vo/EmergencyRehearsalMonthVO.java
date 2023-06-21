@@ -1,13 +1,9 @@
 package com.aiurt.boot.rehearsal.vo;
 
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import java.util.Date;
 
 /**
  * @author
@@ -27,4 +23,14 @@ public class EmergencyRehearsalMonthVO extends EmergencyRehearsalMonth {
      */
     @ApiModelProperty(value = "是否能删除标识")
     private Boolean delete;
+    /**
+     * 应急年度演练计划的计划编号
+     */
+    @ApiModelProperty(value = "应急年度演练计划的计划编号")
+    private String emergencyRehearsalYearCode;
+    /**
+     * 应急年度演练计划的计划名称
+     */
+    @ApiModelProperty(value = "应急年度演练计划的计划名称")
+    private String emergencyRehearsalYearName;
 }

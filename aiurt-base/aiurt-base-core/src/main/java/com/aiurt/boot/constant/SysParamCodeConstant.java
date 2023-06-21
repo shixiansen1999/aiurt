@@ -278,10 +278,18 @@ public interface SysParamCodeConstant {
      * app-检修计划-站点-中心班组需要看到的站点
      */
     String INSPECTION_STATION_CODE = "inspection_station_code";
-        /**
+    /**
      * 调度下发新的故障-需要响铃的中心班组
      */
     String FAULT_EXTERNAL_ORG = "fault_external_org";
+    /**
+     * 调度下发之后，填写维修单解决后，回调云轨调度系统的接口地址
+     */
+    String FAULT_EXTERNAL_URL = "fault_external_url";
+    /**
+     * 故障调度处理完，回调云轨的系统id
+     */
+    String FAULT_EXTERNAL_SYSTEM_ID = "fault_external_system_id";
     /**
      * 根据配置决定故障上报是否开启控制中心班组自检故障指派功能及权限
      */
@@ -299,11 +307,23 @@ public interface SysParamCodeConstant {
      */
     String FAULT_CENTER_RECEIVE = "fault_center_receive";
     /**
-     * 调度下发之后，填写维修单解决后，回调云轨调度系统的接口地址
+     * 统计报表是否需要过滤通信分部
      */
-    String FAULT_EXTERNAL_URL = "fault_external_url";
+    String 	FILTERING_TEAM = "filtering_team";
     /**
-     * 故障调度处理完，回调云轨的系统id
+     * 通信分部编码
      */
-    String FAULT_EXTERNAL_SYSTEM_ID = "fault_external_system_id";
+    String 	SPECIAL_TEAM = "special_team";
+
+    /**
+     * app端检修工单填写同行人是否可选全部班组
+     */
+    String INSPECTION_PEER_ALL_USER = "inspection_peer_all_user";
+
+    String INSPECTION_SIGN_MULTI = "inspection_sign_multi";
+    String APP_PATROL_TASK_POOL_SORT = "app_patrol_task_pool_sort";
+    /**
+     * 	工作内容是否需要查出所有未完成故障
+     */
+    String 	WORKLOG_UNFINISH_FAULT = "worklog_unfinish_fault";
 }

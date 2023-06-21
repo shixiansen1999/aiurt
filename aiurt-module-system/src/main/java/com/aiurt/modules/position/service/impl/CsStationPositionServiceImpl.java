@@ -118,7 +118,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
         csStationPosition.setPositionCodeCc("/" + sta.getLineCode() + "/" + csStationPosition.getStaionCode() + "/" + csStationPosition.getPositionCode());
         csStationPosition.setUpdateTime(new Date());
         csStationPositionMapper.insert(csStationPosition);
-        return Result.OK("添加成功！");
+        return Result.OK(csStationPosition);
     }
 
     /**
@@ -136,7 +136,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
             return Result.error("编码重复，请重新填写！");
         }
         csStationPositionMapper.updateById(csStationPosition);
-        return Result.OK("编辑成功！");
+        return Result.OK(csStationPosition);
     }
 
     @Override

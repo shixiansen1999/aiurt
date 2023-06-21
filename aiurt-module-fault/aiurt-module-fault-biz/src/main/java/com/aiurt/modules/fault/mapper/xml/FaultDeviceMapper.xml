@@ -101,11 +101,12 @@
             distinct
             a.device_code,
             a.fault_code,
-            b.name device_name
+            b.name device_name,
+            b.id as device_id
         from
             fault_device a
                     LEFT JOIN device b ON  a.device_code = b.code
-        where 1=1
+        where 1=1 AND  a.del_flag = 0 and b.del_flag = 0
         <if test="faultCodeList != null and faultCodeList.size() != 0">
             and a.fault_code in
             <foreach collection="faultCodeList" item="item" separator="," open="(" close=")">

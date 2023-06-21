@@ -38,7 +38,7 @@ public class TeamUserDTO {
     private String workingYears;
 
     @ApiModelProperty("检修总工时")
-    private BigDecimal inspecitonTotalTime;
+    private Integer inspecitonTotalTime;
     /**巡检总工时 2023-06-12 通信6期 改为 单位秒*/
     @ApiModelProperty("巡检总工时")
     private Integer patrolTotalTime;

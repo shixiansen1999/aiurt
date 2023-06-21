@@ -97,6 +97,9 @@
             </choose>
         </if>
         ORDER BY
+            <if test="b">
+                t1.`status` = 4 DESC,
+            </if>
         t1.creatTime DESC,
         t1.lineSort ASC,
         t1.stationSort ASC;
@@ -846,7 +849,7 @@
         (SELECT COUNT(id)
         FROM fault WHERE a.system_code = sub_system_code
         and `status` > 2
-        AND DATE_FORMAT(happen_time, '%Y-%m') = DATE_FORMAT(#{endTime}, '%Y-%m')
+        AND DATE_FORMAT(approval_pass_time, '%Y-%m') = DATE_FORMAT(#{endTime}, '%Y-%m')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
@@ -861,7 +864,7 @@
         FROM fault WHERE a.system_code = sub_system_code
         and `status` > 2
         AND
-        DATE_FORMAT(happen_time, '%Y-%m') = DATE_FORMAT(date_sub(#{endTime}, interval 1 month), '%Y-%m')
+        DATE_FORMAT(approval_pass_time, '%Y-%m') = DATE_FORMAT(date_sub(#{endTime}, interval 1 month), '%Y-%m')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
@@ -875,7 +878,7 @@
         (SELECT COUNT(id)
         FROM fault WHERE a.system_code = sub_system_code
         and `status` > 2
-        AND DATE_FORMAT(happen_time, '%Y') = DATE_FORMAT(curdate(), '%Y')
+        AND DATE_FORMAT(approval_pass_time, '%Y') = DATE_FORMAT(curdate(), '%Y')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
@@ -890,7 +893,7 @@
         FROM fault WHERE a.system_code = sub_system_code
         and `status` > 2
         AND
-        DATE_FORMAT(happen_time, '%Y') = DATE_FORMAT(date_sub(curdate(), interval 1 year), '%Y')
+        DATE_FORMAT(approval_pass_time, '%Y') = DATE_FORMAT(date_sub(curdate(), interval 1 year), '%Y')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
@@ -904,7 +907,7 @@
         FROM cs_subsystem a
         LEFT JOIN fault c ON a.system_code = c.sub_system_code and c.`status` > 2
         <if test="startTime != null and endTime != null">
-            and DATE_FORMAT(c.happen_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+            and DATE_FORMAT(c.approval_pass_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
             AND DATE_FORMAT(#{endTime}, '%Y-%m-%d')
         </if>
         <if test="lineCode != null">
@@ -1048,15 +1051,11 @@
         GROUP BY pto.org_code
     </select>
     <select id="selectNum" resultType="java.lang.Integer">
-        select ifnull((TIME_TO_SEC(a.time) / 60), 0) as times from
-        (SELECT timediff(c.arrive_time, IFNULL(c.recevice_time, c.assign_time)) as time
+        select ifnull(sum(a.response_duration), 0) as times
         FROM
         fault a
-        LEFT JOIN fault_repair_record c
-        ON a.`code` = c.fault_code
         WHERE
-        a.`status`
-        >0
+        a.`status`>2
         <if test="code != null">
             and a.sub_system_code = #{code}
         </if>
@@ -1064,7 +1063,7 @@
             and a.sys_org_code = #{orgCode}
         </if>
         <if test="startTime != null and endTime != null">
-            and DATE_FORMAT( a.happen_time
+            and DATE_FORMAT( a.approval_pass_time
             , '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{startTime}
             , '%Y-%m-%d' )
             AND DATE_FORMAT( #{endTime}
@@ -1079,20 +1078,13 @@
                 #{item}
             </foreach>
         </if>
-        and (a.end_time
-        or not NULL) ) as a
-        where 1 = 1
+
     </select>
     <select id="selectNum1" resultType="java.lang.Integer">
-        select ifnull((TIME_TO_SEC(abc.time) / 60), 0) as times from
-        (SELECT timediff(c.end_time, IFNULL(c.recevice_time, c.assign_time)) as time
+        select ifnull(sum(a.resolution_duration), 0) as times
         FROM
         fault a
-        LEFT JOIN fault_repair_record c
-        ON a.`code` = c.fault_code
-        WHERE
-        a.`status`
-        >0
+        WHERE 1=1
         <if test="code != null">
             and a.sub_system_code = #{code}
         </if>
@@ -1100,7 +1092,7 @@
             and a.sys_org_code = #{orgCode}
         </if>
         <if test="startTime != null and endTime != null">
-            and DATE_FORMAT( a.happen_time
+            and DATE_FORMAT( a.approval_pass_time
             , '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{startTime}
             , '%Y-%m-%d' )
             AND DATE_FORMAT( #{endTime}
@@ -1115,27 +1107,25 @@
                 #{item}
             </foreach>
         </if>
-        and (a.end_time
-        or not NULL) ) as abc
-        where 1 = 1
+        and a.status = 12
     </select>
     <select id="selectMonth" resultType="com.aiurt.boot.report.model.dto.MonthDTO">
         select a.system_name,a.shortened_form,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '01' or not NULL) as january,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '02' or not NULL) as february,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '03' or not NULL) as march,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '04' or not NULL) as april,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '05' or not NULL) as may,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '06' or not NULL) as june,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '07' or not NULL) as july,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '08' or not NULL) as august,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '09' or not NULL) as september,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '10' or not NULL) as october,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '11' or not NULL) as november,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '12' or not NULL) as december
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '01' or not NULL) as january,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '02' or not NULL) as february,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '03' or not NULL) as march,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '04' or not NULL) as april,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '05' or not NULL) as may,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '06' or not NULL) as june,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '07' or not NULL) as july,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '08' or not NULL) as august,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '09' or not NULL) as september,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '10' or not NULL) as october,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '11' or not NULL) as november,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '12' or not NULL) as december
         FROM cs_subsystem a
         LEFT JOIN fault c ON a.system_code = c.sub_system_code
-        and c.`status` > 2 AND DATE_ADD(c.happen_time, INTERVAL 1 YEAR) > NOW()
+        and c.`status` > 2 AND DATE_ADD(c.approval_pass_time, INTERVAL 1 YEAR) > NOW()
         <if test="lineCode != null">
             AND c.line_code = #{lineCode}
         </if>
@@ -1162,7 +1152,7 @@
         (SELECT COUNT(id)
         FROM fault WHERE a.org_code = sys_org_code
         and `status` > 2
-        AND DATE_FORMAT(happen_time, '%Y-%m') = DATE_FORMAT(#{startTime}, '%Y-%m')
+        AND DATE_FORMAT(approval_pass_time, '%Y-%m') = DATE_FORMAT(#{startTime}, '%Y-%m')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
@@ -1183,7 +1173,7 @@
         FROM fault WHERE a.org_code = sys_org_code
         and `status` > 2
         AND
-        DATE_FORMAT(happen_time, '%Y-%m') = DATE_FORMAT(date_sub(#{endTime}, interval 1 month), '%Y-%m')
+        DATE_FORMAT(approval_pass_time, '%Y-%m') = DATE_FORMAT(date_sub(#{endTime}, interval 1 month), '%Y-%m')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
@@ -1203,7 +1193,7 @@
         (SELECT COUNT(id)
         FROM fault WHERE a.org_code = sys_org_code
         and `status` > 2
-        AND DATE_FORMAT(happen_time, '%Y') = DATE_FORMAT(curdate(), '%Y')
+        AND DATE_FORMAT(approval_pass_time, '%Y') = DATE_FORMAT(curdate(), '%Y')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
@@ -1224,7 +1214,7 @@
         FROM fault WHERE a.org_code = sys_org_code
         and `status` > 2
         AND
-        DATE_FORMAT(happen_time, '%Y') = DATE_FORMAT(date_sub(curdate(), interval 1 year), '%Y')
+        DATE_FORMAT(approval_pass_time, '%Y') = DATE_FORMAT(date_sub(curdate(), interval 1 year), '%Y')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
@@ -1244,7 +1234,7 @@
         FROM sys_depart a
         LEFT JOIN fault c ON a.org_code = c.sys_org_code and c.`status` > 2
         <if test="startTime != null and endTime != null">
-            and DATE_FORMAT(c.happen_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+            and DATE_FORMAT(c.approval_pass_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
             AND DATE_FORMAT(#{endTime}, '%Y-%m-%d')
         </if>
         <if test="lineCode != null">
@@ -1273,21 +1263,21 @@
     </select>
     <select id="selectMonthOrg" resultType="com.aiurt.boot.report.model.dto.MonthDTO">
         select a.depart_name as orgName,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '01' or not NULL) as january,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '02' or not NULL) as february,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '03' or not NULL) as march,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '04' or not NULL) as april,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '05' or not NULL) as may,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '06' or not NULL) as june,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '07' or not NULL) as july,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '08' or not NULL) as august,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '09' or not NULL) as september,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '10' or not NULL) as october,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '11' or not NULL) as november,
-        COUNT(c.id and DATE_FORMAT(c.happen_time, '%m') = '12' or not NULL) as december
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '01' or not NULL) as january,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '02' or not NULL) as february,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '03' or not NULL) as march,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '04' or not NULL) as april,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '05' or not NULL) as may,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '06' or not NULL) as june,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '07' or not NULL) as july,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '08' or not NULL) as august,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '09' or not NULL) as september,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '10' or not NULL) as october,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '11' or not NULL) as november,
+        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '12' or not NULL) as december
         FROM sys_depart a
         LEFT JOIN fault c ON a.org_code = c.sys_org_code
-        and c.`status` > 2 AND DATE_ADD(c.happen_time, INTERVAL 1 YEAR) > NOW()
+        and c.`status` > 2 AND DATE_ADD(c.approval_pass_time, INTERVAL 1 YEAR) > NOW()
         <if test="lineCode != null">
             AND c.line_code = #{lineCode}
         </if>
@@ -1715,9 +1705,9 @@
         a.system_code as code,
         count(c.id AND c.end_time is NOT NULL and c.status = 12 OR not null) AS resolvedNum
         FROM cs_subsystem a
-        LEFT JOIN fault c ON a.system_code = c.sub_system_code and c.`status` > 2
+        LEFT JOIN fault c ON a.system_code = c.sub_system_code and c.`status` > 2 and c.hang_up_time is null
         <if test="startTime != null and endTime != null">
-            and DATE_FORMAT(c.happen_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+            and DATE_FORMAT(c.approval_pass_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
             AND DATE_FORMAT(#{endTime}, '%Y-%m-%d')
         </if>
         <if test="lineCode != null">
@@ -1730,23 +1720,19 @@
             </foreach>
         </if>
         where a.del_flag = 0
-         and not EXISTS (select 1 from operation_process where fault_code = c.code and  process_code = 10)
+         <!--and not EXISTS (select 1 from operation_process where fault_code = c.code and  process_code = 10)-->
         <if test="id != null">
             AND a.id in (select system_id from cs_user_subsystem where user_id = #{id})
         </if>
         group by a.id
 </select>
 <select id="selectFaultWorkTime" resultType="java.lang.Integer">
- select ifnull((TIME_TO_SEC(abc.time) / 60), 0) as times from
-        (SELECT timediff(c.end_time,IFNULL( IFNULL( c.recevice_time, c.assign_time ),c.start_time)) AS time
+ select ifnull(sum(a.resolution_duration), 0) as times
         FROM
         fault a
-        LEFT JOIN fault_repair_record c
-        ON a.`code` = c.fault_code
-        WHERE
-        a.`status`
-        >0
-        and not EXISTS (select 1 from operation_process where fault_code = a.code and  process_code = 10)
+        WHERE 1=1
+         and  a.hang_up_time is null
+<!--        and not EXISTS (select 1 from operation_process where fault_code = a.code and  process_code = 10)-->
         <if test="code != null">
             and a.sub_system_code = #{code}
         </if>
@@ -1754,7 +1740,7 @@
             and a.sys_org_code = #{orgCode}
         </if>
         <if test="startTime != null and endTime != null">
-            and DATE_FORMAT( a.happen_time
+            and DATE_FORMAT( a.approval_pass_time
             , '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{startTime}
             , '%Y-%m-%d' )
             AND DATE_FORMAT( #{endTime}
@@ -1769,9 +1755,7 @@
                 #{item}
             </foreach>
         </if>
-        and (a.end_time
-        or not NULL) ) as abc
-        where 1 = 1
+        and a.status = 12
 </select>
 <select id="getFilterOrgReport" resultType="com.aiurt.boot.report.model.FailureOrgReport">
   SELECT
@@ -1780,9 +1764,9 @@
         a.org_code,
         count(c.id AND c.end_time is NOT NULL and c.status = 12 OR not null) AS resolvedNum
         FROM sys_depart a
-        LEFT JOIN fault c ON a.org_code = c.sys_org_code and c.`status` > 2
+        LEFT JOIN fault c ON a.org_code = c.sys_org_code and c.`status` > 2 and c.hang_up_time is null
         <if test="startTime != null and endTime != null">
-            and DATE_FORMAT(c.happen_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+            and DATE_FORMAT(c.approval_pass_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d')
             AND DATE_FORMAT(#{endTime}, '%Y-%m-%d')
         </if>
         <if test="lineCode != null">
@@ -1801,7 +1785,7 @@
             </foreach>
         </if>
         WHERE a.del_flag = 0
-        and not EXISTS (select 1 from operation_process where fault_code = c.code and  process_code = 10)
+    <!--    and not EXISTS (select 1 from operation_process where fault_code = c.code and  process_code = 10)-->
         <if test="ids != null and ids.size > 0">
             AND a.id IN
             <foreach collection="ids" item="ids" open="(" separator="," close=")">

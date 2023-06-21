@@ -27,6 +27,7 @@ import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.service.IRepairTaskService;
+import com.aiurt.boot.task.service.IRepairTaskSignUserService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
@@ -56,7 +57,9 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.system.vo.SysParamModel;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -128,6 +131,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Autowired
     ArchiveUtils archiveUtils;
 
+    @Autowired
+    private IRepairTaskSignUserService repairTaskSignUserService;
+
     @Value("${support.path.exportRepairTaskPath}")
     private String exportPath;
 
@@ -152,6 +158,28 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         //判空处理
         if (CollUtil.isEmpty(repairTaskIds)) {
             return pageList.setRecords(lists);
+        }
+
+        // 站台门四期、有多同行人签名的情况的话，预览要是多人的签名图片，给RepairTask的confirmUrl赋值，多个以","分隔
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_SIGN_MULTI);
+        boolean value = "1".equals(paramModel.getValue());
+        // value为true，则检修任务展示签名是包括同行人在内的多签名
+        if(value){
+            // 查询lists的所有task任务的所有签名
+            LambdaQueryWrapper<RepairTaskSignUser> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.in(RepairTaskSignUser::getRepairTaskId, repairTaskIds);
+            queryWrapper.eq(RepairTaskSignUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+            List<RepairTaskSignUser> taskSignUserList = repairTaskSignUserService.list(queryWrapper);
+            // 将所有签名做成一个map,key是任务id，value是使用”,“分隔的多个签名url
+            Map<String, String> taskSignUrlMap = taskSignUserList.stream().filter(taskSignUser -> StrUtil.isNotEmpty(taskSignUser.getSignUrl()))
+                    .collect(Collectors.toMap(RepairTaskSignUser::getRepairTaskId, RepairTaskSignUser::getSignUrl, (oldValue, newValue) -> oldValue + "," + newValue));
+            // 给任务列表的签名url重新赋值为多签名的url
+            lists.forEach(task->{
+                String signUrl = taskSignUrlMap.get(task.getId());
+                if (StrUtil.isNotEmpty(signUrl)) {
+                    task.setConfirmUrl(signUrl);
+                }
+            });
         }
 
         Map<String, String> taskStateMap = getTaskStateMap();
@@ -1552,6 +1580,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
 
+
         // 是任务的检修人才可以提交
         List<RepairTaskUser> repairTaskUserss = repairTaskUserMapper.selectList(
                 new LambdaQueryWrapper<RepairTaskUser>()
@@ -1568,6 +1597,25 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LoginUser user = sysBaseApi.getUserById(sysUser.getId());
+
+        // 站台门四期，多同行人签名，保存签名到repair_task_sign_user表里
+        List<SignUserDTO> signUserDTOList = examineDTO.getSignUserDTOList();
+        if (CollUtil.isNotEmpty(signUserDTOList)) {
+            List<RepairTaskSignUser> repairTaskSignUserList = signUserDTOList.stream().map(signUserDTO -> {
+                RepairTaskSignUser signUser = new RepairTaskSignUser();
+                BeanUtils.copyProperties(signUserDTO, signUser);
+                signUser.setRepairTaskId(repairTask.getId());
+
+                // 多签名时，examineDTO.getConfirmUrl() 可能为空，从signUserDTOList中筛选赋值
+                if(StrUtil.isEmpty(examineDTO.getConfirmUrl()) && sysUser.getId().equals(signUserDTO.getUserId())){
+                    examineDTO.setConfirmUrl(signUserDTO.getSignUrl());
+                }
+
+                return signUser;
+            }).collect(Collectors.toList());
+            repairTaskSignUserService.saveBatch(repairTaskSignUserList);
+        }
+
         SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_SUBMIT_SIGNATURE);
         boolean value = "1".equals(paramModel.getValue());
         if (InspectionConstant.IS_CONFIRM_1.equals(repairTask.getIsConfirm())) {
@@ -1597,6 +1645,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairPoolMapper.updateById(repairPool);
             }
         }
+
+        // 提交检修任务就更新检修任务的检修时长
+        // 2023-06 通信6期 检修任务的检修时长是提交时间-开始时间，且单位秒
+        if (ObjectUtil.isNotNull(repairTask.getBeginTime())) {
+            repairTask.setDuration((int) DateUtil.between(repairTask.getBeginTime(), new Date(), DateUnit.SECOND));
+        }else {
+            repairTask.setDuration(0);
+        }
+
         repairTaskMapper.updateById(repairTask);
 
         // 更新待办任务状态为已完成
@@ -2549,9 +2606,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (ObjectUtil.isEmpty(repairTaskDeviceRel.getEndTime())) {
             repairTaskDeviceRel.setEndTime(submitTime);
             // 检修时长
-            if (ObjectUtil.isNotEmpty(repairTaskDeviceRel.getStartTime()) && ObjectUtil.isNotEmpty(repairTaskDeviceRel.getEndTime())) {
-                repairTaskDeviceRel.setDuration(DateUtil.between(repairTaskDeviceRel.getStartTime(), repairTaskDeviceRel.getEndTime(), DateUnit.MINUTE));
-            }
+            // if (ObjectUtil.isNotEmpty(repairTaskDeviceRel.getStartTime()) && ObjectUtil.isNotEmpty(repairTaskDeviceRel.getEndTime())) {
+            //     repairTaskDeviceRel.setDuration(DateUtil.between(repairTaskDeviceRel.getStartTime(), repairTaskDeviceRel.getEndTime(), DateUnit.MINUTE));
+            // }
+        }
+        // 2023-06 通信6期 检修工单的检修时长是提交时间-开始时间，且单位秒
+        if (ObjectUtil.isNotNull(repairTaskDeviceRel.getStartTime())) {
+            repairTaskDeviceRel.setDuration(DateUtil.between(repairTaskDeviceRel.getStartTime(), submitTime, DateUnit.SECOND));
+        }else {
+            repairTaskDeviceRel.setDuration(0L);
         }
 
         // 修改检修单的状态，已提交
@@ -2622,6 +2685,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairPoolMapper.updateById(repairPool);
             }
         }
+
+        // 提交检修任务就更新检修任务的检修时长
+        // 2023-06 通信6期 检修任务的检修时长是提交时间-开始时间，且单位秒
+        if (ObjectUtil.isNotNull(repairTask.getBeginTime())) {
+            repairTask.setDuration((int) DateUtil.between(repairTask.getBeginTime(), new Date(), DateUnit.SECOND));
+        }else {
+            repairTask.setDuration(0);
+        }
+
         repairTaskMapper.updateById(repairTask);
 
         // 更新待办任务状态为已完成
@@ -2686,8 +2758,19 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
         }
 
-        // 查询登录人部门下所有的人员
-        orgDto = manager.queryUserByOrdCode(loginUser.getOrgCode());
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_PEER_ALL_USER);
+        boolean value = "1".equals(paramModel.getValue());
+        // value为true，则选择同行人时可以选择全部班组的成员
+        if(value){
+            // 获取全部部门
+            List<SysDepartModel> allDepartList = sysBaseApi.getAllSysDepart();
+            String allOrgCodes = allDepartList.stream().map(SysDepartModel::getOrgCode).collect(Collectors.joining(","));
+            // 查询全部部门的人员
+            orgDto = manager.queryUserByOrdCode(allOrgCodes);
+        }else{
+            // 查询登录人部门下所有的人员
+            orgDto = manager.queryUserByOrdCode(loginUser.getOrgCode());
+        }
 
         // 过滤掉检修人
         if (CollUtil.isNotEmpty(orgDto)) {
@@ -3213,6 +3296,59 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         fos.close();
         workbook.close();
         PdfUtil.excel2pdf(exportRepairTaskPath);
+    }
+
+    @Override
+    public List<SignUserDTO> appGetSignUserList(String taskId) {
+        // 1、查看任务是否存在
+        RepairTask repairTask = repairTaskMapper.selectById(taskId);
+        if (ObjectUtil.isEmpty(repairTask)) {
+            throw new AiurtBootException("任务不存在");
+        }
+        // 2、获取检修人员列表
+        List<RepairTaskUser> repairTaskUserList = repairTaskUserMapper.selectList(
+                new LambdaQueryWrapper<RepairTaskUser>()
+                        .select(RepairTaskUser::getUserId, RepairTaskUser::getName)
+                        .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
+                        .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+        );
+        if (CollUtil.isEmpty(repairTaskUserList)) {
+            throw new AiurtBootException("该任务没有对应的检修人");
+        }
+        // 3、将检修人转化成SignUserDTO对象
+        List<SignUserDTO> taskSignUserDTOList = repairTaskUserList.stream()
+                .map(taskUser -> new SignUserDTO(taskUser.getUserId(), taskUser.getName(), 0, null))
+                .collect(Collectors.toList());
+
+        // 4、查询同行人
+        // 4.1 查询检修任务对应的所有检修工单，获取工单code
+        Set<String> repairTaskDeviceRelCodeList = repairTaskDeviceRelMapper.selectList(
+                new LambdaQueryWrapper<RepairTaskDeviceRel>()
+                        .select(RepairTaskDeviceRel::getCode)
+                        .eq(RepairTaskDeviceRel::getRepairTaskId, taskId)
+                        .eq(RepairTaskDeviceRel::getDelFlag, CommonConstant.DEL_FLAG_0)
+        ).stream().map(RepairTaskDeviceRel::getCode).collect(Collectors.toSet());
+
+        // 4.2 根据检修工单code，获取同行人，并转化为SignUserDTO对象
+        List<SignUserDTO> peerSignUserDTOList = repairTaskPeerRelMapper.selectList(
+                new LambdaQueryWrapper<RepairTaskPeerRel>()
+                        .select(RepairTaskPeerRel::getUserId, RepairTaskPeerRel::getRealName)
+                        .in(RepairTaskPeerRel::getRepairTaskDeviceCode, repairTaskDeviceRelCodeList)
+                        .eq(RepairTaskPeerRel::getDelFlag, CommonConstant.DEL_FLAG_0)
+                        .orderByAsc(RepairTaskPeerRel::getCreateTime)
+        ).stream().map(peerUser -> new SignUserDTO(peerUser.getUserId(), peerUser.getRealName(), 1, null))
+                .collect(Collectors.toList());
+
+        // 同行人过滤，当不同的工单是可以选择同一个同行人的。检修人不用过滤，因为同行人选不到检修人，检修人多选时也不能重复
+        List<SignUserDTO> filterPeerSignUserDTOList = new ArrayList<>(
+                peerSignUserDTOList.stream()
+                        .collect(Collectors.toMap(SignUserDTO::getUserId, signUser -> signUser, (oldValue, newValue) -> oldValue))
+                        .values()
+        );
+
+        // 返回检修人和同行人的列表
+        taskSignUserDTOList.addAll(filterPeerSignUserDTOList);
+        return taskSignUserDTOList;
     }
 
     @Override

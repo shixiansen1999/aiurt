@@ -2,6 +2,7 @@ package com.aiurt.modules.common.api;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.thread.ThreadUtil;
@@ -12,7 +13,6 @@ import com.aiurt.boot.index.dto.RepairTaskNum;
 import com.aiurt.modules.fault.dto.FaultReportDTO;
 import com.aiurt.modules.fault.dto.UserTimeDTO;
 import com.aiurt.modules.fault.entity.Fault;
-import com.aiurt.modules.fault.entity.FaultRepairParticipants;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.mapper.FaultRepairParticipantsMapper;
@@ -22,6 +22,7 @@ import com.aiurt.modules.largescream.mapper.FaultInformationMapper;
 import com.aiurt.modules.largescream.model.FaultDurationTask;
 import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.github.xiaoymin.knife4j.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -85,33 +86,61 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         if (CollUtil.isEmpty(userNames)) {
             return map;
         }
-        //获取当前用户部门的人作为被指派/领取人，负责过的故障报修单
-        List<FaultRepairRecord> faultList = recordMapper.selectList(new LambdaQueryWrapper<FaultRepairRecord>().in(FaultRepairRecord::getAppointUserName, userNames).eq(FaultRepairRecord::getDelFlag, 0));
-       //获取已经填写的维修单
-        List<FaultRepairRecord> recordList = Optional.ofNullable(faultList).orElse(Collections.emptyList()).stream().filter(f -> f.getArriveTime() != null).collect(Collectors.toList());
-        //去重复
-        List<FaultRepairRecord> list=Optional.ofNullable(recordList).orElse(Collections.emptyList()).stream().collect(Collectors.collectingAndThen(Collectors.toCollection(()->new TreeSet<>(Comparator.comparing(o->o.getFaultCode()+";"+o.getAppointUserName()))), ArrayList::new));
-        //获取当前用户作为参与人，参与过的故障报修单
-        List<FaultRepairParticipants> participantsList = participantsMapper.selectList(new LambdaQueryWrapper<FaultRepairParticipants>().in(FaultRepairParticipants::getUserName, userNames));
-        //去重复
-        Set <FaultRepairRecord> faultRepairRecords = new HashSet<>();
-        faultRepairRecords.addAll(list);
-        if (CollUtil.isNotEmpty(participantsList)) {
-            participantsList.stream().forEach(p->{
-                FaultRepairRecord record = recordMapper.selectById(p.getFaultRepairRecordId());
-                if (ObjectUtil.isNotEmpty(record)) {
-                    faultRepairRecords.add(record);
+        //根据配置实现是否需要查询全部故障作为工作内容
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.WORKLOG_UNFINISH_FAULT);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            //查出当天维修单已完成的故障，和所有未完成维修单的故障
+            List<Fault> todayFault = recordMapper.getTodayFault(startTime, endTime, userNames);
+            if (CollUtil.isNotEmpty(todayFault)) {
+                StringBuilder content = new StringBuilder();
+                StringBuilder code = new StringBuilder();
+
+                for (Fault fault : todayFault) {
+                    String stationName = sysBaseApi.getPosition(fault.getStationCode());
+                    String lineName = sysBaseApi.getPosition(fault.getLineCode());
+                    content.append(lineName).append("-").append(stationName).append(" ");
+                    if (StrUtil.isNotBlank(fault.getSymptoms())) {
+                        content.append(fault.getSymptoms());
+                    }else {
+                        content.append(" 未填写故障原因");
+                    }
+
+                    if (StrUtil.isNotBlank(fault.getAppointUserName())) {
+                        String realname = sysBaseApi.getUserByName(fault.getAppointUserName()).getRealname();
+                        content.append(" 维修人:").append(realname);
+                    } else {
+                        content.append(" 未指派维修人:");
+                    }
+                    content.append("-");
+
+                    String faultStatus = sysBaseApi.translateDict("fault_status", Convert.toStr(fault.getStatus()));
+                    content.append(faultStatus);
+                    content.append("\n");
+                    code.append(fault.getCode()).append(",");
                 }
-            });
-        }
+                if (content.length() > 1) {
+                    // 截取字符
+                    content = content.deleteCharAt(content.length() - 1);
+                    map.put("content", content.toString());
+                }
+                if (code.length() > 1) {
+                    // 截取字符
+                    code = code.deleteCharAt(code.length() - 1);
+                    map.put("code", code.toString());
+                }
+            }
 
-        StringBuilder content = new StringBuilder();
-        StringBuilder code = new StringBuilder();
+        } else {
+            //获取当前用户部门的人作为被指派/领取人/同行人，负责的故障报修单，并且到达时间在指定时间范围内
+            List<FaultRepairRecord> recordList =  recordMapper.getTodayRecord(startTime, endTime,userNames);
 
-        //获取时间范围内的维修单
-        if (CollUtil.isNotEmpty(faultRepairRecords)) {
-            for (FaultRepairRecord record : faultRepairRecords) {
-                if (record.getCreateTime().after(startTime) && record.getCreateTime().before(endTime)) {
+            StringBuilder content = new StringBuilder();
+            StringBuilder code = new StringBuilder();
+
+            //获取时间范围内的维修单
+            if (CollUtil.isNotEmpty(recordList)) {
+                for (FaultRepairRecord record : recordList) {
                     Fault fault = faultMapper.selectOne(new LambdaQueryWrapper<Fault>().eq(Fault::getCode, record.getFaultCode()));
                     String stationName = sysBaseApi.getPosition(fault.getStationCode());
                     String lineName = sysBaseApi.getPosition(fault.getLineCode());
@@ -125,16 +154,16 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                     content.append("\n");
                     code.append(fault.getCode()).append(",");
                 }
-            }
-            if (content.length() > 1) {
-                // 截取字符
-                content = content.deleteCharAt(content.length() - 1);
-                map.put("content", content.toString());
-            }
-            if (code.length() > 1) {
-                // 截取字符
-                code = code.deleteCharAt(code.length() - 1);
-                map.put("code", code.toString());
+                if (content.length() > 1) {
+                    // 截取字符
+                    content = content.deleteCharAt(content.length() - 1);
+                    map.put("content", content.toString());
+                }
+                if (code.length() > 1) {
+                    // 截取字符
+                    code = code.deleteCharAt(code.length() - 1);
+                    map.put("code", code.toString());
+                }
             }
         }
         return map;
@@ -170,26 +199,18 @@ public class DailyFaultApiImpl implements DailyFaultApi {
          participantsDuration = faultInformationMapper.getFaultParticipantsDuration(startTime, endTime);
         }
 
-        Map<String, Long> durationMap = faultUserDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
-                v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
+        Map<String, Integer> durationMap = faultUserDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
+                v -> ObjectUtil.isEmpty(v.getDuration()) ? 0 : v.getDuration(), (a, b) -> a));
 
-        Map<String, Long> participantsMap = participantsDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
-                v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
+        Map<String, Integer> participantsMap = participantsDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
+                v -> ObjectUtil.isEmpty(v.getDuration()) ? 0 : v.getDuration(), (a, b) -> a));
 
         userList.stream().forEach(l -> {
             String userId = l.getId();
-            Long timeOne = durationMap.get(userId);
-            Long timeTwo = participantsMap.get(userId);
-            if (ObjectUtil.isEmpty(timeOne)) {
-                timeOne = 0L;
-            }
-            if (ObjectUtil.isEmpty(timeTwo)) {
-                timeTwo = 0L;
-            }
-            double time = 1.0 * (timeOne+timeTwo) / 3600;
-            // 展示需要以小时数展示，并保留两位小数
-            BigDecimal decimal = new BigDecimal(time).setScale(2, BigDecimal.ROUND_HALF_UP);
-            userDurationMap.put(userId, decimal);
+            Integer timeOne = durationMap.get(userId) != null ? durationMap.get(userId) : 0;
+            Integer timeTwo = participantsMap.get(userId)!= null ? participantsMap.get(userId) : 0;
+            int time = timeOne + timeTwo;
+            userDurationMap.put(userId, new BigDecimal(time));
         });
         return userDurationMap;
     }
@@ -223,28 +244,20 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                 // 获取参与人在指定时间范围内的每一个任务的任务时长(单位秒)
                  participantsByIdDuration = faultInformationMapper.getParticipantsDuration(startTime, endTime, userList);
             }
-            Map<String, Long> durationMap = faultByIdDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
-                    v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
+            Map<String, Integer> durationMap = faultByIdDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
+                    v -> ObjectUtil.isEmpty(v.getDuration()) ? 0 : v.getDuration(), (a, b) -> a));
 
-            Map<String, Long> participantsMap = participantsByIdDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
-                    v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
+            Map<String, Integer> participantsMap = participantsByIdDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
+                    v -> ObjectUtil.isEmpty(v.getDuration()) ? 0 : v.getDuration(), (a, b) -> a));
             BigDecimal sum = new BigDecimal("0.00");
             for (LoginUser user : userList) {
                 String userId = user.getId();
-                Long timeOne = durationMap.get(userId);
-                Long timeTwo = participantsMap.get(userId);
-                if (ObjectUtil.isEmpty(timeOne)) {
-                    timeOne = 0L;
-                }
-                if (ObjectUtil.isEmpty(timeTwo)) {
-                    timeTwo = 0L;
-                }
-                double time = 1.0 * (timeOne+timeTwo) / 3600;
-                // 展示需要以小时数展示，并保留两位小数
-                BigDecimal a = new BigDecimal(time).setScale(2, BigDecimal.ROUND_HALF_UP);
-                sum = sum.add(a);
+                Integer timeOne = durationMap.get(userId) != null ? durationMap.get(userId) : 0;
+                Integer timeTwo = participantsMap.get(userId)!= null ? participantsMap.get(userId) : 0;
+
+                int time =timeOne+timeTwo;
+                sum = sum.add(new BigDecimal(time));
             }
-            //秒转时
             return sum;
         }
     return new BigDecimal("0.00");
@@ -283,28 +296,19 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         FaultReportDTO f = new FaultReportDTO();
         List<UserTimeDTO> userFaultList = new ArrayList<>();
         List<UserTimeDTO> accompanyFaultList = new ArrayList<>();
+
         if(filterValue){
             f = faultInformationMapper.getFilterFaultOrgReport(startTime,endTime,orgId);
-            //查询指派人任务时长
-            userFaultList = faultInformationMapper.getFilterUserTime(f.getOrgId(),startTime,endTime);
             //查询参与人任务时长
-            accompanyFaultList =faultInformationMapper.getFilterAccompanyTime(f.getOrgId(),startTime,endTime);
+            accompanyFaultList =faultInformationMapper.getFilterAccompanyTime(orgId,startTime,endTime);
         }else {
             f = faultInformationMapper.getFaultOrgReport(startTime,endTime,orgId);
-            //查询指派人任务时长
-            userFaultList = faultInformationMapper.getUserTime(f.getOrgId(),startTime,endTime);
             //查询参与人任务时长
-            accompanyFaultList =faultInformationMapper.getAccompanyTime(f.getOrgId(),startTime,endTime);
+            accompanyFaultList =faultInformationMapper.getAccompanyTime(orgId,startTime,endTime);
         }
+        f.setOrgId(orgId);
         f.setConstructorsNum(faultInformationMapper.getConstructorsNum(startTime,endTime,orgId));
-        // List<String> collect = userFaultList.stream().map(UserTimeDTO::getFrrId).collect(Collectors.toList());
-        // accompanyFaultList = accompanyFaultList.stream().parallel().filter(a -> !collect.contains(a.getFrrId())).collect(Collectors.toList());
-        userFaultList.addAll(accompanyFaultList);
-        Long sum = accompanyFaultList
-                .stream().filter(w-> w.getDuration() !=null)
-                .mapToLong(w -> w.getDuration())
-                .sum();
-        f.setNum(f.getNum()+sum);
+
         List<String> str = faultInformationMapper.getConstructionHours(f.getOrgId(),startTime,endTime);
         List<BigDecimal> doubles = new ArrayList<>();
         str.forEach(s -> {
@@ -326,22 +330,19 @@ public class DailyFaultApiImpl implements DailyFaultApi {
             });
         });
         if (f.getNum1()==0){
-            f.setRepairTime("0");
+            f.setRepairTime(0);
         }else {
-            Long s = (f.getNum()/f.getNum1())/60;
-            f.setRepairTime(s.toString());
+            // 平均维修时长不需要统计同行人
+            BigDecimal bigDecimal = new BigDecimal(f.getNum()).divide(new BigDecimal(f.getNum1()),0, BigDecimal.ROUND_HALF_UP);
+            f.setRepairTime(bigDecimal.intValue());
         }
-        BigDecimal sumFailureTime = new BigDecimal("0.00");
-        userFaultList = userFaultList.stream()
-                .collect(Collectors.groupingBy(UserTimeDTO::getUserId, Collectors.summingLong(UserTimeDTO::getDuration)))
-                .entrySet().stream()
-                .map(entry -> new UserTimeDTO(entry.getKey(), null, entry.getValue()))
-                .collect(Collectors.toList());
-        for (UserTimeDTO userTimeDTO : userFaultList) {
-            BigDecimal decimal = new BigDecimal((1.0 * (userTimeDTO.getDuration()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP);
-            sumFailureTime = sumFailureTime.add(decimal);
-        }
-        f.setFailureTime(sumFailureTime);
+
+        // 总工时需要统计同行人
+        int sum = accompanyFaultList
+                .stream().filter(w-> w.getDuration() !=null)
+                .mapToInt(UserTimeDTO::getDuration)
+                .sum();
+        f.setFailureTime(f.getNum()+sum);
         BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
         f.setConstructionHours(totalPrice.setScale(2,BigDecimal.ROUND_HALF_UP));
         map.put(f.getOrgId(),f);
@@ -368,15 +369,14 @@ public class DailyFaultApiImpl implements DailyFaultApi {
             users.forEach(id->{
                 threadPoolExecutor.execute(() -> {
                     FaultReportDTO faultReportDTO = new FaultReportDTO();
-                    Long sum = 0L;
+                    int sum = 0;
                     if(filterValue){
-                        faultReportDTO = faultInformationMapper.getFilterFaultUserReport(teamId,startTime,endTime,null,id);
+                        faultReportDTO = faultInformationMapper.getFilterFaultUserReport(null,startTime,endTime,null,id);
                         sum = faultInformationMapper.getFilterUserTimes(id,startTime,endTime);
                     }else {
-                        faultReportDTO = faultInformationMapper.getFaultUserReport(teamId,startTime,endTime,null,id);
+                        faultReportDTO = faultInformationMapper.getFaultUserReport(null,startTime,endTime,null,id);
                         sum = faultInformationMapper.getUserTimes(id,startTime,endTime);
                     }
-                    faultReportDTO.setNum(faultReportDTO.getNum()+sum);
                     List<String> str = faultInformationMapper.getUserConstructionHours(id,startTime,endTime);
                     List<BigDecimal> doubles = new ArrayList<>();
                     str.forEach(s -> {
@@ -396,14 +396,19 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                         });
                     });
                     FaultReportDTO  fau = faultInformationMapper.getUserConstructorsNum(id,startTime,endTime);
+
+
                     if (fau.getNum1()==0){
-                        faultReportDTO.setRepairTime("0");
+                        faultReportDTO.setRepairTime(0);
                     }else {
-                        Long s = (faultReportDTO.getNum()/fau.getNum1())/60;
-                        faultReportDTO.setRepairTime(s.toString());
+                        //平均维修时间不需要加上通信工时
+                        BigDecimal bigDecimal = new BigDecimal(faultReportDTO.getNum()).divide(new BigDecimal(faultReportDTO.getNum1()),0, BigDecimal.ROUND_HALF_UP);
+                        faultReportDTO.setRepairTime(bigDecimal.intValue());
                     }
                     faultReportDTO.setConstructorsNum(fau.getConstructorsNum());
-                    faultReportDTO.setFailureTime(new BigDecimal((1.0 * (faultReportDTO.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
+                    //总工时需要加上同行人
+                    faultReportDTO.setNum(faultReportDTO.getNum()+sum);
+                    faultReportDTO.setFailureTime(faultReportDTO.getNum());
                     BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
                     faultReportDTO.setConstructionHours(totalPrice.setScale(2,BigDecimal.ROUND_HALF_UP));
                     map.put(id,faultReportDTO);

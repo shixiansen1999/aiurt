@@ -15,24 +15,20 @@ import com.aiurt.boot.rehearsal.vo.EmergencyRehearsalMonthVO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -124,5 +120,20 @@ public class EmergencyRehearsalMonthServiceImpl extends ServiceImpl<EmergencyReh
             throw new AiurtBootException("该月计划应急演练记录已在使用，不允许删除！");
         }
         this.removeById(id);
+    }
+
+    @Override
+    public IPage<EmergencyRehearsalMonthVO> queryMonthList(Page<EmergencyRehearsalMonthVO> page, EmergencyRehearsalMonthDTO emergencyRehearsalMonthDTO) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
+        emergencyRehearsalMonthDTO.setOrgCode(loginUser.getOrgCode());
+        // 获取当前登录用户部门权限
+        List<CsUserDepartModel> depts = sysBaseApi.getDepartByUserId(loginUser.getId());
+        List<String> orgCodes = depts.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(orgCodes)) {
+            return page;
+        }
+        emergencyRehearsalMonthDTO.setOrgCodes(orgCodes);
+        return emergencyRehearsalMonthMapper.queryMonthList(page, emergencyRehearsalMonthDTO);
     }
 }
