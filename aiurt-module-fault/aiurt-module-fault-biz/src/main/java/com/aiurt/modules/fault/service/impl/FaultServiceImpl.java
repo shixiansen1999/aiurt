@@ -183,8 +183,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Autowired
     private FaultRemind faultRemind;
 
-    @Autowired
-    private FaultRemind faultRemind;
 
 
     /**
