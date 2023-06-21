@@ -26,4 +26,7 @@ public class RecPersonDTO implements Serializable {
     private String value;
 
     private String label;
+
+    @ApiModelProperty(value = "是否推荐人员， true是")
+    private Boolean isDefault = false;
 }

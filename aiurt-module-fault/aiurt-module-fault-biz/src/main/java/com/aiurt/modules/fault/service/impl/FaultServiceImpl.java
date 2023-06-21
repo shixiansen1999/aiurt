@@ -2148,7 +2148,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @return
      */
     @Override
-    public List<LoginUser> queryUser(Fault fault) {
+    public List<RecPersonDTO> queryUser(Fault fault) {
         LoginUser loginUser = checkLogin();
         List<String> orgCodeList = new ArrayList<>();
         if (!loginUser.getRoleCodes().contains("admin")) {
@@ -2197,7 +2197,30 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             // 过滤仅在今日当班的待指派人员
             loginUserList = loginUserList.stream().filter(l -> userIds.contains(l.getId())).collect(Collectors.toList());
         }
-        return loginUserList;
+        List<RecPersonListDTO> recPersonListDTOS = this.queryRecPersonList(fault.getCode());
+        String userName = null;
+        if (CollUtil.isNotEmpty(recPersonListDTOS)) {
+            RecPersonListDTO recPersonListDTO = recPersonListDTOS.get(0);
+            userName = recPersonListDTO.getUserName();
+        }
+        String finalUserName = userName;
+        List<LoginUser> userList = loginUserList.stream().filter(l -> StrUtil.equalsIgnoreCase(finalUserName, l.getUsername())).collect(Collectors.toList());
+
+        List<RecPersonDTO> personDTOList = loginUserList.stream().map(loginUser1 -> {
+            RecPersonDTO recPersonDTO = new RecPersonDTO();
+            recPersonDTO.setUserId(loginUser1.getId());
+            recPersonDTO.setUserName(loginUser1.getUsername());
+            recPersonDTO.setRealName(loginUser1.getRealname());
+            recPersonDTO.setKey(loginUser1.getId());
+            recPersonDTO.setValue(loginUser1.getUsername());
+            recPersonDTO.setLabel(loginUser1.getRealname());
+            recPersonDTO.setIsDefault(StrUtil.equals(finalUserName, loginUser1.getUsername()));
+            return recPersonDTO;
+        }).collect(Collectors.toList());
+        if (CollUtil.isEmpty(userList) && CollUtil.isNotEmpty(personDTOList)) {
+            personDTOList.get(0).setIsDefault(true);
+        }
+        return personDTOList;
     }
 
     /**
@@ -2338,6 +2361,21 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         LoginUser loginUser = checkLogin();
 
         dealDevice(fault, fault.getFaultDeviceList());
+
+        // 删除
+        faultCauseDetailService.remove(new LambdaQueryWrapper<FaultCauseDetail>().eq(FaultCauseDetail::getFaultCode, fault.getCode()));
+        // 记录使用的故障模板的解决原因
+        List<AnalyzeFaultCauseResDTO> analyzeFaultCauseResDTOList = fault.getAnalyzeFaultCauseResDTOList();
+        if (CollUtil.isNotEmpty(analyzeFaultCauseResDTOList)) {
+            List<FaultCauseDetail> causeDetailList = analyzeFaultCauseResDTOList.stream().map(analyzeFaultCauseResDTO -> {
+                FaultCauseDetail causeDetail = BeanUtil.copyProperties(analyzeFaultCauseResDTO, FaultCauseDetail.class, "id");
+                causeDetail.setFaultCauseSolutionId(analyzeFaultCauseResDTO.getId());
+                causeDetail.setFaultKnowledgeBaseId(analyzeFaultCauseResDTO.getKnowledgeBaseId());
+                causeDetail.setFaultCode(fault.getCode());
+                return causeDetail;
+            }).collect(Collectors.toList());
+            faultCauseDetailService.saveBatch(causeDetailList);
+        }
 
         updateById(fault);
 
