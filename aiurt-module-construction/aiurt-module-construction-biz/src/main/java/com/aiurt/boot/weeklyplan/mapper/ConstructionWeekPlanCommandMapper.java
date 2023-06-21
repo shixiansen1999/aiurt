@@ -71,4 +71,30 @@ public interface ConstructionWeekPlanCommandMapper extends BaseMapper<Constructi
                                                       @Param("endDate") Date endDate,
                                                       @Param("formStatus") Integer formStatus);
 
+
+    /**
+     * 跟进线路name查询附表code
+     * @param name
+     * @return
+     */
+    String selectLineName(@Param("name") String name);
+    /**
+     * 跟进站点name查询附表code
+     * @param name
+     * @return
+     */
+    String selectStationName(@Param("name") String name);
+    /**
+     * 跟进组织机构name查询附表code
+     * @param name
+     * @return
+     */
+    String selectOrgName(@Param("name") String name);
+
+ /**
+  * 批量插入导入数据
+  * @param list
+  * @return
+  */
+    Void batchInsert(@Param("list") List<ConstructionWeekPlanCommand> list);
 }

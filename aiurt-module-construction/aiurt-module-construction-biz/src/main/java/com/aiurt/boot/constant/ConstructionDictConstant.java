@@ -13,6 +13,10 @@ public interface ConstructionDictConstant {
      */
     String PLAN_TYPE = "construction_plan_type";
     /**
+     * 施工-计划类型字典编码
+     */
+    String PLAN_TYPE1 = "construction_plan_type1";
+    /**
      * 施工-星期字典编码
      */
     String WEEK = "construction_week";
