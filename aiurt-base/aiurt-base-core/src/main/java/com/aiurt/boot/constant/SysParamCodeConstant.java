@@ -314,4 +314,8 @@ public interface SysParamCodeConstant {
      * 通信分部编码
      */
     String 	SPECIAL_TEAM = "special_team";
+    /**
+     * 	工作内容是否需要查出所有未完成故障
+     */
+    String 	WORKLOG_UNFINISH_FAULT = "worklog_unfinish_fault";
 }
