@@ -1,15 +1,28 @@
 package com.aiurt.modules.system.controller;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.entity.SysUserAptitudes;
 import com.aiurt.modules.system.service.ISysUserAptitudesService;
+import com.aiurt.modules.system.service.ISysUserService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
- /**
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+/**
  * @Description: sys_user_aptitudes
  * @Author: aiurt
  * @Date:   2023-06-07
@@ -23,6 +36,35 @@ public class SysUserAptitudesController extends BaseController<SysUserAptitudes,
 	@Autowired
 	private ISysUserAptitudesService sysUserAptitudesService;
 
+	 @Autowired
+	 private ISysUserService sysUserService;
+
+    /**
+     * @return
+     */
+    @ApiOperation(value = "构造数据", notes = "构造数据")
+    @GetMapping(value = "/random")
+    public Result<?> data(HttpServletRequest request, HttpServletResponse response) {
+        // todo 后期有相应的页面维护数据了删除此方法
+        List<SysUser> list = sysUserService.lambdaQuery()
+                .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .list();
+        List<SysUserAptitudes> aptitudes = new ArrayList<>();
+        SysUserAptitudes userAptitudes = null;
+        Random random = new Random();
+        for (SysUser user : list) {
+            userAptitudes = new SysUserAptitudes();
+            userAptitudes.setUserId(user.getId());
+            int i = random.nextInt(3) + 1;
+            userAptitudes.setLevel(String.valueOf(i));
+            userAptitudes.setName("专业技术人员职业资格证");
+            userAptitudes.setNumber(1);
+            aptitudes.add(userAptitudes);
+        }
+        sysUserAptitudesService.remove(new QueryWrapper<>());
+        sysUserAptitudesService.saveBatch(aptitudes);
+        return Result.ok("操作成功！");
+    }
 //	/**
 //	 * 分页列表查询
 //	 *
