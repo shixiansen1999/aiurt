@@ -49,15 +49,25 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
     @Dict(dicCode = ConstructionDictConstant.CATEGORY)
     private Integer type;
     /**计划类型(1正常计划 2日补充计划 3临时补修计划*/
-    @Excel(name = "计划类型(1正常计划 2日补充计划 3临时补修计划", width = 15)
-    @ApiModelProperty(value = "计划类型(1正常计划 2日补充计划 3临时补修计划")
+    @Excel(name = "计划类型(周计划 变更计划)" , width = 15)
+    @ApiModelProperty(value = "计划类型(周计划 变更计划)")
+    @Dict(dicCode = ConstructionDictConstant.PLAN_TYPE1)
+	private Integer planType;
+    /**计划类型(1正常计划 2日补充计划 3临时补修计划*/
+    @Excel(name = "计划类型(0正常计划 1计划补修 2日计划补充 3施工补充 4施工取消)", width = 15)
+    @ApiModelProperty(value = "计划类型(0正常计划 1计划补修 2日计划补充 3施工补充 4施工取消)")
     @Dict(dicCode = ConstructionDictConstant.PLAN_TYPE)
-	private Integer planChange;
+    private Integer planChange;
 	/**作业单位ID*/
 	@Excel(name = "作业单位ID", width = 15)
     @ApiModelProperty(value = "作业单位ID")
-    @Dict(dictTable = "sys_depart", dicText = "depart_name", dicCode = "org_code")
+    @Dict(dictTable = "construction_week_plan_org", dicText = "name", dicCode = "code")
     private String orgCode;
+    /**辅站编码*/
+    @Excel(name = "辅站编码", width = 15)
+    @ApiModelProperty(value = "辅站编码")
+    @Dict(dictTable = "construction_week_plan_org", dicText = "name", dicCode = "code")
+    private String assistStationCode;
 	/**作业日期*/
 	@Excel(name = "作业日期", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
@@ -83,7 +93,7 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
     /**作业线路编码*/
     @Excel(name = "作业线路编码", width = 15)
     @ApiModelProperty(value = "作业线路编码")
-    @Dict(dictTable = "cs_line", dicText = "line_name", dicCode = "line_code")
+    @Dict(dictTable = "construction_week_plan_line", dicText = "name", dicCode = "code")
     private String lineCode;
 	/**供电要求ID*/
 	@Excel(name = "供电要求ID", width = 15)
@@ -114,17 +124,17 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
 	/**请点车站编码*/
 	@Excel(name = "请点车站编码", width = 15)
     @ApiModelProperty(value = "请点车站编码")
-    @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
+    @Dict(dictTable = "construction_week_plan_station", dicText = "name", dicCode = "code")
     private String firstStationCode;
 	/**变电所编码*/
 	@Excel(name = "变电所编码", width = 15)
     @ApiModelProperty(value = "变电所编码")
-    @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
+    @Dict(dictTable = "construction_week_plan_station", dicText = "name", dicCode = "code")
     private String substationCode;
 	/**销点车站编码*/
 	@Excel(name = "销点车站编码", width = 15)
     @ApiModelProperty(value = "销点车站编码")
-    @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
+    @Dict(dictTable = "construction_week_plan_station", dicText = "name", dicCode = "code")
     private String secondStationCode;
 	/**作业人数*/
 	@Excel(name = "作业人数", width = 15)
@@ -152,8 +162,8 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
     @ApiModelProperty(value = "计划令录音")
     private String voice;
 	/**计划令状态(0待提审、1待审核、2审核中、3已驳回、4已取消、5已通过)*/
-	@Excel(name = "计划令状态(0待提审、1待审核、2审核中、3已驳回、4已取消、5已通过)", width = 15)
-    @ApiModelProperty(value = "计划令状态(0待提审、1待审核、2审核中、3已驳回、4已取消、5已通过)")
+	@Excel(name = "计划令状态(0：申请中、1同意、2驳回、3草稿保存、4已取消、5已通过)", width = 15)
+    @ApiModelProperty(value = "计划令状态(0：申请中、1同意、2驳回、3草稿保存、4已取消、5已通过)")
     @Dict(dicCode =ConstructionDictConstant.STATUS)
     private Integer formStatus;
 	/**申请人ID*/
@@ -181,6 +191,11 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
     @ApiModelProperty(value = "中心经理ID")
     @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     private String managerId;
+    /**申请状态(0:未审批、1:通过、2:驳回)*/
+    @Excel(name = "申请状态(0:未审批、1:通过、2:驳回)", width = 15)
+    @ApiModelProperty(value = "申请状态(0:未审批、1:通过、2:驳回)")
+    @Dict(dicCode =ConstructionDictConstant.APPROVE)
+    private Integer applyFormStatus;
 	/**生产调度审批状态(0:未审批、1:通过、2:驳回)*/
 	@Excel(name = "生产调度审批状态(0:未审批、1:通过、2:驳回)", width = 15)
     @ApiModelProperty(value = "生产调度审批状态(0:未审批、1:通过、2:驳回)")
