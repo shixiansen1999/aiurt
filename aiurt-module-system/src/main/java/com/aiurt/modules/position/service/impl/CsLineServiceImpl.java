@@ -50,7 +50,7 @@ public class CsLineServiceImpl extends ServiceImpl<CsLineMapper, CsLine> impleme
         }
         csLine.setUpdateTime(new Date());
         csLineMapper.insert(csLine);
-        return Result.OK("添加成功！");
+        return Result.OK(csLine);
     }
     /**
      * 修改
@@ -76,6 +76,6 @@ public class CsLineServiceImpl extends ServiceImpl<CsLineMapper, CsLine> impleme
         }
 
         csLineMapper.updateById(csLine);
-        return Result.OK("编辑成功！");
+        return Result.OK(csLine);
     }
 }

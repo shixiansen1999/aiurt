@@ -53,7 +53,7 @@ public class CsStationServiceImpl extends ServiceImpl<CsStationMapper, CsStation
         }
         csStation.setUpdateTime(new Date());
         csStationMapper.insert(csStation);
-        return Result.OK("添加成功！");
+        return Result.OK(csStation);
     }
     /**
      * 修改
@@ -79,6 +79,6 @@ public class CsStationServiceImpl extends ServiceImpl<CsStationMapper, CsStation
         }
 
         csStationMapper.updateById(csStation);
-        return Result.OK("编辑成功！");
+        return Result.OK(csStation);
     }
 }
