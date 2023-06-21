@@ -421,13 +421,13 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query")
     })
     @Deprecated
-    public Result<List<LoginUser>> queryUser(@Param(value = "faultCode") String faultCode) {
+    public Result<List<RecPersonDTO>> queryUser(@Param(value = "faultCode") String faultCode) {
         // 根据故障编号获取故障所属组织机构
         Fault fault = faultService.lambdaQuery().eq(Fault::getCode, faultCode).last("limit 1").one();
         if (ObjectUtil.isEmpty(fault)) {
             return Result.OK(Collections.emptyList());
         } else {
-            List<LoginUser> list = faultService.queryUser(fault);
+            List<RecPersonDTO> list = faultService.queryUser(fault);
             return Result.OK(list);
         }
     }
