@@ -1,8 +1,8 @@
 package com.aiurt.modules.fault.entity;
 
 import com.aiurt.common.aspect.annotation.*;
-import com.aiurt.modules.base.BaseEntity;
 import com.aiurt.modules.basic.entity.DictEntity;
+import com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -104,12 +104,11 @@ public class Fault extends DictEntity implements Serializable {
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm" )
     @ApiModelProperty(value = "故障发生时间yyyy-MM-dd HH:mm",  required = true)
-    @NotNull(message = "请填写故障发生时间")
     private Date happenTime;
 
 	/**故障现象*/
 	@Excel(name = "故障现象分类", width = 15)
-    @ApiModelProperty(value = "故障现象分类",  required = true)
+    @ApiModelProperty(value = "故障现象分类编码",  required = true)
     @NotBlank(message = "故障现象分类!")
     @Dict(dictTable = "fault_knowledge_base_type", dicCode = "code", dicText = "name")
     private String faultPhenomenon;
@@ -248,11 +247,7 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty("故障设备类表")
 	private List<FaultDevice> faultDeviceList;
 
-	@ApiModelProperty("推荐使用的故障知识库id, 逗号隔开")
-	private String knowledgeBaseIds;
 
-	@ApiModelProperty("使用的解决方案ID")
-	private String knowledgeId;
 
 	@ApiModelProperty(value = "yn, 是否委外 1:是,0否", required = true)
     @Dict(dicCode = "yn")
@@ -269,6 +264,16 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "设备名称", required = true)
     @TableField(exist = false)
     private String deviceName;
+
+    @Excel(name = "设备名称", width = 15)
+    @ApiModelProperty(value = "设备名称", required = true)
+    @TableField(exist = false)
+    private String deviceNames;
+
+    @Excel(name = "设备id", width = 15)
+    @ApiModelProperty(value = "设备id", required = true)
+    @TableField(exist = false)
+    private String deviceId;
 
 	@ApiModelProperty(value = "作废用户")
 	private String cancelUserName;
@@ -307,6 +312,10 @@ public class Fault extends DictEntity implements Serializable {
 
     @ApiModelProperty(value = "故障报修时长 second")
     private Long duration;
+
+    @ApiModelProperty(value = "故障报修时长查询参数")
+    @TableField(exist = false)
+    private String faultDurationParam;
 
     @ApiModelProperty(value = "app, 故障上报设备编码，逗号隔开")
     @TableField(exist = false)
@@ -364,6 +373,16 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "故障现象")
     private String symptoms;
 
+    @ApiModelProperty("推荐使用的故障知识库id, 逗号隔开")
+    @Deprecated
+    private String knowledgeBaseIds;
+
+    @ApiModelProperty("故障现象id，从故障想象模板接口回填")
+    private String knowledgeId;
+
+    @ApiModelProperty(value = "故障描述")
+    private String faultMark;
+
     @ApiModelProperty(value = "故障详细位置")
     private String detailLocation;
     @ApiModelProperty(value = "是否是自己的故障任务")
@@ -372,20 +391,10 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "是否是调度列表的故障下发")
     @TableField(exist = false)
     private Boolean isFaultExternal;
+
     @ApiModelProperty(value = "控制中心班组成员是否能领取正线班组的故障：false不能领取，true可以领取")
     @TableField(exist = false)
     private Boolean canReceive;
-    public static void main(String[] args) {
-        Fault fault = new Fault();
-
-        if (fault instanceof BaseEntity) {
-            System.out.println("1111111");
-        }
-
-        if (fault instanceof  DictEntity) {
-            System.out.println("2222222");
-        }
-    }
 
     /**故障维修时长*/
     @Excel(name = "故障维修时长", width = 15)
@@ -411,4 +420,32 @@ public class Fault extends DictEntity implements Serializable {
     @Excel(name = "挂起时间", width = 15)
     @ApiModelProperty(value = "挂起时间")
     private Integer hangUpTime;
+
+    @ApiModelProperty(value = "故障原因")
+    @TableField(exist = false)
+    private List<AnalyzeFaultCauseResDTO> analyzeFaultCauseResDTOList;
+
+    @ApiModelProperty(value = "完成状态")
+    @Dict(dicCode = "fault_state")
+    private Integer state;
+    /**
+     * 用户账号字段(人员画像历史维修记录列表(更多)用到)
+     */
+    @TableField(exist = false)
+    private String username;
+
+    @TableField(exist = false)
+    private String deviceTypeCode;
+
+    @ApiModelProperty("前端故障现象查询参数")
+    @TableField(exist = false)
+    private String phnamon;
+
+    @ApiModelProperty("异常，0 正常， 1异常")
+    private Integer exception;
+
+    @ApiModelProperty("设备类型， app使用")
+    @TableField(exist = false)
+    private String deviceTypeName;
 }
+

@@ -3,8 +3,13 @@ package com.aiurt.modules.faultknowledgebase.mapper;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
+import com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
+import com.aiurt.modules.faultknowledgebase.dto.SymptomReqDTO;
+import com.aiurt.modules.faultknowledgebase.dto.SymptomResDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
+import com.aiurt.modules.knowledge.entity.KnowledgeBase;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -74,26 +79,64 @@ public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase>
      * @param deviceTypeName
      * @return
      */
-    List<DeviceType> getDeviceCodeByName(String deviceTypeName);
+    List<DeviceType> getDeviceCodeByName(@Param("deviceTypeName") String deviceTypeName);
 
     /**
      * 根据设备组件名称获取code
      * @param deviceAssemblyName
      * @return
      */
-    List<DeviceAssemblyDTO> getDeviceAssemblyCode(String deviceAssemblyName);
+    List<DeviceAssemblyDTO> getDeviceAssemblyCode(@Param("deviceAssemblyName") String deviceAssemblyName);
 
     /**
      * 根据线路code获取线路name
      * @param code
      * @return
      */
-    String translateLine(String code);
+    String translateLine(@Param("code") String code);
 
     /**
      * 根据线路code获取线路name
      //     * @param code
      * @return
      */
-    FaultDTO getLineByStation(String code);
+    FaultDTO getLineByStation(@Param("code")String code);
+
+    /**
+     * 查找故障现象
+     * @param pageList 分页
+     * @param symptomReqDTO 查询条件
+     * @return
+     */
+    List<SymptomResDTO> querySymptomTemplate(@Param("pageList") Page<SymptomResDTO> pageList, @Param("condition") SymptomReqDTO symptomReqDTO);
+
+
+    /**
+     * 统计故障原因的数量
+     * @param idList
+     * @return
+     */
+    List<AnalyzeFaultCauseResDTO> countFaultCauseByIdSet(@Param("idList") List<String> idList);
+
+
+    /**
+     * 统计故障原因的数量
+     * @param idList
+     * @return
+     */
+    List<AnalyzeFaultCauseResDTO> countFaultCauseByIdSeV2(@Param("idList") List<String> idList);
+
+    /**
+     * 同步故障知识库数据到ES
+     *
+     * @return
+     */
+    List<KnowledgeBase> synchrodata();
+
+    /**
+     *
+     * @param faultCauseSolutionIdList
+     * @return
+     */
+    List<FaultSparePart> getStandardRepairRequirements(@Param("idList") List<String> faultCauseSolutionIdList);
 }

@@ -104,4 +104,12 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
     List<SysUserTeamDTO> getTodayOndutyDetailNoPage(List<String> orgCodes, Date date);
 
     Result<ScheduleRecord> editRecord(List<ScheduleRecordREditDTO> scheduleRecordREditDTOList);
+
+    /**
+     * 查询用户今日是否值班
+     *
+     * @param userIds
+     * @return
+     */
+    List<ScheduleUserWorkDTO> getTodayUserWork(List<String> userIds);
 }

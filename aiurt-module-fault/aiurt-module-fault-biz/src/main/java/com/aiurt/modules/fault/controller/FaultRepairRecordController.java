@@ -9,10 +9,7 @@ import com.aiurt.modules.fault.service.IFaultRepairRecordService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
- /**
+/**
  * @Description: 维修记录
  * @Author: aiurt
  * @Date:   2022-06-28
@@ -87,7 +84,7 @@ public class FaultRepairRecordController extends BaseController<FaultRepairRecor
 		 DeviceChangeRecordDTO deviceChangeRecordDTO = faultRepairRecordService.queryDeviceChangeRecord(faultCode);
 	 	return Result.OK(deviceChangeRecordDTO);
 	}
-	
+
 
 
 }

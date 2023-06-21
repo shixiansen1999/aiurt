@@ -4,10 +4,7 @@ package com.aiurt.modules.schedule.mapper;
 import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
-import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
-import com.aiurt.modules.schedule.dto.SysTotalTeamDTO;
-import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
-import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
+import com.aiurt.modules.schedule.dto.*;
 import com.aiurt.modules.schedule.entity.Schedule;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.model.ScheduleRecordModel;
@@ -128,4 +125,12 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
      * @return
      */
     List<SysUserTeamDTO> getTodayOndutyDetailNoPage(@Param("orgCodes") List<String> orgCodes, @Param("date") Date date);
+
+    /**
+     * 查询用户今日是否值班
+     *
+     * @param userIds
+     * @return
+     */
+    List<ScheduleUserWorkDTO> getTodayUserWork(@Param("userIds") List<String> userIds, @Param("now") Date now);
 }

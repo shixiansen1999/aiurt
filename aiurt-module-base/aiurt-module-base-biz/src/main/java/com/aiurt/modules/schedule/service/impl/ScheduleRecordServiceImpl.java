@@ -68,6 +68,8 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     private IScheduleItemService ItemService;
     @Autowired
     private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private ScheduleRecordMapper scheduleRecordMapper;
 
     @Override
     public List<ScheduleRecord> getScheduleRecordBySchedule(Integer scheduleId) {
@@ -85,8 +87,8 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     }
 
     @Override
-    public List<ScheduleRecordModel> getAllScheduleRecordsByMonth(String date, String orgId,String text,List<String> userIds) {
-        return this.baseMapper.getAllScheduleRecordsByMonth(date, orgId,text,userIds);
+    public List<ScheduleRecordModel> getAllScheduleRecordsByMonth(String date, String orgId, String text, List<String> userIds) {
+        return this.baseMapper.getAllScheduleRecordsByMonth(date, orgId, text, userIds);
     }
 
     @Override
@@ -120,8 +122,8 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     }
 
     @Override
-    public List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, List<String> userIds , List<String> orgCodeList,String text,Page<Schedule> temp) {
-        return this.baseMapper.getScheduleUserByDateAndOrgCodeAndOrgId(date, userIds, orgCodeList,text,temp);
+    public List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, List<String> userIds, List<String> orgCodeList, String text, Page<Schedule> temp) {
+        return this.baseMapper.getScheduleUserByDateAndOrgCodeAndOrgId(date, userIds, orgCodeList, text, temp);
     }
 
     @Override
@@ -211,7 +213,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         List<String> depart;
         if (StrUtil.isNotEmpty(value)) {
             depart = allSysDepart.stream().map(SysDepartModel::getOrgCode).filter(orgCode -> !value.contains(orgCode)).collect(Collectors.toList());
-        }else {
+        } else {
             depart = allSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
         }
 
@@ -234,7 +236,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
 
         // 填充今日当班人数
         if (CollUtil.isNotEmpty(userIdList)) {
-            List<SysUserTeamDTO> sysUserTeamDTOS = baseMapper.getTodayOndutyDetail(page, null, orgCodes, new Date(),null);
+            List<SysUserTeamDTO> sysUserTeamDTOS = baseMapper.getTodayOndutyDetail(page, null, orgCodes, new Date(), null);
             page.setRecords(sysUserTeamDTOS);
             result.setScheduleNum(page.getTotal());
         }
@@ -252,7 +254,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
      * @return
      */
     @Override
-    public IPage<SysUserTeamDTO> getTodayOndutyDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page,String name) {
+    public IPage<SysUserTeamDTO> getTodayOndutyDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page, String name) {
         List<SysUserTeamDTO> result = new ArrayList<>();
 
         // 根据传入线路和自身管理专业获取班组信息
@@ -261,7 +263,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         if (CollUtil.isNotEmpty(orgCodes)) {
 
             // 根据日期条件查询班次情况
-            result = baseMapper.getTodayOndutyDetail(page, orgcode, orgCodes, new Date(),name);
+            result = baseMapper.getTodayOndutyDetail(page, orgcode, orgCodes, new Date(), name);
 
             // 填充角色名称
             for (SysUserTeamDTO sysUserTeamDTO : result) {
@@ -283,7 +285,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
      * @return
      */
     @Override
-    public IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page,String name) {
+    public IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page, String name) {
         List<SysUserTeamDTO> result = new ArrayList<>();
 
         //测试班组
@@ -301,13 +303,13 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         List<String> depart;
         if (StrUtil.isNotEmpty(value)) {
             depart = allSysDepart.stream().map(SysDepartModel::getOrgCode).filter(orgCode -> !value.contains(orgCode)).collect(Collectors.toList());
-        }else {
+        } else {
             depart = allSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
         }
 
         if (CollUtil.isNotEmpty(depart)) {
             // 查询总人员列表
-            result = baseMapper.getUserByDepIds(depart, page, orgcode,name);
+            result = baseMapper.getUserByDepIds(depart, page, orgcode, name);
 
             // 填充角色名称
             for (SysUserTeamDTO sysUserTeamDTO : result) {
@@ -328,7 +330,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
      * @return
      */
     @Override
-    public IPage<SysTotalTeamDTO> getTotalTeamDetail(Page<SysTotalTeamDTO> page, String lineCode,String orgCode,String name) {
+    public IPage<SysTotalTeamDTO> getTotalTeamDetail(Page<SysTotalTeamDTO> page, String lineCode, String orgCode, String name) {
         // 查询总班组数
         List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
         if (CollUtil.isEmpty(orgCodes)) {
@@ -336,7 +338,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         }
 
         // 获取总班组列表
-        List<SysTotalTeamDTO> result = baseMapper.getTotalTeamDetail(page, orgCodes,orgCode,name);
+        List<SysTotalTeamDTO> result = baseMapper.getTotalTeamDetail(page, orgCodes, orgCode, name);
         page.setRecords(result);
         return page;
     }
@@ -350,7 +352,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
      */
     @Override
     public List<SysUserTeamDTO> getTodayOndutyDetailNoPage(List<String> orgCodes, Date date) {
-        return baseMapper.getTodayOndutyDetailNoPage(orgCodes,date);
+        return baseMapper.getTodayOndutyDetailNoPage(orgCodes, date);
     }
 
     @Override
@@ -433,7 +435,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                 if (!scheduleRecordEntity.getItemId().equals(value.getScheduleItemId())) {
                     updateRecordByItem(scheduleRecordEntity, value);
                 }
-            }else {
+            } else {
                 insertRecordByItem(value);
             }
         }
@@ -441,7 +443,33 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         return result;
     }
 
-    private void updateRecordByItem(ScheduleRecord scheduleRecordEntity,ScheduleRecordREditDTO scheduleRecordREditDTO) {
+    @Override
+    public List<ScheduleUserWorkDTO> getTodayUserWork(List<String> userIds) {
+        List<ScheduleUserWorkDTO> todayUserWork = scheduleRecordMapper.getTodayUserWork(userIds, new Date());
+        final String yyyymmdd = "YYYY-MM-dd";
+        final String hhmmss = "HH:mm:ss";
+        final String yearToSecond = yyyymmdd + " " + hhmmss;
+        for (ScheduleUserWorkDTO userWork : todayUserWork) {
+            if (ObjectUtil.isEmpty(userWork.getDate())
+                    || ObjectUtil.isEmpty(userWork.getStartTime())
+                    || ObjectUtil.isEmpty(userWork.getEndTime())) {
+                continue;
+            }
+            String formatDate = DateUtil.format(userWork.getDate(), yyyymmdd);
+            String formatStartTime = DateUtil.format(userWork.getStartTime(), hhmmss);
+            String formatEndTime = DateUtil.format(userWork.getEndTime(), hhmmss);
+            userWork.setStartTime(DateUtil.parse(formatDate + " " + formatStartTime, yearToSecond));
+            if (0 == DateUtil.compare(userWork.getStartTime(), userWork.getEndTime())) {
+                String formatOffsetDate = DateUtil.format(DateUtil.offsetDay(userWork.getDate(), 1), yyyymmdd);
+                userWork.setEndTime(DateUtil.parse(formatOffsetDate + " " + formatEndTime, yearToSecond));
+            } else {
+                userWork.setEndTime(DateUtil.parse(formatDate + " " + formatEndTime, yearToSecond));
+            }
+        }
+        return todayUserWork;
+    }
+
+    private void updateRecordByItem(ScheduleRecord scheduleRecordEntity, ScheduleRecordREditDTO scheduleRecordREditDTO) {
         ScheduleItem oldItem = itemService.getById(scheduleRecordEntity.getItemId());
         ScheduleItem newItem = itemService.getById(scheduleRecordREditDTO.getScheduleItemId());
         scheduleRecordEntity.setItemId(newItem.getId());

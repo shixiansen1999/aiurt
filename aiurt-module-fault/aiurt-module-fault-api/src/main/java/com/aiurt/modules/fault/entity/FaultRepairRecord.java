@@ -1,6 +1,8 @@
 package com.aiurt.modules.fault.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.faultcauseusagerecords.entity.FaultCauseUsageRecords;
+import com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -13,8 +15,10 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: 维修记录
@@ -236,4 +240,25 @@ public class FaultRepairRecord implements Serializable {
 
     @ApiModelProperty(value = "处理方式:0维修，1委外维修，2委外送修")
     private Integer processing;
+
+    @ApiModelProperty(value = "排查方法")
+    private String method;
+
+    @ApiModelProperty(value = "故障级别")
+    @Dict(dictTable = "fault_level", dicCode = "code", dicText = "name")
+    private String faultLevel;
+
+    @ApiModelProperty(value = "故障原因")
+    private String faultCauseSolution;
+
+
+    /**专业编码*/
+    @ApiModelProperty(value = "专业编码", required = true)
+    @NotBlank(message = "请选择所属专业")
+    private String majorCode;
+
+
+    /**专业子系统编码*/
+    @ApiModelProperty(value = "专业子系统编码")
+    private String subSystemCode;
 }

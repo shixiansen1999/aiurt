@@ -1,0 +1,165 @@
+{
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "keyword"
+      },
+      "faultPhenomenonCode": {
+        "type": "keyword"
+      },
+      "faultPhenomenon": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "fields": {
+          "suggest": {
+            "type": "completion",
+            "analyzer": "ik_max_word"
+          },
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        },
+        "search_analyzer": "ik_smart"
+      },
+      "knowledgeBaseTypeCode": {
+        "type": "keyword"
+      },
+      "knowledgeBaseTypeName": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "fields": {
+          "suggest": {
+            "type": "completion",
+            "analyzer": "ik_max_word"
+          },
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        },
+        "search_analyzer": "ik_smart"
+      },
+      "majorCode": {
+        "type": "keyword"
+      },
+      "majorName": {
+        "type": "text"
+      },
+      "systemCode": {
+        "type": "keyword"
+      },
+      "systemName": {
+        "type": "text"
+      },
+      "materialCode": {
+        "type": "keyword"
+      },
+      "materialName": {
+        "type": "text"
+      },
+      "deviceTypeCode": {
+        "type": "keyword"
+      },
+      "deviceTypeName": {
+        "type": "text"
+      },
+      "faultLevelCode": {
+        "type": "keyword"
+      },
+      "faultLevelName": {
+        "type": "text"
+      },
+      "status": {
+        "type": "integer"
+      },
+      "scanNum": {
+        "type": "integer"
+      },
+      "method": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "fields": {
+          "suggest": {
+            "type": "completion",
+            "analyzer": "ik_max_word"
+          }
+        },
+        "search_analyzer": "ik_smart"
+      },
+      "use": {
+        "type": "integer"
+      },
+      "createTime": {
+        "type": "date",
+        "index": false
+      },
+      "updateTime": {
+        "type": "date",
+        "index": false
+      },
+      "reasonSolutions": {
+        "type": "nested",
+        "properties": {
+          "id": {
+            "type": "keyword"
+          },
+          "knowledgeBaseId": {
+            "type": "keyword"
+          },
+          "faultCause": {
+            "type": "text",
+            "analyzer": "ik_max_word",
+            "fields": {
+              "suggest": {
+                "type": "completion",
+                "analyzer": "ik_max_word"
+              }
+            },
+            "search_analyzer": "ik_smart"
+          },
+          "solution": {
+            "type": "text",
+            "analyzer": "ik_max_word",
+            "fields": {
+              "suggest": {
+                "type": "completion",
+                "analyzer": "ik_max_word"
+              }
+            },
+            "search_analyzer": "ik_smart"
+          },
+          "videoUrl": {
+            "type": "keyword"
+          },
+          "happenRate": {
+            "type": "text"
+          },
+          "spareParts": {
+            "type": "nested",
+            "properties": {
+              "id": {
+                "type": "keyword"
+              },
+              "causeSolutionId": {
+                "type": "keyword"
+              },
+              "sparePartCode": {
+                "type": "keyword"
+              },
+              "sparePartName": {
+                "type": "text"
+              },
+              "specification": {
+                "type": "text"
+              },
+              "number": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

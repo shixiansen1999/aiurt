@@ -1,9 +1,6 @@
 package com.aiurt.modules.fault.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -94,6 +91,7 @@ public class DeviceChangeSparePart implements Serializable {
 
 	/**删除状态：0.未删除 1已删除*/
     @ApiModelProperty(value = "删除状态：0.未删除 1已删除")
+    @TableLogic
     private Integer delFlag;
 
 	/**创建人*/
@@ -134,7 +132,7 @@ public class DeviceChangeSparePart implements Serializable {
     private String intOrderId;
     /**借入的库存记录表ID*/
     @ApiModelProperty(value = "借入的库存记录表ID|本库存记录id")
-    private String BorrowingInventoryOrderId;
+    private String borrowingInventoryOrderId;
     /**借出的库存记录表ID*/
     @ApiModelProperty(value = "借出的库存记录表ID")
     private String lendInventoryOrderId;
@@ -149,4 +147,9 @@ public class DeviceChangeSparePart implements Serializable {
     @ApiModelProperty("规格")
     @TableField(exist = false)
     private String specifications;
+
+    @ApiModelProperty(value = "物资主编码")
+    private String materialBaseCode;
+
+
 }

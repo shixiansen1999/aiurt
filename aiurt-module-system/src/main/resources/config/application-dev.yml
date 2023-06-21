@@ -149,11 +149,11 @@ spring:
           password: 1qaz@2wsx
           driver-class-name: com.mysql.cj.jdbc.Driver
           # 多数据源配置
-          #multi-datasource1:
-          #url: jdbc:mysql://localhost:3306/jeecg-boot2?useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
-          #username: root
-          #password: root
-          #driver-class-name: com.mysql.cj.jdbc.Driver
+        multi-sqlserver:
+          url: jdbc:sqlserver://192.168.1.27:1433;databaseName=alarm
+          username: sa
+          password: 1qaz@2wsx
+          driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
   #redis 配置
   redis:
     database: 5
@@ -388,7 +388,7 @@ support:
   #档案类型Id
   archivesTypeId: 3d74878a-5c31-43b4-a024-188e0a3be725
   #企业微信跳转域名
-  messageUrl: http://aiurt.svstrong.com:12680/#
+  messageUrl: https://open.weixin.qq.com/connect/oauth2/authorize/#
 swsc:
   host: http://116.62.143.85/#/
 
