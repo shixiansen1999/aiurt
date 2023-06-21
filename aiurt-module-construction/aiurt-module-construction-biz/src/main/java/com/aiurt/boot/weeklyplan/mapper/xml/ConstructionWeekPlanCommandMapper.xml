@@ -12,7 +12,9 @@
                  LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
                  LEFT JOIN act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
         where cwpc.del_flag = 0
-          and ahp.ID_ is not null
+        <if test="condition.lineCode != null and condition.lineCode != ''">
+            and ahp.ID_ is not null
+        </if>
         <if test="condition.lineCode != null and condition.lineCode != ''">
             and cwpc.line_code = #{condition.lineCode}
         </if>
@@ -134,4 +136,53 @@
         </if>
         group by cwpc.id
     </select>
+
+    <select id="selectLineName" resultType="java.lang.String">
+        select code from construction_week_plan_line where
+                                   name = #{name}
+    </select>
+    <select id="selectStationName" resultType="java.lang.String">
+        select code from construction_week_plan_station where
+            name = #{name}
+    </select>
+    <select id="selectOrgName" resultType="java.lang.String">
+        select code from construction_week_plan_org where
+            name = #{name}
+    </select>
+
+    <insert id="batchInsert" parameterType="com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO">
+        insert INTO construction_week_plan_command cwpc
+        (weekday,taskDate,taskStaffNum,taskStartTime,taskEndTime,protectiveMeasure,type,orgCode,taskRange,taskContent,largeAppliances,remark,
+        assistStationCode,planChange,nature,powerSupplyRequirementContent,firstStationCode,secondStationCode,substationCode,formStatus,applyFormStatus,
+        lineFormStatus,dispatchFormStatus,plantype,code)
+        VALUES
+        <foreach collection="list" item="command" separator=";">
+            (
+            #{command.weekday},
+            #{command.taskDate},
+            #{command.taskStaffNum},
+            #{command.taskStartTime},
+            #{command.taskEndTime},
+            #{command.protectiveMeasure},
+            #{command.type},
+            #{command.orgCode},
+            #{command.taskRange},
+            #{command.taskContent},
+            #{command.largeAppliances},
+            #{command.remark},
+            #{command.assistStationCode},
+            #{command.planChange},
+            #{command.nature},
+            #{command.powerSupplyRequirementContent},
+            #{command.firstStationCode},
+            #{command.secondStationCode},
+            #{command.substationCode},
+            #{command.formStatus},
+            #{command.applyFormStatus},
+            #{command.lineFormStatus},
+            #{command.dispatchFormStatus},
+            #{command.plantype},
+            #{command.Code})
+        </foreach>
+    </insert>
 </mapper>
