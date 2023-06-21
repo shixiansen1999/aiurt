@@ -96,4 +96,7 @@ public class SelectTable {
 
     /**是否是知识库类别*/
     private Boolean isBaseType;
+
+    @ApiModelProperty(value = "设备类型")
+    private String deviceTypeCode;
 }

@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
@@ -584,8 +585,8 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 }
             }
         } else {
-            List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(new LambdaQueryWrapper<DeviceChangeSparePart>().eq(DeviceChangeSparePart::getCode, faultCode));
-            recoverSparePart(deviceChangeSparePartList);
+            /*List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(new LambdaQueryWrapper<DeviceChangeSparePart>().eq(DeviceChangeSparePart::getCode, faultCode));
+            recoverSparePart(deviceChangeSparePartList);*/
         }
 
     }
@@ -676,6 +677,56 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
             isTodoBaseAPI.createTodoTask(todoDTO);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * 更换组件
+     *
+     * @param dataList
+     */
+    @Override
+    public void dealChangeSparePartV2(List<DeviceChangeSparePartDTO> dataList) {
+        log.info("处理备件更换流程->{}", JSONObject.toJSONString(dataList));
+        Set<String> deviceCodeSet = dataList.stream().map(DeviceChangeSparePartDTO::getDeviceCode).collect(Collectors.toSet());
+        List<Device> deviceList = deviceService.list(new LambdaQueryWrapper<Device>().in(Device::getCode, deviceCodeSet)
+                .eq(Device::getDelFlag, CommonConstant.DEL_FLAG_0));
+        Map<String, Device> deviceMap = deviceList.stream().collect(Collectors.toMap(Device::getCode, t -> t, (t1, t2) -> t1));
+
+        List<DeviceAssembly> addList = new ArrayList<>();
+        List<DeviceAssembly> updateList = new ArrayList<>();
+        dataList.stream().forEach(deviceChangeSparePartDTO -> {
+            String deviceCode = deviceChangeSparePartDTO.getDeviceCode();
+            String oldSparePartCode = deviceChangeSparePartDTO.getOldSparePartCode();
+            Device device = deviceMap.get(deviceCode);
+            if (Objects.isNull(device)) {
+                return;
+            }
+
+            // 查询组件
+            DeviceAssembly deviceAssembly = deviceAssemblyService.getOne(new LambdaQueryWrapper<DeviceAssembly>().eq(DeviceAssembly::getDeviceCode, deviceCode)
+                    .eq(DeviceAssembly::getCode, oldSparePartCode).eq(DeviceAssembly::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .eq(DeviceAssembly::getStatus, 0).last("limit 1"));
+
+            if (Objects.isNull(deviceAssembly)) {
+                return;
+            }
+
+            DeviceAssembly assembly = BeanUtil.copyProperties(deviceAssembly, DeviceAssembly.class, "id");
+            assembly.setCode(deviceChangeSparePartDTO.getNewSparePartCode());
+            assembly.setCreateTime(new Date());
+
+            deviceAssembly.setStatus("1");
+            updateList.add(deviceAssembly);
+            addList.add(assembly);
+        });
+
+        if (CollUtil.isNotEmpty(addList)) {
+            deviceAssemblyService.saveBatch(addList);
+        }
+
+        if (CollUtil.isNotEmpty(updateList)) {
+            deviceAssemblyService.updateBatchById(updateList);
         }
     }
 }

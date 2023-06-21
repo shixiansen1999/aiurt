@@ -1,5 +1,6 @@
 package com.aiurt.modules.device.service;
 
+import com.aiurt.modules.device.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -19,4 +20,11 @@ public interface IDeviceAssemblyService extends IService<DeviceAssembly> {
      * @return 设备组件
      */
     List<DeviceAssembly> fromMaterialToAssembly(List<MaterialBase> materialBaseList);
+
+    /**
+     * 根据设备编码查询组件
+     * @param deviceCode
+     * @return
+     */
+    List<DeviceAssemblyDTO> queryDeviceAssemblyByDeviceCode(String deviceCode);
 }

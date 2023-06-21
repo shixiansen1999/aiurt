@@ -5,6 +5,7 @@ import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
+import com.aiurt.modules.faultcausesolution.dto.FaultCauseSolutionDTO;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -44,6 +45,10 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     @ApiModelProperty(value = "故障知识分类编码")
     @Dict(dictTable = "fault_knowledge_base_type", dicText = "name", dicCode = "code")
     private String knowledgeBaseTypeCode;
+    /**故障现象编号*/
+    @Excel(name = "故障现象编号", width = 15)
+    @ApiModelProperty(value = "故障现象编号")
+    private String faultPhenomenonCode;
 	/**故障现象*/
 	@Excel(name = "故障现象", width = 15)
     @ApiModelProperty(value = "故障现象")
@@ -108,10 +113,16 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     @ApiModelProperty(value = "设备类型")
     @Dict(dictTable ="device_Type",dicText = "name",dicCode = "code")
     private String deviceTypeCode;
+    /**故障等级*/
+    @Excel(name = "故障等级", width = 15)
+    @ApiModelProperty(value = "故障等级")
+    @Dict(dictTable ="fault_level",dicText = "name",dicCode = "code")
+    private String faultLevelCode;
 	/**设备组件*/
 	@Excel(name = "设备组件", width = 15)
     @ApiModelProperty(value = "设备组件")
-    @Dict(dictTable ="device_assembly",dicText = "material_name",dicCode = "material_code")
+//    @Dict(dictTable ="device_assembly",dicText = "material_name",dicCode = "material_code")
+    @Dict(dictTable ="device_compose",dicText = "material_name",dicCode = "material_code")
     private String materialCode;
 	/**审核人*/
 	@Excel(name = "审核人", width = 15)
@@ -142,8 +153,9 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     /**状态*/
     @Excel(name = "状态(0:待审批,1:已审批,2:已驳回)", width = 15)
     @ApiModelProperty(value = "状态(0:待审批,1:已审批,2:已驳回)")
-    @Dict(dicCode = "fault_status")
+    @Dict(dicCode = "fault_knowledge")
     private Integer status;
+
     /**设备类型名称*/
     @Excel(name = "设备类型名称", width = 15)
     @ApiModelProperty(value = "设备类型名称")
@@ -238,4 +250,25 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     @ApiModelProperty(value = "线路line")
     @TableField(exist = false)
     private String lineName;
+    /**
+     * 故障原因及解决方案数据集
+     */
+    @ApiModelProperty(value = "故障原因及解决方案数据集")
+    @TableField(exist = false)
+    private List<FaultCauseSolutionDTO> faultCauseSolutions;
+//    /**
+//     * 故障原因数据
+//     */
+//    @ApiModelProperty(value = "故障原因数据")
+//    @TableField(exist = false)
+//    private String causes;
+//    /**
+//     * 解决方案数据
+//     */
+//    @ApiModelProperty(value = "解决方案数据")
+//    @TableField(exist = false)
+//    private String solutions;
+    @TableField(exist = false)
+    private String userName;
+
 }

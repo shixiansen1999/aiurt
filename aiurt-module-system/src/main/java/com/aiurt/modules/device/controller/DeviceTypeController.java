@@ -349,6 +349,12 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		if(null != deviceType.getCodeCc() && !"".equals(deviceType.getCodeCc())){
 			queryWrapper.like(DeviceType::getCodeCc, deviceType.getCodeCc());
 		}
+		 if(null != deviceType.getCode() && !"".equals(deviceType.getCode())){
+			 List<String> list = StrUtil.splitTrim(deviceType.getCode(), ',');
+			 if (CollUtil.isNotEmpty(list)) {
+				 queryWrapper.in(DeviceType::getCode, list);
+			 }
+		 }
 		Page<DeviceType> page = new Page<DeviceType>(pageNo, pageSize);
 		IPage<DeviceType> pageList = deviceTypeService.page(page, queryWrapper.eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).orderByAsc(DeviceType::getCreateTime));
 		pageList.getRecords().forEach(type->{

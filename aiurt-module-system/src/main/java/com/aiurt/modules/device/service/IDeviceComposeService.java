@@ -1,7 +1,10 @@
 package com.aiurt.modules.device.service;
 
+import com.aiurt.modules.device.dto.DeviceComposeTreeDTO;
 import com.aiurt.modules.device.entity.DeviceCompose;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * @Description: device_compose
@@ -11,4 +14,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IDeviceComposeService extends IService<DeviceCompose> {
 
+    /**
+     * 组件、部位树
+     * @param deviceTypeCode
+     * @return
+     */
+    List<DeviceComposeTreeDTO> queryComposeTree(String deviceTypeCode);
 }

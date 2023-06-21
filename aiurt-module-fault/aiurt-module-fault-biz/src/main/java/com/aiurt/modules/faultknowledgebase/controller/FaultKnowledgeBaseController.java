@@ -16,11 +16,12 @@ import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.constants.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
-import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
-import com.aiurt.modules.faultknowledgebase.dto.FaultKnowledgeBaseDTO;
+import com.aiurt.modules.faultcausesolution.service.IFaultCauseSolutionService;
+import com.aiurt.modules.faultknowledgebase.dto.*;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
+import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -66,6 +67,8 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 private IFaultAnalysisReportService faultAnalysisReportService;
 	 @Autowired
 	 private ISysBaseAPI iSysBaseAPI;
+	@Autowired
+	private IFaultCauseSolutionService faultCauseSolutionService;
 
 	/**
 	 * 分页列表查询
@@ -80,12 +83,33 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库-分页列表查询", notes="故障知识库-分页列表查询")
 	@GetMapping(value = "/list")
 	@PermissionData(pageComponent = "fault/FaultKnowledgeBaseListChange")
-	public Result<IPage<FaultKnowledgeBase>> queryPageList(FaultKnowledgeBase faultKnowledgeBase,
+	public Result<IPage<FaultKnowledgeBaseBuildDTO>> queryPageList(FaultKnowledgeBase faultKnowledgeBase,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 		Page<FaultKnowledgeBase> page = new Page<FaultKnowledgeBase>(pageNo, pageSize);
-		IPage<FaultKnowledgeBase> faultKnowledgeBasePage = faultKnowledgeBaseService.readAll(page, faultKnowledgeBase);
+		IPage<FaultKnowledgeBaseBuildDTO> faultKnowledgeBasePage = faultKnowledgeBaseService.readAll(page, faultKnowledgeBase);
+		return Result.OK(faultKnowledgeBasePage);
+	}
+
+	/**
+	 * 分页列表查询(未拆分数据)
+	 *
+	 * @param faultKnowledgeBase
+	 * @param pageNo
+	 * @param pageSize
+	 * @param request
+	 * @return
+	 */
+	@ApiOperation(value = "故障知识库-分页列表查询(未拆分数据)", notes = "故障知识库-分页列表查询(未拆分数据)")
+	@GetMapping(value = "/unbuilt/list")
+	@PermissionData(pageComponent = "fault/FaultKnowledgeBaseListChange")
+	public Result<IPage<FaultKnowledgeBase>> queryPageList(FaultKnowledgeBase faultKnowledgeBase,
+														   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+														   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+														   HttpServletRequest request, HttpServletResponse response) {
+		Page<FaultKnowledgeBase> page = new Page<FaultKnowledgeBase>(pageNo, pageSize);
+		IPage<FaultKnowledgeBase> faultKnowledgeBasePage = faultKnowledgeBaseService.queryPageList(page, faultKnowledgeBase);
 		return Result.OK(faultKnowledgeBasePage);
 	}
 
@@ -208,17 +232,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库-通过id查询", notes="故障知识库-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<FaultKnowledgeBase> queryById(@RequestParam(name="id",required=true) String id) {
-		FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseMapper.readOne(id);
-		faultKnowledgeBase.setLineName(faultKnowledgeBaseMapper.translateLine(faultKnowledgeBase.getLineCode()));
-		if(faultKnowledgeBase==null) {
-			return Result.error("未找到对应数据");
-		}
-		String faultCodes = faultKnowledgeBase.getFaultCodes();
-		if (StrUtil.isNotBlank(faultCodes)) {
-			String[] split = faultCodes.split(",");
-			List<String> list = Arrays.asList(split);
-			faultKnowledgeBase.setFaultCodeList(list);
-		}
+		FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseService.readOne(id);
 		return Result.OK(faultKnowledgeBase);
 	}
 
@@ -413,5 +427,31 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@RequestMapping(value = "/exportTemplateXls")
 	public void  exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
 		faultKnowledgeBaseService.exportTemplateXls(response);
+	}
+
+
+	/**
+	 * 查找故障现象模板
+	 * @param symptomReqDTO 请求参数
+	 * @return
+	 */
+	@GetMapping("/querySymptomTemplate")
+	@ApiOperation(value="查找故障现象模板", notes="查故障现象模板")
+	public Result<IPage<SymptomResDTO>> querySymptomTemplate(SymptomReqDTO symptomReqDTO) {
+		Page<SymptomResDTO> page = faultKnowledgeBaseService.querySymptomTemplate(symptomReqDTO);
+		return Result.OK(page);
+	}
+
+
+	/**
+	 *  根据故障原因id 标准维修方案要求
+	 * @param faultCauseSolutionIdList
+	 * @return
+	 */
+	@GetMapping("/getStandardRepairRequirements")
+	@ApiOperation(value="标准维修方案要求查询", notes="标准维修方案要求查询")
+	public Result<List<FaultSparePart>> getStandardRepairRequirements(@RequestParam(value = "faultCauseSolutionIdList[]", required = false) String[] faultCauseSolutionIdList) {
+		List<FaultSparePart> list = faultKnowledgeBaseService.getStandardRepairRequirements(faultCauseSolutionIdList);
+		return Result.OK(list);
 	}
  }

@@ -1,4 +1,4 @@
-package com.aiurt.boot.config;
+package com.aiurt.boot.core.config;
 
 import cn.hutool.core.util.StrUtil;
 import org.apache.http.HttpHost;

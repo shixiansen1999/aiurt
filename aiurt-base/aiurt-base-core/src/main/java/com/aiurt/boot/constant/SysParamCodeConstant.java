@@ -322,4 +322,29 @@ public interface SysParamCodeConstant {
     String INSPECTION_PEER_ALL_USER = "inspection_peer_all_user";
 
     String INSPECTION_SIGN_MULTI = "inspection_sign_multi";
+    /**
+     * 	工作内容是否需要查出所有未完成故障
+     */
+    String 	WORKLOG_UNFINISH_FAULT = "worklog_unfinish_fault";
+    String APP_PATROL_TASK_POOL_SORT = "app_patrol_task_pool_sort";
+    /**
+     * 取消去办理的消息类型
+     */
+    String NO_DEAL_MESSAGE_TYPE = "no_deal_message_type";
+    /**
+     * 故障未领取时要给予当班人员提示音
+     */
+    String NO_RECEIVE_FAULT_REMIND = "no_receive_fault_remind";
+    /**
+     * 故障领取后两小时未更新任务状态需给予维修人提示音
+     */
+    String RECEIVE_FAULT_NO_UPDATE = "receive_fault_no_update";
+    /**
+     * 故障领取后两小时未更新任务状态需给予维修人提示音（每两小时提醒5秒）
+     */
+    String FAULT_RECEIVE_NO_UPDATE_RING_DURATION = "fault_receive_no_update_ring_duration";
+    /**
+     * 故障未领取时要给予当班人员提示音（每两分钟提醒20秒）
+     */
+    String NO_RECEIVE_FAULT_RING_DURATION = "no_receive_fault_ring_duration";
 }

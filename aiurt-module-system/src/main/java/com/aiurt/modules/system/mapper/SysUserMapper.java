@@ -281,4 +281,12 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 	 * @return
 	 */
 	List<String> getRealNameByOrgCodeAndRoleCode(@Param("orgCode") List<String> orgCode,@Param("roleCode") List<String> roleCode);
+
+	/**
+	 * 获取用户工龄以及最大值和最小值
+	 *
+	 * @param orgCode
+	 * @return
+	 */
+	List<LoginUser> getSeniorityNumber(@Param("orgCode") String orgCode);
 }

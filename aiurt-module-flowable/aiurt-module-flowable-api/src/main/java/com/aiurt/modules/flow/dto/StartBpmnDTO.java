@@ -15,6 +15,8 @@ import java.util.Map;
 @Data
 public class StartBpmnDTO implements Serializable {
 
+    private String userName;
+
     @ApiModelProperty("流程定义key")
     @NotBlank(message = "参数错误， 流程定义key不能为空")
     private String modelKey;
