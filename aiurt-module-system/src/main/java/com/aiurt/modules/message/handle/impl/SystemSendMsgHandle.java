@@ -78,6 +78,9 @@ public class SystemSendMsgHandle implements ISendMsgHandle {
                 obj.put(WebsocketConst.MSG_TXT, messageDTO.getTitle());
                 if (ObjectUtil.isNotEmpty(messageDTO.getIsRingBell())) {
                     obj.put(WebsocketConst.IS_RING_BELL, messageDTO.getIsRingBell());
+                    if (ObjectUtil.isNotEmpty(messageDTO.getRingDuration())) {
+                        obj.put(WebsocketConst.RING_DURATION, messageDTO.getRingDuration());
+                    }
                 }
                 webSocket.sendMessage(sysUser.getId(), obj.toJSONString());
             }

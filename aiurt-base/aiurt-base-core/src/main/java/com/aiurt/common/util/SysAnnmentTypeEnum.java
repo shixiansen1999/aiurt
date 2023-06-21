@@ -21,6 +21,14 @@ public enum SysAnnmentTypeEnum {
      */
     FAULT_EXTERNAL("fault_external", "component","","故障业务消息"),
     /**
+     * 故障
+     */
+    RECEIVE_FAULT_NO_UPDATE("receive_fault_no_update", "component", "","故障业务消息"),
+    /**
+     * 故障
+     */
+        NO_RECEIVE_FAULT("no_receive_fault", "component", "","故障业务消息"),
+    /**
      * 周计划
      */
     OPERATE_PLAN("week_plan", "component","","周计划业务消息"),

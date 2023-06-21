@@ -63,5 +63,9 @@ public class WebsocketConst {
      */
     public static final String IS_RING_BELL = "is_ring_bell";
 
+    /**
+     * 响铃提醒时长
+     */
+    public static final String RING_DURATION = "ring_duration";
 
 }

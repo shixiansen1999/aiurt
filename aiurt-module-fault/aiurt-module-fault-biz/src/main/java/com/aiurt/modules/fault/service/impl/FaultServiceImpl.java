@@ -35,6 +35,7 @@ import com.aiurt.modules.fault.enums.FaultStatesEnum;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
+import com.aiurt.modules.fault.quzrtz.job.FaultRemind;
 import com.aiurt.modules.fault.service.*;
 import com.aiurt.modules.faultexternal.entity.FaultExternal;
 import com.aiurt.modules.faultexternal.mapper.FaultExternalMapper;
@@ -179,6 +180,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Autowired
     private FaultRepairRecordMapper recordMapper;
 
+    @Autowired
+    private FaultRemind faultRemind;
+
+
     /**
      * 故障上报
      *
@@ -312,6 +317,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 记录日志
         saveLog(user, "故障上报", fault.getCode(), 1, null);
 
+
+        // 根据配置决定：故障未领取时要给予当班人员提示音（每两分钟提醒20秒）
+        SysParamModel remindParam = iSysParamAPI.selectByCode(SysParamCodeConstant.NO_RECEIVE_FAULT_REMIND);
+        boolean b1 = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue());
+        if (b1) {
+            faultRemind.processFaultAdd(fault.getCode(), fault.getApprovalPassTime());
+        }
 
         try {
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
@@ -973,6 +985,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 日志记录
         saveLog(user, FaultStatusEnum.RECEIVE.getMessage(), faultCode, FaultStatusEnum.RECEIVE.getStatus(), null);
 
+        // 根据配置决定：故障领取后两小时未更新任务状态需给予维修人提示音
+        noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, faultCode, FaultStatusEnum.RECEIVE.getStatus());
+
         // 更新工班长指派的任务
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_ASSIGN.getType(), faultCode, user.getUsername(), "1");
         // 发送消息，告诉工班长已指派, // 工班长
@@ -1034,6 +1049,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         repairRecordService.updateById(repairRecord);
 
         saveLog(loginUser, "接收指派", code, FaultStatusEnum.RECEIVE_ASSIGN.getStatus(), null);
+        // 根据配置决定：故障接收后两小时未更新任务状态需给予维修人提示音
+        noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, code, FaultStatusEnum.RECEIVE_ASSIGN.getStatus());
 
         //发送通知
         try {
@@ -1151,6 +1168,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 记录日志
         saveLog(user, "开始维修", code, FaultStatusEnum.REPAIR.getStatus(), null);
+        // 根据配置决定：故障维修中后两小时未更新任务状态需给予维修人提示音
+        noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, code, FaultStatusEnum.REPAIR.getStatus());
 
         // 发送给指派人
         String receiveUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), fault.getMajorCode(), fault.getSubSystemCode(), fault.getStationCode(), fault.getSysOrgCode());
@@ -1263,6 +1282,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             fault.setHangUpTime(faultHangUpTime + faultRepairRecord.getHangUpTime());
 
             saveLog(user, "挂起审批驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), approvalHangUpDTO.getApprovalRejection(),(int) between);
+            // 根据配置决定：驳回故障维修中后两小时未更新任务状态需给予维修人提示音
+            noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, faultCode, FaultStatusEnum.REPAIR.getStatus());
         }
 
         faultRepairRecord.setApprovalHangUpRemark(approvalHangUpDTO.getApprovalRejection());
@@ -1364,6 +1385,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         updateById(fault);
 
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_HANG_UP.getType(), code, null, "1");
+        // 根据配置决定：取消挂起故障维修中后两小时未更新任务状态需给予维修人提示音
+        noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, code, FaultStatusEnum.REPAIR.getStatus());
 
         // 维修待办
         try {
@@ -3903,5 +3926,20 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             return faultExternal.getCreateTime();
         }
         return null;
+    }
+
+    /**
+     * 故障领取后/接收后/维修中/审批驳回/取消挂起时两小时没有更新任务状态给予维修人提示
+     * @param paramCode
+     * @param code
+     * @param status
+     */
+    private void noUpdatetoRemind(String paramCode, String code, Integer status) {
+        // 根据配置决定：故障领取后两小时未更新任务状态需给予维修人提示音
+        SysParamModel remindParam = iSysParamAPI.selectByCode(paramCode);
+        boolean b = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue());
+        if (b) {
+            faultRemind.processFaultNoUpdate(code, status);
+        }
     }
 }
