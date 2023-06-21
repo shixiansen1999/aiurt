@@ -101,6 +101,10 @@ public class MessageDTO implements Serializable {
      */
     protected Boolean isRingBell;
     /**
+     * 响铃提醒时长
+     */
+    protected Integer ringDuration;
+    /**
      * 消息类型：org.jeecg.common.constant.enums.MessageTypeEnum
      *  XT("system",  "系统消息")
      *  YJ("email",  "邮件消息")

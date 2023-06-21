@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.DataColumn;
 import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.basic.entity.CsWork;
+import com.aiurt.modules.fault.dto.FaultForSendMessageDTO;
 import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
@@ -125,4 +126,12 @@ public interface FaultMapper extends BaseMapper<Fault> {
      */
     List<String> getDeviceName(@Param("code")String code);
 
+    /**
+     * 根据故障编码故障及维修记录信息
+     * @param code
+     * @param status
+     * @param updateTime
+     * @return
+     */
+    FaultForSendMessageDTO queryForSendMessage(@Param("code") String code, @Param("status") Integer status, @Param("updateTime") Date updateTime);
 }
