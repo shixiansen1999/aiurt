@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import org.jeecg.common.system.vo.PortraitTaskModel;
 import com.aiurt.boot.task.dto.RepairTaskUserNameDTO;
 import com.aiurt.boot.task.entity.RepairTaskUser;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -28,4 +29,18 @@ public interface RepairTaskUserMapper extends BaseMapper<RepairTaskUser> {
      * @return
      */
     int batchInsert(List<RepairTaskUser> repairTaskUserList);
+
+    /**
+     * 获取近五年的检修任务数据
+     *
+     * @param userId
+     * @param fiveYearsAgo
+     * @param thisYear
+     * @param completed
+     * @return
+     */
+    List<PortraitTaskModel> getInspectionNumber(@Param("userId") String userId,
+                                                @Param("fiveYearsAgo") int fiveYearsAgo,
+                                                @Param("thisYear") int thisYear,
+                                                @Param("completed") Integer completed);
 }

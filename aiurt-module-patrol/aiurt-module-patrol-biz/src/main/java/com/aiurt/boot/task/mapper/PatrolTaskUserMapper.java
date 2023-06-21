@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import org.jeecg.common.system.vo.PortraitTaskModel;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
 import com.aiurt.boot.screen.model.ScreenDurationTask;
 import com.aiurt.boot.task.entity.PatrolTask;
@@ -111,4 +112,18 @@ public interface PatrolTaskUserMapper extends BaseMapper<PatrolTaskUser> {
      * @return
      */
     List<ScreenDurationTask> getScreentPeerDuration(@Param("startTime")Date startTime, @Param("endTime")Date endTime,@Param("userList")List<LoginUser> userList );
+
+    /**
+     * 获取近五年的巡视任务数据
+     *
+     * @param userId
+     * @param fiveYearsAgo
+     * @param thisYear
+     * @param taskComplete
+     * @return
+     */
+    List<PortraitTaskModel> getPatrolTaskNumber(@Param("userId") String userId,
+                                                @Param("fiveYearsAgo") int fiveYearsAgo,
+                                                @Param("thisYear") int thisYear,
+                                                @Param("taskComplete") Integer taskComplete);
 }

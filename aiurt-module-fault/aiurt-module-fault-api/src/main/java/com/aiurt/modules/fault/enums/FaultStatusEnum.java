@@ -2,6 +2,10 @@ package com.aiurt.modules.fault.enums;
 
 import cn.hutool.core.util.StrUtil;
 
+/**
+ * @author fgw
+ */
+
 public enum  FaultStatusEnum {
 
     /**

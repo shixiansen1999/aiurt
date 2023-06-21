@@ -240,9 +240,11 @@
         fault.create_time,
         fault.hang_up_reason,
         fault.fault_phenomenon,
-        fault.symptoms
+        fault.symptoms,
+        GROUP_CONCAT( DISTINCT fd.device_code ) deviceCode
         FROM
         fault fault
+        LEFT JOIN fault_device fd ON ( fault.`code` = fd.fault_code AND fd.del_flag = 0 )
         <!--left join fault_device fd on fault.`code` = fd.fault_code
         left join device de on de.`code` = fd.device_code-->
         <where>
@@ -284,5 +286,411 @@
     from fault_device fd
     left join device d on d.`code` = fd.device_code
     where fd.fault_code = #{code}
+    </select>
+
+    <select id="getFaultTaskNumber" resultType="org.jeecg.common.system.vo.PortraitTaskModel">
+        select year(f.happen_time) `year`, count(f.id) `number`
+        from fault f
+        where 1=1
+          and year(f.happen_time) between #{fiveYearsAgo}
+          and #{thisYear}
+          and status = #{faultStatus}
+          and f.appoint_user_name = #{username}
+        group by year (f.happen_time)
+    </select>
+    <select id="getManagedDepartmentUsers" resultType="com.aiurt.modules.fault.dto.RecPersonListDTO">
+        SELECT
+            su.id AS userId,
+            su.username,
+            su.realname,
+            su.working_time,
+            su.avatar AS picturePath,
+            su.org_code,
+            sd.depart_name AS org_name,
+            su.job_grade,
+            DATEDIFF(
+                    #{date},
+                    IFNULL(
+                            working_time,
+                            #{date})) AS tenure
+        FROM
+            sys_user su
+        LEFT JOIN sys_depart sd ON sd.org_code = su.org_code
+        WHERE
+                su.org_code IN (
+                SELECT
+                    sd.org_code
+                FROM
+                    cs_user_depart cud
+                        LEFT JOIN sys_depart sd ON sd.id = cud.depart_id
+                WHERE
+                    sd.del_flag = 0
+                  AND cud.user_id = #{userId}
+            )
+            AND  su.del_flag = 0
+        GROUP BY
+            su.id
+    </select>
+    <select id="isSameFaultHandled" resultType="com.aiurt.modules.fault.dto.SameFaultDTO">
+        SELECT
+            f.appoint_user_name AS userName,
+            CASE
+                WHEN COUNT(*) > 0 THEN '是' ELSE '否'
+            END AS value
+        FROM
+            fault f
+        WHERE
+          FIND_IN_SET(#{knowledgeId}, f.knowledge_id) > 0
+          AND f.state = 2
+          AND f.appoint_user_name is not null AND f.appoint_user_name!=''
+        <if test="userNames!=null and userNames.size()>0">
+            AND f.appoint_user_name in
+            <foreach collection="userNames" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY f.appoint_user_name
+    </select>
+    <select id="taskSituation" resultType="com.aiurt.modules.fault.dto.SameFaultDTO">
+        SELECT
+            f.appoint_user_name AS userName,
+            CASE
+                WHEN COUNT(*) > 0 THEN
+                    '维修中' ELSE '空闲'
+            END AS value
+        FROM
+            fault f
+        WHERE
+            f.state = 1
+            and f.appoint_user_name is not null
+        <if test="userNames!=null and userNames.size()>0">
+            AND f.appoint_user_name in
+            <foreach collection="userNames" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY
+            f.appoint_user_name
+    </select>
+    <select id="getFaultHandleNumberMaxMin" resultType="com.aiurt.modules.fault.dto.CommonMaxMinNumDTO">
+        SELECT
+        IFNULL( MAX( num ), 0 ) AS maxNum,
+        IFNULL( MIN( num ), 0 ) AS minNum
+        FROM
+        ( SELECT COUNT(DISTINCT id ) AS num FROM fault_repair_record WHERE del_flag = 0
+        <if test="userNames!=null and userNames.size()>0">
+            AND appoint_user_name in
+            <foreach collection="userNames" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY appoint_user_name ) AS subquery;
+    </select>
+    <select id="getEfficiencyList" resultType="com.aiurt.modules.fault.dto.EfficiencyDTO">
+        select frr.appoint_user_name username,
+        IFNULL(AVG(TIME_TO_SEC(TIMEDIFF(frr.start_time, f.assign_time))), 0) AS responseTime,
+        IFNULL(AVG(TIME_TO_SEC(TIMEDIFF(frr.end_time, frr.start_time))), 0) AS resolveTime,
+        (
+        IFNULL(AVG(TIME_TO_SEC(TIMEDIFF(frr.start_time, f.assign_time))), 0) +
+        IFNULL(AVG(TIME_TO_SEC(TIMEDIFF(frr.end_time, frr.start_time))), 0)
+        ) AS sumResponseTimeResolveTime
+        from fault_repair_record frr
+        join fault f on frr.fault_code = f.code
+        where frr.del_flag = 0 AND f.state = 2
+        <if test="userNames!=null and userNames.size()>0">
+            AND f.appoint_user_name in
+            <foreach collection="userNames" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        group by f.appoint_user_name
+    </select>
+    <select id="getTenureMaxMin" resultType="com.aiurt.modules.fault.dto.CommonMaxMinNumDTO">
+        SELECT
+            IFNULL(MAX(workExperience),0) as maxNum,
+            IFNULL(MIN(workExperience),0) as minNum
+        FROM
+            ( SELECT DATEDIFF(#{date}, IFNULL( working_time, #{date})) AS workExperience FROM sys_user GROUP BY id ) AS temp
+    </select>
+    <select id="getHandleNumberList" resultType="com.aiurt.modules.fault.dto.RadarNumberDTO">
+        SELECT
+            appoint_user_name AS username,
+            IFNULL(count(DISTINCT id ),0) AS number
+        FROM
+            fault_repair_record
+        WHERE
+            del_flag = 0
+        <if test="userNameList!=null and userNameList.size()>0">
+            AND appoint_user_name in
+            <foreach collection="userNameList" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY
+            appoint_user_name
+    </select>
+    <select id="getAptitude" resultType="com.aiurt.modules.fault.dto.RadarAptitudeDTO">
+        select sua.user_id     userId,
+               ifnull(sum(sua.number),0) number
+        from sys_user_aptitudes sua
+        join sys_user su on (sua.user_id = su.id and sua.del_flag = 0)
+        <where>
+            sua.del_flag = 0
+            <if test="userIds!=null and userIds.size()>0">
+                and user_id in
+                <foreach collection="userIds" separator="," open="(" close=")" item="userId">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+        group by sua.user_id
+    </select>
+    <select id="getAptitudeMaxMin" resultType="com.aiurt.modules.fault.dto.CommonMaxMinNumDTO">
+        SELECT
+        IFNULL(MAX(number),0) as maxNum,
+        IFNULL(MIN(number),0) as minNum
+        FROM
+        (select
+        ifnull(sum(sua.number),0) number
+        from sys_user_aptitudes sua
+        join sys_user su on (sua.user_id = su.id and sua.del_flag = 0)
+        <where>
+            sua.del_flag = 0
+            <if test="userIds!=null and userIds.size()>0">
+                and user_id in
+                <foreach collection="userIds" separator="," open="(" close=")" item="userId">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+        group by sua.user_id) AS subquery;
+    </select>
+    <select id="getPerformanceList" resultType="com.aiurt.modules.fault.dto.RadarPerformanceDTO">
+        select sup.user_id, IFNULL(avg(sup.score),0) score
+        from sys_user_perf sup
+        join sys_user su on (sup.user_id = su.id and su.del_flag = 0)
+        <where>
+            sup.del_flag = 0
+            and date_format(str_to_date(concat(sup.year, lpad(sup.month, 2, '0'), '01'), '%Y%m%d'), '%Y%m') >=
+            date_format(#{date}, '%Y%m')
+            <if test="userIds!=null and userIds.size()>0">
+                and user_id in
+                <foreach collection="userIds" separator="," open="(" close=")" item="userId">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+        group by sup.user_id
+    </select>
+    <select id="getFaultHandCountListByFaultPhenomenon" resultType="com.aiurt.modules.fault.dto.RadarNumberDTO">
+        SELECT
+        frr.appoint_user_name AS username,
+        ifnull(count(DISTINCT frr.id ),0) AS number
+        FROM
+        fault_repair_record frr
+        LEFT JOIN fault f ON f.code = frr.fault_code
+        WHERE
+        frr.del_flag = 0
+        AND f.state = 2
+        AND frr.knowledge_id = #{knowledgeId}
+        <if test="userNameList!=null and userNameList.size()>0">
+            AND frr.appoint_user_name in
+            <foreach collection="userNameList" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY
+        frr.appoint_user_name
+    </select>
+    <select id="getFaultHandCountListByDeviceType" resultType="com.aiurt.modules.fault.dto.RadarNumberDTO">
+        SELECT
+        frr.appoint_user_name AS username,
+        ifnull(count(DISTINCT frr.id ),0) AS number
+        FROM
+        fault_repair_record frr
+        LEFT JOIN fault f ON f.code = frr.fault_code
+        LEFT JOIN  fault_device fd ON fd.fault_code = frr.fault_code
+        LEFT JOIN  device d ON (d.code = fd.device_code AND d.device_type_code = #{deviceTypeCode})
+        WHERE
+        frr.del_flag = 0
+        AND f.state = 2
+        <if test="userNameList!=null and userNameList.size()>0">
+            AND frr.appoint_user_name in
+            <foreach collection="userNameList" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY
+        frr.appoint_user_name
+    </select>
+    <select id="getRoleNameByUserIdList" resultType="com.aiurt.modules.fault.dto.RoleNameDTO">
+        SELECT
+            sur.user_id,
+            GROUP_CONCAT(ifnull(sr.role_name,'')) AS roleName
+        FROM
+            sys_user_role sur
+        left join sys_role sr on sr.id = sur.role_id
+        <where>
+            <if test="userIdList!=null and userIdList.size()>0">
+                user_id in
+                <foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+        group by sur.user_id
+    </select>
+    <select id="getAptitudeList" resultType="com.aiurt.modules.fault.dto.AptitudeDTO">
+        SELECT
+            sua.user_id,
+            GROUP_CONCAT(CONCAT( sua.NAME, '-', vd.item_text )) AS aptitudeName
+        FROM
+            sys_user_aptitudes sua
+        LEFT JOIN view_dict vd ON(vd.dict_code = 'aptitude_level' AND sua.`level` = vd.item_value)
+        <where>
+            <if test="userIdList!=null and userIdList.size()>0">
+                sua.user_id in
+                <foreach collection="userIdList" item="userId" open="(" close=")" separator=",">
+                    #{userId}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
+            sua.user_id
+    </select>
+    <select id="getFaultRecList" resultType="com.aiurt.modules.fault.dto.FaultRecDTO">
+        SELECT
+            IFNULL( CONCAT( IFNULL(dt.`name`,''), '/', IFNULL(frr.symptoms,'') ), '' ) AS faultRec,
+            IF( frr.symptoms =#{symptoms}  AND d.device_type_code = #{deviceTypeCode}, 1, 0 ) AS isDeviceTypeAndPhenomenon
+        FROM
+            fault_repair_record AS frr
+                LEFT JOIN fault_device fd ON fd.fault_code = frr.fault_code
+                LEFT JOIN device d ON d.CODE = fd.device_code
+                LEFT JOIN device_type dt ON dt.`code` = d.device_type_code
+        WHERE
+            frr.del_flag = 0
+            AND frr.appoint_user_name = #{userName}
+            AND d.device_type_code = #{deviceTypeCode}
+        GROUP BY
+            faultRec
+        ORDER BY isDeviceTypeAndPhenomenon DESC
+    </select>
+    <select id="getUserStationName" resultType="java.lang.String">
+        SELECT
+            cs.station_name
+        FROM
+            sys_user_position sup
+        LEFT JOIN cs_position_wifi cpw ON cpw.mac = sup.bssid
+        LEFT JOIN cs_station cs ON cs.station_code = cpw.station_code
+        WHERE
+            sup.create_by =#{userName}
+          AND sup.upload_time >= #{tenMinutesAgo}
+        ORDER BY
+            sup.upload_time DESC
+            LIMIT 1
+    </select>
+
+
+    <select id="querySparePart" resultType="com.aiurt.modules.fault.dto.SparePartReplaceDTO">
+        select t1.device_code,t3.name as device_name,t2.name as new_spare_part_name, t2.specifications,t2.code as material_code,t1.code old_spare_part_code,t2.name as old_spare_part_name
+        from device_assembly t1
+        left join material_base t2 ON (t1.material_code = t2.code and  t2.del_flag =0 )
+        left join device t3 ON (t1.device_code = t3.code and  t3.del_flag =0 )
+        where t1.del_flag = 0 and t1.device_code = #{deviceCode} and  t1.code = #{oldSparePartCode} limit 1
+    </select>
+
+    <select id="countNumBymaterialCode" resultType="java.lang.Long">
+        select  count(1)  from device_assembly t1 where t1.del_flag = 0 and  t1.material_code = #{materialCode}
+   </select>
+
+    <select id="existDeviceAssemblyCode" resultType="java.lang.Long">
+         select SUM(a.num)  from (
+        select  count(1) num from device_assembly t1 where t1.del_flag = 0 and t1.code = #{newSparePartCode}
+        union
+        select count(1) num from device_change_spare_part t2 where t2.del_flag =0 and t2.new_spare_part_code = #{newSparePartCode}) a
+    </select>
+
+    <select id="queryFaultSparePart" resultType="com.aiurt.modules.faultsparepart.entity.FaultSparePart">
+        select  t1.* from fault_spare_part t1
+        where t1.del_flag = 0
+        <if test="materialCode != null and materialCode != ''">
+            and t1.spare_part_code = #{materialCode}
+        </if>
+        <if test="faultCauseSolutionIdList != null and faultCauseSolutionIdList.size() != 0">
+            and t1.cause_solution_id in
+            <foreach collection="faultCauseSolutionIdList" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        order by t1.number
+    </select>
+    <select id="getStationGraphData" resultType="com.aiurt.modules.fault.dto.StationGraphDTO">
+    SELECT
+            s1.station_code AS source,
+            ifnull(
+                    ( GROUP_CONCAT( DISTINCT s2.station_code )),
+                    ( SELECT station_code FROM cs_station WHERE s1.line_code = line_code AND sort > s1.sort order by sort asc LIMIT 1 )
+	) AS targets
+        FROM
+            cs_station s1
+                LEFT JOIN ( SELECT station_code, line_code, sort, change_code FROM cs_station where  del_flag = 0) s2 ON (
+                    ( s1.line_code = s2.line_code AND s1.station_code != s2.station_code AND s1.sort + 1 = s2.sort )
+                    OR ( s1.change_code = s2.change_code AND s1.station_code != s2.station_code )
+                    OR ( s1.line_code = s2.line_code AND s1.station_code != s2.station_code AND s1.sort -1 = s2.sort )
+                )
+        WHERE
+            s1.station_code IS NOT NULL
+          AND s1.del_flag = 0
+        GROUP BY
+            s1.station_code
+    </select>
+    <select id="getUserStationCodeList" resultType="com.aiurt.modules.fault.dto.UserStationCodeDTO">
+        SELECT
+            sup.create_by AS userName,
+            cs.station_code AS stationCode,
+            cs.station_name AS stationName,
+            cs.line_code AS lineCode
+        FROM
+            sys_user_position sup
+        LEFT JOIN cs_position_wifi cpw ON cpw.mac = sup.bssid
+        LEFT JOIN cs_station cs ON cs.station_code = cpw.station_code
+        WHERE
+        sup.bssid IS NOT NULL AND sup.bssid != ''
+        AND sup.upload_time >= #{tenMinutesAgo}
+        <if test="userNames!=null and userNames.size()>0">
+            AND sup.create_by in
+            <foreach collection="userNames" separator="," open="(" close=")" item="username">
+                #{username}
+            </foreach>
+        </if>
+        GROUP BY sup.create_by
+        ORDER BY sup.upload_time DESC
+    </select>
+    <select id="getStationChangeCodeList" resultType="com.aiurt.modules.fault.dto.ChangeCodeDTO">
+        SELECT
+            station_code,
+            change_code
+        FROM
+            cs_station
+        WHERE
+            change_code IS NOT NULL
+          AND change_code != ''
+        GROUP BY
+            station_code
+    </select>
+
+    <select id="queryDeviceAssemblyByDeviceCode"
+            resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO">
+        select
+            code, material_name, id as assembly_id
+        from device_assembly where status = 0 and del_flag = 0 and  device_code = #{deviceCode}
+        <if test="list != null and list.size() != 0">
+            and material_code in (
+            select spare_part_code from fault_spare_part where cause_solution_id in
+            <foreach collection="list" close=")" open="(" separator="," item="item">
+                #{item}
+            </foreach>
+            )
+        </if>
     </select>
 </mapper>

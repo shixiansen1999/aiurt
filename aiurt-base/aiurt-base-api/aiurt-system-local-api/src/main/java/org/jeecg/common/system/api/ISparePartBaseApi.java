@@ -34,4 +34,11 @@ public interface ISparePartBaseApi {
      * @param faultCode
      */
     void addSparePartOutOrder(List<SparePartStockDTO> nonConsumablesList,String faultCode);
+
+
+    /**
+     * 更换组件
+     * @param dataList
+     */
+    void dealChangeSparePartV2(List<DeviceChangeSparePartDTO> dataList);
 }

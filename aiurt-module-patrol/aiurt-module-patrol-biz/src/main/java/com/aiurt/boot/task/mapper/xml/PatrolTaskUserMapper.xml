@@ -201,4 +201,17 @@ JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
         GROUP BY pt.id
 
     </select>
+
+    <select id="getPatrolTaskNumber" resultType="org.jeecg.common.system.vo.PortraitTaskModel">
+        select year(pt.patrol_date) `year`, count(pt.id) `number`
+        from patrol_task_user ptu
+            join patrol_task pt
+        on (ptu.task_code = pt.code and pt.del_flag = 0)
+        where ptu.del_flag = 0
+          and year(pt.patrol_date) between #{fiveYearsAgo}
+          and #{thisYear}
+          and pt.status = #{taskComplete}
+          and ptu.user_id = #{userId}
+        group by year(pt.patrol_date)
+    </select>
 </mapper>

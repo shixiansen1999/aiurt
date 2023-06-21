@@ -1,13 +1,12 @@
 package com.aiurt.modules.fault.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.BetweenFormater;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.modules.fault.dto.DeviceChangeRecordDTO;
-import com.aiurt.modules.fault.dto.RecordDetailDTO;
-import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
-import com.aiurt.modules.fault.dto.SparePartStockDTO;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.DeviceChangeSparePart;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultRepairParticipants;
@@ -18,6 +17,8 @@ import com.aiurt.modules.fault.service.IDeviceChangeSparePartService;
 import com.aiurt.modules.fault.service.IFaultRepairParticipantsService;
 import com.aiurt.modules.fault.service.IFaultRepairRecordService;
 import com.aiurt.modules.fault.service.IFaultService;
+import com.aiurt.modules.faultcauseusagerecords.entity.FaultCauseUsageRecords;
+import com.aiurt.modules.faultcauseusagerecords.service.IFaultCauseUsageRecordsService;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -63,6 +65,9 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
 
     @Autowired
     private IDeviceChangeSparePartService sparePartService;
+
+    @Autowired
+    private IFaultCauseUsageRecordsService faultCauseUsageRecordsService;
 
     @Override
     public RecordDetailDTO queryDetailByFaultCode(String faultCode) {
@@ -131,6 +136,10 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
 
     @Override
     public DeviceChangeRecordDTO queryDeviceChangeRecord(String faultCode) {
+        Fault fault = faultService.queryByCode(faultCode);
+        if (Objects.isNull(fault)) {
+            return new DeviceChangeRecordDTO();
+        }
         DeviceChangeRecordDTO deviceChangeRecordDTO = new DeviceChangeRecordDTO();
         List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, null);
         List<SparePartStockDTO> deviceChangeList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("0", sparepart.getConsumables()))
@@ -171,6 +180,19 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
                     return build;
                 }).collect(Collectors.toList());
         deviceChangeRecordDTO.setConsumableList(consumableList);
+
+        // 查询使用的解决原件
+        LambdaQueryWrapper<FaultCauseUsageRecords> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(FaultCauseUsageRecords::getFaultCode, faultCode).eq(FaultCauseUsageRecords::getDelFlag, CommonConstant.DEL_FLAG_0);
+        List<FaultCauseUsageRecords> list = faultCauseUsageRecordsService.list(queryWrapper);
+
+        if (CollUtil.isNotEmpty(list)) {
+            deviceChangeRecordDTO.setFaultCauseSolutionId(list.stream().map(FaultCauseUsageRecords::getFaultCauseSolutionId).collect(Collectors.toList()));
+        }
+
+        // 判断是否异常
+        deviceChangeRecordDTO.setIsException(fault.getException()==1);
+
         return deviceChangeRecordDTO;
     }
 }
