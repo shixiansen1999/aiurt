@@ -88,5 +88,6 @@ public class AlmRecordRespDTO extends DictEntity {
     private Date createTime;
 
     @ApiModelProperty(value = "线路编码")
+    @Dict(dictTable = "cs_line", dicCode = "line_code", dicText = "line_name")
     private String lineCode;
 }
