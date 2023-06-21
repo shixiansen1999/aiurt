@@ -2416,7 +2416,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (StrUtil.isNotBlank(faultDuration)) {
             FaultDurationEnum faultDurationEnum = FaultDurationEnum.getByCode(faultDuration);
             queryWrapper.apply(Objects.nonNull(faultDurationEnum),
-                    "(( STATUS IN ( 11, 12 ) AND duration BETWEEN {0} AND {1} ) OR (`status` IN ( 3, 4, 5, 6, 7, 9, 10 ) AND TIMESTAMPDIFF(MINUTE,happen_time,{2}) BETWEEN {0} AND {1} ))",
+                    "(( STATUS IN ( 11, 12 ) AND duration BETWEEN {0} AND {1} ) OR (`status` IN ( 3, 4, 5, 6, 7, 9, 10 ) AND TIMESTAMPDIFF(SECOND,happen_time,{2}) BETWEEN {0} AND {1} ))",
                     faultDurationEnum.getStartValue(), faultDurationEnum.getEndValue(), date);
         }
 
@@ -3426,7 +3426,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
 
             // 时长计算，有值就是已提交
-            if (Objects.isNull(fault1.getDuration())) {
+            Long duration = fault1.getDuration();
+            if (Objects.isNull(duration)) {
                 //
                 Integer status = fault1.getStatus();
                 if (FaultStatusEnum.NEW_FAULT.getStatus().equals(status) || FaultStatusEnum.CANCEL.getStatus().equals(status) || FaultStatusEnum.APPROVAL_REJECT.getStatus().equals(status)) {
@@ -3434,6 +3435,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 } else {
                     fault1.setDuration(DateUtil.between(new Date(), fault1.getHappenTime(), DateUnit.MINUTE));
                 }
+            }else {
+                // 转为分钟
+                long minDuration = duration/60L;
+                fault1.setDuration(minDuration > 0 ? minDuration : 1L);
             }
             //
         });
