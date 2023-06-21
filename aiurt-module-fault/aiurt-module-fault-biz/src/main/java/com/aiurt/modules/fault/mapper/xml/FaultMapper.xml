@@ -285,4 +285,27 @@
     left join device d on d.`code` = fd.device_code
     where fd.fault_code = #{code}
     </select>
+
+    <select id="queryForSendMessage" resultType="com.aiurt.modules.fault.dto.FaultForSendMessageDTO">
+        SELECT
+            f.code,
+            f.status,
+            r.appoint_user_name,
+            r.recevice_time
+        FROM
+            fault f
+                LEFT JOIN fault_repair_record r ON r.fault_code = r.`code`
+        WHERE
+            r.del_flag = 0
+            AND r.recevice_time IS NOT NULL
+            <if test="code != null and code != ''">
+                AND f.code = #{code}
+            </if>
+            <if test="status != null">
+                AND f.status = #{status}
+            </if>
+            <if test="updateTime != null">
+                AND f.update_time = #{updateTime}
+            </if>
+    </select>
 </mapper>
