@@ -136,7 +136,7 @@ public interface IFaultService extends IService<Fault> {
      * @param fault
      * @return
      */
-    List<LoginUser> queryUser(Fault fault);
+    List<RecPersonDTO> queryUser(Fault fault);
 
     /**
      * 查询故障解决方案
