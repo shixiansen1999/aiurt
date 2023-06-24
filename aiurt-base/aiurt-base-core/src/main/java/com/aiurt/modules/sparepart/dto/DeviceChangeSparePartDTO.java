@@ -116,7 +116,7 @@ public class DeviceChangeSparePartDTO implements Serializable {
     private String intOrderId;
     /**借入的库存记录表ID*/
     @ApiModelProperty(value = "借入的库存记录表ID")
-    private String BorrowingInventoryOrderId;
+    private String borrowingInventoryOrderId;
     /**借出的库存记录表ID*/
     @ApiModelProperty(value = "借出的库存记录表ID")
     private String lendInventoryOrderId;

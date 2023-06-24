@@ -3,6 +3,7 @@ package com.aiurt.modules.position.service.impl;
 
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.position.entity.CsLine;
+import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.position.mapper.CsLineMapper;
 import com.aiurt.modules.position.service.ICsLineService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -50,7 +51,24 @@ public class CsLineServiceImpl extends ServiceImpl<CsLineMapper, CsLine> impleme
         }
         csLine.setUpdateTime(new Date());
         csLineMapper.insert(csLine);
-        return Result.OK(csLine);
+        CsStationPosition position = new CsStationPosition();
+        position.setId(csLine.getId());
+        position.setLevel(1);
+        position.setSort(csLine.getSort());
+        position.setPositionCode(csLine.getLineCode());
+        position.setPositionName(csLine.getLineName());
+        position.setLongitude(csLine.getLongitude());
+        position.setLatitude(csLine.getLatitude());
+        position.setPCode(null);
+        position.setPUrl(null);
+        position.setCodeCc(csLine.getLineCode());
+        position.setPositionType(csLine.getLineType());
+        position.setLength("");
+        position.setTitle(csLine.getLineName());
+        position.setValue(csLine.getLineCode());
+        position.setIsLeaf(false);
+        position.setFid("0");
+        return Result.OK(position);
     }
     /**
      * 修改
@@ -76,6 +94,23 @@ public class CsLineServiceImpl extends ServiceImpl<CsLineMapper, CsLine> impleme
         }
 
         csLineMapper.updateById(csLine);
-        return Result.OK(csLine);
+        CsStationPosition position = new CsStationPosition();
+        position.setId(csLine.getId());
+        position.setLevel(1);
+        position.setSort(csLine.getSort());
+        position.setPositionCode(csLine.getLineCode());
+        position.setPositionName(csLine.getLineName());
+        position.setLongitude(csLine.getLongitude());
+        position.setLatitude(csLine.getLatitude());
+        position.setPCode(null);
+        position.setPUrl(null);
+        position.setCodeCc(csLine.getLineCode());
+        position.setPositionType(csLine.getLineType());
+        position.setLength("");
+        position.setTitle(csLine.getLineName());
+        position.setValue(csLine.getLineCode());
+        position.setIsLeaf(false);
+        position.setFid("0");
+        return Result.OK(position);
     }
 }

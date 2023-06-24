@@ -26,4 +26,16 @@
             (#{item.id},#{item.repairTaskCode}, #{item.userId}, #{item.name})
         </foreach>
     </insert>
+
+    <select id="getInspectionNumber" resultType="org.jeecg.common.system.vo.PortraitTaskModel">
+        select rt.year,
+               count(rt.id) `number`
+        from repair_task_user rtu
+                 join repair_task rt on (rtu.repair_task_code = rt.code and rt.del_flag = 0)
+        where rtu.del_flag = 0
+          and rt.year between #{fiveYearsAgo} and #{thisYear}
+          and rt.status = #{completed}
+          and rtu.user_id = #{userId}
+        group by rt.year;
+    </select>
 </mapper>

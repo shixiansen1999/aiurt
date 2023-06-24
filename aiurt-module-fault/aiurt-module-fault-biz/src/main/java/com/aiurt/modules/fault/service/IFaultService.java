@@ -5,12 +5,14 @@ import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
+import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.system.vo.LoginUser;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -134,7 +136,7 @@ public interface IFaultService extends IService<Fault> {
      * @param fault
      * @return
      */
-    List<LoginUser> queryUser(Fault fault);
+    List<RecPersonDTO> queryUser(Fault fault);
 
     /**
      * 查询故障解决方案
@@ -174,4 +176,53 @@ public interface IFaultService extends IService<Fault> {
      * @param fault
      */
     void saveResult(Fault fault);
+
+    /**
+     * 分页查询
+     * @param fault
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    IPage<Fault> queryPageList(Fault fault, Integer pageNo, Integer pageSize, HttpServletRequest req);
+
+    /**
+     * 查询推荐人员列表
+     * @param faultCode
+     * @return
+     */
+    List<RecPersonListDTO> queryRecPersonList(String faultCode);
+
+    /**
+     * 根据编码判断故障单是否存在
+     *
+     * @param code 故障编码
+     * @return
+     */
+     Fault isExist(String code);
+
+    /**
+     * 备件自动回填
+     * @param oldSparePartCode
+     * @param faultCauseSolutionIdList
+     * @param deviceCode
+     * @return
+     */
+    List<SparePartReplaceDTO> querySparePartReplaceList(String[]  oldSparePartCode, String[] faultCauseSolutionIdList, String deviceCode);
+
+    /**
+     * 查询推荐人员
+     * @param faultCode
+     * @return
+     */
+    List<RecPersonDTO> queryRecommendationPerson(String faultCode);
+
+    /**
+     * 查询
+     * @param deviceCode
+     * @param faultCauseSolutionIdList
+     * @return
+     */
+    List<DeviceAssemblyDTO> queryDeviceAssemblyByDeviceCode(String deviceCode, String[] faultCauseSolutionIdList);
 }

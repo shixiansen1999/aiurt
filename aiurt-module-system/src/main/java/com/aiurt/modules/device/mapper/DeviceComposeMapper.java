@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.aiurt.modules.device.entity.DeviceCompose;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,5 +15,12 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public interface DeviceComposeMapper extends BaseMapper<DeviceCompose> {
+
+    /**
+     * 根据deviceTypeCode查询设备组成
+     * @param deviceTypeCode
+     * @return
+     */
+    List<DeviceCompose> queryByDeviceTypeCode(@Param("deviceTypeCode") String deviceTypeCode);
 
 }

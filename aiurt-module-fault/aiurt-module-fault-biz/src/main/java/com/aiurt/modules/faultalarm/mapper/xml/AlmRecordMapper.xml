@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.faultalarm.mapper.AlmRecordMapper">
+
+    <select id="querySqlServerOnAlm" resultType="com.aiurt.modules.faultalarm.entity.AlmRecord">
+        SELECT
+            CONCAT(EquipmentID,'_', Alm_Element,'_',AlmIndex) AS id,
+            CONCAT(EquipmentID,'_', Alm_Element) AS equipmentId,
+            MAX ( DateTime ) AS lastAlmTime,
+            MIN ( DateTime ) AS almTime,
+            LEVEL as level,
+            AlmText AS almText,
+            COUNT(*) AS almNum
+        FROM
+            OnAlm
+        where Level =1
+        GROUP BY
+            EquipmentID,
+            Alm_Element,
+            AlmIndex,
+            LEVEL,
+            AlmText
+        order by lastAlmTime desc,almTime desc
+    </select>
+    <select id="queryAlarmRecordPageList" resultType="com.aiurt.modules.faultalarm.dto.resp.AlmRecordRespDTO">
+        SELECT
+            oar.id,
+            oar.alm_time,
+            oar.state,
+            oar.`level`,
+            oar.alm_text,
+            oar.device_id,
+            oar.create_time,
+            oar.last_alm_time,
+            oar.alm_num,
+            d.`code` AS device_code,
+            d.station_code,
+            d.device_type_code,
+            d.major_code,
+            d.system_code AS sub_system_code,
+            d.line_code
+        FROM
+            on_alm_record oar
+        LEFT JOIN device d ON d.id = oar.device_id
+        <where>
+            <if test="condition.subSystemCode!=null and condition.subSystemCode!=''">
+                d.system_code = #{condition.subSystemCode}
+            </if>
+            <if test="condition.stationCode !=null and condition.stationCode!=''">
+                and d.station_code = #{condition.stationCode}
+            </if>
+        </where>
+        GROUP BY
+            oar.id
+        Order BY oar.last_alm_time desc,oar.alm_time desc,d.code desc
+    </select>
+    <select id="queryAlarmRecordHistoryPageList"
+            resultType="com.aiurt.modules.faultalarm.dto.resp.AlmRecordRespDTO">
+        SELECT
+        oar.id,
+        oar.alm_time,
+        oar.state,
+        oar.`level`,
+        oar.alm_text,
+        oar.device_id,
+        oar.last_alm_time,
+        oar.alm_num,
+        oar.deal_user_id,
+        oar.create_time,
+        CONCAT(IFNULL(cancel_reason,''), ' ', IFNULL(deal_remark,'')) AS deal_remark,
+        oar.deal_date_time,
+        oar.fault_code,
+        d.`code` AS device_code,
+        d.station_code,
+        d.device_type_code,
+        d.major_code,
+        d.system_code AS sub_system_code
+        FROM
+        on_alm_record_history oar
+        LEFT JOIN device d ON d.id = oar.device_id
+        <where>
+            <if test="condition.subSystemCode!=null and condition.subSystemCode!=''">
+                d.system_code = #{condition.subSystemCode}
+            </if>
+            <if test="condition.stationCode !=null and condition.stationCode!=''">
+                and d.station_code = #{condition.stationCode}
+            </if>
+            <if test="condition.state !=null">
+                and oar.state = #{condition.state}
+            </if>
+            <if test="condition.startAlmTime !=null and condition.endAlmTime!=null">
+                and DATE(oar.alm_time) BETWEEN #{condition.startAlmTime} AND #{condition.endAlmTime}
+            </if>
+        </where>
+        GROUP BY
+        oar.id
+        Order BY oar.last_alm_time desc,oar.alm_time desc,d.code desc
+    </select>
+</mapper>

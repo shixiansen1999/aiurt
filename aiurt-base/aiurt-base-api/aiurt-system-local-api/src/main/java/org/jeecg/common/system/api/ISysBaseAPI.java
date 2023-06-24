@@ -695,13 +695,19 @@ public interface ISysBaseAPI extends CommonAPI {
     Map<String, String> getLineNameByCode(List<String> lineCodes);
 
     /**
-     * 根据站点编号获取线路名称,站点编号:站点名称
+     * 根据站点编号获取站点名称,站点编号:站点名称
      *
      * @param stationCodes
      * @return
      */
     Map<String, String> getStationNameByCode(List<String> stationCodes);
-
+    /**
+     * 根据站点编号获取线路站点名称,站点编号:线路名称/站点名称
+     *
+     * @param stationCodes
+     * @return
+     */
+    Map<String, String> getFullNameByStationCode(List<String> stationCodes);
 
     /**
      * 根据用户名或者用户账号查询用户信息
@@ -1105,6 +1111,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getMaterialNameByCode(String materialCode);
+    /**
+     * 根据多个物资编号获取物资名称,编号：名称
+     * @param materialCodes
+     * @return
+     */
+    Map<String, String> getMaterialNameByCode(List<String> materialCodes);
 
     /**
      * 获取所有节假日
@@ -1228,5 +1240,13 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getLineNameByCode(String code);
+
+    /**
+     * 根据组件部位编码获取名称
+     *
+     * @param materialCodes
+     * @return
+     */
+    Map<String, String> getDeviceComposeNameByCode(List<String> materialCodes);
 }
 

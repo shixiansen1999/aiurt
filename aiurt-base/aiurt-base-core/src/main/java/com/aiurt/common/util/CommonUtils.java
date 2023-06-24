@@ -1,5 +1,6 @@
 package com.aiurt.common.util;
 
+import cn.hutool.core.date.DateUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.DataBaseConstant;
 import com.aiurt.common.constant.SymbolConstant;
@@ -25,6 +26,7 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -341,5 +343,59 @@ public class CommonUtils {
         }
         log.info("-----Common getBaseUrl----- : " + baseDomainPath);
         return baseDomainPath;
+    }
+    /**
+     * 雷达图分数转化计算
+     *
+     * @param currentValue 当前值
+     * @param maxValue     最大值
+     * @param minValue     最小值
+     * @param flag         是否为解决效率标识
+     * @return
+     */
+    public static double calculateScore(double currentValue, double maxValue, double minValue, boolean flag) {
+        // 最高分为
+        final int topScore = 100;
+        final int lowestScore = 60;
+
+        if (maxValue == minValue) {
+            if (0 != currentValue && currentValue == maxValue) {
+                return topScore;
+            } else {
+                return lowestScore;
+            }
+        }
+        // 计算当前值相对于最小值和最大值的百分比
+        double percentage = 1.0 * (currentValue - minValue) / (maxValue - minValue);
+        // 解决效率标志
+        if (flag) {
+            final double one = 1.0;
+            final double zero = 0.0;
+            if (one == percentage) {
+                percentage = zero;
+            } else if (zero == percentage) {
+                percentage = one;
+            } else {
+                percentage = 1.0 - percentage;
+            }
+        }
+        // 将百分比映射到分数范围
+        double score = percentage * (topScore - lowestScore) + lowestScore;
+        // 如果小数较多则保留2位小数
+        score = Double.parseDouble(String.format("%.2f", score));
+        return score;
+    }
+
+    /**
+     * 日期拼接
+     *
+     * @param yearDate 保留yearDate的年月日
+     * @param timeDate 保留timeDate的时分秒
+     * @return 保留的年月日时分秒拼接后的日期
+     */
+    public static Date dateConcatenation(Date yearDate, Date timeDate) {
+        String yms = DateUtil.format(yearDate, "yyyy-MM-dd");
+        String hms = DateUtil.format(timeDate, "HH:mm:ss");
+        return DateUtil.parse(yms + " " + hms, "yyyy-MM-dd HH:mm:ss");
     }
 }

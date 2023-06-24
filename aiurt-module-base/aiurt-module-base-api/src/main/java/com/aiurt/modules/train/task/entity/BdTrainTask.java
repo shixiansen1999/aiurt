@@ -2,7 +2,6 @@ package com.aiurt.modules.train.task.entity;
 
 import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -27,7 +26,7 @@ import java.util.List;
 @ApiModel(value="bd_train_task对象", description="培训任务")
 @Data
 @TableName("bd_train_task")
-public class BdTrainTask extends DictEntity implements Serializable ,Cloneable{
+public class BdTrainTask implements Serializable ,Cloneable{
     private static final long serialVersionUID = 1L;
 
 	/**主键*/

@@ -39,4 +39,12 @@ public interface CsStationPositionMapper extends BaseMapper<CsStationPosition> {
      * @return
      */
     String getFullNameByPositionCode(String positionCode);
+
+    /**
+     * 根据组织机构查询工区位置信息
+     *
+     * @param orgCode
+     * @return
+     */
+    List<String> selectPosition(@Param("orgCode") String orgCode);
 }

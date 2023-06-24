@@ -29,9 +29,11 @@ import com.aiurt.modules.common.entity.SelectDeviceType;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
+import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceAssemblyMapper;
 import com.aiurt.modules.device.mapper.DeviceMapper;
+import com.aiurt.modules.device.service.IDeviceComposeService;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
@@ -286,6 +288,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private CsPositionWifiMapper csPositionWifiMapper;
     @Autowired
     private ISysParamAPI sysParamApi;
+
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
     public LoginUser getUserByName(String username) {
@@ -982,6 +985,18 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         MaterialBase one = materialBaseMapper.selectOne(wrapper);
         return one.getName();
     }
+
+    @Override
+    public Map<String, String> getMaterialNameByCode(List<String> materialCodes) {
+        LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(MaterialBase::getCode, materialCodes);
+        wrapper.eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0);
+        wrapper.select(MaterialBase::getCode, MaterialBase::getName);
+        List<MaterialBase> materialBases = materialBaseMapper.selectList(wrapper);
+        Map<String, String> map = materialBases.stream().collect(Collectors.toMap(k -> k.getCode(), v -> v.getName()));
+        return map;
+    }
+
     @Override
     public String getMaterialNameByCodes(String materialCodes) {
         if(ObjectUtil.isNotEmpty(materialCodes)){
@@ -2187,6 +2202,31 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return stationMap;
     }
 
+    @Override
+    public Map<String, String> getFullNameByStationCode(List<String> stationCodes) {
+        if (CollUtil.isEmpty(stationCodes)) {
+            return Collections.emptyMap();
+        }
+        QueryWrapper<CsStation> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .in(CsStation::getStationCode, stationCodes);
+        List<CsStation> stations = csStationMapper.selectList(wrapper);
+        if (CollUtil.isEmpty(stations)) {
+            return Collections.emptyMap();
+        }
+        Map<String, String> stationMap = stations.stream()
+                .collect(Collectors.toMap(CsStation::getStationCode, v -> {
+                    if (StrUtil.isEmpty(v.getStationName())) {
+                        return v.getLineName();
+                    }
+                    if (StrUtil.isEmpty(v.getStationName())) {
+                        return v.getStationName();
+                    }
+                    return StrUtil.join("/", v.getLineName(), v.getStationName());
+                }));
+        return stationMap;
+    }
+
     /**
      * 根据用户名或者用户账号查询用户信息
      *
@@ -3206,6 +3246,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             sendMessage(messageDTO);
         }
     }
+
     /**
      * 发送消息
      * @param messageDTO
@@ -3493,5 +3534,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             loginUsers.add(loginUser);
         }
         return loginUsers;
+    }
+
+    @Autowired
+    private IDeviceComposeService deviceComposeService;
+
+    @Override
+    public Map<String, String> getDeviceComposeNameByCode(List<String> materialCodes) {
+        List<DeviceCompose> deviceComposes = deviceComposeService.lambdaQuery()
+                .eq(DeviceCompose::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .in(DeviceCompose::getMaterialCode, materialCodes)
+                .list();
+        Map<String, String> map = deviceComposes.stream()
+                .collect(Collectors.toMap(k -> k.getMaterialCode(), v -> v.getMaterialName()));
+        return map;
     }
 }

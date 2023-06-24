@@ -99,6 +99,14 @@ public class LoginController {
 	@Autowired
 	ThirdAppConfig thirdAppConfig;
 
+	@Autowired
+	private ISysThirdAccountService sysThirdAccountService;
+
+	/**
+	 * 第三方APP类型，当前固定为 wechat_enterprise
+	 */
+	public final String THIRD_TYPE = ThirdAppConfig.WECHAT_ENTERPRISE.toLowerCase();
+
 	@ApiOperation("登录接口")
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public Result<JSONObject> login(@RequestBody SysLoginModel sysLoginModel){
@@ -758,6 +766,22 @@ public class LoginController {
 		SysUser sysUser = bean.getUserByPhone(phone);
 		if (ObjectUtil.isEmpty(sysUser)){
 			return result.error500("该用户手机号:"+phone+"没注册, 请联系管理员添加账号！");
+		}
+		//第一次登录生成第三方登录信息数据
+		/*
+		 * 判断是否同步过的逻辑：
+		 * 1. 查询 sys_third_account（第三方账号表）是否有数据，如果有代表已同步
+		 */
+		SysThirdAccount sysThirdAccount = sysThirdAccountService.getOneByThirdUserId(sysUser.getUsername(), THIRD_TYPE);
+
+		if (sysThirdAccount == null) {
+			sysThirdAccount = new SysThirdAccount();
+			sysThirdAccount.setSysUserId(sysUser.getId());
+			sysThirdAccount.setStatus(1);
+			sysThirdAccount.setDelFlag(0);
+			sysThirdAccount.setThirdType(THIRD_TYPE);
+			sysThirdAccount.setThirdUserId(userId);
+			sysThirdAccountService.saveOrUpdate(sysThirdAccount);
 		}
 		String username = sysUser.getUsername();
 		String password = sysUser.getPassword();
