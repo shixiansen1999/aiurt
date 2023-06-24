@@ -1,12 +1,10 @@
 package com.aiurt.modules.faultknowledgebase.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
-import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
-import com.google.common.collect.Maps;
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.Snowflake;
@@ -45,6 +43,7 @@ import com.aiurt.modules.faultlevel.service.IFaultLevelService;
 import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.aiurt.modules.faultsparepart.service.IFaultSparePartService;
 import com.aiurt.modules.flow.api.FlowBaseApi;
+import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
 import com.aiurt.modules.flow.dto.StartBpmnDTO;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseMatchDTO;
@@ -54,6 +53,7 @@ import com.aiurt.modules.knowledge.entity.CauseSolution;
 import com.aiurt.modules.knowledge.entity.KnowledgeBase;
 import com.aiurt.modules.knowledge.entity.SparePart;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
+import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.search.service.ISearchRecordsService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -76,9 +76,7 @@ import org.apache.shiro.SecurityUtils;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserMajorModel;
-import org.jeecg.common.system.vo.DictModel;
-import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.*;
 import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -140,7 +138,6 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     @Autowired
     private ElasticAPI elasticApi;
-
 
 
     @Override
@@ -362,11 +359,11 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             List<FaultKnowledgeBase> newFaultKnowledgeBases = this.setFaultCauseSolution(faultKnowledgeBases);
             page.setRecords(faultKnowledgeBases);
         }
-        List<FaultKnowledgeBase> collect=new ArrayList<>();
+        List<FaultKnowledgeBase> collect = new ArrayList<>();
         collect.addAll(faultKnowledgeBases);
         //            筛选站点（暂时）
         String faultLineCode = faultKnowledgeBase.getLineCode();
-        if(faultKnowledgeBase.getLineCode()!=null){
+        if (faultKnowledgeBase.getLineCode() != null) {
             collect = faultKnowledgeBases.stream()
                     .filter(l -> {
                         String lineCode = l.getLineCode();
@@ -734,6 +731,149 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<?> importExcelData(HttpServletRequest request, HttpServletResponse response) {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+            for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+                // 获取上传文件对象
+                MultipartFile file = entity.getValue();
+                ImportParams params = new ImportParams();
+                params.setTitleRows(0);
+                params.setHeadRows(2);
+                List<FaultKnowledgeBaseImportModel> list = null;
+                try {
+                    list = ExcelImportUtil.importExcel(file.getInputStream(), FaultKnowledgeBaseImportModel.class, params);
+                } catch (Exception e) {
+                    throw new AiurtBootException("解析Excel数据失败！");
+                }
+                // 校验数据
+                this.parityData(list);
+                // 保存数据
+                List<FaultKnowledgeBase> bases = new ArrayList<>();
+                FaultKnowledgeBase faultKnowledgeBase = null;
+                for (FaultKnowledgeBaseImportModel importModel : list) {
+                    faultKnowledgeBase = new FaultKnowledgeBase();
+                    faultKnowledgeBase.setFaultPhenomenonCode(this.getFaultPhenomenonCode("GZXX"));
+                    faultKnowledgeBase.setKnowledgeBaseTypeCode(importModel.getKnowledgeBaseTypeCode());
+                    faultKnowledgeBase.setFaultPhenomenon(importModel.getFaultPhenomenon());
+                    faultKnowledgeBase.setMaterialCode(null);
+                    faultKnowledgeBase.setMethod(importModel.getMethod());
+                    faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
+                    faultKnowledgeBase.setLineCode(importModel.getLineCode());
+                    faultKnowledgeBase.setMajorCode(importModel.getMajorCode());
+                    faultKnowledgeBase.setSystemCode(importModel.getSystemCode());
+                    faultKnowledgeBase.setFaultLevelCode(null);
+                    faultKnowledgeBase.setDelFlag(0);
+                    List<FaultReasonSolutionImportModel> causeSolutions = importModel.getCauseSolutions();
+                    if(CollUtil.isNotEmpty(causeSolutions)){
+                        List<FaultCauseSolutionDTO> solutions = new ArrayList<>();
+                        FaultCauseSolutionDTO faultCauseSolution = null;
+                        for (FaultReasonSolutionImportModel causeSolution : causeSolutions) {
+                            faultCauseSolution = new FaultCauseSolutionDTO();
+                            faultCauseSolution.setFaultCause(causeSolution.getFaultCause());
+                            faultCauseSolution.setSolution(causeSolution.getSolution());
+                            solutions.add(faultCauseSolution);
+                        }
+                        faultKnowledgeBase.setFaultCauseSolutions(solutions);
+                    }
+                    bases.add(faultKnowledgeBase);
+                }
+                // 批量保存故障知识库数据
+                this.saveBatch(bases);
+                // 保存故障原因及解决方案
+                List<FaultCauseSolution> causeSolutions = new ArrayList<>();
+                FaultCauseSolution causeSolution = null;
+                for (FaultKnowledgeBase knowledgeBase : bases) {
+                    List<FaultCauseSolutionDTO> faultCauseSolutions = knowledgeBase.getFaultCauseSolutions();
+                    if (CollUtil.isNotEmpty(faultCauseSolutions)) {
+                        for (FaultCauseSolutionDTO faultCauseSolution : faultCauseSolutions) {
+                            causeSolution = new FaultCauseSolution();
+                            causeSolution.setKnowledgeBaseId(knowledgeBase.getId());
+                            causeSolution.setFaultCause(faultCauseSolution.getFaultCause());
+                            causeSolution.setSolution(faultCauseSolution.getSolution());
+                            causeSolutions.add(causeSolution);
+                        }
+                    }
+                }
+                if(CollUtil.isNotEmpty(causeSolutions)){
+                    faultCauseSolutionService.saveBatch(causeSolutions);
+                }
+            }
+        return Result.OK("导入成功！");
+    }
+
+    /**
+     * 校验导入的数据
+     *
+     * @param list
+     */
+    private void parityData(List<FaultKnowledgeBaseImportModel> list) {
+        if (CollUtil.isEmpty(list)) {
+            return;
+        }
+        // 校验线路、专业、子系统、故障现象分类、故障部位
+        // todo 待优化，针对通信赶进度设计出来的
+        List<CsLine> lines = sysBaseApi.getAllLine();
+        List<CsMajorModel> majors = sysBaseApi.getAllMajor();
+        List<CsSubsystemModel> systems = sysBaseApi.getAllSubsystem();
+        List<String> baseTypes = list.stream()
+                .map(FaultKnowledgeBaseImportModel::getKnowledgeBaseTypeName)
+                .collect(Collectors.toList());
+        QueryWrapper<FaultKnowledgeBaseType> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .eq(FaultKnowledgeBaseType::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .in(FaultKnowledgeBaseType::getName, baseTypes);
+        List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(wrapper);
+        for (FaultKnowledgeBaseImportModel importModel : list) {
+            String lineName = importModel.getLineName();
+            String majorName = importModel.getMajorName();
+            String systemName = importModel.getSystemName();
+            String knowledgeBaseTypeName = importModel.getKnowledgeBaseTypeName();
+            String materialName = importModel.getMaterialName();
+            // 线路
+            CsLine line = lines.stream().filter(ObjectUtil::isNotEmpty)
+                    .filter(l -> ObjectUtil.isNotEmpty(l.getLineName()) && l.getLineName().equals(lineName))
+                    .findFirst()
+                    .orElseGet(CsLine::new);
+            // 专业
+            CsMajorModel major = majors.stream().filter(ObjectUtil::isNotEmpty)
+                    .filter(l -> ObjectUtil.isNotEmpty(l.getMajorName()) && l.getMajorName().equals(majorName))
+                    .findFirst()
+                    .orElseGet(CsMajorModel::new);
+            // 根据专业过滤子系统
+            CsSubsystemModel system = systems.stream().filter(ObjectUtil::isNotEmpty)
+                    .filter(l -> {
+                        if (ObjectUtil.isEmpty(major.getMajorCode())
+                                || ObjectUtil.isEmpty(l.getSystemName())
+                                || !major.getMajorCode().equals(l.getMajorCode())
+                                || !l.getSystemName().equals(systemName)) {
+                            return false;
+                        }
+                        return true;
+                    })
+                    .findFirst().orElseGet(CsSubsystemModel::new);
+            // 根据子系统过滤现象分类
+            FaultKnowledgeBaseType faultKnowledgeBaseType = faultKnowledgeBaseTypes.stream().filter(ObjectUtil::isNotEmpty)
+                    .filter(l -> {
+                        if (ObjectUtil.isEmpty(system.getSystemCode())
+                                || ObjectUtil.isEmpty(l.getName())
+                                || !system.getSystemCode().equals(l.getSystemCode())
+                                || !l.getName().equals(knowledgeBaseTypeName)) {
+                            return false;
+                        }
+                        return true;
+                    })
+                    .findFirst().orElseGet(FaultKnowledgeBaseType::new);
+
+            importModel.setLineCode(line.getLineCode());
+            importModel.setMajorCode(major.getMajorCode());
+            importModel.setSystemCode(system.getSystemCode());
+            importModel.setKnowledgeBaseTypeCode(faultKnowledgeBaseType.getCode());
+        }
+    }
+
+    @Override
     public FaultKnowledgeBase readOne(String id) {
         FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseMapper.readOne(id);
         if (faultKnowledgeBase == null) {
@@ -985,18 +1125,18 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         String majorCode = null;
         String systemCode = null;
         String lineCode = null;
-        if(StrUtil.isBlank(faultKnowledgeBaseModel.getLineName())){
+        if (StrUtil.isBlank(faultKnowledgeBaseModel.getLineName())) {
             stringBuilder.append("线路必填，");
-        }else {
+        } else {
             JSONObject line = sysBaseApi.getLineByName(faultKnowledgeBaseModel.getLineName());
-            if (ObjectUtil.isNotNull(line)){
+            if (ObjectUtil.isNotNull(line)) {
                 lineCode = line.getString("lineCode");
                 faultKnowledgeBase.setLineCode(lineCode);
-            }else {
+            } else {
                 stringBuilder.append("系统中不存在该线路，");
             }
         }
-        if(StrUtil.isBlank(faultKnowledgeBaseModel.getMajorName())){
+        if (StrUtil.isBlank(faultKnowledgeBaseModel.getMajorName())) {
             stringBuilder.append("专业必填，");
         } else {
             JSONObject csMajorByName = sysBaseApi.getCsMajorByName(faultKnowledgeBaseModel.getMajorName());

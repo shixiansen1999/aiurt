@@ -1248,5 +1248,17 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     Map<String, String> getDeviceComposeNameByCode(List<String> materialCodes);
+
+    /**
+     * 获取所有专业信息
+     */
+    List<CsMajorModel> getAllMajor();
+
+    /**
+     * 获取所有子系统信息
+     *
+     * @return
+     */
+    List<CsSubsystemModel> getAllSubsystem();
 }
 
