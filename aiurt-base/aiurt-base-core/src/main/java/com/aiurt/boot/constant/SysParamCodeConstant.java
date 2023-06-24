@@ -355,4 +355,25 @@ public interface SysParamCodeConstant {
      * 故障未领取时要给予当班人员提示音（每两分钟提醒20秒）
      */
     String NO_RECEIVE_FAULT_RING_DURATION = "no_receive_fault_ring_duration";
+    /**
+     * 根据配置，获取施工计划导入列表
+     */
+    String CONSTRUCTION_WEEK_PLAN_COMMAND = "construction_week_plan_command";
+
+    /**
+     * 根据配置，获取施工计划导入列表
+     */
+    String DEPARTMENT_NAME = "通号中心";
+
+    /**
+     * app端检修工单填写同行人是否可选全部班组
+     */
+    String INSPECTION_PEER_ALL_USER = "inspection_peer_all_user";
+
+    String INSPECTION_SIGN_MULTI = "inspection_sign_multi";
+    String APP_PATROL_TASK_POOL_SORT = "app_patrol_task_pool_sort";
+    /**
+     * 	工作内容是否需要查出所有未完成故障
+     */
+    String 	WORKLOG_UNFINISH_FAULT = "worklog_unfinish_fault";
 }
