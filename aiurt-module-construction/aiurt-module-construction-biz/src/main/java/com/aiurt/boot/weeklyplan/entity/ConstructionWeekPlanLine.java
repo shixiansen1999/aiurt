@@ -23,11 +23,11 @@ public class ConstructionWeekPlanLine extends DictEntity implements Serializable
     /**站点编号*/
     @Excel(name = "线路编号", width = 15)
     @ApiModelProperty(value = "线路编号")
-    @TableField(value = "`code`")
-    private String code;
+    @TableField(value = "`line_code`")
+    private String lineCode;
     /**站点编号*/
     @Excel(name = "线路名称", width = 15)
     @ApiModelProperty(value = "线路名称")
-    @TableField(value = "`name`")
-    private String name;
+    @TableField(value = "`line_name`")
+    private String lineName;
 }
