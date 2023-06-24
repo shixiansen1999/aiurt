@@ -250,7 +250,7 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
                  //String url = "http://123.57.62.172:30235/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
                  //String url = "http://mtrain-cc.lucksoft.com.cn/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
                  //String url = "http://10.3.2.2:30300/tpsms/center/std/stdMalfunctionCenter/noGetwayMalfunctionData";
-                SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_EXTERNAL_URL);
+                SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.CONSTRUCTION_WEEK_PLAN_COMMAND);
                 String url = sysParamModel.getValue();
                restTemplate.postForObject(url, json, JSONObject.class);
                 log.info("故障推送,请求结果",url);

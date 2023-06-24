@@ -1,5 +1,6 @@
 package com.aiurt.boot.weeklyplan.controller;
 
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanCommandDTO;
 import com.aiurt.boot.weeklyplan.entity.ConstructionWeekPlanCommand;
 import com.aiurt.boot.weeklyplan.mapper.ConstructionWeekPlanCommandMapper;
@@ -18,7 +19,9 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -56,6 +59,8 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
     private RestTemplate restTemplate;
     @Autowired
     private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private ISysParamAPI sysParamApi;
 
     /**
      * 施工周计划列表查询
@@ -89,10 +94,12 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
 
         commandMapper.delete(null);
         // 定义请求URL和请求参数
-        String url = "http://10.100.100.11:30300/cims/pool/pool/noGetwayGetPlan";
+        // 定义请求URL和请求参数
+        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.CONSTRUCTION_WEEK_PLAN_COMMAND);
+        String url = sysParamModel.getValue();
+//        String url = "http://10.100.100.11:30300/cims/pool/pool/noGetwayGetPlan";
 //        JSONObject params = new JSONObject();
         Map params = new HashMap<String, Object>();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         int year = calendar.get(Calendar.YEAR);
@@ -105,7 +112,7 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
         params.put("taskDateStart", startDate);
         params.put("taskDateEnd", endDate);
         params.put("planIstate", 2);
-        params.put("departmentName", "通号中心");
+        params.put("departmentName", SysParamCodeConstant.DEPARTMENT_NAME);
         JSONObject json = (JSONObject) JSONObject.toJSON(params);
         JSONObject resultList = restTemplate.postForObject(url, json, JSONObject.class);
         JSONArray result = resultList.getJSONArray("data");
@@ -144,9 +151,9 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
             String plantype = plan.getString("plantype");
             String planno = plan.getString("planno");
 
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             ConstructionWeekPlanCommand command = new ConstructionWeekPlanCommand();
             command.setWeekday(Integer.parseInt(weekday));
-//            SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd");
             command.setTaskDate(sdf.parse(taskDate));
             command.setTaskStaffNum(Integer.parseInt(taskStaffNum));
             String[] split = taskTime.split(",");
@@ -161,9 +168,15 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
                     command.setType(Integer.valueOf(model.getText()));
                 }
             }
-            //            departmentName
             if (departmentName!=null){
-                String orgCode = commandMapper.selectOrgName(departmentName);
+                String[] split1 = departmentName.split("-");
+                String orgName=null;
+                if (split1.length >= 2 && split1[1]!=null){
+                    orgName=split1[1];
+                }else {
+                    orgName=split1[0];
+                }
+                String orgCode = commandMapper.selectOrgName(orgName);
                 command.setOrgCode(orgCode);
             }
             command.setTaskRange(taskRange);
@@ -173,7 +186,6 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
 //            lineStaffName
 //            dispatchStaffName
             command.setRemark(remark);
-//            assistStationName
             if (assistStationName!=null){
                 String assistStationCode = commandMapper.selectStationName(assistStationName);
                 command.setAssistStationCode(assistStationCode);
@@ -188,24 +200,20 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
                 }
             }
             command.setPowerSupplyRequirementContent(powerSupplyRequirement);
-//            firstStationName
             if (firstStationName!=null){
                 String stationCode = commandMapper.selectStationName(firstStationName);
                 command.setFirstStationCode(stationCode);
             }
-//            secondStationName
             if (secondStationName!=null){
                 String stationCode = commandMapper.selectStationName(secondStationName);
                 command.setSecondStationCode(stationCode);
             }
-//            substationName
             if (substationName!=null){
                 String stationCode = commandMapper.selectStationName(substationName);
                 command.setSubstationCode(stationCode);
             }
 //            applyStaffName
             command.setFormStatus(Integer.parseInt(formStatus));
-//            applyFormStatus
             command.setApplyFormStatus(Integer.parseInt(applyFormStatus));
             command.setLineStatus(Integer.parseInt(lineFormStatus));
             command.setDispatchStatus(Integer.parseInt(dispatchFormStatus));
@@ -221,7 +229,6 @@ public class ConstructionWeekPlanCommandController extends BaseController<Constr
             list.add(command);
         }
         constructionWeekPlanCommandService.saveBatch(list);
-//        commandMapper.batchInsert(list);
 
     }
 
