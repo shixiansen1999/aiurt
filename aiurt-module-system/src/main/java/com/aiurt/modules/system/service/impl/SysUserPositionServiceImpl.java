@@ -58,7 +58,7 @@ public class SysUserPositionServiceImpl extends ServiceImpl<SysUserPositionMappe
                 }
             }
             log.info("转换前的参数：{}", JSON.toJSONString(sysUserPosition));
-            // 通过mac地址获取stationCode
+            // 通过mac地址获取stationCode，如果该站点是换乘车站，那保存的就是换乘编码
             sysUserPosition.setStationCode(sysBaseApi.getStationCodeByMac(sysUserPosition.getBssid()));
             if (StrUtil.isNotBlank(sysUserPosition.getClientMac())) {
                 sysUserPosition.setClientMac(sysUserPosition.getClientMac().toLowerCase());
