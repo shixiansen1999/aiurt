@@ -69,7 +69,7 @@ public class constructionWeekPlanJob implements Job {
         String endDate = year + "-" + month + "-" + day;
         params.put("taskDateStart", startDate);
         params.put("taskDateEnd", endDate);
-        params.put("planIstate", 2);
+        params.put("planIstate", SysParamCodeConstant.PLAN_ISTATE);
         params.put("departmentName", SysParamCodeConstant.DEPARTMENT_NAME);
         JSONObject json = (JSONObject) JSONObject.toJSON(params);
         JSONObject resultList = restTemplate.postForObject(url, json, JSONObject.class);
