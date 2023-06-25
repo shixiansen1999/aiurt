@@ -35,7 +35,8 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
-	@TableId(type = IdType.ASSIGN_ID)
+//	@TableId(type = IdType.ASSIGN_ID)
+    @TableId(type = IdType.NONE)
     @ApiModelProperty(value = "主键")
     private String id;
 	/**计划令编号*/
