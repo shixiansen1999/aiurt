@@ -4,12 +4,15 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.util.JwtUtil;
 import com.aiurt.common.util.PasswordUtil;
+import com.aiurt.common.util.RestUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.config.thirdapp.ThirdAppConfig;
+import com.aiurt.config.thirdapp.ThirdAppTypeItemVo;
 import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.mapper.SysAnnouncementSendMapper;
 import com.aiurt.modules.system.mapper.SysUserMapper;
@@ -35,6 +38,8 @@ import com.jeecg.qywx.api.user.JwUserAPI;
 import com.jeecg.qywx.api.user.vo.User;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +47,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -69,8 +77,8 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
     private ISysPositionService sysPositionService;
     @Autowired
     private SysAnnouncementSendMapper sysAnnouncementSendMapper;
-    @Value("${support.messageUrl}")
-    private String messageUrl ;
+    @Resource
+    private ISysParamAPI sysParamAPI;
     /**
      * 第三方APP类型，当前固定为 wechat_enterprise
      */
@@ -812,7 +820,7 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
      * @param verifyConfig 是否验证配置（未启用的APP会拒绝发送）
      * @return
      */
-    public JSONObject sendTextCardMessage(SysAnnouncement announcement, boolean verifyConfig) {
+    public JSONObject sendTextCardMessage(SysAnnouncement announcement, boolean verifyConfig) throws Exception {
         if (verifyConfig && !thirdAppConfig.isWechatEnterpriseEnabled()) {
             return null;
         }
@@ -849,20 +857,31 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
         entity.setTitle(announcement.getTitile());
         entity.setDescription(oConvertUtils.getString(announcement.getMsgAbstract(),""));
 
+        ThirdAppTypeItemVo config = thirdAppConfig.getWechatEnterprise();
+        StringBuilder builder = new StringBuilder();
+        // 构造企业微信OAuth2登录授权地址
+        builder.append("https://open.weixin.qq.com/connect/oauth2/authorize");
+        // 企业的CorpID
+        builder.append("?appid=").append(config.getClientId());
+        SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.WECHAT_MESSAGE_URL);
+        builder.append("&redirect_uri=").append(sysParamModel.getValue());
         String busType = announcement.getBusType();
         if (StrUtil.isNotEmpty(busType)) {
             if (busType.contains("fault")) {
-                entity.setUrl(messageUrl+"/Breakdown/BreakdownDetail/"+announcement.getBusId());
+                builder.append("/#/Breakdown/BreakdownDetail/").append(announcement.getBusId());
             } else if (busType.contains("patrol")||busType.contains("patrol_assign")) {
-                entity.setUrl(messageUrl+"/Inspection/detail?id="+announcement.getBusId());
+                builder.append("/#/Inspection/detail?id=").append(announcement.getBusId());
             } else if (busType.contains("inspection")||busType.contains("inspection_assign")) {
-                entity.setUrl(messageUrl+"/Task/list/detail/"+announcement.getBusId());
+                builder.append("/#/Task/list/detail/").append(announcement.getBusId());
             } else if (busType.contains("worklog")) {
-                entity.setUrl(messageUrl + "/WorkLog/detail/" + announcement.getBusId());
+                builder.append("/#/WorkLog/detail/").append(announcement.getBusId());
             } else {
-                entity.setUrl(messageUrl + "/news/GoMobile");
+                builder.append("/#/news/GoMobile").append(announcement.getBusId());
             }
         }
+
+        String url = builder.toString();
+        entity.setUrl(url);
         textCard.setTextcard(entity);
         return JwMessageAPI.sendTextCardMessage(textCard, accessToken);
     }
