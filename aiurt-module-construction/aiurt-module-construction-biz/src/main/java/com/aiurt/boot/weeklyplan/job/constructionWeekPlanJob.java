@@ -51,7 +51,6 @@ public class constructionWeekPlanJob implements Job {
 
     void generateWeekPlan() throws ParseException {
 
-        commandMapper.delete(null);
         // 定义请求URL和请求参数
         // 定义请求URL和请求参数
         SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.CONSTRUCTION_WEEK_PLAN_COMMAND);
@@ -98,6 +97,7 @@ public class constructionWeekPlanJob implements Job {
             String assistStationName = plan.getString("assistStationName");
             String planChange = plan.getString("planChange");
             String nature = plan.getString("nature");
+            String ipowerRequirement = plan.getString("ipowerRequirement");
             String powerSupplyRequirement = plan.getString("powerSupplyRequirement");
             String firstStationName = plan.getString("firstStationName");
             String secondStationName = plan.getString("secondStationName");
@@ -121,10 +121,10 @@ public class constructionWeekPlanJob implements Job {
             command.setProtectiveMeasure(protectiveMeasure);
             if (type!=null){
                 DictModel model = sysBaseApi.queryEnableDictItemsByCode("construction_category")
-                        .stream().filter(l -> l.getValue().equals(type))
+                        .stream().filter(l -> l.getText().equals(type))
                         .findFirst().orElse(null);
                 if (model !=null){
-                    command.setType(Integer.valueOf(model.getText()));
+                    command.setType(Integer.valueOf(model.getValue()));
                 }
             }
             if (departmentName!=null){
@@ -147,17 +147,19 @@ public class constructionWeekPlanJob implements Job {
             command.setRemark(remark);
             if (assistStationName!=null){
                 String assistStationCode = commandMapper.selectStationName(assistStationName);
-                command.setAssistStationCode(assistStationCode);
+//                command.setAssistStationCode(assistStationCode);
+                command.setCoordinationDepartmentCode(assistStationCode);
             }
             command.setPlanChange(Integer.parseInt(planChange));
             if (nature!=null){
                 DictModel model = sysBaseApi.queryEnableDictItemsByCode("construction_nature")
-                        .stream().filter(l -> l.getValue().equals(nature))
+                        .stream().filter(l -> l.getText().equals(nature))
                         .findFirst().orElse(null);
                 if (model !=null){
-                    command.setNature(Integer.valueOf(model.getText()));
+                    command.setNature(Integer.valueOf(model.getValue()));
                 }
             }
+            command.setPowerSupplyRequirementId(ipowerRequirement);
             command.setPowerSupplyRequirementContent(powerSupplyRequirement);
             if (firstStationName!=null){
                 String stationCode = commandMapper.selectStationName(firstStationName);
@@ -177,17 +179,19 @@ public class constructionWeekPlanJob implements Job {
             command.setLineStatus(Integer.parseInt(lineFormStatus));
             command.setDispatchStatus(Integer.parseInt(dispatchFormStatus));
             if (plantype!=null){
-                DictModel model = sysBaseApi.queryEnableDictItemsByCode("construction_plan_type1")
-                        .stream().filter(l -> l.getValue().equals(plantype))
+                DictModel model = sysBaseApi.queryEnableDictItemsByCode("construction_plan_typec")
+                        .stream().filter(l -> l.getText().equals(plantype))
                         .findFirst().orElse(null);
                 if (model !=null){
-                    command.setPlanType(Integer.valueOf(model.getText()));
+                    command.setPlanType(Integer.valueOf(model.getValue()));
                 }
             }
             command.setCode(planno);
             list.add(command);
         }
-        commandService.saveBatch(list);
-
+        if (result.size()>0 && result!=null){
+            commandMapper.delete(null);
+            commandService.saveBatch(list);
+        }
     }
 }
