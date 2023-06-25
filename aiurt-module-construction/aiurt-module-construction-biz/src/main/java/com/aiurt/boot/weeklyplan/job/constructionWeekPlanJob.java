@@ -56,21 +56,22 @@ public class constructionWeekPlanJob implements Job {
         SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.CONSTRUCTION_WEEK_PLAN_COMMAND);
         String url = sysParamModel.getValue();
 //        String url = "http://10.100.100.11:30300/cims/pool/pool/noGetwayGetPlan";
-//        JSONObject params = new JSONObject();
         Map params = new HashMap<String, Object>();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
+        calendar.add(Calendar.MONTH, -1);
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH) + 1;
         int day = calendar.get(Calendar.DAY_OF_MONTH);
-        calendar.add(Calendar.YEAR, -1);
-        int lastYear = calendar.get(Calendar.YEAR);
-        String startDate = lastYear + "-" + month + "-" + day;
+        int lastMonth = calendar.get(Calendar.MONTH);
+        String startDate = year + "-" + lastMonth + "-" + day;
         String endDate = year + "-" + month + "-" + day;
         params.put("taskDateStart", startDate);
         params.put("taskDateEnd", endDate);
-        params.put("planIstate", SysParamCodeConstant.PLAN_ISTATE);
-        params.put("departmentName", SysParamCodeConstant.DEPARTMENT_NAME);
+        SysParamModel planIstate = sysParamApi.selectByCode(SysParamCodeConstant.PLAN_ISTATE);
+        params.put("planIstate", planIstate.getValue());
+        SysParamModel department = sysParamApi.selectByCode(SysParamCodeConstant.DEPARTMENT_NAME);
+        params.put("departmentName", department.getValue());
         JSONObject json = (JSONObject) JSONObject.toJSON(params);
         JSONObject resultList = restTemplate.postForObject(url, json, JSONObject.class);
         JSONArray result = resultList.getJSONArray("data");
@@ -80,6 +81,7 @@ public class constructionWeekPlanJob implements Job {
             JSONObject plan = result.getJSONObject(i);
 
             // 获取结果字段,存入test表
+            String indocno = plan.getString("indocno");
             String weekday = plan.getString("weekday");
             String taskDate = plan.getString("taskDate");
             String taskStaffNum = plan.getString("taskStaffNum");
@@ -112,6 +114,7 @@ public class constructionWeekPlanJob implements Job {
 
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             ConstructionWeekPlanCommand command = new ConstructionWeekPlanCommand();
+            command.setId(indocno);
             command.setWeekday(Integer.parseInt(weekday));
             command.setTaskDate(sdf.parse(taskDate));
             command.setTaskStaffNum(Integer.parseInt(taskStaffNum));
@@ -187,11 +190,13 @@ public class constructionWeekPlanJob implements Job {
                 }
             }
             command.setCode(planno);
+            Date date = new Date();
+            command.setUpdateTime(date);
             list.add(command);
         }
         if (result.size()>0 && result!=null){
-            commandMapper.delete(null);
-            commandService.saveBatch(list);
+//            commandMapper.delete(null);
+            commandService.saveOrUpdateBatch(list);
         }
     }
 }
