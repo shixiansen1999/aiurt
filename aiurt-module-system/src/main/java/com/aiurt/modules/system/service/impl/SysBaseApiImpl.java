@@ -3357,7 +3357,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         // 如果stationCode是换乘车站，将stationCode改成换乘编码
         CsStation station = csStationMapper.getStationName(stationCode);
         if (station.getIsChange().equals(CommonConstant.STATION_IS_CHANGE)) {
-            stationCode = station.getChangCode();
+            stationCode = station.getChangeCode();
         }
         // 如果参数的站点和用户当前所在站点相同，返回当前站点的连接时间
         // 如果参数的站点和用户上一站的站点相同，返回上一站的站点的连接时间
