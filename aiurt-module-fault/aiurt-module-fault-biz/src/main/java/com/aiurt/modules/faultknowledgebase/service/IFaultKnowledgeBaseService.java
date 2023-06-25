@@ -168,4 +168,13 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @return
      */
     void addFaultKnowledgeBase(FaultKnowledgeBase faultKnowledgeBase);
+
+    /**
+     * 故障知识库excel导入数据
+     *
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcelData(HttpServletRequest request, HttpServletResponse response);
 }

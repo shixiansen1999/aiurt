@@ -3570,4 +3570,48 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 .collect(Collectors.toList());
         return lineCodes;
     }
+
+    @Override
+    public List<CsMajorModel> getAllMajor() {
+        List<CsMajor> majors = majorService.lambdaQuery()
+                .eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .list();
+        if (CollUtil.isEmpty(majors)) {
+            return Collections.emptyList();
+        }
+        List<CsMajorModel> list = new ArrayList<>();
+        CsMajorModel majorModel = null;
+        for (CsMajor major : majors) {
+            majorModel = new CsMajorModel();
+            BeanUtils.copyProperties(major, majorModel);
+            list.add(majorModel);
+        }
+        return list;
+    }
+
+    @Override
+    public List<CsSubsystemModel> getAllSubsystem() {
+        List<CsSubsystem> subsystems = csSubsystemService.lambdaQuery()
+                .eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .list();
+        if (CollUtil.isEmpty(subsystems)) {
+            return Collections.emptyList();
+        }
+        List<CsSubsystemModel> list = new ArrayList<>();
+        CsSubsystemModel subsystemModel = null;
+        for (CsSubsystem subsystem : subsystems) {
+            subsystemModel = new CsSubsystemModel();
+            BeanUtils.copyProperties(subsystem, subsystemModel);
+            list.add(subsystemModel);
+        }
+        return list;
+    }
+
+    @Override
+    public List<DeviceType> getAllDeviceType() {
+        List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery()
+                .eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .list();
+        return deviceTypes;
+    }
 }

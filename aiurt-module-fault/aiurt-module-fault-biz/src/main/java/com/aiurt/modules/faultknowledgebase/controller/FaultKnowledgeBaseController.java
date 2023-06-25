@@ -341,6 +341,20 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 		return faultKnowledgeBaseService.importExcel(request,response);
 	}
 
+	/**
+	 * 故障知识库excel导入数据
+	 *
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@AutoLog(value = "故障知识库excel导入数据", operateType =  5, operateTypeAlias = "故障知识库excel导入数据", permissionUrl = "/fault/faultKnowledgeBaseList")
+	@ApiOperation(value="故障知识库excel导入数据", notes="故障知识库excel导入数据")
+	@RequestMapping(value = "/import", method = RequestMethod.POST)
+	public Result<?> importExcelData(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		return faultKnowledgeBaseService.importExcelData(request,response);
+	}
+
 	 /**
 	  * 知识库的故障分页查询
 	  *
