@@ -1255,5 +1255,23 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<String> getLineCodeByStationCode(List<String> stationCodes);
+
+    /**
+     * 获取所有专业信息
+     */
+    List<CsMajorModel> getAllMajor();
+
+    /**
+     * 获取所有子系统信息
+     *
+     * @return
+     */
+    List<CsSubsystemModel> getAllSubsystem();
+
+    /**
+     * 获取所有的设备类型信息
+     * @return
+     */
+    List<DeviceType> getAllDeviceType();
 }
 
