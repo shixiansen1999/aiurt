@@ -28,7 +28,7 @@ import java.util.Random;
  * @Date:   2023-06-07
  * @Version: V1.0
  */
-@Api(tags="sys_user_aptitudes")
+@Api(tags="用户资质")
 @RestController
 @RequestMapping("/system/sysUserAptitudes")
 @Slf4j
