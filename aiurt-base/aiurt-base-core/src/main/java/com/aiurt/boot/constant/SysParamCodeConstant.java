@@ -352,9 +352,13 @@ public interface SysParamCodeConstant {
     String CONSTRUCTION_WEEK_PLAN_COMMAND = "construction_week_plan_command";
 
     /**
-     * 根据配置，获取施工计划导入列表
+     * 根据配置，传参部门，获取施工计划导入列表
      */
-    String DEPARTMENT_NAME = "通号中心";
+    String DEPARTMENT_NAME = "department_name";
+    /**
+     * 根据配置，传参状态，获取施工计划导入列表
+     */
+    String PLAN_ISTATE = "planIstate";
 
 
 }
