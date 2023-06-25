@@ -296,10 +296,11 @@ public class CsSubsystemController extends BaseController<CsSubsystem, ICsSubsys
 																   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 																   SubsystemFaultDTO subsystemCode,
 																   @RequestParam(name = "deviceTypeCode",required = false) List<String> deviceTypeCode,
-																   @RequestParam(name = "time",required = false) String time,
+																   @RequestParam(name = "startTime") String startTime,
+																   @RequestParam(name = "endTime") String endTime,
 																   HttpServletRequest req) {
 		 Page<SubsystemFaultDTO> page = new Page<SubsystemFaultDTO>(pageNo, pageSize);
-		 page= csSubsystemService.getSubsystemFailureReport(page,time,subsystemCode,deviceTypeCode);
+		 page= csSubsystemService.getSubsystemFailureReport(page,startTime,endTime,subsystemCode,deviceTypeCode);
 		 return Result.ok(page);
 	 }
 	/**
@@ -357,9 +358,10 @@ public class CsSubsystemController extends BaseController<CsSubsystem, ICsSubsys
 	public ModelAndView reportExport(HttpServletRequest request,
 									 SubsystemFaultDTO subsystemCode,
 									 @RequestParam(name = "deviceTypeCode",required = false) List<String> deviceTypeCode,
-									 @RequestParam(name = "time",required = false) String time,
+									 @RequestParam(name = "startTime") String startTime,
+									 @RequestParam(name = "endTime") String endTime,
 									 @RequestParam(name = "exportField",required = false)String exportField) {
-		return csSubsystemService.reportSystemExport(request,subsystemCode,deviceTypeCode,time,exportField);
+		return csSubsystemService.reportSystemExport(request,subsystemCode,deviceTypeCode,startTime,endTime,exportField);
 	}
 	/**
 	 * 下载子系统导入模板

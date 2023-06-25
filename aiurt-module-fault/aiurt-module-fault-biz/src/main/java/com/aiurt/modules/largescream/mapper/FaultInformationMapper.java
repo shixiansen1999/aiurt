@@ -429,4 +429,20 @@ public interface FaultInformationMapper {
      * @return
      */
     Integer getFilterUserTimes(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime") String endTime);
+    /**
+     * 统计报表-故障列表-获取维修任务数 班组维度
+     * @param orgId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    Integer getFaultCompletedTasks(@Param("startTime") String startTime,@Param("endTime") String endTime, @Param("orgId")String orgId);
+    /**
+     * 统计报表-故障列表-获取维修任务数 人员维度
+     * @param userId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    Integer getFaultUserCompletedTasks(@Param("userId") String userId, @Param("startTime") String startTime,@Param("endTime") String endTime);
 }

@@ -67,10 +67,10 @@ public class PatrolReportService {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> orgCodes = sysBaseApi.getDepartByUser(1);
         List<String> orgIdList = sysBaseApi.getDepartByUser(0);
-        if(ObjectUtil.isNotEmpty(report.getOrgCode())) {
-            SysDepartModel departByOrgCode = sysBaseApi.getDepartByOrgCode(report.getOrgCode());
-            orgCodes = orgCodes.stream().filter(u->report.getOrgCode().contains(u)).collect(Collectors.toList());
-            orgIdList = orgIdList.stream().filter(u->departByOrgCode.getId().contains(u)).collect(Collectors.toList());
+        if(ObjectUtil.isNotEmpty(report.getOrgCodeList())) {
+            List<String> ids = sysBaseApi.queryOrgIdsByOrgCodes(report.getOrgCodeList());
+            orgCodes.retainAll(report.getOrgCodeList());
+            orgIdList.retainAll(ids);
         }
         //根据线路关联工区过滤班组
         if (StrUtil.isNotEmpty(report.getLineCode())) {
@@ -83,13 +83,10 @@ public class PatrolReportService {
                 List<String> orgIds = sysBaseApi.queryOrgIdsByOrgCodes(orgCodeList);
                 orgCodes.retainAll(orgCodeList);
                 orgIdList.retainAll(orgIds);
+            } else {
+                return  pageList.setRecords(new ArrayList<>());
             }
         }
-
-        if(CollUtil.isEmpty(orgCodes)&&(!user.getRoleCodes().contains("admin")||!user.getRoleCodes().contains("director"))) {
-            return  pageList.setRecords(new ArrayList<>());
-        }
-
 
         report.setOrgCodeList(orgCodes);
         if(ObjectUtil.isNotEmpty(report.getLineCode()))
@@ -650,7 +647,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             return system;
        }
 
-    public List<LineOrStationDTO> selectDepart () {
+    public List<LineOrStationDTO> selectDepart (String lineCode) {
 
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //根据当前登录人班组权限获取班组,管理员获取全部
@@ -682,25 +679,45 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             }
         }
 
+        List<LineOrStationDTO> result = new ArrayList<>();
+
+        //根据线路关联工区过滤班组
+        List<String> orgCodeList = new ArrayList<>();
+        if (StrUtil.isNotEmpty(lineCode)) {
+            List<CsWorkAreaModel> workAreaByLineCode = sysBaseApi.getWorkAreaByLineCode(lineCode);
+            if (CollUtil.isNotEmpty(workAreaByLineCode)) {
+                for (CsWorkAreaModel csWorkAreaModel : workAreaByLineCode) {
+                    orgCodeList.addAll(csWorkAreaModel.getOrgCodeList());
+                }
+            }
+
+            if (CollUtil.isNotEmpty(list) && CollUtil.isNotEmpty(orgCodeList)) {
+                result = list.stream().filter(l -> orgCodeList.stream().anyMatch(value -> value.equals(l.getCode()))).collect(Collectors.toList());
+            }
+        } else {
+            result = list;
+        }
+
         //过滤通信分部
         SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FILTERING_TEAM);
         boolean b = "1".equals(sysParamModel.getValue());
-        if (b) {
+        if (CollUtil.isNotEmpty(result) && b) {
             SysParamModel code = sysParamApi.selectByCode(SysParamCodeConstant.SPECIAL_TEAM);
-            List<LineOrStationDTO> dtoList = list.stream().filter(s -> !s.getCode().equals(code.getValue())).collect(Collectors.toList());
+            List<LineOrStationDTO> dtoList = result.stream().filter(s -> !s.getCode().equals(code.getValue())).collect(Collectors.toList());
             return dtoList;
         }
-        return list;
+        return result;
     }
 
     public Page<PatrolReport> getDeviceTaskDate(Page<PatrolReport> pageList, PatrolReportModel report) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> orgCodes = sysBaseApi.getDepartByUser(1);
         List<String> orgIdList = sysBaseApi.getDepartByUser(0);
-        if(ObjectUtil.isNotEmpty(report.getOrgCode())) {
-            SysDepartModel departByOrgCode = sysBaseApi.getDepartByOrgCode(report.getOrgCode());
-            orgCodes = orgCodes.stream().filter(u->report.getOrgCode().contains(u)).collect(Collectors.toList());
-            orgIdList = orgIdList.stream().filter(u->departByOrgCode.getId().contains(u)).collect(Collectors.toList());
+
+        if(ObjectUtil.isNotEmpty(report.getOrgCodeList())) {
+            List<String> ids = sysBaseApi.queryOrgIdsByOrgCodes(report.getOrgCodeList());
+            orgCodes.retainAll(report.getOrgCodeList());
+            orgIdList.retainAll(ids);
         }
         //根据线路关联工区过滤班组
         if (StrUtil.isNotEmpty(report.getLineCode())) {
@@ -713,10 +730,10 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 List<String> orgIds = sysBaseApi.queryOrgIdsByOrgCodes(orgCodeList);
                 orgCodes.retainAll(orgCodeList);
                 orgIdList.retainAll(orgIds);
+            }else {
+                return  pageList.setRecords(new ArrayList<>());
             }
-        }
-        if(CollUtil.isEmpty(orgCodes)&&(!user.getRoleCodes().contains("admin")||!user.getRoleCodes().contains("director"))) {
-            return  pageList.setRecords(new ArrayList<>());
+
         }
         report.setOrgCodeList(orgCodes);
         PatrolReportModel omitModel = new PatrolReportModel();

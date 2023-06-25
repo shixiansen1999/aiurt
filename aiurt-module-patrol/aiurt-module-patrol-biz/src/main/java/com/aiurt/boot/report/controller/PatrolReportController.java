@@ -1,5 +1,6 @@
 package com.aiurt.boot.report.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.report.model.FailureOrgReport;
 import com.aiurt.boot.report.model.FailureReport;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -48,8 +50,12 @@ public class PatrolReportController {
     @ApiOperation(value = "统计报表-巡视数据统计", notes = "统计报表-巡视数据统计")
     @RequestMapping(value = "/patrolTaskList", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<IPage<PatrolReport>> getStatisticsDate(PatrolReportModel report,
+                                                         @RequestParam(name="orgCodes",required = false) String orgCodes,
                                                          @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                                          @RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {
+        if (StrUtil.isNotEmpty(orgCodes)) {
+            report.setOrgCodeList(Arrays.asList(StrUtil.split(orgCodes, ",")));
+        }
         Page<PatrolReport> pageList = new Page<>(pageNo, pageSize);
         //根据配置决定是否需要把工单数量作为任务数量
         SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.PATROL_TASK_DEVICE_NUM);
@@ -221,8 +227,8 @@ public class PatrolReportController {
     @AutoLog(value = "统计报表-班组下拉框", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "统计报表-班组下拉框", notes = "统计报表-班组下拉框")
     @GetMapping(value = "/selectDepart")
-    public List<LineOrStationDTO> selectDepart() {
-        return reportService.selectDepart();
+    public List<LineOrStationDTO> selectDepart(@RequestParam(name = "lineCode",required = false) String lineCode) {
+        return reportService.selectDepart(lineCode);
 
     }
 }

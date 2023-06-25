@@ -51,6 +51,10 @@ public class PersonnelModel {
     @ApiModelProperty("检修实际完成任务数")
     private String inspecitonCompletedTasks;
 
+    @Excel(name = "维修任务数", width = 15,groupName = "维修任务数")
+    @ApiModelProperty("维修任务数")
+    private String faultCompletedTasks;
+
     @Excel(name = "巡视计划完成率", width = 15,groupName = "计划完成率")
     @ApiModelProperty("巡视计划完成率")
     private String patrolPlanCompletion;

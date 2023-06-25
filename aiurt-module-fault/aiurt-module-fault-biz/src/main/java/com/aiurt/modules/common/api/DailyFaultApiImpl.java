@@ -308,6 +308,7 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         }
         f.setOrgId(orgId);
         f.setConstructorsNum(faultInformationMapper.getConstructorsNum(startTime,endTime,orgId));
+        f.setFaultCompletedTasks(faultInformationMapper.getFaultCompletedTasks(startTime,endTime,orgId));
 
         List<String> str = faultInformationMapper.getConstructionHours(f.getOrgId(),startTime,endTime);
         List<BigDecimal> doubles = new ArrayList<>();
@@ -396,12 +397,13 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                         });
                     });
                     FaultReportDTO  fau = faultInformationMapper.getUserConstructorsNum(id,startTime,endTime);
-
+                    Integer finishNumfrom = faultInformationMapper.getFaultUserCompletedTasks(id, startTime, endTime);
+                    faultReportDTO.setFaultCompletedTasks(finishNumfrom);
 
                     if (fau.getNum1()==0){
                         faultReportDTO.setRepairTime(0);
                     }else {
-                        //平均维修时间不需要加上通信工时
+                        //平均维修时间不需要加上同行人工时
                         BigDecimal bigDecimal = new BigDecimal(faultReportDTO.getNum()).divide(new BigDecimal(faultReportDTO.getNum1()),0, BigDecimal.ROUND_HALF_UP);
                         faultReportDTO.setRepairTime(bigDecimal.intValue());
                     }
