@@ -348,6 +348,22 @@ public interface SysParamCodeConstant {
      */
     String RECEIVE_FAULT_NO_UPDATE = "receive_fault_no_update";
     /**
+     * 故障领取后多久未更新任务状态需给予维修人提示音，单位为秒
+     */
+    String NO_UPDATE_DELAY = "no_update_delay";
+    /**
+     * 故障领取后未更新任务状态需给予维修人提示音的间隔，单位为秒
+     */
+    String NO_UPDATE_PERIOD = "no_update_period";
+    /**
+     * 故障多久未领取时要给予当班人员提示音，单位为秒
+     */
+    String NO_RECEIVE_DELAY = "no_receive_delay";
+    /**
+     * 故障未领取时要给予当班人员提示音的间隔，单位为秒
+     */
+    String NO_RECEIVE_PERIOD = "no_receive_period";
+    /**
      * 故障领取后两小时未更新任务状态需给予维修人提示音（每两小时提醒5秒）
      */
     String FAULT_RECEIVE_NO_UPDATE_RING_DURATION = "fault_receive_no_update_ring_duration";
