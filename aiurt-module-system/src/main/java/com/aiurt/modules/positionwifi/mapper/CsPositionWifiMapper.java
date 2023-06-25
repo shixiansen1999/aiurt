@@ -30,10 +30,9 @@ public interface CsPositionWifiMapper extends BaseMapper<CsPositionWifi> {
     List<StationAndMacModel> getStationAndMac(@Param("stationCodes") List<String> stationCodes);
 
     /**
-     * 根据mac地址获取station_code
+     * 根据mac地址获取station_code，如果该站点是换乘车站，那获取的就是换乘编码
      * @param mac
      * @return
      */
-    @Select("select station_code from cs_position_wifi where mac=#{mac} and del_flag=0")
-    String getStationCodeByMac(String mac);
+    String getStationCodeByMac(@Param("mac") String mac);
 }

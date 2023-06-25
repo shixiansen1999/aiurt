@@ -1188,7 +1188,7 @@ public interface ISysBaseAPI extends CommonAPI {
     List<String> getWifiMacByStationCode(List<String> stationCodes);
 
     /**
-     * 根据mac地址获取站点code
+     * 根据mac地址获取站点code，如果该站点是换乘车站，那获取的就是换乘编码
      * @param mac
      * @return
      */
@@ -1196,6 +1196,7 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据username和stationCode查询sys_user_position_current表，获取站点最近一次的连接时间
+     * 如果stationCode是换乘车站，那就将stationCod转化成换乘编码
      * @param username
      * @param stationCode
      * @return
