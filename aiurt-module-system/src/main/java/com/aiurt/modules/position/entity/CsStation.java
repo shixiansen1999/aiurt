@@ -105,7 +105,7 @@ public class CsStation implements Serializable {
     /**换乘编码*/
     @Excel(name = "换乘编码", width = 15)
     @ApiModelProperty(value = "换乘编码")
-    private String changCode;
+    private String changeCode;
 	/**是否首尾站(1是，0否)*/
 	@Excel(name = "是否首尾站(1是，0否)", width = 15)
     @ApiModelProperty(value = "是否首尾站(1是，0否)")
