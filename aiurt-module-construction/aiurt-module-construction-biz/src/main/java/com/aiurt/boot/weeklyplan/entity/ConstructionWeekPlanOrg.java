@@ -21,13 +21,13 @@ public class ConstructionWeekPlanOrg extends DictEntity implements Serializable 
     private static final long serialVersionUID = 1L;
 
     /**站点编号*/
-    @Excel(name = "组织机构编号", width = 15)
-    @ApiModelProperty(value = "组织机构编号")
-    @TableField(value = "`code`")
-    private String code;
+    @Excel(name = "组织机构id", width = 15)
+    @ApiModelProperty(value = "组织机构id")
+    @TableField(value = "`id`")
+    private String id;
     /**站点编号*/
     @Excel(name = "组织机构名称", width = 15)
     @ApiModelProperty(value = "组织机构名称")
-    @TableField(value = "`name`")
-    private String name;
+    @TableField(value = "`depart_name`")
+    private String departName;
 }

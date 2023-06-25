@@ -61,12 +61,12 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
 	/**作业单位ID*/
 	@Excel(name = "作业单位ID", width = 15)
     @ApiModelProperty(value = "作业单位ID")
-    @Dict(dictTable = "construction_week_plan_org", dicText = "name", dicCode = "code")
+    @Dict(dictTable = "construction_week_plan_org", dicText = "station_name", dicCode = "id")
     private String orgCode;
     /**辅站编码*/
     @Excel(name = "辅站编码", width = 15)
     @ApiModelProperty(value = "辅站编码")
-    @Dict(dictTable = "construction_week_plan_org", dicText = "name", dicCode = "code")
+    @Dict(dictTable = "construction_week_plan_org", dicText = "station_name", dicCode = "id")
     private String assistStationCode;
 	/**作业日期*/
 	@Excel(name = "作业日期", width = 15, format = "yyyy-MM-dd")
@@ -93,7 +93,7 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
     /**作业线路编码*/
     @Excel(name = "作业线路编码", width = 15)
     @ApiModelProperty(value = "作业线路编码")
-    @Dict(dictTable = "construction_week_plan_line", dicText = "name", dicCode = "code")
+    @Dict(dictTable = "construction_week_plan_line", dicText = "line_name", dicCode = "line_code")
     private String lineCode;
 	/**供电要求ID*/
 	@Excel(name = "供电要求ID", width = 15)
@@ -124,17 +124,17 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
 	/**请点车站编码*/
 	@Excel(name = "请点车站编码", width = 15)
     @ApiModelProperty(value = "请点车站编码")
-    @Dict(dictTable = "construction_week_plan_station", dicText = "name", dicCode = "code")
+    @Dict(dictTable = "construction_week_plan_station", dicText = "station_name", dicCode = "station_code")
     private String firstStationCode;
 	/**变电所编码*/
 	@Excel(name = "变电所编码", width = 15)
     @ApiModelProperty(value = "变电所编码")
-    @Dict(dictTable = "construction_week_plan_station", dicText = "name", dicCode = "code")
+    @Dict(dictTable = "construction_week_plan_station", dicText = "station_name", dicCode = "station_code")
     private String substationCode;
 	/**销点车站编码*/
 	@Excel(name = "销点车站编码", width = 15)
     @ApiModelProperty(value = "销点车站编码")
-    @Dict(dictTable = "construction_week_plan_station", dicText = "name", dicCode = "code")
+    @Dict(dictTable = "construction_week_plan_station", dicText = "station_name", dicCode = "station_code")
     private String secondStationCode;
 	/**作业人数*/
 	@Excel(name = "作业人数", width = 15)

@@ -138,16 +138,19 @@
     </select>
 
     <select id="selectLineName" resultType="java.lang.String">
-        select code from construction_week_plan_line where
-                                   name = #{name}
+        select line_code from construction_week_plan_line where
+            line_name = #{name}
+            limit 1
     </select>
     <select id="selectStationName" resultType="java.lang.String">
-        select code from construction_week_plan_station where
-            name = #{name}
+        select station_code from construction_week_plan_station where
+            station_name = #{name}
+            limit 1
     </select>
     <select id="selectOrgName" resultType="java.lang.String">
-        select code from construction_week_plan_org where
-            name = #{name}
+        select id from construction_week_plan_org where
+            depart_name = #{name}
+            limit 1
     </select>
 
     <insert id="batchInsert" parameterType="com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO">
