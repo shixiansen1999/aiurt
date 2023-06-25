@@ -3551,4 +3551,21 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 .collect(Collectors.toMap(k -> k.getMaterialCode(), v -> v.getMaterialName()));
         return map;
     }
+
+    @Override
+    public List<String> getLineCodeByStationCode(List<String> stationCodes) {
+        if(CollUtil.isEmpty(stationCodes)){
+            return Collections.emptyList();
+        }
+        QueryWrapper<CsStation> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(CsStation::getDelFlag,CommonConstant.DEL_FLAG_0)
+                .in(CsStation::getStationCode,stationCodes);
+        List<CsStation> stations = csStationMapper.selectList(wrapper);
+        List<String> lineCodes = stations.stream()
+                .filter(l -> ObjectUtil.isNotEmpty(l.getLineCode()))
+                .map(CsStation::getLineCode)
+                .distinct()
+                .collect(Collectors.toList());
+        return lineCodes;
+    }
 }

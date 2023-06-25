@@ -88,7 +88,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 		Page<FaultKnowledgeBase> page = new Page<FaultKnowledgeBase>(pageNo, pageSize);
-		IPage<FaultKnowledgeBaseBuildDTO> faultKnowledgeBasePage = faultKnowledgeBaseService.readAll(page, faultKnowledgeBase);
+		IPage<FaultKnowledgeBaseBuildDTO> faultKnowledgeBasePage = faultKnowledgeBaseService.readAll(page, req, faultKnowledgeBase);
 		return Result.OK(faultKnowledgeBasePage);
 	}
 
@@ -109,7 +109,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 														   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
 														   HttpServletRequest request, HttpServletResponse response) {
 		Page<FaultKnowledgeBase> page = new Page<FaultKnowledgeBase>(pageNo, pageSize);
-		IPage<FaultKnowledgeBase> faultKnowledgeBasePage = faultKnowledgeBaseService.queryPageList(page, faultKnowledgeBase);
+		IPage<FaultKnowledgeBase> faultKnowledgeBasePage = faultKnowledgeBaseService.queryPageList(page, request, faultKnowledgeBase);
 		return Result.OK(faultKnowledgeBasePage);
 	}
 
