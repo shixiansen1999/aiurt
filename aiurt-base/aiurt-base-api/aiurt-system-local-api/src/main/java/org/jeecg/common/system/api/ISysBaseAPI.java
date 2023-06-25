@@ -1248,5 +1248,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     Map<String, String> getDeviceComposeNameByCode(List<String> materialCodes);
+
+    /**
+     * 根据站点编号查询线路编号
+     * @param stationCodes
+     * @return
+     */
+    List<String> getLineCodeByStationCode(List<String> stationCodes);
 }
 

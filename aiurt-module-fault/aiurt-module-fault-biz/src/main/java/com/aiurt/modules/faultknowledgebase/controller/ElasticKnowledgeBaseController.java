@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultknowledgebase.controller;
 
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
@@ -38,12 +39,13 @@ public class ElasticKnowledgeBaseController extends BaseController<FaultKnowledg
      */
     @ApiOperation(value = "分页列表查询", notes = "分页列表查询")
     @GetMapping(value = "/list")
+    @PermissionData(pageComponent = "fault/FaultKnowledgeBaseListChange")
     public Result<IPage<KnowledgeBaseResDTO>> search(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                      KnowledgeBaseReqDTO knowledgeBaseReqDTO,
                                                      HttpServletRequest request) {
         Page<KnowledgeBaseResDTO> page = new Page<>(pageNo, pageSize);
-        IPage<KnowledgeBaseResDTO> pageList = faultKnowledgeBaseService.search(page, knowledgeBaseReqDTO);
+        IPage<KnowledgeBaseResDTO> pageList = faultKnowledgeBaseService.search(page, request, knowledgeBaseReqDTO);
         return Result.OK(pageList);
     }
 

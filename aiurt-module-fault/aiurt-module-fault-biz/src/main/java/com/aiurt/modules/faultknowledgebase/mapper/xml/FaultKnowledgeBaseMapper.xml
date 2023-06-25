@@ -28,7 +28,8 @@
         fkb.del_flag,
         fkb.tools,
         fkb.fault_level_code,
-        fkb.fault_phenomenon_code
+        fkb.fault_phenomenon_code,
+        fkb.line_code
         FROM fault_knowledge_base fkb
         left join sys_user su on su.username = fkb.create_by
         Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fkb.id
@@ -63,7 +64,8 @@
         fkb.del_flag,
         fkb.tools,
         fkb.fault_level_code,
-        fkb.fault_phenomenon_code
+        fkb.fault_phenomenon_code,
+        fkb.line_code
         FROM fault_knowledge_base fkb
         left join sys_user su on su.username = fkb.create_by
         Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fkb.id
@@ -102,7 +104,8 @@
         fkb.del_flag,
         fkb.tools,
         fkb.fault_level_code,
-        fkb.fault_phenomenon_code
+        fkb.fault_phenomenon_code,
+        fkb.line_code
         FROM fault_knowledge_base fkb
         left join sys_user su on su.username = fkb.create_by
         Left JOIN act_hi_procinst ahp ON ahp.BUSINESS_KEY_ = fkb.id
@@ -165,6 +168,9 @@
         </if>
         <if test="condition.knowledgeBaseTypeCode != null and  condition.knowledgeBaseTypeCode != ''">
             and a.knowledge_base_type_code = #{condition.knowledgeBaseTypeCode}
+        </if>
+        <if test="condition.jointSQL != null and condition.jointSQL != ''">
+            and ${condition.jointSQL}
         </if>
         ORDER BY a.create_time DESC
     </select>
@@ -496,7 +502,8 @@
                fkb.scan_num                 scanNum,
                fkb.method                   method,
                fkb.create_time              createTime,
-               fkb.update_time              updateTime
+               fkb.update_time              updateTime,
+               fkb.line_code                lineCode
         from fault_knowledge_base fkb
                      left join fault_knowledge_base_type fkbt
                 on (fkb.knowledge_base_type_code = fkbt.code and fkbt.del_flag = 0)

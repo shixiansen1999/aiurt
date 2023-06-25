@@ -1,12 +1,10 @@
 package com.aiurt.modules.faultknowledgebase.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
-import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
-import com.google.common.collect.Maps;
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.Snowflake;
@@ -17,11 +15,15 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.ElasticAPI;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.common.api.CommonAPI;
+import com.aiurt.common.aspect.annotation.DisableDataFilter;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.AsyncThreadPoolExecutorUtil;
 import com.aiurt.common.util.XlsUtil;
+import com.aiurt.config.datafilter.constant.DataPermRuleType;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
+import com.aiurt.config.datafilter.utils.ContextUtil;
+import com.aiurt.config.datafilter.utils.SqlBuilderUtil;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
@@ -45,6 +47,7 @@ import com.aiurt.modules.faultlevel.service.IFaultLevelService;
 import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.aiurt.modules.faultsparepart.service.IFaultSparePartService;
 import com.aiurt.modules.flow.api.FlowBaseApi;
+import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
 import com.aiurt.modules.flow.dto.StartBpmnDTO;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseMatchDTO;
@@ -144,17 +147,21 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
 
     @Override
-    public IPage<FaultKnowledgeBaseBuildDTO> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase) {
+    public IPage<FaultKnowledgeBaseBuildDTO> readAll(Page<FaultKnowledgeBase> page, HttpServletRequest request, FaultKnowledgeBase faultKnowledgeBase) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //下面禁用数据过滤
-        boolean b = GlobalThreadLocal.setDataFilter(false);
+//        //下面禁用数据过滤
+//        boolean b = GlobalThreadLocal.setDataFilter(false);
         String id = faultKnowledgeBase.getId();
         //根据id条件查询时，jeecg前端会传一个id结尾带逗号的id，所以先去掉结尾id
         if (StringUtils.isNotBlank(id)) {
             String substring = id.substring(0, id.length() - 1);
             faultKnowledgeBase.setId(substring);
         }
+        // 获取权限数据
+        String filterConditions = this.getPermissionSQL(request);
+        faultKnowledgeBase.setJointSQL(filterConditions);
         List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase, null, sysUser.getUsername());
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         Page<FaultKnowledgeBaseBuildDTO> knowledgeBaseBuildPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
         //解决不是审核人去除审核按钮
         if (CollUtil.isNotEmpty(faultKnowledgeBases)) {
@@ -311,17 +318,21 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     }
 
     @Override
-    public IPage<FaultKnowledgeBase> queryPageList(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase) {
+    public IPage<FaultKnowledgeBase> queryPageList(Page<FaultKnowledgeBase> page, HttpServletRequest request, FaultKnowledgeBase faultKnowledgeBase) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //下面禁用数据过滤
-        boolean b = GlobalThreadLocal.setDataFilter(false);
+//        //下面禁用数据过滤
+//        boolean b = GlobalThreadLocal.setDataFilter(false);
         String id = faultKnowledgeBase.getId();
         //根据id条件查询时，jeecg前端会传一个id结尾带逗号的id，所以先去掉结尾id
         if (StringUtils.isNotBlank(id)) {
             String substring = id.substring(0, id.length() - 1);
             faultKnowledgeBase.setId(substring);
         }
+        // 获取权限数据
+        String filterConditions = this.getPermissionSQL(request);
+        faultKnowledgeBase.setJointSQL(filterConditions);
         List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase, null, sysUser.getUsername());
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         page.setRecords(faultKnowledgeBases);
         //解决不是审核人去除审核按钮
         if (CollUtil.isNotEmpty(faultKnowledgeBases)) {
@@ -359,7 +370,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 knowledgeBase.setDeviceTypeName(deviceType.getName());
             }
             // 获取故障原因和解决方案
-            List<FaultKnowledgeBase> newFaultKnowledgeBases = this.setFaultCauseSolution(faultKnowledgeBases);
+            this.setFaultCauseSolution(faultKnowledgeBases);
             page.setRecords(faultKnowledgeBases);
         }
         List<FaultKnowledgeBase> collect=new ArrayList<>();
@@ -380,6 +391,49 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         return page.setRecords(collect);
     }
 
+    /**
+     * 获取数据权限的SQL片段
+     */
+    public String getPermissionSQL(HttpServletRequest request) {
+        Map<String, String> map = (Map<String, String>) request.getAttribute(ContextUtil.FILTER_DATA_AUTHOR_RULES);
+        Map<String, String> ruleMap = null;
+        if (CollUtil.isNotEmpty(map)) {
+            String stationCodes = map.get(DataPermRuleType.TYPE_MANAGE_STATION_ONLY);
+            if (StrUtil.isNotEmpty(stationCodes)) {
+                List<String> codes = StrUtil.split(stationCodes.replaceAll("'", ""), ',');
+                // 根据站点编号获取线路编号
+                List<String> lineCodes = sysBaseApi.getLineCodeByStationCode(codes);
+                String lineCodeStr = lineCodes.stream().map(linecode -> StrUtil.wrap(linecode, "'")).collect(Collectors.joining(","));
+                ruleMap = new HashMap<>(8);
+                ruleMap.put(DataPermRuleType.TYPE_MANAGE_LINE_ONLY, lineCodeStr);
+            }
+        }
+        Map<String, String> mapping = this.getColumnMapping();
+        String filterConditions = SqlBuilderUtil.buildSql(ruleMap, mapping);
+        return filterConditions;
+    }
+
+    /**
+     * 初始化并返回一个预定义的列映射。
+     *
+     * @return 返回一个包含预定义列映射的 Map 对象
+     */
+    public Map<String, String> getColumnMapping() {
+        Map<String, String> columnMapping = new HashMap<>(8);
+//        // 当前的部门
+//        columnMapping.put(DataPermRuleType.TYPE_DEPT_ONLY, "pto.org_code");
+//        // 管理的部门
+//        columnMapping.put(DataPermRuleType.TYPE_MANAGE_DEPT, "pto.org_code");
+        // 管理的线路
+        columnMapping.put(DataPermRuleType.TYPE_MANAGE_LINE_ONLY, "a.line_code");
+//        // 管理的站点
+//        columnMapping.put(DataPermRuleType.TYPE_MANAGE_STATION_ONLY, "pts.station_code");
+//        // 管理的专业
+//        columnMapping.put(DataPermRuleType.TYPE_MANAGE_MAJOR_ONLY, "ptsd.profession_code");
+//        // 管理的子系统
+//        columnMapping.put(DataPermRuleType.TYPE_MANAGE_SYSTEM_ONLY, "ptsd.subsystem_code");
+        return columnMapping;
+    }
     private void dealAuthButton(LoginUser sysUser, FaultKnowledgeBase knowledgeBase) {
         TaskInfoDTO taskInfoDTO = flowBaseApi.viewRuntimeTaskInfoWithCache(knowledgeBase.getProcessInstanceId(), knowledgeBase.getTaskId(), sysUser.getUsername());
         List<ActOperationEntity> operationList = taskInfoDTO.getOperationList();
@@ -1526,7 +1580,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     }
 
     @Override
-    public IPage<KnowledgeBaseResDTO> search(Page<KnowledgeBaseResDTO> page, KnowledgeBaseReqDTO knowledgeBaseReqDTO) {
+    public IPage<KnowledgeBaseResDTO> search(Page<KnowledgeBaseResDTO> page, HttpServletRequest request, KnowledgeBaseReqDTO knowledgeBaseReqDTO) {
         // 记录搜索记录,不影响查询业务
         try {
             String keyword = knowledgeBaseReqDTO.getKeyword();
@@ -1552,7 +1606,17 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         } catch (Exception e) {
             log.error("保存搜索记录异常：", e.getMessage());
         }
-
+        // 数据权限过滤
+        Map<String, String> map = (Map<String, String>) request.getAttribute(ContextUtil.FILTER_DATA_AUTHOR_RULES);
+        if (CollUtil.isNotEmpty(map)) {
+            String stationCodes = map.get(DataPermRuleType.TYPE_MANAGE_STATION_ONLY);
+            if (StrUtil.isNotEmpty(stationCodes)) {
+                List<String> codes = StrUtil.split(stationCodes.replaceAll("'", ""), ',');
+                // 根据站点编号获取线路编号
+                List<String> lineCodes = sysBaseApi.getLineCodeByStationCode(codes);
+                knowledgeBaseReqDTO.setLineCodes(lineCodes);
+            }
+        }
         // 分页搜索
         IPage<KnowledgeBaseResDTO> pageList = null;
         try {

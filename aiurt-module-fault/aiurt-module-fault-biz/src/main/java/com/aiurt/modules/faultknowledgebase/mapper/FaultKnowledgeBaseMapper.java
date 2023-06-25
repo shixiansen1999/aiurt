@@ -22,7 +22,7 @@ import java.util.List;
  * @Date:   2022-06-24
  * @Version: V1.0
  */
-@EnableDataPerm
+@EnableDataPerm(excluseMethodName = {"readAll"})
 public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase> {
 
     /**
