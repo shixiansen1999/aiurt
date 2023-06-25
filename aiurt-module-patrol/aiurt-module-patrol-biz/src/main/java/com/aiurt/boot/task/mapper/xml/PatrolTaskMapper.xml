@@ -1318,7 +1318,7 @@
         </if>
     </select>
     <select id="selectSystem" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
-        select a.system_name as name, a.system_code as code
+        select a.system_name as name, a.system_code as code,a.shortened_form
         from cs_subsystem a
                  left join cs_user_subsystem c on c.system_id = a.id
         where c.user_id = #{id}
