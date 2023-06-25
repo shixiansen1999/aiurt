@@ -124,8 +124,9 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                 .in(PatrolStandard::getId,standardId)
                 .orderByDesc(PatrolStandard::getPrintTemplate).last("LIMIT 1"));
         String excelName = null;
-        DictModel excelDictModel = sysBaseApi.dictById(patrolStandard.getPrintTemplate());
+        DictModel excelDictModel = new DictModel();
         if (StrUtil.isNotEmpty(patrolStandard.getPrintTemplate())){
+            excelDictModel = sysBaseApi.dictById(patrolStandard.getPrintTemplate());
             excelName = excelDictModel.getValue();
         }else {
             excelName = "telephone_system.xlsx";
@@ -203,8 +204,9 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                 .in(PatrolStandard::getId,standardId)
                 .orderByDesc(PatrolStandard::getPrintTemplate).last("LIMIT 1"));
         String excelName = null;
-        DictModel excelDictModel = sysBaseApi.dictById(patrolStandard.getPrintTemplate());
+        DictModel excelDictModel = new DictModel();
         if (StrUtil.isNotEmpty(patrolStandard.getPrintTemplate())){
+            excelDictModel = sysBaseApi.dictById(patrolStandard.getPrintTemplate());
             excelName = excelDictModel.getValue();
         }else {
             excelName = "telephone_system.xlsx";
