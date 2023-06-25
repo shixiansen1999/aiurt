@@ -171,7 +171,20 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     deviceTypeMap = typeList.stream().collect(Collectors.toMap(DeviceType::getCode, Function.identity()));
                 }
             }
-
+            // 线路名称翻译
+            List<String> lineCodes = faultKnowledgeBases.stream()
+                    .map(FaultKnowledgeBase::getLineCode)
+                    .filter(ObjectUtil::isNotEmpty)
+                    .distinct()
+                    .collect(Collectors.toList());
+            if (CollUtil.isNotEmpty(lineCodes)) {
+                Map<String, String> lineNameMap = sysBaseApi.getLineNameByCode(lineCodes);
+                faultKnowledgeBases.forEach(l -> {
+                    if (ObjectUtil.isNotEmpty(l) && StrUtil.isNotEmpty(l.getLineCode())) {
+                        l.setLineName(lineNameMap.get(l.getLineCode()));
+                    }
+                });
+            }
             // 组别标识,构造数据前端所需字段
             int group = 1;
             for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {
@@ -341,6 +354,21 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 if (CollUtil.isNotEmpty(typeList)) {
                     deviceTypeMap = typeList.stream().collect(Collectors.toMap(DeviceType::getCode, Function.identity()));
                 }
+            }
+
+            // 线路名称翻译
+            List<String> lineCodes = faultKnowledgeBases.stream()
+                    .map(FaultKnowledgeBase::getLineCode)
+                    .filter(ObjectUtil::isNotEmpty)
+                    .distinct()
+                    .collect(Collectors.toList());
+            if (CollUtil.isNotEmpty(lineCodes)) {
+                Map<String, String> lineNameMap = sysBaseApi.getLineNameByCode(lineCodes);
+                faultKnowledgeBases.forEach(l -> {
+                    if (ObjectUtil.isNotEmpty(l) && StrUtil.isNotEmpty(l.getLineCode())) {
+                        l.setLineName(lineNameMap.get(l.getLineCode()));
+                    }
+                });
             }
 
             for (FaultKnowledgeBase knowledgeBase : faultKnowledgeBases) {
@@ -1009,7 +1037,12 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             List<String> list = Arrays.asList(split);
             faultKnowledgeBase.setFaultCodeList(list);
         }
-
+        // 线路翻译
+        String lineCode = faultKnowledgeBase.getLineCode();
+        if (StrUtil.isNotEmpty(lineCode)) {
+            String lineName = sysBaseApi.getLineNameByCode(lineCode);
+            faultKnowledgeBase.setLineName(lineName);
+        }
         // 查询故障原因和解决方案
         List<FaultCauseSolution> faultCauseSolutions = faultCauseSolutionService.lambdaQuery()
                 .eq(FaultCauseSolution::getDelFlag, CommonConstant.DEL_FLAG_0)
