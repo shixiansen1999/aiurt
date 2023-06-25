@@ -24,6 +24,8 @@ public class FaultReportDTO {
     String  orgId;
     Integer  num;
     Integer num1;
+    @ApiModelProperty("维修任务数")
+    Integer faultCompletedTasks;
     @ApiModelProperty(value = "平均维修时间")
     Integer repairTime;
     @ApiModelProperty(value = "故障总工时")

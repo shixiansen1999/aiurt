@@ -115,10 +115,12 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 //获取每一个班组维修参数数据
                 FaultReportDTO faultReportDTO = faultOrgReport.get(teamId);
                 if (ObjectUtil.isNotEmpty(faultReportDTO)) {
+                    model.setFaultCompletedTasks(Convert.toStr(faultReportDTO.getFaultCompletedTasks()));
                     model.setFaultTotalTime(Convert.toStr(faultReportDTO.getFailureTime()));
                     model.setAssortNum(Convert.toStr(faultReportDTO.getConstructorsNum()));
                     model.setAssortTime(Convert.toStr(faultReportDTO.getConstructionHours()));
                 }else {
+                    model.setFaultCompletedTasks("0");
                     model.setFaultTotalTime("0");
                     model.setAssortNum("0");
                     model.setAssortTime("0");
@@ -214,10 +216,12 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 //获取每一个人员维修参数数据
                 FaultReportDTO faultReportDTO = faultUserReport.get(userId);
                 if (ObjectUtil.isNotEmpty(faultReportDTO)) {
+                    model.setFaultCompletedTasks(Convert.toStr(faultReportDTO.getFaultCompletedTasks()));
                     model.setFaultTotalTime(Convert.toStr(faultReportDTO.getFailureTime()));
                     model.setAssortNum(Convert.toStr(faultReportDTO.getConstructorsNum()));
                     model.setAssortTime(Convert.toStr(faultReportDTO.getConstructionHours()));
                 } else {
+                    model.setFaultCompletedTasks("0");
                     model.setFaultTotalTime("0");
                     model.setAssortNum("0");
                     model.setAssortTime("0");

@@ -159,7 +159,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     }
 
     @Override
-    public Page<SubsystemFaultDTO> getSubsystemFailureReport(Page<SubsystemFaultDTO> page, String time,SubsystemFaultDTO subsystemCode, List<String> deviceTypeCode) {
+    public Page<SubsystemFaultDTO> getSubsystemFailureReport(Page<SubsystemFaultDTO> page, String startTime, String endTime,SubsystemFaultDTO subsystemCode, List<String> deviceTypeCode) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SubsystemFaultDTO> subSystemCodes = new ArrayList<>();
         if (ObjectUtils.isNotEmpty(subsystemCode.getSystemCode())){
@@ -175,9 +175,9 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         if (CollectionUtil.isNotEmpty(subSystemCodes)){
             subSystemCodes.forEach(s->{
                 threadPoolExecutor.execute(() -> {
-                    SubsystemFaultDTO subDTO = csUserSubsystemMapper.getSubsystemFaultDTO(time,s.getSystemCode());
+                    SubsystemFaultDTO subDTO = csUserSubsystemMapper.getSubsystemFaultDTO(startTime,endTime,s.getSystemCode());
                     if(filterValue){
-                        Integer numDuration = csUserSubsystemMapper.getSubsystemFilterFaultDTO(time,s.getSystemCode());
+                        Integer numDuration = csUserSubsystemMapper.getSubsystemFilterFaultDTO(startTime,endTime,s.getSystemCode());
                         subDTO.setNum(numDuration);
                     }
                     subDTO.setFailureNum(subDTO.getCommonFaultNum()+subDTO.getSeriousFaultNum());
@@ -189,12 +189,12 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                     List<SubsystemFaultDTO> list = csUserSubsystemMapper.getSubsystemByDeviceTypeCode(s.getSystemCode(),deviceTypeCode);
                     List<SubsystemFaultDTO> deviceTypeList = new ArrayList<>();
                     list.forEach(l->{
-                        SubsystemFaultDTO deviceType = csUserSubsystemMapper.getSubsystemByDeviceType(time,s.getSystemCode(),l.getDeviceTypeCode());
+                        SubsystemFaultDTO deviceType = csUserSubsystemMapper.getSubsystemByDeviceType(startTime,endTime,s.getSystemCode(),l.getDeviceTypeCode());
                         Integer num = 0;
                         if(filterValue){
-                            num = csUserSubsystemMapper.getFilterNum(time,s.getSystemCode(),l.getDeviceTypeCode());
+                            num = csUserSubsystemMapper.getFilterNum(startTime,endTime,s.getSystemCode(),l.getDeviceTypeCode());
                         }else {
-                            num = csUserSubsystemMapper.getNum(time,s.getSystemCode(),l.getDeviceTypeCode());
+                            num = csUserSubsystemMapper.getNum(startTime,endTime,s.getSystemCode(),l.getDeviceTypeCode());
                         }
                         deviceType.setFailureNum(deviceType.getCommonFaultNum()+deviceType.getSeriousFaultNum());
                         deviceType.setFailureDuration(num);
@@ -326,10 +326,10 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     }
 
     @Override
-    public ModelAndView reportSystemExport(HttpServletRequest request, SubsystemFaultDTO subsystemCode, List<String> deviceTypeCode, String time, String exportField) {
+    public ModelAndView reportSystemExport(HttpServletRequest request, SubsystemFaultDTO subsystemCode, List<String> deviceTypeCode, String startTime, String endTime, String exportField) {
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
         Page<SubsystemFaultDTO> page = new Page<SubsystemFaultDTO>(1, 9999);
-        IPage<SubsystemFaultDTO> failureReportList = this.getSubsystemFailureReport(page,time, subsystemCode, deviceTypeCode);
+        IPage<SubsystemFaultDTO> failureReportList = this.getSubsystemFailureReport(page,startTime,endTime, subsystemCode, deviceTypeCode);
         List<SubsystemFaultDTO> failureReports = failureReportList.getRecords();
         List<SubsystemFaultDTO> dtos = new ArrayList<>();
         for (SubsystemFaultDTO faultDTO : failureReports) {
