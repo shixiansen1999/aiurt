@@ -30,6 +30,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @author : sbx
@@ -80,9 +81,9 @@ public class FaultRemind {
                 // 获取故障所在班组的今日当班人员,并发送消息给今日当班人员
                 List<SysUserTeamDTO> userList = baseApi.getTodayOndutyDetailNoPage(CollUtil.newArrayList(fault.getSysOrgCode()), date);
                 if (CollUtil.isNotEmpty(userList)) {
-                    userList.parallelStream().forEach(u -> {
-                        sendReminderMessage(date, u.getUsername(), "有新的故障发生，请及时查看", SysParamCodeConstant.NO_RECEIVE_FAULT_RING_DURATION);
-                    });
+                    List<String> collect = userList.stream().map(SysUserTeamDTO::getUsername).distinct().collect(Collectors.toList());
+                    String content = "故障编号：" + code + "<br/>";
+                    sendReminderMessage(date, CollUtil.join(collect, ","), "有新的故障发生，请及时查看", content, SysParamCodeConstant.NO_RECEIVE_FAULT_RING_DURATION);
                 }
             } else {
                 // 取消任务
@@ -126,7 +127,8 @@ public class FaultRemind {
             if (b) {
                 log.info("故障领取后两小时未更新任务状态需给予系统需向当前故障维修人发送一条消息通知，并发送提示音（每两小时提醒5秒）");
                 // 发送消息给维修负责人
-                sendReminderMessage(updateTime, faultForSendMessageDTO.getAppointUserName(), "请及时更新维修状态", SysParamCodeConstant.FAULT_RECEIVE_NO_UPDATE_RING_DURATION);
+                String content = "故障编号："+code+"<br/>";
+                sendReminderMessage(updateTime, faultForSendMessageDTO.getAppointUserName(), "请及时更新维修状态", content, SysParamCodeConstant.FAULT_RECEIVE_NO_UPDATE_RING_DURATION);
             } else {
                 // 取消任务
                 scheduler.shutdownNow();
@@ -173,10 +175,10 @@ public class FaultRemind {
      * @param toUser
      * @param msg
      */
-    private void sendReminderMessage(Date date, String toUser, String msg, String ringDurationParam) {
+    private void sendReminderMessage(Date date, String toUser, String msg, String content, String ringDurationParam) {
         // 发送消息提醒领取故障
         // 发送通知
-        MessageDTO messageDTO = new MessageDTO(null, toUser, msg, null);
+        MessageDTO messageDTO = new MessageDTO(null, toUser, msg, content);
 
         // 业务类型，消息类型，消息模板编码，摘要，发布内容
         HashMap<String, Object> map = new HashMap<>(10);
