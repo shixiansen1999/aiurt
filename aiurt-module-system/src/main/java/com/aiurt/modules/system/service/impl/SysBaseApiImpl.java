@@ -3584,4 +3584,12 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return list;
     }
+
+    @Override
+    public List<DeviceType> getAllDeviceType() {
+        List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery()
+                .eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .list();
+        return deviceTypes;
+    }
 }

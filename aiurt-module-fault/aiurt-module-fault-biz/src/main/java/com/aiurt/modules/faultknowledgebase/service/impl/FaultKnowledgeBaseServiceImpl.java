@@ -571,12 +571,70 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     @Override
     public void exportTemplateXls(HttpServletResponse response) throws IOException {
+        /* 原模板下载实现，用回原来的请注释新的实现-begin*/
+//        //获取输入流，原始模板位置
+//        org.springframework.core.io.Resource resource = new ClassPathResource("/templates/knowledgeBase.xlsx");
+//        InputStream resourceAsStream = resource.getInputStream();
+//
+//        //2.获取临时文件
+//        File fileTemp = new File("/templates/knowledgeBase.xlsx");
+//        try {
+//            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+//            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+//        } catch (Exception e) {
+//            log.error(e.getMessage());
+//        }
+//
+//        String path = fileTemp.getAbsolutePath();
+//        TemplateExportParams exportParams = new TemplateExportParams(path);
+//        Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+//        Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+//
+//        CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+//
+//        //线路下拉框
+//        List<DictModel> dictModels5 = bean.queryTableDictItemsByCode("cs_line", "line_name", "line_code");
+//        Map<String, DictModel> collect10 = dictModels5.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
+//        List<DictModel> collect11 = collect10.values().stream().collect(Collectors.toList());
+//        selectList(workbook, "线路", 0, 0, collect11);
+//        //专业下拉框
+//        List<DictModel> dictModels3 = bean.queryTableDictItemsByCode("cs_major", "major_name", "major_code");
+//        Map<String, DictModel> collect6 = dictModels3.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
+//        List<DictModel> collect7 = collect6.values().stream().collect(Collectors.toList());
+//        selectList(workbook, "专业", 1, 1, collect7);
+//
+//        //子系统下拉框
+//        List<DictModel> dictModels4 = bean.queryTableDictItemsByCode("cs_subsystem", "system_name", "system_code");
+//        Map<String, DictModel> collect8 = dictModels4.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
+//        List<DictModel> collect9 = collect8.values().stream().collect(Collectors.toList());
+//        selectList(workbook, "子系统", 2, 2, collect9);
+//
+//        //知识库类别下拉框
+//        List<DictModel> dictModels = bean.queryTableDictItemsByCode("fault_knowledge_base_type", "name", "code");
+//        Map<String, DictModel> collect = dictModels.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
+//        List<DictModel> collect1 = collect.values().stream().collect(Collectors.toList());
+//        selectList(workbook, "知识库类别", 3, 3, collect1);
+//
+//        //设备类型下拉框
+//        List<DictModel> dictModels1 = bean.queryTableDictItemsByCode("device_Type", "name", "code");
+//        Map<String, DictModel> collect2 = dictModels1.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
+//        List<DictModel> collect3 = collect2.values().stream().collect(Collectors.toList());
+//        selectList(workbook, "设备类型", 4, 4, collect3);
+//
+//        //设备组件下拉框
+//        List<DictModel> dictModels2 = bean.queryTableDictItemsByCode("device_assembly", "material_name", "material_code");
+//        Map<String, DictModel> collect4 = dictModels2.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
+//        List<DictModel> collect5 = collect4.values().stream().collect(Collectors.toList());
+//        selectList(workbook, "设备组件", 5, 5, collect5);
+        /* 原模板下载实现，用回原来的请注释新的实现-end*/
+
+        /* 模板下载新的实现，用回原来的请注释新的实现-end*/
         //获取输入流，原始模板位置
-        org.springframework.core.io.Resource resource = new ClassPathResource("/templates/knowledgeBase.xlsx");
+        org.springframework.core.io.Resource resource = new ClassPathResource("/templates/knowledgeBase-new.xlsx");
         InputStream resourceAsStream = resource.getInputStream();
 
         //2.获取临时文件
-        File fileTemp = new File("/templates/knowledgeBase.xlsx");
+        File fileTemp = new File("/templates/knowledgeBase-new.xlsx");
         try {
             //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
             FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
@@ -595,37 +653,31 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         List<DictModel> dictModels5 = bean.queryTableDictItemsByCode("cs_line", "line_name", "line_code");
         Map<String, DictModel> collect10 = dictModels5.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
         List<DictModel> collect11 = collect10.values().stream().collect(Collectors.toList());
-        selectList(workbook, "线路", 0, 0, collect11);
+        selectList(workbook, "线路名称", 0, 0, collect11);
         //专业下拉框
         List<DictModel> dictModels3 = bean.queryTableDictItemsByCode("cs_major", "major_name", "major_code");
         Map<String, DictModel> collect6 = dictModels3.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
         List<DictModel> collect7 = collect6.values().stream().collect(Collectors.toList());
-        selectList(workbook, "专业", 1, 1, collect7);
+        selectList(workbook, "专业名称", 1, 1, collect7);
 
         //子系统下拉框
         List<DictModel> dictModels4 = bean.queryTableDictItemsByCode("cs_subsystem", "system_name", "system_code");
         Map<String, DictModel> collect8 = dictModels4.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
         List<DictModel> collect9 = collect8.values().stream().collect(Collectors.toList());
-        selectList(workbook, "子系统", 2, 2, collect9);
+        selectList(workbook, "子系统名称", 2, 2, collect9);
 
         //知识库类别下拉框
         List<DictModel> dictModels = bean.queryTableDictItemsByCode("fault_knowledge_base_type", "name", "code");
         Map<String, DictModel> collect = dictModels.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
         List<DictModel> collect1 = collect.values().stream().collect(Collectors.toList());
-        selectList(workbook, "知识库类别", 3, 3, collect1);
+        selectList(workbook, "故障现象分类", 3, 3, collect1);
 
         //设备类型下拉框
         List<DictModel> dictModels1 = bean.queryTableDictItemsByCode("device_Type", "name", "code");
         Map<String, DictModel> collect2 = dictModels1.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
         List<DictModel> collect3 = collect2.values().stream().collect(Collectors.toList());
-        selectList(workbook, "设备类型", 4, 4, collect3);
-
-        //设备组件下拉框
-        List<DictModel> dictModels2 = bean.queryTableDictItemsByCode("device_assembly", "material_name", "material_code");
-        Map<String, DictModel> collect4 = dictModels2.stream().collect(Collectors.toMap(DictModel::getValue, Function.identity(), (oldValue, newValue) -> newValue));
-        List<DictModel> collect5 = collect4.values().stream().collect(Collectors.toList());
-        selectList(workbook, "设备组件", 5, 5, collect5);
-
+        selectList(workbook, "设备类型名称", 5, 5, collect3);
+        /* 模板下载新的实现，用回原来的请注释新的实现-end*/
         String fileName = "故障知识库导入模板.xlsx";
 
         try {
@@ -757,7 +809,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     faultKnowledgeBase.setFaultPhenomenonCode(this.getFaultPhenomenonCode("GZXX"));
                     faultKnowledgeBase.setKnowledgeBaseTypeCode(importModel.getKnowledgeBaseTypeCode());
                     faultKnowledgeBase.setFaultPhenomenon(importModel.getFaultPhenomenon());
-                    faultKnowledgeBase.setMaterialCode(null);
+                    faultKnowledgeBase.setDeviceTypeCode(importModel.getDeviceTypeCode());
                     faultKnowledgeBase.setMethod(importModel.getMethod());
                     faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
                     faultKnowledgeBase.setLineCode(importModel.getLineCode());
@@ -812,7 +864,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         if (CollUtil.isEmpty(list)) {
             return;
         }
-        // 校验线路、专业、子系统、故障现象分类、故障部位
+        // 校验线路、专业、子系统、故障现象分类、设备类型
         // todo 待优化，针对通信赶进度设计出来的
         List<CsLine> lines = sysBaseApi.getAllLine();
         List<CsMajorModel> majors = sysBaseApi.getAllMajor();
@@ -825,12 +877,14 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 .eq(FaultKnowledgeBaseType::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .in(FaultKnowledgeBaseType::getName, baseTypes);
         List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(wrapper);
+        List<DeviceType> deviceTypes = sysBaseApi.getAllDeviceType();
         for (FaultKnowledgeBaseImportModel importModel : list) {
             String lineName = importModel.getLineName();
             String majorName = importModel.getMajorName();
             String systemName = importModel.getSystemName();
             String knowledgeBaseTypeName = importModel.getKnowledgeBaseTypeName();
-            String materialName = importModel.getMaterialName();
+            String deviceTypeName = importModel.getDeviceTypeName();
+
             // 线路
             CsLine line = lines.stream().filter(ObjectUtil::isNotEmpty)
                     .filter(l -> ObjectUtil.isNotEmpty(l.getLineName()) && l.getLineName().equals(lineName))
@@ -865,11 +919,26 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                         return true;
                     })
                     .findFirst().orElseGet(FaultKnowledgeBaseType::new);
-
+            // 设备编号为空的时候根据名称去找
+            if(StrUtil.isEmpty(importModel.getDeviceTypeCode())){
+                DeviceType deviceType = deviceTypes.stream().filter(ObjectUtil::isNotEmpty)
+                        .filter(l -> {
+                            if (ObjectUtil.isEmpty(system.getSystemCode())
+                                    || ObjectUtil.isEmpty(l.getName())
+                                    || !system.getSystemCode().equals(l.getSystemCode())
+                                    || !l.getName().equals(deviceTypeName)) {
+                                return false;
+                            }
+                            return true;
+                        })
+                        .findFirst().orElseGet(DeviceType::new);
+                importModel.setDeviceTypeCode(deviceType.getCode());
+            }
             importModel.setLineCode(line.getLineCode());
             importModel.setMajorCode(major.getMajorCode());
             importModel.setSystemCode(system.getSystemCode());
             importModel.setKnowledgeBaseTypeCode(faultKnowledgeBaseType.getCode());
+            importModel.setDeviceTypeCode(importModel.getDeviceTypeCode());
         }
     }
 

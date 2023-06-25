@@ -9,7 +9,6 @@ import java.util.List;
 @Data
 public class FaultKnowledgeBaseImportModel {
 
-
     /**
      * 线路编号
      */
@@ -52,15 +51,15 @@ public class FaultKnowledgeBaseImportModel {
     @Excel(name = "故障现象", width = 15)
     private java.lang.String faultPhenomenon;
     /**
-     * 组件部位编号
+     * 设备类型名称
      */
-    private String materialCode;
-
+    @Excel(name = "设备类型名称", width = 15)
+    private String deviceTypeName;
     /**
-     * 组件部位名称
+     * 设备类型编号
      */
-    @Excel(name = "故障部位名称", width = 15)
-    private String materialName;
+    @Excel(name = "设备类型编号", width = 15)
+    private String deviceTypeCode;
     /**
      * 排查方法
      */

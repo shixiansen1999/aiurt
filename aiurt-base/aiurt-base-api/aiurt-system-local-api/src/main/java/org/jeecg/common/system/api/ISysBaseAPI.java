@@ -1260,5 +1260,11 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<CsSubsystemModel> getAllSubsystem();
+
+    /**
+     * 获取所有的设备类型信息
+     * @return
+     */
+    List<DeviceType> getAllDeviceType();
 }
 
