@@ -58,7 +58,7 @@ public interface ICsSubsystemService extends IService<CsSubsystem> {
      * @param subsystemCode
      * @return
      */
-    List<SubsystemFaultDTO> deviceTypeCodeByNameDTO(String subsystemCode);
+    List<SubsystemFaultDTO> deviceTypeCodeByNameDTO(List<String> subsystemCode);
 
     /**
      * 统计报表-子系统分析-年分钟
@@ -86,4 +86,6 @@ public interface ICsSubsystemService extends IService<CsSubsystem> {
     SystemByCodeDTO csSubsystemByCode(String subsystemCode);
 
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
+
+    List<YearFaultDTO> yearTrendChartFault(String startTime, String endTime, List<String> systemCodes);
 }
