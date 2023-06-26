@@ -65,11 +65,13 @@ public class FaultRemind {
         // 判断是否有效
         boolean b1 = ObjectUtil.isEmpty(date) && ObjectUtil.isEmpty(delay) && ObjectUtil.isEmpty(period);
         if (b1) {
+            log.info("校验失败,故障编号：{}",code);
             return;
         }
 
         // 提醒任务
         Runnable reminderTask = () -> {
+            log.info("进入超时无人领取发送消息及提示音任务，故障编号：{}",code);
             Fault fault = getFault(code);
             // 计算当前时间与故障审核通过时间的时间间隔
             LocalDateTime currentTime = LocalDateTime.now();
@@ -114,10 +116,12 @@ public class FaultRemind {
         // 判断是否有效
         boolean b1 = ObjectUtil.isEmpty(fault) && ObjectUtil.isEmpty(status) && ObjectUtil.isEmpty(updateTime) && ObjectUtil.isEmpty(delay) && ObjectUtil.isEmpty(period);
         if (b1) {
+            log.info("校验失败,故障编号：{}",code);
             return;
         }
         // 提醒任务
         Runnable reminderTask = () -> {
+            log.info("进入超时未更新状态发送消息及提示音任务，故障编号：{}",code);
             // 计算当前时间与故障上报时间的时间间隔
             LocalDateTime currentTime = LocalDateTime.now();
             Duration duration = Duration.between(updateTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(), currentTime);
@@ -131,7 +135,7 @@ public class FaultRemind {
                 sendReminderMessage(updateTime, faultForSendMessageDTO.getAppointUserName(), "请及时更新维修状态", content, SysParamCodeConstant.FAULT_RECEIVE_NO_UPDATE_RING_DURATION);
             } else {
                 // 取消任务
-                scheduler.shutdownNow();
+                scheduler.shutdown();
             }
         };
         // 安排提醒任务，每两小时执行一次
