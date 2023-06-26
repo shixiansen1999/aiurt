@@ -154,5 +154,20 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
      */
     List<ListDTO> sysTemYearAllFault(@Param("systemCode") String systemCode);
 
+    /**
+     * @param startTime
+     * @param endTime
+     * @param systemCode
+     * @param filterValue
+     * @return
+     */
     List<SubsystemFaultDTO> yearTrendChartFault(@Param("startTime")String startTime, @Param("endTime")String endTime, @Param("systemCode")String systemCode, @Param("filterValue")boolean filterValue);
+
+    /**
+     * @param id
+     * @param systemCodes
+     * @return
+     */
+    List<SubsystemFaultDTO> selectSystem(@Param("id")String id, @Param("systemCodes")List<String> systemCodes);
+
 }

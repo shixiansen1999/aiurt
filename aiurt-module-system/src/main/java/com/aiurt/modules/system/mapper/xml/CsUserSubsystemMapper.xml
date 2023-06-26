@@ -289,4 +289,17 @@
     AND DATE_FORMAT(fa.approval_pass_time ,'%Y-%m') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m') and DATE_FORMAT(#{endTime}, '%Y-%m-%d')
     group by yearMonth
     </select>
+
+<select id="selectSystem" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
+    select  s.system_code,s.system_name,s.id,s.shortened_form from cs_user_subsystem csu
+    left join cs_subsystem s on csu.system_id = s.id
+    where  s.del_flag =0 and csu.user_id = #{id}
+    <if test="systemCodes!=null and systemCodes.size()>0 ">
+        and s.system_code in
+        <foreach collection="systemCodes" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </if>
+    group by s.system_code
+    </select>
 </mapper>
