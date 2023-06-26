@@ -44,7 +44,7 @@
         WHERE
         pt.del_flag = 0
         <if test="startTime != null and endTime != null">
-            AND pt.patrol_date BETWEEN #{startTime} AND #{endTime}
+            AND IF(pt.source = 3, pt.end_date, pt.patrol_date) BETWEEN #{startTime} AND #{endTime}
         </if>
         GROUP BY
         ptu.user_id
@@ -64,7 +64,7 @@
         WHERE
         pt.del_flag = 0
         <if test="startTime != null and endTime != null">
-            AND pt.patrol_date BETWEEN #{startTime} AND #{endTime}
+            AND IF(pt.source = 3, pt.end_date, pt.patrol_date) BETWEEN #{startTime} AND #{endTime}
         </if>
         GROUP BY pa.user_id, pt.id
         ) total
@@ -87,7 +87,7 @@
 
     </if>
     <if test="startDate != null and startDate != ''">
-     and DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
+     and DATE_FORMAT(IF(pt.source = 3, pt.end_date, pt.patrol_date),'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
     </if>
     GROUP BY ptu.user_id
 </select>
@@ -109,7 +109,7 @@ JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
 
     </if>
  <if test="startDate != null and startDate != ''">
-     and DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
+     and DATE_FORMAT(IF(pt.source = 3, pt.end_date, pt.patrol_date),'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
     </if>GROUP BY pa.user_id
 </select>
 <select id="getUserOmitNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
@@ -120,7 +120,7 @@ JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
     JOIN patrol_task pt on pt.`code` = ptu.task_code
     where  pt.del_flag = 0   AND  pt.discard_status = 0 and ptu.del_flag = 0
     <if test="startDate != null and startDate != null and endDate != null and endDate != null">
-        AND  pt.patrol_date BETWEEN #{startDate} AND #{endDate}
+        AND  IF(pt.source = 3, pt.end_date, pt.patrol_date) BETWEEN #{startDate} AND #{endDate}
     </if>
     <if test="useIds != null and useIds.size() != 0">
      and ptu.user_id in
@@ -130,7 +130,7 @@ JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
 
     </if>
  <if test="startDate != null and startDate != ''">
-     and DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
+     and DATE_FORMAT(IF(pt.source = 3, pt.end_date, pt.patrol_date),'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
     </if>    GROUP BY ptu.user_id
 </select>
 <select id="getPeopleOmitNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
@@ -149,7 +149,7 @@ JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
 
     </if>
  <if test="startDate != null and startDate != ''">
-     and DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
+     and DATE_FORMAT(IF(pt.source = 3, pt.end_date, pt.patrol_date),'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
     </if>GROUP BY pa.user_id
 </select>
 
@@ -164,7 +164,7 @@ JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
         WHERE
         pt.del_flag = 0
         <if test="startTime != null and endTime != null">
-            AND pt.patrol_date BETWEEN #{startTime} AND #{endTime}
+            AND IF(pt.source = 3, pt.end_date, pt.patrol_date) BETWEEN #{startTime} AND #{endTime}
         </if>
         <if test="userList != null and userList.size() != 0">
             and ptu.user_id in
@@ -189,7 +189,7 @@ JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
         WHERE
         pt.del_flag = 0
         <if test="startTime != null and endTime != null">
-            AND pt.patrol_date BETWEEN #{startTime} AND #{endTime}
+            AND IF(pt.source = 3, pt.end_date, pt.patrol_date) BETWEEN #{startTime} AND #{endTime}
         </if>
         <if test="userList != null and userList.size() != 0">
             and pa.user_id in
@@ -203,15 +203,15 @@ JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
     </select>
 
     <select id="getPatrolTaskNumber" resultType="org.jeecg.common.system.vo.PortraitTaskModel">
-        select year(pt.patrol_date) `year`, count(pt.id) `number`
+        select year(IF(pt.source = 3, pt.end_date, pt.patrol_date)) `year`, count(pt.id) `number`
         from patrol_task_user ptu
             join patrol_task pt
         on (ptu.task_code = pt.code and pt.del_flag = 0)
         where ptu.del_flag = 0
-          and year(pt.patrol_date) between #{fiveYearsAgo}
+          and year(IF(pt.source = 3, pt.end_date, pt.patrol_date)) between #{fiveYearsAgo}
           and #{thisYear}
           and pt.status = #{taskComplete}
           and ptu.user_id = #{userId}
-        group by year(pt.patrol_date)
+        group by year(IF(pt.source = 3, pt.end_date, pt.patrol_date))
     </select>
 </mapper>

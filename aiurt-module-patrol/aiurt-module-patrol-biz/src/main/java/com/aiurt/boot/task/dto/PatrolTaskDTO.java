@@ -45,6 +45,16 @@ public class PatrolTaskDTO extends DictEntity implements Serializable
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "巡检的日期")
     private java.util.Date patrolDate;
+    @Excel(name = "手工下发巡检的开始日期", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "手工下发巡检的开始日期(yyyy-MM-dd)")
+    private java.util.Date startDate;
+    @Excel(name = "手工下发巡检的结束日期", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "手工下发巡检的结束日期(yyyy-MM-dd)")
+    private java.util.Date endDate;
     /*** 巡检开始时间*/
     @JsonFormat(timezone = "GMT+8", pattern = "HH:mm")
     @DateTimeFormat(pattern = "HH:mm")

@@ -404,8 +404,14 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                         map.put("patrolTaskName",patrolTask.getName());
                         List<String>  station = patrolTaskStationMapper.getStationByTaskCode(patrolTask.getCode());
                         map.put("patrolStation",CollUtil.join(station,","));
-                        String patrolDate = DateUtil.format(patrolTask.getPatrolDate(), "yyyy-MM-dd");
-                        map.put("patrolTaskTime",patrolDate);
+                        if (patrolTask.getPatrolDate() != null) {
+                            String patrolDate = DateUtil.format(patrolTask.getPatrolDate(), "yyyy-MM-dd");
+                            map.put("patrolTaskTime",patrolDate);
+                        }else {
+                            String s1 = DateUtil.format(patrolTask.getStartDate(), "yyyy-MM-dd");
+                            String s2 = DateUtil.format(patrolTask.getEndDate(), "yyyy-MM-dd");
+                            map.put("patrolTaskTime",s1+"-"+s2);
+                        }
                         map.put("patrolName", realNames);
 
                         //发送通知

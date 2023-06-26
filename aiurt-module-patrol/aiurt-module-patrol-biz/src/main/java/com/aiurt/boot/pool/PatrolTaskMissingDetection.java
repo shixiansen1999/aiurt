@@ -107,10 +107,15 @@ public class PatrolTaskMissingDetection implements Job {
 //        List<LoginUser> users = sysBaseApi.getUserByRoleCode("String roleCode");
 
         taskList.stream().forEach(l -> {
-            if (null == l.getPatrolDate()) {
+            if (null == l.getPatrolDate() && null == l.getEndDate()) {
                 return;
             }
-            Date patrolDate = l.getPatrolDate();
+            Date patrolDate = null;
+            if (null != l.getEndDate()) {
+                 patrolDate = l.getEndDate();
+            }else {
+                 patrolDate = l.getPatrolDate();
+            }
             if (ObjectUtil.isNotEmpty(l.getEndTime())) {
                 String endTime = DateUtil.format(l.getEndTime(), "HH:mm:ss");
                 patrolDate = DateUtil.parse(DateUtil.format(patrolDate, "yyyy-MM-dd " + endTime));
@@ -146,7 +151,7 @@ public class PatrolTaskMissingDetection implements Job {
                         map.put("patrolTaskName",l.getName());
                         List<String>  station = patrolTaskStationMapper.getStationByTaskCode(l.getCode());
                         map.put("patrolStation", CollUtil.join(station,","));
-                        String date = DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd");
+                        String date = DateUtil.format(patrolDate, "yyyy-MM-dd");
                         map.put("patrolTaskTime",date);
 
                         QueryWrapper<PatrolTaskUser> wrapper = new QueryWrapper<>();

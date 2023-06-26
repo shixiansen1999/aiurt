@@ -1,9 +1,11 @@
 package com.aiurt.boot.task.dto;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * @author zwl
@@ -78,7 +80,22 @@ public class LeadingOutDTO {
     @TableField(exist = false)
     private java.lang.String patrolDate;
 
-
+    /**
+     * 手工下发巡检的开始日期(yyyy-MM-dd)
+     */
+    @Excel(name = "手工下发巡检的开始日期", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "手工下发巡检的开始日期(yyyy-MM-dd)")
+    private java.util.Date startDate;
+    /**
+     * 手工下发巡检的结束日期(yyyy-MM-dd)
+     */
+    @Excel(name = "手工下发巡检的结束日期", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "手工下发巡检的结束日期(yyyy-MM-dd)")
+    private java.util.Date endDate;
     /**
      * 任务巡视起止时间
      */

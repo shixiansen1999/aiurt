@@ -526,8 +526,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         map.put("patrolTaskName",patrolTask.getName());
         List<String> station = patrolTaskStationMapper.getStationByTaskCode(patrolTask.getCode());
         map.put("patrolStation",CollUtil.join(station,","));
-        String patrolDate = DateUtil.format(patrolTask.getPatrolDate(), "yyyy-MM-dd");
-        map.put("patrolTaskTime",patrolDate);
+        if (patrolTask.getPatrolDate() != null) {
+            String patrolDate = DateUtil.format(patrolTask.getPatrolDate(), "yyyy-MM-dd");
+            map.put("patrolTaskTime",patrolDate);
+        }else {
+            String s1 = DateUtil.format(patrolTask.getStartDate(), "yyyy-MM-dd");
+            String s2 = DateUtil.format(patrolTask.getEndDate(), "yyyy-MM-dd");
+            map.put("patrolTaskTime",s1+"-"+s2);
+        }
         if (CollectionUtil.isNotEmpty(taskUsers)) {
             String[] userIds = taskUsers.stream().map(PatrolTaskUser::getUserId).toArray(String[]::new);
             List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
@@ -1360,8 +1366,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     map.put("patrolTaskName",patrolTask.getName());
                     List<String>  station = patrolTaskStationMapper.getStationByTaskCode(patrolTask.getCode());
                     map.put("patrolStation",CollUtil.join(station,","));
-                    String patrolDate = DateUtil.format(patrolTask.getPatrolDate(), "yyyy-MM-dd");
-                    map.put("patrolTaskTime",patrolDate);
+                    if (patrolTask.getPatrolDate() != null) {
+                        String patrolDate = DateUtil.format(patrolTask.getPatrolDate(), "yyyy-MM-dd");
+                        map.put("patrolTaskTime",patrolDate);
+                    }else {
+                        String s1 = DateUtil.format(patrolTask.getStartDate(), "yyyy-MM-dd");
+                        String s2 = DateUtil.format(patrolTask.getEndDate(), "yyyy-MM-dd");
+                        map.put("patrolTaskTime",s1+"-"+s2);
+                    }
                     map.put("patrolName", realNames);
 
                     //发送通知
@@ -1412,7 +1424,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         PatrolTask patrolTask = new PatrolTask();
         patrolTask.setName(patrolTaskManualDTO.getName());
         patrolTask.setCode(PatrolCodeUtil.getTaskCode());
-        patrolTask.setPatrolDate(patrolTaskManualDTO.getPatrolDate());
+        patrolTask.setStartDate(patrolTaskManualDTO.getStartDate());
+        patrolTask.setEndDate(patrolTaskManualDTO.getEndDate());
         patrolTask.setStatus(0);
         patrolTask.setSource(3);
         patrolTask.setDelFlag(0);
@@ -1842,7 +1855,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 .set(PatrolTask::getStartTime, patrolTaskManualDTO.getStartTime()).set(PatrolTask::getEndTime, patrolTaskManualDTO.getEndTime())
                 .set(PatrolTask::getType, patrolTaskManualDTO.getType())
                 .set(PatrolTask::getStandardDuration, patrolTaskManualDTO.getStandardDuration())
-                .set(PatrolTask::getName, patrolTaskManualDTO.getName()).set(PatrolTask::getPatrolDate, patrolTaskManualDTO.getPatrolDate()).eq(PatrolTask::getId, patrolTaskManualDTO.getId());
+                .set(PatrolTask::getName, patrolTaskManualDTO.getName())
+                .set(PatrolTask::getStartDate, patrolTaskManualDTO.getStartDate())
+                .set(PatrolTask::getEndDate, patrolTaskManualDTO.getEndDate())
+                .eq(PatrolTask::getId, patrolTaskManualDTO.getId());
         patrolTaskMapper.update(new PatrolTask(), updateWrapper);
         //删除、保存站点、组织
         saveOrgStation(patrolTaskManualDTO);
@@ -2024,8 +2040,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         map.put("patrolTaskName",patrolMessageDTO.getName());
         List<String> station = patrolTaskStationMapper.getStationByTaskCode(patrolMessageDTO.getCode());
         map.put("patrolStation",CollUtil.join(station,","));
-        String patrolDate = DateUtil.format(patrolMessageDTO.getPatrolDate(), "yyyy-MM-dd");
-        map.put("patrolTaskTime",patrolDate);
+        if (patrolMessageDTO.getPatrolDate() != null) {
+            String patrolDate = DateUtil.format(patrolMessageDTO.getPatrolDate(), "yyyy-MM-dd");
+            map.put("patrolTaskTime",patrolDate);
+        }else {
+            String s1 = DateUtil.format(patrolMessageDTO.getStartDate(), "yyyy-MM-dd");
+            String s2 = DateUtil.format(patrolMessageDTO.getEndDate(), "yyyy-MM-dd");
+            map.put("patrolTaskTime",s1+"-"+s2);
+        }
         if (StrUtil.isNotEmpty(realNames)) {
             map.put("patrolName", realNames);
         } else {
