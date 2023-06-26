@@ -2,6 +2,7 @@ package com.aiurt.modules.subsystem.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -296,10 +297,14 @@ public class CsSubsystemController extends BaseController<CsSubsystem, ICsSubsys
 																   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 																   SubsystemFaultDTO subsystemCode,
 																   @RequestParam(name = "deviceTypeCode",required = false) List<String> deviceTypeCode,
-																   @RequestParam(name = "startTime") String startTime,
-																   @RequestParam(name = "endTime") String endTime,
+																   @RequestParam(name = "startTime",required = false) String startTime,
+																   @RequestParam(name = "endTime",required = false) String endTime,
 																   HttpServletRequest req) {
 		 Page<SubsystemFaultDTO> page = new Page<SubsystemFaultDTO>(pageNo, pageSize);
+		 if (startTime != null && endTime != null) {
+			 startTime = DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(startTime,"yyyy-MM")),"yyyy-MM-dd") ;
+			 endTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
+		 }
 		 page= csSubsystemService.getSubsystemFailureReport(page,startTime,endTime,subsystemCode,deviceTypeCode);
 		 return Result.ok(page);
 	 }
@@ -325,6 +330,21 @@ public class CsSubsystemController extends BaseController<CsSubsystem, ICsSubsys
 		List<YearFaultDTO> pages = csSubsystemService.yearMinuteFault(name);
 		return Result.ok(pages);
 	}
+
+	/**
+	 * 统计报表-子系统分析-趋势图
+	 * @param
+	 * @return
+	 */
+	@ApiOperation(value="统计报表-子系统分析-趋势图", notes="统计报表-子系统分析-趋势图")
+	@GetMapping(value = "/yearTrendChartFault")
+	public Result<List<YearFaultDTO>> yearTrendChartFault(@RequestParam(name = "systemCodes",required = false) List<String> systemCodes,
+														  @RequestParam(name = "startTime",required = false) String startTime,
+														  @RequestParam(name = "endTime",required = false) String endTime) {
+		List<YearFaultDTO> pages = csSubsystemService.yearTrendChartFault(startTime,endTime,systemCodes);
+		return Result.ok(pages);
+	}
+
 	/**
 	 * 统计报表-子系统分析-下拉框
 	 * @param
@@ -332,7 +352,7 @@ public class CsSubsystemController extends BaseController<CsSubsystem, ICsSubsys
 	 */
 	@ApiOperation(value="统计报表-子系统分析-下拉框", notes="统计报表-子系统分析-下拉框")
 	@GetMapping(value = "/DeviceTypeComboBox")
-	public Result<List<SubsystemFaultDTO>> deviceTypeComboBox(@RequestParam(name = "subsystemCode",required = false) String subsystemCode) {
+	public Result<List<SubsystemFaultDTO>> deviceTypeComboBox(@RequestParam(name = "subsystemCode",required = false) List<String> subsystemCode) {
 		List<SubsystemFaultDTO> pages = csSubsystemService.deviceTypeCodeByNameDTO(subsystemCode);
 		return Result.ok(pages);
 	}

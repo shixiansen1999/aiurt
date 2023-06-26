@@ -47,4 +47,6 @@ public class YearFaultDTO {
     private String december ="0";
 
     List<YearFaultDTO> yearFaultDtos;
+
+    List<SubsystemFaultDTO> subsystemFaultDTOS;
 }

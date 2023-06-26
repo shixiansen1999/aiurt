@@ -8,6 +8,10 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.fault.dto.FaultSystemDeviceSumDTO;
+import com.aiurt.modules.fault.dto.FaultSystemReliabilityDTO;
+import com.aiurt.modules.fault.dto.FaultSystemTimesDTO;
+import com.aiurt.modules.largescream.mapper.FaultInformationMapper;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.subsystem.dto.*;
@@ -25,6 +29,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import liquibase.pro.packaged.S;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ObjectUtils;
@@ -63,6 +68,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -91,6 +98,8 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     String filepath;
     @Autowired
     private ISysParamAPI sysParamApi;
+    @Autowired
+    private FaultInformationMapper faultInformationMapper;
     /**
      * 添加
      *
@@ -161,9 +170,9 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     @Override
     public Page<SubsystemFaultDTO> getSubsystemFailureReport(Page<SubsystemFaultDTO> page, String startTime, String endTime,SubsystemFaultDTO subsystemCode, List<String> deviceTypeCode) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SubsystemFaultDTO> subSystemCodes = new ArrayList<>();
-        if (ObjectUtils.isNotEmpty(subsystemCode.getSystemCode())){
-            subSystemCodes.add(csUserSubsystemMapper.selectSubSystem(subsystemCode));
+        List<SubsystemFaultDTO> subSystemCodes;
+        if (ObjectUtils.isNotEmpty(subsystemCode.getSystemCodes())){
+            subSystemCodes = new ArrayList<>(csUserSubsystemMapper.selectSubSystem(subsystemCode));
         }else {
             subSystemCodes = csUserSubsystemMapper.selectByUserId(page,sysUser.getId());
         }
@@ -175,36 +184,60 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         if (CollectionUtil.isNotEmpty(subSystemCodes)){
             subSystemCodes.forEach(s->{
                 threadPoolExecutor.execute(() -> {
-                    SubsystemFaultDTO subDTO = csUserSubsystemMapper.getSubsystemFaultDTO(startTime,endTime,s.getSystemCode());
-                    if(filterValue){
-                        Integer numDuration = csUserSubsystemMapper.getSubsystemFilterFaultDTO(startTime,endTime,s.getSystemCode());
-                        subDTO.setNum(numDuration);
+                    SubsystemFaultDTO subDTO ;
+                    if (filterValue) {
+                        subDTO = csUserSubsystemMapper.getSubsystemFilterFaultDTO(startTime, endTime, s.getSystemCode());
+                    } else {
+                        subDTO = csUserSubsystemMapper.getSubsystemFaultDTO(startTime,endTime,s.getSystemCode());
                     }
-                    subDTO.setFailureNum(subDTO.getCommonFaultNum()+subDTO.getSeriousFaultNum());
-                    subDTO.setSystemCode(s.getSystemCode());subDTO.setSystemName(s.getSystemName());subDTO.setId(s.getId());
-                    subDTO.setShortenedForm(s.getShortenedForm());
-                    subDTO.setCode(subDTO.getSystemCode());subDTO.setName(subDTO.getSystemName());
-                    subDTO.setFailureDuration(subDTO.getNum());
+                    if (ObjectUtil.isNotNull(subDTO)) {
+                        subDTO.setFailureNum(subDTO.getCommonFaultNum()+subDTO.getSeriousFaultNum());
+                        subDTO.setSystemCode(s.getSystemCode());subDTO.setSystemName(s.getSystemName());subDTO.setId(s.getId());
+                        subDTO.setShortenedForm(s.getShortenedForm());
+                        subDTO.setCode(subDTO.getSystemCode());subDTO.setName(subDTO.getSystemName());
+                        //获取子系统可靠度和故障率，平均维修时间，平均响应时间
+                        getSystemReliability(startTime, endTime, s.getSystemCode(),subDTO);
+                        if (subDTO.getFailureNum() != 0) {
+                            BigDecimal bigDecimal = new BigDecimal(subDTO.getFailureNum());
 
-                    List<SubsystemFaultDTO> list = csUserSubsystemMapper.getSubsystemByDeviceTypeCode(s.getSystemCode(),deviceTypeCode);
+                            BigDecimal divide = new BigDecimal(subDTO.getSolutionsNum()* 100 ).divide(bigDecimal, 3, BigDecimal.ROUND_HALF_UP);
+                            subDTO.setSolutionsRate(divide.intValue());
+
+                            BigDecimal divide2 = new BigDecimal(subDTO.getResponseDuration() ).divide(bigDecimal, 0, BigDecimal.ROUND_HALF_UP);
+                            subDTO.setAverageTime(divide2.intValue());
+
+                            BigDecimal divide3 = new BigDecimal(subDTO.getRepairDuration() ).divide(bigDecimal, 0, BigDecimal.ROUND_HALF_UP);
+                            subDTO.setAverageFaultTime(divide3.intValue());
+
+                        }else {
+                            subDTO.setSolutionsRate(0);
+                            subDTO.setAverageTime(0);
+                            subDTO.setAverageFaultTime(0);
+                        }
+
+                    /*List<SubsystemFaultDTO> list = csUserSubsystemMapper.getSubsystemByDeviceTypeCode(s.getSystemCode(),deviceTypeCode);
                     List<SubsystemFaultDTO> deviceTypeList = new ArrayList<>();
                     list.forEach(l->{
-                        SubsystemFaultDTO deviceType = csUserSubsystemMapper.getSubsystemByDeviceType(startTime,endTime,s.getSystemCode(),l.getDeviceTypeCode());
-                        Integer num = 0;
-                        if(filterValue){
-                            num = csUserSubsystemMapper.getFilterNum(startTime,endTime,s.getSystemCode(),l.getDeviceTypeCode());
-                        }else {
-                            num = csUserSubsystemMapper.getNum(startTime,endTime,s.getSystemCode(),l.getDeviceTypeCode());
-                        }
+                        SubsystemFaultDTO deviceType = csUserSubsystemMapper.getSubsystemByDeviceType(startTime,endTime,s.getSystemCode(),l.getDeviceTypeCode(),filterValue);
+//                        Integer num = 0;
+//                        if(filterValue){
+//                            num = csUserSubsystemMapper.getFilterNum(startTime,endTime,s.getSystemCode(),l.getDeviceTypeCode());
+//                        }else {
+//                            num = csUserSubsystemMapper.getNum(startTime,endTime,s.getSystemCode(),l.getDeviceTypeCode());
+//                        }
                         deviceType.setFailureNum(deviceType.getCommonFaultNum()+deviceType.getSeriousFaultNum());
-                        deviceType.setFailureDuration(num);
                         deviceType.setDeviceTypeCode(l.getDeviceTypeCode());
                         deviceType.setDeviceTypeName(l.getDeviceTypeName());
                         deviceType.setName(l.getDeviceTypeName());deviceType.setCode(l.getDeviceTypeCode());deviceType.setId(l.getId());
+                        if (deviceType.getFailureNum() != 0) {
+                            BigDecimal divide = new BigDecimal(deviceType.getSolutionsNum()* 100 ).divide(new BigDecimal(deviceType.getFailureNum()), 3, BigDecimal.ROUND_HALF_UP);
+                            deviceType.setSolutionsRate(divide.intValue());
+                        }
                         deviceTypeList.add(deviceType);
                     });
-                    subDTO.setDeviceTypeList(deviceTypeList);
-                    subsystemFaultDtos.add(subDTO);
+                    subDTO.setDeviceTypeList(deviceTypeList);*/
+                        subsystemFaultDtos.add(subDTO);
+                    }
                 });
             });
         }
@@ -217,6 +250,79 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             log.info("循环方法的线程中断异常", e.getMessage());
         }
         return page.setRecords(subsystemFaultDtos);
+    }
+
+    private void getSystemReliability(String startTime, String endTime, String systemCode,SubsystemFaultDTO subDTO) {
+        subDTO.setReliability("0");
+        subDTO.setFailureRate("0");
+        //查询按系统分类好的并计算了故障消耗总时长的记录
+        List<FaultSystemTimesDTO> systemFaultSum = csSubsystemMapper.getSystemFaultSumBySystemCode(startTime, endTime,systemCode);
+        //查询子系统设备数
+
+        List<FaultSystemDeviceSumDTO> systemDeviceSum = csSubsystemMapper.getLineSystemBySystemCode(systemCode);
+
+        //计划时长
+        Double planTime = null;
+        //实际时长
+        Double actualTime = null;
+
+        if (ObjectUtil.isNotEmpty(systemDeviceSum)) {
+            //遍历所有设备
+            for (FaultSystemDeviceSumDTO faultSystemDeviceSumDTO : systemDeviceSum) {
+                FaultSystemReliabilityDTO faultSystemReliabilityDTO = new FaultSystemReliabilityDTO();
+                //计划时长
+                if (StrUtil.isNotBlank(faultSystemDeviceSumDTO.getShouldWorkTime())){
+                    planTime = Double.valueOf(faultSystemDeviceSumDTO.getShouldWorkTime());
+                }
+                if(StrUtil.isNotBlank(faultSystemDeviceSumDTO.getSystemCode())){
+                    String sumWorkTime = faultInformationMapper.getSumWorkTime(faultSystemDeviceSumDTO.getSystemCode());
+                    if(StrUtil.isNotBlank(sumWorkTime)){
+                        planTime = Double.valueOf(sumWorkTime);
+                    }
+                }
+                actualTime = planTime;
+                if (actualTime != null) {
+                    if (ObjectUtil.isNotEmpty(systemFaultSum)) {
+                        //遍历故障时间
+                        for (FaultSystemTimesDTO faultSystemTimeDTO : systemFaultSum) {
+                            if (ObjectUtil.isNotEmpty(faultSystemTimeDTO) && ObjectUtil.isNotEmpty(faultSystemTimeDTO.getSubSystemCode())) {
+                                //实际时长
+                                if (faultSystemTimeDTO.getSubSystemCode().equals(faultSystemDeviceSumDTO.getSystemCode())) {
+                                    if (ObjectUtil.isNotEmpty(faultSystemTimeDTO.getRepairTime())) {
+                                        Double repairTime = faultSystemTimeDTO.getRepairTime();
+                                        actualTime = actualTime - repairTime;
+                                        Double d = new BigDecimal(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                        faultSystemReliabilityDTO.setActualRuntime(d);
+                                    } else {
+                                        Double d = new BigDecimal(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                        faultSystemReliabilityDTO.setActualRuntime(d);
+                                    }
+                                } else {
+                                    Double d = new BigDecimal(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                    faultSystemReliabilityDTO.setActualRuntime(d);
+                                }
+                            }
+
+                        }
+                    } else {
+                        Double d = new BigDecimal(actualTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                        faultSystemReliabilityDTO.setActualRuntime(d);
+                    }
+//                    planTime = planTime / 60;
+                    Double plan = null;
+                    plan = new BigDecimal(planTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                    faultSystemReliabilityDTO.setScheduledRuntime(plan);
+                    if (planTime <= 0 || actualTime <= 0) {
+                        subDTO.setReliability("0");
+                    } else {
+                        double d = new BigDecimal((faultSystemReliabilityDTO.getActualRuntime()!=null?faultSystemReliabilityDTO.getActualRuntime():0) * 100 / plan).setScale(3, BigDecimal.ROUND_DOWN).doubleValue();
+                        double e = new BigDecimal((subDTO.getFailureNum() != null ? subDTO.getFailureNum() : 0) * 100 / plan).setScale(3, BigDecimal.ROUND_DOWN).doubleValue();
+                        subDTO.setReliability(Double.toString(d));
+                        subDTO.setFailureRate(Double.toString(e));
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -262,7 +368,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     }
 
     @Override
-    public List<SubsystemFaultDTO> deviceTypeCodeByNameDTO(String subsystemCode) {
+    public List<SubsystemFaultDTO> deviceTypeCodeByNameDTO(List<String> subsystemCode) {
         List<SubsystemFaultDTO> list = csUserSubsystemMapper.getSubsystemByDeviceTypeCode(subsystemCode,null);
         return list;
     }
@@ -552,6 +658,110 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 }
             }
         return imporReturnRes(errorLines, successLines, tipMessage,true,url);
+    }
+
+    @Override
+    public List<YearFaultDTO> yearTrendChartFault(String startTime, String endTime, List<String> systemCodes) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Page<SubsystemFaultDTO> page = new Page<SubsystemFaultDTO>(1, 999);
+        List<SubsystemFaultDTO> strings = csUserSubsystemMapper.selectByUserId(page, sysUser.getId());
+        List<YearFaultDTO> yearFaultDtos = new ArrayList<>();
+        List<String> months = getMonths(startTime, endTime);
+        //线程处理
+        ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
+        strings.forEach(s->{
+            SysParamModel filterParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_FILTER);
+            boolean filterValue = "1".equals(filterParamModel.getValue());
+
+            threadPoolExecutor.execute(() -> {
+                List<SubsystemFaultDTO> subDTOs = csUserSubsystemMapper.yearTrendChartFault(startTime, endTime, s.getSystemCode(),filterValue);
+                if (ObjectUtil.isNotNull(subDTOs)) {
+                    for (SubsystemFaultDTO subDTO : subDTOs) {
+                        subDTO.setFailureNum(subDTO.getCommonFaultNum()+subDTO.getSeriousFaultNum());
+                        //获取子系统可靠度和故障率，平均维修时间，平均响应时间
+                        getSystemReliability(startTime, endTime, s.getSystemCode(),subDTO);
+                        if (subDTO.getFailureNum() != 0) {
+                            BigDecimal bigDecimal = new BigDecimal(subDTO.getFailureNum());
+
+                            BigDecimal divide = new BigDecimal(subDTO.getSolutionsNum()* 100 ).divide(bigDecimal, 3, BigDecimal.ROUND_HALF_UP);
+                            subDTO.setSolutionsRate(divide.intValue());
+
+                            BigDecimal divide2 = new BigDecimal(subDTO.getResponseDuration() ).divide(bigDecimal, 0, BigDecimal.ROUND_HALF_UP);
+                            subDTO.setAverageTime(divide2.intValue());
+
+                            BigDecimal divide3 = new BigDecimal(subDTO.getRepairDuration() ).divide(bigDecimal, 0, BigDecimal.ROUND_HALF_UP);
+                            subDTO.setAverageFaultTime(divide3.intValue());
+                        }else {
+                            subDTO.setSolutionsRate(0);
+                            subDTO.setAverageTime(0);
+                            subDTO.setAverageFaultTime(0);
+                        }
+                    }
+                    //找出没有数据的月份
+                    List<String> yearMonth = subDTOs.stream().map(SubsystemFaultDTO::getYearMonth).collect(Collectors.toList());
+                    months.removeAll(yearMonth);
+                }
+                //补充数据
+                if (CollUtil.isNotEmpty(months)) {
+                    for (String month : months) {
+                        SubsystemFaultDTO subsystemFaultDTO = new SubsystemFaultDTO();
+                        subsystemFaultDTO.setYearMonth(month);
+                        subsystemFaultDTO.setFailureNum(0);
+                        subsystemFaultDTO.setSolutionsNum(0);
+                        subsystemFaultDTO.setFailureDuration(0);
+                        subsystemFaultDTO.setRepairDuration(0);
+                        subsystemFaultDTO.setResponseDuration(0);
+                        subsystemFaultDTO.setAverageTime(0);
+                        subsystemFaultDTO.setAverageFaultTime(0);
+                        subsystemFaultDTO.setSolutionsRate(0);
+                        getSystemReliability(startTime, endTime, s.getSystemCode(),subsystemFaultDTO);
+                        subDTOs.add(subsystemFaultDTO);
+                    }
+
+                }
+                YearFaultDTO yearFaultDTO = new YearFaultDTO();
+                yearFaultDTO.setId(s.getId());
+                yearFaultDTO.setName(s.getSystemName());
+                yearFaultDTO.setShortenedForm(s.getShortenedForm());
+                yearFaultDTO.setCode(s.getSystemCode());
+                yearFaultDTO.setSubsystemFaultDTOS(subDTOs);
+                yearFaultDtos.add(yearFaultDTO);
+            });
+        });
+        threadPoolExecutor.shutdown();
+        try {
+            // 等待线程池中的任务全部完成
+            threadPoolExecutor.awaitTermination(100, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            // 处理中断异常
+            log.info("循环方法的线程中断异常", e.getMessage());
+        }
+        return yearFaultDtos;
+    }
+
+    private List<String> getMonths(String startTime, String endTime) {
+        List<String> months = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");//格式化为年月
+
+        Calendar min = Calendar.getInstance();
+        Calendar max = Calendar.getInstance();
+
+        try {
+            min.setTime(sdf.parse(startTime));
+            max.setTime(sdf.parse(endTime));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        min.set(min.get(Calendar.YEAR), min.get(Calendar.MONTH), 1);
+        max.set(max.get(Calendar.YEAR), max.get(Calendar.MONTH), 2);
+
+        Calendar curr = min;
+        while (curr.before(max)) {
+            months.add(sdf.format(curr.getTime()));
+            curr.add(Calendar.MONTH, 1);
+        }
+
+        return months;
     }
 
     public static final class ExcelSelectListUtil {
