@@ -650,4 +650,9 @@ public interface CommonConstant {
   * 大屏故障统计参数（3，本月）
   */
  public static final Integer BOARD_TIME_TYPE_3 = 3;
+
+ /**
+  * 站点是换乘车站。在cs_station中，is_change=1表示该站点是换乘车站
+  */
+ Integer STATION_IS_CHANGE = 1;
 }
