@@ -351,4 +351,27 @@ public interface SysParamCodeConstant {
      * 企业微信跳转地址
      */
     String WECHAT_MESSAGE_URL = "wechat_message_url";
+    /**
+     * 根据配置，获取施工计划导入列表
+     */
+    String CONSTRUCTION_WEEK_PLAN_COMMAND = "construction_week_plan_command";
+
+    /**
+     * 根据配置，传参部门，获取施工计划导入列表
+     */
+    String DEPARTMENT_NAME = "department_name";
+    /**
+     * 根据配置，传参状态，获取施工计划导入列表
+     */
+    String PLAN_ISTATE = "planIstate";
+    /**
+     * 根据配置，传参开始时间，获取施工计划导入列表
+     */
+    String LAST_MONTH = "start_month";
+    /**
+     * 根据配置，传参结束时间，获取施工计划导入列表
+     */
+    String NEW_MONTH = "end_month";
+
+
 }

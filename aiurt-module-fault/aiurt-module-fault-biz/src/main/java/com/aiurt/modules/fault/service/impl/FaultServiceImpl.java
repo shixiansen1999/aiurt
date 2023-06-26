@@ -2059,7 +2059,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             faultKnowledgeBase.setMajorCode(fault.getMajorCode());
             faultKnowledgeBase.setProcessInitiator(0);
             faultKnowledgeBase.setMethod(repairRecord.getMethod());
-            faultKnowledgeBase.setKnowledgeBaseTypeCode("001");
+
+            //
+            FaultKnowledgeBaseType baseType = faultKnowledgeBaseTypeService.getOne(new LambdaQueryWrapper<FaultKnowledgeBaseType>()
+                    .eq(FaultKnowledgeBaseType::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1").orderByAsc(FaultKnowledgeBaseType::getCreateTime));
+            faultKnowledgeBase.setKnowledgeBaseTypeCode(Objects.isNull(baseType) ? "001" : baseType.getCode());
 
             List<FaultCauseSolutionDTO> list = new ArrayList<>();
             FaultCauseSolutionDTO faultCauseSolution = new FaultCauseSolutionDTO();
