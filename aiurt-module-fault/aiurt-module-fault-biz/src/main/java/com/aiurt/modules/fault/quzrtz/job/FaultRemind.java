@@ -77,7 +77,7 @@ public class FaultRemind {
             // 上报五分钟后，且没有人领取故障，发送提醒消息
             boolean b = ObjectUtil.isNotEmpty(fault) && (duration.compareTo(Duration.ofSeconds(delay)) >= 0) && !checkIfSomeoneClaimedFault(fault);
             if (b) {
-                log.info("超过五分钟无人领取此故障，则给予此故障设备班组当班人员发送一条消息通知通知内容，并发送提示音。（每两分钟提醒20秒）");
+                log.info("超时无人领取发送消息及提示音，故障编号：{}", code);
                 // 获取故障所在班组的今日当班人员,并发送消息给今日当班人员
                 List<SysUserTeamDTO> userList = baseApi.getTodayOndutyDetailNoPage(CollUtil.newArrayList(fault.getSysOrgCode()), date);
                 if (CollUtil.isNotEmpty(userList)) {
@@ -125,7 +125,7 @@ public class FaultRemind {
             FaultForSendMessageDTO faultForSendMessageDTO = faultMapper.queryForSendMessage(code, status, updateTime);
             boolean b = (duration.compareTo(Duration.ofSeconds(delay)) >= 0) && ObjectUtil.isNotEmpty(faultForSendMessageDTO);
             if (b) {
-                log.info("故障领取后两小时未更新任务状态需给予系统需向当前故障维修人发送一条消息通知，并发送提示音（每两小时提醒5秒）");
+                log.info("超时未更新状态发送消息及提示音，故障编号：{}", code);
                 // 发送消息给维修负责人
                 String content = "故障编号："+code+"<br/>";
                 sendReminderMessage(updateTime, faultForSendMessageDTO.getAppointUserName(), "请及时更新维修状态", content, SysParamCodeConstant.FAULT_RECEIVE_NO_UPDATE_RING_DURATION);
