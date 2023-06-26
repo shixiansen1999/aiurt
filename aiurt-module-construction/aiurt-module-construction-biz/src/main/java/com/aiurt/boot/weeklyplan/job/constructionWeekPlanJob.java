@@ -59,13 +59,14 @@ public class constructionWeekPlanJob implements Job {
         Map params = new HashMap<String, Object>();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
-        calendar.add(Calendar.MONTH, -1);
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH) + 1;
         int day = calendar.get(Calendar.DAY_OF_MONTH);
+//        int lastMonth = calendar.get(Calendar.MONTH);
         int lastMonth = calendar.get(Calendar.MONTH);
+        int newMonth = calendar.get(Calendar.MONTH)+2;
         String startDate = year + "-" + lastMonth + "-" + day;
-        String endDate = year + "-" + month + "-" + day;
+        String endDate = year + "-" + newMonth + "-" + day;
         params.put("taskDateStart", startDate);
         params.put("taskDateEnd", endDate);
         SysParamModel planIstate = sysParamApi.selectByCode(SysParamCodeConstant.PLAN_ISTATE);
@@ -80,7 +81,6 @@ public class constructionWeekPlanJob implements Job {
         for (int i = 0; i < result.size(); i++) {
             JSONObject plan = result.getJSONObject(i);
 
-            // 获取结果字段,存入test表
             String indocno = plan.getString("indocno");
             String weekday = plan.getString("weekday");
             String taskDate = plan.getString("taskDate");
