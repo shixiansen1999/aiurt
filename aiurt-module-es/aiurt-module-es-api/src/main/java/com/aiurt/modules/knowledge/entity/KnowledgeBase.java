@@ -186,4 +186,11 @@ public class KnowledgeBase {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "修改时间")
     private Date updateTime;
+
+    /**
+     * 线路编号
+     */
+    @Field(type = FieldType.Keyword)
+    @ApiModelProperty(value = "线路编号")
+    private String lineCode;
 }

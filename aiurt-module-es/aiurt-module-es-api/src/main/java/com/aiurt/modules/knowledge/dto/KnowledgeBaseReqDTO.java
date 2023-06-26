@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author
@@ -61,4 +62,9 @@ public class KnowledgeBaseReqDTO implements Serializable {
      */
     @ApiModelProperty(value = "状态(0:待审批,1:已审批,2:已驳回)")
     private Integer status;
+
+    /**
+     * 线路编号集合
+     */
+    private List<String> lineCodes;
 }

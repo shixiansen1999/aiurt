@@ -2,6 +2,7 @@ package com.aiurt.modules.faultknowledgebase.entity;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.common.aspect.annotation.LineFilterColumn;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
@@ -243,6 +244,7 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
      * 线路line
      */
     @ApiModelProperty(value = "线路line")
+    @LineFilterColumn
     private String lineCode;
     /**
      * 线路line
@@ -270,5 +272,9 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
 //    private String solutions;
     @TableField(exist = false)
     private String userName;
-
+    /**
+     * 根据线路过滤的自定义SQl
+     */
+    @TableField(exist = false)
+    private String jointSQL;
 }

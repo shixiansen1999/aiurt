@@ -1266,5 +1266,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<DeviceType> getAllDeviceType();
+
+    /**
+     * 根据站点编号查询线路编号
+     * @param stationCodes
+     * @return
+     */
+    List<String> getLineCodeByStationCode(List<String> stationCodes);
 }
 

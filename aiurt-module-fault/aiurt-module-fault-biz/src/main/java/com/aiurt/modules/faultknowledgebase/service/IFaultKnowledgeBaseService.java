@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultknowledgebase.service;
 
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultknowledgebase.dto.FaultKnowledgeBaseBuildDTO;
 import com.aiurt.modules.faultknowledgebase.dto.RepairSolRecDTO;
@@ -26,6 +27,7 @@ import java.util.List;
  * @Date:   2022-06-24
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase> {
     /**
      * 故障知识库查询
@@ -33,7 +35,7 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @param faultKnowledgeBase
      * @return IPage<faultKnowledgeBase>
      */
-    IPage<FaultKnowledgeBaseBuildDTO> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase);
+    IPage<FaultKnowledgeBaseBuildDTO> readAll(Page<FaultKnowledgeBase> page, HttpServletRequest request, FaultKnowledgeBase faultKnowledgeBase);
 
     /**
      * 故障知识库-分页列表查询(未拆分数据)
@@ -42,7 +44,8 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @param faultKnowledgeBase
      * @return
      */
-    IPage<FaultKnowledgeBase> queryPageList(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase);
+    IPage<FaultKnowledgeBase> queryPageList(Page<FaultKnowledgeBase> page, HttpServletRequest request, FaultKnowledgeBase faultKnowledgeBase);
+
     /**
      * 故障知识库查询，不分页
      * @param faultKnowledgeBase
@@ -123,7 +126,7 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @param knowledgeBaseReqDTO
      * @return
      */
-    IPage<KnowledgeBaseResDTO> search(Page<KnowledgeBaseResDTO> page, KnowledgeBaseReqDTO knowledgeBaseReqDTO);
+    IPage<KnowledgeBaseResDTO> search(Page<KnowledgeBaseResDTO> page, HttpServletRequest request, KnowledgeBaseReqDTO knowledgeBaseReqDTO);
 
     /**
      * 同步故障知识库数据到ES

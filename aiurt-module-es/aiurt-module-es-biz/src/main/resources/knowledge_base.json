@@ -98,6 +98,9 @@
         "type": "date",
         "index": false
       },
+      "lineCode": {
+        "type": "keyword"
+      },
       "reasonSolutions": {
         "type": "nested",
         "properties": {
