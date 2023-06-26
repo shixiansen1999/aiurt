@@ -9,7 +9,6 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.util.JwtUtil;
 import com.aiurt.common.util.PasswordUtil;
-import com.aiurt.common.util.RestUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.config.thirdapp.ThirdAppConfig;
 import com.aiurt.config.thirdapp.ThirdAppTypeItemVo;
@@ -43,13 +42,10 @@ import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -876,7 +872,7 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
             } else if (busType.contains("worklog")) {
                 builder.append("/#/WorkLog/detail/").append(announcement.getBusId());
             } else {
-                builder.append("/#/news/GoMobile").append(announcement.getBusId());
+                builder.append("/#/news/GoMobile");
             }
         }
 
