@@ -69,4 +69,13 @@ public interface IDeviceTypeService extends IService<DeviceType> {
      * @param deviceType
      */
     ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response, DeviceType deviceType);
+
+    /**
+     * 根据专业子系统和某个设备类型获取下面的子树
+     *
+     * @param majorCode
+     * @param systemCode
+     * @return
+     */
+    List<DeviceType> tree(String majorCode, String systemCode);
 }
