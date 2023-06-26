@@ -96,6 +96,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -1220,6 +1221,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         Set<String> idSet = symptomResDTOS.stream().map(SymptomResDTO::getId).collect(Collectors.toSet());
 
         // 查询故障记录使用的记录数
+        DecimalFormat df = new DecimalFormat("#.00");
         Map<String, List<AnalyzeFaultCauseResDTO>> dataMap = new HashMap<>();
         if (CollUtil.isNotEmpty(idSet)) {
             List<AnalyzeFaultCauseResDTO> causeResDTOList = baseMapper.countFaultCauseByIdSeV2(new ArrayList<>(idSet));
@@ -1229,7 +1231,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                     Long sum = resList.stream().filter(Objects::nonNull).map(AnalyzeFaultCauseResDTO::getNum).reduce(0L, Long::sum);
                     resList.stream().forEach(re -> {
                         if (sum != 0L) {
-                            re.setPercentage(NumberUtil.div((float) re.getNum(), (float) sum, 2) * 100 + "");
+                            re.setPercentage(df.format(NumberUtil.div((float) re.getNum(), (float) sum, 2) * 100 ));
                         } else {
                             re.setPercentage("0");
                         }
