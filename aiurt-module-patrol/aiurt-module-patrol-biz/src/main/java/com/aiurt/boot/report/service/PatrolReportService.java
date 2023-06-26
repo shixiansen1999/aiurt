@@ -540,6 +540,18 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             orgCodes.retainAll(orgCodeList);
         }
 
+        //根据线路关联工区过滤班组
+        if (StrUtil.isNotEmpty(lineCode)) {
+            List<CsWorkAreaModel> workAreaByLineCode = sysBaseApi.getWorkAreaByLineCode(lineCode);
+            if (CollUtil.isNotEmpty(workAreaByLineCode)) {
+                List<String> list = new ArrayList<>();
+                for (CsWorkAreaModel csWorkAreaModel : workAreaByLineCode) {
+                    list.addAll(csWorkAreaModel.getOrgCodeList());
+                }
+                orgCodes.retainAll(list);
+            }
+        }
+
         if (CollectionUtil.isEmpty(orgCodes)){
             return new ArrayList<SystemMonthDTO>() ;
         }

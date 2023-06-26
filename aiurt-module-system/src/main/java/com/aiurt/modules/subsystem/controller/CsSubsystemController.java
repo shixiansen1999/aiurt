@@ -341,6 +341,10 @@ public class CsSubsystemController extends BaseController<CsSubsystem, ICsSubsys
 	public Result<List<YearFaultDTO>> yearTrendChartFault(@RequestParam(name = "systemCodes",required = false) List<String> systemCodes,
 														  @RequestParam(name = "startTime",required = false) String startTime,
 														  @RequestParam(name = "endTime",required = false) String endTime) {
+		if (startTime != null && endTime != null) {
+			startTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(startTime,"yyyy-MM")),"yyyy-MM-dd") ;
+			endTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
+		}
 		List<YearFaultDTO> pages = csSubsystemService.yearTrendChartFault(startTime,endTime,systemCodes);
 		return Result.ok(pages);
 	}

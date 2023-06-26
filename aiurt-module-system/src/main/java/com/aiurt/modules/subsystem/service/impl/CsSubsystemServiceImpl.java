@@ -663,16 +663,18 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     @Override
     public List<YearFaultDTO> yearTrendChartFault(String startTime, String endTime, List<String> systemCodes) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Page<SubsystemFaultDTO> page = new Page<SubsystemFaultDTO>(1, 999);
-        List<SubsystemFaultDTO> strings = csUserSubsystemMapper.selectByUserId(page, sysUser.getId());
+
+        List<SubsystemFaultDTO> strings = csUserSubsystemMapper.selectSystem(sysUser.getId(),systemCodes);
         List<YearFaultDTO> yearFaultDtos = new ArrayList<>();
+
         List<String> months = getMonths(startTime, endTime);
         //线程处理
         ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
         strings.forEach(s->{
             SysParamModel filterParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_FILTER);
             boolean filterValue = "1".equals(filterParamModel.getValue());
-
+            List<String> m = new ArrayList<>();
+            m.addAll(months);
             threadPoolExecutor.execute(() -> {
                 List<SubsystemFaultDTO> subDTOs = csUserSubsystemMapper.yearTrendChartFault(startTime, endTime, s.getSystemCode(),filterValue);
                 if (ObjectUtil.isNotNull(subDTOs)) {
@@ -699,11 +701,11 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                     }
                     //找出没有数据的月份
                     List<String> yearMonth = subDTOs.stream().map(SubsystemFaultDTO::getYearMonth).collect(Collectors.toList());
-                    months.removeAll(yearMonth);
+                    m.removeAll(yearMonth);
                 }
                 //补充数据
-                if (CollUtil.isNotEmpty(months)) {
-                    for (String month : months) {
+                if (CollUtil.isNotEmpty(m)) {
+                    for (String month : m) {
                         SubsystemFaultDTO subsystemFaultDTO = new SubsystemFaultDTO();
                         subsystemFaultDTO.setYearMonth(month);
                         subsystemFaultDTO.setFailureNum(0);
