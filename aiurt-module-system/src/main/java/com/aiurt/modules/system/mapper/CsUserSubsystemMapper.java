@@ -56,7 +56,7 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
      * @param deviceTypeCode
      * @return
      */
-    List<SubsystemFaultDTO> getSubsystemByDeviceTypeCode( @Param("subsystemCode") String subsystemCode,@Param("deviceTypeCode") List<String> deviceTypeCode);
+    List<SubsystemFaultDTO> getSubsystemByDeviceTypeCode( @Param("subsystemCode") List<String> subsystemCode,@Param("deviceTypeCode") List<String> deviceTypeCode);
 
     /**
      *  设备类型数据
@@ -66,7 +66,7 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
      * @param deviceTypeCode
      * @return
      */
-    SubsystemFaultDTO getSubsystemByDeviceType(@Param("startTime") String startTime, @Param("endTime")String endTime,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
+    SubsystemFaultDTO getSubsystemByDeviceType(@Param("startTime") String startTime, @Param("endTime")String endTime,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode, @Param("filterValue")boolean filterValue);
 
     /**
      * 查询次数
@@ -127,7 +127,7 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
      * @param subsystemCode
      * @return
      */
-    SubsystemFaultDTO selectSubSystem(@Param("subsystemCode")SubsystemFaultDTO subsystemCode);
+    List<SubsystemFaultDTO> selectSubSystem(@Param("subsystemCode")SubsystemFaultDTO subsystemCode);
 
     /**
      * 查询子系统的维修时长（过滤已挂起的）
@@ -136,7 +136,7 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
      * @param subsystemCode
      * @return
      */
-    Integer getSubsystemFilterFaultDTO(@Param("startTime") String startTime, @Param("endTime")String endTime, @Param("subsystemCode")String subsystemCode);
+    SubsystemFaultDTO  getSubsystemFilterFaultDTO(@Param("startTime") String startTime, @Param("endTime")String endTime, @Param("subsystemCode")String subsystemCode);
 
     /**
      * 查询子系统的下的设备分类的维修时长（过滤已挂起的）
@@ -153,4 +153,6 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
      * @return
      */
     List<ListDTO> sysTemYearAllFault(@Param("systemCode") String systemCode);
+
+    List<SubsystemFaultDTO> yearTrendChartFault(@Param("startTime")String startTime, @Param("endTime")String endTime, @Param("systemCode")String systemCode, @Param("filterValue")boolean filterValue);
 }

@@ -1,5 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="org.jeecg.modules.subsystem.mapper.CsSubsystemMapper">
+<mapper namespace="com.aiurt.modules.subsystem.mapper.CsSubsystemMapper">
 
+<select id="getSystemFaultSumBySystemCode" resultType="com.aiurt.modules.fault.dto.FaultSystemTimesDTO">
+    select cs.system_name,f.sub_system_code,f.line_code,f.happen_time,f.end_time,
+    sum(TIMESTAMPDIFF(minute,f.happen_time,f.end_time)) as repairTime  from fault f
+    left join cs_subSystem cs on f.sub_system_code = cs.system_code
+    <where>
+        f.status > 2
+        <if test="startTime!=null and endTime!=null">
+            and date_format(f.approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{startTime},'%Y-%m-%d')
+            and date_format(f.approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{endTime},'%Y-%m-%d')
+        </if>
+        <if test="systemCode != null and systemCode != ''">
+            and f.sub_system_code =#{systemCode}
+        </if>
+    </where>
+    </select>
+
+<select id="getLineSystemBySystemCode" resultType="com.aiurt.modules.fault.dto.FaultSystemDeviceSumDTO">
+    select
+    rwt.line_code as lineCode,
+    rwt.system_code as systemCode,
+    cs.system_name as systemName,
+    cs.shortened_form as shortenedForm,
+    rwt.should_work_time as shouldWorkTime
+    from reliability_work_time rwt
+    left join cs_subSystem cs  on rwt.system_code = cs.system_code
+    <where>
+        cs.del_flag = 0
+        <if test="systemCode != null and systemCode != ''">
+            and rwt.system_code = #{systemCode}
+        </if>
+
+    </where>
+    </select>
 </mapper>
