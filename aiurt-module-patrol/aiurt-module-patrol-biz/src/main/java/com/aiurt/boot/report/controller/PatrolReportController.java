@@ -7,7 +7,7 @@ import com.aiurt.boot.report.model.FailureReport;
 import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.report.model.PatrolReportModel;
 import com.aiurt.boot.report.model.dto.LineOrStationDTO;
-import com.aiurt.boot.report.model.dto.MonthDTO;
+import com.aiurt.boot.report.model.dto.SystemMonthDTO;
 import com.aiurt.boot.report.service.PatrolReportService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -82,9 +83,14 @@ public class PatrolReportController {
                                                          @RequestParam(name = "stationCode",required = false) List<String> stationCode,
                                                          @RequestParam(name = "startTime",required = false) String startTime,
                                                          @RequestParam(name = "endTime",required = false) String endTime,
+                                                          @RequestParam(name = "systemCode",required = false) String systemCode,
                                                          HttpServletRequest req) {
         Page<FailureReport> page = new Page<FailureReport>(pageNo, pageSize);
-        IPage<FailureReport> pages = reportService.getFailureReport(page,lineCode,stationCode,startTime,endTime);
+        List<String> systemCodes = new ArrayList<>();
+        if (StrUtil.isNotEmpty(systemCode)) {
+            systemCodes.addAll(Arrays.asList(StrUtil.split(systemCode, ",")));
+        }
+        IPage<FailureReport> pages = reportService.getFailureReport(page,lineCode,stationCode,startTime,endTime, systemCodes);
         return Result.ok(pages);
     }
     /**
@@ -95,9 +101,16 @@ public class PatrolReportController {
     @AutoLog(value = "统计报表-子系统故障列表-年图数据", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "统计报表-子系统故障列表-年图数据", notes = "统计报表-子系统故障列表-年图数据")
     @RequestMapping(value = "/monthReport", method = {RequestMethod.GET})
-    public Result<List<MonthDTO>> getMonthNum(@RequestParam(name = "lineCode",required = false) String lineCode,
-                                                   @RequestParam(name = "stationCode",required = false) List<String> stationCode) {
-        List<MonthDTO> monthDtos = reportService.getMonthNum(lineCode,stationCode);
+    public Result<List<SystemMonthDTO>> getMonthNum(@RequestParam(name = "lineCode",required = false) String lineCode,
+                                              @RequestParam(name = "stationCode",required = false) List<String> stationCode,
+                                              @RequestParam(name = "systemCode",required = false) String systemCode,
+                                              @RequestParam(name = "startTime",required = false) String startTime,
+                                              @RequestParam(name = "endTime",required = false) String endTime) {
+        List<String> systemCodes = new ArrayList<>();
+        if (StrUtil.isNotEmpty(systemCode)) {
+            systemCodes.addAll(Arrays.asList(StrUtil.split(systemCode, ",")));
+        }
+        List<SystemMonthDTO> monthDtos = reportService.getMonthNum(lineCode,stationCode,systemCodes,startTime,endTime);
         return Result.ok(monthDtos);
     }
     /**
@@ -108,10 +121,17 @@ public class PatrolReportController {
     @AutoLog(value = "统计报表-班组故障列表-年图数据", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "统计报表-班组故障列表-年图数据", notes = "统计报表-班组故障列表-年图数据")
     @RequestMapping(value = "/monthOrgReport", method = {RequestMethod.GET})
-    public Result<List<MonthDTO>> getMonthOrgNum(@RequestParam(name = "lineCode",required = false) String lineCode,
+    public Result<List<SystemMonthDTO>> getMonthOrgNum(@RequestParam(name = "lineCode",required = false) String lineCode,
                                                  @RequestParam(name = "stationCode",required = false) List<String> stationCode,
-                                                 @RequestParam(name = "systemCode",required = false) List<String> systemCode) {
-        List<MonthDTO> monthDtos = reportService.getMonthOrgNum(lineCode,stationCode,systemCode);
+                                                 @RequestParam(name = "systemCode",required = false) List<String> systemCode ,
+                                                 @RequestParam(name = "orgcodes",required = false) String orgcodes,
+                                                 @RequestParam(name = "startTime",required = false) String startTime,
+                                                 @RequestParam(name = "endTime",required = false) String endTime) {
+        List<String> orgCodeList = new ArrayList<>();
+        if (StrUtil.isNotEmpty(orgcodes)) {
+            orgCodeList.addAll(Arrays.asList(StrUtil.split(orgcodes, ",")));
+        }
+        List<SystemMonthDTO> monthDtos = reportService.getMonthOrgNum(lineCode,stationCode,systemCode,startTime,endTime,orgCodeList);
         return Result.ok(monthDtos);
     }
     /**
@@ -129,9 +149,14 @@ public class PatrolReportController {
                                                                @RequestParam(name = "subsystemCode",required = false) List<String> systemCode,
                                                                @RequestParam(name = "startTime",required = false) String startTime,
                                                                @RequestParam(name = "endTime",required = false) String endTime,
+                                                                @RequestParam(name = "orgcodes",required = false) String orgcodes,
                                                                 HttpServletRequest req) {
         Page<FailureOrgReport> page = new Page<FailureOrgReport>(pageNo, pageSize);
-        IPage<FailureOrgReport> pages = reportService.getFailureOrgReport(page,lineCode,stationCode,startTime,endTime,systemCode);
+        List<String> orgCodeList = new ArrayList<>();
+        if (StrUtil.isNotEmpty(orgcodes)) {
+            orgCodeList.addAll(Arrays.asList(StrUtil.split(orgcodes, ",")));
+        }
+        IPage<FailureOrgReport> pages = reportService.getFailureOrgReport(page,lineCode,stationCode,startTime,endTime,systemCode,orgCodeList);
         return Result.ok(pages);
     }
 
@@ -160,8 +185,13 @@ public class PatrolReportController {
                                      @RequestParam(name = "stationCode",required = false) List<String> stationCode,
                                      @RequestParam(name = "startTime",required = false) String startTime,
                                      @RequestParam(name = "endTime",required = false) String endTime,
+                                     @RequestParam(name = "systemCode",required = false) String systemCode,
                                      @RequestParam(name = "exportField",required = false)String exportField) {
-        return reportService.reportSystemExport(request,lineCode,stationCode,startTime,endTime,exportField);
+        List<String> systemCodes = new ArrayList<>();
+        if (StrUtil.isNotEmpty(systemCode)) {
+            systemCodes.addAll(Arrays.asList(StrUtil.split(systemCode, ",")));
+        }
+        return reportService.reportSystemExport(request,lineCode,stationCode,startTime,endTime,exportField,systemCodes);
     }
         /**
          * 统计分析-班组故障报表导出
@@ -178,8 +208,13 @@ public class PatrolReportController {
                                             @RequestParam(name = "systemCode",required = false)  List<String> systemCode,
                                             @RequestParam(name = "startTime",required = false) String startTime,
                                             @RequestParam(name = "endTime",required = false) String endTime,
+                                            @RequestParam(name = "orgcodes",required = false) String orgcodes,
                                             @RequestParam(name = "exportField",required = false)String exportField) {
-            return reportService.reportOrgExport(request,lineCode,stationCode,startTime,endTime,systemCode,exportField);
+            List<String> orgCodeList = new ArrayList<>();
+            if (StrUtil.isNotEmpty(orgcodes)) {
+                orgCodeList.addAll(Arrays.asList(StrUtil.split(orgcodes, ",")));
+            }
+            return reportService.reportOrgExport(request,lineCode,stationCode,startTime,endTime,systemCode,exportField,orgCodeList);
 
     }
     /**

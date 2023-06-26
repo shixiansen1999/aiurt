@@ -55,9 +55,10 @@ public class FailureReport {
      */
     @ApiModelProperty(value = "报修")
     @Excel(name = "报修", width = 15,groupName = "故障数")
-    private Integer repairNum;
+    private Double repairNum;
     private Double lastMonthNum;
     private Double lastYearNum;
+    private Double lastWeekNum;
     private Double monthNum;
     private Double yearNum;
     @ApiModelProperty(value = "与上个月数据对比增加")
@@ -69,6 +70,10 @@ public class FailureReport {
     @ApiModelProperty(value = "与上个年数据对比增加")
     @Excel(name = "与上个年数据对比增加", width = 15,groupName = "故障数")
     private String lastYearStr;
+
+    @Excel(name = "与上个周数据对比增加", width = 15,groupName = "故障数")
+    private String lastWeekStr;
+
     /**
      * 已解决数
      */
