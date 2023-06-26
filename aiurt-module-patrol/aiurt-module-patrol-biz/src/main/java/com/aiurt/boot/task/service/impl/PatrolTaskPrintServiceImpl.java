@@ -124,8 +124,9 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                 .in(PatrolStandard::getId,standardId)
                 .orderByDesc(PatrolStandard::getPrintTemplate).last("LIMIT 1"));
         String excelName = null;
-        DictModel excelDictModel = sysBaseApi.dictById(patrolStandard.getPrintTemplate());
+        DictModel excelDictModel = new DictModel();
         if (StrUtil.isNotEmpty(patrolStandard.getPrintTemplate())){
+            excelDictModel = sysBaseApi.dictById(patrolStandard.getPrintTemplate());
             excelName = excelDictModel.getValue();
         }else {
             excelName = "telephone_system.xlsx";
@@ -203,8 +204,9 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                 .in(PatrolStandard::getId,standardId)
                 .orderByDesc(PatrolStandard::getPrintTemplate).last("LIMIT 1"));
         String excelName = null;
-        DictModel excelDictModel = sysBaseApi.dictById(patrolStandard.getPrintTemplate());
+        DictModel excelDictModel = new DictModel();
         if (StrUtil.isNotEmpty(patrolStandard.getPrintTemplate())){
+            excelDictModel = sysBaseApi.dictById(patrolStandard.getPrintTemplate());
             excelName = excelDictModel.getValue();
         }else {
             excelName = "telephone_system.xlsx";
@@ -896,5 +898,44 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             stationList.add(station);
         }
         return stationList;
+    }
+
+    public PrintForBasicDTO printForBasic(String id, String standardId) {
+        PatrolTask patrolTask = patrolTaskMapper.selectById(id);
+        Assert.notNull(patrolTask, "未找到对应记录！");
+        PrintForBasicDTO printForBasicDTO = new PrintForBasicDTO();
+        List<PatrolTaskStationDTO> stationInfo = patrolTaskStationMapper.selectStationByTaskCode(patrolTask.getCode());
+        printForBasicDTO.setPatrolStation(stationInfo.stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.joining()));
+        if (StrUtil.isNotEmpty(patrolTask.getEndUserId())) {
+            printForBasicDTO.setPatrolPerson(patrolTaskMapper.getUsername(patrolTask.getEndUserId()));
+        }
+        if (StrUtil.isNotEmpty(patrolTask.getSpotCheckUserId())) {
+            printForBasicDTO.setCheckUserName(patrolTaskMapper.getUsername(patrolTask.getSpotCheckUserId()));
+        }
+        printForBasicDTO.setPatrolDate( DateUtil.format(patrolTask.getSubmitTime(),"yyyy-MM-dd"));
+        printForBasicDTO.setPatrolTime(DateUtil.format(patrolTask.getSubmitTime(),"HH:mm"));
+        printForBasicDTO.setYear(DateUtil.format(patrolTask.getSubmitTime(),"yyyy"));
+        printForBasicDTO.setMonth(DateUtil.format(patrolTask.getSubmitTime(),"MM"));
+        printForBasicDTO.setDay(DateUtil.format(patrolTask.getSubmitTime(),"dd"));
+        if (ObjectUtil.isNotEmpty(patrolTask.getSpotCheckTime())) {
+            printForBasicDTO.setYearSpot(DateUtil.format(patrolTask.getSpotCheckTime(),"yyyy"));
+            printForBasicDTO.setMonthSpot(DateUtil.format(patrolTask.getSpotCheckTime(),"MM"));
+            printForBasicDTO.setDaySpot(DateUtil.format(patrolTask.getSpotCheckTime(),"dd"));
+        }
+        if(StrUtil.isNotEmpty(patrolTask.getSignUrl())&& patrolTask.getSignUrl().indexOf("?")!=-1){
+            int index =  patrolTask.getSignUrl().indexOf("?");
+            SysAttachment sysAttachment = sysBaseApi.getFilePath(patrolTask.getSignUrl().substring(0, index));
+            InputStream inputStream = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
+            if(ObjectUtil.isEmpty(inputStream)){
+               printForBasicDTO.setInputStream(null);
+            } else {
+                //存的obj
+                printForBasicDTO.setInputStream(inputStream);
+            }
+        }else{
+            printForBasicDTO.setInputStream(null);
+        }
+        printForBasicDTO.setPrintDTOList(print(id,standardId));
+        return printForBasicDTO;
     }
 }
