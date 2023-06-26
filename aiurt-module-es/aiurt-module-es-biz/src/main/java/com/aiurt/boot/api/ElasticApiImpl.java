@@ -82,6 +82,7 @@ public class ElasticApiImpl implements ElasticAPI {
             String materialCode = knowledgeBaseReqDTO.getMaterialCode();
             Integer sortFlag = knowledgeBaseReqDTO.getSort();
             Integer status = knowledgeBaseReqDTO.getStatus();
+            List<String> lineCodes = knowledgeBaseReqDTO.getLineCodes();
             AtomicReference<BoolQueryBuilder> boolQueryBuilder = new AtomicReference<>();
 //            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
             // 多字段匹配
@@ -142,6 +143,13 @@ public class ElasticApiImpl implements ElasticAPI {
                 }
                 boolQueryBuilder.get().must(QueryBuilders.termQuery("status", s));
             });
+            // 线路
+            if (CollUtil.isNotEmpty(lineCodes)) {
+                if (ObjectUtil.isEmpty(boolQueryBuilder.get())) {
+                    boolQueryBuilder.set(QueryBuilders.boolQuery());
+                }
+                boolQueryBuilder.get().must(QueryBuilders.termsQuery("lineCode", lineCodes));
+            }
 //            // 备件
 //            if (ObjectUtil.isNotEmpty(materialCode)) {
 //                boolQueryBuilder.must(QueryBuilders.nestedQuery(

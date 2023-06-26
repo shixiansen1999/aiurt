@@ -18,4 +18,12 @@
         #{item}
     </foreach>
     </select>
+    <select id="getStationCodeByMac" resultType="java.lang.String">
+        SELECT IF(cs.is_change=1,cs.change_code, cs.station_code) AS station_code
+        FROM cs_station cs
+        INNER JOIN cs_position_wifi cpw ON cpw.station_code = cs.station_code
+        WHERE cs.del_flag=0 AND cpw.del_flag=0
+        AND cpw.mac=#{mac}
+        limit 1
+    </select>
 </mapper>

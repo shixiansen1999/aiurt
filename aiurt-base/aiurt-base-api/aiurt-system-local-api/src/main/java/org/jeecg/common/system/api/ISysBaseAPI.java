@@ -1033,7 +1033,7 @@ public interface ISysBaseAPI extends CommonAPI {
     String getUserNameByDeptAuthCodeAndRoleCode(List<String> orgCodes, List<String> roleCodes);
 
     /**
-     * 根据站点id获取站点信息
+     * 根据站点code获取站点信息
      *
      * @param stationCode
      * @return
@@ -1188,7 +1188,7 @@ public interface ISysBaseAPI extends CommonAPI {
     List<String> getWifiMacByStationCode(List<String> stationCodes);
 
     /**
-     * 根据mac地址获取站点code
+     * 根据mac地址获取站点code，如果该站点是换乘车站，那获取的就是换乘编码
      * @param mac
      * @return
      */
@@ -1196,6 +1196,7 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据username和stationCode查询sys_user_position_current表，获取站点最近一次的连接时间
+     * 如果stationCode是换乘车站，那就将stationCod转化成换乘编码
      * @param username
      * @param stationCode
      * @return
@@ -1248,5 +1249,30 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     Map<String, String> getDeviceComposeNameByCode(List<String> materialCodes);
+
+    /**
+     * 根据站点编号查询线路编号
+     * @param stationCodes
+     * @return
+     */
+    List<String> getLineCodeByStationCode(List<String> stationCodes);
+
+    /**
+     * 获取所有专业信息
+     */
+    List<CsMajorModel> getAllMajor();
+
+    /**
+     * 获取所有子系统信息
+     *
+     * @return
+     */
+    List<CsSubsystemModel> getAllSubsystem();
+
+    /**
+     * 获取所有的设备类型信息
+     * @return
+     */
+    List<DeviceType> getAllDeviceType();
 }
 

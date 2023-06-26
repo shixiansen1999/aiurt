@@ -15,6 +15,7 @@ import lombok.Data;
 public class LineOrStationDTO {
     private String id;
     private String name;
+    private String shortenedForm;
     private String code;
     private String orgCategory;
 }

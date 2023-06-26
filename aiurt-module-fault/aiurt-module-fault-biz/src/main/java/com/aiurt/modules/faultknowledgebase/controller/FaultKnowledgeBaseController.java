@@ -88,7 +88,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 		Page<FaultKnowledgeBase> page = new Page<FaultKnowledgeBase>(pageNo, pageSize);
-		IPage<FaultKnowledgeBaseBuildDTO> faultKnowledgeBasePage = faultKnowledgeBaseService.readAll(page, faultKnowledgeBase);
+		IPage<FaultKnowledgeBaseBuildDTO> faultKnowledgeBasePage = faultKnowledgeBaseService.readAll(page, req, faultKnowledgeBase);
 		return Result.OK(faultKnowledgeBasePage);
 	}
 
@@ -109,7 +109,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 														   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
 														   HttpServletRequest request, HttpServletResponse response) {
 		Page<FaultKnowledgeBase> page = new Page<FaultKnowledgeBase>(pageNo, pageSize);
-		IPage<FaultKnowledgeBase> faultKnowledgeBasePage = faultKnowledgeBaseService.queryPageList(page, faultKnowledgeBase);
+		IPage<FaultKnowledgeBase> faultKnowledgeBasePage = faultKnowledgeBaseService.queryPageList(page, request, faultKnowledgeBase);
 		return Result.OK(faultKnowledgeBasePage);
 	}
 
@@ -339,6 +339,20 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		return faultKnowledgeBaseService.importExcel(request,response);
+	}
+
+	/**
+	 * 故障知识库excel导入数据
+	 *
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@AutoLog(value = "故障知识库excel导入数据", operateType =  5, operateTypeAlias = "故障知识库excel导入数据", permissionUrl = "/fault/faultKnowledgeBaseList")
+	@ApiOperation(value="故障知识库excel导入数据", notes="故障知识库excel导入数据")
+	@RequestMapping(value = "/import", method = RequestMethod.POST)
+	public Result<?> importExcelData(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		return faultKnowledgeBaseService.importExcelData(request,response);
 	}
 
 	 /**

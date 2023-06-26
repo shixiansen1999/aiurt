@@ -67,14 +67,15 @@
         oar.alm_num,
         oar.deal_user_id,
         oar.create_time,
-        CONCAT(IFNULL(cancel_reason,''), ' ', IFNULL(deal_remark,'')) AS deal_remark,
+        CONCAT(IFNULL(cancel_reason,''), IF(cancel_reason IS NULL OR deal_remark IS NULL, '', '|'), IFNULL(deal_remark,'')) AS deal_remark,
         oar.deal_date_time,
         oar.fault_code,
         d.`code` AS device_code,
         d.station_code,
         d.device_type_code,
         d.major_code,
-        d.system_code AS sub_system_code
+        d.system_code AS sub_system_code,
+        d.line_code
         FROM
         on_alm_record_history oar
         LEFT JOIN device d ON d.id = oar.device_id

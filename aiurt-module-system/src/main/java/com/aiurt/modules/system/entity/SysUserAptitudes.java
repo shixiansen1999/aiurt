@@ -39,6 +39,10 @@ public class SysUserAptitudes implements Serializable {
 	@Excel(name = "用户ID", width = 15)
     @ApiModelProperty(value = "用户ID")
     private String userId;
+    /**证书名称*/
+    @Excel(name = "证书名称", width = 15)
+    @ApiModelProperty(value = "证书名称")
+    private String name;
 	/**证书等级*/
 	@Excel(name = "证书等级", width = 15)
     @ApiModelProperty(value = "证书等级")

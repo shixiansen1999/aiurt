@@ -97,7 +97,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
-import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
@@ -2924,7 +2923,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public JSONObject getCsStationByCode(String stationCode) {
-        CsStation csStation = csStationMapper.selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode, stationCode));
+        CsStation csStation = csStationMapper.selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode, stationCode).eq(CsStation::getDelFlag,CommonConstant.DEL_FLAG_0));
         if (Objects.isNull(csStation)) {
             return null;
         }
@@ -3354,6 +3353,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         if (ObjectUtil.isNull(sysUserPositionCurrent)) {
             return null;
         }
+        // 如果stationCode是换乘车站，将stationCode改成换乘编码
+        CsStation station = csStationMapper.getStationName(stationCode);
+        if (station.getIsChange().equals(CommonConstant.STATION_IS_CHANGE)) {
+            stationCode = station.getChangeCode();
+        }
         // 如果参数的站点和用户当前所在站点相同，返回当前站点的连接时间
         // 如果参数的站点和用户上一站的站点相同，返回上一站的站点的连接时间
         if (StrUtil.equals(stationCode, sysUserPositionCurrent.getStationCode())) {
@@ -3548,5 +3552,66 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         Map<String, String> map = deviceComposes.stream()
                 .collect(Collectors.toMap(k -> k.getMaterialCode(), v -> v.getMaterialName()));
         return map;
+    }
+
+    @Override
+    public List<String> getLineCodeByStationCode(List<String> stationCodes) {
+        if(CollUtil.isEmpty(stationCodes)){
+            return Collections.emptyList();
+        }
+        QueryWrapper<CsStation> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(CsStation::getDelFlag,CommonConstant.DEL_FLAG_0)
+                .in(CsStation::getStationCode,stationCodes);
+        List<CsStation> stations = csStationMapper.selectList(wrapper);
+        List<String> lineCodes = stations.stream()
+                .filter(l -> ObjectUtil.isNotEmpty(l.getLineCode()))
+                .map(CsStation::getLineCode)
+                .distinct()
+                .collect(Collectors.toList());
+        return lineCodes;
+    }
+
+    @Override
+    public List<CsMajorModel> getAllMajor() {
+        List<CsMajor> majors = majorService.lambdaQuery()
+                .eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .list();
+        if (CollUtil.isEmpty(majors)) {
+            return Collections.emptyList();
+        }
+        List<CsMajorModel> list = new ArrayList<>();
+        CsMajorModel majorModel = null;
+        for (CsMajor major : majors) {
+            majorModel = new CsMajorModel();
+            BeanUtils.copyProperties(major, majorModel);
+            list.add(majorModel);
+        }
+        return list;
+    }
+
+    @Override
+    public List<CsSubsystemModel> getAllSubsystem() {
+        List<CsSubsystem> subsystems = csSubsystemService.lambdaQuery()
+                .eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .list();
+        if (CollUtil.isEmpty(subsystems)) {
+            return Collections.emptyList();
+        }
+        List<CsSubsystemModel> list = new ArrayList<>();
+        CsSubsystemModel subsystemModel = null;
+        for (CsSubsystem subsystem : subsystems) {
+            subsystemModel = new CsSubsystemModel();
+            BeanUtils.copyProperties(subsystem, subsystemModel);
+            list.add(subsystemModel);
+        }
+        return list;
+    }
+
+    @Override
+    public List<DeviceType> getAllDeviceType() {
+        List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery()
+                .eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .list();
+        return deviceTypes;
     }
 }
