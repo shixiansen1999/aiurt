@@ -574,6 +574,16 @@ public interface CommonConstant {
  public static final String TECHNICIAN = "technician";
 
  /**
+  * 中心工班长角色编码
+  */
+ String ZXBANZHANG = "zxbanzhang";
+
+ /**
+  * 中心班组成员角色编码
+  */
+ String ZXCHENGYUAN = "zxchengyuan";
+
+ /**
   * 待办任务状态:0待办2待阅
   */
  public static final String TODO_TYPE_0 = "0";
