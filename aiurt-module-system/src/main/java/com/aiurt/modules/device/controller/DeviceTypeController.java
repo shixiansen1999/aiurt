@@ -3,6 +3,7 @@ package com.aiurt.modules.device.controller;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
@@ -27,6 +28,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -389,6 +391,21 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			}
 		});
 		return Result.OK(pageList);
+	}
+
+	/**
+	 * 根据专业子系统获取设备类型树
+	 *
+	 * @param majorCode
+	 * @param systemCode
+	 * @return
+	 */
+	@ApiOperation(value = "根据专业子系统获取设备类型树", notes = "根据专业子系统获取设备类型树")
+	@GetMapping(value = "/tree")
+	public Result<List<DeviceType>> tree(@ApiParam(name = "majorCode", value = "专业编号") @RequestParam String majorCode,
+										 @ApiParam(name = "systemCode", value = "子系统编号") @RequestParam String systemCode) {
+		List<DeviceType> deviceTypes = deviceTypeService.tree(majorCode, systemCode);
+		return Result.OK(deviceTypes);
 	}
 
 	/**
