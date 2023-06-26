@@ -327,6 +327,14 @@ public interface SysParamCodeConstant {
      * 根据配置，传参状态，获取施工计划导入列表
      */
     String PLAN_ISTATE = "planIstate";
+    /**
+     * 根据配置，传参开始时间，获取施工计划导入列表
+     */
+    String LAST_MONTH = "start_month";
+    /**
+     * 根据配置，传参结束时间，获取施工计划导入列表
+     */
+    String NEW_MONTH = "end_month";
 
     /**
      * app端检修工单填写同行人是否可选全部班组

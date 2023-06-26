@@ -62,9 +62,10 @@ public class constructionWeekPlanJob implements Job {
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH) + 1;
         int day = calendar.get(Calendar.DAY_OF_MONTH);
-//        int lastMonth = calendar.get(Calendar.MONTH);
-        int lastMonth = calendar.get(Calendar.MONTH);
-        int newMonth = calendar.get(Calendar.MONTH)+2;
+        SysParamModel start = sysParamApi.selectByCode(SysParamCodeConstant.LAST_MONTH);
+        SysParamModel end = sysParamApi.selectByCode(SysParamCodeConstant.NEW_MONTH);
+        int lastMonth = month-Integer.valueOf(start.getValue());
+        int newMonth = month+Integer.valueOf(end.getValue());
         String startDate = year + "-" + lastMonth + "-" + day;
         String endDate = year + "-" + newMonth + "-" + day;
         params.put("taskDateStart", startDate);
