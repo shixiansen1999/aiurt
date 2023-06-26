@@ -320,9 +320,13 @@ public interface SysParamCodeConstant {
     String CONSTRUCTION_WEEK_PLAN_COMMAND = "construction_week_plan_command";
 
     /**
-     * 根据配置，获取施工计划导入列表
+     * 根据配置，传参部门，获取施工计划导入列表
      */
-    String DEPARTMENT_NAME = "通号中心";
+    String DEPARTMENT_NAME = "department_name";
+    /**
+     * 根据配置，传参状态，获取施工计划导入列表
+     */
+    String PLAN_ISTATE = "planIstate";
 
     /**
      * app端检修工单填写同行人是否可选全部班组
@@ -371,4 +375,27 @@ public interface SysParamCodeConstant {
      * 故障未领取时要给予当班人员提示音（每两分钟提醒20秒）
      */
     String NO_RECEIVE_FAULT_RING_DURATION = "no_receive_fault_ring_duration";
+    /**
+     * 根据配置，获取施工计划导入列表
+     */
+    String CONSTRUCTION_WEEK_PLAN_COMMAND = "construction_week_plan_command";
+
+    /**
+     * 根据配置，传参部门，获取施工计划导入列表
+     */
+    String DEPARTMENT_NAME = "department_name";
+    /**
+     * 根据配置，传参状态，获取施工计划导入列表
+     */
+    String PLAN_ISTATE = "planIstate";
+    /**
+     * 根据配置，传参开始时间，获取施工计划导入列表
+     */
+    String LAST_MONTH = "start_month";
+    /**
+     * 根据配置，传参结束时间，获取施工计划导入列表
+     */
+    String NEW_MONTH = "end_month";
+
+
 }

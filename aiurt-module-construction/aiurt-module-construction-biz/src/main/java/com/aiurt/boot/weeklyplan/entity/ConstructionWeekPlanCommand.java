@@ -35,7 +35,8 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
-	@TableId(type = IdType.ASSIGN_ID)
+//	@TableId(type = IdType.ASSIGN_ID)
+    @TableId(type = IdType.NONE)
     @ApiModelProperty(value = "主键")
     private String id;
 	/**计划令编号*/
@@ -61,12 +62,12 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
 	/**作业单位ID*/
 	@Excel(name = "作业单位ID", width = 15)
     @ApiModelProperty(value = "作业单位ID")
-    @Dict(dictTable = "construction_week_plan_org", dicText = "station_name", dicCode = "id")
+    @Dict(dictTable = "construction_week_plan_org", dicText = "depart_name", dicCode = "id")
     private String orgCode;
     /**辅站编码*/
     @Excel(name = "辅站编码", width = 15)
     @ApiModelProperty(value = "辅站编码")
-    @Dict(dictTable = "construction_week_plan_org", dicText = "station_name", dicCode = "id")
+    @Dict(dictTable = "construction_week_plan_org", dicText = "depart_name", dicCode = "id")
     private String assistStationCode;
 	/**作业日期*/
 	@Excel(name = "作业日期", width = 15, format = "yyyy-MM-dd")

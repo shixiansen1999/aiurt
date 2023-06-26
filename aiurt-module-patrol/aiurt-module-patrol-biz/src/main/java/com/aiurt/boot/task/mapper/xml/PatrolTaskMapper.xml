@@ -903,7 +903,21 @@
                 #{item}
             </foreach>
         </if>
-        ) as lastYearNum
+        ) as lastYearNum,
+        (SELECT COUNT(id)
+        FROM fault WHERE a.system_code = sub_system_code
+        and `status` > 2
+        AND DATE_FORMAT(approval_pass_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(date_sub(#{startTime}, interval 1 week), '%Y-%m-%d') AND DATE_FORMAT(date_sub(#{endTime}, interval 1 week), '%Y-%m-%d')
+        <if test="lineCode != null">
+            AND line_code = #{lineCode}
+        </if>
+        <if test="stationCode != null and stationCode.size > 0">
+            AND station_code IN
+            <foreach collection="stationCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ) as lastWeekNum
         FROM cs_subsystem a
         LEFT JOIN fault c ON a.system_code = c.sub_system_code and c.`status` > 2
         <if test="startTime != null and endTime != null">
@@ -922,6 +936,12 @@
         where a.del_flag = 0
         <if test="id != null">
             AND a.id in (select system_id from cs_user_subsystem where user_id = #{id})
+        </if>
+        <if test="systemCode != null and systemCode.size > 0">
+            AND a.system_code IN
+            <foreach collection="systemCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         </if>
         group by a.id
     </select>
@@ -1111,21 +1131,12 @@
     </select>
     <select id="selectMonth" resultType="com.aiurt.boot.report.model.dto.MonthDTO">
         select a.system_name,a.shortened_form,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '01' or not NULL) as january,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '02' or not NULL) as february,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '03' or not NULL) as march,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '04' or not NULL) as april,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '05' or not NULL) as may,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '06' or not NULL) as june,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '07' or not NULL) as july,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '08' or not NULL) as august,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '09' or not NULL) as september,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '10' or not NULL) as october,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '11' or not NULL) as november,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '12' or not NULL) as december
+        DATE_FORMAT(c.approval_pass_time, '%Y-%m') as approvalPassTime,
+        ifnull(count(c.code),0) as nums
         FROM cs_subsystem a
         LEFT JOIN fault c ON a.system_code = c.sub_system_code
-        and c.`status` > 2 AND DATE_ADD(c.approval_pass_time, INTERVAL 1 YEAR) > NOW()
+        and c.`status` > 2
+        AND DATE_FORMAT( c.approval_pass_time, '%Y-%m-%d' ) BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d' ) AND DATE_FORMAT(#{endTime}, '%Y-%m-%d' )
         <if test="lineCode != null">
             AND c.line_code = #{lineCode}
         </if>
@@ -1135,9 +1146,15 @@
                 #{item}
             </foreach>
         </if>
+        <if test="systemCode != null and systemCode.size > 0">
+            AND a.system_code IN
+            <foreach collection="systemCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
         WHERE a.del_flag = 0
         AND a.id in (select system_id from cs_user_subsystem where user_id = #{id})
-        GROUP BY a.system_name
+        GROUP BY a.system_name,approvalPassTime
     </select>
     <select id="getOrgReport" resultType="com.aiurt.boot.report.model.FailureOrgReport">
         SELECT
@@ -1230,7 +1247,21 @@
                 #{item}
             </foreach>
         </if>
-        ) as lastYearNum
+        ) as lastYearNum,
+        (SELECT COUNT(id)
+        FROM fault WHERE a.org_code = sys_org_code
+        and `status` > 2
+        AND DATE_FORMAT(approval_pass_time, '%Y') BETWEEN DATE_FORMAT(date_sub(#{startTime}, interval 1 week), '%Y-%m-%d') AND DATE_FORMAT(date_sub(#{endTime}, interval 1 week), '%Y-%m-%d')
+        <if test="lineCode != null">
+            AND line_code = #{lineCode}
+        </if>
+        <if test="stationCode != null and stationCode.size > 0">
+            AND station_code IN
+            <foreach collection="stationCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ) as lastWeekNum
         FROM sys_depart a
         LEFT JOIN fault c ON a.org_code = c.sys_org_code and c.`status` > 2
         <if test="startTime != null and endTime != null">
@@ -1253,31 +1284,22 @@
             </foreach>
         </if>
         WHERE a.del_flag = 0
-        <if test="ids != null and ids.size > 0">
+        <if test="orgCodes != null and orgCodes.size > 0">
             AND a.id IN
-            <foreach collection="ids" item="ids" open="(" separator="," close=")">
-                #{ids}
+            <foreach collection="orgCodes" item="item" open="(" separator="," close=")">
+                #{item}
             </foreach>
         </if>
         GROUP BY a.depart_name, a.org_code
     </select>
     <select id="selectMonthOrg" resultType="com.aiurt.boot.report.model.dto.MonthDTO">
         select a.depart_name as orgName,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '01' or not NULL) as january,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '02' or not NULL) as february,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '03' or not NULL) as march,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '04' or not NULL) as april,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '05' or not NULL) as may,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '06' or not NULL) as june,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '07' or not NULL) as july,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '08' or not NULL) as august,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '09' or not NULL) as september,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '10' or not NULL) as october,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '11' or not NULL) as november,
-        COUNT(c.id and DATE_FORMAT(c.approval_pass_time, '%m') = '12' or not NULL) as december
+        DATE_FORMAT(c.approval_pass_time, '%Y-%m') as approvalPassTime,
+        ifnull(count(c.code),0) as nums
         FROM sys_depart a
         LEFT JOIN fault c ON a.org_code = c.sys_org_code
-        and c.`status` > 2 AND DATE_ADD(c.approval_pass_time, INTERVAL 1 YEAR) > NOW()
+        and c.`status` > 2
+        AND DATE_FORMAT( c.approval_pass_time, '%Y-%m-%d' ) BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d' ) AND DATE_FORMAT(#{endTime}, '%Y-%m-%d' )
         <if test="lineCode != null">
             AND c.line_code = #{lineCode}
         </if>
@@ -1300,7 +1322,7 @@
                 #{orgCodes}
             </foreach>
         </if>
-        GROUP BY a.depart_name
+        GROUP BY a.depart_name,approvalPassTime
     </select>
     <select id="selectLine" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
         select a.line_name as name, a.line_code as code
@@ -1318,7 +1340,7 @@
         </if>
     </select>
     <select id="selectSystem" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
-        select a.system_name as name, a.system_code as code
+        select a.system_name as name, a.system_code as code,a.shortened_form
         from cs_subsystem a
                  left join cs_user_subsystem c on c.system_id = a.id
         where c.user_id = #{id}
@@ -1724,6 +1746,12 @@
         <if test="id != null">
             AND a.id in (select system_id from cs_user_subsystem where user_id = #{id})
         </if>
+        <if test="systemCode != null and systemCode.size > 0">
+            AND a.system_code IN
+            <foreach collection="systemCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
         group by a.id
 </select>
 <select id="selectFaultWorkTime" resultType="java.lang.Integer">
@@ -1786,10 +1814,10 @@
         </if>
         WHERE a.del_flag = 0
     <!--    and not EXISTS (select 1 from operation_process where fault_code = c.code and  process_code = 10)-->
-        <if test="ids != null and ids.size > 0">
-            AND a.id IN
-            <foreach collection="ids" item="ids" open="(" separator="," close=")">
-                #{ids}
+        <if test="orgCodes != null and orgCodes.size > 0">
+            AND a.org_code IN
+            <foreach collection="orgCodes" item="item" open="(" separator="," close=")">
+                #{item}
             </foreach>
         </if>
         GROUP BY a.depart_name, a.org_code

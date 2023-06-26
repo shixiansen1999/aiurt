@@ -1,9 +1,9 @@
 package com.aiurt.modules.device.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.modules.device.controller.DeviceTypeController;
@@ -537,6 +537,46 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
             mv.addObject(NormalExcelConstants.DATA_LIST, deviceTypes);
         }
         return mv;
+    }
+
+    @Override
+    public List<DeviceType> tree(String majorCode, String systemCode) {
+        List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery()
+                .eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(DeviceType::getMajorCode, majorCode)
+                .eq(DeviceType::getSystemCode, systemCode)
+                .list();
+        for (DeviceType deviceType : deviceTypes) {
+            deviceType.setValue(deviceType.getCode());
+            deviceType.setText(deviceType.getName());
+        }
+        List<DeviceType> parents = deviceTypes.stream()
+                .filter(l -> "0".equals(l.getPid()))
+                .collect(Collectors.toList());
+        Map<String, List<DeviceType>> childrensMap = deviceTypes.stream()
+                .filter(l -> !"0".equals(l.getPid()))
+                .collect(Collectors.groupingBy(DeviceType::getPid));
+        for (DeviceType deviceType : parents) {
+            this.buildTree(deviceType, childrensMap);
+        }
+        return parents;
+    }
+
+    /**
+     * 构造树形结构
+     *
+     * @param deviceType
+     * @param childrensMap
+     */
+    private void buildTree(DeviceType deviceType, Map<String, List<DeviceType>> childrensMap) {
+        String id = deviceType.getId();
+        List<DeviceType> deviceTypes = childrensMap.get(id);
+        if (CollUtil.isNotEmpty(deviceTypes)) {
+            for (DeviceType type : deviceTypes) {
+                this.buildTree(type, childrensMap);
+            }
+            deviceType.setChildren(deviceTypes);
+        }
     }
 
     String Ccstr(DeviceType deviceType, String str){

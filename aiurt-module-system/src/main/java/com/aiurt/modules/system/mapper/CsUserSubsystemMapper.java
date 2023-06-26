@@ -43,11 +43,12 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
 
     /**
      * 查询
-     * @param time
+     * @param startTime
+     * @param endTime
      * @param subsystemCode
      * @return
      */
-    SubsystemFaultDTO getSubsystemFaultDTO(@Param("time") String time, @Param("subsystemCode") String subsystemCode);
+    SubsystemFaultDTO getSubsystemFaultDTO(@Param("startTime") String startTime, @Param("endTime")String endTime, @Param("subsystemCode") String subsystemCode);
 
     /**
      * 查询
@@ -59,21 +60,23 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
 
     /**
      *  设备类型数据
-     * @param time
+     * @param startTime
+     * @param endTime
      * @param subsystemCode
      * @param deviceTypeCode
      * @return
      */
-    SubsystemFaultDTO getSubsystemByDeviceType(@Param("time") String time,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
+    SubsystemFaultDTO getSubsystemByDeviceType(@Param("startTime") String startTime, @Param("endTime")String endTime,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
 
     /**
      * 查询次数
-     * @param time
+     * @param startTime
+     * @param endTime
      * @param subsystemCode
      * @param deviceTypeCode
      * @return
      */
-    Integer getNum(@Param("time") String time,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
+    Integer getNum(@Param("startTime") String startTime, @Param("endTime")String endTime,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
 
     /**
      * 年次数
@@ -128,20 +131,22 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
 
     /**
      * 查询子系统的维修时长（过滤已挂起的）
-     * @param time
+     * @param startTime
+     * @param endTime
      * @param subsystemCode
      * @return
      */
-    Integer getSubsystemFilterFaultDTO(@Param("time") String time, @Param("subsystemCode")String subsystemCode);
+    Integer getSubsystemFilterFaultDTO(@Param("startTime") String startTime, @Param("endTime")String endTime, @Param("subsystemCode")String subsystemCode);
 
     /**
      * 查询子系统的下的设备分类的维修时长（过滤已挂起的）
-     * @param time
+     * @param startTime
+     * @param endTime
      * @param subsystemCode
      * @param deviceTypeCode
      * @return
      */
-    Integer getFilterNum(@Param("time") String time,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
+    Integer getFilterNum(@Param("startTime") String startTime, @Param("endTime")String endTime,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
     /**
      * 年分钟
      * @param systemCode
