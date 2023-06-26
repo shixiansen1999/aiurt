@@ -5,6 +5,7 @@ import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.Week;
 import cn.hutool.core.util.ObjectUtil;
@@ -27,6 +28,8 @@ import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
 import com.aiurt.modules.worklog.constans.WorkLogConstans;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
+import com.aiurt.modules.worklog.dto.WorkLogIndexDTO;
+import com.aiurt.modules.worklog.dto.WorkLogIndexShowDTO;
 import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
 import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.entity.WorkLogEnclosure;
@@ -56,6 +59,7 @@ import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.system.vo.SysParamModel;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -67,6 +71,7 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -276,7 +281,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         if (!admin) {
-            if(CollUtil.isNotEmpty(departByUserId)){
+            // 首页-工作日志，获取的是本班组的
+            if ("1".equals(param.getIsMyTeam().toString())) {
+                param.setDepartList(Collections.singletonList(user.getOrgId()));
+            } else if(CollUtil.isNotEmpty(departByUserId)){
                 List<String> departIdsByUserId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
                 param.setDepartList(departIdsByUserId);
             }
@@ -378,7 +386,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
         if (!admin) {
-            if(CollUtil.isNotEmpty(departByUserId)){
+            // 首页-工作日志，获取的是本班组的
+            if ("1".equals(param.getIsMyTeam().toString())) {
+                param.setDepartList(Collections.singletonList(user.getOrgId()));
+            }else if(CollUtil.isNotEmpty(departByUserId)){
                 List<String> departIdsByUserId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
                 param.setDepartList(departIdsByUserId);
             }
@@ -1378,6 +1389,79 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
     }
 
+    @Override
+    public WorkLogIndexDTO getOverviewInfo(Date startDate, Date endDate, HttpServletRequest request) {
+        WorkLogIndexDTO workLogIndexDTO = new WorkLogIndexDTO();
+
+        // 查看开始时间到结束时间有多少天
+        int days = (int) DateUtil.between(startDate, endDate, DateUnit.DAY);
+
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+        if (SecurityUtils.getSubject().hasRole("admin") || SecurityUtils.getSubject().hasRole("zhuren")){
+            // 获取所有班组
+            List<SysDepartModel> departList = iSysBaseAPI.getAllSysDepart();
+            // 应提交日志数
+            Integer shouldSubmitNum = 2 * departList.size() * days;
+            // 已提交日志数
+            Integer submitNum = this.baseMapper.getSubmitNum(startDate, endDate, null);
+            // 未提交数，应提交-已提交
+            Integer unSubmitNum = Math.max(shouldSubmitNum - submitNum, 0);
+            // 获取前7个已提交的日志
+            LambdaQueryWrapper<WorkLog> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(WorkLog::getDelFlag, CommonConstant.DEL_FLAG_0);
+            queryWrapper.eq(WorkLog::getStatus, 1);
+            queryWrapper.eq(WorkLog::getOrgId, loginUser.getOrgId());
+            queryWrapper.ge(WorkLog::getSubmitTime, startDate);
+            // 因为endDate是默认00:00:00的，增加一天到第二天的00:00:00
+            queryWrapper.lt(WorkLog::getSubmitTime, DateUtil.offsetDay(endDate, 1));
+            queryWrapper.orderByDesc(WorkLog::getSubmitTime);
+            queryWrapper.last("limit 7");
+            List<WorkLogIndexShowDTO> workLogIndexShowDTOList = this.list(queryWrapper).stream().map(workLog -> {
+                WorkLogIndexShowDTO workLogIndexShowDTO = new WorkLogIndexShowDTO();
+                BeanUtils.copyProperties(workLog, workLogIndexShowDTO);
+                String orgName = iSysBaseAPI.selectAllById(workLog.getOrgId()).getDepartName();
+                workLogIndexShowDTO.setOrgName(orgName);
+                return workLogIndexShowDTO;
+            }).collect(Collectors.toList());
+
+            workLogIndexDTO.setShouldSubmitNum(shouldSubmitNum);
+            workLogIndexDTO.setSubmitNum(submitNum);
+            workLogIndexDTO.setUnSubmitNum(unSubmitNum);
+            workLogIndexDTO.setWorkLogIndexShowDTOList(workLogIndexShowDTOList);
+
+        }else {
+            // 应提交日志数，每个班组每天是2个
+            Integer shouldSubmitNum = 2 * days;
+            // 已提交日志数
+            Integer submitNum = this.baseMapper.getSubmitNum(startDate, endDate, loginUser.getOrgId());
+            // 未提交数，应提交-已提交
+            Integer unSubmitNum = Math.max(shouldSubmitNum - submitNum, 0);
+            // 获取本班组前7个已提交的日志
+            LambdaQueryWrapper<WorkLog> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(WorkLog::getDelFlag, CommonConstant.DEL_FLAG_0);
+            queryWrapper.eq(WorkLog::getStatus, 1);
+            queryWrapper.eq(WorkLog::getOrgId, loginUser.getOrgId());
+            queryWrapper.ge(WorkLog::getSubmitTime, startDate);
+            // 因为endDate是默认00:00:00的，增加一天到第二天的00:00:00
+            queryWrapper.lt(WorkLog::getSubmitTime, DateUtil.offsetDay(endDate, 1));
+            queryWrapper.orderByDesc(WorkLog::getSubmitTime);
+            queryWrapper.last("limit 7");
+            List<WorkLogIndexShowDTO> workLogIndexShowDTOList = this.list(queryWrapper).stream().map(workLog -> {
+                WorkLogIndexShowDTO workLogIndexShowDTO = new WorkLogIndexShowDTO();
+                BeanUtils.copyProperties(workLog, workLogIndexShowDTO);
+                String orgName = iSysBaseAPI.selectAllById(workLog.getOrgId()).getDepartName();
+                workLogIndexShowDTO.setOrgName(orgName);
+                return workLogIndexShowDTO;
+            }).collect(Collectors.toList());
+
+            workLogIndexDTO.setShouldSubmitNum(shouldSubmitNum);
+            workLogIndexDTO.setSubmitNum(submitNum);
+            workLogIndexDTO.setUnSubmitNum(unSubmitNum);
+            workLogIndexDTO.setWorkLogIndexShowDTOList(workLogIndexShowDTOList);
+        }
+        return workLogIndexDTO;
+    }
 
     /**发送消息*/
     public void sendMessage(String orgId,Date date ,Integer flag,String workLogId) {

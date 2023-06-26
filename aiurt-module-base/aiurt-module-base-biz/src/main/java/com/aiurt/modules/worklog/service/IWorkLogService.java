@@ -2,6 +2,7 @@ package com.aiurt.modules.worklog.service;
 
 import com.aiurt.common.result.*;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
+import com.aiurt.modules.worklog.dto.WorkLogIndexDTO;
 import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
 import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.param.LogCountParam;
@@ -151,5 +152,15 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @return
      * */
     Boolean editFlag(Date createTime, Integer  confirmStatus, Integer  checkStatus);
+
+    /**
+     * 获取首页-工作日志
+     * 获取首页工作日志的信息
+     * @param startDate 开始时间
+     * @param endDate   结束时间
+     * @param request   request
+     * @return
+     */
+    WorkLogIndexDTO getOverviewInfo(Date startDate, Date endDate, HttpServletRequest request);
 }
 
