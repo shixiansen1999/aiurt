@@ -334,7 +334,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         PatrolDisposeDTO dispose = new PatrolDisposeDTO();
         dispose.setTaskCode(task.getCode());
         dispose.setTaskName(task.getName());
-        dispose.setOmitDate(task.getPatrolDate());
+        dispose.setOmitDate(task.getPatrolDate()!=null?task.getPatrolDate():task.getEndDate());
         return Result.OK(dispose);
     }
 
@@ -713,6 +713,11 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
                 String format1 = DateUtil.format(e.getEndTime(), "HH:mm");
                 outDTO.setStartAndEndTime(format+"~"+format1);
 
+            }
+            if (e.getStartDate() != null && e.getEndDate() != null) {
+                String s1 = DateUtil.formatDate(e.getStartDate());
+                String s2 = DateUtil.formatDate(e.getEndDate());
+                outDTO.setPatrolDate(s1+"-"+s2);
             }
             if (CollectionUtil.isNotEmpty(e.getStationInfo())){
                 List<String> collect = e.getStationInfo().stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.toList());
