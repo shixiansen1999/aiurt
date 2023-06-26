@@ -29,10 +29,10 @@ public class WorkLogIndexShowDTO implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "提交时间")
     private Date submitTime;
-    /**提交状态:0-未提交 1-已提交*/
-    @ApiModelProperty(value = "提交状态:0-未提交 1-已提交")
-    private Integer status;
     /**确认状态:0-未确认 1-已确认*/
     @ApiModelProperty(value = "确认状态:0-未确认 1-已确认")
     private Integer confirmStatus;
+    /**确认状态翻译*/
+    @ApiModelProperty(value = "确认状态翻译")
+    private String confirmStatusName;
 }
