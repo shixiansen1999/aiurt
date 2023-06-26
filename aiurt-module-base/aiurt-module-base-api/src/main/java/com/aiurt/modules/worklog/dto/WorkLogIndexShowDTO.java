@@ -15,6 +15,9 @@ import java.util.Date;
  */
 @Data
 public class WorkLogIndexShowDTO implements Serializable {
+    /**工作日志id*/
+    @ApiModelProperty(value = "工作日志id")
+    private String id;
     /**班组名称*/
     @ApiModelProperty(value = "班组名称")
     private String orgName;

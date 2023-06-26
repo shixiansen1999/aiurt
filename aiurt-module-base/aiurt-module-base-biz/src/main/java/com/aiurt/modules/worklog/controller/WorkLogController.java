@@ -601,4 +601,23 @@ public class WorkLogController {
         nightWorkLogAutoAdd.execute();
         return Result.ok();
     }
+
+    /**
+     * 批量打印调用接口获取数据
+     * @param pageNo
+     * @param pageSize
+     * @param param
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "工作日志上报-批量打印")
+    @ApiOperation(value="工作日志上报-批量打印", notes="工作日志上报-批量打印")
+    @GetMapping(value = "/batchPrint")
+    public Result<List<List<WorkLogDetailResult>>> batchPrint(@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+                                                      @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+                                                      WorkLogParam param, HttpServletRequest req){
+        Page<WorkLogResult> page = new Page<WorkLogResult>(pageNo, pageSize);
+        List<List<WorkLogDetailResult>> resultList = workLogDepotService.batchPrint(page, param, req);
+        return Result.ok(resultList);
+    }
 }

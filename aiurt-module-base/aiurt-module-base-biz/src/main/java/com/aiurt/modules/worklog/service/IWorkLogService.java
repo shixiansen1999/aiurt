@@ -8,6 +8,7 @@ import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.param.LogCountParam;
 import com.aiurt.modules.worklog.param.WorkLogParam;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
@@ -169,5 +170,14 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @return
      */
     WorkLogIndexDTO getOverviewInfo(Date startDate, Date endDate, HttpServletRequest request);
+
+    /**
+     * 批量打印获取数据
+     * @param page
+     * @param param
+     * @param req
+     * @return
+     */
+    List<List<WorkLogDetailResult>> batchPrint(Page<WorkLogResult> page, WorkLogParam param, HttpServletRequest req);
 }
 

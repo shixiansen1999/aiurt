@@ -8,6 +8,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.Week;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.InspectionApi;
@@ -47,7 +48,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
@@ -70,6 +73,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -78,6 +85,7 @@ import java.util.stream.Collectors;
  * @date 2022/7/20
  * @desc
  */
+@Slf4j
 @Service
 public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> implements IWorkLogService {
 
@@ -1449,6 +1457,56 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
 
         return workLogIndexDTO;
+    }
+
+    @Override
+    public List<List<WorkLogDetailResult>> batchPrint(Page<WorkLogResult> page, WorkLogParam param, HttpServletRequest req) {
+        // 要打印的日志的id
+        List<String> idList;
+        String selections = req.getParameter("selections");
+        if (StrUtil.isNotEmpty(selections)){
+            idList = Arrays.asList(selections.split(","));
+        }else {
+            idList = this.pageList(page, param, req).getRecords().stream().map(WorkLogResult::getId).collect(Collectors.toList());
+        }
+
+        // 打印的日志的id的Set，用这个allIdSet是为了多线程查询。allIdSet->{id1,id2,id3,id4}
+        Set<String> allIdSet = new HashSet<>();
+        // 要打印的日志的id，组合成每个早班晚班，放到set里，防止传入一个早班一个晚班时打印重复的数据，set->{[id1,id2], [id3,id4]}
+        Set<List<String>> set = new HashSet<>();
+        idList.forEach(id->{
+            // 查出每个日志id，对应的晚班(早班)id
+            List<String> sameDayIdList = this.baseMapper.getSameDayIdList(id);
+            Collections.sort(sameDayIdList);
+            set.add(sameDayIdList);
+            allIdSet.addAll(sameDayIdList);
+        });
+
+        Map<String, WorkLogDetailResult> map = new ConcurrentHashMap<>();
+        // 多线程查询，将结构存入map中
+        ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
+        allIdSet.forEach(id->{
+            threadPoolExecutor.execute(()->{
+                WorkLogDetailResult workLogDetailResult = queryWorkLogDetail(id);
+                map.put(id, workLogDetailResult);
+            });
+        });
+        threadPoolExecutor.shutdown();
+        try {
+            // 等待线程池中的任务全部完成
+            threadPoolExecutor.awaitTermination(100, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            // 处理中断异常
+            log.info("循环方法的线程中断异常,{}", e.getMessage());
+        }
+
+        // 最终返回的结果
+        List<List<WorkLogDetailResult>> resultList = new ArrayList<>();
+        set.forEach(perIdList->{
+            List<WorkLogDetailResult> perResult = perIdList.stream().map(map::get).collect(Collectors.toList());
+            resultList.add(perResult);
+        });
+        return resultList;
     }
 
     /**发送消息*/
