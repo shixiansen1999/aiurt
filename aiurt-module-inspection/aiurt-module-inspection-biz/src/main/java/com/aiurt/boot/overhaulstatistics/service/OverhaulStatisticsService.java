@@ -301,6 +301,8 @@ public class OverhaulStatisticsService{
                 resultList = list.stream()
                         .filter(entity -> orgCodeList.stream().anyMatch(value -> value.equals(entity.getOrgCode())))
                         .collect(Collectors.toList());
+            } else {
+                resultList = list;
             }
 
             //过滤通信分部
