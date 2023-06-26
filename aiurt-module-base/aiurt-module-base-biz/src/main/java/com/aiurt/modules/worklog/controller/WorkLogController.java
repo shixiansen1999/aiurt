@@ -362,11 +362,9 @@ public class WorkLogController {
     @AutoLog(value = "工作日志通过id查看")
     @ApiOperation(value="工作日志通过id查看", notes="工作日志通过id查看")
     @GetMapping(value = "/queryWorkLogDetail")
-    public Result<WorkLogDetailResult> queryWorkLogDetail(@RequestParam String id) {
-        Result<WorkLogDetailResult> result = new Result<WorkLogDetailResult>();
-        WorkLogDetailResult detailById = workLogDepotService.queryWorkLogDetail(id);
-        // result.setResult(detailById);
-        return Result.ok(detailById);
+    public Result<List<WorkLogDetailResult>> queryWorkLogDetail(@RequestParam String id) {
+        List<WorkLogDetailResult> list = workLogDepotService.queryWorkLogDetailList(id);
+        return Result.ok(list);
     }
 
     /**

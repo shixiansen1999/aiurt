@@ -264,4 +264,13 @@
             AND org_id=#{orgId}
         </if>
     </select>
+    <select id="getSameDayIdList" resultType="java.lang.String">
+        SELECT t1.id
+        FROM t_work_log t1
+        INNER JOIN (
+            SELECT log_time, org_id
+            FROM t_work_log
+            WHERE id = #{id}
+        ) t2 ON t1.log_time = t2.log_time AND t1.org_id = t2.org_id;
+    </select>
 </mapper>

@@ -131,6 +131,13 @@ public interface IWorkLogService extends IService<WorkLog> {
     WorkLogDetailResult queryWorkLogDetail(String id);
 
     /**
+     * 工作日志通过id查看，但是返回的是早班、晚班的多条数据
+     * @param id
+     * @return
+     */
+    List<WorkLogDetailResult> queryWorkLogDetailList(String id);
+
+    /**
      * 今日工作内容
      * @param nowday
      * @return

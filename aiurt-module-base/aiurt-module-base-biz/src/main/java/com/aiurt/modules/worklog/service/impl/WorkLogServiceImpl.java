@@ -1234,6 +1234,17 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     }
 
     @Override
+    public List<WorkLogDetailResult> queryWorkLogDetailList(String id) {
+        List<WorkLogDetailResult> list = new ArrayList<>();
+        List<String> idList = depotMapper.getSameDayIdList(id);
+        idList.forEach(perId->{
+            WorkLogDetailResult workLogDetailResult = queryWorkLogDetail(perId);
+            list.add(workLogDetailResult);
+        });
+        return list;
+    }
+
+    @Override
     public WorkLogDetailResult queryWorkLogDetail(String id) {
         WorkLogDetailResult workLog = depotMapper.queryWorkLogById(id);
         //签名列表
