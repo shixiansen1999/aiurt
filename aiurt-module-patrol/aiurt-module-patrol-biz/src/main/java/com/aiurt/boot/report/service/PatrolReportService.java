@@ -471,7 +471,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
     public List<SystemMonthDTO> getMonthNum(String lineCode, List<String> stationCode, List<String> systemCodes, String startTime, String endTime) {
         if (startTime != null && endTime != null) {
             startTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(startTime,"yyyy-MM")),"yyyy-MM-dd") ;
-            endTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
+            endTime =DateUtil.format(DateUtil.endOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
 
         }
         if (ObjectUtil.isNotEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
@@ -529,7 +529,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
     public List<SystemMonthDTO> getMonthOrgNum(String lineCode, List<String> stationCode, List<String> systemCode,String startTime, String endTime,List<String> orgCodeList) {
         if (startTime != null && endTime != null) {
             startTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(startTime,"yyyy-MM")),"yyyy-MM-dd") ;
-            endTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
+            endTime =DateUtil.format(DateUtil.endOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
 
         }
 

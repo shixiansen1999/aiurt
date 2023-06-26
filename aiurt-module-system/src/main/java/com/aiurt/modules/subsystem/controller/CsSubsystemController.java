@@ -303,7 +303,7 @@ public class CsSubsystemController extends BaseController<CsSubsystem, ICsSubsys
 		 Page<SubsystemFaultDTO> page = new Page<SubsystemFaultDTO>(pageNo, pageSize);
 		 if (startTime != null && endTime != null) {
 			 startTime = DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(startTime,"yyyy-MM")),"yyyy-MM-dd") ;
-			 endTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
+			 endTime =DateUtil.format(DateUtil.endOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
 		 }
 		 page= csSubsystemService.getSubsystemFailureReport(page,startTime,endTime,subsystemCode,deviceTypeCode);
 		 return Result.ok(page);
@@ -343,7 +343,7 @@ public class CsSubsystemController extends BaseController<CsSubsystem, ICsSubsys
 														  @RequestParam(name = "endTime",required = false) String endTime) {
 		if (startTime != null && endTime != null) {
 			startTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(startTime,"yyyy-MM")),"yyyy-MM-dd") ;
-			endTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
+			endTime =DateUtil.format(DateUtil.endOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
 		}
 		List<YearFaultDTO> pages = csSubsystemService.yearTrendChartFault(startTime,endTime,systemCodes);
 		return Result.ok(pages);
