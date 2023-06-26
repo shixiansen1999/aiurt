@@ -348,7 +348,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param endTime
      * @return
      */
-    IPage<FailureReport> getFailureReport(Page<FailureReport>page,@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
+    IPage<FailureReport> getFailureReport(Page<FailureReport>page,@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime,@Param("systemCode")List<String> systemCode);
 
     /**
      * 查询数量
@@ -381,12 +381,12 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param stationCode
      * @return
      */
-    List<MonthDTO> selectMonth(@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode);
+    List<MonthDTO> selectMonth(@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("systemCode")List<String> systemCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
 
     /**
      * 查询班组报表
      * @param page
-     * @param ids
+     * @param orgCodes
      * @param lineCode
      * @param stationCode
      * @param startTime
@@ -394,7 +394,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param systemCode
      * @return
      */
-    IPage<FailureOrgReport> getOrgReport(Page<FailureOrgReport> page, @Param("ids")List<String> ids, @Param("lineCode") String lineCode, @Param("stationCode") List<String> stationCode, @Param("startTime") String startTime, @Param("endTime")String endTime, @Param("systemCode")  List<String> systemCode);
+    IPage<FailureOrgReport> getOrgReport(Page<FailureOrgReport> page, @Param("orgCodes")List<String> orgCodes, @Param("lineCode") String lineCode, @Param("stationCode") List<String> stationCode, @Param("startTime") String startTime, @Param("endTime")String endTime, @Param("systemCode")  List<String> systemCode);
 
     /**
      * 查询班组时间
@@ -404,7 +404,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param systemCode
      * @return
      */
-    List<MonthDTO> selectMonthOrg(@Param("orgCodes") List<String> orgCodes,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("systemCode") List<String> systemCode);
+    List<MonthDTO> selectMonthOrg(@Param("orgCodes") List<String> orgCodes,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("systemCode") List<String> systemCode, @Param("startTime") String startTime, @Param("endTime")String endTime);
 
     /**
      * 权限查询
@@ -555,7 +555,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param endTime
      * @return
      */
-    List<FailureReport> getFilterFailureReport(Page<FailureReport>page,@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
+    List<FailureReport> getFilterFailureReport(Page<FailureReport>page,@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime,@Param("systemCode")List<String> systemCode);
 
     /**
      * 统计报表-故障-统计子系统发生故障时间（过滤挂起的）
@@ -572,7 +572,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     /**
      * 统计报表-故障-统计各个部门故障已解决数（过滤挂起的）
      * @param page
-     * @param ids
+     * @param orgCodes
      * @param lineCode
      * @param stationCode
      * @param startTime
@@ -580,7 +580,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param systemCode
      * @return
      */
-    List<FailureOrgReport> getFilterOrgReport(Page<FailureOrgReport> page, @Param("ids")List<String> ids, @Param("lineCode") String lineCode, @Param("stationCode") List<String> stationCode, @Param("startTime") String startTime, @Param("endTime")String endTime, @Param("systemCode")  List<String> systemCode);
+    List<FailureOrgReport> getFilterOrgReport(Page<FailureOrgReport> page, @Param("orgCodes")List<String> orgCodes, @Param("lineCode") String lineCode, @Param("stationCode") List<String> stationCode, @Param("startTime") String startTime, @Param("endTime")String endTime, @Param("systemCode")  List<String> systemCode);
     /**
      * 统计报表中巡视任务下的维修人工单数量(人员维度)
      */
