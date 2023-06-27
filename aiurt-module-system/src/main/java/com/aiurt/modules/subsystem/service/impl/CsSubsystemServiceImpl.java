@@ -315,7 +315,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                         subDTO.setReliability("0");
                     } else {
                         double d = new BigDecimal((faultSystemReliabilityDTO.getActualRuntime()!=null?faultSystemReliabilityDTO.getActualRuntime():0) * 100 / plan).setScale(3, BigDecimal.ROUND_DOWN).doubleValue();
-                        double e = new BigDecimal((subDTO.getFailureNum() != null ? subDTO.getFailureNum() : 0) * 100 / plan).setScale(3, BigDecimal.ROUND_DOWN).doubleValue();
+                        double e = new BigDecimal((subDTO.getFailureNum() != null ? subDTO.getFailureNum() : 0) * 100 / plan).setScale(6, BigDecimal.ROUND_DOWN).doubleValue();
                         subDTO.setReliability(Double.toString(d));
                         subDTO.setFailureRate(Double.toString(e));
                     }
