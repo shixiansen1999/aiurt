@@ -1,7 +1,7 @@
 package com.aiurt.boot.overhaulstatistics.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.overhaulstatistics.service.OverhaulStatisticsService;
-import com.aiurt.boot.task.dto.OverhaulStatisticsDTO;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTOS;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -13,9 +13,11 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-;
+
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
+import java.util.Arrays;
+
+;
 
 /**
  * @author zwl
@@ -42,9 +44,13 @@ public class OverhaulStatisticsController {
     @ApiOperation(value = "检修-统计分析查询", notes = "检修-统计分析查询")
     @RequestMapping(value = "/getOverhaulList", method = RequestMethod.GET)
     public Result<IPage<OverhaulStatisticsDTOS>> getOverhaulList(OverhaulStatisticsDTOS condition,
+                                                                 @RequestParam(name="orgCodes",required = false) String orgCodes,
                                                                 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                                                 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
                                                                  HttpServletRequest req) {
+        if (StrUtil.isNotEmpty(orgCodes)) {
+            condition.setOrgCodeList(Arrays.asList(StrUtil.split(orgCodes, ",")));
+        }
         Page<OverhaulStatisticsDTOS> pageList = new Page<>(pageNo, pageSize);
         Page<OverhaulStatisticsDTOS> overhaulList = overhaulStatisticsService.getOverhaulList(pageList, condition);
         return Result.OK(overhaulList);

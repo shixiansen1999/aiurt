@@ -266,7 +266,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
     @RequestMapping(value = "/getMyInfo", method = RequestMethod.GET)
     public Result<List<SysAnnouncement>> getMyInfo(SysAnnouncement sysAnnouncement,
                                                         HttpServletRequest req) {
-        Result<List<SysAnnouncement>> result = new Result<>();
+        // Result<List<SysAnnouncement>> result = new Result<>();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysAnnouncement> myInfo = sysInfoListMapper.getMyInfo( sysUser.getId());
         List<SysAnnouncement> list = new ArrayList<>();
@@ -279,11 +279,9 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
             result.setResult(page.setRecords(myInfo));
             return result;*/
             for (SysAnnouncement announcement : myInfo) {
-                if (ObjectUtil.isNotEmpty(announcement.getEndTime())) {
-                    Date date = new Date();
-                    if (announcement.getEndTime().before(date)) {
-                        continue;
-                    }
+                Date date = new Date();
+                if (ObjectUtil.isEmpty(announcement.getEndTime()) || announcement.getEndTime().before(date)) {
+                    continue;
                 }
                 String msgContent = announcement.getMsgContent();
                 String replace = StrUtil.replace(msgContent, "<p>", "");
@@ -300,12 +298,12 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
                 announcement.setMsgContent(replace1);
                 bdInfoListService.getUserNames(announcement);
                 list.add(announcement);
-                result.setSuccess(true);
-                result.setResult(list);
-                return result;
+                // result.setSuccess(true);
+                // result.setResult(list);
+                // return result;
             }
         }
-        return result;
+        return Result.ok(list);
     }
 
     /**

@@ -15,6 +15,7 @@ import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.report.model.PatrolReportModel;
 import com.aiurt.boot.report.model.dto.LineOrStationDTO;
 import com.aiurt.boot.report.model.dto.MonthDTO;
+import com.aiurt.boot.report.model.dto.SystemMonthDTO;
 import com.aiurt.boot.report.utils.PatrolDateUtils;
 import com.aiurt.boot.screen.service.PatrolScreenService;
 import com.aiurt.boot.statistics.service.PatrolStatisticsService;
@@ -37,6 +38,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -67,10 +69,10 @@ public class PatrolReportService {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> orgCodes = sysBaseApi.getDepartByUser(1);
         List<String> orgIdList = sysBaseApi.getDepartByUser(0);
-        if(ObjectUtil.isNotEmpty(report.getOrgCode())) {
-            SysDepartModel departByOrgCode = sysBaseApi.getDepartByOrgCode(report.getOrgCode());
-            orgCodes = orgCodes.stream().filter(u->report.getOrgCode().contains(u)).collect(Collectors.toList());
-            orgIdList = orgIdList.stream().filter(u->departByOrgCode.getId().contains(u)).collect(Collectors.toList());
+        if(ObjectUtil.isNotEmpty(report.getOrgCodeList())) {
+            List<String> ids = sysBaseApi.queryOrgIdsByOrgCodes(report.getOrgCodeList());
+            orgCodes.retainAll(report.getOrgCodeList());
+            orgIdList.retainAll(ids);
         }
         //根据线路关联工区过滤班组
         if (StrUtil.isNotEmpty(report.getLineCode())) {
@@ -83,13 +85,10 @@ public class PatrolReportService {
                 List<String> orgIds = sysBaseApi.queryOrgIdsByOrgCodes(orgCodeList);
                 orgCodes.retainAll(orgCodeList);
                 orgIdList.retainAll(orgIds);
+            } else {
+                return  pageList.setRecords(new ArrayList<>());
             }
         }
-
-        if(CollUtil.isEmpty(orgCodes)&&(!user.getRoleCodes().contains("admin")||!user.getRoleCodes().contains("director"))) {
-            return  pageList.setRecords(new ArrayList<>());
-        }
-
 
         report.setOrgCodeList(orgCodes);
         if(ObjectUtil.isNotEmpty(report.getLineCode()))
@@ -392,7 +391,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         }
         return mv;
     }
-     public IPage<FailureReport> getFailureReport(Page<FailureReport>page,String lineCode, List<String> stationCode, String startTime, String endTime) {
+     public IPage<FailureReport> getFailureReport(Page<FailureReport>page,String lineCode, List<String> stationCode, String startTime, String endTime,List<String> systemCode) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         SimpleDateFormat mm = new SimpleDateFormat("yyyy-MM");
         if (ObjectUtil.isEmpty(startTime) && ObjectUtil.isEmpty(endTime)) {
@@ -403,13 +402,13 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         }else if (ObjectUtil.isEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
             stationCode = this.selectStation(null).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }
-        IPage<FailureReport> failureReportIpage = patrolTaskMapper.getFailureReport(page,sysUser.getId(), lineCode, stationCode, startTime, endTime);
+        IPage<FailureReport> failureReportIpage = patrolTaskMapper.getFailureReport(page,sysUser.getId(), lineCode, stationCode, startTime, endTime, systemCode);
         //子系统拿到已解决数（去掉挂起的的数据）
          SysParamModel filterParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_FILTER);
          boolean filterValue = "1".equals(filterParamModel.getValue());
          Map<String,Integer> systemCodeResolveMap = new HashMap<>(8);
          if(filterValue){
-             List<FailureReport>filterFailureReportList = patrolTaskMapper.getFilterFailureReport(page,sysUser.getId(), lineCode, stationCode, startTime, endTime);
+             List<FailureReport>filterFailureReportList = patrolTaskMapper.getFilterFailureReport(page,sysUser.getId(), lineCode, stationCode, startTime, endTime,systemCode);
              systemCodeResolveMap = filterFailureReportList.stream().collect(Collectors.toMap(FailureReport::getCode, FailureReport::getResolvedNum));
          }
          String finalStartTime = startTime;
@@ -431,6 +430,13 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             } else {
                 f.setLastYearStr("-");
             }
+             if (f.getLastWeekNum() != 0) {
+                 BigDecimal sub = NumberUtil.sub(f.getFailureNum(), f.getLastWeekNum());
+                 BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastWeekNum(), 2));
+                 f.setLastWeekStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
+             } else {
+                 f.setLastWeekStr("-");
+             }
 
             List<Integer> faultWortTime =  new ArrayList<>(0);
              if(filterValue){
@@ -462,22 +468,95 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         return failureReportIpage;
     }
 
-    public List<MonthDTO> getMonthNum(String lineCode, List<String> stationCode) {
+    public List<SystemMonthDTO> getMonthNum(String lineCode, List<String> stationCode, List<String> systemCodes, String startTime, String endTime) {
+        if (startTime != null && endTime != null) {
+            startTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(startTime,"yyyy-MM")),"yyyy-MM-dd") ;
+            endTime =DateUtil.format(DateUtil.endOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
+
+        }
         if (ObjectUtil.isNotEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
             stationCode= this.selectStation(lineCode).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }else if (ObjectUtil.isEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
             stationCode = this.selectStation(null).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<MonthDTO> monthDtos = patrolTaskMapper.selectMonth(sysUser.getId(), lineCode, stationCode);
-        return monthDtos;
+        List<MonthDTO> monthDtos = patrolTaskMapper.selectMonth(sysUser.getId(), lineCode, stationCode,systemCodes,startTime,endTime);
+        List<String> months = getMonths(startTime, endTime);
+        List<String> list = monthDtos.stream().map(MonthDTO::getShortenedForm).distinct().collect(Collectors.toList());
+        Map<String, String> map = monthDtos.stream().collect(Collectors.toMap(MonthDTO::getShortenedForm, MonthDTO::getSystemCode, (a, b) -> b));
+        List<SystemMonthDTO> results = new ArrayList<>();
+        for (String s : list) {
+            SystemMonthDTO systemMonthDTO = new SystemMonthDTO();
+            systemMonthDTO.setShortenedForm(s);
+            String code = map.get(s);
+            systemMonthDTO.setSystemCode(code);
+            List<MonthDTO> monthDTOS = new ArrayList<>();
+            for (String month : months) {
+                int sum = monthDtos.stream().filter(m ->m.getApprovalPassTime() != null && m.getApprovalPassTime().equals(month) && m.getShortenedForm().equals(s)).mapToInt(MonthDTO::getNums).sum();
+                MonthDTO monthDTO = new MonthDTO();
+                monthDTO.setApprovalPassTime(month);
+                monthDTO.setNums(sum);
+                monthDTOS.add(monthDTO);
+            }
+            systemMonthDTO.setMonthDTOList(monthDTOS);
+            results.add(systemMonthDTO);
+        }
+        return results;
     }
-    public List<MonthDTO> getMonthOrgNum(String lineCode, List<String> stationCode, List<String> systemCode) {
+
+    private List<String> getMonths(String startTime, String endTime) {
+        List<String> months = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");//格式化为年月
+
+        Calendar min = Calendar.getInstance();
+        Calendar max = Calendar.getInstance();
+
+        try {
+            min.setTime(sdf.parse(startTime));
+            max.setTime(sdf.parse(endTime));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        min.set(min.get(Calendar.YEAR), min.get(Calendar.MONTH), 1);
+        max.set(max.get(Calendar.YEAR), max.get(Calendar.MONTH), 2);
+
+        Calendar curr = min;
+        while (curr.before(max)) {
+            months.add(sdf.format(curr.getTime()));
+            curr.add(Calendar.MONTH, 1);
+        }
+
+        return months;
+    }
+
+    public List<SystemMonthDTO> getMonthOrgNum(String lineCode, List<String> stationCode, List<String> systemCode,String startTime, String endTime,List<String> orgCodeList) {
+        if (startTime != null && endTime != null) {
+            startTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(startTime,"yyyy-MM")),"yyyy-MM-dd") ;
+            endTime =DateUtil.format(DateUtil.endOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
+
+        }
+
         //根据当前登录人获取班组权限，管理员获取全部
         List<String> orgCodes = sysBaseApi.getDepartByUser(1);
 
+        if (CollectionUtil.isNotEmpty(orgCodeList)){
+            orgCodes.retainAll(orgCodeList);
+        }
+
+        //根据线路关联工区过滤班组
+        if (StrUtil.isNotEmpty(lineCode)) {
+            List<CsWorkAreaModel> workAreaByLineCode = sysBaseApi.getWorkAreaByLineCode(lineCode);
+            if (CollUtil.isNotEmpty(workAreaByLineCode)) {
+                List<String> list = new ArrayList<>();
+                for (CsWorkAreaModel csWorkAreaModel : workAreaByLineCode) {
+                    list.addAll(csWorkAreaModel.getOrgCodeList());
+                }
+                orgCodes.retainAll(list);
+            }
+        }
+
         if (CollectionUtil.isEmpty(orgCodes)){
-            return new ArrayList<MonthDTO>() ;
+            return new ArrayList<SystemMonthDTO>() ;
         }
         if (ObjectUtil.isNotEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
             stationCode= this.selectStation(lineCode).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
@@ -487,13 +566,36 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         if ( CollectionUtil.isEmpty(systemCode)){
             systemCode = this.selectSystem().stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }
-        List<MonthDTO> monthDtos = patrolTaskMapper.selectMonthOrg(orgCodes, lineCode, stationCode, systemCode);
-        return monthDtos;
+        List<MonthDTO> monthDtos = patrolTaskMapper.selectMonthOrg(orgCodes, lineCode, stationCode, systemCode,startTime,endTime);
+        List<String> months = getMonths(startTime, endTime);
+        List<String> list = monthDtos.stream().map(MonthDTO::getOrgName).distinct().collect(Collectors.toList());
+        Map<String, String> map = monthDtos.stream().collect(Collectors.toMap(MonthDTO::getOrgName, MonthDTO::getOrgCode,(a, b) -> b));
+        List<SystemMonthDTO> results = new ArrayList<>();
+        for (String s : list) {
+            SystemMonthDTO systemMonthDTO = new SystemMonthDTO();
+            systemMonthDTO.setOrgName(s);
+            String code = map.get(s);
+            systemMonthDTO.setOrgCode(code);
+            List<MonthDTO> monthDTOS = new ArrayList<>();
+            for (String month : months) {
+                int sum = monthDtos.stream().filter(m -> m.getApprovalPassTime() != null && m.getApprovalPassTime().equals(month) && m.getOrgName().equals(s)).mapToInt(MonthDTO::getNums).sum();
+                MonthDTO monthDTO = new MonthDTO();
+                monthDTO.setApprovalPassTime(month);
+                monthDTO.setNums(sum);
+                monthDTOS.add(monthDTO);
+            }
+            systemMonthDTO.setMonthDTOList(monthDTOS);
+            results.add(systemMonthDTO);
+        }
+        return results;
     }
 
-    public IPage<FailureOrgReport> getFailureOrgReport(Page<FailureOrgReport> page,String lineCode, List<String> stationCode, String startTime, String endTime, List<String> systemCode) {
+    public IPage<FailureOrgReport> getFailureOrgReport(Page<FailureOrgReport> page,String lineCode, List<String> stationCode, String startTime, String endTime, List<String> systemCode,List<String> orgCodes) {
         //根据当前登录人获取班组权限，管理员获取全部
-        List<String> ids = sysBaseApi.getDepartByUser(0);
+        List<String> codes = sysBaseApi.getDepartByUser(1);
+        if (CollUtil.isNotEmpty(orgCodes)) {
+            codes.retainAll(orgCodes);
+        }
         //根据线路关联工区过滤班组
         if (StrUtil.isNotEmpty(lineCode)) {
             List<CsWorkAreaModel> workAreaByLineCode = sysBaseApi.getWorkAreaByLineCode(lineCode);
@@ -502,12 +604,11 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 for (CsWorkAreaModel csWorkAreaModel : workAreaByLineCode) {
                     orgCodeList.addAll(csWorkAreaModel.getOrgCodeList());
                 }
-                List<String> orgIds = sysBaseApi.queryOrgIdsByOrgCodes(orgCodeList);
-                ids.retainAll(orgIds);
+                codes.retainAll(orgCodeList);
             }
         }
 
-        if (CollectionUtil.isEmpty(ids)){
+        if (CollectionUtil.isEmpty(codes)){
             return page.setRecords(new ArrayList<>()) ;
         }
         SimpleDateFormat mm= new SimpleDateFormat("yyyy-MM");
@@ -524,8 +625,8 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         }
         SysParamModel filterParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_FILTER);
         boolean filterValue = "1".equals(filterParamModel.getValue());
-        IPage<FailureOrgReport> orgReport = patrolTaskMapper.getOrgReport(page,ids,lineCode,stationCode,startTime,endTime,systemCode);
-        List<FailureOrgReport> filterOrgReport = patrolTaskMapper.getFilterOrgReport(page,ids,lineCode,stationCode,startTime,endTime,systemCode);
+        IPage<FailureOrgReport> orgReport = patrolTaskMapper.getOrgReport(page,codes,lineCode,stationCode,startTime,endTime,systemCode);
+        List<FailureOrgReport> filterOrgReport = patrolTaskMapper.getFilterOrgReport(page,codes,lineCode,stationCode,startTime,endTime,systemCode);
         Map<String, Integer> orgResolveMap = new HashMap<>();
         if(filterValue){
             orgResolveMap = filterOrgReport.stream().collect(Collectors.toMap(FailureOrgReport::getOrgCode, FailureOrgReport::getResolvedNum));
@@ -548,6 +649,13 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 f.setLastYearStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
             } else {
                 f.setLastYearStr("-");
+            }
+            if (f.getLastWeekNum() != 0) {
+                BigDecimal sub = NumberUtil.sub(f.getFailureNum(), f.getLastWeekNum());
+                BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastYearNum(), 2));
+                f.setLastWeekStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
+            }else {
+                f.setLastWeekStr("-");
             }
 
             List<Integer> faultWortTime =  new ArrayList<>(0);
@@ -584,10 +692,10 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
              * @param request
              * @return
                  */
-        public ModelAndView reportSystemExport(HttpServletRequest request, String lineCode, List<String> stationCode, String startTime, String endTime,String exportField ){
+        public ModelAndView reportSystemExport(HttpServletRequest request, String lineCode, List<String> stationCode, String startTime, String endTime,String exportField, List<String> systemCode){
             ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
             Page<FailureReport> page = new Page<FailureReport>(1, 9999);
-            IPage<FailureReport> failureReportList = this.getFailureReport(page,lineCode, stationCode, startTime, endTime);
+            IPage<FailureReport> failureReportList = this.getFailureReport(page,lineCode, stationCode, startTime, endTime,systemCode);
             List<FailureReport> failureReports = failureReportList.getRecords();
             if (CollectionUtil.isNotEmpty(failureReports)) {
                 //导出文件名称
@@ -610,10 +718,10 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
          * @param exportField
          * @return
          */
-        public ModelAndView reportOrgExport(HttpServletRequest request, String lineCode, List<String> stationCode, String startTime, String endTime, List<String> systemCode, String exportField){
+        public ModelAndView reportOrgExport(HttpServletRequest request, String lineCode, List<String> stationCode, String startTime, String endTime, List<String> systemCode, String exportField,  List<String> orgCodeList){
             ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
             Page<FailureOrgReport> page = new Page<FailureOrgReport>(1, 9999);
-            IPage<FailureOrgReport> failureOrgReport = this.getFailureOrgReport(page,lineCode, stationCode, startTime, endTime, systemCode);
+            IPage<FailureOrgReport> failureOrgReport = this.getFailureOrgReport(page, lineCode, stationCode, startTime, endTime, systemCode, orgCodeList);
             List<FailureOrgReport> failureOrgReports = failureOrgReport.getRecords();
             if (CollectionUtil.isNotEmpty(failureOrgReports)) {
                 //导出文件名称
@@ -650,7 +758,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             return system;
        }
 
-    public List<LineOrStationDTO> selectDepart () {
+    public List<LineOrStationDTO> selectDepart (String lineCode) {
 
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //根据当前登录人班组权限获取班组,管理员获取全部
@@ -682,25 +790,45 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             }
         }
 
+        List<LineOrStationDTO> result = new ArrayList<>();
+
+        //根据线路关联工区过滤班组
+        List<String> orgCodeList = new ArrayList<>();
+        if (StrUtil.isNotEmpty(lineCode)) {
+            List<CsWorkAreaModel> workAreaByLineCode = sysBaseApi.getWorkAreaByLineCode(lineCode);
+            if (CollUtil.isNotEmpty(workAreaByLineCode)) {
+                for (CsWorkAreaModel csWorkAreaModel : workAreaByLineCode) {
+                    orgCodeList.addAll(csWorkAreaModel.getOrgCodeList());
+                }
+            }
+
+            if (CollUtil.isNotEmpty(list) && CollUtil.isNotEmpty(orgCodeList)) {
+                result = list.stream().filter(l -> orgCodeList.stream().anyMatch(value -> value.equals(l.getCode()))).collect(Collectors.toList());
+            }
+        } else {
+            result = list;
+        }
+
         //过滤通信分部
         SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FILTERING_TEAM);
         boolean b = "1".equals(sysParamModel.getValue());
-        if (b) {
+        if (CollUtil.isNotEmpty(result) && b) {
             SysParamModel code = sysParamApi.selectByCode(SysParamCodeConstant.SPECIAL_TEAM);
-            List<LineOrStationDTO> dtoList = list.stream().filter(s -> !s.getCode().equals(code.getValue())).collect(Collectors.toList());
+            List<LineOrStationDTO> dtoList = result.stream().filter(s -> !s.getCode().equals(code.getValue())).collect(Collectors.toList());
             return dtoList;
         }
-        return list;
+        return result;
     }
 
     public Page<PatrolReport> getDeviceTaskDate(Page<PatrolReport> pageList, PatrolReportModel report) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> orgCodes = sysBaseApi.getDepartByUser(1);
         List<String> orgIdList = sysBaseApi.getDepartByUser(0);
-        if(ObjectUtil.isNotEmpty(report.getOrgCode())) {
-            SysDepartModel departByOrgCode = sysBaseApi.getDepartByOrgCode(report.getOrgCode());
-            orgCodes = orgCodes.stream().filter(u->report.getOrgCode().contains(u)).collect(Collectors.toList());
-            orgIdList = orgIdList.stream().filter(u->departByOrgCode.getId().contains(u)).collect(Collectors.toList());
+
+        if(ObjectUtil.isNotEmpty(report.getOrgCodeList())) {
+            List<String> ids = sysBaseApi.queryOrgIdsByOrgCodes(report.getOrgCodeList());
+            orgCodes.retainAll(report.getOrgCodeList());
+            orgIdList.retainAll(ids);
         }
         //根据线路关联工区过滤班组
         if (StrUtil.isNotEmpty(report.getLineCode())) {
@@ -713,10 +841,10 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 List<String> orgIds = sysBaseApi.queryOrgIdsByOrgCodes(orgCodeList);
                 orgCodes.retainAll(orgCodeList);
                 orgIdList.retainAll(orgIds);
+            }else {
+                return  pageList.setRecords(new ArrayList<>());
             }
-        }
-        if(CollUtil.isEmpty(orgCodes)&&(!user.getRoleCodes().contains("admin")||!user.getRoleCodes().contains("director"))) {
-            return  pageList.setRecords(new ArrayList<>());
+
         }
         report.setOrgCodeList(orgCodes);
         PatrolReportModel omitModel = new PatrolReportModel();

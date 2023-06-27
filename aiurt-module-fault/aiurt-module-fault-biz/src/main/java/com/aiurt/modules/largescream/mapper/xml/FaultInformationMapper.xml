@@ -921,4 +921,48 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
        <!--    and not EXISTS (select 1 from operation_process where fault_code = f.code and  process_code = 10)-->
           AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
 </select>
+
+<select id="getFaultCompletedTasks" resultType="java.lang.Integer">
+    select
+    IFNULL(count(f.id),0) as finishNum
+    from
+    fault f
+    left join sys_depart sd on f.sys_org_code = sd.org_code and sd.del_flag = 0
+    where 1=1
+    and f.status = 12
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d')
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
+    AND  sd.id = #{orgId}
+    </select>
+
+<select id="getFaultUserCompletedTasks" resultType="java.lang.Integer">
+    select  IFNULL(count(result.id),0) as finishNumfrom
+    from (
+    select
+    f.id
+    from
+    fault f
+    left join sys_depart sd on f.sys_org_code = sd.org_code and sd.del_flag = 0
+    left join fault_repair_record  fr on f.code = fr.fault_code
+    left join sys_user s on s.username = fr.appoint_user_name and s.org_code = f.sys_org_code
+    where 1=1
+    and f.status = 12
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d')
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
+    AND  s.id = #{userId}
+    union all
+    select
+    f.id
+    from  sys_user s
+    left join fault_repair_participants frp on s.username = frp.user_name
+    left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id  and fr.del_flag = 0 and s.username != fr.appoint_user_name
+    left join  fault f on f.code = fr.fault_code
+    where
+    s.del_flag = 0
+    and s.id = #{userId}
+    and f.status = 12
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d')
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
+    ) as result
+    </select>
 </mapper>

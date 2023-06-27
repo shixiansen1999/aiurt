@@ -43,11 +43,12 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
 
     /**
      * 查询
-     * @param time
+     * @param startTime
+     * @param endTime
      * @param subsystemCode
      * @return
      */
-    SubsystemFaultDTO getSubsystemFaultDTO(@Param("time") String time, @Param("subsystemCode") String subsystemCode);
+    SubsystemFaultDTO getSubsystemFaultDTO(@Param("startTime") String startTime, @Param("endTime")String endTime, @Param("subsystemCode") String subsystemCode);
 
     /**
      * 查询
@@ -55,25 +56,27 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
      * @param deviceTypeCode
      * @return
      */
-    List<SubsystemFaultDTO> getSubsystemByDeviceTypeCode( @Param("subsystemCode") String subsystemCode,@Param("deviceTypeCode") List<String> deviceTypeCode);
+    List<SubsystemFaultDTO> getSubsystemByDeviceTypeCode( @Param("subsystemCode") List<String> subsystemCode,@Param("deviceTypeCode") List<String> deviceTypeCode);
 
     /**
      *  设备类型数据
-     * @param time
+     * @param startTime
+     * @param endTime
      * @param subsystemCode
      * @param deviceTypeCode
      * @return
      */
-    SubsystemFaultDTO getSubsystemByDeviceType(@Param("time") String time,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
+    SubsystemFaultDTO getSubsystemByDeviceType(@Param("startTime") String startTime, @Param("endTime")String endTime,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode, @Param("filterValue")boolean filterValue);
 
     /**
      * 查询次数
-     * @param time
+     * @param startTime
+     * @param endTime
      * @param subsystemCode
      * @param deviceTypeCode
      * @return
      */
-    Integer getNum(@Param("time") String time,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
+    Integer getNum(@Param("startTime") String startTime, @Param("endTime")String endTime,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
 
     /**
      * 年次数
@@ -124,28 +127,47 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
      * @param subsystemCode
      * @return
      */
-    SubsystemFaultDTO selectSubSystem(@Param("subsystemCode")SubsystemFaultDTO subsystemCode);
+    List<SubsystemFaultDTO> selectSubSystem(@Param("subsystemCode")SubsystemFaultDTO subsystemCode);
 
     /**
      * 查询子系统的维修时长（过滤已挂起的）
-     * @param time
+     * @param startTime
+     * @param endTime
      * @param subsystemCode
      * @return
      */
-    Integer getSubsystemFilterFaultDTO(@Param("time") String time, @Param("subsystemCode")String subsystemCode);
+    SubsystemFaultDTO  getSubsystemFilterFaultDTO(@Param("startTime") String startTime, @Param("endTime")String endTime, @Param("subsystemCode")String subsystemCode);
 
     /**
      * 查询子系统的下的设备分类的维修时长（过滤已挂起的）
-     * @param time
+     * @param startTime
+     * @param endTime
      * @param subsystemCode
      * @param deviceTypeCode
      * @return
      */
-    Integer getFilterNum(@Param("time") String time,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
+    Integer getFilterNum(@Param("startTime") String startTime, @Param("endTime")String endTime,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
     /**
      * 年分钟
      * @param systemCode
      * @return
      */
     List<ListDTO> sysTemYearAllFault(@Param("systemCode") String systemCode);
+
+    /**
+     * @param startTime
+     * @param endTime
+     * @param systemCode
+     * @param filterValue
+     * @return
+     */
+    List<SubsystemFaultDTO> yearTrendChartFault(@Param("startTime")String startTime, @Param("endTime")String endTime, @Param("systemCode")String systemCode, @Param("filterValue")boolean filterValue);
+
+    /**
+     * @param id
+     * @param systemCodes
+     * @return
+     */
+    List<SubsystemFaultDTO> selectSystem(@Param("id")String id, @Param("systemCodes")List<String> systemCodes);
+
 }

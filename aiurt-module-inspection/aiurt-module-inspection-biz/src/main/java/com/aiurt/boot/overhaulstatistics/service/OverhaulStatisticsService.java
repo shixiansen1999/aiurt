@@ -13,7 +13,6 @@ import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.personnelteam.mapper.PersonnelTeamMapper;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTO;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTOS;
-import com.aiurt.boot.task.dto.PersonnelTeamDTO;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -65,7 +63,7 @@ public class OverhaulStatisticsService{
 
 
     public Page<OverhaulStatisticsDTOS> getOverhaulList(Page<OverhaulStatisticsDTOS> pageList, OverhaulStatisticsDTOS condition) {
-        List<OverhaulStatisticsDTOS> dtoList2 = this.selectDepart(condition.getOrgCode());
+        List<OverhaulStatisticsDTOS> dtoList2 = this.selectDepart(condition.getOrgCodeList());
         if (CollUtil.isNotEmpty(dtoList2)) {
             List<String> collect1 = dtoList2.stream().map(OverhaulStatisticsDTOS::getOrgCode).collect(Collectors.toList());
             //根据线路关联工区过滤班组
@@ -77,6 +75,8 @@ public class OverhaulStatisticsService{
                         orgCodeList.addAll(csWorkAreaModel.getOrgCodeList());
                     }
                     collect1.retainAll(orgCodeList);
+                } else {
+                    return pageList;
                 }
             }
             condition.setOrgCodeList(collect1);
@@ -263,11 +263,12 @@ public class OverhaulStatisticsService{
         }
     }
 
-    public List<OverhaulStatisticsDTOS> selectDepart (String orgCode) {
+    public List<OverhaulStatisticsDTOS> selectDepart (List<String> orgCodeList) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //根据当前登录人班组权限获取班组,管理员获取全部
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         List<OverhaulStatisticsDTOS> list = new ArrayList<>();
+
         if (!admin) {
             List<CsUserDepartModel>  departByUserId = sysBaseAPI.getDepartByUserId(sysUser.getId());
             if (CollUtil.isNotEmpty(departByUserId)) {
@@ -276,13 +277,7 @@ public class OverhaulStatisticsService{
                     overhaulStatisticsDTOS.setOrgId(csUserDepartModel.getDepartId());
                     overhaulStatisticsDTOS.setOrgCode(csUserDepartModel.getOrgCode());
                     overhaulStatisticsDTOS.setOrgName(csUserDepartModel.getDepartName());
-                    if (StrUtil.isNotEmpty(orgCode) && csUserDepartModel.getOrgCode().equals(orgCode)) {
-                        List<OverhaulStatisticsDTOS> one = new ArrayList<>();
-                        one.add(overhaulStatisticsDTOS);
-                        return one;
-                    } else {
-                        list.add(overhaulStatisticsDTOS);
-                    }
+                    list.add(overhaulStatisticsDTOS);
 
                 }
             }
@@ -295,25 +290,31 @@ public class OverhaulStatisticsService{
                     overhaulStatisticsDTOS.setOrgId(sysDepartModel.getId());
                     overhaulStatisticsDTOS.setOrgCode(sysDepartModel.getOrgCode());
                     overhaulStatisticsDTOS.setOrgName(sysDepartModel.getDepartName());
-                    if (StrUtil.isNotEmpty(orgCode) && sysDepartModel.getOrgCode().equals(orgCode)) {
-                        List<OverhaulStatisticsDTOS> one = new ArrayList<>();
-                        one.add(overhaulStatisticsDTOS);
-                        return one;
-                    } else {
-                        list.add(overhaulStatisticsDTOS);
-                    }
+                    list.add(overhaulStatisticsDTOS);
                 }
             }
         }
+        //参数条件筛选
+        if (CollUtil.isNotEmpty(list)) {
+            List<OverhaulStatisticsDTOS> resultList = new ArrayList<>();
+            if (CollUtil.isNotEmpty(orgCodeList)) {
+                resultList = list.stream()
+                        .filter(entity -> orgCodeList.stream().anyMatch(value -> value.equals(entity.getOrgCode())))
+                        .collect(Collectors.toList());
+            } else {
+                resultList = list;
+            }
 
-        //过滤通信分部
-        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FILTERING_TEAM);
-        boolean b = "1".equals(sysParamModel.getValue());
-        if (b) {
-            SysParamModel code = sysParamApi.selectByCode(SysParamCodeConstant.SPECIAL_TEAM);
-            List<OverhaulStatisticsDTOS> dtoList = list.stream().filter(s -> !s.getOrgCode().equals(code.getValue())).collect(Collectors.toList());
-            return dtoList;
+            //过滤通信分部
+            SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FILTERING_TEAM);
+            boolean b = "1".equals(sysParamModel.getValue());
+            if (CollUtil.isNotEmpty(resultList) && b) {
+                SysParamModel code = sysParamApi.selectByCode(SysParamCodeConstant.SPECIAL_TEAM);
+                List<OverhaulStatisticsDTOS> dtoList = resultList.stream().filter(s -> !s.getOrgCode().equals(code.getValue())).collect(Collectors.toList());
+                return dtoList;
+            }
         }
+
         return list;
     }
 
@@ -333,7 +334,7 @@ public class OverhaulStatisticsService{
 
         for (OverhaulStatisticsDTOS statisticsDTO : records) {
             dtos.add(statisticsDTO);
-           List<OverhaulStatisticsDTO> nameList = statisticsDTO.getNameList();
+           /*List<OverhaulStatisticsDTO> nameList = statisticsDTO.getNameList();
            List<OverhaulStatisticsDTOS> dtoNameList = new ArrayList<>();
             for (OverhaulStatisticsDTO dto : nameList) {
                 OverhaulStatisticsDTOS overhaulstatisticsdtos = new OverhaulStatisticsDTOS();
@@ -342,7 +343,7 @@ public class OverhaulStatisticsService{
             }
             if (CollUtil.isNotEmpty(dtoNameList)) {
                 dtos.addAll(dtoNameList);
-            }
+            }*/
         }
         if (CollectionUtil.isNotEmpty(records)) {
             //导出文件名称

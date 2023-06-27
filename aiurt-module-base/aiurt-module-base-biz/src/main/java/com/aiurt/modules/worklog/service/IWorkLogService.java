@@ -2,11 +2,13 @@ package com.aiurt.modules.worklog.service;
 
 import com.aiurt.common.result.*;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
+import com.aiurt.modules.worklog.dto.WorkLogIndexDTO;
 import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
 import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.param.LogCountParam;
 import com.aiurt.modules.worklog.param.WorkLogParam;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
@@ -130,6 +132,13 @@ public interface IWorkLogService extends IService<WorkLog> {
     WorkLogDetailResult queryWorkLogDetail(String id);
 
     /**
+     * 工作日志通过id查看，但是返回的是早班、晚班的多条数据
+     * @param id
+     * @return
+     */
+    List<WorkLogDetailResult> queryWorkLogDetailList(String id);
+
+    /**
      * 今日工作内容
      * @param nowday
      * @return
@@ -151,5 +160,24 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @return
      * */
     Boolean editFlag(Date createTime, Integer  confirmStatus, Integer  checkStatus);
+
+    /**
+     * 获取首页-工作日志
+     * 获取首页工作日志的信息
+     * @param startDate 开始时间
+     * @param endDate   结束时间
+     * @param request   request
+     * @return
+     */
+    WorkLogIndexDTO getOverviewInfo(Date startDate, Date endDate, HttpServletRequest request);
+
+    /**
+     * 批量打印获取数据
+     * @param page
+     * @param param
+     * @param req
+     * @return
+     */
+    List<List<WorkLogDetailResult>> batchPrint(Page<WorkLogResult> page, WorkLogParam param, HttpServletRequest req);
 }
 
