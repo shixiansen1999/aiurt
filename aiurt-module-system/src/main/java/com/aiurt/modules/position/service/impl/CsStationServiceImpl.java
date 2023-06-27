@@ -71,7 +71,7 @@ public class CsStationServiceImpl extends ServiceImpl<CsStationMapper, CsStation
         position.setValue(csStation.getStationCode());
         position.setIsLeaf(false);
         position.setFid(csStation.getLineCode());
-        return Result.OK(position);
+        return Result.OK("添加成功！", position);
     }
     /**
      * 修改
@@ -114,6 +114,6 @@ public class CsStationServiceImpl extends ServiceImpl<CsStationMapper, CsStation
         position.setValue(csStation.getStationCode());
         position.setIsLeaf(false);
         position.setFid(csStation.getLineCode());
-        return Result.OK(position);
+        return Result.OK("编辑成功！", position);
     }
 }
