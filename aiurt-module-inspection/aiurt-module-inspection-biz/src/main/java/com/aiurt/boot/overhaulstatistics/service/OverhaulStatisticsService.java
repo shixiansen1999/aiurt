@@ -334,7 +334,7 @@ public class OverhaulStatisticsService{
 
         for (OverhaulStatisticsDTOS statisticsDTO : records) {
             dtos.add(statisticsDTO);
-           List<OverhaulStatisticsDTO> nameList = statisticsDTO.getNameList();
+           /*List<OverhaulStatisticsDTO> nameList = statisticsDTO.getNameList();
            List<OverhaulStatisticsDTOS> dtoNameList = new ArrayList<>();
             for (OverhaulStatisticsDTO dto : nameList) {
                 OverhaulStatisticsDTOS overhaulstatisticsdtos = new OverhaulStatisticsDTOS();
@@ -343,7 +343,7 @@ public class OverhaulStatisticsService{
             }
             if (CollUtil.isNotEmpty(dtoNameList)) {
                 dtos.addAll(dtoNameList);
-            }
+            }*/
         }
         if (CollectionUtil.isNotEmpty(records)) {
             //导出文件名称

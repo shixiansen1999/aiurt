@@ -1220,7 +1220,7 @@
         and a.status = 12
     </select>
     <select id="selectMonth" resultType="com.aiurt.boot.report.model.dto.MonthDTO">
-        select a.system_name,a.shortened_form,
+        select a.system_name,a.shortened_form,a.system_code,
         DATE_FORMAT(c.approval_pass_time, '%Y-%m') as approvalPassTime,
         ifnull(count(c.code),0) as nums
         FROM cs_subsystem a
@@ -1383,7 +1383,7 @@
         GROUP BY a.depart_name, a.org_code
     </select>
     <select id="selectMonthOrg" resultType="com.aiurt.boot.report.model.dto.MonthDTO">
-        select a.depart_name as orgName,
+        select a.depart_name as orgName,a.org_code,
         DATE_FORMAT(c.approval_pass_time, '%Y-%m') as approvalPassTime,
         ifnull(count(c.code),0) as nums
         FROM sys_depart a

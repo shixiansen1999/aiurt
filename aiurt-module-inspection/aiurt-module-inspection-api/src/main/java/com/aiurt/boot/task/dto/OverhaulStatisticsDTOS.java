@@ -7,7 +7,6 @@ import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -64,7 +63,7 @@ public class OverhaulStatisticsDTOS {
 
     /**姓名*/
     @TableField(exist = false)
-    @Excel(name = "姓名", width = 15)
+    /*@Excel(name = "姓名", width = 15)*/
     @ApiModelProperty(value = "姓名")
     private String userName;
 
@@ -95,20 +94,20 @@ public class OverhaulStatisticsDTOS {
 
     /**漏检修数*/
     @TableField(exist = false)
-    @Excel(name = "漏检修数", width = 15)
+    /*@Excel(name = "漏检修数", width = 15)*/
     @ApiModelProperty(value = "漏检修数")
     private Long leakOverhaulNumber;
 
 
     /**平均每周漏检修数*/
     @TableField(exist = false)
-    @Excel(name = "平均每周漏检修数", width = 15)
+    /*@Excel(name = "平均每周漏检修数", width = 15)*/
     @ApiModelProperty(value = "平均每周漏检修数")
     private Long avgWeekNumber;
 
     /**平均每周漏检修数*/
     @TableField(exist = false)
-    @Excel(name = "平均每月漏检修数", width = 15)
+    /*@Excel(name = "平均每月漏检修数", width = 15)*/
     @ApiModelProperty(value = "平均每月漏检修数")
     private Long avgMonthNumber;
 
@@ -149,7 +148,7 @@ public class OverhaulStatisticsDTOS {
     /**开始时间*/
     @TableField(exist = false)
     @ApiModelProperty(value = "开始时间")
-    @Excel(name = "开始时间，精确到分钟", width = 15, format = "yyyy-MM-dd")
+  /*  @Excel(name = "开始时间，精确到分钟", width = 15, format = "yyyy-MM-dd")*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     private java.util.Date startDate;
@@ -158,7 +157,7 @@ public class OverhaulStatisticsDTOS {
     /**结束时间*/
     @TableField(exist = false)
     @ApiModelProperty(value = "结束时间")
-    @Excel(name = "结束时间，精确到分钟", width = 15, format = "yyyy-MM-dd")
+   /* @Excel(name = "结束时间，精确到分钟", width = 15, format = "yyyy-MM-dd")*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     private java.util.Date endDate;

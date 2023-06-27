@@ -10,6 +10,8 @@ import java.util.List;
 @Data
 public class SystemMonthDTO {
     private String orgName;
+    private String orgCode;
     private String shortenedForm;
+    private String systemCode;
     private List<MonthDTO> monthDTOList;
 }
