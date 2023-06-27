@@ -89,6 +89,7 @@ public class FaultRemind {
                 }
             } else {
                 // 取消任务
+                log.info("已领取取消任务故障编号：{}\", code");
                 scheduler.shutdown();
             }
         };
@@ -128,6 +129,7 @@ public class FaultRemind {
             // 两小时后，没有更新故障状态（未填写维修单、未挂起、或填写维修单后未提交），发送提醒消息
             FaultForSendMessageDTO faultForSendMessageDTO = faultMapper.queryForSendMessage(code, status, updateTime);
             boolean b = (duration.compareTo(Duration.ofSeconds(delay)) >= 0) && ObjectUtil.isNotEmpty(faultForSendMessageDTO);
+            log.info("{}",b);
             if (b) {
                 log.info("超时未更新状态发送消息及提示音，故障编号：{}", code);
                 // 发送消息给维修负责人
@@ -135,6 +137,7 @@ public class FaultRemind {
                 sendReminderMessage(updateTime, faultForSendMessageDTO.getAppointUserName(), "请及时更新维修状态", content, SysParamCodeConstant.FAULT_RECEIVE_NO_UPDATE_RING_DURATION);
             } else {
                 // 取消任务
+                log.info("已更新状态取消任务故障编号：{}\", code");
                 scheduler.shutdown();
             }
         };
