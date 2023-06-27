@@ -431,7 +431,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 f.setLastYearStr("-");
             }
              if (f.getLastWeekNum() != 0) {
-                 double sub = NumberUtil.sub(f.getRepairNum(), f.getLastWeekNum());
+                 BigDecimal sub = NumberUtil.sub(f.getFailureNum(), f.getLastWeekNum());
                  BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastWeekNum(), 2));
                  f.setLastWeekStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
              } else {
@@ -645,7 +645,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 f.setLastYearStr("-");
             }
             if (f.getLastWeekNum() != 0) {
-                double sub = NumberUtil.sub(f.getRepairNum(), f.getLastWeekNum());
+                BigDecimal sub = NumberUtil.sub(f.getFailureNum(), f.getLastWeekNum());
                 BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastYearNum(), 2));
                 f.setLastWeekStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
             }else {
