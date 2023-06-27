@@ -1,6 +1,5 @@
 package com.aiurt.modules.subsystem.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.thread.ThreadUtil;
@@ -439,7 +438,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         List<SubsystemFaultDTO> dtos = new ArrayList<>();
         for (SubsystemFaultDTO faultDTO : failureReports) {
             dtos.add(faultDTO);
-            List<SubsystemFaultDTO> deviceTypeList = faultDTO.getDeviceTypeList();
+            /*List<SubsystemFaultDTO> deviceTypeList = faultDTO.getDeviceTypeList();
             List<SubsystemFaultDTO> dtoNameList = new ArrayList<>();
             for (SubsystemFaultDTO dto : deviceTypeList) {
                 SubsystemFaultDTO subsystemFaultDTO = new SubsystemFaultDTO();
@@ -448,7 +447,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             }
             if (CollUtil.isNotEmpty(dtoNameList)) {
                 dtos.addAll(dtoNameList);
-            }
+            }*/
         }
         if (CollectionUtil.isNotEmpty(failureReports)) {
             //导出文件名称
