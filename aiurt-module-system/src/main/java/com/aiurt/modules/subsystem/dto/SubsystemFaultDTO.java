@@ -40,10 +40,10 @@ public class SubsystemFaultDTO {
     @Excel(name = "故障一般数", width = 15)
     private Integer commonFaultNum;
     @ApiModelProperty(value = "故障时长")
-    @Excel(name = "故障时长", width = 15)
+    @Excel(name = "故障时长（秒）", width = 15)
     private Integer failureDuration;
     /**故障维修时长*/
-    @Excel(name = "故障维修时长", width = 15)
+    @Excel(name = "故障维修时长（秒）", width = 15)
     @ApiModelProperty(value = "故障维修时长")
     private Integer repairDuration;
 
@@ -51,17 +51,17 @@ public class SubsystemFaultDTO {
     @ApiModelProperty(value = "维修响应时长")
     private Integer responseDuration;
     @ApiModelProperty(value = "关闭率")
-    @Excel(name = "关闭率", width = 15)
+    @Excel(name = "关闭率（%）", width = 15)
     private Integer solutionsRate;
     @ApiModelProperty(value = "可靠度")
-    @Excel(name = "可靠度", width = 15)
+    @Excel(name = "可靠度（%）", width = 15)
     private String  reliability;
 
     @ApiModelProperty("平均响应时间")
-    @Excel(name = "平均故障响应时间", width = 15)
+    @Excel(name = "平均故障响应时间（秒）", width = 15)
     private Integer averageTime;
     @ApiModelProperty("平均维修时间")
-    @Excel(name = "平均故障修复时间", width = 15)
+    @Excel(name = "平均故障修复时间（秒）", width = 15)
     private Integer averageFaultTime;
 
     Integer num;
