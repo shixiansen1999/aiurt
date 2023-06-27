@@ -114,14 +114,14 @@ public class PatrolTaskMissingDetectionQuarter implements Job {
                 return;
             }
             Date patrolDate = null;
-            if (null != l.getEndDate()) {
+            if (l.getSource().equals(PatrolConstant.TASK_MANUAL)) {
                 patrolDate = l.getEndDate();
             }else {
                 patrolDate = l.getPatrolDate();
-            }
-            if (ObjectUtil.isNotEmpty(l.getEndTime())) {
-                String endTime = DateUtil.format(l.getEndTime(), "HH:mm:ss");
-                patrolDate = DateUtil.parse(DateUtil.format(patrolDate, "yyyy-MM-dd " + endTime));
+                if (ObjectUtil.isNotEmpty(l.getEndTime())) {
+                    String endTime = DateUtil.format(l.getEndTime(), "HH:mm:ss");
+                    patrolDate = DateUtil.parse(DateUtil.format(patrolDate, "yyyy-MM-dd " + endTime));
+                }
             }
             // 当前时间
             Date now = new Date();
