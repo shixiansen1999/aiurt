@@ -3557,23 +3557,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<String> getLineCodeByStationCode(List<String> stationCodes) {
-        if(CollUtil.isEmpty(stationCodes)){
-            return Collections.emptyList();
-        }
-        QueryWrapper<CsStation> wrapper = new QueryWrapper<>();
-        wrapper.lambda().eq(CsStation::getDelFlag,CommonConstant.DEL_FLAG_0)
-                .in(CsStation::getStationCode,stationCodes);
-        List<CsStation> stations = csStationMapper.selectList(wrapper);
-        List<String> lineCodes = stations.stream()
-                .filter(l -> ObjectUtil.isNotEmpty(l.getLineCode()))
-                .map(CsStation::getLineCode)
-                .distinct()
-                .collect(Collectors.toList());
-        return lineCodes;
-    }
-
-    @Override
     public List<CsMajorModel> getAllMajor() {
         List<CsMajor> majors = majorService.lambdaQuery()
                 .eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0)
@@ -3615,5 +3598,22 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 .eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .list();
         return deviceTypes;
+    }
+
+    @Override
+    public List<String> getLineCodeByStationCode(List<String> stationCodes) {
+        if(CollUtil.isEmpty(stationCodes)){
+            return Collections.emptyList();
+        }
+        QueryWrapper<CsStation> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(CsStation::getDelFlag,CommonConstant.DEL_FLAG_0)
+                .in(CsStation::getStationCode,stationCodes);
+        List<CsStation> stations = csStationMapper.selectList(wrapper);
+        List<String> lineCodes = stations.stream()
+                .filter(l -> ObjectUtil.isNotEmpty(l.getLineCode()))
+                .map(CsStation::getLineCode)
+                .distinct()
+                .collect(Collectors.toList());
+        return lineCodes;
     }
 }
