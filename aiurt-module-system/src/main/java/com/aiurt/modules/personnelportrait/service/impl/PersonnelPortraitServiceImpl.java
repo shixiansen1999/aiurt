@@ -35,6 +35,7 @@ import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.train.task.dto.TrainExperienceDTO;
 import com.aiurt.modules.workarea.mapper.WorkAreaOrgMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -890,24 +891,31 @@ public class PersonnelPortraitServiceImpl implements PersonnelPortraitService {
     }
 
     @Override
-    public List<ExperienceResDTO> experience(String userId) {
-        List<TrainExperienceDTO> trainExperience = iBaseApi.getTrainExperience(userId);
+    public IPage<ExperienceResDTO> experience(Integer pageNo, Integer pageSize, String userId) {
+        Page<TrainExperienceDTO> page = new Page<>(pageNo, pageSize);
+        IPage<TrainExperienceDTO> trainExperience = iBaseApi.getTrainExperience(page, userId);
+        List<TrainExperienceDTO> records = trainExperience.getRecords();
         List<ExperienceResDTO> experiences = new ArrayList<>();
-        ExperienceResDTO experienceResDTO = null;
-        for (TrainExperienceDTO experience : trainExperience) {
-            experienceResDTO = new ExperienceResDTO();
-            if (!userId.equals(experience.getUserId())) {
-                continue;
+        if (CollUtil.isNotEmpty(records)) {
+            ExperienceResDTO experienceResDTO = null;
+            for (TrainExperienceDTO experience : records) {
+                experienceResDTO = new ExperienceResDTO();
+                if (!userId.equals(experience.getUserId())) {
+                    continue;
+                }
+                String startTime = DateUtil.format(experience.getStartTime(), "YYYY-MM-dd HH:mm:ss");
+                String endTime = DateUtil.format(experience.getEndTime(), "YYYY-MM-dd HH:mm:ss");
+                String taskName = "参与培训：" + experience.getTaskName();
+                experienceResDTO.setId(experience.getId());
+                experienceResDTO.setStarDate(startTime);
+                experienceResDTO.setEndDate(endTime);
+                experienceResDTO.setDescription(taskName);
+                experiences.add(experienceResDTO);
             }
-            String startTime = DateUtil.format(experience.getStartTime(), "YYYY-MM-dd HH:mm:ss");
-            String endTime = DateUtil.format(experience.getEndTime(), "YYYY-MM-dd HH:mm:ss");
-            String taskName = "参与培训：" + experience.getTaskName();
-            experienceResDTO.setStarDate(startTime);
-            experienceResDTO.setEndDate(endTime);
-            experienceResDTO.setDescription(taskName);
-            experiences.add(experienceResDTO);
         }
-        return experiences;
+        IPage<ExperienceResDTO> pageList = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        pageList.setRecords(experiences);
+        return pageList;
     }
 
     @Override

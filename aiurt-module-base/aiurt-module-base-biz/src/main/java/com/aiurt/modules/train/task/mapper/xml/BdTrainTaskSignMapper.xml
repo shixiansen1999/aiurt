@@ -32,6 +32,7 @@ where sign_time is not NULL and train_task_id = #{trainTaskId}
 
 	<select id="getTrainExperience" resultType="com.aiurt.modules.train.task.dto.TrainExperienceDTO">
 		select
+		btts.id,
 		btts.user_id,
 		btt.start_time,
 		btt.end_time,

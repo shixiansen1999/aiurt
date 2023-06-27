@@ -14,6 +14,10 @@ import java.util.Date;
 @AllArgsConstructor
 public class TrainExperienceDTO {
     /**
+     * 记录ID
+     */
+    private String id;
+    /**
      * 用户ID
      */
     private String userId;

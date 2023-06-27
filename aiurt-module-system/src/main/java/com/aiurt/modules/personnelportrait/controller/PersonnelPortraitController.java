@@ -88,11 +88,13 @@ public class PersonnelPortraitController {
      */
     @ApiOperation(value = "培训经历", notes = "培训经历")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = List.class)
+            @ApiResponse(code = 200, message = "OK", response = IPage.class)
     })
     @GetMapping(value = "/experience")
-    public Result<List<ExperienceResDTO>> experience(@RequestParam @ApiParam(name = "userId", value = "用户ID") String userId) {
-        List<ExperienceResDTO> experiences = personnelPortraitService.experience(userId);
+    public Result<IPage<ExperienceResDTO>> experience(@RequestParam @ApiParam(name = "userId", value = "用户ID") String userId,
+                                                      @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                      @RequestParam(name = "pageSize", defaultValue = "3") Integer pageSize) {
+        IPage<ExperienceResDTO> experiences = personnelPortraitService.experience(pageNo, pageSize, userId);
         return Result.OK(experiences);
     }
 

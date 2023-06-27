@@ -100,7 +100,7 @@
     </select>
 
     <select id="selectPosition" resultType="java.lang.String">
-        select distinct concat(wa.`name`, '(', wa.`code`, ')') workAreaName
+        select distinct wa.`name` workAreaName
         from work_area wa
                  join work_area_org wao on (wa.`code` = wao.work_area_code and wao.del_flag = 0)
         where wa.del_flag = 0
