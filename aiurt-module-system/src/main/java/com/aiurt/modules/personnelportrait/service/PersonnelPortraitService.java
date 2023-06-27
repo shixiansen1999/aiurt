@@ -53,7 +53,7 @@ public interface PersonnelPortraitService {
      * @param userId
      * @return
      */
-    List<ExperienceResDTO> experience(String userId);
+    IPage<ExperienceResDTO> experience(Integer pageNo, Integer pageSize,String userId);
 
     /**
      * 任务次数
