@@ -19,7 +19,7 @@ public class PersonnelModel {
     @ApiModelProperty(value = "用户id")
     private String userId;
 
-    @Excel(name = "姓名", width = 15)
+    @Excel(name = "人员名称", width = 15)
     @ApiModelProperty(value = "姓名")
     private String realname;
 
