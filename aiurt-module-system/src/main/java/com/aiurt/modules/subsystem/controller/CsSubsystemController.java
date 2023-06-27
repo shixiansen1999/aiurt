@@ -385,6 +385,10 @@ public class CsSubsystemController extends BaseController<CsSubsystem, ICsSubsys
 									 @RequestParam(name = "startTime") String startTime,
 									 @RequestParam(name = "endTime") String endTime,
 									 @RequestParam(name = "exportField",required = false)String exportField) {
+		if (startTime != null && endTime != null) {
+			startTime = DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(startTime,"yyyy-MM")),"yyyy-MM-dd") ;
+			endTime =DateUtil.format(DateUtil.endOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
+		}
 		return csSubsystemService.reportSystemExport(request,subsystemCode,deviceTypeCode,startTime,endTime,exportField);
 	}
 	/**
