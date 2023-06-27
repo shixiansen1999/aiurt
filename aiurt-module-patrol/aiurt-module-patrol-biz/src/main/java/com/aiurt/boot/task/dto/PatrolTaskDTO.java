@@ -220,5 +220,9 @@ public class PatrolTaskDTO extends DictEntity implements Serializable
      */
     @ApiModelProperty(value = "标准工时：单位秒")
     private Integer standardDuration;
+
+    @Excel(name = "任务执行日期", width = 15)
+    @ApiModelProperty(value = "任务执行日期")
+    private String patrolDay;
 }
 

@@ -68,7 +68,7 @@ public class ScheduleTask implements Serializable {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "任务计划执行日期(yyyy-MM-dd)")
-    private java.util.Date patrolDate;
+    private String patrolDate;
     /**
      * 手工下发巡检的开始日期(yyyy-MM-dd)
      */
