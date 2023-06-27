@@ -20,9 +20,6 @@ import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -74,10 +71,10 @@ public class FaultRemind {
             log.info("进入超时无人领取发送消息及提示音任务，故障编号：{}",code);
             Fault fault = getFault(code);
             // 计算当前时间与故障审核通过时间的时间间隔
-            LocalDateTime currentTime = LocalDateTime.now();
-            Duration duration = Duration.between(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(), currentTime);
+            //LocalDateTime currentTime = LocalDateTime.now();
+            //Duration duration = Duration.between(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(), currentTime);
             // 上报五分钟后，且没有人领取故障，发送提醒消息
-            boolean b = ObjectUtil.isNotEmpty(fault) && (duration.compareTo(Duration.ofSeconds(delay)) >= 0) && !checkIfSomeoneClaimedFault(fault);
+            boolean b = ObjectUtil.isNotEmpty(fault) && !checkIfSomeoneClaimedFault(fault);
             if (b) {
                 log.info("超时无人领取发送消息及提示音，故障编号：{}", code);
                 // 获取故障所在班组的今日当班人员,并发送消息给今日当班人员
@@ -124,12 +121,12 @@ public class FaultRemind {
         Runnable reminderTask = () -> {
             log.info("进入超时未更新状态发送消息及提示音任务，故障编号：{}",code);
             // 计算当前时间与故障上报时间的时间间隔
-            LocalDateTime currentTime = LocalDateTime.now();
-            Duration duration = Duration.between(updateTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(), currentTime);
+            //LocalDateTime currentTime = LocalDateTime.now();
+            //Duration duration = Duration.between(updateTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(), currentTime);
             // 两小时后，没有更新故障状态（未填写维修单、未挂起、或填写维修单后未提交），发送提醒消息
             FaultForSendMessageDTO faultForSendMessageDTO = faultMapper.queryForSendMessage(code, status, updateTime);
-            boolean b = (duration.compareTo(Duration.ofSeconds(delay)) >= 0) && ObjectUtil.isNotEmpty(faultForSendMessageDTO);
-            log.info("{}，{}，{}，{}",currentTime,Duration.ofSeconds(delay),duration.compareTo(Duration.ofSeconds(delay)),ObjectUtil.isNotEmpty(faultForSendMessageDTO));
+            boolean b = ObjectUtil.isNotEmpty(faultForSendMessageDTO);
+            log.info("{}",b);
             if (b) {
                 log.info("超时未更新状态发送消息及提示音，故障编号：{}", code);
                 // 发送消息给维修负责人
