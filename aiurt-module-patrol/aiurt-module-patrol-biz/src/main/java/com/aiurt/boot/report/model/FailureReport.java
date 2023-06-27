@@ -29,11 +29,10 @@ public class FailureReport {
      * 子系统名称
      */
     @ApiModelProperty(value = "子系统名称")
-    @Excel(name = "子系统名称", width = 15)
     private String systemName;
 
     /**名称*/
-    @Excel(name = "简称", width = 15)
+    @Excel(name = "子系统分类", width = 15)
     @ApiModelProperty(value = "简称")
     private String shortenedForm;
 
@@ -62,40 +61,40 @@ public class FailureReport {
     private Double monthNum;
     private Double yearNum;
     @ApiModelProperty(value = "与上个月数据对比增加")
-    @Excel(name = "与上个月数据对比增加", width = 15,groupName = "故障数")
+/*    @Excel(name = "与上个月数据对比增加", width = 15,groupName = "故障数")*/
     private String lastMonthStr;
     /**
      * 与上个年数据对比增加
      */
     @ApiModelProperty(value = "与上个年数据对比增加")
-    @Excel(name = "与上个年数据对比增加", width = 15,groupName = "故障数")
+    /*@Excel(name = "与上个年数据对比增加", width = 15,groupName = "故障数")*/
     private String lastYearStr;
 
-    @Excel(name = "与上个周数据对比增加", width = 15,groupName = "故障数")
+    @Excel(name = "与上个周数据对比增加(%)", width = 15)
     private String lastWeekStr;
 
     /**
      * 已解决数
      */
     @ApiModelProperty(value = "已解决数")
-    @Excel(name = "已解决数", width = 15,groupName = "故障解决数")
+    @Excel(name = "已解决数", width = 15,groupName = "解决数")
     private Integer resolvedNum;
     /**
      * 待解决数
      */
     @ApiModelProperty(value = "待解决数")
-    @Excel(name = "待解决数", width = 15,groupName = "故障解决数")
+    @Excel(name = "待解决数", width = 15,groupName = "解决数")
     private Integer unResolvedNum;
     /**
      * 平均响应时间
      */
     @ApiModelProperty(value = "平均响应时间")
-    @Excel(name = "平均响应时间", width = 15,groupName = "故障解决数")
+    @Excel(name = "平均响应时间(秒)", width = 15,groupName = "平均时长")
     private Integer averageResponse;
     /**
      * 平均解决时间
      */
     @ApiModelProperty(value = "平均解决时间")
-    @Excel(name = "平均解决时间", width = 15,groupName = "故障解决数")
+    @Excel(name = "平均解决时间（秒）", width = 15,groupName = "平均时长")
     private Integer averageResolution;
 }
