@@ -5,8 +5,10 @@ import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.Week;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.InspectionApi;
@@ -27,6 +29,8 @@ import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
 import com.aiurt.modules.worklog.constans.WorkLogConstans;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
+import com.aiurt.modules.worklog.dto.WorkLogIndexDTO;
+import com.aiurt.modules.worklog.dto.WorkLogIndexShowDTO;
 import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
 import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.entity.WorkLogEnclosure;
@@ -44,7 +48,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
@@ -52,10 +58,8 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
-import org.jeecg.common.system.vo.CsUserDepartModel;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
-import org.jeecg.common.system.vo.SysParamModel;
+import org.jeecg.common.system.vo.*;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -67,7 +71,12 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -76,6 +85,7 @@ import java.util.stream.Collectors;
  * @date 2022/7/20
  * @desc
  */
+@Slf4j
 @Service
 public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> implements IWorkLogService {
 
@@ -276,7 +286,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         if (!admin) {
-            if(CollUtil.isNotEmpty(departByUserId)){
+            // 首页-工作日志，获取的是本班组的
+            if (Integer.valueOf(1).equals(param.getIsMyTeam())) {
+                param.setDepartList(Collections.singletonList(user.getOrgId()));
+            } else if(CollUtil.isNotEmpty(departByUserId)){
                 List<String> departIdsByUserId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
                 param.setDepartList(departIdsByUserId);
             }
@@ -378,7 +391,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
         if (!admin) {
-            if(CollUtil.isNotEmpty(departByUserId)){
+            // 首页-工作日志，获取的是本班组的
+            if (Integer.valueOf(1).equals(param.getIsMyTeam())) {
+                param.setDepartList(Collections.singletonList(user.getOrgId()));
+            }else if(CollUtil.isNotEmpty(departByUserId)){
                 List<String> departIdsByUserId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
                 param.setDepartList(departIdsByUserId);
             }
@@ -1223,6 +1239,17 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     }
 
     @Override
+    public List<WorkLogDetailResult> queryWorkLogDetailList(String id) {
+        List<WorkLogDetailResult> list = new ArrayList<>();
+        List<String> idList = depotMapper.getSameDayIdList(id);
+        idList.forEach(perId->{
+            WorkLogDetailResult workLogDetailResult = queryWorkLogDetail(perId);
+            list.add(workLogDetailResult);
+        });
+        return list;
+    }
+
+    @Override
     public WorkLogDetailResult queryWorkLogDetail(String id) {
         WorkLogDetailResult workLog = depotMapper.queryWorkLogById(id);
         //签名列表
@@ -1378,6 +1405,109 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
     }
 
+    @Override
+    public WorkLogIndexDTO getOverviewInfo(Date startDate, Date endDate, HttpServletRequest request) {
+        WorkLogIndexDTO workLogIndexDTO = new WorkLogIndexDTO();
+
+        // 查看开始时间到结束时间有多少天
+        int days = (int) DateUtil.between(startDate, endDate, DateUnit.DAY) + 1;
+
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        boolean isAdmin = SecurityUtils.getSubject().hasRole("admin") || SecurityUtils.getSubject().hasRole("zhuren");
+        int teamNum = 1;
+        if (isAdmin){
+            teamNum = iSysBaseAPI.getAllSysDepart().size();
+        }
+
+        // 应提交日志数，每个班组每天是2个，如果是管理员或者主任，获取的就是所以班组的
+        Integer shouldSubmitNum = 2 * teamNum * days;
+        // 已提交日志数
+        Integer submitNum = this.baseMapper.getSubmitNum(startDate, endDate, isAdmin ? null : loginUser.getOrgId());
+        // 未提交数，应提交-已提交
+        Integer unSubmitNum = Math.max(shouldSubmitNum - submitNum, 0);
+        // 获取前7个已提交的日志
+        LambdaQueryWrapper<WorkLog> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(WorkLog::getDelFlag, CommonConstant.DEL_FLAG_0);
+        queryWrapper.eq(WorkLog::getStatus, 1);
+        queryWrapper.eq(!isAdmin, WorkLog::getOrgId, loginUser.getOrgId());
+        queryWrapper.ge(WorkLog::getSubmitTime, DateUtil.beginOfDay(startDate));
+        queryWrapper.le(WorkLog::getSubmitTime, DateUtil.endOfDay(endDate));
+        queryWrapper.orderByDesc(WorkLog::getSubmitTime);
+        queryWrapper.last("limit 7");
+        // 查询已确认、待确认的字段值
+        List<DictModel> workLogConfirmStatusList = iSysBaseAPI.getDictItems("work_log_confirm_status");
+        List<WorkLogIndexShowDTO> workLogIndexShowDTOList = this.list(queryWrapper).stream().map(workLog -> {
+            WorkLogIndexShowDTO workLogIndexShowDTO = new WorkLogIndexShowDTO();
+            BeanUtils.copyProperties(workLog, workLogIndexShowDTO);
+            String orgName = iSysBaseAPI.selectAllById(workLog.getOrgId()).getDepartName();
+            workLogIndexShowDTO.setOrgName(orgName);
+            for (DictModel dictModel : workLogConfirmStatusList) {
+                if (dictModel.getValue().equals(workLogIndexShowDTO.getConfirmStatus().toString())) {
+                    workLogIndexShowDTO.setConfirmStatusName(dictModel.getText());
+                    break;
+                }
+            }
+            return workLogIndexShowDTO;
+        }).collect(Collectors.toList());
+
+        workLogIndexDTO.setShouldSubmitNum(shouldSubmitNum);
+        workLogIndexDTO.setSubmitNum(submitNum);
+        workLogIndexDTO.setUnSubmitNum(unSubmitNum);
+        workLogIndexDTO.setWorkLogIndexShowDTOList(workLogIndexShowDTOList);
+
+
+        return workLogIndexDTO;
+    }
+
+    @Override
+    public List<List<WorkLogDetailResult>> batchPrint(Page<WorkLogResult> page, WorkLogParam param, HttpServletRequest req) {
+        // 要打印的日志的id
+        List<String> idList;
+        String selections = req.getParameter("selections");
+        if (StrUtil.isNotEmpty(selections)){
+            idList = Arrays.asList(selections.split(","));
+        }else {
+            idList = this.pageList(page, param, req).getRecords().stream().map(WorkLogResult::getId).collect(Collectors.toList());
+        }
+
+        // 打印的日志的id的Set，用这个allIdSet是为了多线程查询。allIdSet->{id1,id2,id3,id4}
+        Set<String> allIdSet = new HashSet<>();
+        // 要打印的日志的id，组合成每个早班晚班，放到set里，防止传入一个早班一个晚班时打印重复的数据，set->{[id1,id2], [id3,id4]}
+        Set<List<String>> set = new HashSet<>();
+        idList.forEach(id->{
+            // 查出每个日志id，对应的晚班(早班)id
+            List<String> sameDayIdList = this.baseMapper.getSameDayIdList(id);
+            Collections.sort(sameDayIdList);
+            set.add(sameDayIdList);
+            allIdSet.addAll(sameDayIdList);
+        });
+
+        Map<String, WorkLogDetailResult> map = new ConcurrentHashMap<>();
+        // 多线程查询，将结构存入map中
+        ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
+        allIdSet.forEach(id->{
+            threadPoolExecutor.execute(()->{
+                WorkLogDetailResult workLogDetailResult = queryWorkLogDetail(id);
+                map.put(id, workLogDetailResult);
+            });
+        });
+        threadPoolExecutor.shutdown();
+        try {
+            // 等待线程池中的任务全部完成
+            threadPoolExecutor.awaitTermination(100, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            // 处理中断异常
+            log.info("循环方法的线程中断异常,{}", e.getMessage());
+        }
+
+        // 最终返回的结果
+        List<List<WorkLogDetailResult>> resultList = new ArrayList<>();
+        set.forEach(perIdList->{
+            List<WorkLogDetailResult> perResult = perIdList.stream().map(map::get).collect(Collectors.toList());
+            resultList.add(perResult);
+        });
+        return resultList;
+    }
 
     /**发送消息*/
     public void sendMessage(String orgId,Date date ,Integer flag,String workLogId) {

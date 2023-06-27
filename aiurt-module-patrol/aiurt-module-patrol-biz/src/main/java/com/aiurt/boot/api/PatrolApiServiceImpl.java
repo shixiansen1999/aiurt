@@ -197,7 +197,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
                         string = patrolTask.getName();
                     }
                 }
-                content.append(string).append("-").append(stationName).append(" ").append(" 巡视人:").append(userById.getRealname()).append("。").append('\n');
+                content.append(string).append("---").append(stationName).append(" ").append(" 巡视人:").append(userById.getRealname()).append("。").append('\n');
                 code.append(patrolTaskDevice.getTaskCode()).append(",");
             }
         }
