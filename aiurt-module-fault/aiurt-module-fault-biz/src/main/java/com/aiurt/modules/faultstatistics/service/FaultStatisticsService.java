@@ -93,6 +93,10 @@ public class FaultStatisticsService {
                 //子系统
             }
             boolean b = GlobalThreadLocal.setDataFilter(false);
+
+            // 通信7期 改成从大到小排序
+            Collections.reverse(sub);
+
             subList(faultStatisticsDTO, sub);
             GlobalThreadLocal.setDataFilter(b);
         }
