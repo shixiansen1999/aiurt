@@ -4,7 +4,8 @@
     <select id="getPatrolTaskPoolList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
         SELECT
         DISTINCT
-        t1.*
+        t1.*,
+        IF(t1.source = 3,concat(DATE_FORMAT(t1.start_date,'%Y-%m-%d'),'~',DATE_FORMAT(t1.end_date,'%Y-%m-%d')) ,DATE_FORMAT(t1.patrol_date,'%Y-%m-%d') ) as patrolDay
         FROM
         (
         SELECT
@@ -43,9 +44,14 @@
         LEFT JOIN patrol_task_organization pto ON t1.`code` = pto.task_code AND pto.del_flag = 0
         where 1=1
         <if test="patrolTaskDTO.dateScope != null and patrolTaskDTO.dateScope != ''">
-            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d')
-            between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
-            and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(t1.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d') and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d'))
+            or
+            (
+            DATE_FORMAT(t1.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
+            and DATE_FORMAT(t1.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
+            )
+            )
         </if>
         <if test="patrolTaskDTO.userHaveOrgCodeList != null and patrolTaskDTO.userHaveOrgCodeList.size() > 0">
             and t1.CODE IN
@@ -108,9 +114,12 @@
         select DISTINCT t1.id,
         t1.code,
         t1.name,
-        t1.patrol_date,
+        DATE_FORMAT(t1.patrol_date,'%Y-%m-%d') as patrolDate,
+        IF(t1.source = 3,concat(DATE_FORMAT(t1.start_date,'%Y-%m-%d'),'~',DATE_FORMAT(t1.end_date,'%Y-%m-%d')) ,DATE_FORMAT(t1.patrol_date,'%Y-%m-%d') ) as patrolDay,
         t1.start_time,
         t1.end_time,
+        t1.start_date,
+        t1.end_date,
         t1.type,
         t1.status,
         t1.end_user_id,
@@ -140,9 +149,14 @@
             )
         </if>
         <if test="patrolTaskDTO.dateScope != null and patrolTaskDTO.dateScope != ''">
-            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d')
-            between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
-            and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(t1.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d') and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d'))
+            or
+            (
+            DATE_FORMAT(t1.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
+            and DATE_FORMAT(t1.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
+            )
+            )
         </if>
         <if test="patrolTaskDTO.status != null">
             and t1.status = #{patrolTaskDTO.status}
@@ -207,9 +221,12 @@
         <!--pt.plan_order_code,-->
         <!--pt.plan_order_code_url,-->
         <!--pt.period,-->
-        pt.patrol_date,
+        DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') as patrolDate,
+        IF(pt.source = 3,concat(DATE_FORMAT(pt.start_date,'%Y-%m-%d'),'~',DATE_FORMAT(pt.end_date,'%Y-%m-%d')) ,DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') ) as patrolDay,
         pt.start_time,
         pt.end_time,
+        pt.start_date,
+        pt.end_date,
         pt.source,
         <!--pt.begin_time,-->
         pt.submit_time,
@@ -304,9 +321,14 @@
             </choose>
         </if>
         <if test="patrolTask.dateHead != null and patrolTask.dateEnd != null">
-            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')
-            BETWEEN DATE_FORMAT(#{patrolTask.dateHead}, '%Y-%m-%d')
-            AND DATE_FORMAT(#{patrolTask.dateEnd}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{patrolTask.dateHead}, '%Y-%m-%d') and DATE_FORMAT(#{patrolTask.dateEnd}, '%Y-%m-%d'))
+            or
+            (
+            DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{patrolTask.dateHead}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{patrolTask.dateEnd}, '%Y-%m-%d')
+            )
+            )
         </if>
         <if test="patrolTask.submitDateHead != null and patrolTask.submitDateEnd != null">
             AND DATE_FORMAT(pt.submit_time, '%Y-%m-%d')
@@ -314,7 +336,10 @@
             AND DATE_FORMAT(#{patrolTask.submitDateEnd}, '%Y-%m-%d')
         </if>
         <if test="patrolTask.patrolDate != null and patrolTask.patrolDate != null">
-            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTask.patrolDate}, '%Y-%m-%d')
+            AND ((DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTask.patrolDate}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.end_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTask.patrolDate}, '%Y-%m-%d'))
+            )
         </if>
         GROUP BY pt.id
         order by
@@ -347,7 +372,7 @@
         where t2.org_code = #{code}
     </select>
     <select id="selectBasicInfo" resultType="com.aiurt.boot.task.param.PatrolTaskParam">
-        SELECT *
+        SELECT *, IF(pt.source = 3,concat(DATE_FORMAT(pt.start_date,'%Y-%m-%d'),'~',DATE_FORMAT(pt.end_date,'%Y-%m-%d')) ,DATE_FORMAT(pt.patrol_date,'%Y-%m-%d')) as patrolDay
         FROM patrol_task pt
         WHERE pt.del_flag = 0
         <if test="patrolTaskParam.id != null and patrolTaskParam.id != ''">
@@ -364,9 +389,12 @@
         <!--pt.plan_order_code,-->
         <!--pt.plan_order_code_url,-->
         <!--pt.period,-->
-        pt.patrol_date,
+        DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') as patrolDate,
+        IF(pt.source = 3,concat(DATE_FORMAT(pt.start_date,'%Y-%m-%d'),'~',DATE_FORMAT(pt.end_date,'%Y-%m-%d')) ,DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') ) as patrolDay,
         pt.start_time,
         pt.end_time,
+        pt.start_date,
+        pt.end_date,
         <!--pt.source,-->
         <!--pt.begin_time,-->
         <!--pt.submit_time,-->
@@ -441,9 +469,15 @@
             and pt.status = #{patrolTaskDTO.status}
         </if>
         <if test="patrolTaskDTO.dateScope != null">
-            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')
-            between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
-            and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d') and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d'))
+            or
+            (
+            DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
+            )
+            )
+
         </if>
 <!--        <if test="patrolTaskDTO.taskCodes != null and patrolTaskDTO.taskCodes.size() > 0">-->
 <!--            and pt.code in-->
@@ -528,9 +562,14 @@
         left join patrol_task_standard ptsd on pt.id = ptsd.task_id and ptsd.del_flag = 0
         WHERE pt.del_flag = 0
         <if test="condition.startDate != null and condition.endDate != null">
-            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')
-                    BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-                    AND DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            or
+            (
+            DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            )
+            )
         </if>
         <if test="condition.omitStatus != null">
             AND pt.omit_status = #{condition.omitStatus}
@@ -569,9 +608,14 @@
         left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
         WHERE pt.del_flag = 0
         <if test="condition.startDate != null and condition.endDate != null">
-            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')
-            BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-            AND DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            or
+            (
+            DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            )
+            )
         </if>
         <if test="condition.state != null">
             AND pt.abnormal_state = #{condition.state}
@@ -610,7 +654,7 @@
         pt.`name`,
         pt.`code`,
         pt.`status`,
-        pt.patrol_date,
+        IF(3 = pt.source, concat(DATE_FORMAT(pt.start_date,'%Y-%m-%d'),'~',DATE_FORMAT(pt.end_date,'%Y-%m-%d')) ,DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') ) as patrolDate,
         IF(1 = pt.auditor, pt.auditor_time, pt.submit_time) submitTime,
         GROUP_CONCAT(DISTINCT ptu.user_name SEPARATOR '；' ) userInfo,
         GROUP_CONCAT(DISTINCT cs.station_name SEPARATOR '；' ) stationInfo,
@@ -624,7 +668,11 @@
         LEFT JOIN patrol_task_standard ptsd ON pt.id = ptsd.task_id AND ptsd.del_flag = 0
         WHERE pt.del_flag = 0
         <if test="condition.date != null">
-            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.date}, '%Y-%m-%d')
+            AND (
+            (DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.date}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.end_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.date}, '%Y-%m-%d'))
+            )
         </if>
         <if test="condition.source != null">
             and pt.source = #{condition.source}
@@ -668,7 +716,14 @@
         left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
         WHERE pt.del_flag = 0
         <if test="startDate != null and endDate != null">
-            AND pt.patrol_date BETWEEN #{startDate} AND #{endDate}
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and DATE_FORMAT(#{endDate}, '%Y-%m-%d'))
+            or
+            (
+            DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+            )
+            )
         </if>
 <!--        <if test="jointSQL != null and jointSQL != ''">-->
 <!--            and ${jointSQL}-->
@@ -705,7 +760,12 @@
         WHERE
         pt.del_flag = 0
         <if test="condition.startTime != null and condition.endTime != null">
-            AND pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
+            )
         </if>
         <if test="condition.discardStatus != null">
             AND pt.discard_status = #{condition.discardStatus}
@@ -737,7 +797,12 @@
         join sys_depart sd on pto.org_code = sd.org_code
         where pt.del_flag = 0
         <if test="condition.startTime != null and condition.endTime != null">
-            AND pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
+            )
         </if>
         <if test="condition.discardStatus != null">
             AND pt.discard_status = #{condition.discardStatus}
@@ -773,7 +838,12 @@
         WHERE
         pt.del_flag = 0
         <if test="condition.startTime != null and condition.endTime != null">
-            AND pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
+            )
         </if>
         <if test="condition.status != null">
             AND pt.`status` = #{condition.status}
@@ -791,7 +861,12 @@
             AND  cs.line_code = #{condition.lineCode}
         </if>
         <if test="condition.today != null">
-            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.today}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
+            )
         </if>
         <if test="condition.orgCodes != null and condition.orgCodes.size > 0">
             AND pt.`code` IN(
@@ -812,8 +887,15 @@
         JOIN cs_station cs ON pts.station_code = cs.station_code AND cs.del_flag = 0
         where  pt.del_flag = 0
         <if test="condition.startTime != null and condition.endTime != null">
-            AND  pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
+<!--            AND  pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}-->
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
+            )
         </if>
+
         <if test="condition.omit != null">
             AND  pt.omit_status = #{condition.omit}
         </if>
@@ -970,8 +1052,12 @@
             AND pto.org_code = #{orgCode}
         </if>
         <if test="condition.startDate != null and condition.endDate != null">
-            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-            AND DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            )
         </if>
         <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
@@ -1024,8 +1110,12 @@
             </foreach>
         </if>
         <if test="condition.startDate != null and condition.endDate != null">
-            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-            AND DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            )
         </if>
         <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
@@ -1374,8 +1464,12 @@
             AND sd.id = #{orgId}
         </if>
         <if test="startDate != null and startDate != ''">
-            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and
-            DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and DATE_FORMAT(#{endDate}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate}, '%Y-%m-%d'))
+            )
         </if>
     </select>
     <select id="getUserNowNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
@@ -1394,8 +1488,12 @@
             </foreach>
         </if>
         <if test="startDate != null and startDate != ''">
-            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and
-            DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and DATE_FORMAT(#{endDate}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate}, '%Y-%m-%d'))
+            )
         </if>
         and pt.`status` = 7
         GROUP BY pt.id
@@ -1417,8 +1515,12 @@
             </foreach>
         </if>
         <if test="startDate != null and startDate != ''">
-            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and
-            DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and DATE_FORMAT(#{endDate}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate}, '%Y-%m-%d'))
+            )
         </if>
         and pt.`status` = 7
         GROUP BY pt.id
@@ -1438,8 +1540,12 @@
             </foreach>
         </if>
         <if test="startDate != null and startDate != ''">
-            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and
-            DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and DATE_FORMAT(#{endDate}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate}, '%Y-%m-%d'))
+            )
         </if>
         and pt.abnormal_state = 1
         GROUP BY pt.id
@@ -1460,14 +1566,19 @@
             </foreach>
         </if>
         <if test="startDate != null and startDate != ''">
-            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and
-            DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{startDate}, '%Y-%m-%d') and DATE_FORMAT(#{endDate}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate}, '%Y-%m-%d'))
+            )
         </if>
         and pt.abnormal_state = 1
         GROUP BY pt.id
     </select>
     <select id="getDetail" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
         select t1.*,
+        IF(t1.source = 3,concat(DATE_FORMAT(t1.start_date,'%Y-%m-%d'),'~',DATE_FORMAT(t1.end_date,'%Y-%m-%d')) ,DATE_FORMAT(t1.patrol_date,'%Y-%m-%d') ) as patrolDay,
         (select realname from sys_user where id = t1.end_user_id) as
         endUserName,
         concat(DATE_FORMAT(t1.start_time, '%H:%i'), "-", DATE_FORMAT(t1.end_time, '%H:%i')) as startEndTime
@@ -1520,8 +1631,8 @@
                  left join patrol_task_station t4 on t1.code = t4.task_code
         where t1.del_flag = 0
           and t1.status = #{status}
-          and date_format(t1.patrol_date, '%Y-%m-%d') &gt;= date_format(#{firstDay}, '%Y-%m-%d')
-          and date_format(t1.patrol_date, '%Y-%m-%d') &lt;= date_format(#{lastDay}, '%Y-%m-%d')
+            and date_format(t1.patrol_date, '%Y-%m-%d') &gt;= date_format(#{firstDay}, '%Y-%m-%d')
+            and date_format(t1.patrol_date, '%Y-%m-%d') &lt;= date_format(#{lastDay}, '%Y-%m-%d')
     </select>
 
     <sql id="OverviewInfo">
@@ -1530,14 +1641,19 @@
         pt.`status`,
         pt.abnormal_state,
         pt.omit_status,
-        date_format(pt.patrol_date, '%Y-%m-%d') as patrolDate
+        date_format(if(pt.source = 3, pt.end_date, pt.patrol_date), '%Y-%m-%d') as patrolDate
         FROM patrol_task pt
         left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
         left join patrol_task_standard ptsd on pt.id = ptsd.task_id and ptsd.del_flag = 0
         left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
         WHERE pt.del_flag = 0
         <if test="condition.startDate != null and condition.endDate != null">
-            AND pt.patrol_date BETWEEN #{condition.startDate} AND #{condition.endDate}
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            )
         </if>
         <if test="condition.discardStatus != null">
             AND pt.discard_status != #{condition.discardStatus}
@@ -1613,13 +1729,18 @@
         pt.`status`,
         pt.abnormal_state,
         pt.omit_status,
-        date_format(pt.patrol_date, '%Y-%m-%d') as patrolDate
+        date_format(if(pt.source = 3,pt.end_date , pt.patrol_date), '%Y-%m-%d') as patrolDate
         from patrol_task pt
         LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code AND pts.del_flag = 0
         JOIN cs_station cs ON pts.station_code = cs.station_code AND cs.del_flag = 0
         where  pt.del_flag = 0
         <if test="condition.startTime != null and condition.endTime != null">
-            AND  pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
+            )
         </if>
         <if test="condition.discardStatus != null">
             AND  pt.discard_status = #{condition.discardStatus}
@@ -1671,7 +1792,12 @@
         LEFT JOIN patrol_task_standard ptsd on ptsd.task_id = pt.id and ptsd.del_flag = 0
         where pt.del_flag = 0 AND pt.discard_status = 0
         <if test="condition.startDate != null and condition.endDate != null">
-            AND pt.patrol_date BETWEEN #{condition.startDate} AND #{condition.endDate}
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            )
         </if>
         <if test="condition.lineCode != null and condition.lineCode != ''">
             AND cs.line_code = #{condition.lineCode}
@@ -1863,7 +1989,7 @@
         SELECT
         pt.id,
         pt.`code`,
-        pt.patrol_date,
+        DATE_FORMAT(pt.patrol_date,'%Y-%m-%d'),
         IF(1 = pt.auditor, pt.auditor_time, pt.submit_time) submitTime
         FROM patrol_task pt
         left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
@@ -1875,9 +2001,12 @@
             and ${condition.jointSQL}
         </if>
         <if test="condition.startDate != null and condition.endDate != null">
-            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')
-            BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-            AND DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            )
         </if>
 <!--        <if test="condition.status != null and condition.status.length > 0">-->
 <!--            AND pt.`status` IN-->
@@ -1945,7 +2074,7 @@
         SELECT
         pt.id,
         pt.`code`,
-        pt.patrol_date,
+        IF(3 = pt.source, concat(DATE_FORMAT(pt.start_date,'%Y-%m-%d'),'~',DATE_FORMAT(pt.end_date,'%Y-%m-%d')) ,DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') ) as patrolDate,
         IF(1 = pt.auditor, pt.auditor_time, pt.submit_time) submitTime
         FROM patrol_task pt
         left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
@@ -1957,7 +2086,11 @@
             and ${condition.jointSQL}
         </if>
         <if test="condition.date != null">
-            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d')= DATE_FORMAT(#{condition.date}, '%Y-%m-%d')
+            AND (
+            (DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.date}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.end_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.date}, '%Y-%m-%d'))
+            )
         </if>
         <if test="condition.source != null">
             AND pt.source = #{condition.source}
@@ -1971,7 +2104,7 @@
         ps.`name`,
         statistics.`code`,
         ptd.`status`,
-        statistics.patrol_date,
+        statistics.patrolDate,
         statistics.submitTime,
         ptd.station_code
         FROM
@@ -1994,7 +2127,7 @@
         SELECT
         pt.id,
         pt.`code`,
-        pt.patrol_date,
+        DATE_FORMAT(pt.patrol_date,'%Y-%m-%d'),
         pt.omit_status,
         IF(1 = pt.auditor, pt.auditor_time, pt.submit_time) submitTime
         FROM patrol_task pt
@@ -2004,7 +2137,12 @@
         left join patrol_task_user ptu on pt.code = ptu.task_code and ptu.del_flag = 0
         WHERE pt.del_flag = 0 AND pt.discard_status != 1
         <if test="condition.startTime != null and condition.endTime != null">
-            AND pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
+            )
         </if>
         <if test="condition.omit != null">
             AND pt.omit_status = #{condition.omit}
@@ -2016,7 +2154,11 @@
             </foreach>
         </if>
         <if test="condition.today != null">
-            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.today}, '%Y-%m-%d')
+            AND (
+            (DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.today}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.end_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.today}, '%Y-%m-%d'))
+            )
         </if>
         <if test="condition.username != null and condition.username != ''">
             and  ptu.user_name

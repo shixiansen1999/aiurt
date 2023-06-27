@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -67,7 +68,23 @@ public class ScheduleTask implements Serializable {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "任务计划执行日期(yyyy-MM-dd)")
-    private java.util.Date patrolDate;
+    private String patrolDate;
+    /**
+     * 手工下发巡检的开始日期(yyyy-MM-dd)
+     */
+    @Excel(name = "手工下发巡检的开始日期", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "手工下发巡检的开始日期(yyyy-MM-dd)")
+    private java.util.Date startDate;
+    /**
+     * 手工下发巡检的结束日期(yyyy-MM-dd)
+     */
+    @Excel(name = "手工下发巡检的结束日期", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "手工下发巡检的结束日期(yyyy-MM-dd)")
+    private java.util.Date endDate;
     /**
      * 任务提交时间，需要审核的任务以审核时间为准
      */

@@ -113,6 +113,22 @@ public class PatrolTask extends DictEntity implements Serializable {
     @ApiModelProperty(value = "巡检结束时间(HH:mm)")
     private java.util.Date endTime;
     /**
+     * 手工下发巡检的开始日期(yyyy-MM-dd)
+     */
+    @Excel(name = "手工下发巡检的开始日期", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "手工下发巡检的开始日期(yyyy-MM-dd)")
+    private java.util.Date startDate;
+    /**
+     * 手工下发巡检的结束日期(yyyy-MM-dd)
+     */
+    @Excel(name = "手工下发巡检的结束日期", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "手工下发巡检的结束日期(yyyy-MM-dd)")
+    private java.util.Date endDate;
+    /**
      * 任务获取方式：1 个人领取、2常规指派、3 手工下发
      */
     @Excel(name = "任务获取方式：1 个人领取、2常规指派、3 手工下发", width = 15)

@@ -187,7 +187,16 @@ public class PatrolScreenService {
         }else {
         List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
         List<PatrolTask> todayList = list.stream()
-                .filter(l -> DateUtil.format(today, "yyyy-MM-dd").equals(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd")))
+                //.filter(l -> DateUtil.format(today, "yyyy-MM-dd").equals(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd")))
+                .filter(l -> {
+                    if (l.getSource() == 3) {
+                        // 使用 end_date 进行筛选
+                        return DateUtil.format(today, "yyyy-MM-dd").equals(DateUtil.format(l.getEndDate(), "yyyy-MM-dd"));
+                    } else {
+                        // 使用 patrol_date 进行筛选
+                        return DateUtil.format(today, "yyyy-MM-dd").equals(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd"));
+                    }
+                })
                 .collect(Collectors.toList());
         if (!ScreenConstant.THIS_WEEK.equals(timeType) && !ScreenConstant.THIS_MONTH.equals(timeType)) {
             //今日数量构造条件对象
@@ -195,6 +204,7 @@ public class PatrolScreenService {
             module.setEndTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 23:59:59")));
             todayList = patrolTaskMapper.getScreenDataCount(module);
         }
+
         long planNum = list.stream().count();
         long finishNum = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
         //漏巡条件构建

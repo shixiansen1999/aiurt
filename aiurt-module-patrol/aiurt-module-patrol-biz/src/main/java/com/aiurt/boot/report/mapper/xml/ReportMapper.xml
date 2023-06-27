@@ -21,7 +21,14 @@
             </foreach>
         </if>
         <if test="condition.startDate != null and condition.startDate != ''">
-            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            or
+            (
+            DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            )
+            )
         </if>
          <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
@@ -82,7 +89,14 @@
             </foreach>
         </if>
         <if test="condition.startDate != null and condition.startDate != ''">
-            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            or
+            (
+            DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            )
+            )
         </if>
          <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
@@ -140,7 +154,14 @@ FROM
      </foreach>
     </if>
      <if test="condition.startDate != null and condition.startDate != ''">
-            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+         and (
+         (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+         or
+         (
+         DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+         and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+         )
+         )
         </if>
          <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
@@ -198,7 +219,14 @@ FROM
      </foreach>
     </if>
 	 <if test="condition.startDate != null and condition.startDate != ''">
-            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+         and (
+         (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+         or
+         (
+         DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+         and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+         )
+         )
         </if>
          <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
@@ -258,7 +286,14 @@ FROM
             </foreach>
         </if>
         <if test="condition.startDate != null and condition.startDate != ''">
-            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            or
+            (
+            DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            )
+            )
         </if>
          <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
@@ -317,7 +352,14 @@ FROM
             </foreach>
         </if>
         <if test="condition.startDate != null and condition.startDate != ''">
-            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+            and (
+            (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            or
+            (
+            DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            )
+            )
         </if>
          <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
@@ -366,7 +408,14 @@ FROM
             AND pto.org_code = #{orgCode}
         </if>
        <if test="condition.startDate != null and condition.startDate != ''">
-            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+           and (
+           (DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+           or
+           (
+           DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+           and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+           )
+           )
         </if>
         <if test="condition.lineCode != null and condition.stationCode != null">
             and pt.code in (
