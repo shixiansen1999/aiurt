@@ -1285,7 +1285,7 @@
         </if>
         WHERE a.del_flag = 0
         <if test="orgCodes != null and orgCodes.size > 0">
-            AND a.id IN
+            AND a.org_code IN
             <foreach collection="orgCodes" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
