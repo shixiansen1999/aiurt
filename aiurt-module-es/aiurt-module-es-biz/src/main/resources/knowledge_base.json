@@ -1,4 +1,32 @@
 {
+  "settings": {
+    "index": {
+      "analysis": {
+        "analyzer": {
+          "index_analyzer": {
+            "tokenizer": "ik_max_word",
+            "filter": [
+              "lowercase"
+            ]
+          },
+          "search_analyzer": {
+            "tokenizer": "ik_smart",
+            "filter": [
+              "lowercase",
+              "synonym_filter"
+            ]
+          }
+        },
+        "filter": {
+          "synonym_filter": {
+            "type": "synonym_graph",
+            "synonyms_path": "analysis/synonyms.txt",
+            "updateable": true
+          }
+        }
+      }
+    }
+  },
   "mappings": {
     "properties": {
       "id": {
@@ -9,7 +37,7 @@
       },
       "faultPhenomenon": {
         "type": "text",
-        "analyzer": "ik_max_word",
+        "analyzer": "index_analyzer",
         "fields": {
           "suggest": {
             "type": "completion",
@@ -20,14 +48,14 @@
             "ignore_above": 256
           }
         },
-        "search_analyzer": "ik_smart"
+        "search_analyzer": "search_analyzer"
       },
       "knowledgeBaseTypeCode": {
         "type": "keyword"
       },
       "knowledgeBaseTypeName": {
         "type": "text",
-        "analyzer": "ik_max_word",
+        "analyzer": "index_analyzer",
         "fields": {
           "suggest": {
             "type": "completion",
@@ -38,7 +66,7 @@
             "ignore_above": 256
           }
         },
-        "search_analyzer": "ik_smart"
+        "search_analyzer": "search_analyzer"
       },
       "majorCode": {
         "type": "keyword"
@@ -112,14 +140,14 @@
           },
           "faultCause": {
             "type": "text",
-            "analyzer": "ik_max_word",
+            "analyzer": "index_analyzer",
             "fields": {
               "suggest": {
                 "type": "completion",
                 "analyzer": "ik_max_word"
               }
             },
-            "search_analyzer": "ik_smart"
+            "search_analyzer": "search_analyzer"
           },
           "solution": {
             "type": "text",
