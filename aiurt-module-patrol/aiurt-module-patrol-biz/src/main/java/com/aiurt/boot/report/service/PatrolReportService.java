@@ -483,10 +483,13 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         List<MonthDTO> monthDtos = patrolTaskMapper.selectMonth(sysUser.getId(), lineCode, stationCode,systemCodes,startTime,endTime);
         List<String> months = getMonths(startTime, endTime);
         List<String> list = monthDtos.stream().map(MonthDTO::getShortenedForm).distinct().collect(Collectors.toList());
+        Map<String, String> map = monthDtos.stream().collect(Collectors.toMap(MonthDTO::getShortenedForm, MonthDTO::getSystemCode, (a, b) -> b));
         List<SystemMonthDTO> results = new ArrayList<>();
         for (String s : list) {
             SystemMonthDTO systemMonthDTO = new SystemMonthDTO();
             systemMonthDTO.setShortenedForm(s);
+            String code = map.get(s);
+            systemMonthDTO.setSystemCode(code);
             List<MonthDTO> monthDTOS = new ArrayList<>();
             for (String month : months) {
                 int sum = monthDtos.stream().filter(m ->m.getApprovalPassTime() != null && m.getApprovalPassTime().equals(month) && m.getShortenedForm().equals(s)).mapToInt(MonthDTO::getNums).sum();
@@ -566,10 +569,13 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         List<MonthDTO> monthDtos = patrolTaskMapper.selectMonthOrg(orgCodes, lineCode, stationCode, systemCode,startTime,endTime);
         List<String> months = getMonths(startTime, endTime);
         List<String> list = monthDtos.stream().map(MonthDTO::getOrgName).distinct().collect(Collectors.toList());
+        Map<String, String> map = monthDtos.stream().collect(Collectors.toMap(MonthDTO::getOrgName, MonthDTO::getOrgCode,(a, b) -> b));
         List<SystemMonthDTO> results = new ArrayList<>();
         for (String s : list) {
             SystemMonthDTO systemMonthDTO = new SystemMonthDTO();
             systemMonthDTO.setOrgName(s);
+            String code = map.get(s);
+            systemMonthDTO.setOrgCode(code);
             List<MonthDTO> monthDTOS = new ArrayList<>();
             for (String month : months) {
                 int sum = monthDtos.stream().filter(m -> m.getApprovalPassTime() != null && m.getApprovalPassTime().equals(month) && m.getOrgName().equals(s)).mapToInt(MonthDTO::getNums).sum();
@@ -646,7 +652,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             }
             if (f.getLastWeekNum() != 0) {
                 BigDecimal sub = NumberUtil.sub(f.getFailureNum(), f.getLastWeekNum());
-                BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastYearNum(), 2));
+                BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastWeekNum(), 2));
                 f.setLastWeekStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
             }else {
                 f.setLastWeekStr("-");

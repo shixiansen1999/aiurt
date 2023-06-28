@@ -15,8 +15,10 @@ import lombok.Data;
 public class MonthDTO {
     private Integer nums;
     private String orgName;
+    private String orgCode;
     private String systemName;
     private String shortenedForm;
+    private String systemCode;
     private String approvalPassTime;
 
 

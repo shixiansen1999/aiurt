@@ -6,9 +6,8 @@ import com.aiurt.modules.schedule.dto.ScheduleUserWorkDTO;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.schedule.service.IScheduleRecordService;
 import com.aiurt.modules.train.task.dto.TrainExperienceDTO;
+import com.aiurt.modules.train.task.entity.BdTrainTask;
 import com.aiurt.modules.train.task.mapper.BdTrainTaskSignMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +48,7 @@ public class BaseApiImpl implements IBaseApi {
     }
 
     @Override
-    public IPage<TrainExperienceDTO> getTrainExperience(Page<TrainExperienceDTO> page, String userId) {
-        return bdTrainTaskSignMapper.getTrainExperience(page, userId);
+    public List<TrainExperienceDTO> getTrainExperience(String userId) {
+        return bdTrainTaskSignMapper.getTrainExperience(userId);
     }
 }

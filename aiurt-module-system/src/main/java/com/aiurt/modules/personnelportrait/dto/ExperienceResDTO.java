@@ -20,10 +20,7 @@ import java.io.Serializable;
 @ApiModel(value = "培训经历", description = "培训经历")
 public class ExperienceResDTO implements Serializable {
     private static final long serialVersionUID = 1L;
-    /**
-     * 记录ID
-     */
-    private String id;
+
     /**
      * 培训起始时间
      */

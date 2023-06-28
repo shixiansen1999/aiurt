@@ -404,7 +404,7 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                         faultReportDTO.setRepairTime(0);
                     }else {
                         //平均维修时间不需要加上同行人工时
-                        BigDecimal bigDecimal = new BigDecimal(faultReportDTO.getNum()).divide(new BigDecimal(faultReportDTO.getNum1()),0, BigDecimal.ROUND_HALF_UP);
+                        BigDecimal bigDecimal = new BigDecimal(faultReportDTO.getNum()).divide(new BigDecimal(fau.getNum1()),0, BigDecimal.ROUND_HALF_UP);
                         faultReportDTO.setRepairTime(bigDecimal.intValue());
                     }
                     faultReportDTO.setConstructorsNum(fau.getConstructorsNum());
