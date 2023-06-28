@@ -2129,7 +2129,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 dataList.add(dto);
             });
             try {
-                sparePartBaseApi.dealChangeSparePart(dataList);
+                sparePartBaseApi.dealChangeSparePartV2(dataList);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
