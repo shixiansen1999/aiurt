@@ -118,7 +118,7 @@ public class PatrolTaskMissingDetectionByDrools implements Job {
                         .in(PatrolTask::getStatus, status)
                         .eq(PatrolTask::getOmitStatus, PatrolConstant.UNOMIT_STATUS)
                         .eq(PatrolTask::getDiscardStatus,PatrolConstant.TASK_UNDISCARD)
-                        .ne(PatrolTask::getPeriod,PatrolConstant.PLAN_PERIOD_THREE_MONTH)
+                        .and(wrapper -> wrapper.ne(PatrolTask::getPeriod, PatrolConstant.PLAN_PERIOD_THREE_MONTH).or().isNull(PatrolTask::getPeriod))
                         .list()
         ).orElseGet(Collections::emptyList);
         if (CollectionUtil.isEmpty(taskList)) {
