@@ -652,7 +652,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
             }
             if (f.getLastWeekNum() != 0) {
                 BigDecimal sub = NumberUtil.sub(f.getFailureNum(), f.getLastWeekNum());
-                BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastYearNum(), 2));
+                BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastWeekNum(), 2));
                 f.setLastWeekStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
             }else {
                 f.setLastWeekStr("-");

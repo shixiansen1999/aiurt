@@ -1341,7 +1341,7 @@
         (SELECT COUNT(id)
         FROM fault WHERE a.org_code = sys_org_code
         and `status` > 2
-        AND DATE_FORMAT(approval_pass_time, '%Y') BETWEEN DATE_FORMAT(date_sub(#{startTime}, interval 1 week), '%Y-%m-%d') AND DATE_FORMAT(date_sub(#{endTime}, interval 1 week), '%Y-%m-%d')
+        AND DATE_FORMAT(approval_pass_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(date_sub(#{startTime}, interval 1 week), '%Y-%m-%d') AND DATE_FORMAT(date_sub(#{endTime}, interval 1 week), '%Y-%m-%d')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
