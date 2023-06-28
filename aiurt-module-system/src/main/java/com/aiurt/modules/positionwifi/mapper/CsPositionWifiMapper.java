@@ -20,14 +20,14 @@ public interface CsPositionWifiMapper extends BaseMapper<CsPositionWifi> {
      * @param stationCodes
      * @return
      */
-    List<String> getMac(@Param("stationCodes") List<String> stationCodes);
+    List<String> getMac(@Param("stationCodes") List<String> stationCodes,@Param("changeCode")List<String> changeCode);
 
     /**
      * 根据站点code获取mac地址和站点名称
      * @param stationCodes
      * @return
      */
-    List<StationAndMacModel> getStationAndMac(@Param("stationCodes") List<String> stationCodes);
+    List<StationAndMacModel> getStationAndMac(@Param("stationCodes") List<String> stationCodes,@Param("changeCode")List<String> changeCode);
 
     /**
      * 根据mac地址获取station_code
@@ -36,4 +36,10 @@ public interface CsPositionWifiMapper extends BaseMapper<CsPositionWifi> {
      */
     @Select("select station_code from cs_position_wifi where mac=#{mac} and del_flag=0")
     String getStationCodeByMac(String mac);
+    /**
+     * 获取换乘站站点
+     * @param stationCodes
+     * @return
+     */
+    List<String> getChangeCode(@Param("stationCodes")List<String> stationCodes);
 }
