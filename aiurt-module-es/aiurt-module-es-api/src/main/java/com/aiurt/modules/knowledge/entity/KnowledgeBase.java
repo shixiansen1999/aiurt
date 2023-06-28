@@ -39,7 +39,7 @@ public class KnowledgeBase {
      * 故障现象
      */
     @HighlightField(name = "faultPhenomenon")
-    @Field(type = FieldType.Text, analyzer = "ik_max_word", searchAnalyzer = "ik_smart")
+    @Field(type = FieldType.Text, analyzer = "index_analyzer", searchAnalyzer = "search_analyzer")
     @CompletionField(analyzer = "ik_max_word")
     @ApiModelProperty(value = "故障现象")
     private String faultPhenomenon;
@@ -55,7 +55,7 @@ public class KnowledgeBase {
      * 故障知识分类名称
      */
     @HighlightField(name = "knowledgeBaseTypeName")
-    @Field(type = FieldType.Text, analyzer = "ik_max_word", searchAnalyzer = "ik_smart")
+    @Field(type = FieldType.Text, analyzer = "index_analyzer", searchAnalyzer = "search_analyzer")
     @CompletionField(analyzer = "ik_max_word")
     @ApiModelProperty(value = "故障知识分类名称")
     private String knowledgeBaseTypeName;
