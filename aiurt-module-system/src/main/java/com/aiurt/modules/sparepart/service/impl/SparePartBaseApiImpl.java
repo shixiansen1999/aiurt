@@ -727,7 +727,8 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
         }
 
         if (CollUtil.isNotEmpty(updateList)) {
-            deviceAssemblyService.updateBatchById(updateList);
+            List<String> collect = updateList.stream().map(DeviceAssembly::getId).collect(Collectors.toList());
+            deviceAssemblyService.removeBatchByIds(collect);
         }
     }
 }
