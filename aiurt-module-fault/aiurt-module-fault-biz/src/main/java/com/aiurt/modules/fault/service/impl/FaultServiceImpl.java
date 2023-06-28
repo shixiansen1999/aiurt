@@ -758,7 +758,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
             // 通信七期，中心班组成员可以填写维修记录
             String roleCodes = Optional.ofNullable(user.getRoleCodes()).orElseGet(() -> "");
-            fault.setIsFault(roleCodes.contains(CommonConstant.ZXBANZHANG) || roleCodes.contains(CommonConstant.ZXCHENGYUAN));
+            if (roleCodes.contains(CommonConstant.ZXBANZHANG) || roleCodes.contains(CommonConstant.ZXCHENGYUAN)){
+                fault.setIsFault(true);
+            }
 
         } else {
             fault.setIsFault(false);
@@ -3469,7 +3471,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
             // 通信七期，中心班组成员可以填写维修记录
             String roleCodes = Optional.ofNullable(user.getRoleCodes()).orElseGet(() -> "");
-            fault1.setIsFault(roleCodes.contains(CommonConstant.ZXBANZHANG) || roleCodes.contains(CommonConstant.ZXCHENGYUAN));
+            if (roleCodes.contains(CommonConstant.ZXBANZHANG) || roleCodes.contains(CommonConstant.ZXCHENGYUAN)){
+                fault1.setIsFault(true);
+            }
 
             // 权重登记
             if (StrUtil.isNotBlank(fault1.getFaultLevel())) {
