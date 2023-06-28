@@ -18,9 +18,9 @@ import java.util.List;
 @Data
 public class SubsystemFaultDTO {
     String id;
-    @ApiModelProperty(value = "子系统名称")
-    @Excel(name = "子系统名称", width = 15)
     private String systemName;
+    @ApiModelProperty(value = "子系统简称")
+    @Excel(name = "专业子系统", width = 15)
     private String shortenedForm;
     private String systemCode;
     private List<String> systemCodes;

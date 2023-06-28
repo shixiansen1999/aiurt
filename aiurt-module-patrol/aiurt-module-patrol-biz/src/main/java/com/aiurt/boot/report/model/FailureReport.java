@@ -70,7 +70,7 @@ public class FailureReport {
     /*@Excel(name = "与上个年数据对比增加", width = 15,groupName = "故障数")*/
     private String lastYearStr;
 
-    @Excel(name = "与上个周数据对比增加(%)", width = 15)
+    @Excel(name = "与上个周对比(%)", width = 15)
     private String lastWeekStr;
 
     /**
@@ -89,12 +89,12 @@ public class FailureReport {
      * 平均响应时间
      */
     @ApiModelProperty(value = "平均响应时间")
-    @Excel(name = "平均响应时间(秒)", width = 15,groupName = "平均时长")
+    @Excel(name = "故障平均响应时间(秒)", width = 15,groupName = "平均时长")
     private Integer averageResponse;
     /**
      * 平均解决时间
      */
     @ApiModelProperty(value = "平均解决时间")
-    @Excel(name = "平均解决时间（秒）", width = 15,groupName = "平均时长")
+    @Excel(name = "故障平均解决时间（秒）", width = 15,groupName = "平均时长")
     private Integer averageResolution;
 }
