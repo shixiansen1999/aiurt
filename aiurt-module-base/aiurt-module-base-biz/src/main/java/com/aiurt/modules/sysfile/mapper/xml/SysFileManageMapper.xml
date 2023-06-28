@@ -44,7 +44,7 @@
             AND sf.type = #{condition.type}
         </if>
         <if test="condition.startTime !=null and condition.endTime!=null">
-            AND sf.create_time between #{condition.startTime} and #{condition.endTime}
+            AND DATE_FORMAT(sf.create_time,'%Y-%m-%d') between #{condition.startTime} and #{condition.endTime}
         </if>
         <if test="userNames!=null and userNames.size>0">
             AND sf.create_by in
