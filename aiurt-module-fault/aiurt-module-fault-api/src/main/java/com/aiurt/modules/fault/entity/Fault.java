@@ -396,6 +396,10 @@ public class Fault extends DictEntity implements Serializable {
     @TableField(exist = false)
     private Boolean canReceive;
 
+    @ApiModelProperty(value = "是否能填写维修记录：false不能填写，true可以填写，本人的故障和中心班组成员都可以填写")
+    @TableField(exist = false)
+    private Boolean canWriteFault;
+
     /**故障维修时长*/
     @Excel(name = "故障维修时长", width = 15)
     @ApiModelProperty(value = "故障维修时长")
