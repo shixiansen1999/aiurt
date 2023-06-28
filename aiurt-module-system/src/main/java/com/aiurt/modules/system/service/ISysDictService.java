@@ -266,4 +266,21 @@ public interface ISysDictService extends IService<SysDict> {
 	 * @return
 	 */
 	DictModel dictById(String id);
+	/**
+	 * 字典表的 翻译(返回多个值)
+	 *
+	 * @param table 数据库表
+	 * @param text  返回字段
+	 * @param code  条件字段
+	 * @param key   条件值
+	 * @return
+	 */
+    List<String> queryTableDictValueByKey(String table, String text, String code, String key);
+	/**
+	 * 通过字典code及字典项的文本获取字典value
+	 * @param code
+	 * @param key
+	 * @return
+	 */
+	List<String> queryDictValueByKey(String code, String key);
 }

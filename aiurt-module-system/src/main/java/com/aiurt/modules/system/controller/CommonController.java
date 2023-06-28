@@ -97,6 +97,7 @@ public class CommonController {
         Result<SysAttachment> result = new Result<>();
         String savePath = "";
         String bizPath = request.getParameter("biz");
+        String business = request.getParameter("business");
 
         String type = uploadType;
 
@@ -142,6 +143,7 @@ public class CommonController {
             sysAttachment.setFileType(FilenameUtils.getExtension(originalFilename));
             sysAttachment.setType(type);
             sysAttachment.setDelFlag(0);
+            sysAttachment.setBusinessId(business);
             // 返回文件大小
             sysAttachment.setFileSize(file.getSize());
             sysAttachmentService.save(sysAttachment);

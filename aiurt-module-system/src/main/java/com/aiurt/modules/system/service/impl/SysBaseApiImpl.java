@@ -286,6 +286,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private CsPositionWifiMapper csPositionWifiMapper;
     @Autowired
     private ISysParamAPI sysParamApi;
+
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
     public LoginUser getUserByName(String username) {
@@ -842,7 +843,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
 
     @Override
-    public List<CsRoleUserModel>queryRoleUserTree(){
+    public List<CsRoleUserModel> queryRoleUserTree() {
         List<CsRoleUserModel> list = new ArrayList<>();
         List<SysRole> roleList = roleMapper.selectList(new QueryWrapper<SysRole>());
         for (SysRole role : roleList) {
@@ -852,14 +853,14 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             csRoleUserModel.setLabel(role.getRoleName());
             csRoleUserModel.setIsOrg(true);
             LambdaQueryWrapper<SysUserRole> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.eq(SysUserRole::getRoleId,role.getId());
+            lambdaQueryWrapper.eq(SysUserRole::getRoleId, role.getId());
             List<SysUserRole> sysUserRoles = sysUserRoleMapper.selectList(lambdaQueryWrapper);
-            if (CollUtil.isNotEmpty(sysUserRoles)){
+            if (CollUtil.isNotEmpty(sysUserRoles)) {
                 List<String> collect = sysUserRoles.stream().map(SysUserRole::getUserId).collect(Collectors.toList());
                 List<SysUser> sysUsers = userMapper.selectList(new LambdaQueryWrapper<SysUser>()
                         .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
                         .in(SysUser::getId, collect));
-                if (CollUtil.isNotEmpty(sysUsers)){
+                if (CollUtil.isNotEmpty(sysUsers)) {
                     List<SysUserModel> sysUserModelList = new ArrayList<>();
                     for (SysUser sysUser : sysUsers) {
                         SysUserModel sysUserModel = new SysUserModel();
@@ -873,23 +874,23 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             }
             list.add(csRoleUserModel);
         }
-        return  list;
+        return list;
     }
 
     @Override
-    public List<PostModel>queryPostUserTree(){
+    public List<PostModel> queryPostUserTree() {
         List<PostModel> list = new ArrayList<>();
         List<DictModel> sysPost = this.getDictItems("sys_post");
-        if (CollUtil.isNotEmpty(sysPost)){
+        if (CollUtil.isNotEmpty(sysPost)) {
             for (DictModel dictModel : sysPost) {
-                 PostModel postModel = new PostModel();
-                 postModel.setLabel(dictModel.getText());
-                 postModel.setIsOrg(true);
-                 //根据岗位查询用户信息
+                PostModel postModel = new PostModel();
+                postModel.setLabel(dictModel.getText());
+                postModel.setIsOrg(true);
+                //根据岗位查询用户信息
                 List<SysUser> sysUsers = userMapper.selectList(new LambdaQueryWrapper<SysUser>()
                         .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
                         .eq(SysUser::getJobName, dictModel.getValue()));
-                if (CollUtil.isNotEmpty(sysUsers)){
+                if (CollUtil.isNotEmpty(sysUsers)) {
                     List<SysUserModel> sysUserModelList = new ArrayList<>();
                     for (SysUser sysUser : sysUsers) {
                         SysUserModel sysUserModel = new SysUserModel();
@@ -951,7 +952,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<JSONObject> jsonObjects = new ArrayList<>();
         for (CsSubsystem subsystem : csSubsystems) {
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("code",subsystem.getSystemCode());
+            jsonObject.put("code", subsystem.getSystemCode());
             jsonObjects.add(jsonObject);
         }
         return jsonObjects;
@@ -965,8 +966,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public String getWarehouseNameByCode(String warehouseCode) {
         LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SparePartStockInfo::getWarehouseCode,warehouseCode);
-        wrapper.eq(SparePartStockInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
+        wrapper.eq(SparePartStockInfo::getWarehouseCode, warehouseCode);
+        wrapper.eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0);
         SparePartStockInfo one = sparePartStockInfoMapper.selectOne(wrapper);
         if (ObjectUtil.isEmpty(one)) {
             throw new AiurtBootException("找不到对应仓库！");
@@ -977,28 +978,29 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public String getMaterialNameByCode(String materialCode) {
         LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(MaterialBase::getCode,materialCode);
-        wrapper.eq(MaterialBase::getDelFlag,CommonConstant.DEL_FLAG_0);
+        wrapper.eq(MaterialBase::getCode, materialCode);
+        wrapper.eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0);
         MaterialBase one = materialBaseMapper.selectOne(wrapper);
         return one.getName();
     }
+
     @Override
     public String getMaterialNameByCodes(String materialCodes) {
-        if(ObjectUtil.isNotEmpty(materialCodes)){
+        if (ObjectUtil.isNotEmpty(materialCodes)) {
             List<String> list = StrUtil.splitTrim(materialCodes, ",");
-            List<DeviceAssembly> deviceAssemblies = deviceAssemblyMapper.selectList(new LambdaQueryWrapper<DeviceAssembly>().eq(DeviceAssembly::getDelFlag,0).in(DeviceAssembly::getCode,list));
-            if(CollUtil.isNotEmpty(deviceAssemblies)){
+            List<DeviceAssembly> deviceAssemblies = deviceAssemblyMapper.selectList(new LambdaQueryWrapper<DeviceAssembly>().eq(DeviceAssembly::getDelFlag, 0).in(DeviceAssembly::getCode, list));
+            if (CollUtil.isNotEmpty(deviceAssemblies)) {
                 List<String> materialNames = new ArrayList<>();
                 for (DeviceAssembly deviceAssembly : deviceAssemblies) {
-                    String materialName = deviceAssembly.getMaterialName()+"-"+deviceAssembly.getCode();
-                   materialNames.add(materialName);
+                    String materialName = deviceAssembly.getMaterialName() + "-" + deviceAssembly.getCode();
+                    materialNames.add(materialName);
                 }
                 String collect = materialNames.stream().collect(Collectors.joining(","));
                 return collect;
             }
-          return null;
+            return null;
         }
-     return null;
+        return null;
     }
 
 
@@ -1637,7 +1639,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
         for (SysUser user : userList) {
             LoginUser loginUser = new LoginUser();
-            BeanUtils.copyProperties(user,loginUser);
+            BeanUtils.copyProperties(user, loginUser);
             loginUser.setPassword(null);
 //            loginUser.setId(user.getId());
 //            loginUser.setUsername(user.getUsername());
@@ -1768,60 +1770,62 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<DeviceTypeTable> deviceTypeTree = getDeviceTypeTree(list, "0");
         return deviceTypeTree;
     }
+
     @Override
     public List<SelectDeviceType> selectDeviceTypeList(String value) {
         List<SelectDeviceType> selectDeviceTypes = new ArrayList<>();
-        if (StrUtil.isEmpty(value)){
+        if (StrUtil.isEmpty(value)) {
             // 一级专业显示
-            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).list();
+            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).list();
             List<String> collect = deviceTypes.stream().map(DeviceType::getMajorCode).distinct().collect(Collectors.toList());
-            List<CsMajor> majors = majorService.lambdaQuery().eq(CsMajor::getDelFlag,CommonConstant.DEL_FLAG_0)
-                                                             .in(CsMajor::getMajorCode,collect).list();
-            majors.forEach(m->{
-                SelectDeviceType selectDeviceType = new SelectDeviceType(m.getId(),"0",m.getMajorCode(),m.getMajorName(),false,false);
+            List<CsMajor> majors = majorService.lambdaQuery().eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .in(CsMajor::getMajorCode, collect).list();
+            majors.forEach(m -> {
+                SelectDeviceType selectDeviceType = new SelectDeviceType(m.getId(), "0", m.getMajorCode(), m.getMajorName(), false, false);
                 selectDeviceTypes.add(selectDeviceType);
             });
-        }else {
+        } else {
             // 作为二级子系统显示
-            List<CsSubsystem> csSubsystems = csSubsystemService.lambdaQuery().eq(CsSubsystem::getDelFlag,CommonConstant.DEL_FLAG_0).eq(CsSubsystem::getMajorCode,value).list();
-            if (CollectionUtil.isNotEmpty(csSubsystems)){
-                csSubsystems.forEach(s->{
-                    List<DeviceType> deviceTypeList = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0)
-                            .eq(DeviceType::getMajorCode,s.getMajorCode()).eq(DeviceType::getSystemCode,s.getSystemCode()).list();
+            List<CsSubsystem> csSubsystems = csSubsystemService.lambdaQuery().eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0).eq(CsSubsystem::getMajorCode, value).list();
+            if (CollectionUtil.isNotEmpty(csSubsystems)) {
+                csSubsystems.forEach(s -> {
+                    List<DeviceType> deviceTypeList = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0)
+                            .eq(DeviceType::getMajorCode, s.getMajorCode()).eq(DeviceType::getSystemCode, s.getSystemCode()).list();
                     String str = sysUserRoleMapper.getMajorId(s.getMajorCode());
-                    SelectDeviceType selectDeviceType = new SelectDeviceType(s.getId(),str,s.getSystemCode(),s.getSystemName(),CollectionUtil.isEmpty(deviceTypeList),false);
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(s.getId(), str, s.getSystemCode(), s.getSystemName(), CollectionUtil.isEmpty(deviceTypeList), false);
                     selectDeviceTypes.add(selectDeviceType);
                 });
             }
             // 二级分类显示
-            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0)
-                    .eq(DeviceType::getMajorCode,value).isNull(DeviceType::getSystemCode).list();
-            if (CollectionUtil.isNotEmpty(deviceTypes)){
-                deviceTypes.forEach(d->{
+            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .eq(DeviceType::getMajorCode, value).isNull(DeviceType::getSystemCode).list();
+            if (CollectionUtil.isNotEmpty(deviceTypes)) {
+                deviceTypes.forEach(d -> {
                     String str = sysUserRoleMapper.getMajorId(d.getMajorCode());
-                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),str,d.getId(),d.getName(),d.getIsEnd()==1?true:false,true);
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(), str, d.getId(), d.getName(), d.getIsEnd() == 1 ? true : false, true);
                     selectDeviceTypes.add(selectDeviceType);
                 });
             }
             //在子系统下的三级分类
-            List<DeviceType> deviceTypes1 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceType::getSystemCode,value).list();
-            if (CollectionUtil.isNotEmpty(deviceTypes1)){
-                deviceTypes1.forEach(d->{
-                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),sysUserRoleMapper.getSubsystemId(d.getMajorCode(),d.getSystemCode()),d.getId(),d.getName(),d.getIsEnd()==1?true:false,true);
+            List<DeviceType> deviceTypes1 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).eq(DeviceType::getSystemCode, value).list();
+            if (CollectionUtil.isNotEmpty(deviceTypes1)) {
+                deviceTypes1.forEach(d -> {
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(), sysUserRoleMapper.getSubsystemId(d.getMajorCode(), d.getSystemCode()), d.getId(), d.getName(), d.getIsEnd() == 1 ? true : false, true);
                     selectDeviceTypes.add(selectDeviceType);
                 });
             }
             //无限层级分类
-            List<DeviceType> deviceTypes2 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceType::getPid,value).list();
-            if (CollectionUtil.isNotEmpty(deviceTypes2)){
-                deviceTypes2.forEach(d->{
-                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(),d.getPid(),d.getId(),d.getName(),d.getIsEnd()==1?true:false,true);
+            List<DeviceType> deviceTypes2 = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).eq(DeviceType::getPid, value).list();
+            if (CollectionUtil.isNotEmpty(deviceTypes2)) {
+                deviceTypes2.forEach(d -> {
+                    SelectDeviceType selectDeviceType = new SelectDeviceType(d.getId(), d.getPid(), d.getId(), d.getName(), d.getIsEnd() == 1 ? true : false, true);
                     selectDeviceTypes.add(selectDeviceType);
                 });
             }
         }
         return selectDeviceTypes;
     }
+
     public List<DeviceTypeTable> getDeviceTypeTree(List<DeviceTypeTable> list, String pid) {
         List<DeviceTypeTable> children = list.stream().filter(deviceTypeTable -> deviceTypeTable.getPid().equals(pid)).collect(Collectors.toList());
         if (CollectionUtil.isNotEmpty(children)) {
@@ -1869,7 +1873,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public String getLineNameByCode(String code) {
         LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CsLine::getLineCode,code).eq(CsLine::getDelFlag,0);
+        wrapper.eq(CsLine::getLineCode, code).eq(CsLine::getDelFlag, 0);
         return lineMapper.selectOne(wrapper).getLineName();
     }
 
@@ -2092,7 +2096,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public JSONObject getCsMajorByCode(String majorCode) {
         LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CsMajor::getMajorCode, majorCode).eq(CsMajor::getDelFlag,CommonConstant.DEL_FLAG_0).last("limit 1");
+        wrapper.eq(CsMajor::getMajorCode, majorCode).eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
         CsMajor csMajor = majorService.getBaseMapper().selectOne(wrapper);
         if (Objects.isNull(csMajor)) {
             return null;
@@ -2153,7 +2157,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public DeviceType getCsMajorByCodeTypeName(String majorCode, String deviceTypeName, String systemCode) {
         LambdaQueryWrapper<DeviceType> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(DeviceType::getMajorCode, majorCode).eq(DeviceType::getName, deviceTypeName).eq(DeviceType::getSystemCode, systemCode).eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+        wrapper.eq(DeviceType::getMajorCode, majorCode).eq(DeviceType::getName, deviceTypeName).eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+        if (StrUtil.isNotEmpty(systemCode)) {
+            wrapper.eq(DeviceType::getSystemCode, systemCode);
+        }
         DeviceType deviceType = deviceTypeService.getBaseMapper().selectOne(wrapper);
         if (Objects.isNull(deviceType)) {
             return null;
@@ -2421,18 +2428,18 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public Set<SysDepartModel> getDeptByUserId(String ids) {
         String[] split = ids.split(",");
         Set<SysDepartModel> sysDepartModels = new HashSet<>();
-        if(split.length!=0){
+        if (split.length != 0) {
             List<SysUser> userList = userMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, split));
-            if(CollUtil.isNotEmpty(userList)){
+            if (CollUtil.isNotEmpty(userList)) {
                 List<String> userOrgIds = userList.stream().map(SysUser::getOrgId).collect(Collectors.toList());
                 List<SysDepart> sysDepartList = sysDepartService.list(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0).in(SysDepart::getId, userOrgIds));
-               if(CollUtil.isNotEmpty(sysDepartList)){
-                   for (SysDepart sysDepart : sysDepartList) {
-                       SysDepartModel sysDepartModel = new SysDepartModel();
-                       BeanUtils.copyProperties(sysDepart,sysDepartModel);
-                       sysDepartModels.add(sysDepartModel);
-                   }
-               }
+                if (CollUtil.isNotEmpty(sysDepartList)) {
+                    for (SysDepart sysDepart : sysDepartList) {
+                        SysDepartModel sysDepartModel = new SysDepartModel();
+                        BeanUtils.copyProperties(sysDepart, sysDepartModel);
+                        sysDepartModels.add(sysDepartModel);
+                    }
+                }
             }
         }
         return sysDepartModels;
@@ -2624,6 +2631,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<String> result = userMapper.getUserNameByOrgCodeAndRoleCode(orgCode, roleCode);
         return CollUtil.isNotEmpty(result) ? StrUtil.join(",", result) : "";
     }
+
     /**
      * 根据部门，角色编码查询人员姓名
      *
@@ -2648,7 +2656,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             for (WorkArea workArea : workAreas) {
                 CsWorkAreaModel csWorkAreaModel = new CsWorkAreaModel();
                 BeanUtils.copyProperties(workArea, csWorkAreaModel);
-                List<WorkAreaOrg> workAreaOrgList = workAreaOrgMapper.selectList(new LambdaQueryWrapper<WorkAreaOrg>().eq(WorkAreaOrg::getWorkAreaCode,workArea.getCode()));
+                List<WorkAreaOrg> workAreaOrgList = workAreaOrgMapper.selectList(new LambdaQueryWrapper<WorkAreaOrg>().eq(WorkAreaOrg::getWorkAreaCode, workArea.getCode()));
                 List<String> orgCodeList = workAreaOrgList.stream().map(WorkAreaOrg::getOrgCode).collect(Collectors.toList());
                 csWorkAreaModel.setOrgCodeList(orgCodeList);
                 csWorkAreaModels.add(csWorkAreaModel);
@@ -2665,7 +2673,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             for (WorkArea workArea : workAreas) {
                 CsWorkAreaModel csWorkAreaModel = new CsWorkAreaModel();
                 BeanUtils.copyProperties(workArea, csWorkAreaModel);
-                List<WorkAreaOrg> workAreaOrgList = workAreaOrgMapper.selectList(new LambdaQueryWrapper<WorkAreaOrg>().eq(WorkAreaOrg::getWorkAreaCode,workArea.getCode()));
+                List<WorkAreaOrg> workAreaOrgList = workAreaOrgMapper.selectList(new LambdaQueryWrapper<WorkAreaOrg>().eq(WorkAreaOrg::getWorkAreaCode, workArea.getCode()));
                 List<String> orgCodeList = workAreaOrgList.stream().map(WorkAreaOrg::getOrgCode).collect(Collectors.toList());
                 csWorkAreaModel.setOrgCodeList(orgCodeList);
                 csWorkAreaModels.add(csWorkAreaModel);
@@ -2747,13 +2755,13 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             return null;
         }
         List<SysDepartModel> list1 = new ArrayList<>();
-        if (CollectionUtil.isNotEmpty(list)){
+        if (CollectionUtil.isNotEmpty(list)) {
             for (int i = 0; i < list.size(); i++) {
                 SysDepartModel sysDepartModel = new SysDepartModel();
-                BeanUtil.copyProperties(list.get(i),sysDepartModel);
+                BeanUtil.copyProperties(list.get(i), sysDepartModel);
                 list1.add(sysDepartModel);
                 List<SysDepartModel> departByParentId = getDepartByParentId(list.get(i).getId());
-                if(CollectionUtil.isNotEmpty(departByParentId)){
+                if (CollectionUtil.isNotEmpty(departByParentId)) {
                     list1.addAll(departByParentId);
                 }
             }
@@ -2762,22 +2770,22 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public  List<String> sysDepartList(String orgCode){
+    public List<String> sysDepartList(String orgCode) {
         List<SysDepart> list = departMapper.selectList(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0));
         List<SysDepartModel> modelList = new ArrayList<>();
         for (SysDepart sysDepart : list) {
             SysDepartModel model = new SysDepartModel();
-            BeanUtils.copyProperties(sysDepart,model);
+            BeanUtils.copyProperties(sysDepart, model);
             modelList.add(model);
         }
-        SysDepart sysDepart = departMapper.selectOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SysDepart::getOrgCode,orgCode));
-        if(ObjectUtil.isEmpty(sysDepart)){
+        SysDepart sysDepart = departMapper.selectOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SysDepart::getOrgCode, orgCode));
+        if (ObjectUtil.isEmpty(sysDepart)) {
             return Collections.emptyList();
         }
         SysDepartModel model = new SysDepartModel();
-        BeanUtils.copyProperties(sysDepart,model);
+        BeanUtils.copyProperties(sysDepart, model);
         List<SysDepartModel> allChildren = new ArrayList<>();
-        if(ObjectUtil.isNotEmpty(model)&&CollUtil.isNotEmpty(modelList)){
+        if (ObjectUtil.isNotEmpty(model) && CollUtil.isNotEmpty(modelList)) {
             List<SysDepartModel> sysDepartList = treeMenuList(modelList, model, allChildren);
             sysDepartList.add(model);
             if (CollectionUtil.isEmpty(sysDepartList)) {
@@ -2788,8 +2796,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return null;
     }
+
     /**
      * 获取某个父节点下面的所有子节点
+     *
      * @param list
      * @param depart
      * @param allChildren
@@ -2921,7 +2931,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         Iterator<SelectTable> iterator = list.iterator();
         while (iterator.hasNext()) {
             SelectTable next = iterator.next();
-            if (StrUtil.containsAnyIgnoreCase(next.getLabel(),name)) {
+            if (StrUtil.containsAnyIgnoreCase(next.getLabel(), name)) {
                 //名称匹配则赋值颜色
                 next.setColor("#FF5B05");
             }
@@ -2939,9 +2949,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public boolean selectTableName(String dbName, String tableName) {
         String string = userMapper.selectTableName(dbName, tableName);
-        if (StrUtil.isNotBlank(string)){
+        if (StrUtil.isNotBlank(string)) {
             return true;
-        }else {
+        } else {
             return false;
         }
     }
@@ -2966,11 +2976,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         //update-begin-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
         String templateCode = message.getTemplateCode();
         String content = null;
-        if(StrUtil.isNotBlank(templateCode)){
+        if (StrUtil.isNotBlank(templateCode)) {
             SysMessageTemplate templateEntity = getTemplateEntity(templateCode);
-            boolean isMarkdown =CommonConstant.MSG_TEMPLATE_TYPE_MD.equals(templateEntity.getTemplateType());
+            boolean isMarkdown = CommonConstant.MSG_TEMPLATE_TYPE_MD.equals(templateEntity.getTemplateType());
             content = templateEntity.getTemplateContent();
-            if(StrUtil.isNotBlank(content) && null!=message.getData()){
+            if (StrUtil.isNotBlank(content) && null != message.getData()) {
                 content = FreemarkerParseFactory.parseTemplateContent(content, message.getData(), isMarkdown);
             }
             message.setIsMarkdown(isMarkdown);
@@ -2979,20 +2989,20 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         /*if(StrUtil.isBlank(message.getContent())){
             throw new AiurtBootException("发送消息失败,消息内容为空！");
         }*/
-        if(StrUtil.isBlank(type)){
+        if (StrUtil.isBlank(type)) {
             throw new AiurtBootException("发送消息失败,消息发送渠道没有配置！");
         }
         List<String> messageTypes = StrUtil.splitTrim(type, ",");
 
         //保存信息
-        Map<String,Object> data = message.getData();
+        Map<String, Object> data = message.getData();
         SysAnnouncement announcement = new SysAnnouncement();
         announcement.setProcessName(message.getProcessName());
         announcement.setProcessCode(message.getProcessCode());
-        if(data!=null){
+        if (data != null) {
             // 任务节点ID
             Object taskId = data.get(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID);
-            if(taskId!=null){
+            if (taskId != null) {
                 announcement.setBusId(taskId.toString());
                 // announcement.setBusType(Vue3MessageHrefEnum.BPM_TASK.getBusType());
             }
@@ -3034,10 +3044,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         String userId = message.getToUser();
         String[] userIds = userId.split(",");
         String anntId = announcement.getId();
-        for(int i=0;i<userIds.length;i++) {
-            if(org.jeecg.common.util.oConvertUtils.isNotEmpty(userIds[i])) {
+        for (int i = 0; i < userIds.length; i++) {
+            if (org.jeecg.common.util.oConvertUtils.isNotEmpty(userIds[i])) {
                 SysUser sysUser = userMapper.getUserByName(userIds[i]);
-                if(sysUser==null) {
+                if (sysUser == null) {
                     continue;
                 }
                 SysAnnouncementSend announcementSend = new SysAnnouncementSend();
@@ -3058,22 +3068,22 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         //根据发送渠道发送消息
         for (String messageType : messageTypes) {
             //update-end-author:taoyan date:2022-7-9 for: 将模板解析代码移至消息发送, 而不是调用的地方
-            if(MessageTypeEnum.XT.getType().equals(messageType)){
+            if (MessageTypeEnum.XT.getType().equals(messageType)) {
                 if (message.isMarkdown()) {
                     // 系统消息要解析Markdown
                     message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
                 }
                 systemSendMsgHandle.sendMessage(message);
-            }else if(MessageTypeEnum.YJ.getType().equals(messageType)){
+            } else if (MessageTypeEnum.YJ.getType().equals(messageType)) {
                 if (message.isMarkdown()) {
                     // 邮件消息要解析Markdown
                     message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
                 }
                 emailSendMsgHandle.sendMessage(message);
-            }else if(MessageTypeEnum.DD.getType().equals(messageType)){
+            } else if (MessageTypeEnum.DD.getType().equals(messageType)) {
 
                 ddSendMsgHandle.sendMessage(message);
-            }else if(MessageTypeEnum.QYWX.getType().equals(messageType)){
+            } else if (MessageTypeEnum.QYWX.getType().equals(messageType)) {
                 if (message.isMarkdown()) {
                     // 系统消息要解析Markdown
                     message.setContent(HTMLUtils.parseMarkdown(message.getContent()));
@@ -3094,7 +3104,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public String getTemplateContent(String templateCode) {
         List<SysMessageTemplate> list = sysMessageTemplateService.selectByCode(templateCode);
-        if(list==null || list.size()==0){
+        if (list == null || list.size() == 0) {
             return null;
         }
         return list.get(0).getTemplateContent();
@@ -3137,7 +3147,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<SpareResult>  getSpareChange(String faultCode) {
+    public List<SpareResult> getSpareChange(String faultCode) {
         LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(FaultRepairRecord::getFaultCode, faultCode)
                 .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
@@ -3155,7 +3165,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public String getFaultRepairReuslt(String faultCode) {
         RepairRecordDetailDTO recordByFaultCode = faultRepairRecordMapper.getRecordByFaultCode(faultCode);
         if (ObjectUtil.isNotEmpty(recordByFaultCode)) {
-            String s = "故障接报人："+recordByFaultCode.getAppointRealName() + ",处理结果："+recordByFaultCode.getMaintenanceMeasures();
+            String s = "故障接报人：" + recordByFaultCode.getAppointRealName() + ",处理结果：" + recordByFaultCode.getMaintenanceMeasures();
             return s;
         }
         return null;
@@ -3170,7 +3180,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<LoginUser> loginUsers = new ArrayList<>();
         for (SysDepart sysDepart : sysDepartList) {
             List<String> orgCodes = sysDepartList(sysDepart.getOrgCode());
-            if(CollUtil.isNotEmpty(orgCodes)){
+            if (CollUtil.isNotEmpty(orgCodes)) {
                 List<LoginUser> users = userMapper.getUserByCodes(orgCodes);
                 loginUsers.addAll(users);
             }
@@ -3194,7 +3204,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         if (CollectionUtil.isNotEmpty(users)) {
             List<String> list = users.stream().map(SysUser::getUsername).collect(Collectors.toList());
             //发送通知
-            MessageDTO messageDTO = new MessageDTO(null,CollUtil.join(list,","), "调度已产生新的故障，请及时处理！" + DateUtil.today(), null);
+            MessageDTO messageDTO = new MessageDTO(null, CollUtil.join(list, ","), "调度已产生新的故障，请及时处理！" + DateUtil.today(), null);
 
             //业务类型，消息类型，消息模板编码，摘要，发布内容
             HashMap<String, Object> map = new HashMap<>();
@@ -3206,8 +3216,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             sendMessage(messageDTO);
         }
     }
+
     /**
      * 发送消息
+     *
      * @param messageDTO
      */
     private void sendMessage(MessageDTO messageDTO) {
@@ -3218,6 +3230,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         messageDTO.setCategory(CommonConstant.MSG_CATEGORY_6);
         sendTemplateMessage(messageDTO);
     }
+
     /**
      * 根据编码查询设备分类
      *
@@ -3247,12 +3260,12 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         List<String> list = new ArrayList<>();
         if (!admin) {
-            List<CsUserDepartModel>  departByUserId = this.getDepartByUserId(user.getId());
+            List<CsUserDepartModel> departByUserId = this.getDepartByUserId(user.getId());
             if (CollUtil.isNotEmpty(departByUserId)) {
                 if (flag == 0) {
-                    list =departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
-                }else {
-                    list =departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+                    list = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
+                } else {
+                    list = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
                 }
             }
 
@@ -3260,9 +3273,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             List<SysDepartModel> allSysDepart = this.getAllSysDepart();
             if (CollUtil.isNotEmpty(allSysDepart)) {
                 if (flag == 0) {
-                    list =allSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
-                }else {
-                    list =allSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+                    list = allSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+                } else {
+                    list = allSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
                 }
             }
         }
@@ -3273,9 +3286,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             SysParamModel code = sysParamApi.selectByCode(SysParamCodeConstant.SPECIAL_TEAM);
             String orgCode = code.getValue();
             String departId = this.getDepartIdsByOrgCode(orgCode);
-            if (StrUtil.isNotEmpty(departId)&&flag == 0) {
+            if (StrUtil.isNotEmpty(departId) && flag == 0) {
                 list.remove(departId);
-            } else if (StrUtil.isNotEmpty(departId)&&flag == 1) {
+            } else if (StrUtil.isNotEmpty(departId) && flag == 1) {
                 list.remove(orgCode);
             }
         }
@@ -3305,9 +3318,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         LambdaQueryWrapper<SysUserPositionCurrent> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysUserPositionCurrent::getCreateBy, username);
         SysUserPositionCurrent sysUserPositionCurrent;
-        try{
+        try {
             sysUserPositionCurrent = sysUserPositionCurrentService.getOne(queryWrapper);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new AiurtBootException(username + " 在用户实时位置表中有多条数据，请联系相关人员处理！");
         }
         if (ObjectUtil.isNull(sysUserPositionCurrent)) {
@@ -3317,12 +3330,13 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         // 如果参数的站点和用户上一站的站点相同，返回上一站的站点的连接时间
         if (StrUtil.equals(stationCode, sysUserPositionCurrent.getStationCode())) {
             return sysUserPositionCurrent.getUploadTime();
-        }else if(StrUtil.equals(stationCode, sysUserPositionCurrent.getLastStationCode())){
+        } else if (StrUtil.equals(stationCode, sysUserPositionCurrent.getLastStationCode())) {
             return sysUserPositionCurrent.getLastUploadTime();
-        }else {
+        } else {
             return null;
         }
     }
+
     @Override
     public void saveSysAttachment(SysAttachment sysAttachment) {
         sysAttachmentService.save(sysAttachment);
@@ -3336,8 +3350,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public JSONObject queryPageUserList(LoginUser loginUser, List<String> excludeUserIds, String isBelongOrg,
-                                              String isPermissionOrg, Integer pageNo, Integer pageSize,
-                                              HttpServletRequest req) {
+                                        String isPermissionOrg, Integer pageNo, Integer pageSize,
+                                        HttpServletRequest req) {
 
         // 因为此方法基本是从/sys/user/list搬过来的，所以先把请求参数的LoginUser转化成SysUser
         SysUser user = new SysUser();
@@ -3354,20 +3368,20 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
         // 查询当前登录人所属部门的用户
         if ("1".equals(isBelongOrg)) {
-            if (StrUtil.isBlank(user.getOrgId())){
-                queryWrapper.eq("org_id",sysUser.getOrgId());
+            if (StrUtil.isBlank(user.getOrgId())) {
+                queryWrapper.eq("org_id", sysUser.getOrgId());
             }
         }
         // 查询当前登录人拥有的权限的部门用户，只有当isBelongOrg=0才有效，因为isBelongOrg=0就直接获取所属部门的用户了
         // 这里使用了in，因为部门也不会太多
-        if ("1".equals(isPermissionOrg) && "0".equals(isBelongOrg)){
+        if ("1".equals(isPermissionOrg) && "0".equals(isBelongOrg)) {
             List<CsUserDepartModel> departModels = csUserDepartMapper.getDepartByUserId(user.getId());
             List<String> orgIdList = departModels.stream().map(CsUserDepartModel::getId).collect(Collectors.toList());
-            queryWrapper.in("org_id",orgIdList);
+            queryWrapper.in("org_id", orgIdList);
         }
 
         // 过滤excludeUserIds, 这里使用了in，但是因为user的数量不会太多，不会造成sql很长的in
-        if (CollUtil.isNotEmpty(excludeUserIds)){
+        if (CollUtil.isNotEmpty(excludeUserIds)) {
             queryWrapper.notIn("id", excludeUserIds);
         }
 
@@ -3399,8 +3413,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
         queryWrapper.apply(StrUtil.isNotBlank(user.getStationId()), "id in (select user_id from cs_user_station where 1=1 and station_id in (select id from cs_station where 1=1 and (id ={0} or station_code = {0})))", user.getStationId());
         //如果是查全部，则把当前登录人所属部门的人排在前面
-        String sql = "order by case when ( org_code = '"+sysUser.getOrgCode()+"') then 0 else 1 end,id DESC";
-        queryWrapper.last("0".equals(isBelongOrg),sql);
+        String sql = "order by case when ( org_code = '" + sysUser.getOrgCode() + "') then 0 else 1 end,id DESC";
+        queryWrapper.last("0".equals(isBelongOrg), sql);
         Page<SysUser> page = new Page<SysUser>(pageNo, pageSize);
         // 这里修改了下面的，因为会有循环依赖
         // IPage<SysUser> pageList = sysUserService.page(page, queryWrapper);
@@ -3481,7 +3495,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<LoginUser> queryAllUsers() {
         QueryWrapper<SysUser> wrapper = new QueryWrapper<>();
-        wrapper.lambda().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0).select(SysUser::getId,SysUser::getRealname);
+        wrapper.lambda().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0).select(SysUser::getId, SysUser::getRealname);
         List<SysUser> users = userMapper.selectList(wrapper);
         if (CollectionUtil.isEmpty(users)) {
             return Collections.emptyList();
