@@ -3448,6 +3448,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 根据配置获取控制中心班组code,并判断当前登陆人所在班组是否是控制中心班组
         SysParamModel faultCenterAddOrg = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_ADD_ORG);
         boolean contains1 = StrUtil.splitTrim(faultCenterAddOrg.getValue(),',').contains(user.getOrgCode());
+        // 根据配置获取中心班组是否可填写其他人的维修记录
+        boolean faultCenterWrite = "1".equals(iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_WRITE).getValue());
+
         records.parallelStream().forEach(fault1 -> {
 
             // 通过站点获取工区部门
@@ -3471,7 +3474,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
             fault1.setCanWriteFault(fault1.getIsFault());
             // 通信七期，中心班组成员可以填写维修记录
-            if ("1".equals(iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_WRITE).getValue())){
+            if (faultCenterWrite){
                 String roleCodes = Optional.ofNullable(user.getRoleCodes()).orElseGet(() -> "");
                 if (roleCodes.contains(CommonConstant.ZXBANZHANG) || roleCodes.contains(CommonConstant.ZXCHENGYUAN)){
                     fault1.setCanWriteFault(true);
