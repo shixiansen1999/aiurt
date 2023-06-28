@@ -97,6 +97,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                 majorDTO.setKey(majorDTO.getId());
                 majorDTO.setLabel(majorDTO.getMajorName());
                 majorDTO.setTitle(majorDTO.getMajorName());
+                majorDTO.setText(majorDTO.getMajorName());
                 majorDTO.setValue(majorDTO.getMajorCode());
                 majorDTO.setIsBaseType(false);
                 List<SelectTableDTO> selectTableDTOList = new ArrayList<>();
@@ -108,6 +109,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                         selectTableDTO.setKey(csUserSubsystemModel.getId());
                         selectTableDTO.setLabel(csUserSubsystemModel.getSystemName());
                         selectTableDTO.setTitle(csUserSubsystemModel.getSystemName());
+                        selectTableDTO.setText(csUserSubsystemModel.getSystemName());
                         selectTableDTO.setValue(csUserSubsystemModel.getSystemCode());
                         selectTableDTO.setIsBaseType(false);
                         selectTableDTO.setSystemCode(csUserSubsystemModel.getSystemCode());
@@ -161,6 +163,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
             selectTable.setKey(f.getId().toString());
             selectTable.setLabel(f.getName());
             selectTable.setTitle(f.getName());
+            selectTable.setText(f.getName());
             selectTable.setValue(f.getCode());
             selectTable.setPid(f.getPid());
             selectTable.setIsBaseType(true);

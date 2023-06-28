@@ -31,6 +31,8 @@ public class MajorDTO {
     private String label;
     @TableField(exist = false)
     private String title;
+    @TableField(exist = false)
+    private String text;
 
     private String color;
 
