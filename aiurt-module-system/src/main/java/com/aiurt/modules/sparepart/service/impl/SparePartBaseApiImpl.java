@@ -717,6 +717,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
             assembly.setCreateTime(new Date());
 
             deviceAssembly.setStatus("1");
+            deviceAssembly.setDelFlag(1);
             updateList.add(deviceAssembly);
             addList.add(assembly);
         });
