@@ -308,6 +308,10 @@ public interface SysParamCodeConstant {
      */
     String FAULT_EXTERNAL_SYSTEM_ID = "fault_external_system_id";
     /**
+     * 中心班组是否可以填写其他人的维修记录
+     */
+    String FAULT_CENTER_WRITE = "fault_center_write";
+    /**
      * 统计报表是否需要过滤通信分部
      */
     String 	FILTERING_TEAM = "filtering_team";
@@ -363,31 +367,4 @@ public interface SysParamCodeConstant {
      * 故障未领取时要给予当班人员提示音（每两分钟提醒20秒）
      */
     String NO_RECEIVE_FAULT_RING_DURATION = "no_receive_fault_ring_duration";
-    /**
-     * 企业微信跳转地址
-     */
-    String WECHAT_MESSAGE_URL = "wechat_message_url";
-    /**
-     * 根据配置，获取施工计划导入列表
-     */
-    String CONSTRUCTION_WEEK_PLAN_COMMAND = "construction_week_plan_command";
-
-    /**
-     * 根据配置，传参部门，获取施工计划导入列表
-     */
-    String DEPARTMENT_NAME = "department_name";
-    /**
-     * 根据配置，传参状态，获取施工计划导入列表
-     */
-    String PLAN_ISTATE = "planIstate";
-    /**
-     * 根据配置，传参开始时间，获取施工计划导入列表
-     */
-    String LAST_MONTH = "start_month";
-    /**
-     * 根据配置，传参结束时间，获取施工计划导入列表
-     */
-    String NEW_MONTH = "end_month";
-
-
 }
