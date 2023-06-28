@@ -1628,6 +1628,90 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
         BeanUtil.copyProperties(fault, faultMessageDTO);
 
+        // 专业子系统
+        one.setMajorCode(repairRecordDTO.getMajorCode());
+        one.setSubSystemCode(repairRecordDTO.getSubSystemCode());
+        one.setFaultCauseSolution(repairRecordDTO.getFaultCauseSolution());
+        one.setMethod(repairRecordDTO.getMethod());
+        one.setFaultLevel(repairRecordDTO.getFaultLevel());
+
+        // 处理采用的解决方案, 先删除，在插入
+        LambdaQueryWrapper<FaultCauseUsageRecords> recordsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        recordsLambdaQueryWrapper.eq(FaultCauseUsageRecords::getFaultCode, one.getFaultCode());
+        faultCauseUsageRecordsService.remove(recordsLambdaQueryWrapper);
+
+        List<FaultCauseUsageRecords> recordsList = repairRecordDTO.getRecordsList();
+        if (CollUtil.isNotEmpty(recordsList)) {
+            recordsList.stream().forEach(record -> {
+                record.setId(null);
+                record.setFaultCode(faultCode);
+                record.setFaultRepairRecordId(one.getId());
+            });
+            faultCauseUsageRecordsService.saveBatch(recordsList);
+        }
+
+
+
+        repairRecordService.updateById(one);
+        sparePartService.remove(new LambdaQueryWrapper<DeviceChangeSparePart>().eq(DeviceChangeSparePart::getCode, faultCode));
+        if (CollUtil.isNotEmpty(deviceChangeList)) {
+
+            List<DeviceChangeSparePart> sparePartList = deviceChangeList.stream().map(sparePartStockDTO -> {
+                DeviceChangeSparePart part = DeviceChangeSparePart.builder()
+                        .newSparePartNum(sparePartStockDTO.getNewSparePartNum())
+                        .newSparePartCode(sparePartStockDTO.getNewSparePartCode())
+                        .oldSparePartCode(sparePartStockDTO.getOldSparePartCode())
+                        .deviceCode(sparePartStockDTO.getDeviceCode())
+                        .repairRecordId(one.getId())
+                        .code(faultCode)
+                        .consumables("0")
+                        .type(2)
+                        .materialBaseCode(sparePartStockDTO.getMaterialCode())
+                        .build();
+                return part;
+            }).collect(Collectors.toList());
+            sparePartService.saveBatch(sparePartList);
+            // 对比标准是否异常
+            fault.setException(0);
+            if (CollUtil.isNotEmpty(recordsList)) {
+                List<String> faultCauseSolutionIdList = recordsList.stream().map(FaultCauseUsageRecords::getFaultCauseSolutionId).collect(Collectors.toList());
+                String[] array = faultCauseSolutionIdList.stream().toArray(String[]::new);
+                List<FaultSparePart> faultSparePartList = faultKnowledgeBaseService.getStandardRepairRequirements(array);
+
+                if (deviceChangeList.size() != faultSparePartList.size()) {
+                    // 异常
+                    fault.setException(1);
+                } else {
+                    Map<String, Integer> sparePartMap = faultSparePartList.stream().collect(Collectors.toMap(FaultSparePart::getSparePartCode, FaultSparePart::getNumber, (t1, t2) -> t2));
+                    deviceChangeList.stream().forEach(sparePartStockDTO -> {
+                        String materialCode = sparePartStockDTO.getMaterialCode();
+                        Integer newSparePartNum = sparePartStockDTO.getNewSparePartNum();
+                        Integer sparePartNum = sparePartMap.getOrDefault(materialCode, 0);
+                        if (!sparePartNum.equals(newSparePartNum)) {
+                            fault.setException(1);
+                            return;
+                        }
+                    });
+                }
+            }
+        }
+
+        // 删除
+        faultCauseDetailService.remove(new LambdaQueryWrapper<FaultCauseDetail>().eq(FaultCauseDetail::getFaultCode, fault.getCode()));
+        // 记录使用的故障模板的解决原因
+        List<AnalyzeFaultCauseResDTO> analyzeFaultCauseResDTOList = repairRecordDTO.getAnalyzeFaultCauseResDTOList();
+        if (CollUtil.isNotEmpty(analyzeFaultCauseResDTOList)) {
+            List<FaultCauseDetail> causeDetailList = analyzeFaultCauseResDTOList.stream().map(analyzeFaultCauseResDTO -> {
+                FaultCauseDetail causeDetail = BeanUtil.copyProperties(analyzeFaultCauseResDTO, FaultCauseDetail.class, "id");
+                causeDetail.setFaultCauseSolutionId(analyzeFaultCauseResDTO.getId());
+                causeDetail.setFaultKnowledgeBaseId(analyzeFaultCauseResDTO.getKnowledgeBaseId());
+                causeDetail.setFaultCode(fault.getCode());
+                return causeDetail;
+            }).collect(Collectors.toList());
+            faultCauseDetailService.saveBatch(causeDetailList);
+        }
+
+
         // 未解决，需要重新指派
         if (!flag.equals(solveStatus) && flag.equals(assignFlag)) {
             // 重新指派
@@ -1698,28 +1782,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             one.setSignPath(repairRecordDTO.getSignPath());
         }
 
-        // 专业子系统
-        one.setMajorCode(repairRecordDTO.getMajorCode());
-        one.setSubSystemCode(repairRecordDTO.getSubSystemCode());
-        one.setFaultCauseSolution(repairRecordDTO.getFaultCauseSolution());
-        one.setMethod(repairRecordDTO.getMethod());
-        one.setFaultLevel(repairRecordDTO.getFaultLevel());
-
-        // 处理采用的解决方案, 先删除，在插入
-        LambdaQueryWrapper<FaultCauseUsageRecords> recordsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        recordsLambdaQueryWrapper.eq(FaultCauseUsageRecords::getFaultCode, one.getFaultCode());
-        faultCauseUsageRecordsService.remove(recordsLambdaQueryWrapper);
-
-        List<FaultCauseUsageRecords> recordsList = repairRecordDTO.getRecordsList();
-        if (CollUtil.isNotEmpty(recordsList)) {
-            recordsList.stream().forEach(record -> {
-                record.setId(null);
-                record.setFaultCode(faultCode);
-                record.setFaultRepairRecordId(one.getId());
-            });
-            faultCauseUsageRecordsService.saveBatch(recordsList);
-        }
-
         //更新维修时长
         //获取维修单的挂起时长
         int oneHangUpTime= one.getHangUpTime() != null ? one.getHangUpTime() : 0;
@@ -1732,66 +1794,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         one.setRepairDuration((int) repairDuration - oneHangUpTime);
 
         fault.setRepairDuration(one.getRepairDuration() + repairDuration1);
-
-        repairRecordService.updateById(one);
-        sparePartService.remove(new LambdaQueryWrapper<DeviceChangeSparePart>().eq(DeviceChangeSparePart::getCode, faultCode));
-        if (CollUtil.isNotEmpty(deviceChangeList)) {
-
-            List<DeviceChangeSparePart> sparePartList = deviceChangeList.stream().map(sparePartStockDTO -> {
-                DeviceChangeSparePart part = DeviceChangeSparePart.builder()
-                        .newSparePartNum(sparePartStockDTO.getNewSparePartNum())
-                        .newSparePartCode(sparePartStockDTO.getNewSparePartCode())
-                        .oldSparePartCode(sparePartStockDTO.getOldSparePartCode())
-                        .deviceCode(sparePartStockDTO.getDeviceCode())
-                        .repairRecordId(one.getId())
-                        .code(faultCode)
-                        .consumables("0")
-                        .type(2)
-                        .materialBaseCode(sparePartStockDTO.getMaterialCode())
-                        .build();
-                return part;
-            }).collect(Collectors.toList());
-            sparePartService.saveBatch(sparePartList);
-            // 对比标准是否异常
-            fault.setException(0);
-            if (CollUtil.isNotEmpty(recordsList)) {
-                List<String> faultCauseSolutionIdList = recordsList.stream().map(FaultCauseUsageRecords::getFaultCauseSolutionId).collect(Collectors.toList());
-                String[] array = faultCauseSolutionIdList.stream().toArray(String[]::new);
-                List<FaultSparePart> faultSparePartList = faultKnowledgeBaseService.getStandardRepairRequirements(array);
-
-                if (deviceChangeList.size() != faultSparePartList.size()) {
-                    // 异常
-                    fault.setException(1);
-                } else {
-                    Map<String, Integer> sparePartMap = faultSparePartList.stream().collect(Collectors.toMap(FaultSparePart::getSparePartCode, FaultSparePart::getNumber, (t1, t2) -> t2));
-                    deviceChangeList.stream().forEach(sparePartStockDTO -> {
-                        String materialCode = sparePartStockDTO.getMaterialCode();
-                        Integer newSparePartNum = sparePartStockDTO.getNewSparePartNum();
-                        Integer sparePartNum = sparePartMap.getOrDefault(materialCode, 0);
-                        if (!sparePartNum.equals(newSparePartNum)) {
-                            fault.setException(1);
-                            return;
-                        }
-                    });
-                }
-            }
-        }
-
-        // 删除
-        faultCauseDetailService.remove(new LambdaQueryWrapper<FaultCauseDetail>().eq(FaultCauseDetail::getFaultCode, fault.getCode()));
-        // 记录使用的故障模板的解决原因
-        List<AnalyzeFaultCauseResDTO> analyzeFaultCauseResDTOList = repairRecordDTO.getAnalyzeFaultCauseResDTOList();
-        if (CollUtil.isNotEmpty(analyzeFaultCauseResDTOList)) {
-            List<FaultCauseDetail> causeDetailList = analyzeFaultCauseResDTOList.stream().map(analyzeFaultCauseResDTO -> {
-                FaultCauseDetail causeDetail = BeanUtil.copyProperties(analyzeFaultCauseResDTO, FaultCauseDetail.class, "id");
-                causeDetail.setFaultCauseSolutionId(analyzeFaultCauseResDTO.getId());
-                causeDetail.setFaultKnowledgeBaseId(analyzeFaultCauseResDTO.getKnowledgeBaseId());
-                causeDetail.setFaultCode(fault.getCode());
-                return causeDetail;
-            }).collect(Collectors.toList());
-            faultCauseDetailService.saveBatch(causeDetailList);
-        }
-
         updateById(fault);
 
         // 备件更换记录
