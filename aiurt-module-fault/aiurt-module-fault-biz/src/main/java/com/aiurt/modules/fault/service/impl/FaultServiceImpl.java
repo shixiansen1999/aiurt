@@ -755,16 +755,19 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             } else {
                 fault.setIsFault(false);
             }
-
-            // 通信七期，中心班组成员可以填写维修记录
-            String roleCodes = Optional.ofNullable(user.getRoleCodes()).orElseGet(() -> "");
-            if (roleCodes.contains(CommonConstant.ZXBANZHANG) || roleCodes.contains(CommonConstant.ZXCHENGYUAN)){
-                fault.setIsFault(true);
-            }
-
         } else {
             fault.setIsFault(false);
         }
+
+        fault.setCanWriteFault(fault.getIsFault());
+        // 通信七期，中心班组成员可以填写维修记录
+        if ("1".equals(iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_WRITE).getValue())){
+            String roleCodes = Optional.ofNullable(user.getRoleCodes()).orElseGet(() -> "");
+            if (roleCodes.contains(CommonConstant.ZXBANZHANG) || roleCodes.contains(CommonConstant.ZXCHENGYUAN)){
+                fault.setCanWriteFault(true);
+            }
+        }
+
         // 设备
         List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(code);
         fault.setFaultDeviceList(faultDeviceList);
@@ -3465,10 +3468,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             } else {
                 fault1.setIsFault(false);
             }
+
+            fault1.setCanWriteFault(fault1.getIsFault());
             // 通信七期，中心班组成员可以填写维修记录
-            String roleCodes = Optional.ofNullable(user.getRoleCodes()).orElseGet(() -> "");
-            if (roleCodes.contains(CommonConstant.ZXBANZHANG) || roleCodes.contains(CommonConstant.ZXCHENGYUAN)){
-                fault1.setIsFault(true);
+            if ("1".equals(iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_WRITE).getValue())){
+                String roleCodes = Optional.ofNullable(user.getRoleCodes()).orElseGet(() -> "");
+                if (roleCodes.contains(CommonConstant.ZXBANZHANG) || roleCodes.contains(CommonConstant.ZXCHENGYUAN)){
+                    fault1.setCanWriteFault(true);
+                }
             }
 
             // 权重登记
