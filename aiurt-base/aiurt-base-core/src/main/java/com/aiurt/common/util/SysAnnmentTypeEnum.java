@@ -27,7 +27,7 @@ public enum SysAnnmentTypeEnum {
     /**
      * 故障
      */
-        NO_RECEIVE_FAULT("no_receive_fault", "component", "","故障业务消息"),
+    NO_RECEIVE_FAULT("no_receive_fault", "component", "","故障业务消息"),
     /**
      * 周计划
      */
