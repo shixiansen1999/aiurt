@@ -540,7 +540,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     }
 
     @ApiOperation(value = "查询推荐人员", notes = "查询推荐人员")
-    @GetMapping(value = "/queryRecommendationPerson")
+    @GetMapping(value = "/queryReommendationPerson")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query"),
     })
