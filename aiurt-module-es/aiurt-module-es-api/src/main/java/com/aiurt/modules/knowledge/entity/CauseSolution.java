@@ -25,7 +25,7 @@ public class CauseSolution {
     /**
      * 故障原因
      */
-    @Field(type = FieldType.Text, analyzer = "ik_max_word", searchAnalyzer = "ik_max_word")
+    @Field(type = FieldType.Text, analyzer = "index_analyzer", searchAnalyzer = "search_analyzer")
     @CompletionField(analyzer = "ik_max_word")
     @ApiModelProperty(value = "故障原因")
     private String faultCause;
