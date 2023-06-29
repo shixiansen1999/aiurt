@@ -2,6 +2,7 @@ package com.aiurt.modules.faultknowledgebase.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.base.BaseEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -34,4 +35,12 @@ public class SymptomReqDTO extends BaseEntity {
 
     @ApiModelProperty(value = "故障等级编码")
     private String faultLevelCode;
+
+    private String lineCode;
+
+    /**
+     * 根据线路过滤的自定义SQl
+     */
+    @TableField(exist = false)
+    private String jointSQL;
 }

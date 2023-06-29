@@ -64,4 +64,7 @@ public class SymptomResDTO implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
+    @Dict(dicCode = "line_code", dictTable = "cs_line", dicText = "line_name")
+    private String lineCode;
+
 }

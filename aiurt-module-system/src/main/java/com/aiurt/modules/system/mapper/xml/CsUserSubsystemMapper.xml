@@ -217,8 +217,6 @@
     </select>
     <select id="getSubsystemFilterFaultDTO" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
         SELECT
-        IFNULL(COUNT(fa.id and fl.weight >=8 or not null),0) as seriousFaultNum,
-        IFNULL(COUNT(fa.id and (fl.weight &lt;= 7 or fa.fault_level is null) or not null),0) as commonFaultNum,
         IFNULL(SUM(fa.status=12),0) as solutionsNum,
         IFNULL(SUM(fa.fault_duration),0) as failureDuration,
         IFNULL(SUM(fa.repair_duration),0) as repairDuration,
@@ -300,5 +298,19 @@
         </foreach>
     </if>
     group by s.system_code
+    </select>
+
+<select id="getFaultNum" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
+    SELECT
+    IFNULL(COUNT(fa.id and fl.weight >=8 or not null),0) as seriousFaultNum,
+    IFNULL(COUNT(fa.id and (fl.weight &lt;= 7 or fa.fault_level is null) or not null),0) as commonFaultNum
+    FROM cs_subsystem ss
+    LEFT JOIN fault fa on fa.sub_system_code = ss.system_code
+    LEFT JOIN fault_level fl on fa.fault_level = fl.`code` and fl.del_flag = 0
+    WHERE
+    ss.del_flag =0
+    AND ss.system_code = #{subsystemCode}
+    AND DATE_FORMAT(fa.approval_pass_time ,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d') and DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+    AND fa.status>2;
     </select>
 </mapper>

@@ -451,8 +451,9 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 */
 	@GetMapping("/querySymptomTemplate")
 	@ApiOperation(value="查找故障现象模板", notes="查故障现象模板")
-	public Result<IPage<SymptomResDTO>> querySymptomTemplate(SymptomReqDTO symptomReqDTO) {
-		Page<SymptomResDTO> page = faultKnowledgeBaseService.querySymptomTemplate(symptomReqDTO);
+	@PermissionData(pageComponent = "fault/FaultList", appComponent="Breakdown/BreakdownReport")
+	public Result<IPage<SymptomResDTO>> querySymptomTemplate(HttpServletRequest request, SymptomReqDTO symptomReqDTO) {
+		Page<SymptomResDTO> page = faultKnowledgeBaseService.querySymptomTemplate(request, symptomReqDTO);
 		return Result.OK(page);
 	}
 
