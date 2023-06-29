@@ -50,6 +50,9 @@ public class NoModelDataListener extends AnalysisEventListener<DemoData> {
         }
         index[0] += 1;
         JSONObject json = JSON.parseObject(JSON.toJSONString(data));
+        if(StrUtil.isNotBlank(data.getRow0())&&data.getRow0().equals("表格填写说明")){
+            return;
+        }
         BdTrainPlanSub bdTrainPlanSub = new BdTrainPlanSub();
         Set<String> keySet = json.keySet();
         String row0 = json.getString("row0");
