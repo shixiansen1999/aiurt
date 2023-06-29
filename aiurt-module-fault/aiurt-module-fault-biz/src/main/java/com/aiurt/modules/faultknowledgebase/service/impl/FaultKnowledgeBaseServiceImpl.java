@@ -572,6 +572,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<String> delete(String id) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         FaultKnowledgeBase byId = this.getById(id);
         if (ObjectUtil.isEmpty(byId)) {
             return Result.error("没找到对应实体");
@@ -601,6 +602,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 //            wrapper.lambda().eq(FaultCauseSolution::getKnowledgeBaseId, id);
             // 删除ES的数据
             elasticApi.removeKnowledgeBase(id);
+
+            // 流程
+            flowBaseApi.delProcess(sysUser.getUsername(), id, null);
         }
         return Result.OK("删除成功!");
     }
