@@ -6,6 +6,9 @@ import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 
 /**
  * @Description: spare_part_stock_info
@@ -35,4 +38,12 @@ public interface ISparePartStockInfoService extends IService<SparePartStockInfo>
      * @return
      */
     SparePartStockInfo getSparePartStockInfoByUserName(String userName);
+
+    /**
+     * 系统管理-基础数据-备件仓库-导入
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
 }

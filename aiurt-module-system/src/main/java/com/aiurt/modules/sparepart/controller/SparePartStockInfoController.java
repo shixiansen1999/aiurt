@@ -200,4 +200,17 @@ public class SparePartStockInfoController extends BaseController<SparePartStockI
 		result.setResult(sparePartStockInfos);
 		return result;
 	}
+
+	/**
+	 * 系统管理-基础数据-备件仓库-导入
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ApiOperation(value = "系统管理-基础数据-备件仓库-导入", notes = "系统管理-基础数据-备件仓库-导入")
+	@PostMapping(value = "/importExcel")
+	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response){
+		return sparePartStockInfoService.importExcel(request, response);
+
+	}
 }
