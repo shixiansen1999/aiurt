@@ -1643,8 +1643,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         fault.setMajorCode(repairRecordDTO.getMajorCode());
         one.setSubSystemCode(repairRecordDTO.getSubSystemCode());
         fault.setSubSystemCode(repairRecordDTO.getSubSystemCode());
-        fault.setLineCode(repairRecordDTO.getLineCode());
-        fault.setStationCode(repairRecordDTO.getStationCode());
         one.setFaultCauseSolution(repairRecordDTO.getFaultCauseSolution());
         one.setMethod(repairRecordDTO.getMethod());
         one.setFaultLevel(repairRecordDTO.getFaultLevel());
