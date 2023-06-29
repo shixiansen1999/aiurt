@@ -268,6 +268,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                         .build();
 
                 repairRecordService.save(record);
+                // 根据配置决定：故障领取后两小时未更新任务状态需给予维修人提示音
+                noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, fault.getCode(), FaultStatusEnum.REPAIR.getStatus());
             }
         } else {
             if (value) {
@@ -631,6 +633,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        // （开启上报需要审批的情况）根据配置决定：故障未领取时要给予当班人员提示音（每两分钟提醒20秒）
+        SysParamModel remindParam = iSysParamAPI.selectByCode(SysParamCodeConstant.NO_RECEIVE_FAULT_REMIND);
+        // 审批通过、待指派的故障才安排提醒任务
+        boolean b1 = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && FaultStatusEnum.APPROVAL_PASS.getStatus().equals(fault.getStatus());
+        if (b1) {
+            faultRemind.processFaultAdd(fault.getCode(), fault.getApprovalPassTime());
         }
     }
 
