@@ -16,15 +16,15 @@ import java.util.Map;
  * @create: 2023-06-28 15:23
  * @Description:
  */
-@Component("InspectionCodeRowSystemValidationRuleHandler")
-public class InspectionCodeRowSystemValidationRuleHandler implements RowValidationRule {
+@Component("PatrolStandardRowSystemValidationRuleHandler")
+public class PatrolStandardRowSystemValidationRuleHandler implements RowValidationRule {
     @Resource
     private ISysBaseAPI sysBaseApi;
 
     @Override
     public ValidationResult validate(Map<String, Column> row, Column column) {
         Object systemName = column.getData();
-        Column majorName = row.get("major_code");
+        Column majorName = row.get("profession_code");
 
         if (ObjectUtil.isNotEmpty(systemName) && ObjectUtil.isNotEmpty(majorName)) {
             JSONObject csMajorByName = sysBaseApi.getCsMajorByName((String) majorName.getData());

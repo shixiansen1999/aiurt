@@ -276,4 +276,9 @@ public interface PatrolConstant {
      * 巡检任务mac地址匹配异常状态
      */
     Integer MAC_STATUS_EXCEPTION = 0;
+
+    /**
+     * 表示是
+     */
+    String SHI = "是";
 }
