@@ -1051,8 +1051,8 @@
             <if test="condition.subsystemCode!=null and condition.subsystemCode!=''">
                 AND t4.subsystem_code  = #{condition.subsystemCode}
             </if>
-            group by t1.id
         </where>
+        group by t1.id
     </sql>
 
     <select id="countTeamList" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTOS">
@@ -1072,9 +1072,8 @@
                 #{item}
             </foreach>
         </if>
-            group by t1.org_code
         </where>
-
+        group by t1.org_code
     </select>
 
     <select id="countUserList" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTO">
@@ -1097,7 +1096,7 @@
                     #{item}
                 </foreach>
             </if>
-            group by t2.user_id
         </where>
+        group by t2.user_id
     </select>
 </mapper>
