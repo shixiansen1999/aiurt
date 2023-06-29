@@ -91,13 +91,13 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
     @Override
     public IPage<PatrolStandardDto> pageList(Page page, PatrolStandard patrolStandard) {
         // 数据权限过滤
-        List<String> stadardCode = new ArrayList<>();
+       /* List<String> stadardCode = new ArrayList<>();
         try {
             stadardCode = this.standardDataPermissionFilter();
             patrolStandard.setCodes(stadardCode);
         } catch (Exception e) {
             return page;
-        }
+        }*/
 
         List<PatrolStandardDto> page1 = patrolStandardMapper.pageList(page, patrolStandard);
         List<DictModel> standardTypes = sysBaseApi.getDictItems("patrol_standard_type");
