@@ -674,7 +674,10 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
             todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_OUT.getType());
             todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
             todoDTO.setTemplateCode(CommonConstant.SPAREPARTOUTORDER_SERVICE_NOTICE);
-            isTodoBaseAPI.createTodoTask(todoDTO);
+            //labdam方式
+            new Thread(()-> {
+                isTodoBaseAPI.createTodoTask(todoDTO);
+            }).start();
         } catch (Exception e) {
             e.printStackTrace();
         }
