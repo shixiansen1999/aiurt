@@ -385,4 +385,8 @@ public interface SysParamCodeConstant {
     String NEW_MONTH = "end_month";
 
 
+    /**
+     * 企业微信跳转地址
+     */
+    String WECHAT_MESSAGE_URL = "wechat_message_url";
 }

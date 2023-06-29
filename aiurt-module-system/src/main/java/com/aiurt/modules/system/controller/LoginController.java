@@ -101,12 +101,6 @@ public class LoginController {
 
 	@Autowired
 	private ISysThirdAccountService sysThirdAccountService;
-
-	/**
-	 * 第三方APP类型，当前固定为 wechat_enterprise
-	 */
-	public final String THIRD_TYPE = ThirdAppConfig.WECHAT_ENTERPRISE.toLowerCase();
-
 	@ApiOperation("登录接口")
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public Result<JSONObject> login(@RequestBody SysLoginModel sysLoginModel){
@@ -772,14 +766,16 @@ public class LoginController {
 		 * 判断是否同步过的逻辑：
 		 * 1. 查询 sys_third_account（第三方账号表）是否有数据，如果有代表已同步
 		 */
-		SysThirdAccount sysThirdAccount = sysThirdAccountService.getOneByThirdUserId(sysUser.getUsername(), THIRD_TYPE);
+		String wechat = ThirdAppConfig.WECHAT_ENTERPRISE.toLowerCase();
+		ISysThirdAccountService sysThirdAccountService = SpringContextUtils.getBean(ISysThirdAccountService.class);
+		SysThirdAccount sysThirdAccount = sysThirdAccountService.getOneByThirdUserId(userId, wechat);
 
 		if (sysThirdAccount == null) {
 			sysThirdAccount = new SysThirdAccount();
 			sysThirdAccount.setSysUserId(sysUser.getId());
 			sysThirdAccount.setStatus(1);
 			sysThirdAccount.setDelFlag(0);
-			sysThirdAccount.setThirdType(THIRD_TYPE);
+			sysThirdAccount.setThirdType(wechat);
 			sysThirdAccount.setThirdUserId(userId);
 			sysThirdAccountService.saveOrUpdate(sysThirdAccount);
 		}
