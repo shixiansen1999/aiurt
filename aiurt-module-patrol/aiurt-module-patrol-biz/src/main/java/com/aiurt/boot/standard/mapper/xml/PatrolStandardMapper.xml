@@ -35,12 +35,12 @@
         <if test="patrolStandard.status !=null ">
             AND patrol_standardstatus = #{patrolStandard.status}
         </if>
-        <if test="patrolStandard.codes != null and patrolStandard.codes.size() > 0">
+        <!--<if test="patrolStandard.codes != null and patrolStandard.codes.size() > 0">
             and patrol_standard.code in
             <foreach collection="patrolStandard.codes" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
-        </if>
+        </if>-->
         order by patrol_standard.create_time desc
     </select>
     <select id="pageLists" resultType="com.aiurt.boot.standard.dto.PatrolStandardDto">

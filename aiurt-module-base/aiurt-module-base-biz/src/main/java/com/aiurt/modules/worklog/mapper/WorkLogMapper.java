@@ -17,6 +17,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -128,5 +129,22 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
      * @return
      */
     List<CsStationPosition> queryPositionList(@Param("list") List<String> code);
+
+    /**
+     * 获取已提交的日志数
+     * @param startDate
+     * @param endDate
+     * @param orgId
+     * @return
+     */
+    Integer getSubmitNum(@Param("startDate") Date startDate,@Param("endDate") Date endDate, @Param("orgId") String orgId);
+
+
+    /**
+     * 获取日志相同天，相同班组的日志id列表。比如根据早班日志的id，获取到早班与晚班的日志id
+     * @param id
+     * @return
+     */
+    List<String> getSameDayIdList(@Param("id") String id);
 }
 
