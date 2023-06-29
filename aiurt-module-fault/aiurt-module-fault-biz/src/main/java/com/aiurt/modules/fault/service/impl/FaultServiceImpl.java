@@ -1632,7 +1632,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 更新备件出库未使用的数量，目前只有易耗品， 智能化提升没有关联出去库；
         List<SparePartStockDTO> list = repairRecordDTO.getConsumableList();
-        sparePartBaseApi.addSparePartOutOrder(list, faultCode);
+        deviceChangeList.addAll(list);
+        try {
+            sparePartBaseApi.addSparePartOutOrder(deviceChangeList, faultCode);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
         //sparePartBaseApi.updateSparePartOutOrder(updateMap);
 
         // 先删除，再新增
@@ -1684,11 +1689,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
 
 
-        repairRecordService.updateById(one);
-        sparePartService.remove(new LambdaQueryWrapper<DeviceChangeSparePart>().eq(DeviceChangeSparePart::getCode, faultCode));
+        // sparePartService.remove(new LambdaQueryWrapper<DeviceChangeSparePart>().eq(DeviceChangeSparePart::getCode, faultCode));
         if (CollUtil.isNotEmpty(deviceChangeList)) {
 
-            List<DeviceChangeSparePart> sparePartList = deviceChangeList.stream().map(sparePartStockDTO -> {
+            /*List<DeviceChangeSparePart> sparePartList = deviceChangeList.stream().map(sparePartStockDTO -> {
                 DeviceChangeSparePart part = DeviceChangeSparePart.builder()
                         .newSparePartNum(sparePartStockDTO.getNewSparePartNum())
                         .newSparePartCode(sparePartStockDTO.getNewSparePartCode())
@@ -1702,7 +1706,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                         .build();
                 return part;
             }).collect(Collectors.toList());
-            sparePartService.saveBatch(sparePartList);
+            sparePartService.saveBatch(sparePartList);*/
             // 对比标准是否异常
             fault.setException(0);
             if (CollUtil.isNotEmpty(recordsList)) {
@@ -1828,10 +1832,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         fault.setRepairDuration(one.getRepairDuration() + repairDuration1);
         updateById(fault);
 
-        // 备件更换记录
-     /*   sparePartBaseApi.updateSparePartReplace(list);
-
-        sparePartBaseApi.updateSparePartMalfunction(malfunctionList);*/
+        repairRecordService.updateById(one);
 
         if(submitValue){
             saveLog(loginUser, "填写维修记录", faultCode, FaultStatusEnum.REPAIR.getStatus(), null);
@@ -1842,105 +1843,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     }
 
 
-    /**
-     *  统计实际的出库量以及更新故障组件更换记录device_change_spare_part
-     * @param repairRecordDTO
-     * @param faultCode
-     * @return
-     */
-//    private Map<String, Integer> buildSparePartNumMap(RepairRecordDTO repairRecordDTO, String faultCode) {
-//        LambdaQueryWrapper<DeviceChangeSparePart> dataWrapper = new LambdaQueryWrapper<>();
-//        dataWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
-//        List<DeviceChangeSparePart> oneSourceList = sparePartService.list(dataWrapper);
-//
-//        // 不能简单删除， 对比，修改出库的实际使用数量
-//        List<DeviceChangeDTO> deviceChangeList = repairRecordDTO.getDeviceChangeList();
-//        Map<String, Integer> updateMap = new HashMap<>(16);
-//        if (CollectionUtil.isNotEmpty(deviceChangeList)) {
-//
-//            // key-> 主键id_出库单id_物资编码， value： 使用的数量
-//            Map<String, Integer> map = oneSourceList.stream().collect(Collectors.toMap(sparepart -> {
-//                return String.format("%s_%s_%s", sparepart.getId(), sparepart.getOutOrderId(), sparepart.getNewSparePartCode());
-//            }, DeviceChangeSparePart::getNewSparePartNum, (t1, t2) -> t1));
-//
-//            Map<String, DeviceChangeSparePart> sparePartMap = oneSourceList.stream().collect(Collectors.toMap(DeviceChangeSparePart::getId, t -> t, (t1, t2) -> t1));
-//
-//            Set<String> recordIdSet = deviceChangeList.stream().filter(s -> StrUtil.isNotBlank(s.getId())).map(DeviceChangeDTO::getId).collect(Collectors.toSet());
-//            List<DeviceChangeSparePart> sparePartList = deviceChangeList.stream().map(deviceChangeDTO -> {
-//                // 原纪录id,
-//                String dtoId = deviceChangeDTO.getId();
-//                // 出库单
-//                String outOrderId = deviceChangeDTO.getOutOrderId();
-//                // 物资编码
-//                String newSparePartCode = deviceChangeDTO.getNewSparePartCode();
-//                // 数量
-//                Integer newSparePartNum = deviceChangeDTO.getNewSparePartNum();
-//
-//                // 新增数据
-//                if (StrUtil.isNotBlank(dtoId)) {
-//                    Integer mapNum = updateMap.getOrDefault(dtoId, 0);
-//                    updateMap.put(outOrderId, mapNum + newSparePartNum);
-//                } else {
-//                    // 修改数据
-//                    String key = String.format("%s_%s_%s", dtoId, outOrderId, newSparePartCode);
-//                    Integer orignNum = map.getOrDefault(key, 0);
-//                    Integer mapNum = updateMap.getOrDefault(outOrderId, 0);
-//                    updateMap.put(outOrderId, (newSparePartNum - orignNum) + mapNum);
-//                }
-//
-//                DeviceChangeSparePart build = DeviceChangeSparePart.builder()
-//                        .code(faultCode)
-//                        .consumables("0")
-//                        .deviceCode(deviceChangeDTO.getDeviceCode())
-//                        .newSparePartCode(newSparePartCode)
-//                        .newSparePartNum(newSparePartNum)
-//                        .repairRecordId(dtoId)
-//                        .id(dtoId)
-//                        .oldSparePartNum(deviceChangeDTO.getOldSparePartNum())
-//                        .oldSparePartCode(deviceChangeDTO.getOldSparePartCode())
-//                        .delFlag(CommonConstant.DEL_FLAG_0)
-//                        .outOrderId(outOrderId)
-//                        .build();
-//                return build;
-//            }).collect(Collectors.toList());
-//
-//            // 删除的数据
-//
-//            Set<String> set = sparePartMap.keySet();
-//            set.removeAll(recordIdSet);
-//            if (CollectionUtil.isNotEmpty(set)) {
-//                set.stream().forEach(id -> {
-//                    DeviceChangeSparePart deviceChangeSparePart = sparePartMap.get(id);
-//                    if (Objects.nonNull(deviceChangeSparePart)) {
-//                        String outOrderId = deviceChangeSparePart.getOutOrderId();
-//                        Integer num = Optional.ofNullable(deviceChangeSparePart.getNewSparePartNum()).orElse(0);
-//                        Integer mapNum = updateMap.getOrDefault(outOrderId, 0);
-//                        updateMap.put(outOrderId, mapNum + (0 - num));
-//                    }
-//                });
-//            }
-//
-//            // 删除
-//            if (CollectionUtil.isNotEmpty(set)) {
-//                sparePartService.removeBatchByIds(set);
-//            }
-//            // 更新备件更换记录
-//            sparePartService.saveOrUpdateBatch(sparePartList);
-//            //
-//        } else {
-//            oneSourceList.stream().forEach(deviceChangeSparePart -> {
-//                String id = deviceChangeSparePart.getOutOrderId();
-//                Integer newSparePartNum = deviceChangeSparePart.getNewSparePartNum();
-//                Integer mapNum = updateMap.getOrDefault(id, 0);
-//                if (Objects.nonNull(newSparePartNum)) {
-//                    updateMap.put(id, mapNum + (0 - newSparePartNum));
-//                }
-//            });
-//            // s
-//            sparePartService.remove(dataWrapper);
-//        }
-//        return updateMap;
-//    }
 
     /**
      * 审核结果
@@ -3597,6 +3499,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Override
     public List<SparePartReplaceDTO> querySparePartReplaceList(String[] oldSparePartCode, String[] faultCauseSolutionIdList, String deviceCode) {
         // 查询
+        // 查询相同物资的数据是还有存储
+        // 优先本人的仓库，如果库存有则优先取本人库存的
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String warehouseCode = sparePartBaseApi.getWarehouseCode(loginUser.getOrgId());
+
+        // 查询所有的类型的存储
+
+        // 则获取其他的库存，
         List<SparePartReplaceDTO> list = new ArrayList<>();
         // 非标准的
         if (ObjectUtil.isNotEmpty(oldSparePartCode) && ObjectUtil.isEmpty(faultCauseSolutionIdList) && StrUtil.isNotBlank(deviceCode)) {
@@ -3605,6 +3515,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 SparePartReplaceDTO replaceDTO = baseMapper.querySparePart(deviceCode, sparePartCode);
                 if (Objects.isNull(replaceDTO) || StrUtil.isBlank(replaceDTO.getMaterialCode())) {
                    continue;
+                }
+                // 查询最大的库存
+                SparePartReplaceDTO replaceDTO1 = baseMapper.queryWarehouseCodeAndNum(warehouseCode, replaceDTO.getMaterialCode());
+                if (Objects.isNull(replaceDTO1)) {
+                    replaceDTO1 = baseMapper.queryWarehouseCodeAndNum(null, replaceDTO.getMaterialCode());
+                }
+                if (Objects.isNull(replaceDTO1)) {
+                    continue;
                 }
                 // 查询最大编码数数据
                 String materialCode = replaceDTO.getMaterialCode();
@@ -3624,6 +3542,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 replaceDTO.setNewSparePartCode(newSparePartCode);
                 replaceDTO.setNewSparePartSplitCode(newSparePartCode);
                 replaceDTO.setNewSparePartNum(1);
+                replaceDTO.setWarehouseCode(replaceDTO1.getWarehouseCode());
+                replaceDTO.setMaxNum(replaceDTO1.getMaxNum());
+                replaceDTO.setOrgId(replaceDTO1.getOrgId());
                 // 新编码
                 list.add(replaceDTO);
             }
@@ -3641,6 +3562,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     continue;
                 }
                 String materialCode = replaceDTO.getMaterialCode();
+                // 查询最大的库存
+                SparePartReplaceDTO replaceDTO1 = baseMapper.queryWarehouseCodeAndNum(warehouseCode, materialCode);
+                if (Objects.isNull(replaceDTO1)) {
+                    replaceDTO1 = baseMapper.queryWarehouseCodeAndNum(null, replaceDTO.getMaterialCode());
+                }
+                if (Objects.isNull(replaceDTO1)) {
+                    continue;
+                }
                 // 解决方案的中备件与旧组件的物资编码相同的备件更换数据
                 List<FaultSparePart> faultSparePartList = baseMapper.queryFaultSparePart(materialCode, idList);
                 if (CollUtil.isNotEmpty(faultSparePartList)) {
@@ -3662,7 +3591,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     redisUtil.set("fault:sparepart:" + newSparePartCode, newSparePartCode, 7 * 24 * 60 * 60);
                     replaceDTO.setNewSparePartCode(newSparePartCode);
                     replaceDTO.setNewSparePartSplitCode(newSparePartCode);
-
+                    replaceDTO.setWarehouseCode(replaceDTO1.getWarehouseCode());
+                    replaceDTO.setMaxNum(replaceDTO1.getMaxNum());
+                    replaceDTO.setOrgId(replaceDTO1.getOrgId());
                     // 新编码
                     list.add(replaceDTO);
             }

@@ -592,7 +592,7 @@
 
 
     <select id="querySparePart" resultType="com.aiurt.modules.fault.dto.SparePartReplaceDTO">
-        select t1.device_code,t3.name as device_name,t1.material_name as new_spare_part_name, t2.specifications,ifnull(t2.code, '0000000') as material_code,t1.code old_spare_part_code,t1.material_name as old_spare_part_name
+        select t1.device_code,t3.name as device_name,t1.material_name as new_spare_part_name, t2.specifications,t2.code as material_code,t1.code old_spare_part_code,t1.material_name as old_spare_part_name
         from device_assembly t1
         left join material_base t2 ON (t1.material_code = t2.code and  t2.del_flag =0 )
         left join device t3 ON (t1.device_code = t3.code and  t3.del_flag =0 )
@@ -715,5 +715,14 @@
             <if test="updateTime != null">
                 AND f.update_time = #{updateTime}
             </if>
+    </select>
+
+    <select id="queryWarehouseCodeAndNum" resultType="com.aiurt.modules.fault.dto.SparePartReplaceDTO">
+        SELECT warehouse_code, num as max_num, org_id from spare_part_stock where num>0 and del_flag = 0 and  material_code = #{materialCode}
+        <if test="warehouseCode != null and warehouseCode != ''">
+            and warehouse_code = #{warehouseCode}
+        </if>
+        order by num desc
+        limit 1
     </select>
 </mapper>
