@@ -38,8 +38,12 @@ public class SparePartStockInfoImportExcelVO {
     @ApiModelProperty(value = "备件仓库位置")
     private String warehousePosition;
 
+    /**备件仓库状态字符串，为导入检测所准备：1启用、2停用*/
+    @Excel(name = "备件仓库状态", width = 15)
+    @ApiModelProperty(value = "备件仓库状态：1启用、2停用")
+    private String warehouseStatusString;
+
     /**备件仓库状态：1启用、2停用*/
-    @Excel(name = "备件仓库状态", replace = {"启用_1", "停用_2"}, width = 15)
     @ApiModelProperty(value = "数据字典：warehouse_status ，备件仓库状态：1启用、2停用")
     private Integer warehouseStatus;
 
@@ -49,6 +53,7 @@ public class SparePartStockInfoImportExcelVO {
     private String remarks;
 
     /**数据验证时的错误信息*/
+    @Excel(name = "导入失败原因", width = 15)
     @ApiModelProperty(value = "数据验证时的错误信息")
     private String errorMessage;
 

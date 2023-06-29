@@ -1,10 +1,13 @@
 package com.aiurt.modules.sparepart.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 
+import com.aiurt.common.util.MinioUtil;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.sparepart.entity.vo.SparePartStockInfoImportExcelVO;
 import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
@@ -15,12 +18,15 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -30,9 +36,8 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.io.*;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -51,6 +56,11 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
 
     @Autowired
     private ISysBaseAPI sysBaseApi;
+
+    @Value("${jeecg.minio.bucketName}")
+    private String bucketName;
+    @Value("${jeecg.path.upload}")
+    private String upLoadPath;
     /**
      * 添加
      *
@@ -155,8 +165,8 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
             // 看有没有错误信息
             int errorCount = (int) list.stream().filter(vo -> StrUtil.isNotEmpty(vo.getErrorMessage())).count();
             if (errorCount > 0){
-                // TODO: 错误模板
-                throw new AiurtBootException("有错误");
+                // 有错误
+                return importErrorExcel(errorCount, list);
             }
 
             // 转成实体类，并进行保存
@@ -166,8 +176,7 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
                 return sparePartStockInfo;
             }).collect(Collectors.toList());
 
-            // this.saveBatch(sparePartStockInfoList);
-            log.info("list: {}", list);
+            this.saveBatch(sparePartStockInfoList);
 
             JSONObject result = new JSONObject(5);
             result.put("isSucceed", true);
@@ -181,6 +190,67 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
             return Result.error(e.getMessage());
         }
 
+    }
+
+    /**
+     * 导入错误时，生成错误清单
+     * @param errorCount 错误数量
+     * @param list 导入数据列表
+     */
+    private Result<?> importErrorExcel(int errorCount, List<SparePartStockInfoImportExcelVO> list) {
+        int totalCount = list.size();
+        int successCount = totalCount - errorCount;
+
+        //从minio获取错误清单模板
+        InputStream inputStream = MinioUtil.getMinioFile(bucketName, "excel/template/备件仓库错误清单模板.xlsx");
+        //2.获取临时文件
+        File fileTemp= new File("/templates/error.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(inputStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        TemplateExportParams exportParams = new TemplateExportParams(fileTemp.getAbsolutePath());
+        Map<String, Object> errorMap = new HashMap<String, Object>(1);
+        List<Map<String, Object>> listMap = new ArrayList<>();
+        list.forEach(vo->{
+            Map<String, Object> map = new HashMap<>(7);
+            map.put("code", vo.getWarehouseCode());
+            map.put("name", vo.getWarehouseName());
+            map.put("orgCode", vo.getOrgCode());
+            map.put("position", vo.getWarehousePosition());
+            map.put("state", vo.getWarehouseStatusString());
+            map.put("remarks", vo.getRemarks());
+            map.put("errorMessage", vo.getErrorMessage());
+            listMap.add(map);
+        });
+        errorMap.put("maplist", listMap);
+
+        Workbook workbook = ExcelExportUtil.exportExcel(exportParams, errorMap);
+        String url = null;
+        File tempFile = null;
+        try {
+            // 错误清单不放到minio里了，还是按照原来的放到服务器里，不然前端要改通用下载错误清单的组件
+            String fileName = "备件仓库导入错误清单"+"_" + System.currentTimeMillis()+".xlsx";
+            FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
+            url = fileName;
+            workbook.write(out);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            // 关闭临时文件
+            Optional.ofNullable(tempFile).ifPresent(File::delete);
+            fileTemp.delete();
+        }
+        JSONObject result = new JSONObject(5);
+        result.put("isSucceed", false);
+        result.put("errorCount", errorCount);
+        result.put("successCount", successCount);
+        result.put("totalCount", totalCount);
+        result.put("failReportUrl", url);
+        return Result.OK("文件失败，数据有错误！", result);
 
     }
 
@@ -266,6 +336,16 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
             //判断一个仓库仅能所属一个机构
             if (warehouseOrgCodeList.contains(vo.getOrgCode())) {
                 stringBuilder.append("备件仓库组织机构重复或库中已存在");
+                stringBuilder.append(";");
+            }
+
+            // 状态只能是停用或启用
+            if ("启用".equals(vo.getWarehouseStatusString())){
+                vo.setWarehouseStatus(1);
+            }else if ("停用".equals(vo.getWarehouseStatusString())){
+                vo.setWarehouseStatus(2);
+            }else {
+                stringBuilder.append("备件仓库状态只能是启用或者停用");
                 stringBuilder.append(";");
             }
 
