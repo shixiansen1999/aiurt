@@ -3,6 +3,8 @@ package com.aiurt.boot.standard.mapper;
 import com.aiurt.boot.standard.dto.InspectionStandardDto;
 import com.aiurt.boot.standard.dto.PatrolStandardDto;
 import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -25,6 +27,12 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
      * @param patrolStandard
      * @return
      */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "pso.org_code"),
+            @DataColumn(key = "majorName",value = "b.major_code"),
+            @DataColumn(key = "systemName",value = "c.system_code"),
+
+    })
     List<PatrolStandardDto> pageList (@Param("page") Page page, @Param("patrolStandard") PatrolStandard patrolStandard);
 
     /**
