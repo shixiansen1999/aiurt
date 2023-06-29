@@ -110,13 +110,18 @@ public class PatrolTaskMissingDetectionQuarter implements Job {
         AtomicInteger missNum = new AtomicInteger();
 
         taskList.stream().forEach(l -> {
-            if (null == l.getPatrolDate()) {
+            if (null == l.getPatrolDate() && null == l.getEndDate()) {
                 return;
             }
-            Date patrolDate = l.getPatrolDate();
-            if (ObjectUtil.isNotEmpty(l.getEndTime())) {
-                String endTime = DateUtil.format(l.getEndTime(), "HH:mm:ss");
-                patrolDate = DateUtil.parse(DateUtil.format(patrolDate, "yyyy-MM-dd " + endTime));
+            Date patrolDate = null;
+            if (l.getSource().equals(PatrolConstant.TASK_MANUAL)) {
+                patrolDate = l.getEndDate();
+            }else {
+                patrolDate = l.getPatrolDate();
+                if (ObjectUtil.isNotEmpty(l.getEndTime())) {
+                    String endTime = DateUtil.format(l.getEndTime(), "HH:mm:ss");
+                    patrolDate = DateUtil.parse(DateUtil.format(patrolDate, "yyyy-MM-dd " + endTime));
+                }
             }
             // 当前时间
             Date now = new Date();
@@ -149,7 +154,7 @@ public class PatrolTaskMissingDetectionQuarter implements Job {
                         map.put("patrolTaskName",l.getName());
                         List<String>  station = patrolTaskStationMapper.getStationByTaskCode(l.getCode());
                         map.put("patrolStation", CollUtil.join(station,","));
-                        String date = DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd");
+                        String date = DateUtil.format(patrolDate, "yyyy-MM-dd");
                         map.put("patrolTaskTime",date);
 
                         QueryWrapper<PatrolTaskUser> wrapper = new QueryWrapper<>();

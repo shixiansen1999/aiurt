@@ -118,7 +118,7 @@ public class PatrolTaskMissingDetectionByDrools implements Job {
                         .in(PatrolTask::getStatus, status)
                         .eq(PatrolTask::getOmitStatus, PatrolConstant.UNOMIT_STATUS)
                         .eq(PatrolTask::getDiscardStatus,PatrolConstant.TASK_UNDISCARD)
-                        .ne(PatrolTask::getPeriod,PatrolConstant.PLAN_PERIOD_THREE_MONTH)
+                        .and(wrapper -> wrapper.ne(PatrolTask::getPeriod, PatrolConstant.PLAN_PERIOD_THREE_MONTH).or().isNull(PatrolTask::getPeriod))
                         .list()
         ).orElseGet(Collections::emptyList);
         if (CollectionUtil.isEmpty(taskList)) {
@@ -140,8 +140,14 @@ public class PatrolTaskMissingDetectionByDrools implements Job {
 //        List<LoginUser> users = sysBaseApi.getUserByRoleCode("String roleCode");
 
         taskList.stream().forEach(l -> {
-            if (null == l.getPatrolDate()) {
+            if (null == l.getPatrolDate() && null == l.getEndDate()) {
                 return;
+            }
+            Date patrolDate = null;
+            if (null != l.getEndDate()) {
+                patrolDate = l.getEndDate();
+            }else {
+                patrolDate = l.getPatrolDate();
             }
 //            Date patrolDate = l.getPatrolDate();
 //            if (ObjectUtil.isNotEmpty(l.getEndTime())) {
@@ -196,7 +202,7 @@ public class PatrolTaskMissingDetectionByDrools implements Job {
                         List<String>  station = patrolTaskStationMapper.getStationByTaskCode(l.getCode());
                         map.put("patrolStation", CollUtil.join(station,","));
                         if (ObjectUtil.isNotEmpty(l.getStartTime()) && ObjectUtil.isNotEmpty(l.getEndTime())) {
-                            String date = DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd");
+                            String date = DateUtil.format(patrolDate, "yyyy-MM-dd");
                             map.put("patrolTaskTime",date+" "+DateUtil.format(l.getStartTime(),"HH:mm")+"-"+date+" "+DateUtil.format(l.getEndTime(),"HH:mm"));
                         }
                         QueryWrapper<PatrolTaskUser> wrapper = new QueryWrapper<>();
