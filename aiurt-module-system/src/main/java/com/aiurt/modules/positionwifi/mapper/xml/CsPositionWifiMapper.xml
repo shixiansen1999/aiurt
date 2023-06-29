@@ -3,21 +3,57 @@
 <mapper namespace="com.aiurt.modules.positionwifi.mapper.CsPositionWifiMapper">
 
 <select id="getMac" resultType="java.lang.String">
-    select mac from cs_position_wifi where del_flag = 0 and station_code in
-    <foreach collection="stationCodes" open="(" separator="," close=")" item="item" index="index">
-        #{item}
-    </foreach>
+    select cpw.mac
+    from cs_station cs
+    left join  cs_position_wifi cpw on cpw.station_code = cs.station_code
+    where cpw.del_flag = 0 and cs.del_flag = 0
+    <if test="stationCodes != null and stationCodes.size() != 0">
+        and cs.station_code in
+        <foreach collection="stationCodes" open="(" separator="," close=")" item="item" index="index">
+            #{item}
+        </foreach>
+    </if>
+    <if test="changeCode != null and changeCode.size() != 0">
+        or cs.change_code in
+        <foreach collection="changeCode" open="(" separator="," close=")" item="item" index="index">
+            #{item}
+        </foreach>
+    </if>
+    group by cpw.mac
     </select>
 
 <select id="getStationAndMac" resultType="org.jeecg.common.system.vo.StationAndMacModel">
     select cpw.mac ,cs.station_name
-    from cs_position_wifi cpw
-    left join cs_station cs on cpw.station_code = cs.station_code
-    where cpw.del_flag = 0 and cpw.station_code in
-    <foreach collection="stationCodes" open="(" separator="," close=")" item="item" index="index">
-        #{item}
-    </foreach>
+    from cs_station cs
+    left join  cs_position_wifi cpw on cpw.station_code = cs.station_code
+    where cpw.del_flag = 0
+    <if test="stationCodes != null and stationCodes.size() != 0">
+        and cs.station_code in
+        <foreach collection="stationCodes" open="(" separator="," close=")" item="item" index="index">
+            #{item}
+        </foreach>
+    </if>
+    <if test="changeCode != null and changeCode.size() != 0">
+        or cs.change_code in
+        <foreach collection="changeCode" open="(" separator="," close=")" item="item" index="index">
+            #{item}
+        </foreach>
+    </if>
+    group by cpw.mac
+</select>
+
+<select id="getChangeCode" resultType="java.lang.String">
+    select cs.change_code
+    from cs_station cs
+    where  cs.del_flag = 0
+    <if test="stationCodes != null and stationCodes.size() != 0">
+        and cs.station_code in
+        <foreach collection="stationCodes" open="(" separator="," close=")" item="item" index="index">
+            #{item}
+        </foreach>
+    </if>
     </select>
+
     <select id="getStationCodeByMac" resultType="java.lang.String">
         SELECT IF(cs.is_change=1,cs.change_code, cs.station_code) AS station_code
         FROM cs_station cs

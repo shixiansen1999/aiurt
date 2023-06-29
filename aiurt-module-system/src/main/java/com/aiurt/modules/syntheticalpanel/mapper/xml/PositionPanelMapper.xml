@@ -35,7 +35,7 @@
     LEFT JOIN work_area_station was ON was.station_code = cs.station_code and was.del_flag = 0
     LEFT JOIN work_area wa ON wa.`code` = work_area_code
     WHERE
-    cs.del_flag = 0 and cs.line_code not in ('01','02')
+    cs.del_flag = 0
     </select>
 
 <select id="queryById" resultType="com.aiurt.modules.syntheticalpanel.model.PositionPanelModel">
