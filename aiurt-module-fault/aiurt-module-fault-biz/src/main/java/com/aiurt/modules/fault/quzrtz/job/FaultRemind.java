@@ -115,7 +115,7 @@ public class FaultRemind {
         long delay = Long.parseLong(StrUtil.trim(delayParam.getValue()));
         long period = Long.parseLong(StrUtil.trim(periodParam.getValue()));
         // 判断是否有效
-        boolean b1 = ObjectUtil.isEmpty(fault) && ObjectUtil.isEmpty(status) && ObjectUtil.isEmpty(updateTime) && ObjectUtil.isEmpty(delay) && ObjectUtil.isEmpty(period);
+        boolean b1 = ObjectUtil.isEmpty(fault) && ObjectUtil.isEmpty(status) && ObjectUtil.isEmpty(delay) && ObjectUtil.isEmpty(period);
         if (b1) {
             log.info("校验失败,故障编号：{}",code);
             return;
