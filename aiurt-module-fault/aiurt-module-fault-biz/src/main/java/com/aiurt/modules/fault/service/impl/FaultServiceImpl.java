@@ -37,14 +37,13 @@ import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.fault.quzrtz.job.FaultRemind;
 import com.aiurt.modules.fault.service.*;
-import com.aiurt.modules.faultexternal.entity.FaultExternal;
-import com.aiurt.modules.faultexternal.mapper.FaultExternalMapper;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
 import com.aiurt.modules.faultcausesolution.dto.FaultCauseSolutionDTO;
-import com.aiurt.modules.faultcausesolution.entity.FaultCauseSolution;
 import com.aiurt.modules.faultcauseusagerecords.entity.FaultCauseUsageRecords;
 import com.aiurt.modules.faultcauseusagerecords.service.IFaultCauseUsageRecordsService;
+import com.aiurt.modules.faultexternal.entity.FaultExternal;
+import com.aiurt.modules.faultexternal.mapper.FaultExternalMapper;
 import com.aiurt.modules.faultexternal.service.IFaultExternalService;
 import com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
@@ -320,7 +319,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 根据配置决定：故障未领取时要给予当班人员提示音（每两分钟提醒20秒）
         SysParamModel remindParam = iSysParamAPI.selectByCode(SysParamCodeConstant.NO_RECEIVE_FAULT_REMIND);
-        boolean b1 = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue());
+        // 审批通过、待指派的故障才安排提醒任务
+        boolean b1 = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && FaultStatusEnum.APPROVAL_PASS.getStatus().equals(fault.getStatus());
         if (b1) {
             faultRemind.processFaultAdd(fault.getCode(), fault.getApprovalPassTime());
         }
