@@ -110,7 +110,7 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @param symptomReqDTO
      * @return
      */
-    Page<SymptomResDTO> querySymptomTemplate(SymptomReqDTO symptomReqDTO);
+    Page<SymptomResDTO> querySymptomTemplate(HttpServletRequest request, SymptomReqDTO symptomReqDTO);
 
     /**
      * 维修建议

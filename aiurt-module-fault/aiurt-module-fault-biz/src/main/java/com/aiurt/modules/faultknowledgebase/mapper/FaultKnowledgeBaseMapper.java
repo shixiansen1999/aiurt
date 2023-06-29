@@ -1,5 +1,7 @@
 package com.aiurt.modules.faultknowledgebase.mapper;
 
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
