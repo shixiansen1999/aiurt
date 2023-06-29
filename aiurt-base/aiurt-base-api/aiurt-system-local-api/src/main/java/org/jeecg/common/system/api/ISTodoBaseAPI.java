@@ -40,4 +40,11 @@ public interface ISTodoBaseAPI {
      * @param todoType
      */
     void updateBpmnTaskState(String taskId, String processInstanceId, String username, String todoType);
+
+
+    /**
+     * 更新流程待办任务
+     * @param processInstanceId
+     */
+    void updateBpmnTaskState(String processInstanceId);
 }

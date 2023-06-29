@@ -1465,7 +1465,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         BeanUtils.copyProperties(repairRecord, repairRecordDTO);
         repairRecordDTO.setMajorCode(fault.getMajorCode());
         repairRecordDTO.setSubSystemCode(fault.getSubSystemCode());
-
+        repairRecordDTO.setLineCode(fault.getLineCode());
         repairRecordDTO.setStationCode(fault.getStationCode());
         repairRecordDTO.setStationPositionCode(fault.getStationPositionCode());
         // 查询参与人
@@ -1551,11 +1551,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             repairRecordDTO.setMaintenanceMeasures(base.getSolution());
         }*/
 
-        // 查询解决
-        LambdaQueryWrapper<FaultCauseUsageRecords> recordsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        // 查询解决, 不返回，每次重新挑选方案
+        /*LambdaQueryWrapper<FaultCauseUsageRecords> recordsLambdaQueryWrapper = new LambdaQueryWrapper<>();
         recordsLambdaQueryWrapper.eq(FaultCauseUsageRecords::getFaultRepairRecordId, repairRecord.getId());
-        List<FaultCauseUsageRecords> records = faultCauseUsageRecordsService.list(recordsLambdaQueryWrapper);
-        repairRecordDTO.setRecordsList(records);
+        List<FaultCauseUsageRecords> records = faultCauseUsageRecordsService.list(recordsLambdaQueryWrapper);*/
+        repairRecordDTO.setRecordsList(new ArrayList<>());
 
         // 故障原因百分比
         LambdaQueryWrapper<FaultCauseDetail> queryWrapper = new LambdaQueryWrapper<>();
@@ -1652,7 +1652,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 专业子系统
         one.setMajorCode(repairRecordDTO.getMajorCode());
+        fault.setMajorCode(repairRecordDTO.getMajorCode());
         one.setSubSystemCode(repairRecordDTO.getSubSystemCode());
+        fault.setSubSystemCode(repairRecordDTO.getSubSystemCode());
+        fault.setLineCode(repairRecordDTO.getLineCode());
+        fault.setStationCode(repairRecordDTO.getStationCode());
         one.setFaultCauseSolution(repairRecordDTO.getFaultCauseSolution());
         one.setMethod(repairRecordDTO.getMethod());
         one.setFaultLevel(repairRecordDTO.getFaultLevel());
@@ -1733,12 +1737,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             faultCauseDetailService.saveBatch(causeDetailList);
         }
 
-
+        one.setEndTime(new Date());
         // 未解决，需要重新指派
         if (!flag.equals(solveStatus) && flag.equals(assignFlag)) {
             // 重新指派
             fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
-            one.setEndTime(new Date());
+
             // 仅需要发送消息，不需要更新待办
             try {
                 TodoDTO todoDTO = new TodoDTO();
