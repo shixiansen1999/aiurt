@@ -37,6 +37,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -142,6 +143,25 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
     }
 
     @Override
+    public void downloadTemplateExcel(HttpServletRequest request, HttpServletResponse response) {
+        String fileName = new String("备件仓库导入模板.xlsx".getBytes(), StandardCharsets.ISO_8859_1);
+        response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+        try (
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            // 从minio获取模板文件
+            InputStream inputStream = MinioUtil.getMinioFile(bucketName, "excel/template/备件仓库导入模板.xlsx")
+        ) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                bufferedOutPut.write(buffer, 0, bytesRead);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         try {
             MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
@@ -197,7 +217,7 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
      * @param errorCount 错误数量
      * @param list 导入数据列表
      */
-    private Result<?> importErrorExcel(int errorCount, List<SparePartStockInfoImportExcelVO> list) {
+    private Result<?> importErrorExcel(int errorCount, List<SparePartStockInfoImportExcelVO> list) throws IOException {
         int totalCount = list.size();
         int successCount = totalCount - errorCount;
 
@@ -230,19 +250,18 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
         Workbook workbook = ExcelExportUtil.exportExcel(exportParams, errorMap);
         String url = null;
         File tempFile = null;
-        try {
-            // 错误清单不放到minio里了，还是按照原来的放到服务器里，不然前端要改通用下载错误清单的组件
-            String fileName = "备件仓库导入错误清单"+"_" + System.currentTimeMillis()+".xlsx";
-            FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
+        // 错误清单不放到minio里了，还是按照原来的放到服务器里，不然前端要改通用下载错误清单的组件
+        String fileName = "备件仓库导入错误清单"+"_" + System.currentTimeMillis()+".xlsx";
+        try (FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName)){
             url = fileName;
             workbook.write(out);
-
         } catch (Exception e) {
             e.printStackTrace();
         }finally {
             // 关闭临时文件
             Optional.ofNullable(tempFile).ifPresent(File::delete);
             fileTemp.delete();
+            inputStream.close();
         }
         JSONObject result = new JSONObject(5);
         result.put("isSucceed", false);

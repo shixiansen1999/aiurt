@@ -8,6 +8,7 @@ import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 
 /**
@@ -46,4 +47,12 @@ public interface ISparePartStockInfoService extends IService<SparePartStockInfo>
      * @return
      */
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 下载导入模板
+     * @param response
+     * @param request
+     * @throws IOException
+     */
+    void downloadTemplateExcel(HttpServletRequest request, HttpServletResponse response);
 }
