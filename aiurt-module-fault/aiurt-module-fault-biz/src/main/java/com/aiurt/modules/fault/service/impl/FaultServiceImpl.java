@@ -320,7 +320,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 根据配置决定：故障未领取时要给予当班人员提示音（每两分钟提醒20秒）
         SysParamModel remindParam = iSysParamAPI.selectByCode(SysParamCodeConstant.NO_RECEIVE_FAULT_REMIND);
-        boolean b1 = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue());
+        // 审批通过、待指派的故障才安排提醒任务
+        boolean b1 = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && FaultStatusEnum.APPROVAL_PASS.getStatus().equals(fault.getStatus());
         if (b1) {
             faultRemind.processFaultAdd(fault.getCode(), fault.getApprovalPassTime());
         }
