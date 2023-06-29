@@ -282,7 +282,14 @@ public interface SysParamCodeConstant {
      * 调度下发新的故障-需要响铃的中心班组
      */
     String FAULT_EXTERNAL_ORG = "fault_external_org";
-
+    /**
+     * 调度下发之后，填写维修单解决后，回调云轨调度系统的接口地址
+     */
+    String FAULT_EXTERNAL_URL = "fault_external_url";
+    /**
+     * 故障调度处理完，回调云轨的系统id
+     */
+    String FAULT_EXTERNAL_SYSTEM_ID = "fault_external_system_id";
     /**
      * 根据配置决定故障上报是否开启控制中心班组自检故障指派功能及权限
      */
@@ -299,14 +306,6 @@ public interface SysParamCodeConstant {
      * 根据配置决定控制中心成员能否领取正线站点故障，开启时表示不能
      */
     String FAULT_CENTER_RECEIVE = "fault_center_receive";
-    /**
-     * 调度下发之后，填写维修单解决后，回调云轨调度系统的接口地址
-     */
-    String FAULT_EXTERNAL_URL = "fault_external_url";
-    /**
-     * 故障调度处理完，回调云轨的系统id
-     */
-    String FAULT_EXTERNAL_SYSTEM_ID = "fault_external_system_id";
     /**
      * 中心班组是否可以填写其他人的维修记录
      */

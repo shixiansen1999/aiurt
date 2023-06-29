@@ -128,4 +128,8 @@ public class DeviceChangeSparePartDTO implements Serializable {
     @Excel(name = "仓库编号", width = 15)
     @ApiModelProperty(value = "仓库编号")
     private String warehouseCode;
+
+    @ApiModelProperty(value = "物资主编码")
+    private String materialBaseCode;
+
 }
