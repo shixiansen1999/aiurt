@@ -254,7 +254,8 @@ public class CommonController {
                     throw new AiurtBootException("文件下载失败！文件不存在或已经被删除。");
                 }
                 response.setContentType("application/force-download");
-                response.addHeader("Content-Disposition", "attachment;fileName=" + new String(fileName.getBytes("UTF-8"), "iso-8859-1"));
+                String encodedFileName = URLEncoder.encode(fileName, "UTF-8");
+                response.addHeader("Content-Disposition", "attachment;fileName=" + encodedFileName);
                 IoUtil.copy(inputStream, outputStream, IoUtil.DEFAULT_BUFFER_SIZE);
             } catch (IOException e) {
                 log.error("预览文件失败" + e.getMessage());
