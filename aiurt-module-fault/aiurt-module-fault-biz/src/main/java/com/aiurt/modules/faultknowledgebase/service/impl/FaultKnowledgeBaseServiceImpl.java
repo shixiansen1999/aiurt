@@ -1218,12 +1218,15 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
      * @return
      */
     @Override
-    public Page<SymptomResDTO> querySymptomTemplate(SymptomReqDTO symptomReqDTO) {
+    public Page<SymptomResDTO> querySymptomTemplate(HttpServletRequest request, SymptomReqDTO symptomReqDTO) {
         Page<SymptomResDTO> page = new Page<>(symptomReqDTO.getPageNo(), symptomReqDTO.getPageSize());
+        //
+        String permissionSQL = getSymptomTemplatePermissionSQL(request);
+        symptomReqDTO.setJointSQL(permissionSQL);
         List<SymptomResDTO> symptomResDTOS = baseMapper.querySymptomTemplate(page, symptomReqDTO);
         // app 需要每个故障原因的比例
         Set<String> idSet = symptomResDTOS.stream().map(SymptomResDTO::getId).collect(Collectors.toSet());
-
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         // 查询故障记录使用的记录数
         DecimalFormat df = new DecimalFormat("#.00");
         Map<String, List<AnalyzeFaultCauseResDTO>> dataMap = new HashMap<>();
@@ -1271,6 +1274,36 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
         // 查询故障原因及解决方案
         return null;
+    }
+
+    /**
+     * 获取数据权限的SQL片段
+     */
+    public String getSymptomTemplatePermissionSQL(HttpServletRequest request) {
+        Map<String, String> map = (Map<String, String>) request.getAttribute(ContextUtil.FILTER_DATA_AUTHOR_RULES);
+        Map<String, String> ruleMap = null;
+        if (CollUtil.isNotEmpty(map)) {
+            String stationCodes = map.get(DataPermRuleType.TYPE_MANAGE_STATION_ONLY);
+            if (StrUtil.isNotEmpty(stationCodes)) {
+                List<String> codes = StrUtil.split(stationCodes.replaceAll("'", ""), ',');
+                // 根据站点编号获取线路编号
+                List<String> lineCodes = sysBaseApi.getLineCodeByStationCode(codes);
+                String lineCodeStr = lineCodes.stream().map(linecode -> StrUtil.wrap(linecode, "'")).collect(Collectors.joining(","));
+                ruleMap = new HashMap<>(8);
+                ruleMap.put(DataPermRuleType.TYPE_MANAGE_LINE_ONLY, lineCodeStr);
+            }
+        }
+        Map<String, String> mapping = this.getSymptomTempColumnMapping();
+        String filterConditions = SqlBuilderUtil.buildSql(ruleMap, mapping);
+        return filterConditions;
+    }
+
+    private Map<String, String> getSymptomTempColumnMapping() {
+        Map<String, String> columnMapping = new HashMap<>(8);
+
+        columnMapping.put(DataPermRuleType.TYPE_MANAGE_LINE_ONLY, "t1.line_code");
+
+        return columnMapping;
     }
 
     /**
