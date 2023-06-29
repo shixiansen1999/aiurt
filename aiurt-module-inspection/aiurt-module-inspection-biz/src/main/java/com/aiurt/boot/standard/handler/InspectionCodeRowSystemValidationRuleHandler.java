@@ -25,10 +25,16 @@ public class InspectionCodeRowSystemValidationRuleHandler implements RowValidati
     @Override
     public ValidationResult validate(Map<String, Column> row, Column column) {
         Object systemName = column.getData();
-        if (ObjectUtil.isNotEmpty(systemName) && ObjectUtil.isNotEmpty(row.get("major_code").getData())) {
-            JSONObject subSystem = sysBaseApi.getSystemName((String) row.get("major_code").getData(), (String) systemName);
-            if (ObjectUtil.isEmpty(subSystem)) {
-                return new ValidationResult(false, "系统不存在该专业下的子系统");
+        Column majorName = row.get("major_code");
+
+        if (ObjectUtil.isNotEmpty(systemName) && ObjectUtil.isNotEmpty(majorName)) {
+            JSONObject csMajorByName = sysBaseApi.getCsMajorByName((String) majorName.getData());
+
+            if (ObjectUtil.isNotEmpty(csMajorByName)) {
+                JSONObject subSystem = sysBaseApi.getSystemName(csMajorByName.getString("major_code"), (String) systemName);
+                if (ObjectUtil.isEmpty(subSystem)) {
+                    return new ValidationResult(false, "系统不存在该专业下的子系统");
+                }
             }
         }
         return new ValidationResult(true, null);
