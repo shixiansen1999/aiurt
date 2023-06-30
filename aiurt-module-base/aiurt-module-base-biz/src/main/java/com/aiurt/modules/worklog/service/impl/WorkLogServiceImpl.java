@@ -71,10 +71,8 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -1416,7 +1414,13 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         boolean isAdmin = SecurityUtils.getSubject().hasRole("admin") || SecurityUtils.getSubject().hasRole("zhuren");
         int teamNum = 1;
         if (isAdmin){
-            teamNum = iSysBaseAPI.getAllSysDepart().size();
+
+            /*teamNum = iSysBaseAPI.getAllSysDepart().size();*/
+            List<SysDepartModel> allSysDepart = iSysBaseAPI.getAllSysDepart();
+            //只获取班组数量,组织机构类型不为公司部门
+            String orgCategory = "3,4,5";
+            List<SysDepartModel> modelList = allSysDepart.stream().filter(s -> orgCategory.contains(s.getOrgCategory())).collect(Collectors.toList());
+            teamNum = modelList.size();
         }
 
         // 应提交日志数，每个班组每天是2个，如果是管理员或者主任，获取的就是所以班组的
