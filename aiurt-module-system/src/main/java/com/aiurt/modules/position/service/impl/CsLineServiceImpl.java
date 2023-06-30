@@ -68,7 +68,7 @@ public class CsLineServiceImpl extends ServiceImpl<CsLineMapper, CsLine> impleme
         position.setValue(csLine.getLineCode());
         position.setIsLeaf(false);
         position.setFid("0");
-        return Result.OK(position);
+        return Result.OK("添加成功！", position);
     }
     /**
      * 修改
@@ -111,6 +111,6 @@ public class CsLineServiceImpl extends ServiceImpl<CsLineMapper, CsLine> impleme
         position.setValue(csLine.getLineCode());
         position.setIsLeaf(false);
         position.setFid("0");
-        return Result.OK(position);
+        return Result.OK("编辑成功！", position);
     }
 }

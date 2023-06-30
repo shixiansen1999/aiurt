@@ -126,7 +126,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
                 csStationPosition.getLongitude(), csStationPosition.getLatitude());
         position.setIsLeaf(true);
         position.setFid(csStationPosition.getStaionCode());
-        return Result.OK(position);
+        return Result.OK("添加成功！", position);
     }
 
     /**
@@ -152,7 +152,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
                 csStationPosition.getLongitude(), csStationPosition.getLatitude());
         position.setIsLeaf(true);
         position.setFid(csStationPosition.getStaionCode());
-        return Result.OK(position);
+        return Result.OK("编辑成功！", position);
     }
 
     @Override
