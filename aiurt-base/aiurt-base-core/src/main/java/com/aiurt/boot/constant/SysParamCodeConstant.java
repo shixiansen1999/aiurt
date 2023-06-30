@@ -307,6 +307,10 @@ public interface SysParamCodeConstant {
      */
     String FAULT_CENTER_RECEIVE = "fault_center_receive";
     /**
+     * 中心班组是否可以填写其他人的维修记录
+     */
+    String FAULT_CENTER_WRITE = "fault_center_write";
+    /**
      * 统计报表是否需要过滤通信分部
      */
     String 	FILTERING_TEAM = "filtering_team";
@@ -375,4 +379,14 @@ public interface SysParamCodeConstant {
      * 故障未领取时要给予当班人员提示音（每两分钟提醒20秒）
      */
     String NO_RECEIVE_FAULT_RING_DURATION = "no_receive_fault_ring_duration";
+    /**
+     * 根据配置，传参开始时间，获取施工计划导入列表
+     */
+    String LAST_MONTH = "start_month";
+    /**
+     * 根据配置，传参结束时间，获取施工计划导入列表
+     */
+    String NEW_MONTH = "end_month";
+
+
 }

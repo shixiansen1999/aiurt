@@ -19,55 +19,56 @@ public class PersonnelModel {
     @ApiModelProperty(value = "用户id")
     private String userId;
 
-    @Excel(name = "姓名", width = 15)
+    @Excel(name = "人员名称", width = 15)
     @ApiModelProperty(value = "姓名")
     private String realname;
 
-    @Excel(name = "检修总工时", width = 15,groupName = "施工总工时（不含施工）")
-    @ApiModelProperty("检修总工时")
-    private String inspecitonTotalTime;
-
-    @Excel(name = "巡检总工时", width = 15,groupName = "施工总工时（不含施工）")
+    @Excel(name = "巡检", width = 15,groupName = "总工时")
     @ApiModelProperty("巡检总工时")
     private String patrolTotalTime;
 
-    @Excel(name = "维修总工时", width = 15,groupName = "施工总工时（不含施工）")
-    @ApiModelProperty("维修总工时")
+    @Excel(name = "检修", width = 15,groupName = "总工时")
+    @ApiModelProperty("检修总工时")
+    private String inspecitonTotalTime;
+
+    @Excel(name = "维修", width = 15,groupName = "总工时")
+    @ApiModelProperty("故障总工时")
     private String faultTotalTime;
 
-    @Excel(name = "巡视计划任务数", width = 15,groupName = "计划任务数")
+    @Excel(name = "巡视", width = 15,groupName = "计划任务数")
     @ApiModelProperty("巡视计划任务数")
     private String patrolScheduledTasks;
 
-    @Excel(name = "检修计划任务数", width = 15,groupName = "计划任务数")
+    @Excel(name = "检修", width = 15,groupName = "计划任务数")
     @ApiModelProperty("检修计划任务数")
     private String inspecitonScheduledTasks;
 
-    @Excel(name = "巡视实际完成任务数", width = 15,groupName = "实际完成任务数")
+    @Excel(name = "巡视", width = 15,groupName = "实际完成任务数")
     @ApiModelProperty("巡视实际完成任务数")
     private String patrolCompletedTasks;
 
-    @Excel(name = "检修实际完成任务数", width = 15,groupName = "实际完成任务数")
+    @Excel(name = "检修", width = 15,groupName = "实际完成任务数")
     @ApiModelProperty("检修实际完成任务数")
     private String inspecitonCompletedTasks;
 
-    @Excel(name = "维修任务数", width = 15,groupName = "维修任务数")
-    @ApiModelProperty("维修任务数")
-    private String faultCompletedTasks;
-
-    @Excel(name = "巡视计划完成率", width = 15,groupName = "计划完成率")
+    @Excel(name = "巡视", width = 15,groupName = "计划完成率")
     @ApiModelProperty("巡视计划完成率")
     private String patrolPlanCompletion;
 
-    @Excel(name = "检修计划完成率", width = 15,groupName = "计划完成率")
+    @Excel(name = "检修", width = 15,groupName = "计划完成率")
     @ApiModelProperty("检修计划完成率")
     private String inspecitonPlanCompletion;
 
-    @Excel(name = "巡视漏检数", width = 15,groupName = "漏检数")
+    @Excel(name = "巡视漏检数", width = 15)
     @ApiModelProperty("巡视漏检数")
     private String patrolMissingChecks;
 
-    @Excel(name = "检修漏检数", width = 15,groupName = "漏检数")
+
+    @Excel(name = "维修任务数", width = 15)
+    @ApiModelProperty("维修任务数")
+    private String faultCompletedTasks;
+
+    /*@Excel(name = "检修漏检数", width = 15,groupName = "漏检数")*/
     @ApiModelProperty("检修漏检数")
     private String inspecitonMissingChecks;
 
@@ -79,15 +80,15 @@ public class PersonnelModel {
     @ApiModelProperty("配合施工工时")
     private String assortTime;
 
-    @Excel(name = "应急处置次数", width = 15)
+    /*@Excel(name = "应急处置次数", width = 15)*/
     @ApiModelProperty("应急处置次数")
     private String emergencyResponseNum;
 
-    @Excel(name = "应急处置工时", width = 15)
+    /*@Excel(name = "应急处置工时", width = 15)*/
     @ApiModelProperty("应急处置工时")
     private String emergencyHandlingHours;
 
-    @Excel(name = "培训完成次数", width = 15)
+    /*@Excel(name = "培训完成次数", width = 15)*/
     @ApiModelProperty("培训完成次数")
     private String trainFinish;
 }

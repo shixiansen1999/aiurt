@@ -124,12 +124,12 @@ public class PatrolReportController {
     public Result<List<SystemMonthDTO>> getMonthOrgNum(@RequestParam(name = "lineCode",required = false) String lineCode,
                                                  @RequestParam(name = "stationCode",required = false) List<String> stationCode,
                                                  @RequestParam(name = "systemCode",required = false) List<String> systemCode ,
-                                                 @RequestParam(name = "orgcodes",required = false) String orgcodes,
+                                                 @RequestParam(name = "orgCodes",required = false) String orgCodes,
                                                  @RequestParam(name = "startTime",required = false) String startTime,
                                                  @RequestParam(name = "endTime",required = false) String endTime) {
         List<String> orgCodeList = new ArrayList<>();
-        if (StrUtil.isNotEmpty(orgcodes)) {
-            orgCodeList.addAll(Arrays.asList(StrUtil.split(orgcodes, ",")));
+        if (StrUtil.isNotEmpty(orgCodes)) {
+            orgCodeList.addAll(Arrays.asList(StrUtil.split(orgCodes, ",")));
         }
         List<SystemMonthDTO> monthDtos = reportService.getMonthOrgNum(lineCode,stationCode,systemCode,startTime,endTime,orgCodeList);
         return Result.ok(monthDtos);
@@ -149,12 +149,12 @@ public class PatrolReportController {
                                                                @RequestParam(name = "subsystemCode",required = false) List<String> systemCode,
                                                                @RequestParam(name = "startTime",required = false) String startTime,
                                                                @RequestParam(name = "endTime",required = false) String endTime,
-                                                                @RequestParam(name = "orgcodes",required = false) String orgcodes,
+                                                                @RequestParam(name = "orgCodes",required = false) String orgCodes,
                                                                 HttpServletRequest req) {
         Page<FailureOrgReport> page = new Page<FailureOrgReport>(pageNo, pageSize);
         List<String> orgCodeList = new ArrayList<>();
-        if (StrUtil.isNotEmpty(orgcodes)) {
-            orgCodeList.addAll(Arrays.asList(StrUtil.split(orgcodes, ",")));
+        if (StrUtil.isNotEmpty(orgCodes)) {
+            orgCodeList.addAll(Arrays.asList(StrUtil.split(orgCodes, ",")));
         }
         IPage<FailureOrgReport> pages = reportService.getFailureOrgReport(page,lineCode,stationCode,startTime,endTime,systemCode,orgCodeList);
         return Result.ok(pages);

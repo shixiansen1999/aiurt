@@ -174,6 +174,10 @@ public class PatrolTaskParam extends PatrolTask {
     @ApiModelProperty(value = "是否有打印")
     private Boolean havePrint;
 
+    @Excel(name = "任务执行日期", width = 15)
+    @ApiModelProperty(value = "任务执行日期")
+    private String patrolDay;
+
     @ApiModelProperty(value = "巡视单内容")
     private List<PrintStationDTO> printStationDTOList;
 }

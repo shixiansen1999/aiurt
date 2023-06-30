@@ -37,14 +37,13 @@ import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.fault.quzrtz.job.FaultRemind;
 import com.aiurt.modules.fault.service.*;
-import com.aiurt.modules.faultexternal.entity.FaultExternal;
-import com.aiurt.modules.faultexternal.mapper.FaultExternalMapper;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
 import com.aiurt.modules.faultcausesolution.dto.FaultCauseSolutionDTO;
-import com.aiurt.modules.faultcausesolution.entity.FaultCauseSolution;
 import com.aiurt.modules.faultcauseusagerecords.entity.FaultCauseUsageRecords;
 import com.aiurt.modules.faultcauseusagerecords.service.IFaultCauseUsageRecordsService;
+import com.aiurt.modules.faultexternal.entity.FaultExternal;
+import com.aiurt.modules.faultexternal.mapper.FaultExternalMapper;
 import com.aiurt.modules.faultexternal.service.IFaultExternalService;
 import com.aiurt.modules.faultknowledgebase.dto.AnalyzeFaultCauseResDTO;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
@@ -319,13 +318,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         saveLog(user, "故障上报", fault.getCode(), 1, null);
 
 
-        // 根据配置决定：故障未领取时要给予当班人员提示音（每两分钟提醒20秒）
-        SysParamModel remindParam = iSysParamAPI.selectByCode(SysParamCodeConstant.NO_RECEIVE_FAULT_REMIND);
-        boolean b1 = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue());
-        if (b1) {
-            faultRemind.processFaultAdd(fault.getCode(), fault.getApprovalPassTime());
-        }
-
         try {
             FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
             BeanUtil.copyProperties(fault, faultMessageDTO);
@@ -417,6 +409,20 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         boolean equals = "1".equals(sysParamModel.getValue());
         if (equals) {
             sendInfo(fault, fault.getFaultDeviceList());
+        }
+
+        // 根据配置决定：故障未领取时要给予当班人员提示音（每两分钟提醒20秒）
+        SysParamModel remindParam = iSysParamAPI.selectByCode(SysParamCodeConstant.NO_RECEIVE_FAULT_REMIND);
+        // 审批通过、待指派的故障才安排提醒任务
+        boolean b1 = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && FaultStatusEnum.APPROVAL_PASS.getStatus().equals(fault.getStatus());
+        if (b1) {
+            faultRemind.processFaultAdd(fault.getCode(), fault.getApprovalPassTime());
+        }
+        // 自检跳过到维修中安排超时未更新状态提醒任务
+        boolean b2 = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && FaultStatusEnum.REPAIR.getStatus().equals(fault.getStatus());
+        if (b2) {
+            // 根据配置决定：故障领取后两小时未更新任务状态需给予维修人提示音
+            noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, fault.getCode(), FaultStatusEnum.REPAIR.getStatus());
         }
 
         return builder.toString();
@@ -615,6 +621,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     messageDTO.setIsRingBell(true);
                     sendMessage(messageDTO,faultMessageDTO);
                 }
+
+                // （开启上报需要审批的情况）根据配置决定：故障未领取时要给予当班人员提示音（每两分钟提醒20秒）
+                SysParamModel remindParam = iSysParamAPI.selectByCode(SysParamCodeConstant.NO_RECEIVE_FAULT_REMIND);
+                // 审批通过、待指派的故障才安排提醒任务
+                boolean b1 = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && FaultStatusEnum.APPROVAL_PASS.getStatus().equals(fault.getStatus());
+                if (b1) {
+                    faultRemind.processFaultAdd(fault.getCode(), fault.getApprovalPassTime());
+                }
             } else {
                 //被驳回发送通知
                 MessageDTO messageDTO = new MessageDTO(user.getUsername(), fault.getReceiveUserName(), "故障上报审核驳回" + DateUtil.today(), null);
@@ -633,6 +647,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
     /**
@@ -759,6 +774,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         } else {
             fault.setIsFault(false);
         }
+
+        fault.setCanWriteFault(fault.getIsFault());
+        // 通信七期，中心班组成员可以填写维修记录
+        if ("1".equals(iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_WRITE).getValue())){
+            String roleCodes = Optional.ofNullable(user.getRoleCodes()).orElseGet(() -> "");
+            if (roleCodes.contains(CommonConstant.ZXBANZHANG) || roleCodes.contains(CommonConstant.ZXCHENGYUAN)){
+                fault.setCanWriteFault(true);
+            }
+        }
+
         // 设备
         List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(code);
         fault.setFaultDeviceList(faultDeviceList);
@@ -986,8 +1011,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 日志记录
         saveLog(user, FaultStatusEnum.RECEIVE.getMessage(), faultCode, FaultStatusEnum.RECEIVE.getStatus(), null);
 
-        // 根据配置决定：故障领取后两小时未更新任务状态需给予维修人提示音
-        noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, faultCode, FaultStatusEnum.RECEIVE.getStatus());
 
         // 更新工班长指派的任务
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_ASSIGN.getType(), faultCode, user.getUsername(), "1");
@@ -1016,6 +1039,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             todoDTO.setMsgAbstract("故障被主动领取");
             todoDTO.setPublishingContent("故障被主动领取，维修人请尽快维修，并维修后填写维修记录");
             sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(), todoDTO, faultMessageDTO);
+
+            // 根据配置决定：故障领取后两小时未更新任务状态需给予维修人提示音
+            noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, faultCode, FaultStatusEnum.RECEIVE.getStatus());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1050,8 +1076,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         repairRecordService.updateById(repairRecord);
 
         saveLog(loginUser, "接收指派", code, FaultStatusEnum.RECEIVE_ASSIGN.getStatus(), null);
-        // 根据配置决定：故障接收后两小时未更新任务状态需给予维修人提示音
-        noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, code, FaultStatusEnum.RECEIVE_ASSIGN.getStatus());
 
         //发送通知
         try {
@@ -1072,6 +1096,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             todoDTO.setMsgAbstract("接收到新的故障维修任务");
             todoDTO.setPublishingContent("接收到新的故障维修任务，请尽快维修，并维修后填写维修记录");
             sendTodo(code, null, loginUser.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(), todoDTO, faultMessageDTO);
+
+            // 根据配置决定：故障接收后两小时未更新任务状态需给予维修人提示音
+            noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, code, FaultStatusEnum.RECEIVE_ASSIGN.getStatus());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1169,8 +1196,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 记录日志
         saveLog(user, "开始维修", code, FaultStatusEnum.REPAIR.getStatus(), null);
-        // 根据配置决定：故障维修中后两小时未更新任务状态需给予维修人提示音
-        noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, code, FaultStatusEnum.REPAIR.getStatus());
 
         // 发送给指派人
         String receiveUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(RoleConstant.FOREMAN), fault.getMajorCode(), fault.getSubSystemCode(), fault.getStationCode(), fault.getSysOrgCode());
@@ -1188,6 +1213,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             messageDTO.setPublishingContent("开始维修");
 
             sendMessage(messageDTO, faultMessageDTO);
+            // 根据配置决定：故障维修中后两小时未更新任务状态需给予维修人提示音
+            noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, code, FaultStatusEnum.REPAIR.getStatus());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1283,8 +1310,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             fault.setHangUpTime(faultHangUpTime + faultRepairRecord.getHangUpTime());
 
             saveLog(user, "挂起审批驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), approvalHangUpDTO.getApprovalRejection(),(int) between);
-            // 根据配置决定：驳回故障维修中后两小时未更新任务状态需给予维修人提示音
-            noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, faultCode, FaultStatusEnum.REPAIR.getStatus());
         }
 
         faultRepairRecord.setApprovalHangUpRemark(approvalHangUpDTO.getApprovalRejection());
@@ -1344,6 +1369,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 messageDTO.setPublishingContent("您申请的故障挂起申请被驳回，关联故障编号："+faultCode);
 
                 sendMessage(messageDTO,faultMessageDTO);*/
+
+                // 根据配置决定：驳回故障维修中后两小时未更新任务状态需给予维修人提示音
+                noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, faultCode, FaultStatusEnum.REPAIR.getStatus());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1386,8 +1414,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         updateById(fault);
 
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_HANG_UP.getType(), code, null, "1");
-        // 根据配置决定：取消挂起故障维修中后两小时未更新任务状态需给予维修人提示音
-        noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, code, FaultStatusEnum.REPAIR.getStatus());
 
         // 维修待办
         try {
@@ -1400,6 +1426,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             todoDTO.setMsgAbstract("挂起申请取消");
             todoDTO.setPublishingContent("挂起申请取消");
             sendTodo(code, null, fault.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(), todoDTO, faultMessageDTO);
+
+            // 根据配置决定：取消挂起故障维修中后两小时未更新任务状态需给予维修人提示音
+            noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, code, FaultStatusEnum.REPAIR.getStatus());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -2059,7 +2088,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             faultKnowledgeBase.setMajorCode(fault.getMajorCode());
             faultKnowledgeBase.setProcessInitiator(0);
             faultKnowledgeBase.setMethod(repairRecord.getMethod());
-            faultKnowledgeBase.setKnowledgeBaseTypeCode("001");
+
+            //
+            FaultKnowledgeBaseType baseType = faultKnowledgeBaseTypeService.getOne(new LambdaQueryWrapper<FaultKnowledgeBaseType>()
+                    .eq(FaultKnowledgeBaseType::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1").orderByAsc(FaultKnowledgeBaseType::getCreateTime));
+            faultKnowledgeBase.setKnowledgeBaseTypeCode(Objects.isNull(baseType) ? "001" : baseType.getCode());
 
             List<FaultCauseSolutionDTO> list = new ArrayList<>();
             FaultCauseSolutionDTO faultCauseSolution = new FaultCauseSolutionDTO();
@@ -3439,6 +3472,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 根据配置获取控制中心班组code,并判断当前登陆人所在班组是否是控制中心班组
         SysParamModel faultCenterAddOrg = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_ADD_ORG);
         boolean contains1 = StrUtil.splitTrim(faultCenterAddOrg.getValue(),',').contains(user.getOrgCode());
+        // 根据配置获取中心班组是否可填写其他人的维修记录
+        boolean faultCenterWrite = "1".equals(iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_WRITE).getValue());
+
         records.parallelStream().forEach(fault1 -> {
 
             // 通过站点获取工区部门
@@ -3458,6 +3494,15 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 fault1.setIsFault(true);
             } else {
                 fault1.setIsFault(false);
+            }
+
+            fault1.setCanWriteFault(fault1.getIsFault());
+            // 通信七期，中心班组成员可以填写维修记录
+            if (faultCenterWrite){
+                String roleCodes = Optional.ofNullable(user.getRoleCodes()).orElseGet(() -> "");
+                if (roleCodes.contains(CommonConstant.ZXBANZHANG) || roleCodes.contains(CommonConstant.ZXCHENGYUAN)){
+                    fault1.setCanWriteFault(true);
+                }
             }
 
             // 权重登记

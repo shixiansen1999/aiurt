@@ -3325,7 +3325,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<String> getWifiMacByStationCode(List<String> stationCodes) {
         if (CollUtil.isNotEmpty(stationCodes)) {
-            List<String> mac = csPositionWifiMapper.getMac(stationCodes);
+            //如果有换乘站，则获取换乘站的站点
+            List<String> changeCode = csPositionWifiMapper.getChangeCode(stationCodes);
+            List<String> mac = csPositionWifiMapper.getMac(stationCodes,changeCode);
             return mac;
         }
         return new ArrayList<>();
@@ -3334,7 +3336,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<StationAndMacModel> getStationAndMacByCode(List<String> stationCodes) {
         if (CollUtil.isNotEmpty(stationCodes)) {
-            List<StationAndMacModel> mac = csPositionWifiMapper.getStationAndMac(stationCodes);
+            //如果有换乘站，则获取换乘站的站点
+            List<String> changeCode = csPositionWifiMapper.getChangeCode(stationCodes);
+            List<StationAndMacModel> mac = csPositionWifiMapper.getStationAndMac(stationCodes,changeCode);
             return mac;
         }
         return new ArrayList<>();
@@ -3614,4 +3618,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 .list();
         return deviceTypes;
     }
+
+
 }

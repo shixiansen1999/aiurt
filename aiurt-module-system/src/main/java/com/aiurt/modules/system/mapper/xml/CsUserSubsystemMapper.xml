@@ -23,31 +23,42 @@
     where  s.del_flag =0 and csu.user_id = #{id}
     </select>
     <select id="getSubsystemFaultDTO" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
-    SELECT
-    COUNT(fa.id and fl.weight >=8 or not null) as seriousFaultNum,
-    COUNT(fa.id and (fl.weight &lt;= 7 or fa.fault_level is null) or not null) as commonFaultNum,
-    IFNULL(SUM(fa.fault_duration),0)  as num
-    FROM cs_subsystem ss
-    LEFT JOIN fault fa on fa.sub_system_code = ss.system_code
-    LEFT JOIN fault_level fl on fa.fault_level = fl.`code` and fl.del_flag = 0
-    WHERE
-    ss.del_flag =0
-    AND ss.system_code = #{subsystemCode}
-    AND DATE_FORMAT(fa.approval_pass_time ,'%Y-%m') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m') and DATE_FORMAT(#{endTime}, '%Y-%m-%d')
-    AND fa.status>2
+        SELECT
+        IFNULL(COUNT(fa.id and fl.weight >=8 or not null),0) as seriousFaultNum,
+        IFNULL(COUNT(fa.id and (fl.weight &lt;= 7 or fa.fault_level is null) or not null),0) as commonFaultNum,
+        IFNULL(SUM(fa.status=12),0) as solutionsNum,
+        IFNULL(SUM(fa.fault_duration),0) as failureDuration,
+        IFNULL(SUM(fa.repair_duration),0) as repairDuration,
+        IFNULL(SUM(fa.response_duration),0) as responseDuration
+        FROM cs_subsystem ss
+        LEFT JOIN fault fa on fa.sub_system_code = ss.system_code
+        LEFT JOIN fault_level fl on fa.fault_level = fl.`code` and fl.del_flag = 0
+        WHERE
+        ss.del_flag =0
+        AND ss.system_code = #{subsystemCode}
+        AND DATE_FORMAT(fa.approval_pass_time ,'%Y-%m') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m') and
+        DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+        AND fa.status>2;
+
     </select>
 
     <select id="getSubsystemByDeviceType" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
         SELECT
-
         COUNT(fa.id and fl.weight >=8 or not null) as seriousFaultNum,
-        COUNT(fa.id and (fl.weight &lt;= 7 or fa.fault_level is null) or not null ) as commonFaultNum
+        COUNT(fa.id and (fl.weight &lt;= 7 or fa.fault_level is null) or not null ) as commonFaultNum,
+        IFNULL(SUM(fa.status=12),0) as solutionsNum,
+        IFNULL(SUM(fa.fault_duration),0) as failureDuration,
+        IFNULL(SUM(fa.repair_duration),0) as repairDuration,
+        IFNULL(SUM(fa.response_duration),0) as responseDuration
         FROM   fault fa
         LEFT JOIN fault_device fd on  fd.fault_code =fa.`code`
         LEFT JOIN  device de on fd.device_code = de.`code`
-        LEFT JOIN fault_level fl on fa.fault_level = fl.`code` and fl.del_flag = 0
+        LEFT JOIN fault_level fl on fa.fault_level = fl.`code`
         WHERE
-        fd.del_flag =0
+        fd.del_flag =0   and fl.del_flag = 0
+        <if test="filterValue">
+            and fa.hang_up_time is null
+        </if>
         AND fa.sub_system_code = #{subsystemCode}
         and de.device_type_code = #{deviceTypeCode}
         AND DATE_FORMAT(fa.approval_pass_time ,'%Y-%m') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m') and DATE_FORMAT(#{endTime}, '%Y-%m-%d')
@@ -118,8 +129,11 @@
                 #{item}
             </foreach>
         </if>
-        <if test="deviceTypeCode == null ">
-            and system_code = #{subsystemCode}
+        <if test="subsystemCode != null and subsystemCode.size()>0">
+            and system_code in
+            <foreach collection="subsystemCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         </if>
     </select>
     <select id="sysTemYearFault" resultType="com.aiurt.modules.subsystem.dto.ListDTO">
@@ -194,21 +208,31 @@
     <select id="selectSubSystem" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
         select s.system_name,s.system_code,s.shortened_form,s.id
         from  cs_subsystem s
-        where s.del_flag =0 and s.system_code = #{subsystemCode.systemCode}
+        where s.del_flag =0
+        <if test="subsystemCode.systemCodes!=null and subsystemCode.systemCodes.size()>0 ">
+            and s.system_code in
+            <foreach collection="subsystemCode.systemCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
     </select>
-    <select id="getSubsystemFilterFaultDTO" resultType="java.lang.Integer">
+    <select id="getSubsystemFilterFaultDTO" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
         SELECT
-    IFNULL(SUM(fa.fault_duration),0)  as num
-    FROM cs_subsystem ss
-    LEFT JOIN fault fa on fa.sub_system_code = ss.system_code and fa.hang_up_time is null
-    LEFT JOIN fault_level fl on fa.fault_level = fl.`code` and fl.del_flag = 0
-    WHERE
-    ss.del_flag =0
-    AND ss.system_code = #{subsystemCode}
-    AND DATE_FORMAT(fa.approval_pass_time ,'%Y-%m') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m') and DATE_FORMAT(#{endTime}, '%Y-%m-%d')
-<!--    and not EXISTS (select 1 from operation_process where fault_code = fa.code and  process_code = 10)-->
-    AND fa.status>2
-</select>
+        IFNULL(COUNT(fa.id and fl.weight >=8 or not null),0) as seriousFaultNum,
+        IFNULL(COUNT(fa.id and (fl.weight &lt;= 7 or fa.fault_level is null) or not null),0) as commonFaultNum,
+        IFNULL(SUM(fa.status=12),0) as solutionsNum,
+        IFNULL(SUM(fa.fault_duration),0) as failureDuration,
+        IFNULL(SUM(fa.repair_duration),0) as repairDuration,
+        IFNULL(SUM(fa.response_duration),0) as responseDuration
+        FROM cs_subsystem ss
+        LEFT JOIN fault fa on fa.sub_system_code = ss.system_code and fa.hang_up_time is null
+        LEFT JOIN fault_level fl on fa.fault_level = fl.`code` and fl.del_flag = 0
+        WHERE
+        ss.del_flag =0
+        AND ss.system_code = #{subsystemCode}
+        AND DATE_FORMAT(fa.approval_pass_time ,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d') and DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+        AND fa.status>2;
+    </select>
 <select id="getFilterNum" resultType="java.lang.Integer">
    select IFNULL(sum(aa.num),0)  from (SELECT
                                     IFNULL(SUM(fa.fault_duration),0)  as num
@@ -220,7 +244,7 @@
         <!--and not EXISTS (select 1 from operation_process where fault_code = fa.code and  process_code = 10)-->
           AND fa.sub_system_code = #{subsystemCode}
           and de.device_type_code = #{deviceTypeCode}
-          AND DATE_FORMAT(fa.approval_pass_time ,'%Y-%m') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m') and DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+          AND DATE_FORMAT(fa.approval_pass_time ,'%Y-%m-%d') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m-%d') and DATE_FORMAT(#{endTime}, '%Y-%m-%d')
         group by fa.id) aa
 </select>
 
@@ -241,5 +265,41 @@
     GROUP BY
     date_format(c.happen_time, '%c'),
     a.system_code
+    </select>
+
+<select id="yearTrendChartFault" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
+    SELECT
+    IFNULL(COUNT(fa.id and fl.weight >=8 or not null),0) as seriousFaultNum,
+    IFNULL(COUNT(fa.id and (fl.weight &lt;= 7 or fa.fault_level is null) or not null),0) as commonFaultNum,
+    IFNULL(SUM(fa.status=12),0) as solutionsNum,
+    IFNULL(SUM(fa.fault_duration),0) as failureDuration,
+    IFNULL(SUM(fa.repair_duration),0) as repairDuration,
+    IFNULL(SUM(fa.response_duration),0) as responseDuration,
+    DATE_FORMAT(fa.approval_pass_time, '%Y-%m') as yearMonth
+    FROM cs_subsystem ss
+    LEFT JOIN fault fa on fa.sub_system_code = ss.system_code
+    LEFT JOIN fault_level fl on fa.fault_level = fl.`code` and fl.del_flag = 0
+    WHERE
+    ss.del_flag =0
+    <if test="filterValue">
+        and fa.hang_up_time is null
+    </if>
+    AND fa.sub_system_code = #{systemCode}
+    AND DATE_FORMAT(fa.approval_pass_time ,'%Y-%m') BETWEEN DATE_FORMAT(#{startTime}, '%Y-%m') and DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+    AND fa.status>2
+    group by yearMonth
+    </select>
+
+<select id="selectSystem" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
+    select  s.system_code,s.system_name,s.id,s.shortened_form from cs_user_subsystem csu
+    left join cs_subsystem s on csu.system_id = s.id
+    where  s.del_flag =0 and csu.user_id = #{id}
+    <if test="systemCodes!=null and systemCodes.size()>0 ">
+        and s.system_code in
+        <foreach collection="systemCodes" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </if>
+    group by s.system_code
     </select>
 </mapper>

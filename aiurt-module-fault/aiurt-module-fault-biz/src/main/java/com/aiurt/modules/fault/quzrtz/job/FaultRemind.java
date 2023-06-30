@@ -8,6 +8,7 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.common.api.IBaseApi;
+import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.dto.FaultForSendMessageDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
@@ -20,9 +21,6 @@ import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -65,17 +63,21 @@ public class FaultRemind {
         // 判断是否有效
         boolean b1 = ObjectUtil.isEmpty(date) && ObjectUtil.isEmpty(delay) && ObjectUtil.isEmpty(period);
         if (b1) {
+            log.info("校验失败,故障编号：{}",code);
             return;
         }
 
         // 提醒任务
         Runnable reminderTask = () -> {
+            log.info("进入超时无人领取发送消息及提示音任务，故障编号：{}",code);
             Fault fault = getFault(code);
             // 计算当前时间与故障审核通过时间的时间间隔
-            LocalDateTime currentTime = LocalDateTime.now();
-            Duration duration = Duration.between(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(), currentTime);
+            //LocalDateTime currentTime = LocalDateTime.now();
+            //Duration duration = Duration.between(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(), currentTime);
             // 上报五分钟后，且没有人领取故障，发送提醒消息
-            boolean b = ObjectUtil.isNotEmpty(fault) && (duration.compareTo(Duration.ofSeconds(delay)) >= 0) && !checkIfSomeoneClaimedFault(fault);
+            SysParamModel remindParam = iSysParamApi.selectByCode(SysParamCodeConstant.NO_RECEIVE_FAULT_REMIND);
+            boolean b = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && ObjectUtil.isNotEmpty(fault) && !checkIfSomeoneClaimedFault(fault);
+            log.info("{}",b);
             if (b) {
                 log.info("超时无人领取发送消息及提示音，故障编号：{}", code);
                 // 获取故障所在班组的今日当班人员,并发送消息给今日当班人员
@@ -87,6 +89,7 @@ public class FaultRemind {
                 }
             } else {
                 // 取消任务
+                log.info("取消超时未领取提醒任务故障编号：{}", code);
                 scheduler.shutdown();
             }
         };
@@ -112,18 +115,22 @@ public class FaultRemind {
         long delay = Long.parseLong(StrUtil.trim(delayParam.getValue()));
         long period = Long.parseLong(StrUtil.trim(periodParam.getValue()));
         // 判断是否有效
-        boolean b1 = ObjectUtil.isEmpty(fault) && ObjectUtil.isEmpty(status) && ObjectUtil.isEmpty(updateTime) && ObjectUtil.isEmpty(delay) && ObjectUtil.isEmpty(period);
+        boolean b1 = ObjectUtil.isEmpty(fault) && ObjectUtil.isEmpty(status) && ObjectUtil.isEmpty(delay) && ObjectUtil.isEmpty(period);
         if (b1) {
+            log.info("校验失败,故障编号：{}",code);
             return;
         }
         // 提醒任务
         Runnable reminderTask = () -> {
+            log.info("进入超时未更新状态发送消息及提示音任务，故障编号：{}",code);
             // 计算当前时间与故障上报时间的时间间隔
-            LocalDateTime currentTime = LocalDateTime.now();
-            Duration duration = Duration.between(updateTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(), currentTime);
+            //LocalDateTime currentTime = LocalDateTime.now();
+            //Duration duration = Duration.between(updateTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(), currentTime);
             // 两小时后，没有更新故障状态（未填写维修单、未挂起、或填写维修单后未提交），发送提醒消息
+            SysParamModel remindParam = iSysParamApi.selectByCode(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE);
             FaultForSendMessageDTO faultForSendMessageDTO = faultMapper.queryForSendMessage(code, status, updateTime);
-            boolean b = (duration.compareTo(Duration.ofSeconds(delay)) >= 0) && ObjectUtil.isNotEmpty(faultForSendMessageDTO);
+            boolean b = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && ObjectUtil.isNotEmpty(faultForSendMessageDTO);
+            log.info("{}",b);
             if (b) {
                 log.info("超时未更新状态发送消息及提示音，故障编号：{}", code);
                 // 发送消息给维修负责人
@@ -131,7 +138,8 @@ public class FaultRemind {
                 sendReminderMessage(updateTime, faultForSendMessageDTO.getAppointUserName(), "请及时更新维修状态", content, SysParamCodeConstant.FAULT_RECEIVE_NO_UPDATE_RING_DURATION);
             } else {
                 // 取消任务
-                scheduler.shutdownNow();
+                log.info("取消超时未更新状态提醒任务故障编号：{}", code);
+                scheduler.shutdown();
             }
         };
         // 安排提醒任务，每两小时执行一次
@@ -161,8 +169,7 @@ public class FaultRemind {
      */
     private boolean checkIfSomeoneClaimedFault(Fault fault) {
         // 判断故障是否被领取
-        boolean b =fault.getStatus() > FaultStatusEnum.APPROVAL_PASS.getStatus() && fault.getStatus() < FaultStatusEnum.REPAIR.getStatus()
-                && (ObjectUtil.equal(FaultStatusEnum.RECEIVE.getStatus(), fault.getStatus()) || ObjectUtil.equal(FaultStatusEnum.RECEIVE_ASSIGN.getStatus(), fault.getStatus()));
+        boolean b = FaultStatusEnum.RECEIVE.getStatus() <= fault.getStatus();
         if (b) {
             return true;
         }

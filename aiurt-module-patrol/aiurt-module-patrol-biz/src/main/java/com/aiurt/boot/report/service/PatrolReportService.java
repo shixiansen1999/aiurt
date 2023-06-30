@@ -431,7 +431,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 f.setLastYearStr("-");
             }
              if (f.getLastWeekNum() != 0) {
-                 double sub = NumberUtil.sub(f.getRepairNum(), f.getLastWeekNum());
+                 BigDecimal sub = NumberUtil.sub(f.getFailureNum(), f.getLastWeekNum());
                  BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastWeekNum(), 2));
                  f.setLastWeekStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
              } else {
@@ -471,7 +471,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
     public List<SystemMonthDTO> getMonthNum(String lineCode, List<String> stationCode, List<String> systemCodes, String startTime, String endTime) {
         if (startTime != null && endTime != null) {
             startTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(startTime,"yyyy-MM")),"yyyy-MM-dd") ;
-            endTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
+            endTime =DateUtil.format(DateUtil.endOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
 
         }
         if (ObjectUtil.isNotEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
@@ -483,10 +483,13 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         List<MonthDTO> monthDtos = patrolTaskMapper.selectMonth(sysUser.getId(), lineCode, stationCode,systemCodes,startTime,endTime);
         List<String> months = getMonths(startTime, endTime);
         List<String> list = monthDtos.stream().map(MonthDTO::getShortenedForm).distinct().collect(Collectors.toList());
+        Map<String, String> map = monthDtos.stream().collect(Collectors.toMap(MonthDTO::getShortenedForm, MonthDTO::getSystemCode, (a, b) -> b));
         List<SystemMonthDTO> results = new ArrayList<>();
         for (String s : list) {
             SystemMonthDTO systemMonthDTO = new SystemMonthDTO();
             systemMonthDTO.setShortenedForm(s);
+            String code = map.get(s);
+            systemMonthDTO.setSystemCode(code);
             List<MonthDTO> monthDTOS = new ArrayList<>();
             for (String month : months) {
                 int sum = monthDtos.stream().filter(m ->m.getApprovalPassTime() != null && m.getApprovalPassTime().equals(month) && m.getShortenedForm().equals(s)).mapToInt(MonthDTO::getNums).sum();
@@ -529,7 +532,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
     public List<SystemMonthDTO> getMonthOrgNum(String lineCode, List<String> stationCode, List<String> systemCode,String startTime, String endTime,List<String> orgCodeList) {
         if (startTime != null && endTime != null) {
             startTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(startTime,"yyyy-MM")),"yyyy-MM-dd") ;
-            endTime =DateUtil.format(DateUtil.beginOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
+            endTime =DateUtil.format(DateUtil.endOfMonth(DateUtil.parse(endTime,"yyyy-MM")),"yyyy-MM-dd") ;
 
         }
 
@@ -538,6 +541,18 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
 
         if (CollectionUtil.isNotEmpty(orgCodeList)){
             orgCodes.retainAll(orgCodeList);
+        }
+
+        //根据线路关联工区过滤班组
+        if (StrUtil.isNotEmpty(lineCode)) {
+            List<CsWorkAreaModel> workAreaByLineCode = sysBaseApi.getWorkAreaByLineCode(lineCode);
+            if (CollUtil.isNotEmpty(workAreaByLineCode)) {
+                List<String> list = new ArrayList<>();
+                for (CsWorkAreaModel csWorkAreaModel : workAreaByLineCode) {
+                    list.addAll(csWorkAreaModel.getOrgCodeList());
+                }
+                orgCodes.retainAll(list);
+            }
         }
 
         if (CollectionUtil.isEmpty(orgCodes)){
@@ -554,10 +569,13 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         List<MonthDTO> monthDtos = patrolTaskMapper.selectMonthOrg(orgCodes, lineCode, stationCode, systemCode,startTime,endTime);
         List<String> months = getMonths(startTime, endTime);
         List<String> list = monthDtos.stream().map(MonthDTO::getOrgName).distinct().collect(Collectors.toList());
+        Map<String, String> map = monthDtos.stream().collect(Collectors.toMap(MonthDTO::getOrgName, MonthDTO::getOrgCode,(a, b) -> b));
         List<SystemMonthDTO> results = new ArrayList<>();
         for (String s : list) {
             SystemMonthDTO systemMonthDTO = new SystemMonthDTO();
             systemMonthDTO.setOrgName(s);
+            String code = map.get(s);
+            systemMonthDTO.setOrgCode(code);
             List<MonthDTO> monthDTOS = new ArrayList<>();
             for (String month : months) {
                 int sum = monthDtos.stream().filter(m -> m.getApprovalPassTime() != null && m.getApprovalPassTime().equals(month) && m.getOrgName().equals(s)).mapToInt(MonthDTO::getNums).sum();
@@ -633,8 +651,8 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 f.setLastYearStr("-");
             }
             if (f.getLastWeekNum() != 0) {
-                double sub = NumberUtil.sub(f.getRepairNum(), f.getLastWeekNum());
-                BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastYearNum(), 2));
+                BigDecimal sub = NumberUtil.sub(f.getFailureNum(), f.getLastWeekNum());
+                BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastWeekNum(), 2));
                 f.setLastWeekStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
             }else {
                 f.setLastWeekStr("-");
