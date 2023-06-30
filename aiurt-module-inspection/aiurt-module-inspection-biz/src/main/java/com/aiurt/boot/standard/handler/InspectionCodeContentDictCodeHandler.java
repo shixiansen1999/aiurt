@@ -42,6 +42,12 @@ public class InspectionCodeContentDictCodeHandler implements RowValidationRule {
                 return new ValidationResult(false, "检查值类型不是选择项，关联字典字段不用填写");
             }
         }
+
+        ValidationResult validationResult = CommonValidation.validateForNoInspectionProject(row, column);
+        if (!validationResult.isValid()) {
+            return validationResult;
+        }
+
         return new ValidationResult(true, null);
     }
 

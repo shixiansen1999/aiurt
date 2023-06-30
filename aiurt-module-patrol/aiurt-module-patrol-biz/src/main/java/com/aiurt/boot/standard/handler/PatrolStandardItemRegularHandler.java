@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * @author:wgp
  * @create: 2023-06-30 09:19
- * @Description:
+ * @Description:  作用数据校验表达式字段上
  */
 @Component("PatrolStandardItemRegularHandler")
 public class PatrolStandardItemRegularHandler implements RowValidationRule {
@@ -43,6 +43,12 @@ public class PatrolStandardItemRegularHandler implements RowValidationRule {
                 return new ValidationResult(false, "检查值类型不是输入项时，数据校验表达式字段不用填写");
             }
         }
+
+        ValidationResult validationResult = CommonValidation.validateForNoInspectionProject(row, column);
+        if (!validationResult.isValid()) {
+            return validationResult;
+        }
+
         return new ValidationResult(true, null);
     }
 

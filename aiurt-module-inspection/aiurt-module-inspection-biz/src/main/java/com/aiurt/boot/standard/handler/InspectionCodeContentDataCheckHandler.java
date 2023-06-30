@@ -42,6 +42,12 @@ public class InspectionCodeContentDataCheckHandler implements RowValidationRule 
                 return new ValidationResult(false, "检查值类型不是输入项时，数据校验表达式字段不用填写");
             }
         }
+
+        ValidationResult validationResult = CommonValidation.validateForNoInspectionProject(row, column);
+        if (!validationResult.isValid()) {
+            return validationResult;
+        }
+
         return new ValidationResult(true, null);
     }
 

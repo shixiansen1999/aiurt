@@ -38,6 +38,7 @@ public class PatrolStandardItemCodeUniqueValidationHandler implements Validation
                 return new ValidationResult(false, String.format("%s该字段值在数据库中已存在", currentColumn.getName()));
             }
         }
+
         return new ValidationResult(true, null);
     }
 

@@ -18,6 +18,7 @@ import java.util.Map;
 public class PatrolStandardItemRequiredHandler implements RowValidationRule {
     /**
      * 检查值类型是选择项或输入项时，检查值是否必填字段必填
+     *
      * @param row
      * @param column
      * @return
@@ -40,6 +41,12 @@ public class PatrolStandardItemRequiredHandler implements RowValidationRule {
                 return new ValidationResult(false, "检查值类型是选择项或输入项时，检查值是否必填字段必填");
             }
         }
+
+        ValidationResult validationResult = CommonValidation.validateForNoInspectionProject(row, column);
+        if (!validationResult.isValid()) {
+            return validationResult;
+        }
+
         return new ValidationResult(true, null);
     }
 

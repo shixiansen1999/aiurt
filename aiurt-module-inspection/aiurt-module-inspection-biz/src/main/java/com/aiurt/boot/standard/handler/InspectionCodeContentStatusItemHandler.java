@@ -32,6 +32,12 @@ public class InspectionCodeContentStatusItemHandler implements RowValidationRule
                 return new ValidationResult(false, "是否检查项为是时，检查值类型字段必填");
             }
         }
+
+        ValidationResult validationResult = CommonValidation.validateForNoInspectionProject(row, column);
+        if (!validationResult.isValid()) {
+            return validationResult;
+        }
+
         return new ValidationResult(true, null);
     }
 
