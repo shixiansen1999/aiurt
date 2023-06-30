@@ -281,4 +281,16 @@ public interface PatrolConstant {
      * 表示是
      */
     String SHI = "是";
+    String FOU = "否";
+    /**
+     * 检修标准-层级类型
+     */
+    String LEVEL_TYPE_0 = "一级";
+    String LEVEL_TYPE_1 = "子级";
+
+    /**
+     * 检查值类型
+     */
+    String SELECT_ITEM_2 = "选择项";
+    String INPUT_ITEM_3 = "输入项";
 }

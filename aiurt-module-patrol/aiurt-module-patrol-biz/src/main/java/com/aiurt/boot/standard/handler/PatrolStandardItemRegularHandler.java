@@ -1,7 +1,7 @@
 package com.aiurt.boot.standard.handler;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.constant.InspectionConstant;
+import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.modules.entity.Column;
 import com.aiurt.modules.handler.validator.ValidationResult;
 import com.aiurt.modules.handler.validator.rule.RowValidationRule;
@@ -11,30 +11,31 @@ import java.util.Map;
 
 /**
  * @author:wgp
- * @create: 2023-06-29 15:05
- * @Description: 作用在数据校验表达式字段上
+ * @create: 2023-06-30 09:19
+ * @Description:
  */
-@Component("InspectionCodeContentDataCheckHandler")
-public class InspectionCodeContentDataCheckHandler implements RowValidationRule {
+@Component("PatrolStandardItemRegularHandler")
+public class PatrolStandardItemRegularHandler implements RowValidationRule {
     /**
      * 检查值类型是输入项时，数据校验表达式字段必填
-     *
      * @param row
      * @param column
      * @return
      */
     @Override
     public ValidationResult validate(Map<String, Column> row, Column column) {
-        Column statusItem = row.get("status_item");
+        Column inputTypeColumn = row.get("input_type");
 
-        if (ObjectUtil.isNotEmpty(statusItem)) {
-            Object statusItemData = statusItem.getData();
+        if (ObjectUtil.isNotEmpty(inputTypeColumn)) {
+            Object inputTypeData = inputTypeColumn.getData();
 
-            // 判断 "status_item" 列的数据是否是选择项或输入项
-            boolean isSelectableOrInput = InspectionConstant.INPUT_ITEM_3.equals(String.valueOf(statusItemData));
+            // 判断 "input_type" 列的数据是否是选择项或输入项
+            boolean isSelectableOrInput = PatrolConstant.INPUT_ITEM_3.equals(String.valueOf(inputTypeData));
 
             // 判断当前列的数据是否为空
-            if (isSelectableOrInput && ObjectUtil.isEmpty(column.getData())) {
+            boolean isColumnDataEmpty = ObjectUtil.isEmpty(column.getData());
+
+            if (isSelectableOrInput && isColumnDataEmpty) {
                 return new ValidationResult(false, "检查值类型是输入项时，数据校验表达式字段必填");
             }
 

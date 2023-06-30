@@ -301,6 +301,7 @@ public class InspectionConstant {
      * 表示是
      */
     public static final String SHI = "是";
+    public static final String FOU = "否";
 
     /**
      * 检修标准-层级类型
