@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
+import org.jeecg.common.system.vo.DictModel;
 
 import java.util.Date;
 import java.util.List;
@@ -74,22 +75,19 @@ public interface ConstructionWeekPlanCommandMapper extends BaseMapper<Constructi
 
     /**
      * 跟进线路name查询附表code
-     * @param name
      * @return
      */
-    String selectLineName(@Param("name") String name);
+    List<DictModel> selectLineName();
     /**
      * 跟进站点name查询附表code
-     * @param name
      * @return
      */
-    String selectStationName(@Param("name") String name);
+    List<DictModel> selectStationName();
     /**
      * 跟进组织机构name查询附表code
-     * @param name
      * @return
      */
-    String selectOrgName(@Param("name") String name);
+    List<DictModel> selectOrgName();
 
  /**
   * 批量插入导入数据
