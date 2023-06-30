@@ -1,6 +1,7 @@
 package com.aiurt.modules.system.controller;
 
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -1799,13 +1800,17 @@ public class SysUserController {
     @AutoLog(value = "根据部门查询人员")
     @ApiOperation(value = "根据部门查询人员", notes = "根据部门查询人员")
     @GetMapping(value = "/getTrainUser")
-    public Result<IPage<SysUser>> getTrainUser(LoginUser user,
+    public Result<IPage<SysUser>> getTrainUser(SysUser user,
                                                @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
         Page<SysUser> page = new Page<SysUser>(pageNo, pageSize);
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(user.getOrgId())) {
             queryWrapper.eq(SysUser::getOrgId, user.getOrgId());
+        }
+        if (StringUtils.isNotBlank(user.getRoleCode())) {
+            queryWrapper.apply(StrUtil.isNotBlank(user.getRoleCode()), "id in (select user_id from sys_user_role where 1=1 and role_id in (select id from sys_role where 1=1 and (id = {0} or role_code ={0})))",
+                    user.getRoleCode());
         }
         if (StringUtils.isNotBlank(user.getOrgCode())) {
             queryWrapper.eq(SysUser::getOrgCode, user.getOrgCode());
@@ -1820,6 +1825,13 @@ public class SysUserController {
             queryWrapper.like(SysUser::getRealname, user.getRealname());
         }
         IPage<SysUser> pageList = sysUserService.page(page, queryWrapper);
+        List<SysUser> list = pageList.getRecords();
+        if(CollUtil.isNotEmpty(list)){
+            for (SysUser sysUser : list) {
+                List<String> roleNames = sysBaseAPI.getRoleNamesById(sysUser.getId());
+                sysUser.setRoleNames(StrUtil.join(",", roleNames));
+            }
+        }
         return Result.OK(pageList);
     }
 
