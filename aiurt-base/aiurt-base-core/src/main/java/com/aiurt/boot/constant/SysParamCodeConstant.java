@@ -389,4 +389,9 @@ public interface SysParamCodeConstant {
     String NEW_MONTH = "end_month";
 
 
+
+    /**
+     * 无故障时也生成生产日报的专业，多个专业使用英文逗号分隔
+     */
+    String GENERATE_REPORT_MAJOR = "generate_report_major";
 }
