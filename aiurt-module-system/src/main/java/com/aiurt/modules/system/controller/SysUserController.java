@@ -1,6 +1,7 @@
 package com.aiurt.modules.system.controller;
 
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -1824,6 +1825,13 @@ public class SysUserController {
             queryWrapper.like(SysUser::getRealname, user.getRealname());
         }
         IPage<SysUser> pageList = sysUserService.page(page, queryWrapper);
+        List<SysUser> list = pageList.getRecords();
+        if(CollUtil.isNotEmpty(list)){
+            for (SysUser sysUser : list) {
+                List<String> roleNames = sysBaseAPI.getRoleNamesById(sysUser.getId());
+                sysUser.setRoleNames(StrUtil.join(",", roleNames));
+            }
+        }
         return Result.OK(pageList);
     }
 
