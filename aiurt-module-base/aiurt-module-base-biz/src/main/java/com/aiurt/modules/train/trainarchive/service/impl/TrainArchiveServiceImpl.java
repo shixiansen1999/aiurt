@@ -88,7 +88,7 @@ public class TrainArchiveServiceImpl extends ServiceImpl<TrainArchiveMapper, Tra
     @Transactional(rollbackFor = Exception.class)
     public Result<String> add(TrainArchiveDTO trainArchiveDTO) {
         TrainArchive trainArchive = archiveMapper.selectOne(new LambdaQueryWrapper<TrainArchive>()
-                .eq(TrainArchive::getUserId, trainArchiveDTO.getUserId()));
+                .eq(TrainArchive::getUserId, trainArchiveDTO.getUserId()).eq(TrainArchive::getDelFlag,CommonConstant.DEL_FLAG_0));
         if (ObjectUtil.isNotEmpty(trainArchive)) {
             throw new AiurtBootException("系统已添加过该用户！");
         }
@@ -756,7 +756,7 @@ public class TrainArchiveServiceImpl extends ServiceImpl<TrainArchiveMapper, Tra
         if (ObjectUtil.isNotEmpty(user)) {
             String realName = "realname";
             String userId = user.getString("id");
-            TrainArchive trainArchive = archiveMapper.selectOne(new LambdaQueryWrapper<TrainArchive>().eq(TrainArchive::getUserId, userId));
+            TrainArchive trainArchive = archiveMapper.selectOne(new LambdaQueryWrapper<TrainArchive>().eq(TrainArchive::getUserId, userId).eq(TrainArchive::getDelFlag,CommonConstant.DEL_FLAG_0));
             if(ObjectUtil.isNotEmpty(trainArchive)){
                 errorMessage.append("系统已添加该用户,");
             }
