@@ -1,5 +1,6 @@
 package com.aiurt.boot.rehearsal.mapper;
 
+import com.aiurt.boot.rehearsal.dto.EmergencyLedgerDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRecordDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyImplementationRecord;
 import com.aiurt.boot.rehearsal.vo.EmergencyImplementationRecordVO;
@@ -27,4 +28,10 @@ public interface EmergencyImplementationRecordMapper extends BaseMapper<Emergenc
     IPage<EmergencyImplementationRecordVO> queryPageList(@Param("page") Page<EmergencyImplementationRecordVO> page
             , @Param("condition") EmergencyRecordDTO emergencyRecordDTO, @Param("orgCodes") List<String> orgCodes);
 
+    /**
+     * 信号20230630版本需求变更，增加导出闭环台账需要的sql
+     * @param recodeIdList
+     * @return
+     */
+    List<EmergencyLedgerDTO> queryLedger(@Param("recodeIdList") List<String> recodeIdList);
 }

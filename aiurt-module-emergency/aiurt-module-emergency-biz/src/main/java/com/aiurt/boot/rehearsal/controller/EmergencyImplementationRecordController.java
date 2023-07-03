@@ -22,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -148,4 +149,20 @@ public class EmergencyImplementationRecordController extends BaseController<Emer
         return Result.OK(users);
     }
 
+    /**
+     * 导出闭环台账
+     * @param emergencyRecordDTO
+     * @param pageNo
+     * @param pageSize
+     * @param request
+     * @param response
+     */
+    @ApiOperation(value = "应急模块-导出闭环台账", notes = "应急模块-导出闭环台账")
+    @GetMapping("/exportLedger")
+    public void exportLedger(EmergencyRecordDTO emergencyRecordDTO,
+                             @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                             @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                             HttpServletRequest request, HttpServletResponse response){
+        emergencyImplementationRecordService.exportLedger(emergencyRecordDTO,pageNo,pageSize,request,response);
+    }
 }
