@@ -22,6 +22,13 @@
         LEFT JOIN patrol_task_station pts ON t1.`code` = pts.task_code
         LEFT JOIN cs_station cs ON (pts.station_code = cs.station_code AND cs.del_flag = 0 )
         LEFT JOIN cs_line cl ON( cs.line_code = cl.line_code AND cl.del_flag = 0 )
+        <!--根据巡视人查询-->
+        <if test="patrolTaskDTO.patrolUserIdList !=null and patrolTaskDTO.patrolUserIdList.size() > 0">
+            INNER JOIN patrol_task_user ptu ON ptu.task_code = t1.`code` AND ptu.user_id IN
+            <foreach collection="patrolTaskDTO.patrolUserIdList" separator="," open="(" close=")" item="item">
+                #{item}
+            </foreach>
+        </if>
         WHERE
         t1.STATUS NOT IN ( 6, 7, 8 )
         AND t1.del_flag = 0
