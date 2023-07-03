@@ -130,10 +130,10 @@
         AND  DATE_FORMAT(frr.arrive_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d')
         AND  DATE_FORMAT(frr.arrive_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
         <if test="userNames != null and userNames.size() != 0">
-            and ( frr.appoint_user_name or frp.user_name in
+            and ( frr.appoint_user_name or frp.user_name) in
                 <foreach collection="userNames" item="item" open="(" separator="," close=")">
                     #{item}
-                </foreach>)
+                </foreach>
         </if>
         </where>
         group by frr.fault_code
