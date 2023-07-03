@@ -1274,5 +1274,18 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<DeviceType> getAllDeviceType();
+    /**
+     * 根据部门code,查询部门下的子级部门codeList
+     * @param code 部门code
+     * @return 返回部门信息codeList
+     */
+    List<String> getSysDepartList(String code);
+    /**
+     * 根据用户工号 查询用户信息
+     *
+     * @param workNo 工号
+     * @return 用户信息
+     */
+    JSONObject queryByWorkNoUser(String workNo);
 }
 
