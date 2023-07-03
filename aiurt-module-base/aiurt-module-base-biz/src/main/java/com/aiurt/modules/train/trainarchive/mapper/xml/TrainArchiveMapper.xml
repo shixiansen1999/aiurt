@@ -29,9 +29,15 @@
             <if test="condition.phone != null and condition.phone != ''">
                 and su.phone = #{condition.phone}
             </if>
-            <if test="param2.orgCodeList != null and param2.orgCodeList.size() != 0">
+            <if test="condition.orgCodeList != null and condition.orgCodeList.size() != 0">
                 and tr.org_code in
                 <foreach collection="condition.orgCodeList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+                 <if test="condition.selections != null and condition.selections.size() != 0">
+                and tr.id in
+                <foreach collection="condition.selections" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>
