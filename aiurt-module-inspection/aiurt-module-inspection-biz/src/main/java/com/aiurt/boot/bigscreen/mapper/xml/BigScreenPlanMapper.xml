@@ -216,15 +216,12 @@
 <select id="getReconditionTime" resultType="com.aiurt.boot.index.dto.TeamUserDTO">
     SELECT
     rts.user_id,
-    SUM(rt.duration) AS time
+    SUM( rt.duration ) AS time
     FROM
-    repair_pool rp
-    LEFT JOIN repair_task rt ON rp.`code` = rt.`code` LEFT JOIN repair_task_user rts ON rts.repair_task_code = rt.`code`
+    repair_task rt
+    LEFT JOIN repair_task_user rts ON rts.repair_task_code = rt.`code`
     WHERE
-    CASE
-    WHEN rp.is_manual=0 THEN DATE_FORMAT(rp.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rp.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
-    WHEN rp.is_manual=1 THEN DATE_FORMAT(rt.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rt.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
-    END
+    DATE_FORMAT(rt.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rt.start_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
     <if test="userList != null and userList.size() != 0">
         AND  rts.user_id in
         <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
@@ -242,12 +239,8 @@
     repair_task_peer_rel rtpr
     LEFT JOIN repair_task_device_rel rtdr ON rtpr.repair_task_device_code = rtdr.`code`
     LEFT JOIN repair_task rt ON rtdr.repair_task_id = rt.id
-    LEFT JOIN repair_pool rp ON rp.`code` = rt.`code`
     WHERE
-    CASE
-    WHEN rp.is_manual=0 THEN DATE_FORMAT(rp.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rp.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
-    WHEN rp.is_manual=1 THEN DATE_FORMAT(rt.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rt.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
-    END
+    DATE_FORMAT(rt.start_time ,'%Y-%m-%d') >= DATE_FORMAT(#{beginDate},'%Y-%m-%d') AND  DATE_FORMAT(rt.start_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
     <if test="userList != null and userList.size() != 0">
         AND  rtpr.user_id in
         <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">

@@ -22,7 +22,9 @@
             a.sign_path,
             a.work_ticket_code,
             a.work_tick_path,
-            a.symptoms
+            a.symptoms,
+            a.repair_duration,
+            a.response_duration
         from
         fault_repair_record a
         LEFT JOIN sys_user su on a.appoint_user_name = su.username

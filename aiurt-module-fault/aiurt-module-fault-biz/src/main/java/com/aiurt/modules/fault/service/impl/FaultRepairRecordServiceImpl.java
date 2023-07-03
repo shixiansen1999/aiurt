@@ -29,10 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -106,7 +103,7 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
             // 响应时长： 接收到任务，开始维修时长
             Date receviceTime = repairRecordDetailDTO.getReceviceTime();
             Date startTime = repairRecordDetailDTO.getStartTime();
-            Date time = repairRecordDetailDTO.getEndTime();
+            Date time = Optional.ofNullable(repairRecordDetailDTO.getEndTime()).orElse(new Date());
             if (Objects.nonNull(startTime) && Objects.nonNull(receviceTime)) {
                 long between = DateUtil.between(receviceTime, startTime, DateUnit.MINUTE);
                 between = between == 0 ? 1: between;
@@ -123,13 +120,15 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
         String knowledgeId = fault.getKnowledgeId();
         if (StrUtil.isNotBlank(knowledgeId)) {
             FaultKnowledgeBase knowledgeBase = knowledgeBaseService.getById(knowledgeId);
-            String deviceTypeCode = knowledgeBase.getDeviceTypeCode();
-            if (StrUtil.isNotBlank(deviceTypeCode)) {
-                String deviceTypeName = baseMapper.queryDeviceTypeName(deviceTypeCode);
-                knowledgeBase.setDeviceTypeName(deviceTypeName);
+            if (Objects.nonNull(knowledgeBase)) {
+                String deviceTypeCode = knowledgeBase.getDeviceTypeCode();
+                if (StrUtil.isNotBlank(deviceTypeCode)) {
+                    String deviceTypeName = baseMapper.queryDeviceTypeName(deviceTypeCode);
+                    knowledgeBase.setDeviceTypeName(deviceTypeName);
+                }
+                // 设备类型
+                recordDetailDTO.setFaultKnowledgeBase(knowledgeBase);
             }
-            // 设备类型
-            recordDetailDTO.setFaultKnowledgeBase(knowledgeBase);
         }
         return recordDetailDTO;
     }

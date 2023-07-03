@@ -184,7 +184,18 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 threadPoolExecutor.execute(() -> {
                     SubsystemFaultDTO subDTO ;
                     if (filterValue) {
+                        //有挂起不参与工时统计
                         subDTO = csUserSubsystemMapper.getSubsystemFilterFaultDTO(startTime, endTime, s.getSystemCode());
+                        //获取所有故障数
+                        SubsystemFaultDTO subDTO2 = csUserSubsystemMapper.getFaultNum(startTime, endTime, s.getSystemCode());
+                        if (ObjectUtil.isNotNull(subDTO2)) {
+                            subDTO.setCommonFaultNum(subDTO2.getCommonFaultNum());
+                            subDTO.setSeriousFaultNum(subDTO2.getSeriousFaultNum());
+                        }else {
+                            subDTO.setCommonFaultNum(0);
+                            subDTO.setSeriousFaultNum(0);
+                        }
+
                     } else {
                         subDTO = csUserSubsystemMapper.getSubsystemFaultDTO(startTime,endTime,s.getSystemCode());
                     }

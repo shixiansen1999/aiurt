@@ -34,6 +34,7 @@ import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -83,6 +84,9 @@ public class FlowBaseApiImpl implements FlowBaseApi {
 
     @Autowired
     private RedisTemplate<String,String> redisTemplate;
+
+    @Autowired
+    private ISTodoBaseAPI todoBaseApi;
 
     /**
      * 查询当前任务的权限信息（页面，按钮权限）
@@ -261,6 +265,8 @@ public class FlowBaseApiImpl implements FlowBaseApi {
 
         list.stream().forEach(processInstance -> {
             flowApiService.deleteProcessInstance(processInstance.getProcessInstanceId(), delReason);
+
+            todoBaseApi.updateBpmnTaskState(processInstance.getProcessInstanceId());
         });
     }
 

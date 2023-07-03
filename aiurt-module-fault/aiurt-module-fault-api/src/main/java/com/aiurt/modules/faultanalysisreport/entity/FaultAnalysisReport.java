@@ -109,6 +109,7 @@ public class FaultAnalysisReport implements Serializable {
     @Excel(name = "故障现象分类", width = 15)
     @ApiModelProperty(value = "故障现象分类")
     @TableField(exist = false)
+    @Dict(dictTable = "fault_knowledge_base_type", dicText = "name", dicCode = "code")
     private String faultPhenomenon;
 
     /**故障分类*/

@@ -170,4 +170,12 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
      */
     List<SubsystemFaultDTO> selectSystem(@Param("id")String id, @Param("systemCodes")List<String> systemCodes);
 
+    /**
+     * 查询子系统的故障数量
+     * @param startTime
+     * @param endTime
+     * @param subsystemCode
+     * @return
+     */
+    SubsystemFaultDTO  getFaultNum(@Param("startTime") String startTime, @Param("endTime")String endTime, @Param("subsystemCode")String subsystemCode);
 }

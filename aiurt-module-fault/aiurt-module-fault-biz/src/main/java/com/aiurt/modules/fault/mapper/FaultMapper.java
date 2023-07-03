@@ -377,5 +377,13 @@ public interface FaultMapper extends BaseMapper<Fault> {
      * @return
      */
     FaultForSendMessageDTO queryForSendMessage(@Param("code") String code, @Param("status") Integer status, @Param("updateTime") Date updateTime);
+
+    /**
+     *
+     * @param warehouseCode
+     * @param materialCode
+     * @return
+     */
+    SparePartReplaceDTO queryWarehouseCodeAndNum(@Param("warehouseCode")String warehouseCode, @Param("materialCode")String materialCode);
 }
 

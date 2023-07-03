@@ -67,5 +67,15 @@ public class SparePartReplaceDTO implements Serializable {
 
     private String specifications;
 
+    @ApiModelProperty(value = "最大库存")
+    private Integer maxNum;
+
+    @ApiModelProperty(value = "仓库编码")
+    private String warehouseCode;
+
+    private String orgId;
+
+    private String consumablesType = "0";
+
 
 }

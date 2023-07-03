@@ -232,5 +232,18 @@ public class FaultInformationController {
             }
         }
     }
+
+    /**
+     * 根据站点code，获取未完成故障（挂起+维修中）的故障现象、故障发生时间、故障code
+     * @param stationCode 要查询哪个站点的故障
+     * @return
+     */
+    @AutoLog(value = "根据站点code，获取未完成故障（挂起+维修中）", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "根据站点code，获取未完成故障（挂起+维修中）", notes = "根据站点code，获取未完成故障（挂起+维修中）")
+    @GetMapping(value = "/getUnfinishedSymptomsByStationCode")
+    public Result<List<FaultUnfinishedSymptomsDTO>> getUnfinishedSymptomsByStationCode(@RequestParam("stationCode") String stationCode){
+        List<FaultUnfinishedSymptomsDTO> list = faultInformationService.getUnfinishedSymptomsByStationCode(stationCode);
+        return Result.ok(list);
+    }
 }
 

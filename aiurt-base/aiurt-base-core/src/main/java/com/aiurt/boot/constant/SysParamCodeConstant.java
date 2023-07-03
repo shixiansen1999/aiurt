@@ -394,4 +394,8 @@ public interface SysParamCodeConstant {
      * 无故障时也生成生产日报的专业，多个专业使用英文逗号分隔
      */
     String GENERATE_REPORT_MAJOR = "generate_report_major";
+    /**
+     * 企业微信跳转地址
+     */
+    String WECHAT_MESSAGE_URL = "wechat_message_url";
 }

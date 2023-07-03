@@ -118,6 +118,21 @@ public class TodoBaseApiImpl implements ISTodoBaseAPI {
         }
     }
 
+    /**
+     * 更新流程待办任务
+     *
+     * @param processInstanceId
+     */
+    @Override
+    public void updateBpmnTaskState(String processInstanceId) {
+        LambdaUpdateWrapper<SysTodoList> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.set(SysTodoList::getTodoType, 1)
+                .set(SysTodoList::getUpdateTime, new Date())
+                .eq(SysTodoList::getProcessInstanceId, processInstanceId);
+
+        sysTodoListService.update(updateWrapper);
+    }
+
     private void doCreateTodoTask(SysTodoList sysTodoList) {
         if (ObjectUtil.isEmpty(sysTodoList)) {
             log.error("待办任务创建失败");

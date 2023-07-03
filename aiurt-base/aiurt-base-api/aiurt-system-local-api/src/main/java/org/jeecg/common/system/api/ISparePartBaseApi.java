@@ -41,4 +41,11 @@ public interface ISparePartBaseApi {
      * @param dataList
      */
     void dealChangeSparePartV2(List<DeviceChangeSparePartDTO> dataList);
+
+    /**
+     * 查询
+     * @param orgId
+     * @return
+     */
+    String getWarehouseCode(String orgId);
 }
