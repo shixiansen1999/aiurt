@@ -27,8 +27,13 @@ import com.aiurt.modules.train.task.listener.NoModelDataListener;
 import com.aiurt.modules.train.task.mapper.*;
 import com.aiurt.modules.train.task.service.IBdTrainPlanService;
 import com.aiurt.modules.train.task.vo.*;
+import com.aiurt.modules.train.trainarchive.entity.TrainArchive;
+import com.aiurt.modules.train.trainarchive.service.ITrainArchiveService;
+import com.aiurt.modules.train.trainrecord.entity.TrainRecord;
+import com.aiurt.modules.train.trainrecord.service.ITrainRecordService;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.enums.CellExtraTypeEnum;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -102,6 +107,10 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
     private BdTrainTaskUserMapper bdTrainTaskUserMapper;
     @Resource
     private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private ITrainArchiveService archiveService;
+    @Autowired
+    private ITrainRecordService recordService;
     /**
      * 发布
      *
@@ -500,6 +509,20 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
             bdExamRecord.setIsRelease("4");
             bdExamRecordMapper.updateById(bdExamRecord);
         }
+        BdExamRecord examRecord = bdExamRecordMapper.selectById(reqList.get(0).getExamRecordId());
+       TrainArchive archive = archiveService.getOne(new LambdaQueryWrapper<TrainArchive>().eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0)
+               .eq(TrainArchive::getUserId,examRecord.getUserId()));
+       if(ObjectUtil.isNotEmpty(archive)){
+           TrainRecord trainRecord = recordService.getOne(new LambdaQueryWrapper<TrainRecord>().eq(TrainRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
+                   .eq(TrainRecord::getTrainTaskId, examRecord.getTrainTaskId()).eq(TrainRecord::getTrainArchiveId, archive.getId()));
+           if(ObjectUtil.isNotEmpty(examRecord.getScore())){
+               if(ObjectUtil.isNotEmpty(trainRecord)){
+                   trainRecord.setCheckGrade(String.valueOf(examRecord.getScore()));
+                   recordService.updateById(trainRecord);
+               }
+           }
+       }
+
     }
 
     /**

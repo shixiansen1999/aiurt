@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.trainrecord.mapper.TrainRecordMapper">
+    <select id="getList" resultType="com.aiurt.modules.train.trainrecord.entity.TrainRecord">
+        SELECT tr.id,
+               tr.train_time,
+               tr.train_content,
+               tr.task_grade,
+               tr.is_annual_plan,
+               d2.item_text as taskGradeName,
+               tr.`hour`,
+               tr.check_grade,
+               d4.item_text as isAnnualPlanName,
+               tr.task_code
+        FROM train_record tr
+                     LEFT JOIN sys_dict AS d1 ON d1.dict_code = 'training_classification' AND d1.del_flag = 0
+                     LEFT JOIN sys_dict_item AS d2 ON (d2.item_value = tr.task_grade AND d1.id = d2.dict_id)
+                     LEFT JOIN sys_dict AS d3 ON d3.dict_code = 'is_annual_plan' AND d3.del_flag = 0
+                     LEFT JOIN sys_dict_item AS d4 ON (d4.item_value = tr.is_annual_plan AND d3.id = d4.dict_id)
+        <where>
+            tr.del_flag = 0
+                    and tr.train_archive_id = #{id}
+        </where>
+    </select>
+</mapper>

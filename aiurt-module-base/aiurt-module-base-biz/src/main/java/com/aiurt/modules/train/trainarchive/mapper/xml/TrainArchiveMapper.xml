@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.trainarchive.mapper.TrainArchiveMapper">
+    <select id="pageList" resultType="com.aiurt.modules.train.trainarchive.dto.TrainArchiveDTO">
+        SELECT tr.id,
+               tr.status,
+               su.id as userId,
+               su.realname,
+               su.salary_code,
+               su.avatar,
+               su.phone,
+               su.birthday,
+               su.entry_date,
+               su.sex,
+               sd.depart_name,
+               su.working_time,
+               tr.create_time
+        FROM train_archive tr
+                     LEFT JOIN sys_user su on tr.user_id = su.id
+                     LEFT JOIN sys_depart sd on (su.org_id = sd.id and sd.del_flag = 0)
+        <where>
+            tr.del_flag = 0
+            <if test="condition.realname != null and condition.realname != ''">
+                and su.realname = #{condition.realname}
+            </if>
+            <if test="condition.status != null">
+                and tr.stauts = #{condition.status}
+            </if>
+            <if test="condition.phone != null and condition.phone != ''">
+                and su.phone = #{condition.phone}
+            </if>
+            <if test="condition.orgCodeList != null and condition.orgCodeList.size() != 0">
+                and tr.org_code in
+                <foreach collection="condition.orgCodeList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+                 <if test="condition.selections != null and condition.selections.size() != 0">
+                and tr.id in
+                <foreach collection="condition.selections" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="queryById" resultType="com.aiurt.modules.train.trainarchive.dto.TrainArchiveDTO">
+        SELECT tr.id,
+               tr.status,
+               su.id as userId,
+               su.realname,
+               su.salary_code,
+               su.avatar,
+               su.phone,
+               su.birthday,
+               su.entry_date,
+               su.sex,
+               sd.depart_name,
+               su.working_time
+        FROM train_archive tr
+                     LEFT JOIN sys_user su on tr.user_id = su.id
+                     LEFT JOIN sys_depart sd on (su.org_id = sd.id and sd.del_flag = 0)
+        <where>
+            tr.del_flag = 0
+            and tr.id = #{id}
+        </where>
+    </select>
+</mapper>

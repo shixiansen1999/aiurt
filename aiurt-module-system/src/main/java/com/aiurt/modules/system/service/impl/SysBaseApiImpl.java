@@ -97,6 +97,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
@@ -3619,5 +3620,31 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 .distinct()
                 .collect(Collectors.toList());
         return lineCodes;
+    }
+
+    @Override
+    public List<String> getSysDepartList(String code) {
+        if (ObjectUtil.isEmpty(code)){
+            return  CollUtil.newArrayList();
+        }
+        String orgCode = "/" + code + "/";
+        List<SysDepart> sysDeparts = sysDepartMapper.selectList(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag,0).like(SysDepart::getOrgCodeCc, orgCode));
+        if(CollUtil.isEmpty(sysDeparts)){
+            return  CollUtil.newArrayList();
+        }
+        List<String> orgCodeList = sysDeparts.stream().map(SysDepart::getOrgCode).collect(Collectors.toList());
+        return orgCodeList;
+    }
+
+    @Override
+    public JSONObject queryByWorkNoUser(String workNo) {
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysUser::getWorkNo, workNo);
+        SysUser sysUser = userMapper.selectOne(queryWrapper);
+        LoginUser loginUser = new LoginUser();
+        if (ObjectUtil.isNotEmpty(sysUser)) {
+            BeanUtils.copyProperties(sysUser, loginUser);
+        }
+        return JSONObject.parseObject(JSON.toJSONString(loginUser));
     }
 }
