@@ -1831,6 +1831,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                                             .setInputType(result.getInputType())
                                             .setDictCode(result.getDictCode())
                                             .setRegular(result.getRegular())
+                                            .setSpecialCharacters(result.getSpecialCharacters())
                                             .setRequired(result.getRequired())
                                             .setDelFlag(0);
                                     newResultList.add(checkResult);

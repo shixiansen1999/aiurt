@@ -630,6 +630,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             result.setInputType(l.getInputType());  // 填写数据类型
             result.setDictCode(l.getDictCode());    // 关联的数据字典
             result.setRegular(l.getRegular());  // 数据校验表达式
+            result.setSpecialCharacters(l.getSpecialCharacters());  // 特殊字符输入
             result.setDelFlag(0);  // 数据校验表达式
             result.setRequired(l.getRequired()); // 检查值是否必填
             addResultList.add(result);

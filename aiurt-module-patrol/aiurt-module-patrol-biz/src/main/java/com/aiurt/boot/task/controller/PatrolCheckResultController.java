@@ -141,6 +141,9 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 
 				}
 			 }
+			 if (PatrolConstant.DATE_TYPE_SPECIALCHAR.equals(patrolCheckDTO.getInputType())) {
+				 updateWrapper.set(PatrolCheckResult::getSpecialCharacters,patrolCheckDTO.getSpecialCharacters()).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,patrolCheckDTO.getId());
+			 }
 		 }
 		 patrolCheckResultService.update(updateWrapper);
 		 return Result.OK("检查值保存成功");
