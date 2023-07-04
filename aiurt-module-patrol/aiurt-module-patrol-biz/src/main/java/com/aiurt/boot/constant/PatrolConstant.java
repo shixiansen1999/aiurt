@@ -217,6 +217,10 @@ public interface PatrolConstant {
      */
     Integer DEVICE_OUT = 3;
     /**
+     * 工单-数据填写类型：特殊字符
+     */
+    Integer DATE_TYPE_SPECIALCHAR= 4;
+    /**
      * 巡视项检查值是否必填：0否
      */
     Integer REQUIRED_0 = 0;
