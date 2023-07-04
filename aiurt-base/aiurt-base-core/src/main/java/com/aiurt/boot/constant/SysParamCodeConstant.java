@@ -307,6 +307,10 @@ public interface SysParamCodeConstant {
      */
     String FAULT_CENTER_RECEIVE = "fault_center_receive";
     /**
+     * 中心班组是否可以填写其他人的维修记录
+     */
+    String FAULT_CENTER_WRITE = "fault_center_write";
+    /**
      * 统计报表是否需要过滤通信分部
      */
     String 	FILTERING_TEAM = "filtering_team";
