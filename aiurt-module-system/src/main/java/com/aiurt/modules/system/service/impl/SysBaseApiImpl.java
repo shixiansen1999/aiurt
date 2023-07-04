@@ -955,7 +955,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<JSONObject> jsonObjects = new ArrayList<>();
         for (CsSubsystem subsystem : csSubsystems) {
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("code",subsystem.getSystemCode());
+            jsonObject.put("code", subsystem.getSystemCode());
             jsonObjects.add(jsonObject);
         }
         return jsonObjects;
@@ -981,8 +981,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public String getMaterialNameByCode(String materialCode) {
         LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(MaterialBase::getCode,materialCode);
-        wrapper.eq(MaterialBase::getDelFlag,CommonConstant.DEL_FLAG_0);
+        wrapper.eq(MaterialBase::getCode, materialCode);
+        wrapper.eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0);
         MaterialBase one = materialBaseMapper.selectOne(wrapper);
         return one.getName();
     }
@@ -1000,21 +1000,21 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public String getMaterialNameByCodes(String materialCodes) {
-        if(ObjectUtil.isNotEmpty(materialCodes)){
+        if (ObjectUtil.isNotEmpty(materialCodes)) {
             List<String> list = StrUtil.splitTrim(materialCodes, ",");
-            List<DeviceAssembly> deviceAssemblies = deviceAssemblyMapper.selectList(new LambdaQueryWrapper<DeviceAssembly>().eq(DeviceAssembly::getDelFlag,0).in(DeviceAssembly::getCode,list));
-            if(CollUtil.isNotEmpty(deviceAssemblies)){
+            List<DeviceAssembly> deviceAssemblies = deviceAssemblyMapper.selectList(new LambdaQueryWrapper<DeviceAssembly>().eq(DeviceAssembly::getDelFlag, 0).in(DeviceAssembly::getCode, list));
+            if (CollUtil.isNotEmpty(deviceAssemblies)) {
                 List<String> materialNames = new ArrayList<>();
                 for (DeviceAssembly deviceAssembly : deviceAssemblies) {
-                    String materialName = deviceAssembly.getMaterialName()+"-"+deviceAssembly.getCode();
-                   materialNames.add(materialName);
+                    String materialName = deviceAssembly.getMaterialName() + "-" + deviceAssembly.getCode();
+                    materialNames.add(materialName);
                 }
                 String collect = materialNames.stream().collect(Collectors.joining(","));
                 return collect;
             }
-          return null;
+            return null;
         }
-     return null;
+        return null;
     }
 
 
@@ -1653,7 +1653,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
         for (SysUser user : userList) {
             LoginUser loginUser = new LoginUser();
-            BeanUtils.copyProperties(user,loginUser);
+            BeanUtils.copyProperties(user, loginUser);
             loginUser.setPassword(null);
 //            loginUser.setId(user.getId());
 //            loginUser.setUsername(user.getUsername());
@@ -1784,6 +1784,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<DeviceTypeTable> deviceTypeTree = getDeviceTypeTree(list, "0");
         return deviceTypeTree;
     }
+
     @Override
     public List<SelectDeviceType> selectDeviceTypeList(String value) {
         List<SelectDeviceType> selectDeviceTypes = new ArrayList<>();
@@ -1838,6 +1839,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return selectDeviceTypes;
     }
+
     public List<DeviceTypeTable> getDeviceTypeTree(List<DeviceTypeTable> list, String pid) {
         List<DeviceTypeTable> children = list.stream().filter(deviceTypeTable -> deviceTypeTable.getPid().equals(pid)).collect(Collectors.toList());
         if (CollectionUtil.isNotEmpty(children)) {
@@ -1885,7 +1887,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public String getLineNameByCode(String code) {
         LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CsLine::getLineCode,code).eq(CsLine::getDelFlag,0);
+        wrapper.eq(CsLine::getLineCode, code).eq(CsLine::getDelFlag, 0);
         return lineMapper.selectOne(wrapper).getLineName();
     }
 
@@ -2169,7 +2171,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public DeviceType getCsMajorByCodeTypeName(String majorCode, String deviceTypeName, String systemCode) {
         LambdaQueryWrapper<DeviceType> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(DeviceType::getMajorCode, majorCode).eq(DeviceType::getName, deviceTypeName).eq(DeviceType::getSystemCode, systemCode).eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+        wrapper.eq(DeviceType::getMajorCode, majorCode).eq(DeviceType::getName, deviceTypeName).eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+        if (StrUtil.isNotEmpty(systemCode)) {
+            wrapper.eq(DeviceType::getSystemCode, systemCode);
+        }
         DeviceType deviceType = deviceTypeService.getBaseMapper().selectOne(wrapper);
         if (Objects.isNull(deviceType)) {
             return null;
@@ -2665,6 +2670,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<String> result = userMapper.getUserNameByOrgCodeAndRoleCode(orgCode, roleCode);
         return CollUtil.isNotEmpty(result) ? StrUtil.join(",", result) : "";
     }
+
     /**
      * 根据部门，角色编码查询人员姓名
      *
@@ -2706,7 +2712,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             for (WorkArea workArea : workAreas) {
                 CsWorkAreaModel csWorkAreaModel = new CsWorkAreaModel();
                 BeanUtils.copyProperties(workArea, csWorkAreaModel);
-                List<WorkAreaOrg> workAreaOrgList = workAreaOrgMapper.selectList(new LambdaQueryWrapper<WorkAreaOrg>().eq(WorkAreaOrg::getWorkAreaCode,workArea.getCode()));
+                List<WorkAreaOrg> workAreaOrgList = workAreaOrgMapper.selectList(new LambdaQueryWrapper<WorkAreaOrg>().eq(WorkAreaOrg::getWorkAreaCode, workArea.getCode()));
                 List<String> orgCodeList = workAreaOrgList.stream().map(WorkAreaOrg::getOrgCode).collect(Collectors.toList());
                 csWorkAreaModel.setOrgCodeList(orgCodeList);
                 csWorkAreaModels.add(csWorkAreaModel);
@@ -2829,8 +2835,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return null;
     }
+
     /**
      * 获取某个父节点下面的所有子节点
+     *
      * @param list
      * @param depart
      * @param allChildren
@@ -2962,7 +2970,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         Iterator<SelectTable> iterator = list.iterator();
         while (iterator.hasNext()) {
             SelectTable next = iterator.next();
-            if (StrUtil.containsAnyIgnoreCase(next.getLabel(),name)) {
+            if (StrUtil.containsAnyIgnoreCase(next.getLabel(), name)) {
                 //名称匹配则赋值颜色
                 next.setColor("#FF5B05");
             }
@@ -3181,7 +3189,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return new ArrayList<Date>();
     }
-    
+
     @Override
     public List<JSONObject> querySysHolidaysByDate(Date date) {
         if (ObjectUtil.isEmpty(date)) {
@@ -3195,7 +3203,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<SpareResult>  getSpareChange(String faultCode) {
+    public List<SpareResult> getSpareChange(String faultCode) {
         LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(FaultRepairRecord::getFaultCode, faultCode)
                 .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
@@ -3267,6 +3275,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     /**
      * 发送消息
+     *
      * @param messageDTO
      */
     private void sendMessage(MessageDTO messageDTO) {
@@ -3277,6 +3286,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         messageDTO.setCategory(CommonConstant.MSG_CATEGORY_6);
         sendTemplateMessage(messageDTO);
     }
+
     /**
      * 根据编码查询设备分类
      *
@@ -3368,9 +3378,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         LambdaQueryWrapper<SysUserPositionCurrent> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(SysUserPositionCurrent::getCreateBy, username);
         SysUserPositionCurrent sysUserPositionCurrent;
-        try{
+        try {
             sysUserPositionCurrent = sysUserPositionCurrentService.getOne(queryWrapper);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new AiurtBootException(username + " 在用户实时位置表中有多条数据，请联系相关人员处理！");
         }
         if (ObjectUtil.isNull(sysUserPositionCurrent)) {
@@ -3391,6 +3401,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             return null;
         }
     }
+
     @Override
     public void saveSysAttachment(SysAttachment sysAttachment) {
         sysAttachmentService.save(sysAttachment);
@@ -3404,8 +3415,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public JSONObject queryPageUserList(LoginUser loginUser, List<String> excludeUserIds, String isBelongOrg,
-                                              String isPermissionOrg, Integer pageNo, Integer pageSize,
-                                              HttpServletRequest req) {
+                                        String isPermissionOrg, Integer pageNo, Integer pageSize,
+                                        HttpServletRequest req) {
 
         // 因为此方法基本是从/sys/user/list搬过来的，所以先把请求参数的LoginUser转化成SysUser
         SysUser user = new SysUser();
