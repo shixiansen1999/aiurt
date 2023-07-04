@@ -97,6 +97,10 @@ public class TrainRecord extends DictEntity implements Serializable {
     @Excel(name = "培训内容", width = 15)
     @ApiModelProperty(value = "培训内容")
     private String trainContent;
+    /**培训内容*/
+    @Excel(name = "培训任务Id", width = 15)
+    @ApiModelProperty(value = "培训任务Id")
+    private String trainTaskId;
 
 
 }

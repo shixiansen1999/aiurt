@@ -1,13 +1,20 @@
 package com.aiurt.modules.train.quzrtz.job;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
-import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
+import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.task.entity.BdTrainMakeupExamRecord;
 import com.aiurt.modules.train.task.entity.BdTrainTask;
 import com.aiurt.modules.train.task.mapper.BdTrainMakeupExamRecordMapper;
 import com.aiurt.modules.train.task.mapper.BdTrainTaskMapper;
+import com.aiurt.modules.train.trainarchive.entity.TrainArchive;
+import com.aiurt.modules.train.trainarchive.service.ITrainArchiveService;
+import com.aiurt.modules.train.trainrecord.entity.TrainRecord;
+import com.aiurt.modules.train.trainrecord.service.ITrainRecordService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -28,6 +35,10 @@ public class MakeUpExamEndJob implements Job {
     private BdTrainTaskMapper bdTrainTaskMapper;
     @Autowired
     private BdTrainMakeupExamRecordMapper bdTrainMakeupExamRecordMapper;
+    @Autowired
+    private ITrainArchiveService archiveService;
+    @Autowired
+    private ITrainRecordService recordService;
 
     private String parameter;
 
@@ -59,5 +70,15 @@ public class MakeUpExamEndJob implements Job {
             bdTrainMakeupExamRecordMapper.insert(bdTrainMakeupExamRecord);
         }
         bdExamRecordMapper.updateById(record);
+        TrainArchive archive = archiveService.getOne(new LambdaQueryWrapper<TrainArchive>().eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(TrainArchive::getUserId, record.getUserId()));
+        if(ObjectUtil.isNotEmpty(archive)){
+            TrainRecord trainRecord = recordService.getOne(new LambdaQueryWrapper<TrainRecord>().eq(TrainRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .eq(TrainRecord::getTrainTaskId, record.getTrainTaskId()).eq(TrainRecord::getTrainArchiveId, archive.getId()));
+            if(ObjectUtil.isNotEmpty(record.getScore())){
+                trainRecord.setCheckGrade(String.valueOf(record.getScore()));
+                recordService.updateById(trainRecord);
+            }
+        }
     }
 }

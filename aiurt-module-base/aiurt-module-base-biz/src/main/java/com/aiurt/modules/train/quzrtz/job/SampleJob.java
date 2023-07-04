@@ -1,7 +1,9 @@
 package com.aiurt.modules.train.quzrtz.job;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordDetailMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
@@ -16,6 +18,11 @@ import com.aiurt.modules.train.task.mapper.BdTrainTaskMapper;
 import com.aiurt.modules.train.task.mapper.BdTrainTaskUserMapper;
 import com.aiurt.modules.train.task.service.IBdTrainTaskService;
 import com.aiurt.modules.train.task.vo.BdTrainTaskPage;
+import com.aiurt.modules.train.trainarchive.entity.TrainArchive;
+import com.aiurt.modules.train.trainarchive.service.ITrainArchiveService;
+import com.aiurt.modules.train.trainrecord.entity.TrainRecord;
+import com.aiurt.modules.train.trainrecord.service.ITrainRecordService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -26,6 +33,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -49,6 +57,10 @@ public class SampleJob implements Job {
     private BdExamRecordDetailMapper bdExamRecordDetailMapper;
     @Autowired
     private BdTrainTaskMapper bdTrainTaskMapper;
+    @Autowired
+    private ITrainArchiveService archiveService;
+    @Autowired
+    private ITrainRecordService recordService;
 
     private String parameter;
 
@@ -71,8 +83,13 @@ public class SampleJob implements Job {
         }
         List<BdExamRecord> bdExamRecords = bdExamRecordMapper.getNum(bdTrainTask.getId());
         List<BdExamRecord> examRecords = new ArrayList<>();
+        List<TrainArchive> archiveList = archiveService.list(new LambdaQueryWrapper<TrainArchive>().eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0));
+        Map<String, TrainArchive> archiveMap = archiveList.stream().collect(Collectors.toMap(TrainArchive::getUserId, Function.identity()));
+        List<TrainRecord> trainRecords = new ArrayList<>();
         //对已考试的进行状态更改
         for (BdExamRecord bdExamRecord : bdExamRecords) {
+            TrainArchive archive = archiveMap.get(bdExamRecord.getUserId());
+            LambdaQueryWrapper<TrainRecord> queryWrapper = new LambdaQueryWrapper<TrainRecord>().eq(TrainRecord::getDelFlag, CommonConstant.DEL_FLAG_0);
             if ("1".equals(bdExamRecord.getIsRelease())) {
                 //如果是考试中改为未考试，且直接已结束
                 if (ExamConstans.IN_THE_EXAM.equals(bdExamRecord.getExamState())) {
@@ -80,12 +97,26 @@ public class SampleJob implements Job {
                     bdExamRecord.setIsRelease("3");
                     examRecords.add(bdExamRecord);
                     bdExamRecordMapper.deleteById(bdExamRecord.getId());
+                    if(ObjectUtil.isNotEmpty(archive)){
+                        queryWrapper.eq(TrainRecord::getTrainArchiveId, archive.getId());
+                        queryWrapper.eq(TrainRecord::getTrainTaskId, bdTrainTask.getId());
+                        TrainRecord trainRecord = recordService.getOne(queryWrapper);
+                        trainRecord.setCheckGrade("0");
+                        trainRecords.add(trainRecord);
+                    }
                 }else {
                     //已考试，无简答题直接结束，有则待复核
                     if (!flag) {
                         bdExamRecord.setIsRelease("3");
                     } else {
                         bdExamRecord.setIsRelease("2");
+                    }
+                    if(ObjectUtil.isNotEmpty(archive)){
+                        queryWrapper.eq(TrainRecord::getTrainArchiveId, archive.getId());
+                        queryWrapper.eq(TrainRecord::getTrainTaskId, bdTrainTask.getId());
+                        TrainRecord trainRecord = recordService.getOne(queryWrapper);
+                        trainRecord.setCheckGrade(ObjectUtil.isNotEmpty(bdExamRecord.getScore())?String.valueOf(bdExamRecord.getScore()):"0");
+                        trainRecords.add(trainRecord);
                     }
                 }
             }
@@ -138,9 +169,20 @@ public class SampleJob implements Job {
                     if (num1 == num2) {
                         bdTrainTaskPage.setTaskState(6);
                     }
+                    TrainArchive archive = archiveMap.get(bdExamRecord.getUserId());
+                    LambdaQueryWrapper<TrainRecord> queryWrapper = new LambdaQueryWrapper<TrainRecord>().eq(TrainRecord::getDelFlag, CommonConstant.DEL_FLAG_0);
+                    if(ObjectUtil.isNotEmpty(archive)){
+                        queryWrapper.eq(TrainRecord::getTrainArchiveId, archive.getId());
+                        queryWrapper.eq(TrainRecord::getTrainTaskId, bdTrainTask.getId());
+                        TrainRecord trainRecord = recordService.getOne(queryWrapper);
+                        trainRecord.setCheckGrade("0");
+                        trainRecords.add(trainRecord);
+                    }
                 }
             }
-
+            if(CollUtil.isNotEmpty(trainRecords)){
+                recordService.updateBatchById(trainRecords);
+            }
         bdTrainTaskPage.setId(parameter);
         bdTrainTaskService.edit(bdTrainTaskPage);
     }
