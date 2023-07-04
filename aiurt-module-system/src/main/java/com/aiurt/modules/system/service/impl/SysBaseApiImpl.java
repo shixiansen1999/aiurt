@@ -97,7 +97,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
-import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
@@ -2924,7 +2923,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public JSONObject getCsStationByCode(String stationCode) {
-        CsStation csStation = csStationMapper.selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode, stationCode));
+        CsStation csStation = csStationMapper.selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode, stationCode).eq(CsStation::getDelFlag,CommonConstant.DEL_FLAG_0));
         if (Objects.isNull(csStation)) {
             return null;
         }

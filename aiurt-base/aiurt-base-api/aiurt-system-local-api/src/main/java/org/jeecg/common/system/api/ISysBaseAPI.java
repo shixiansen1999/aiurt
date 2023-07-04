@@ -1033,7 +1033,7 @@ public interface ISysBaseAPI extends CommonAPI {
     String getUserNameByDeptAuthCodeAndRoleCode(List<String> orgCodes, List<String> roleCodes);
 
     /**
-     * 根据站点id获取站点信息
+     * 根据站点code获取站点信息
      *
      * @param stationCode
      * @return

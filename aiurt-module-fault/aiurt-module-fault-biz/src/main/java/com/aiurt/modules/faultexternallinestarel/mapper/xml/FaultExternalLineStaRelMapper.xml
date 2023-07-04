@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.faultexternallinestarel.mapper.FaultExternalLineStaRelMapper">
+    <select id="pageList"  resultType="com.aiurt.modules.faultexternallinestarel.entity.FaultExternalLineStaRel">
+        SELECT sr.*,cs.line_name as lineName,
+               cs.station_name as stationName
+        FROM fault_external_line_sta_rel sr
+        LEFT JOIN cs_station cs on sr.line_code = cs.line_code and sr.station_code = cs.station_code
+        where
+        cs.del_flag = 0
+        <if test="condition.iline != null and condition.iline != ''">
+        and sr.iline like CONCAT ('%',#{condition.iline}, '%')
+        </if>
+        <if test="condition.ipos != null and condition.ipos != ''">
+        and sr.ipos like CONCAT ('%',#{condition.ipos}, '%')
+        </if>
+         <if test="condition.scc != null and condition.scc != ''">
+        and sr.scc like CONCAT ('%',#{condition.scc}, '%')
+        </if>
+        <if test="condition.lineName != null and condition.lineName != ''">
+        and cs.line_name like CONCAT ('%',#{condition.lineName}, '%')
+        </if>
+        <if test="condition.stationName != null and condition.stationName != ''">
+        and cs.station_name like CONCAT ('%',#{condition.stationName}, '%')
+        </if>
+         <if test="condition.selections != null and condition.selections.size() != 0">
+         and sr.id in
+         <foreach collection="condition.selections" item="item" open="(" separator="," close=")">
+             #{item}
+        </foreach>
+        </if>
+        order by sr.create_time desc
+    </select>
+</mapper>
