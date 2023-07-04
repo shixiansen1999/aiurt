@@ -103,6 +103,7 @@ public class BdTrainTaskUser implements Serializable {
     private Date completeTime;
 
     /**考试记录id*/
+    @Excel(name = "考试记录id", width = 15)
     @ApiModelProperty(value = "考试记录id")
     @TableField(exist = false)
     private String recordId;
