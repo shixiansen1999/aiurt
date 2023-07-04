@@ -76,11 +76,12 @@ public class SysHolidaysServiceImpl extends ServiceImpl<SysHolidaysMapper, SysHo
         } else {
             // 获取开始日期到结束日期之间的所有日期
             List<Date> dateList = DateUtil.rangeToList(sysHolidays.getStartDate(), sysHolidays.getEndDate(), DateField.DAY_OF_YEAR).stream().map(DateTime::toJdkDate).collect(Collectors.toList());
-
-            // 判断是否已存在节假日
-            dateList.retainAll(allHolidays);
-            if (CollUtil.isNotEmpty(dateList)) {
-                throw new AiurtBootException("该日期范围内系统中已存在节假日");
+            if (CollUtil.isNotEmpty(allHolidays)) {
+                // 判断是否已存在节假日
+                dateList.retainAll(allHolidays);
+                if (CollUtil.isNotEmpty(dateList)) {
+                    throw new AiurtBootException("该日期范围内系统中已存在节假日");
+                }
             }
         }
     }
@@ -197,7 +198,7 @@ public class SysHolidaysServiceImpl extends ServiceImpl<SysHolidaysMapper, SysHo
         Set<String> typeNames = typeMap.keySet();
         // 获取所有节假日
         List<Date> allHolidays = iSysBaseApi.getAllHolidaysByType(null);
-        List<Date> importDayList = new ArrayList<>();
+        HashSet<DateTime> dateTimes = new HashSet<>();
         String format = "yyyy-MM-dd";
         for (SysHolidaysImportDTO sysHoliday : list) {
             StringBuilder error = new StringBuilder();
@@ -229,28 +230,32 @@ public class SysHolidaysServiceImpl extends ServiceImpl<SysHolidaysMapper, SysHo
             } else {
                 // 获取开始日期到结束日期之间的所有日期
                 List<DateTime> dateList = DateUtil.rangeToList(sysHoliday.getStartDate(), sysHoliday.getEndDate(), DateField.DAY_OF_YEAR);
-                // 判断系统中是否已存在节假日
-                boolean exist = CollUtil.isNotEmpty(allHolidays) && allHolidays.retainAll(dateList);
-                if (exist) {
-                    error.append("该日期范围内系统中已存在节假日;");
-                }
+                int size = dateTimes.size() + dateList.size();
+                dateTimes.addAll(dateList);
                 // 判断填写的日期是否有重复或已包含的日期
-                boolean isCover = CollUtil.isNotEmpty(importDayList) && importDayList.retainAll(dateList);
-                if (isCover) {
+                if (dateTimes.size() < size) {
                     error.append("该日期范围内已填写有节假日，请检查冲突;");
-                } else {
-                    importDayList.addAll(dateList);
+                }
+                if (CollUtil.isNotEmpty(allHolidays)) {
+                    // 判断系统中是否已存在节假日
+                    dateList.retainAll(allHolidays);
+                    if (CollUtil.isNotEmpty(dateList)) {
+                        error.append("该日期范围内系统中已存在节假日;");
+                    }
                 }
             }
-            if (ObjectUtil.isEmpty(sysHoliday.getName())) {
+            if (StrUtil.isBlank(sysHoliday.getName())) {
                 error.append("节假日名称不能为空;");
             }
-            if (CollUtil.isEmpty(typeNames)) {
+            if (StrUtil.isBlank(sysHoliday.getTypeName())) {
                 error.append("类型不能为空;");
-            } else if (!typeNames.contains(sysHoliday.getTypeName())) {
-                error.append("系统中不存在该类型;");
             } else {
-                sysHoliday.setType(Integer.valueOf(typeMap.get(sysHoliday.getTypeName())));
+                boolean b1 = CollUtil.isEmpty(typeNames) || (CollUtil.isNotEmpty(typeNames) && !typeNames.contains(sysHoliday.getTypeName()));
+                if (b1) {
+                    error.append("系统中不存在该类型;");
+                } else {
+                    sysHoliday.setType(Integer.valueOf(typeMap.get(sysHoliday.getTypeName())));
+                }
             }
             if (ObjectUtil.isNotEmpty(error)) {
                 errorLines++;
