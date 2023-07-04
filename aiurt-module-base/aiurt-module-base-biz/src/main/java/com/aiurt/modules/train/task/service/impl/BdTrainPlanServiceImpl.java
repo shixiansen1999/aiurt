@@ -514,11 +514,13 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
                .eq(TrainArchive::getUserId,examRecord.getUserId()));
        if(ObjectUtil.isNotEmpty(archive)){
            TrainRecord trainRecord = recordService.getOne(new LambdaQueryWrapper<TrainRecord>().eq(TrainRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
-                   .eq(TrainRecord::getTrainTaskId, examRecord.getUserId()).eq(TrainRecord::getTrainArchiveId, archive.getId()));
+                   .eq(TrainRecord::getTrainTaskId, examRecord.getTrainTaskId()).eq(TrainRecord::getTrainArchiveId, archive.getId()));
            if(ObjectUtil.isNotEmpty(examRecord.getScore())){
-               trainRecord.setCheckGrade(String.valueOf(examRecord.getScore()));
+               if(ObjectUtil.isNotEmpty(trainRecord)){
+                   trainRecord.setCheckGrade(String.valueOf(examRecord.getScore()));
+                   recordService.updateById(trainRecord);
+               }
            }
-           recordService.updateById(trainRecord);
        }
 
     }

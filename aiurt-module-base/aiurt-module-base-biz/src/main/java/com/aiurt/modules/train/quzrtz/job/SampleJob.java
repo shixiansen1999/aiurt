@@ -169,7 +169,7 @@ public class SampleJob implements Job {
                     if (num1 == num2) {
                         bdTrainTaskPage.setTaskState(6);
                     }
-                    TrainArchive archive = archiveMap.get(bdExamRecord.getUserId());
+                    TrainArchive archive = archiveMap.get(c);
                     LambdaQueryWrapper<TrainRecord> queryWrapper = new LambdaQueryWrapper<TrainRecord>().eq(TrainRecord::getDelFlag, CommonConstant.DEL_FLAG_0);
                     if(ObjectUtil.isNotEmpty(archive)){
                         queryWrapper.eq(TrainRecord::getTrainArchiveId, archive.getId());
