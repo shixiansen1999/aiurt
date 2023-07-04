@@ -45,7 +45,7 @@ public class PatrolStandardItemDictCodeHandler implements RowValidationRule {
             }
         }
 
-        ValidationResult validationResult = CommonValidation.validateForNoInspectionProject(row, column);
+        ValidationResult validationResult = CommonValidationHandler.validateForNoInspectionProject(row, column);
         if (!validationResult.isValid()) {
             return validationResult;
         }

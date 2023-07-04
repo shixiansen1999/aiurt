@@ -39,7 +39,7 @@ public class InspectionCodeContentPidHandler implements RowValidationRule {
             return new ValidationResult(false, "层级类型是子级时，父级是必填的");
         }
 
-        if (isFirstLevel(levelType)) {
+        if (isFirstLevel(levelType) && ObjectUtil.isNotEmpty(column.getData())) {
             return new ValidationResult(false, "层级类型是一级时，父级不用填写");
         }
 

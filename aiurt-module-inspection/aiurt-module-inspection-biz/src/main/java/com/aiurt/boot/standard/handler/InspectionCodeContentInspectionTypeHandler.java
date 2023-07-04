@@ -18,6 +18,7 @@ import java.util.Map;
 public class InspectionCodeContentInspectionTypeHandler implements RowValidationRule {
     /**
      * 检查值类型是选择项或输入项时，检查值是否必填字段必填
+     *
      * @param row
      * @param column
      * @return
@@ -41,7 +42,7 @@ public class InspectionCodeContentInspectionTypeHandler implements RowValidation
             }
         }
 
-        ValidationResult validationResult = CommonValidation.validateForNoInspectionProject(row, column);
+        ValidationResult validationResult = CommonValidationHandler.validateForNoInspectionProject(row, column);
         if (!validationResult.isValid()) {
             return validationResult;
         }

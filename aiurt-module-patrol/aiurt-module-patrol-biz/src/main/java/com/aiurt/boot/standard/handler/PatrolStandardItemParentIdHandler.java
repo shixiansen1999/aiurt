@@ -39,7 +39,7 @@ public class PatrolStandardItemParentIdHandler implements RowValidationRule {
             return new ValidationResult(false, "层级类型是子级时，父级是必填的");
         }
 
-        if (isFirstLevel(hierarchyType)) {
+        if (isFirstLevel(hierarchyType) && ObjectUtil.isNotEmpty(column.getData())) {
             return new ValidationResult(false, "层级类型是一级时，父级不用填写");
         }
 

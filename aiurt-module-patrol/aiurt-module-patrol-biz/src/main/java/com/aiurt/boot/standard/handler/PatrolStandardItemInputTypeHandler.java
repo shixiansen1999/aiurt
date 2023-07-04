@@ -39,7 +39,7 @@ public class PatrolStandardItemInputTypeHandler implements RowValidationRule {
             return new ValidationResult(false, "是否为巡视项目为是时，检查值类型字段必填");
         }
 
-        ValidationResult validationResult = CommonValidation.validateForNoInspectionProject(row, column);
+        ValidationResult validationResult = CommonValidationHandler.validateForNoInspectionProject(row, column);
         if (!validationResult.isValid()) {
             return validationResult;
         }
