@@ -57,31 +57,40 @@ public class SysHolidaysServiceImpl extends ServiceImpl<SysHolidaysMapper, SysHo
 
     @Override
     public void add(SysHolidays sysHolidays) {
-        checkDate(sysHolidays);
+        checkDate(sysHolidays, false);
         this.save(sysHolidays);
     }
 
     @Override
     public void edit(SysHolidays sysHolidays) {
-        checkDate(sysHolidays);
+        checkDate(sysHolidays, true);
         this.updateById(sysHolidays);
     }
 
     @Override
-    public void checkDate(SysHolidays sysHolidays) {
+    public void checkDate(SysHolidays sysHolidays, Boolean isEdit) {
         // 获取所有节假日
         List<Date> allHolidays = iSysBaseApi.getAllHolidaysByType(null);
+        HashSet<Date> dates = new HashSet<>();
+        if (CollUtil.isNotEmpty(allHolidays)) {
+            dates.addAll(allHolidays);
+        }
+        // 移除当前的日期
+        if (isEdit) {
+            SysHolidays byId = this.getById(sysHolidays.getId());
+            List<Date> collect = DateUtil.rangeToList(byId.getStartDate(), byId.getEndDate(), DateField.DAY_OF_YEAR).stream().map(DateTime::toJdkDate).collect(Collectors.toList());
+            dates.removeAll(collect);
+        }
         if (sysHolidays.getStartDate().after(sysHolidays.getEndDate())) {
             throw new AiurtBootException("结束日期不能小于开始日期");
         } else {
             // 获取开始日期到结束日期之间的所有日期
             List<Date> dateList = DateUtil.rangeToList(sysHolidays.getStartDate(), sysHolidays.getEndDate(), DateField.DAY_OF_YEAR).stream().map(DateTime::toJdkDate).collect(Collectors.toList());
-            if (CollUtil.isNotEmpty(allHolidays)) {
-                // 判断是否已存在节假日
-                dateList.retainAll(allHolidays);
-                if (CollUtil.isNotEmpty(dateList)) {
-                    throw new AiurtBootException("该日期范围内系统中已存在节假日");
-                }
+            int i = dates.size() + dateList.size();
+            dates.addAll(dateList);
+            // 判断是否已存在节假日
+            if (dates.size() < i) {
+                throw new AiurtBootException("该日期范围内系统中已存在节假日");
             }
         }
     }
