@@ -245,13 +245,25 @@
         rp.type,
         rp.inspection_str_code,
         rp.start_time,
-        rp.end_time
+        rp.end_time,
+        GROUP_CONCAT(DISTINCT(rtu.`name`) SEPARATOR ';') AS repairUserNameString
         FROM
             repair_pool rp
         LEFT JOIN repair_pool_rel AS rpr ON rpr.repair_pool_code = rp.`code`
         LEFT JOIN repair_pool_code AS rpc ON rpc.id = rpr.repair_pool_sta_id
         LEFT JOIN repair_pool_station_rel AS rpsr ON rpsr.repair_pool_code = rp.`code`
         LEFT JOIN repair_pool_org_rel AS rpor ON rpor.repair_pool_code = rp.`code`
+        LEFT JOIN repair_task AS rt ON rt.repair_pool_id = rp.id
+        LEFT JOIN repair_task_user AS rtu ON rtu.repair_task_code = rt.`code`
+        <!--这里使用repair_task_user查询两次是因为如果把 user_id in() 放到where里面，查出来的检修人不全。而如果先查出repair_task_code
+        再使用 rtu.repair_task_code in的话，repair_task_code有可能很多而使in很多-->
+        <if test="selectPlanReq.userIdList != null and selectPlanReq.userIdList.size() != 0">
+            INNER JOIN repair_task_user AS rtu2 ON rtu.repair_task_code = rtu2.repair_task_code
+            AND rtu2.user_id IN
+            <foreach collection="selectPlanReq.userIdList" item="userId" separator="," open="(" close=")">
+                #{userId}
+            </foreach>
+        </if>
         <where>
             rp.del_flag = 0
             <if test="selectPlanReq.startTime != null and selectPlanReq.endTime != null">
