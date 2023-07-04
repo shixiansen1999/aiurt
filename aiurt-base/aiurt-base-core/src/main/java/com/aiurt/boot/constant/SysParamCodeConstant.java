@@ -314,4 +314,12 @@ public interface SysParamCodeConstant {
      * 通信分部编码
      */
     String 	SPECIAL_TEAM = "special_team";
+    /**
+     * 节假日类型为补班时调整的班次名称
+     */
+    String SCHEDULE_FOR_WORK = "schedule_for_work";
+    /**
+     * 假日类型为调休时调整的班次名称
+     */
+    String SCHEDULE_FOR_REST = "schedule_for_rest";
 }
