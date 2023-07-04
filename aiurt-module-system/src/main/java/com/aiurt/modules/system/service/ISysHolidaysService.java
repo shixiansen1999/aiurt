@@ -23,7 +23,7 @@ public interface ISysHolidaysService extends IService<SysHolidays> {
 
     void edit(SysHolidays sysHolidays);
 
-    void checkDate(SysHolidays sysHolidays);
+    void checkDate(SysHolidays sysHolidays, Boolean isEdit);
 
     IPage<SysHolidays> queryPage(Page<SysHolidays> page, SysHolidays sysHolidays);
 }
