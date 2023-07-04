@@ -907,11 +907,14 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				//文件、数据中，是否存在相同的组件编码
 				if(ObjectUtil.isNotEmpty(deviceAssembly.getAssemblyCode())){
 					List<DeviceAssemblyModel> fileList = deviceAssemblyList.stream().filter(d -> deviceAssembly.getAssemblyCode().equals(d.getAssemblyCode()) && !deviceAssembly.equals(d)).collect(Collectors.toList());
-					List<DeviceAssembly> sqlList = deviceAssemblyMapper.selectList(new LambdaQueryWrapper<DeviceAssembly>().eq(DeviceAssembly::getDelFlag, CommonConstant.DEL_FLAG_0).eq(DeviceAssembly::getCode, deviceAssembly.getAssemblyCode()));
+					LambdaQueryWrapper<DeviceAssembly> wrapper = new LambdaQueryWrapper<>();
+					wrapper.eq(DeviceAssembly::getDelFlag, CommonConstant.DEL_FLAG_0);
+					wrapper.eq(DeviceAssembly::getCode, deviceAssembly.getAssemblyCode());
+					boolean exists = deviceAssemblyMapper.exists(wrapper);
 					if(CollUtil.isNotEmpty(fileList)){
 						stringBuilder.append("文件中存在相同组件编码，");
 					}
-					if(CollUtil.isNotEmpty(sqlList)){
+					if(exists){
 						stringBuilder.append("系统中已添加相同组件编码，");
 					}
 				}
