@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
@@ -24,6 +25,10 @@ import com.aiurt.modules.train.task.mapper.*;
 import com.aiurt.modules.train.task.service.IBdTrainTaskService;
 import com.aiurt.modules.train.task.service.IBdTrainTaskSignService;
 import com.aiurt.modules.train.task.vo.BdTrainTaskPage;
+import com.aiurt.modules.train.trainarchive.entity.TrainArchive;
+import com.aiurt.modules.train.trainarchive.service.ITrainArchiveService;
+import com.aiurt.modules.train.trainrecord.entity.TrainRecord;
+import com.aiurt.modules.train.trainrecord.service.ITrainRecordService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -42,6 +47,7 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -85,6 +91,10 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	private QuartzServiceImpl quartzService;
 	@Autowired
 	private ISysBaseAPI iSysBaseAPI;
+	@Autowired
+	private ITrainArchiveService archiveService;
+	@Autowired
+	private ITrainRecordService recordService;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -195,6 +205,30 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 			quartzService.test(quartzJobDTO);
 			//保存定时任务id
 			bdTrainTask.setQuartzJobId(quartzJobDTO.getId());
+			List<BdTrainTaskUser> list = examRecordMapper.userList(bdTrainTask.getId());
+			List<TrainArchive> archiveList = archiveService.list(new LambdaQueryWrapper<TrainArchive>().eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0));
+			Map<String, TrainArchive> archiveMap = archiveList.stream().collect(Collectors.toMap(TrainArchive::getUserId, Function.identity()));
+			List<TrainRecord> trainRecords = new ArrayList<>();
+			BdTrainTask trainTask = bdTrainTaskMapper.selectById(bdTrainTaskPage.getId());
+			list.forEach(e -> {
+				TrainArchive archive = archiveMap.get(e.getUserId());
+				if(ObjectUtil.isNotEmpty(archive)){
+					TrainRecord trainRecord = new TrainRecord();
+					trainRecord.setTrainArchiveId(archive.getId());
+					trainRecord.setTrainTime(trainTask.getStartDate());
+					trainRecord.setTaskGrade(trainTask.getTaskGrade());
+					trainRecord.setIsAnnualPlan(trainTask.getIsAnnualPlan());
+					trainRecord.setTrainContent(trainTask.getPlanSubName());
+					trainRecord.setHour(Integer.valueOf(String.valueOf(trainTask.getTaskHours())));
+					trainRecord.setTaskCode(trainTask.getTaskCode());
+					trainRecord.setTrainTaskId(bdTrainTask.getId());
+					trainRecords.add(trainRecord);
+				}
+
+			});
+			if(CollUtil.isNotEmpty(trainRecords)){
+				recordService.saveBatch(trainRecords);
+			}
 		}
 		this.updateById(bdTrainTask);
 		return Result.OK("编辑成功!");

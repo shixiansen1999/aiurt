@@ -154,6 +154,10 @@ public class TrainArchiveDTO extends DictEntity implements Serializable {
     @ApiModelProperty(value = "部门集合")
     @TableField(exist = false)
     private List<String> orgCodeList;
+    /**导出ids*/
+    @ApiModelProperty(value = "导出ids")
+    @TableField(exist = false)
+    private List<String> selections;
 
     @ApiModelProperty(value = "第一学历")
     private  TrainDegreeRecord firstDegree;
