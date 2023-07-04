@@ -3,6 +3,8 @@ package com.aiurt.modules.system.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateField;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -95,7 +97,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
-import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
@@ -271,7 +272,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Autowired
     private SparePartLendMapper sparePartLendMapper;
     @Autowired
-    private ISysHolidaysService sysHolidaysService;
+    private SysHolidaysMapper sysHolidaysMapper;
     @Autowired
     private DeviceChangeSparePartMapper sparePartMapper;
     @Autowired
@@ -3126,14 +3127,31 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<String> getAllHolidays() {
+    public List<Date> getAllHolidaysByType(Integer type) {
         LambdaQueryWrapper<SysHolidays> wrapper = new LambdaQueryWrapper<>();
-        List<SysHolidays> list = sysHolidaysService.list(wrapper);
+        wrapper.eq(ObjectUtil.isNotEmpty(type), SysHolidays::getType, type);
+        List<SysHolidays> list = sysHolidaysMapper.selectList(wrapper);
         if (CollUtil.isNotEmpty(list)) {
-            List<String> collect = list.stream().map(SysHolidays::getDate).collect(Collectors.toList());
-            return collect;
+            List<Date> allList = new ArrayList<>();
+            list.forEach(e -> {
+                List<DateTime> dateList = DateUtil.rangeToList(e.getStartDate(), e.getEndDate(), DateField.DAY_OF_YEAR);
+                allList.addAll(dateList);
+            });
+            return allList;
         }
-        return new ArrayList<String>();
+        return new ArrayList<Date>();
+    }
+    
+    @Override
+    public List<JSONObject> querySysHolidaysByDate(Date date) {
+        if (ObjectUtil.isEmpty(date)) {
+            return new ArrayList<>();
+        }
+        LambdaQueryWrapper<SysHolidays> wrapper = new LambdaQueryWrapper<>();
+        wrapper.le(SysHolidays::getStartDate, date).ge(SysHolidays::getEndDate, date).or().eq(SysHolidays::getStartDate, date);
+        List<SysHolidays> sysHolidays = sysHolidaysMapper.selectList(wrapper);
+        List<JSONObject> collect = sysHolidays.stream().map(e -> JSON.parseObject(JSON.toJSONString(e))).collect(Collectors.toList());
+        return collect;
     }
 
     @Override
