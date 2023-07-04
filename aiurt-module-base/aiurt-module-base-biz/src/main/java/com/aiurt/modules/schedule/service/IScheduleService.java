@@ -1,10 +1,12 @@
 package com.aiurt.modules.schedule.service;
 
 import com.aiurt.modules.schedule.entity.Schedule;
+import com.aiurt.modules.schedule.entity.ScheduleItem;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.SysParamModel;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -28,5 +30,12 @@ public interface IScheduleService extends IService<Schedule> {
      * @param response
      * @throws IOException
      */
-    void exportTemplateXls(HttpServletResponse response)throws IOException;;
+    void exportTemplateXls(HttpServletResponse response)throws IOException;
+
+    /**
+     * 根据配置的班次名称获取班次
+     * @param sysParamModel
+     * @return
+     */
+    ScheduleItem getItemByParam(SysParamModel sysParamModel);
 }

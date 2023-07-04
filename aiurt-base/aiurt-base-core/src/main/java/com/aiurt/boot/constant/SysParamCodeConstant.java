@@ -307,10 +307,6 @@ public interface SysParamCodeConstant {
      */
     String FAULT_CENTER_RECEIVE = "fault_center_receive";
     /**
-     * 中心班组是否可以填写其他人的维修记录
-     */
-    String FAULT_CENTER_WRITE = "fault_center_write";
-    /**
      * 统计报表是否需要过滤通信分部
      */
     String 	FILTERING_TEAM = "filtering_team";
@@ -398,4 +394,12 @@ public interface SysParamCodeConstant {
      * 企业微信跳转地址
      */
     String WECHAT_MESSAGE_URL = "wechat_message_url";
+    /**
+     * 节假日类型为补班时调整的班次名称
+     */
+    String SCHEDULE_FOR_WORK = "schedule_for_work";
+    /**
+     * 假日类型为调休时调整的班次名称
+     */
+    String SCHEDULE_FOR_REST = "schedule_for_rest";
 }

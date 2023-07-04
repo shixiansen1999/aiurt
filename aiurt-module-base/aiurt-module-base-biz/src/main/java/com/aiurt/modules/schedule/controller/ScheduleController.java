@@ -4,7 +4,6 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.ExportParams;
 import cn.afterturn.easypoi.excel.entity.params.ExcelExportEntity;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -521,10 +520,10 @@ public class ScheduleController {
     @ApiOperation(value = "校验本年度是否有存在节假日", notes = "校验本年度是否有存在节假日")
     @RequestMapping(value = "checkHolidays", method = RequestMethod.GET)
     public Boolean checkHolidays() {
-        List<String> allHolidays = sysBaseAPI.getAllHolidays();
+        List<Date> allHolidays = sysBaseAPI.getAllHolidaysByType(null);
         if (CollUtil.isNotEmpty(allHolidays)) {
             int i = DateUtil.thisYear();
-            List<String> list = allHolidays.stream().filter(h -> h.contains(Convert.toStr(i))).collect(Collectors.toList());
+            List<Date> list = allHolidays.stream().filter(h -> (i == DateUtil.year(h))).collect(Collectors.toList());
             if (CollUtil.isEmpty(list)) {
                 return false;
             }
