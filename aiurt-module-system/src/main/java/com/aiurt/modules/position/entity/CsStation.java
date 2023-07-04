@@ -153,6 +153,10 @@ public class CsStation implements Serializable {
     @TableField(exist = false)
     private String title;
 
+    /**故障数量*/
+    @ApiModelProperty(value = "故障数量")
+    @TableField(exist = false)
+    private String faultNum;
 
     /**位置集合*/
     @ApiModelProperty(value = "位置集合")
