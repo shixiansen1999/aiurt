@@ -1,43 +1,27 @@
 package com.aiurt.modules.manufactor.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.common.system.base.view.AiurtEntityExcelView;
-import com.aiurt.modules.major.entity.CsMajor;
-import com.aiurt.modules.major.entity.vo.CsMajorImportVO;
-import com.aiurt.modules.manufactor.entity.vo.CsManuFactorImportVo;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
+import com.aiurt.modules.manufactor.entity.vo.CsManuFactorImportVo;
 import com.aiurt.modules.manufactor.mapper.CsManufactorMapper;
 import com.aiurt.modules.manufactor.service.ICsManufactorService;
-import com.aiurt.modules.stock.entity.StockLevel2Info;
-import com.aiurt.modules.subsystem.service.impl.CsSubsystemServiceImpl;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddressList;
-import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
-import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.entity.TemplateExportParams;
-import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
-import org.jeecgframework.poi.excel.export.ExcelExportServer;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,12 +29,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -58,8 +39,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -100,7 +83,7 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
         //判断厂商名称是否重复
         LambdaQueryWrapper<CsManufactor> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsManufactor::getName, csManufactor.getName());
-        queryWrapper.eq(CsManufactor::getDelFlag, CommonConstant.DEL_FLAG_0);
+        nameWrapper.eq(CsManufactor::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<CsManufactor> nameList = csManufactorMapper.selectList(nameWrapper);
         if (!nameList.isEmpty()) {
             return Result.error("厂商名称重复，请重新填写！");
