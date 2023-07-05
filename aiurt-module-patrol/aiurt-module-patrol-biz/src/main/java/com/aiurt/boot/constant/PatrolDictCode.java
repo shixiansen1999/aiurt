@@ -25,4 +25,8 @@ public interface PatrolDictCode {
      * 巡视工单任务状态字典编码
      */
     String PATROL_BILL_STATUS = "patrol_bill_status";
+    /**
+     * 任务来源字典编码
+     */
+    String PATROL_TASK_ACCESS = "patrol_task_access";
 }
