@@ -1307,12 +1307,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             boolean isWorkArea = WorkAreaStationCodeList.contains(stationCode);
             // 巡视标准时长，单位：秒
             Integer standardDuration = task.getStandardDuration();
+            // wifi最近连接巡视站点时间
+            Date recentConnectTime = sysBaseApi.getRecentConnectTimeByStationCode(sysUser.getUsername(),stationCode);
+            // 把提交任务时最近一次wifi连接记录存入patrol_task表
+            updateWrapper.set(PatrolTask::getWifiConnectTime, recentConnectTime);
             if (isWorkArea) {
                 // 工区，巡视时长等于上限时长。
                 updateWrapper.set(PatrolTask::getDuration, standardDuration);
             } else {
                 // 非工区，当巡视时长大于大于上限时长时，巡视时长等于上限时长。不然就是wifi最近连接巡视站点时间减提交时间
-                Date recentConnectTime = sysBaseApi.getRecentConnectTimeByStationCode(sysUser.getUsername(), stationCode);
                 if (ObjectUtil.isNull(recentConnectTime)) {
                     updateWrapper.set(PatrolTask::getDuration, standardDuration);
                 }else {
