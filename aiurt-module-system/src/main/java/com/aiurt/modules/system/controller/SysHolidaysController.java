@@ -1,13 +1,11 @@
 package com.aiurt.modules.system.controller;
 
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.modules.system.entity.SysHolidays;
 import com.aiurt.modules.system.service.ISysHolidaysService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -15,6 +13,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -54,16 +53,8 @@ public class SysHolidaysController extends BaseController<SysHolidays, ISysHolid
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 		//QueryWrapper<SysHolidays> queryWrapper = QueryGenerator.initQueryWrapper(sysHolidays, req.getParameterMap());
-		LambdaQueryWrapper<SysHolidays> wrapper = new LambdaQueryWrapper<>();
-		if (StrUtil.isNotEmpty(sysHolidays.getDate())) {
-			wrapper.like(SysHolidays::getDate, sysHolidays.getDate());
-		}
-		if (StrUtil.isNotEmpty(sysHolidays.getName())) {
-			wrapper.like(SysHolidays::getName, sysHolidays.getName());
-		}
-		wrapper.orderByDesc(SysHolidays::getDate);
 		Page<SysHolidays> page = new Page<SysHolidays>(pageNo, pageSize);
-		IPage<SysHolidays> pageList = sysHolidaysService.page(page, wrapper);
+		IPage<SysHolidays> pageList = sysHolidaysService.queryPage(page, sysHolidays);
 		return Result.OK(pageList);
 	}
 
@@ -76,8 +67,8 @@ public class SysHolidaysController extends BaseController<SysHolidays, ISysHolid
 	@AutoLog(value = "sys_holidays-添加")
 	@ApiOperation(value="sys_holidays-添加", notes="sys_holidays-添加")
 	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody SysHolidays sysHolidays) {
-		sysHolidaysService.save(sysHolidays);
+	public Result<String> add(@RequestBody @Validated SysHolidays sysHolidays) {
+		sysHolidaysService.add(sysHolidays);
 		return Result.OK("添加成功！");
 	}
 
@@ -90,8 +81,8 @@ public class SysHolidaysController extends BaseController<SysHolidays, ISysHolid
 	@AutoLog(value = "sys_holidays-编辑")
 	@ApiOperation(value="sys_holidays-编辑", notes="sys_holidays-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody SysHolidays sysHolidays) {
-		sysHolidaysService.updateById(sysHolidays);
+	public Result<String> edit(@RequestBody @Validated SysHolidays sysHolidays) {
+		sysHolidaysService.edit(sysHolidays);
 		return Result.OK("编辑成功!");
 	}
 
@@ -149,7 +140,7 @@ public class SysHolidaysController extends BaseController<SysHolidays, ISysHolid
 	@ApiOperation(value="sys_holidays-导出excel", notes="sys_holidays-导出excel")
     @RequestMapping(value = "/exportXls", method = RequestMethod.GET)
     public ModelAndView exportXls(HttpServletRequest request, SysHolidays sysHolidays) {
-        return super.exportXls(request, sysHolidays, SysHolidays.class, "节假日表","date,name");
+        return super.exportXls(request, sysHolidays, SysHolidays.class, "节假日表","dateRange,name");
     }
 
     /**

@@ -398,4 +398,12 @@ public interface SysParamCodeConstant {
      * 无故障时也生成生产日报的专业，多个专业使用英文逗号分隔
      */
     String GENERATE_REPORT_MAJOR = "generate_report_major";
+    /**
+     * 节假日类型为补班时调整的班次名称
+     */
+    String SCHEDULE_FOR_WORK = "schedule_for_work";
+    /**
+     * 假日类型为调休时调整的班次名称
+     */
+    String SCHEDULE_FOR_REST = "schedule_for_rest";
 }
