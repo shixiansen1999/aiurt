@@ -29,7 +29,11 @@
     cs.warning_status,
     cs.open_status,
     wa.id as teamId,
-    wa.`name` as teamName
+    wa.`name` as teamName,
+    ifnull(( select count(*)
+    from fault
+    where (status=9 or status=10 or status=7)
+    and station_code=cs.station_code),0) as faultNum
     FROM
     cs_station cs
     LEFT JOIN work_area_station was ON was.station_code = cs.station_code and was.del_flag = 0
