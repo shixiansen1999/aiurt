@@ -21,13 +21,13 @@
         <where>
             tr.del_flag = 0
             <if test="condition.realname != null and condition.realname != ''">
-                and su.realname = #{condition.realname}
+                and su.realname like concat('%',#{condition.realname},'%')
             </if>
             <if test="condition.status != null">
-                and tr.stauts = #{condition.status}
+                and tr.status = #{condition.status}
             </if>
             <if test="condition.phone != null and condition.phone != ''">
-                and su.phone = #{condition.phone}
+                and su.phone like concat('%',#{condition.phone},'%')
             </if>
             <if test="condition.orgCodeList != null and condition.orgCodeList.size() != 0">
                 and tr.org_code in
