@@ -406,4 +406,9 @@ public interface SysParamCodeConstant {
      * 假日类型为调休时调整的班次名称
      */
     String SCHEDULE_FOR_REST = "schedule_for_rest";
+
+    /**
+     * 故障完成后是否给中心班组成员提示音
+     */
+    String FAULT_FINISH_CENTER_MSG = "fault_finish_center_msg";
 }
