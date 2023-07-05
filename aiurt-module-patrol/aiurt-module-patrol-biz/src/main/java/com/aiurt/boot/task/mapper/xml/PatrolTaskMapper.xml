@@ -2211,4 +2211,39 @@
         </if>
         GROUP BY ptd.id
     </select>
+
+    <select id="queryPatrolTaskExportExcelDTOByIds"
+            resultType="com.aiurt.boot.task.dto.PatrolTaskExportExcelDTO">
+        SELECT
+            cs.line_name,
+            cs.station_name,
+            pt.`code` AS task_code,
+            pt.`name` AS task_name,
+            sd.depart_name AS org_name,
+            pt.source,
+            pt.`status`,
+            pt.`discard_status`,
+            pt.`omit_status`,
+            pt.standard_duration,
+            pt.duration,
+            pt.submit_time,
+            pt.wifi_connect_time,
+            GROUP_CONCAT(ptu.user_name SEPARATOR ';') AS patrol_user_name_string,
+            TIMESTAMPDIFF(SECOND, pt.wifi_connect_time,pt.submit_time) AS actual_duration
+        FROM patrol_task pt
+        LEFT JOIN patrol_task_user ptu ON ptu.task_code=pt.`code`
+        LEFT JOIN patrol_task_station pts ON pts.task_code=pt.`code`
+        LEFT JOIN cs_station cs ON cs.station_code=pts.station_code
+        LEFT JOIN patrol_task_organization pto ON pto.task_code=pt.`code`
+        LEFT JOIN sys_depart sd ON sd.org_code=pto.org_code
+        <where>
+            <if test="patrolTaskIdList != null and patrolTaskIdList.size() != 0">
+                pt.id IN
+                <foreach collection="patrolTaskIdList" item="patrolId" separator="," open="(" close=")">
+                    #{patrolId}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY pt.id
+    </select>
 </mapper>
