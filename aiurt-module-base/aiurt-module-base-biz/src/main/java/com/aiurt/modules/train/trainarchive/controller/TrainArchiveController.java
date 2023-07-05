@@ -104,7 +104,21 @@ public class TrainArchiveController extends BaseController<TrainArchive, ITrainA
         trainArchiveService.updateById(trainArchive);
         return Result.OK("冻结成功!");
     }
-
+    /**
+     * 解冻
+     *
+     * @param id 编辑的数据
+     * @return 结果集
+     */
+    @AutoLog(value = "培训档案-解冻")
+    @ApiOperation(value = "培训档案-解冻", notes = "培训档案-解冻")
+    @PutMapping(value = "/thaw")
+    public Result<String> thaw(String id) {
+        TrainArchive trainArchive = trainArchiveService.getById(id);
+        trainArchive.setStatus(1);
+        trainArchiveService.updateById(trainArchive);
+        return Result.OK("解冻成功!");
+    }
     /**
      * 删除
      *
