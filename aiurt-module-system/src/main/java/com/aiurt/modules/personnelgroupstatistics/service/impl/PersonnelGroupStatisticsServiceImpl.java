@@ -6,6 +6,7 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.OverhaulApi;
 import com.aiurt.boot.api.PatrolApi;
 import com.aiurt.boot.constant.SysParamCodeConstant;
@@ -541,7 +542,8 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         boolean b = "1".equals(sysParamModel.getValue());
         if (b) {
             SysParamModel code = sysParamApi.selectByCode(SysParamCodeConstant.SPECIAL_TEAM);
-            List<SysDepartModel> dtoList = list.stream().filter(s -> !s.getOrgCode().equals(code.getValue())).collect(Collectors.toList());
+            List<String> codes = StrUtil.splitTrim(code.getValue(), ",");
+            List<SysDepartModel> dtoList = list.stream().filter(s -> !codes.contains(s.getOrgCode())).collect(Collectors.toList());
             return dtoList;
         }
         return list;
