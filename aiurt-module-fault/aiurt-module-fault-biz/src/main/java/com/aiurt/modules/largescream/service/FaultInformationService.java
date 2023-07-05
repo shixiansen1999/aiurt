@@ -466,6 +466,12 @@ public class FaultInformationService {
             dto.setId(String.valueOf(i));
             dto.setMonth(String.valueOf(i + 1));
             dto.setFaultSum(yearFault);
+
+            faultDataStatisticsDTO.setFaultModeCode(FaultConstant.FAULT_MODE_CODE_0);
+            Integer selfCheckFaults = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
+            dto.setSelfCheckFaults(new BigDecimal(selfCheckFaults));
+
+            dto.setRepairFaults(new BigDecimal(yearFault - selfCheckFaults));
             dtoList.add(dto);
         }
         return dtoList;
@@ -500,6 +506,13 @@ public class FaultInformationService {
             dto.setSubSystemName(allSystemCode.get(i).getSubSystemName());
             dto.setShortenedForm(allSystemCode.get(i).getShortenedForm());
             dto.setFaultSum(yearFault);
+
+            faultDataStatisticsDTO.setFaultModeCode(FaultConstant.FAULT_MODE_CODE_0);
+            Integer selfCheckFaults = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
+            dto.setSelfCheckFaults(new BigDecimal(selfCheckFaults));
+
+            dto.setRepairFaults(new BigDecimal(yearFault - selfCheckFaults));
+
             dtoList.add(dto);
         }
         return dtoList;
