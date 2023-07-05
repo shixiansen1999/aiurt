@@ -601,4 +601,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     IPage<ScheduleTask> getScheduleDeviceList(Page<ScheduleTask> page, @Param("condition")IndexScheduleDTO indexScheduleDTO);
 
     IPage<ScreenStatisticsTask> getStatisticsDataDeviceList(Page<ScreenStatisticsTask> page, @Param("condition") ScreenModule moduleType);
+
+    /**
+     * 根据巡视任务id，查询出要导出excel的数据
+     * @param patrolTaskIdList 巡视任务id列表
+     * @return 返回PatrolTaskExportExcelDTO对象的列表
+     */
+    List<PatrolTaskExportExcelDTO> queryPatrolTaskExportExcelDTOByIds(@Param("patrolTaskIdList") List<String> patrolTaskIdList);
 }
