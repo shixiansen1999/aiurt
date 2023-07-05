@@ -310,7 +310,8 @@ public class OverhaulStatisticsService{
             boolean b = "1".equals(sysParamModel.getValue());
             if (CollUtil.isNotEmpty(resultList) && b) {
                 SysParamModel code = sysParamApi.selectByCode(SysParamCodeConstant.SPECIAL_TEAM);
-                List<OverhaulStatisticsDTOS> dtoList = resultList.stream().filter(s -> !s.getOrgCode().equals(code.getValue())).collect(Collectors.toList());
+                List<String> codes = StrUtil.splitTrim(code.getValue(), ",");
+                List<OverhaulStatisticsDTOS> dtoList = resultList.stream().filter(s -> !codes.contains(s.getOrgCode())).collect(Collectors.toList());
                 return dtoList;
             }
         }

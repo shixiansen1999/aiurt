@@ -3316,7 +3316,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             if (StrUtil.isNotEmpty(departId)&&flag == 0) {
                 list.remove(departId);
             } else if (StrUtil.isNotEmpty(departId)&&flag == 1) {
-                list.remove(orgCode);
+                List<String> codes = StrUtil.splitTrim(orgCode, ",");
+                list.removeAll(codes);
             }
         }
         return list;
