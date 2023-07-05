@@ -1795,6 +1795,26 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 noAudit(faultCode);
                 // 如果非标准方案这新增一个标准库
                 addFaultKnowledgeBase(faultCode, fault);
+                // 通信试运行八期：故障完成之后，给中心班组提示音
+                SysParamModel msgParam = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_FINISH_CENTER_MSG);
+                boolean finishCenterMsg = ObjectUtil.isNotEmpty(msgParam) && FaultConstant.ENABLE.equals(msgParam.getValue());
+                if (finishCenterMsg) {
+                    try {
+                        // 获取中心班组成员账号
+                        String centerUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(CommonConstant.ZXCHENGYUAN), null, null, null, null);
+                        MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), centerUserName, "维修完成" + DateUtil.today(), null);
+                        //业务类型，消息类型，消息模板编码，摘要，发布内容
+                        faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
+                        messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                        messageDTO.setMsgAbstract("维修完成");
+                        messageDTO.setPublishingContent("故障维修完成");
+                        messageDTO.setIsRingBell(true);
+                        messageDTO.setRingDuration(5);
+                        sendMessage(messageDTO, faultMessageDTO);
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
             }
             //推送数据到调度系统
             faultExternalService.complete(repairRecordDTO,one.getEndTime(),loginUser);
