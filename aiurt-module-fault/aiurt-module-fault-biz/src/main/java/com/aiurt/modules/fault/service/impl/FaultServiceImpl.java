@@ -3985,4 +3985,31 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             faultRemind.processFaultNoUpdate(code, status);
         }
     }
+    @Override
+    public void leaderHangUp(HangUpDTO hangUpDTO) {
+        LoginUser user = checkLogin();
+        String faultCode = hangUpDTO.getFaultCode();
+        Fault fault = isExist(faultCode);
+        FaultRepairRecord faultRepairRecord = getFaultRepairRecord(faultCode, user);
+        // 审批通过-挂起
+        fault.setHangUpReason(hangUpDTO.getHangUpReason());
+        fault.setState(FaultStatesEnum.HANGUP.getStatus());
+        fault.setStatus(FaultStatusEnum.HANGUP.getStatus());
+        saveLog(user, "挂起通过", faultCode, FaultStatusEnum.HANGUP.getStatus(), null);
+        faultRepairRecord.setReqHangupTime(new Date());
+        faultRepairRecord.setHangupReason(hangUpDTO.getHangUpReason());
+        faultRepairRecord.setApprovalHangUpRemark(hangUpDTO.getHangUpReason());
+        faultRepairRecord.setApprovalHangUpResult(1);
+        faultRepairRecord.setApprovalHangUpTime(new Date());
+        faultRepairRecord.setApprovalHangUpUser(user.getUsername());
+
+        // 更新数据库
+        updateById(fault);
+
+        repairRecordService.updateById(faultRepairRecord);
+
+        // 更新工班长指派的任务
+        todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_HANG_UP.getType(), faultCode, user.getUsername(), "1");
+
+    }
 }
