@@ -41,9 +41,9 @@ public class TrainArchive implements Serializable {
 	@Excel(name = "所属部门", width = 15)
     @ApiModelProperty(value = "所属部门")
     private String orgCode;
-	/**状态：0，是正常，1是冻结*/
-	@Excel(name = "状态：0，是正常，1是冻结", width = 15)
-    @ApiModelProperty(value = "状态：0，是正常，1是冻结")
+	/**状态：1，是正常，2是冻结*/
+	@Excel(name = "1，是正常，2是冻结", width = 15)
+    @ApiModelProperty(value = "1，是正常，2是冻结")
     private Integer status;
 	/**delFlag*/
 	@Excel(name = "delFlag", width = 15)
