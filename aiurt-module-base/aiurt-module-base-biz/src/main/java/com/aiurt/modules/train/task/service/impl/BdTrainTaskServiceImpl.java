@@ -189,7 +189,9 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 			}
 			studentFeedback.setTrainTaskId(bdTrainTask.getId());
 			copyDetail(studentFeedback);
-			constructArchive(trainRecords,trainTask,bdTrainTask.getTaskState());
+			if(0==trainTask.getExamStatus()){
+				constructArchive(trainRecords,trainTask,bdTrainTask.getTaskState());
+			}
 		}
 		//开始考试
 		if (bdTrainTask.getTaskState() == 4) {
