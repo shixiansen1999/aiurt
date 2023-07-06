@@ -223,4 +223,20 @@
 		</if>
 		</where>
     </select>
+    <select id="queryTableDictValueByKey" resultType="java.lang.String">
+		select ${text} as "text" from ${table}
+		<where>
+			<if test="code !=null and code !='' and key!=null and key !=''">
+				${code}= #{key}
+			</if>
+			<if test="delFlag != null and delFlag >0 ">
+				and del_flag = 0
+			</if>
+		</where>
+	</select>
+	<select id="queryDictValueByKey" resultType="java.lang.String">
+		select s.item_value from sys_dict_item s
+		where s.dict_id = (select id from sys_dict where dict_code = #{code})
+		and s.item_text = #{key}
+	</select>
 </mapper>

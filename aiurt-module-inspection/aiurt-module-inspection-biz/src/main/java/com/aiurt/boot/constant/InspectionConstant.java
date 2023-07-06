@@ -295,5 +295,23 @@ public class InspectionConstant {
     /**
      * 今日检修数
      */
-    public static final Integer PLAN_TODAY_4 =4;
+    public static final Integer PLAN_TODAY_4 = 4;
+
+    /**
+     * 表示是
+     */
+    public static final String SHI = "是";
+    public static final String FOU = "否";
+
+    /**
+     * 检修标准-层级类型
+     */
+    public static final String LEVEL_TYPE_0 = "一级";
+    public static final String LEVEL_TYPE_1 = "子级";
+
+    /**
+     * 检查值类型
+     */
+    public static final String SELECT_ITEM_2 = "选择项";
+    public static final String INPUT_ITEM_3 = "输入项";
 }

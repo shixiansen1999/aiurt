@@ -433,4 +433,16 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
         return baseMapper.dictByid(id);
     }
 
+	@Override
+	public List<String> queryTableDictValueByKey(String table, String text, String code, String key) {
+		// 判断是否存在del_flag 字段
+		Long delFlag = sysDictMapper.isExistDelFlag(table);
+		return baseMapper.queryTableDictValueByKey(table, text, code, key,delFlag);
+	}
+
+	@Override
+	public List<String> queryDictValueByKey(String code, String key) {
+		return sysDictMapper.queryDictValueByKey(code, key);
+	}
+
 }

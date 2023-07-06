@@ -38,5 +38,8 @@ public interface ServiceNameConstants {
 	 * gateway通过header传递根路径 basePath
 	 */
 	String X_GATEWAY_BASE_PATH = "X_GATEWAY_BASE_PATH";
-
+	/**
+	 * 微服务名：用户服务
+	 */
+	String AIURT_BASIC = "aiurt-basic";
 }

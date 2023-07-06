@@ -276,4 +276,22 @@ public interface PatrolConstant {
      * 巡检任务mac地址匹配异常状态
      */
     Integer MAC_STATUS_EXCEPTION = 0;
+
+    /**
+     * 表示是
+     */
+    String SHI = "是";
+    String FOU = "否";
+    /**
+     * 检修标准-层级类型
+     */
+    String LEVEL_TYPE_0 = "一级";
+    String LEVEL_TYPE_1 = "子级";
+
+    /**
+     * 检查值类型
+     */
+    String SELECT_ITEM_2 = "选择项";
+    String INPUT_ITEM_3 = "输入项";
+    String SPECIAL_CHARACTERS_4 = "特殊字符输入";
 }
