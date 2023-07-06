@@ -56,5 +56,7 @@ public class SelectPlanReq {
     private java.lang.String code;
     @ApiModelProperty(value = "检修周期类型")
     private java.lang.Integer type;
+    @ApiModelProperty(value = "检修人id列表")
+    private List<String> userIdList;
 
 }
