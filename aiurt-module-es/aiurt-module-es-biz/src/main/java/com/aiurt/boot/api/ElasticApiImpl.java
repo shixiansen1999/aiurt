@@ -94,7 +94,16 @@ public class ElasticApiImpl implements ElasticAPI {
                         "faultPhenomenon", "knowledgeBaseTypeName", "majorName",
                         "systemName", "materialName", "deviceTypeName", "faultLevelName"
                 };
-                boolQueryBuilder.get().should(QueryBuilders.multiMatchQuery(keyword, fieldNames));
+                boolQueryBuilder.get().should(
+                        QueryBuilders.multiMatchQuery(keyword, fieldNames)
+                                .field("faultPhenomenon", 2.0f)
+                                .field("knowledgeBaseTypeName", 1.0f)
+                                .field("majorName", 1.0f)
+                                .field("systemName", 1.0f)
+                                .field("materialName", 1.0f)
+                                .field("deviceTypeName", 1.0f)
+                                .field("faultLevelName", 1.0f)
+                );
                 boolQueryBuilder.get().should(QueryBuilders.nestedQuery(
                         "reasonSolutions",
                         QueryBuilders.matchQuery("reasonSolutions.faultCause", keyword),
