@@ -47,6 +47,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -832,5 +833,24 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     public Result spotCheck(@RequestBody PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         patrolTaskService.spotCheck(patrolTaskDTO);
         return Result.ok("抽巡成功");
+    }
+
+    /**
+     * 定制模板导出excel
+     * @param patrolTaskParam
+     * @param pageNo
+     * @param pageSize
+     * @param request
+     * @param response
+     */
+    @ApiOperation(value = "定制模板导出excel", notes = "定制模板导出excel")
+    @GetMapping("/exportExcel")
+    public void exportExcel(PatrolTaskParam patrolTaskParam,
+                            @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                            @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                            HttpServletRequest request, HttpServletResponse response){
+        Page<PatrolTaskParam> page = new Page<PatrolTaskParam>(pageNo, pageSize);
+        patrolTaskParam.setHavePrint(true);
+        patrolTaskService.exportExcel(page, patrolTaskParam, request, response);
     }
 }

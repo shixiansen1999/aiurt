@@ -180,4 +180,13 @@ public class PatrolTaskParam extends PatrolTask {
 
     @ApiModelProperty(value = "巡视单内容")
     private List<PrintStationDTO> printStationDTOList;
+
+    @ApiModelProperty(value = "巡检任务的id列表，如果selections不为空，就不根据分页查询的那些参数查询，只查询id")
+    private List<String> selections;
+
+    /**巡视工时时间转化，转成1天2时5分9秒这种形式*/
+    private String durationString;
+
+    /**实际巡视时长时间转化，转成1天2时5分9秒这种形式*/
+    private String actualDurationString;
 }

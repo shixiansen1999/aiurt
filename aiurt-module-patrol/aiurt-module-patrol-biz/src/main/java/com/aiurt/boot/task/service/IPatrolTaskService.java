@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
@@ -245,4 +247,13 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @return
      */
     List<PrintPatrolTaskDTO> printPatrolTaskDeviceById(String ids);
+
+    /**
+     * 定制模板导出excel
+     * @param page
+     * @param patrolTaskParam
+     * @param request
+     * @param response
+     */
+    void exportExcel(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam, HttpServletRequest request, HttpServletResponse response);
 }
