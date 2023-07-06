@@ -2682,6 +2682,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (seconds > 0) {
             timeStringBuilder.append(seconds).append("秒");
         }
+        if (days == 0 && hours == 0 && minutes == 0 && second == 0){
+            return "0秒";
+        }
         return timeStringBuilder.toString();
     }
 }
