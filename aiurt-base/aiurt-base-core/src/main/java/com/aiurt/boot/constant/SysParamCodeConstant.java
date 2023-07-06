@@ -367,10 +367,6 @@ public interface SysParamCodeConstant {
      */
     String NO_RECEIVE_FAULT_RING_DURATION = "no_receive_fault_ring_duration";
     /**
-     * 企业微信跳转地址
-     */
-    String WECHAT_MESSAGE_URL = "wechat_message_url";
-    /**
      * 根据配置，获取施工计划导入列表
      */
     String CONSTRUCTION_WEEK_PLAN_COMMAND = "construction_week_plan_command";
@@ -397,11 +393,23 @@ public interface SysParamCodeConstant {
     /**
      * 无故障时也生成生产日报的专业，多个专业使用英文逗号分隔
      */
-    String GENERATE_REPORT_MAJOR = "generate_report_major";
+    String GENERATE_REPORT_MAJOR = "generate_report_major";\
+
     /**
      * 节假日类型为补班时调整的班次名称
      */
     String SCHEDULE_FOR_WORK = "schedule_for_work";
+
+    /**
+     * 企业微信跳转地址
+     */
+    String WECHAT_MESSAGE_URL = "wechat_message_url";
+
+    /**
+     * 故障完成后是否给中心班组成员提示音
+     */
+    String FAULT_FINISH_CENTER_MSG = "fault_finish_center_msg";
+
     /**
      * 假日类型为调休时调整的班次名称
      */
