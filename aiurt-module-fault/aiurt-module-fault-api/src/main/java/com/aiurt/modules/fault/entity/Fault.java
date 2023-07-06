@@ -19,7 +19,6 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -451,5 +450,28 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty("设备类型， app使用")
     @TableField(exist = false)
     private String deviceTypeName;
+
+    /**故障维修时长转换后*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "故障维修时长(天/时/分/秒)")
+    private String repairDurationConversion;
+
+    /**维修响应时长转换后*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "维修响应时长(天/时/分/秒)")
+    private String responseDurationConversion;
+
+    /**故障时长转换后*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "故障时长(天/时/分/秒)")
+    private String faultDurationConversion;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "处理情况")
+    private String maintenanceMeasures;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "处理方式")
+    private String processingName;
 }
 
