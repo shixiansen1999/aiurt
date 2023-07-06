@@ -1798,12 +1798,15 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 addFaultKnowledgeBase(faultCode, fault);
                 // 通信试运行八期：故障完成之后，给中心班组提示音
                 SysParamModel msgParam = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_FINISH_CENTER_MSG);
-                boolean finishCenterMsg = ObjectUtil.isNotEmpty(msgParam) && FaultConstant.ENABLE.equals(msgParam.getValue());
+                SysParamModel orgParam = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_ADD_ORG);
+                boolean finishCenterMsg = ObjectUtil.isNotEmpty(msgParam) && ObjectUtil.isNotEmpty(orgParam) && FaultConstant.ENABLE.equals(msgParam.getValue());
                 if (finishCenterMsg) {
                     try {
-                        // 获取中心班组成员账号
-                        String centerUserName = getUserNameByOrgCodeAndRoleCode(Collections.singletonList(CommonConstant.ZXCHENGYUAN), null, null, null, null);
-                        MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), centerUserName, "维修完成" + DateUtil.today(), null);
+                        // 获取中心班组成员
+                        List<String> deptCodes = StrUtil.splitTrim(orgParam.getValue(), ",");
+                        List<LoginUser> users = sysBaseAPI.getUserByDepIds(deptCodes);
+                        List<String> centerUserName = ObjectUtil.isNotEmpty(users) ? users.stream().map(LoginUser::getUsername).distinct().collect(Collectors.toList()) : new ArrayList<>();
+                        MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), CollUtil.join(centerUserName, ","), "维修完成" + DateUtil.today(), null);
                         //业务类型，消息类型，消息模板编码，摘要，发布内容
                         faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
                         messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
