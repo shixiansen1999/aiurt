@@ -988,6 +988,17 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
+    public Map<String, String> getMaterialNameByCode(List<String> materialCodes) {
+        LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(MaterialBase::getCode, materialCodes);
+        wrapper.eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0);
+        wrapper.select(MaterialBase::getCode, MaterialBase::getName);
+        List<MaterialBase> materialBases = materialBaseMapper.selectList(wrapper);
+        Map<String, String> map = materialBases.stream().collect(Collectors.toMap(k -> k.getCode(), v -> v.getName()));
+        return map;
+    }
+
+    @Override
     public String getMaterialNameByCodes(String materialCodes) {
         if (ObjectUtil.isNotEmpty(materialCodes)) {
             List<String> list = StrUtil.splitTrim(materialCodes, ",");
