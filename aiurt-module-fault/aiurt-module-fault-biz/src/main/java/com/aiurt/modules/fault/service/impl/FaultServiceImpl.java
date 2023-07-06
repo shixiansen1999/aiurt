@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.BetweenFormater;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
@@ -3410,6 +3411,19 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         boolean faultCenterWrite = "1".equals(iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_WRITE).getValue());
 
         records.parallelStream().forEach(fault1 -> {
+            //通信八期获取维修记录中的处理情况和处理方式，并且把各时长转换为天时分秒
+            LambdaQueryWrapper<FaultRepairRecord> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(FaultRepairRecord::getFaultCode, fault1.getCode()).select(FaultRepairRecord::getMaintenanceMeasures,FaultRepairRecord::getProcessing);
+            FaultRepairRecord faultRepairRecord = faultRepairRecordService.getBaseMapper().selectOne(queryWrapper);
+            if (ObjectUtil.isNotNull(faultRepairRecord)) {
+                fault1.setMaintenanceMeasures(faultRepairRecord.getMaintenanceMeasures());
+                List<DictModel> faultProcessing = sysBaseAPI.getDictItems("fault_processing");
+                String faultProcessingName = faultProcessing.stream().filter(f -> f.getValue().equals(String.valueOf(faultRepairRecord.getProcessing()))).map(DictModel::getLabel).collect(Collectors.joining());
+                fault1.setProcessingName(faultProcessingName);
+            }
+            fault1.setRepairDurationConversion(DateUtil.formatBetween(fault1.getRepairDuration() != null ? fault1.getRepairDuration() : 0, BetweenFormater.Level.SECOND));
+            fault1.setResponseDurationConversion(DateUtil.formatBetween(fault1.getResponseDuration() != null ? fault1.getResponseDuration() : 0, BetweenFormater.Level.SECOND));
+            fault1.setFaultDurationConversion(DateUtil.formatBetween(fault1.getFaultDuration() != null ? fault1.getFaultDuration() : 0, BetweenFormater.Level.SECOND));
 
             // 通过站点获取工区部门
             List<String> departs = sysBaseAPI.getWorkAreaByCode(fault1.getStationCode())
