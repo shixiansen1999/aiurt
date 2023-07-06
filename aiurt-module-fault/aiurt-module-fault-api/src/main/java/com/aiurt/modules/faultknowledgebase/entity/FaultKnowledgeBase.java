@@ -44,6 +44,10 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     @ApiModelProperty(value = "故障知识分类编码")
     @Dict(dictTable = "fault_knowledge_base_type", dicText = "name", dicCode = "code")
     private String knowledgeBaseTypeCode;
+    /**故障现象编号*/
+    @Excel(name = "故障现象编号", width = 15)
+    @ApiModelProperty(value = "故障现象编号")
+    private String faultPhenomenonCode;
 	/**故障现象*/
 	@Excel(name = "故障现象", width = 15)
     @ApiModelProperty(value = "故障现象")
