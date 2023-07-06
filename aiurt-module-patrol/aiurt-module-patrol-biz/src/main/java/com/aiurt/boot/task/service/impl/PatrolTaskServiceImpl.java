@@ -9,6 +9,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.*;
@@ -163,7 +164,26 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 //            return page;
 //        }
 
-        IPage<PatrolTaskParam> taskPage = patrolTaskMapper.getTaskList(page, patrolTaskParam);
+        IPage<PatrolTaskParam> taskPage = page;
+        if (CollUtil.isNotEmpty(patrolTaskParam.getSelections())){
+            // 只根据id查询
+            List<PatrolTaskParam> taskList = patrolTaskMapper.getTaskListByIds(patrolTaskParam.getSelections());
+            // 因为根据id查询只用于导出，就不设置页数之类的了
+            taskPage.setRecords(taskList);
+        }else{
+            taskPage = patrolTaskMapper.getTaskList(page, patrolTaskParam);
+        }
+
+        // 转化巡视时长
+        taskPage.getRecords().forEach(task->{
+            task.setDurationString(translateTime(task.getDuration()));
+            // 实际巡视时长，只有wifi连接时间和提交时间都不为空时才有
+            if (ArrayUtil.isAllNotEmpty(task.getSubmitTime(), task.getWifiConnectTime())){
+                int actualDuration = (int) DateUtil.between(task.getWifiConnectTime(), task.getSubmitTime(), DateUnit.SECOND);
+                task.setActualDurationString(translateTime(actualDuration));
+            }
+        });
+
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("patrol_task-%d").build();
         ExecutorService patrolTask = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
                 0L, TimeUnit.MILLISECONDS,
@@ -2654,7 +2674,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             timeStringBuilder.append(days).append("天");
         }
         if (hours > 0) {
-            timeStringBuilder.append(hours).append("时");
+            timeStringBuilder.append(hours).append("小时");
         }
         if (minutes > 0) {
             timeStringBuilder.append(minutes).append("分");
