@@ -8,6 +8,7 @@ import com.aiurt.modules.handler.validator.rule.RowValidationRule;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author:wgp
@@ -35,11 +36,11 @@ public class PatrolStandardItemParentIdHandler implements RowValidationRule {
             return new ValidationResult(true, null);
         }
 
-        if (isChildLevel(hierarchyType) && isEmptyParentColumn(column)) {
+        if (isChildLevel(hierarchyType) && (isEmptyParentColumn(column) || Objects.equals(column.getData(), column.getDefaultValue()))) {
             return new ValidationResult(false, "层级类型是子级时，父级是必填的");
         }
 
-        if (isFirstLevel(hierarchyType) && ObjectUtil.isNotEmpty(column.getData())) {
+        if (isFirstLevel(hierarchyType) && ObjectUtil.isNotEmpty(column.getData()) && !Objects.equals(column.getData(), column.getDefaultValue())) {
             return new ValidationResult(false, "层级类型是一级时，父级不用填写");
         }
 
