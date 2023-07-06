@@ -258,7 +258,10 @@
         <!--pt.discard_reason,-->
         pt.`rebuild`,
         pt.remark,
-        pt.spot_check_status
+        pt.spot_check_status,
+        pt.duration,
+        pt.standard_duration,
+        pt.wifi_connect_time
         from patrol_task pt
         left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
         left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
@@ -2245,5 +2248,64 @@
             </if>
         </where>
         GROUP BY pt.id
+    </select>
+
+    <select id="getTaskListByIds" resultType="com.aiurt.boot.task.param.PatrolTaskParam">
+        select pt.id,
+        pt.`code`,
+        <!--pt.plan_code,-->
+        pt.`name`,
+        <!--pt.type,-->
+        <!--pt.outsource,-->
+        <!--pt.plan_order_code,-->
+        <!--pt.plan_order_code_url,-->
+        <!--pt.period,-->
+        DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') as patrolDate,
+        IF(pt.source = 3,concat(DATE_FORMAT(pt.start_date,'%Y-%m-%d'),'~',DATE_FORMAT(pt.end_date,'%Y-%m-%d')) ,DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') ) as patrolDay,
+        pt.start_time,
+        pt.end_time,
+        pt.start_date,
+        pt.end_date,
+        pt.source,
+        <!--pt.begin_time,-->
+        pt.submit_time,
+        <!--pt.end_user_id,-->
+        <!--pt.sign_url,-->
+        pt.`status`,
+        <!--pt.reject_reason,-->
+        <!--pt.auditor,-->
+        <!--pt.auditor_id,-->
+        pt.auditor_time,
+        <!--pt.auditor_remark,-->
+        <!--pt.abnormal_state,-->
+        pt.dispose_status,
+        pt.dispose_time,
+        pt.dispose_id,
+        pt.omit_status,
+        <!--pt.omit_explain,-->
+        <!--pt.back_id,-->
+        <!--pt.back_reason,-->
+        <!--pt.assign_id,-->
+        pt.discard_status,
+        <!--pt.discard_reason,-->
+        pt.`rebuild`,
+        pt.remark,
+        pt.spot_check_status,
+        pt.duration,
+        pt.standard_duration,
+        pt.wifi_connect_time
+        from patrol_task pt
+        left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
+        left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
+        left join patrol_task_standard ptsd on pt.id = ptsd.task_id and pts.del_flag = 0
+        where pt.del_flag = 0
+        <if test="patrolTaskIdList != null and patrolTaskIdList.size() != 0">
+            and pt.id in
+            <foreach collection="patrolTaskIdList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        GROUP BY pt.id
+        order by pt.create_time desc
     </select>
 </mapper>
