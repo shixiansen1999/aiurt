@@ -297,4 +297,5 @@ public interface PatrolConstant {
      */
     String SELECT_ITEM_2 = "选择项";
     String INPUT_ITEM_3 = "输入项";
+    String SPECIAL_CHARACTERS_4 = "特殊字符输入";
 }
