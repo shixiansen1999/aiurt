@@ -531,6 +531,20 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             }
             String userName = patrolTaskMapper.getUserName(c.getUserId());
             c.setCheckUserName(userName);
+
+            if (PatrolConstant.DATE_TYPE_SPECIALCHAR.equals(c.getInputType())) {
+                //查询原标准项判断是否填写过
+                PatrolStandardItems standardItems = patrolStandardItemsMapper.selectById(c.getOldId());
+                if (ObjectUtil.isNotEmpty(standardItems) && !standardItems.getSpecialCharacters().equals(c.getSpecialCharacters())) {
+                    c.setResult(c.getSpecialCharacters());
+                }
+            }
+            if (PatrolConstant.DEVICE_OUT.equals(c.getInputType())) {
+                c.setResult(c.getWriteValue());
+            }
+            if (PatrolConstant.DEVICE_INP_TYPE.equals(c.getInputType())) {
+                c.setResult(c.getCheckDictName());
+            }
         });
         // 统计检查项中正常项的数据
         long normalItem = Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList)
