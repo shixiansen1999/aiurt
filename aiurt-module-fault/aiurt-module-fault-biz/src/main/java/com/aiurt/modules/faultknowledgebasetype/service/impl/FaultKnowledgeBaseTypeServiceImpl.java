@@ -180,7 +180,10 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
         List<SelectTableDTO> childList = children.stream().filter(f -> f.getPid().equals(pid)).collect(Collectors.toList());
         if(CollectionUtil.isNotEmpty(childList)){
             for (SelectTableDTO selectTableDTO : childList) {
-                selectTableDTO.setChildren(getTreeRes(children,selectTableDTO.getId()));
+                List<SelectTableDTO> treeRes = getTreeRes(children, selectTableDTO.getId());
+                if (CollUtil.isNotEmpty(treeRes)) {
+                    selectTableDTO.setChildren(treeRes);
+                }
             }
         }
         return childList;
