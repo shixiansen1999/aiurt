@@ -181,4 +181,41 @@ public class TimeUtil {
             return false;
         }
     }
+
+    /**
+     * 时间转化，转成1天2时5分9秒这种形式
+     * @param second 输入时间，单位：秒
+     * @return 转成的时间，转成1天2时5分9秒这种形式
+     */
+    public static String translateTime(Integer second){
+        if (ObjectUtil.isNull(second)){
+            return null;
+        }
+        // 天
+        int days = second / (24 * 60 * 60);
+        // 时，对24 * 60 * 60取余数(只有对24 * 60 * 60的余数部分才会转化成时，大于24 * 60 * 60的部分会转化成天)，再除以3600转成时
+        int hours = (second % (24 * 60 * 60)) / (60 * 60);
+        // 分，对3600取余数(只有对3600的余数部分才会转化成分，大于3600的部分会转化成时)，再除以60转成分
+        int minutes = (second % 3600) / 60;
+        // 秒，直接对60取余
+        int seconds = second % 60;
+
+        StringBuilder timeStringBuilder = new StringBuilder();
+        if (days > 0) {
+            timeStringBuilder.append(days).append("天");
+        }
+        if (hours > 0) {
+            timeStringBuilder.append(hours).append("小时");
+        }
+        if (minutes > 0) {
+            timeStringBuilder.append(minutes).append("分");
+        }
+        if (seconds > 0) {
+            timeStringBuilder.append(seconds).append("秒");
+        }
+        if (days == 0 && hours == 0 && minutes == 0 && second == 0){
+            return "0秒";
+        }
+        return timeStringBuilder.toString();
+    }
 }

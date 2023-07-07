@@ -55,6 +55,13 @@ public interface InspectionManagerMapper {
     List<String> translateStationList(List<String> codeList);
 
     /**
+     * 翻译线路名称，根据站点获取的线路名称
+     * @param stationCodeList 站点code
+     * @return
+     */
+    List<String> translateLineListByStationCodeList(@Param("stationCodeList") List<String> stationCodeList);
+
+    /**
      * 翻译站点信息
      * @param
      * @return

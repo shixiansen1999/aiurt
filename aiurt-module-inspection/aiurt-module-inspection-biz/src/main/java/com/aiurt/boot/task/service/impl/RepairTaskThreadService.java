@@ -9,6 +9,7 @@ import com.aiurt.boot.task.dto.RepairPrintMessage;
 import com.aiurt.boot.task.dto.RepairTaskUserNameDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.common.util.DateUtils;
+import com.aiurt.common.util.TimeUtil;
 import org.springframework.beans.BeanUtils;
 
 import java.util.Arrays;
@@ -111,6 +112,9 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
         // 对组织机构、站点、专业、子系统进行编码处理并设置相应的属性
         setTranslatedCode(repairTask, manager);
 
+        // 的检修时长检修时间转化
+        repairTask.setDurationString(TimeUtil.translateTime(repairTask.getDuration()));
+
         //repairTask.setContent(repairTask.getErrorContent());
         repairTask.setPath(repairTask.getUrl());
         repairTask.setTitle(repairTask.getSiteName() + "检修记录表");
@@ -147,6 +151,7 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
     private void setTranslatedCode(RepairTask repairTask, InspectionManager manager) {
         setOrganizational(repairTask, manager);
         setSiteName(repairTask, manager);
+        setLineName(repairTask, manager);
         setMajorName(repairTask, manager);
         setSystemName(repairTask, manager);
         setRepairTaskWeekName(repairTask);
@@ -175,6 +180,18 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
         if (repairTask.getSiteCode() != null) {
             List<String> list2 = Arrays.asList(repairTask.getSiteCode().split(","));
             repairTask.setSiteName(manager.translateStationList(list2));
+        }
+    }
+
+    /**
+     * 设置检修任务的线路名称，根据站点信息设置的线路名称
+     * @param repairTask
+     * @param manager
+     */
+    private void setLineName(RepairTask repairTask, InspectionManager manager) {
+        if (repairTask.getSiteCode() != null) {
+            List<String> stationCodeList = Arrays.asList(repairTask.getSiteCode().split(","));
+            repairTask.setLineName(manager.translateLineListByStationCodeList(stationCodeList));
         }
     }
 
