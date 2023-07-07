@@ -1535,6 +1535,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         repairRecordDTO.setDeviceList(faultDeviceList);
         if (Objects.nonNull(faultDeviceList)) {
             repairRecordDTO.setDeviceCodes(StrUtil.join(",", faultDeviceList.stream().map(FaultDevice::getDeviceCode).collect(Collectors.toList())));
+            repairRecordDTO.setDeviceTypeCode(faultDeviceList.get(0).getDeviceTypeCode());
         }
 
         // 指派时间
@@ -1764,6 +1765,32 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 已解决
         SysParamModel submitParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_AUDIT);
         boolean submitValue = "1".equals(submitParamModel.getValue());
+        // 使用的解决方案
+        fault.setKnowledgeId(repairRecordDTO.getKnowledgeId());
+        one.setKnowledgeId(repairRecordDTO.getKnowledgeId());
+        //是否需要自动提交签名（通信需要、站台门不需要）
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_SUBMIT_SIGNATURE);
+        boolean value = "1".equals(paramModel.getValue());
+        if(value){
+            LoginUser user = sysBaseAPI.getUserById(loginUser.getId());
+            one.setSignPath(user.getSignatureUrl());
+        }else {
+            one.setSignPath(repairRecordDTO.getSignPath());
+        }
+
+        //更新维修时长
+        //获取维修单的挂起时长
+        int oneHangUpTime= one.getHangUpTime() != null ? one.getHangUpTime() : 0;
+        //维修时间减去挂起时长
+        int repairDuration1 = fault.getRepairDuration() != null ? fault.getRepairDuration() : 0;
+        long repairDuration = DateUtil.between(one.getEndTime(), one.getReceviceTime(), DateUnit.SECOND);
+        if (ObjectUtil.isNull(repairDuration)) {
+            repairDuration = 0L;
+        }
+        one.setRepairDuration((int) repairDuration - oneHangUpTime);
+
+        fault.setRepairDuration(one.getRepairDuration() + repairDuration1);
+
         if (flag.equals(solveStatus)) {
             Date date = new Date();
             fault.setEndTime(date);
@@ -1821,31 +1848,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             fault.setResolutionDuration((int) faultDuration);
         }
 
-        // 使用的解决方案
-        fault.setKnowledgeId(repairRecordDTO.getKnowledgeId());
-        one.setKnowledgeId(repairRecordDTO.getKnowledgeId());
-        //是否需要自动提交签名（通信需要、站台门不需要）
-        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_SUBMIT_SIGNATURE);
-        boolean value = "1".equals(paramModel.getValue());
-        if(value){
-            LoginUser user = sysBaseAPI.getUserById(loginUser.getId());
-            one.setSignPath(user.getSignatureUrl());
-        }else {
-            one.setSignPath(repairRecordDTO.getSignPath());
-        }
-
-        //更新维修时长
-        //获取维修单的挂起时长
-        int oneHangUpTime= one.getHangUpTime() != null ? one.getHangUpTime() : 0;
-        //维修时间减去挂起时长
-        int repairDuration1 = fault.getRepairDuration() != null ? fault.getRepairDuration() : 0;
-        long repairDuration = DateUtil.between(one.getEndTime(), one.getReceviceTime(), DateUnit.SECOND);
-        if (ObjectUtil.isNull(repairDuration)) {
-            repairDuration = 0L;
-        }
-        one.setRepairDuration((int) repairDuration - oneHangUpTime);
-
-        fault.setRepairDuration(one.getRepairDuration() + repairDuration1);
         updateById(fault);
 
         repairRecordService.updateById(one);
@@ -2406,7 +2408,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             queryWrapper.or().like("code", faultPhenomenon);
         } else {
             if (StrUtil.isNotBlank(faultPhenomenon)) {
-                queryWrapper.like("code", faultPhenomenon);
+                queryWrapper.like("symptoms", faultPhenomenon);
             }
         }
         queryWrapper.apply(StrUtil.isNotBlank(stationCode), "(line_code = {0} or station_code = {0} or station_position_code = {0})", stationCode);

@@ -177,6 +177,7 @@ public class RepairRecordDTO extends DictEntity implements Serializable  {
     @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     private String subSystemCode;
 
+    private String deviceTypeCode;
 
 
 }
