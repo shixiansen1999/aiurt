@@ -3424,9 +3424,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         BeanUtils.copyProperties(loginUser, user);
         // 因为LoginUser没有majorId、roleCode、systemId、stationId，后面有用到，从req获取
         user.setMajorId(req.getParameter("majorId"));
-        user.setStationId(req.getParameter("roleCode"));
-        user.setRoleCode(req.getParameter("systemId"));
-        user.setSystemId(req.getParameter("stationId"));
+        user.setStationId(req.getParameter("stationId"));
+        user.setRoleCode(req.getParameter("roleCode"));
+        user.setSystemId(req.getParameter("systemId"));
 
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         // Result<IPage<SysUser>> result = new Result<>();
