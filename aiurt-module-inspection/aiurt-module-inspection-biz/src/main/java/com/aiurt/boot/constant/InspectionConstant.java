@@ -314,4 +314,9 @@ public class InspectionConstant {
      */
     public static final String SELECT_ITEM_2 = "选择项";
     public static final String INPUT_ITEM_3 = "输入项";
+
+    /**
+     * 代表检修类型的字典
+     */
+    public static final Integer MODULES_1 = 1;
 }

@@ -298,4 +298,9 @@ public interface PatrolConstant {
     String SELECT_ITEM_2 = "选择项";
     String INPUT_ITEM_3 = "输入项";
     String SPECIAL_CHARACTERS_4 = "特殊字符输入";
+
+    /**
+     * 巡视类型的数据字典
+     */
+    Integer MODULES_2 = 2;
 }

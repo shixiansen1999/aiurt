@@ -132,7 +132,7 @@ public class PatrolStandardRowDeviceTypeValidationRuleHandler implements RowVali
      */
     private ValidationResult validateForNonAppointedDevice(Column column) {
         if (ObjectUtil.isNotEmpty(column.getData())) {
-            return new ValidationResult(true, "与设备类型相关为否时，不用填写设备类型字段");
+            return new ValidationResult(false, "与设备类型相关为否时，不用填写设备类型字段");
         }
         return new ValidationResult(true, null);
     }
