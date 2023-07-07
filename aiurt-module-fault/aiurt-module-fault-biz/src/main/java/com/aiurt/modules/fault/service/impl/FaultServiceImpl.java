@@ -3365,10 +3365,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
 
-        Map<String, FaultAnalysisReport> reportMap = faultAnalysisReportService.getBaseMapper().selectList(Wrappers.lambdaQuery(FaultAnalysisReport.class)
+//        Map<String, FaultAnalysisReport> reportMap = faultAnalysisReportService.getBaseMapper().selectList(Wrappers.lambdaQuery(FaultAnalysisReport.class)
+//                        .in(FaultAnalysisReport::getFaultCode, records.stream().map(Fault::getCode).distinct().collect(Collectors.toList()))
+//                        .eq(FaultAnalysisReport::getDelFlag, 0))
+//                .stream().collect(Collectors.toMap(FaultAnalysisReport::getFaultCode, Function.identity()));
+        Map<String, List<FaultAnalysisReport>> reportMap = faultAnalysisReportService.getBaseMapper().selectList(Wrappers.lambdaQuery(FaultAnalysisReport.class)
                         .in(FaultAnalysisReport::getFaultCode, records.stream().map(Fault::getCode).distinct().collect(Collectors.toList()))
                         .eq(FaultAnalysisReport::getDelFlag, 0))
-                .stream().collect(Collectors.toMap(FaultAnalysisReport::getFaultCode, Function.identity()));
+                .stream().collect(Collectors.groupingBy(FaultAnalysisReport::getFaultCode));
 
         Map<String, Integer> finalWeightMap = weightMap;
 
@@ -3426,7 +3430,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
 
             //如果存在故障分析则返回true
-            if (ObjectUtil.isNotNull(reportMap.get(fault1.getCode()))) {
+            if (CollUtil.isNotEmpty(reportMap.get(fault1.getCode()))) {
                 fault1.setIsFaultAnalysisReport(true);
             }
 
