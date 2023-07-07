@@ -74,6 +74,19 @@
             </if>
         </where>
     </select>
+
+    <select id="translateLineListByStationCodeList" resultType="java.lang.String">
+        select DISTINCT(line_name) from cs_station
+        where
+            del_flag = 0
+            <if test="stationCodeList != null and stationCodeList.size() != 0">
+                and station_code in
+                <foreach item="item" collection="stationCodeList" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+    </select>
+
     <select id="translateStation" resultType="java.lang.String">
         select GROUP_CONCAT(station_name SEPARATOR ';') as stationName  from cs_station
         <where>

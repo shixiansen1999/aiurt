@@ -216,6 +216,11 @@ public class RepairTask extends BaseEntity {
     @ApiModelProperty(value = "检修任务的检修时长")
     private Integer duration;
 
+    /**检修时长转化，转化成1小时10分5秒这种形式*/
+    @ApiModelProperty(value = "检修时长")
+    @TableField(exist = false)
+    private String durationString;
+
     /**组织机构名称*/
     @ApiModelProperty(value = "组织机构名称")
     @TableField(exist = false)
@@ -235,6 +240,13 @@ public class RepairTask extends BaseEntity {
     @ApiModelProperty(value = "站点编码")
     @TableField(exist = false)
     private String siteCode;
+
+    /**线路名称，这个线路名称直接从上面的站点编码中获取，就没有多加一个线路编码。如果检修任务是多线路的话，使用”；“分隔，因为上面的站点名称
+     * 也是使用中文分号分隔的
+     */
+    @ApiModelProperty(value = "线路名称")
+    @TableField(exist = false)
+    private String lineName;
 
     /**专业名称*/
     @ApiModelProperty(value = "专业名称")
