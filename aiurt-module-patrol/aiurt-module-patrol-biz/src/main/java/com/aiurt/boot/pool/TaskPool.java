@@ -402,6 +402,7 @@ public class TaskPool implements Job {
             result.setSpecialCharacters(l.getSpecialCharacters());  // 特殊字符输入
             result.setDelFlag(0);  // 数据校验表达式
             result.setRequired(l.getRequired()); // 检查值是否必填
+            result.setProcMethods(l.getProcMethods()); // 程序及方法
             addResultList.add(result);
         });
         return addResultList;
