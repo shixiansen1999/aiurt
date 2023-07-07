@@ -561,11 +561,11 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
         messageDTO.setPublishingContent("备件借出申请通过");
         messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
 
-        new Thread(()-> {
-            sysBaseApi.sendTemplateMessage(messageDTO);
-            // 更新待办
-            isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.SPAREPART_LEND.getType(), sparePartLend.getId(), user.getUsername(), "1");
-        }).start();
+
+        sysBaseApi.sendTemplateMessage(messageDTO);
+        // 更新待办
+        isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.SPAREPART_LEND.getType(), sparePartLend.getId(), user.getUsername(), "1");
+
 
     }
 
@@ -653,9 +653,9 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
             todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
             todoDTO.setTemplateCode(CommonConstant.SPAREPARTOUTORDER_SERVICE_NOTICE);
             //labdam方式
-            new Thread(()-> {
-                isTodoBaseAPI.createTodoTask(todoDTO);
-            }).start();
+
+            isTodoBaseAPI.createTodoTask(todoDTO);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -668,10 +668,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
      */
     @Override
     public void dealChangeSparePartV2(List<DeviceChangeSparePartDTO> dataList) {
-        new Thread(()-> {
-            extracted(dataList);
-        }).start();
-
+        extracted(dataList);
     }
 
     /**
