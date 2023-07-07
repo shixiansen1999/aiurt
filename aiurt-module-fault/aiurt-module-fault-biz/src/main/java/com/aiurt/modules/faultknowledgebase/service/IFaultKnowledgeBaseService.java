@@ -187,4 +187,12 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @return
      */
     Result<?> importExcelData(HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 获取故障现象编号
+     *
+     * @param prefix FaultKnowledgebaseConstant.FAULT_PHENOMENON_PREFIX
+     * @return
+     */
+    String getFaultPhenomenonCode(String prefix);
 }
