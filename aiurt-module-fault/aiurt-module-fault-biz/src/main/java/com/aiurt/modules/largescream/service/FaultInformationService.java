@@ -765,6 +765,9 @@ public class FaultInformationService {
 
             String faultModeName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_MODE_CODE).stream().filter(item -> item.getValue().equals(String.valueOf(l.getFaultModeCode()))).map(DictModel::getText).collect(Collectors.joining());
             l.setFaultModeName(faultModeName);
+
+            String faultPhenomenonName = sysBaseApi.translateDictFromTable("fault_knowledge_base_type", "name", "code", l.getFaultPhenomenon());
+            l.setFaultPhenomenonName(faultPhenomenonName);
         });
         return largeFaultDataInfo;
     }
