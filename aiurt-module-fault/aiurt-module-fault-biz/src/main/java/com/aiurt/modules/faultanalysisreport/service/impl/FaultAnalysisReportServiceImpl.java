@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
@@ -15,32 +16,37 @@ import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
+import com.aiurt.modules.faultcausesolution.entity.FaultCauseSolution;
+import com.aiurt.modules.faultcausesolution.service.IFaultCauseSolutionService;
+import com.aiurt.modules.faultknowledgebase.constants.FaultKnowledgebaseConstant;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.modules.flow.api.FlowBaseApi;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
+import com.aiurt.modules.knowledge.entity.CauseSolution;
+import com.aiurt.modules.knowledge.entity.KnowledgeBase;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.collections.ArrayStack;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -66,6 +72,8 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     private FaultMapper faultMapper;
     @Autowired
     private FlowBaseApi flowBaseApi;
+    @Autowired
+    private IFaultCauseSolutionService faultCauseSolutionService;
     @Override
     public IPage<FaultAnalysisReport> readAll(Page<FaultAnalysisReport> page, FaultAnalysisReport faultAnalysisReport) {
         //获取权限查询的数据集合
@@ -327,12 +335,38 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
                     faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
                     faultKnowledgeBase.setDelFlag(0);
                     faultKnowledgeBaseService.updateById(faultKnowledgeBase);
+                    // 知识库审批通过后同步知识库数据至Elasticserach
+                    this.knowledgeBaseElasticData(faultKnowledgeBase);
                 }
                 break;
             default:
                 break;
         }
         this.updateById(analysisReport);
+    }
+
+    /**
+     * 知识库审批完成后同步一份数据到Elasticsearch中
+     * @param faultKnowledgeBase
+     */
+    private void knowledgeBaseElasticData(FaultKnowledgeBase faultKnowledgeBase) {
+        String id = faultKnowledgeBase.getId();
+        List<FaultCauseSolution> faultCauseSolutions = faultCauseSolutionService.lambdaQuery()
+                .eq(FaultCauseSolution::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(FaultCauseSolution::getKnowledgeBaseId, id)
+                .list();
+        List<CauseSolution> causeSolutions = new ArrayList<>();
+        CauseSolution causeSolution = null;
+        for (FaultCauseSolution solution : faultCauseSolutions) {
+            causeSolution = new CauseSolution();
+//            causeSolution.setKnowledgeBaseId(solution.getKnowledgeBaseId());
+//            causeSolution.setFaultCause(solution.getFaultCause());
+//            causeSolution.setSolution(solution.getSolution());
+//            causeSolution.setVideoUrl(solution.getVideoUrl());
+            BeanUtils.copyProperties(solution, causeSolution);
+            causeSolutions.add(causeSolution);
+        }
+        faultKnowledgeBaseService.knowledgeBaseElasticData(faultKnowledgeBase, causeSolutions, null);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -352,6 +386,9 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
             faultKnowledgeBase.setSystemCode(faultDTO.getSubSystemCode());
             //先隐藏，审批通过后再展示
             faultKnowledgeBase.setDelFlag(1);
+            // 故障现象编号
+            String faultPhenomenonCode = faultKnowledgeBaseService.getFaultPhenomenonCode(FaultKnowledgebaseConstant.FAULT_PHENOMENON_PREFIX);
+            faultKnowledgeBase.setFaultPhenomenonCode(faultPhenomenonCode);
         }
         if (StrUtil.isEmpty(id)) {
             if (StrUtil.isEmpty(faultDTO.getCode())) {
@@ -363,6 +400,8 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
             }
             this.save(faultAnalysisReport);
             String newId = faultAnalysisReport.getId();
+            // 保存或更新故障原因和解决方案
+            this.saveOrUpdateCauseSolution(faultKnowledgeBase);
             return newId;
         }else{
             if (ObjectUtil.isNotNull(faultKnowledgeBase.getId())) {
@@ -372,10 +411,55 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
                 faultKnowledgeBaseService.save(faultKnowledgeBase);
                 faultAnalysisReport.setFaultKnowledgeBaseId(faultKnowledgeBase.getId());
             }
+            // 保存或更新故障原因和解决方案
+            this.saveOrUpdateCauseSolution(faultKnowledgeBase);
             this.updateById(faultAnalysisReport);
             return id;
         }
 
     }
 
+    /**
+     * 保存或更新故障原因及解决方案
+     *
+     * @param faultKnowledgeBase
+     */
+    private void saveOrUpdateCauseSolution(FaultKnowledgeBase faultKnowledgeBase) {
+        if (ObjectUtil.isEmpty(faultKnowledgeBase)) {
+            return;
+        }
+        String knowledgeBaseId = faultKnowledgeBase.getId();
+        String faultReason = faultKnowledgeBase.getFaultReason();
+        String solution = faultKnowledgeBase.getSolution();
+
+        // 查询故障原因及解决方案
+        FaultCauseSolution faultCauseSolution = faultCauseSolutionService.lambdaQuery()
+                .eq(FaultCauseSolution::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(FaultCauseSolution::getKnowledgeBaseId, knowledgeBaseId)
+                .last("limit 1")
+                .one();
+        if (ObjectUtil.isNotEmpty(faultCauseSolution)) {
+            // 数据库中有故障原因及解决方案，参数中没有，则删除数据库中对应的解决方案信息
+            if (StrUtil.isEmpty(faultReason) && StrUtil.isEmpty(solution)) {
+                QueryWrapper<FaultCauseSolution> wrapper = new QueryWrapper<>();
+                wrapper.lambda().eq(FaultCauseSolution::getKnowledgeBaseId, knowledgeBaseId);
+                faultCauseSolutionService.remove(wrapper);
+                return;
+            }
+            // 数据库中有故障原因及解决方案，参数中存在，则更新解决方案信息
+            faultCauseSolution.setKnowledgeBaseId(knowledgeBaseId);
+            faultCauseSolution.setFaultCause(faultReason);
+            faultCauseSolution.setSolution(solution);
+            faultCauseSolutionService.updateById(faultCauseSolution);
+        } else {
+            // 数据库中没有故障原因及解决方案,参数中存在，则保存解决方案信息
+            if (StrUtil.isNotEmpty(faultReason) || StrUtil.isNotEmpty(solution)) {
+                faultCauseSolution = new FaultCauseSolution();
+                faultCauseSolution.setKnowledgeBaseId(knowledgeBaseId);
+                faultCauseSolution.setFaultCause(faultReason);
+                faultCauseSolution.setSolution(solution);
+                faultCauseSolutionService.save(faultCauseSolution);
+            }
+        }
+    }
 }
