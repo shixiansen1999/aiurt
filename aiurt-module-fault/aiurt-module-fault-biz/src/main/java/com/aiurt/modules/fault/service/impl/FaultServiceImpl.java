@@ -1533,7 +1533,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 维修设备
         List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultCode);
         repairRecordDTO.setDeviceList(faultDeviceList);
-        if (Objects.nonNull(faultDeviceList)) {
+        if (CollUtil.isNotEmpty(faultDeviceList)) {
             repairRecordDTO.setDeviceCodes(StrUtil.join(",", faultDeviceList.stream().map(FaultDevice::getDeviceCode).collect(Collectors.toList())));
             repairRecordDTO.setDeviceTypeCode(faultDeviceList.get(0).getDeviceTypeCode());
         }
