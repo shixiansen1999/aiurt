@@ -87,5 +87,6 @@ public class FaultLargeInfoDTO extends DictEntity {
     @ApiModelProperty(value = "线路编码", required = true)
     private String lineCode;
 
-
+    @ApiModelProperty(value = "线路名称",  required = true)
+    private String lineName;
 }
