@@ -1689,13 +1689,13 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     }
 
     /**
-     * 添加或编辑是同步数据至Elasticsearch
+     * 添加或编辑时同步数据至Elasticsearch
      *
      * @param faultKnowledgeBase
      * @param causeSolutions
      * @param sparePartInfos
      */
-    private void knowledgeBaseElasticData(FaultKnowledgeBase faultKnowledgeBase,
+    public void knowledgeBaseElasticData(FaultKnowledgeBase faultKnowledgeBase,
                                           List<CauseSolution> causeSolutions,
                                           List<FaultSparePart> sparePartInfos) {
         AsyncThreadPoolExecutorUtil executor = AsyncThreadPoolExecutorUtil.getExecutor();
