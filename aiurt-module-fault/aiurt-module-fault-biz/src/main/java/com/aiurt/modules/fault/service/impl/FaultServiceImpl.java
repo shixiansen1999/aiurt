@@ -2039,8 +2039,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             faultCauseSolution.setSpareParts(faultSpareParts);
             list.add(faultCauseSolution);
             faultKnowledgeBase.setFaultCauseSolutions(list);
-            faultKnowledgeBase.setUserName(fault.getAppointUserName());
-
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            //0706-发起人改为当前登录人，不然流程会报错
+            faultKnowledgeBase.setUserName(sysUser.getUsername());
             try {
                 faultKnowledgeBaseService.addFaultKnowledgeBase(faultKnowledgeBase);
             } catch (Exception e) {
