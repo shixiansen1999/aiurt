@@ -18,6 +18,7 @@ import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
 import com.aiurt.modules.faultcausesolution.entity.FaultCauseSolution;
 import com.aiurt.modules.faultcausesolution.service.IFaultCauseSolutionService;
+import com.aiurt.modules.faultknowledgebase.constants.FaultKnowledgebaseConstant;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
@@ -385,6 +386,9 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
             faultKnowledgeBase.setSystemCode(faultDTO.getSubSystemCode());
             //先隐藏，审批通过后再展示
             faultKnowledgeBase.setDelFlag(1);
+            // 故障现象编号
+            String faultPhenomenonCode = faultKnowledgeBaseService.getFaultPhenomenonCode(FaultKnowledgebaseConstant.FAULT_PHENOMENON_PREFIX);
+            faultKnowledgeBase.setFaultPhenomenonCode(faultPhenomenonCode);
         }
         if (StrUtil.isEmpty(id)) {
             if (StrUtil.isEmpty(faultDTO.getCode())) {
