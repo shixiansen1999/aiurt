@@ -87,7 +87,7 @@ public class FaultKnowLedgeBaseRowDeviceTypeCodeValidationRuleHandle implements 
             return new ValidationResult(false, String.format("系统不存在该专业或该子系统的设备类型"));
         } else {
             Column code = row.get("device_type_code");
-            if (code != null && !code.getData().equals(csMajorByCodeTypeName.getCode())) {
+            if (code != null && code.getData() != null && !code.getData().equals(csMajorByCodeTypeName.getCode())) {
                 return new ValidationResult(false, String.format("系统不存在该专业或该子系统的设备类型code"));
             }
         }
