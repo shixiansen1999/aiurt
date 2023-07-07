@@ -32,6 +32,11 @@ public class FaultDataAnalysisInfoDTO extends DictEntity {
     @ApiModelProperty(value = "主键")
     private String id;
 
+    /**故障报修编码*/
+    @ApiModelProperty(value = "故障报修编码")
+    private String code;
+
+
     /**专业子系统编码*/
     @ApiModelProperty(value = "专业子系统编码")
     @SystemFilterColumn
@@ -79,5 +84,11 @@ public class FaultDataAnalysisInfoDTO extends DictEntity {
     @ApiModelProperty(value = "线路编码", required = true)
     private String lineCode;
 
+    /**故障现象*/
+    @ApiModelProperty(value = "故障现象分类编码",  required = true)
+    private String faultPhenomenon;
 
+    /**故障现象*/
+    @ApiModelProperty(value = "故障现象分类",  required = true)
+    private String faultPhenomenonName;
 }
