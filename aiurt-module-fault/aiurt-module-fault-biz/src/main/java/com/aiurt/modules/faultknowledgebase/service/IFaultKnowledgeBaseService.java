@@ -11,6 +11,7 @@ import com.aiurt.modules.faultsparepart.entity.FaultSparePart;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseMatchDTO;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseReqDTO;
 import com.aiurt.modules.knowledge.dto.KnowledgeBaseResDTO;
+import com.aiurt.modules.knowledge.entity.CauseSolution;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -135,6 +136,15 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @param response
      */
     void synchrodata(HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 添加或编辑时同步数据至Elasticsearch
+     *
+     * @param faultKnowledgeBase
+     * @param causeSolutions
+     * @param sparePartInfos
+     */
+    void knowledgeBaseElasticData(FaultKnowledgeBase faultKnowledgeBase, List<CauseSolution> causeSolutions, List<FaultSparePart> sparePartInfos);
 
     /**
      * 智能助手知识库数据匹配
