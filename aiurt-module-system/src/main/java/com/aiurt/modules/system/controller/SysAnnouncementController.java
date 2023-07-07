@@ -458,30 +458,7 @@ public class SysAnnouncementController {
                 }
             }
         }
-        // 2.查询用户未读的系统消息
-        // 通知
-        Page<SysAnnouncement> anntMsgList = new Page<SysAnnouncement>(0, pageSize);
-        anntMsgList = sysAnnouncementService.querySysCementPageByUserId(anntMsgList, userId, Arrays.asList(CommonConstant.MSG_CATEGORY_1));
 
-        // 消息
-        Page<SysAnnouncement> sysMsgList = new Page<SysAnnouncement>(0, pageSize);
-        sysMsgList = sysAnnouncementService.querySysCementPageByUserId(sysMsgList, userId, Arrays.asList(CommonConstant.MSG_CATEGORY_2, CommonConstant.MSG_CATEGORY_3));
-
-        // 我的待办任务
-        Page<SysTodoList> listPage = new Page<SysTodoList>(0, pageSize);
-        SysTodoList sysTodoList = new SysTodoList();
-        sysTodoList.setCurrentUserName(sysUser.getUsername());
-        // 待办或待阅
-        sysTodoList.setTodoType(CommonConstant.TODO_TYPE_0 + "," + CommonConstant.TODO_TYPE_2);
-        IPage<SysTodoList> todoTaskList = sysTodoListService.queryPageList(listPage, sysTodoList);
-
-        // 封装结果
-        result.setSysMsgList(sysMsgList.getRecords());
-        result.setSysMsgTotal(sysMsgList.getTotal());
-        result.setAnntMsgList(anntMsgList.getRecords());
-        result.setAnntMsgTotal(anntMsgList.getTotal());
-        result.setTodoTaskList(todoTaskList.getRecords());
-        result.setTodoTaskTotal(todoTaskList.getTotal());
         return Result.OK(result);
     }
 
