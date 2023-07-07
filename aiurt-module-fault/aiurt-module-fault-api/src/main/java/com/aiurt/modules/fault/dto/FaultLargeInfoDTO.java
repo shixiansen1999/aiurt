@@ -31,6 +31,10 @@ public class FaultLargeInfoDTO extends DictEntity {
     @ApiModelProperty(value = "主键")
     private String id;
 
+    /**故障报修编码*/
+    @ApiModelProperty(value = "故障报修编码")
+    private String faultCode;
+
     /**专业子系统编码*/
     @ApiModelProperty(value = "专业子系统编码")
     @SystemFilterColumn
