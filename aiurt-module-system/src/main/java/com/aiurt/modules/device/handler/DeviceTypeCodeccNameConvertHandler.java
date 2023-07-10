@@ -4,7 +4,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.entity.Column;
 import com.aiurt.modules.handler.IRowDataConvertHandler;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.stereotype.Component;
 
@@ -26,9 +25,6 @@ public class DeviceTypeCodeccNameConvertHandler implements IRowDataConvertHandle
 
         Column subsystemCodeColumn = row.get("system_code");
         Object subsystem = subsystemCodeColumn.getData();
-
-        LambdaQueryWrapper<DeviceType> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(DeviceType::getMajorCode, (String)majorCodeColumn.getData()).eq(DeviceType::getSystemCode,(String)subsystem);
 
         // 查询设备类型是否匹配专业和子系统
         DeviceType csMajorByCodeTypeName = sysBaseApi.getDeviceTypeByCode((String)majorCodeColumn.getData(), (String)subsystem, (String) value.getData());
