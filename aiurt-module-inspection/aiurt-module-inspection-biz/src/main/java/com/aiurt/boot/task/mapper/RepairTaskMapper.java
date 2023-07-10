@@ -44,6 +44,12 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
     })
     List<RepairTask> selectables(@Param("pageList") Page<RepairTask> pageList, @Param("condition") RepairTask condition);
 
+    /**
+     * 根据任务id查询任务，这里主要是选择数据后导出使用，因此加不加数据权限都可以
+     * @param selections
+     * @return
+     */
+    List<RepairTask> selectablesByIds(List<String> selections);
 
     /**
      * 检修任务清单查询
