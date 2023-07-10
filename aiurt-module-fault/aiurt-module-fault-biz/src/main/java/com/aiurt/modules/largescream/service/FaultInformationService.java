@@ -831,7 +831,7 @@ public class FaultInformationService {
                     }
                     //计算超时时长
                     long hour = DateUtil.between(faultDatum.getHappenTime(), new Date(), DateUnit.HOUR);
-                    String time = hour + "H";
+                    String time = hour + "h";
                     faultDatum.setTimeoutDuration(time);
 
                     faultTimeOutList.add(faultDatum);
