@@ -237,7 +237,7 @@ jeecg:
   minio:
     minio_url: http://192.168.1.27:9000
     minio_name: admin
-    minio_pass: gz*&1949
+    minio_pass: '1qaz@2wsx'
     bucketName: platform
   #大屏报表参数设置
   jmreport:

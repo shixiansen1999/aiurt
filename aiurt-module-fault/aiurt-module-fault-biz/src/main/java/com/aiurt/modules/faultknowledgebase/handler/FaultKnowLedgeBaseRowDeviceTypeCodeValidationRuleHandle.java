@@ -82,14 +82,9 @@ public class FaultKnowLedgeBaseRowDeviceTypeCodeValidationRuleHandle implements 
         wrapper.eq(DeviceType::getMajorCode, csMajorByName.getString("majorCode")).eq(DeviceType::getSystemCode,(String)subsystemName);
 
         // 查询设备类型是否匹配专业和子系统
-        DeviceType csMajorByCodeTypeName = sysBaseApi.getCsMajorByCodeTypeName(csMajorByName.getString("majorCode"), (String) column.getData(), systemCode);
+        DeviceType csMajorByCodeTypeName = sysBaseApi.getDeviceTypeByCode(csMajorByName.getString("majorCode"), systemCode, (String) column.getData());
         if (ObjectUtil.isEmpty(csMajorByCodeTypeName)) {
-            return new ValidationResult(false, String.format("系统不存在该专业或该子系统的设备类型"));
-        } else {
-            Column code = row.get("device_type_code");
-            if (code != null && code.getData() != null && !code.getData().equals(csMajorByCodeTypeName.getCode())) {
-                return new ValidationResult(false, String.format("系统不存在该专业或该子系统的设备类型code"));
-            }
+            return new ValidationResult(false, String.format("系统不存在该专业或该子系统的设备类型层级"));
         }
 
         return new ValidationResult(true, null);

@@ -80,9 +80,9 @@ public class DeviceRowDeviceTypeValidationRuleHandle  implements RowValidationRu
         }
 
         // 查询设备类型是否匹配专业和子系统
-        DeviceType csMajorByCodeTypeName = sysBaseApi.getCsMajorByCodeTypeName(csMajorByName.getString("majorCode"), (String) column.getData(), systemCode);
+        DeviceType csMajorByCodeTypeName = sysBaseApi.getDeviceTypeByCode(csMajorByName.getString("majorCode"), systemCode, (String) column.getData());
         if (ObjectUtil.isEmpty(csMajorByCodeTypeName)) {
-            return new ValidationResult(false, String.format("系统不存在该专业或该子系统的设备类型"));
+            return new ValidationResult(false, String.format("系统不存在该专业或该子系统的设备类型层级"));
         }
         return new ValidationResult(true, null);
     }
@@ -94,7 +94,7 @@ public class DeviceRowDeviceTypeValidationRuleHandle  implements RowValidationRu
      * @return 子系统名称。
      */
     private Object getSubsystemName(Map<String, Column> row) {
-        Column subsystemCodeColumn = row.get("subsystem_code");
+        Column subsystemCodeColumn = row.get("system_code");
         if (subsystemCodeColumn != null) {
             return subsystemCodeColumn.getData();
         }

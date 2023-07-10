@@ -95,7 +95,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
-import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
@@ -2168,6 +2167,41 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return deviceType;
     }
 
+    @Override
+    public DeviceType getDeviceTypeByCode(String majorCode, String systemCode, String deviceTypeName) {
+
+        List<String> list = StrUtil.splitTrim(deviceTypeName, CommonConstant.SYSTEM_SPLIT_STR);
+        //获取最后一层设备类型名称
+        String lastTypeName = list.get(list.size() - 1);
+
+        LambdaQueryWrapper<DeviceType> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(DeviceType::getMajorCode, majorCode)
+                .eq(DeviceType::getSystemCode, systemCode)
+                .eq(DeviceType::getName, lastTypeName)
+                .eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0);
+
+        List<DeviceType> deviceTypes = deviceTypeService.getBaseMapper().selectList(wrapper);
+        if (Objects.isNull(deviceTypes)) {
+            return null;
+        }
+        //获取最后一层的设备类型的层次名称，进行比较
+        StringBuilder deviceTypeCodeCcName = new StringBuilder();
+        StringBuilder deviceTypeNameBuilder = new StringBuilder(deviceTypeName);
+        for (DeviceType deviceType : deviceTypes) {
+            List<String> strings = Arrays.asList(deviceType.getCodeCc().split(CommonConstant.SYSTEM_SPLIT_STR));
+            for(String typeCode : strings){
+                DeviceType one = deviceTypeService.getBaseMapper().selectOne(new QueryWrapper<DeviceType>().eq("code",typeCode)
+                        .lambda().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0));
+                deviceTypeCodeCcName.append(one.getName()).append(CommonConstant.SYSTEM_SPLIT_STR);
+            }
+            //当层次关系和表格的层次关系相同时返回当前设备类型，不存在多个相同层次关系的设备类型
+            deviceTypeNameBuilder.append(CommonConstant.SYSTEM_SPLIT_STR);
+            if (deviceTypeNameBuilder.toString().equals(deviceTypeCodeCcName.toString())) {
+                return deviceType;
+            }
+        }
+        return null;
+    }
     @Override
     public Map<String, String> getLineNameByCode(List<String> lineCodes) {
         LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
