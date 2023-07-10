@@ -8,7 +8,8 @@
             sd.org_code AS teamCode,
             sd.depart_name AS teamName,
             su.realname AS teamLeaderName,
-            sd.parent_id
+            sd.parent_id,
+            sd.depart_phone_num
     FROM
             work_area wa
                     LEFT JOIN work_area_org wao ON wao.work_area_code = wa.`code`

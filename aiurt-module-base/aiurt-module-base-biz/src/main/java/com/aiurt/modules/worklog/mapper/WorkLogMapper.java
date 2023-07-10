@@ -8,6 +8,8 @@ import com.aiurt.common.result.LogCountResult;
 import com.aiurt.common.result.WorkLogDetailResult;
 import com.aiurt.common.result.WorkLogResult;
 import com.aiurt.modules.position.entity.CsStationPosition;
+import com.aiurt.modules.worklog.dto.WorkLogBigScreenReqDTO;
+import com.aiurt.modules.worklog.dto.WorkLogBigScreenRespDTO;
 import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.param.LogCountParam;
 import com.aiurt.modules.worklog.param.PatrolAppHomeParam;
@@ -15,6 +17,7 @@ import com.aiurt.modules.worklog.param.WorkLogParam;
 import com.aiurt.modules.worklog.vo.WorkLogVO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
@@ -40,6 +43,14 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
             @DataColumn(key = "deptName",value = "sd.org_code")
     })
     IPage<WorkLogResult> queryWorkLog(IPage<WorkLogResult> page, @Param("param") WorkLogParam param);
+
+    /**
+     * 大屏-工作日志列表查询
+     * @param page
+     * @param workLogBigScreenReqDTO
+     * @return
+     */
+    IPage<WorkLogBigScreenRespDTO> bigScreenPageList(Page<WorkLogResult> page, @Param("workLogBigScreenReqDTO") WorkLogBigScreenReqDTO workLogBigScreenReqDTO);
 
     /**
      * 工作日志导出
