@@ -406,6 +406,11 @@ public interface SysParamCodeConstant {
     String WECHAT_MESSAGE_URL = "wechat_message_url";
 
     /**
+     * 企业微信认证url
+     */
+    String WECHAT_AUTHORIZE_URL = "wechat_authorize_url";
+
+    /**
      * 故障完成后是否给中心班组成员提示音
      */
     String FAULT_FINISH_CENTER_MSG = "fault_finish_center_msg";
