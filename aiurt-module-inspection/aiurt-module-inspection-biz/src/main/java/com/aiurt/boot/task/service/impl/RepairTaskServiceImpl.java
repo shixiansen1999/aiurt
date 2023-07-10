@@ -149,7 +149,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         // 去掉查询参数的所有空格
         removeSpacesFromQueryCondition(condition);
 
-        List<RepairTask> lists = repairTaskMapper.selectables(pageList, condition);
+        List<RepairTask> lists;
+
+        if (CollUtil.isNotEmpty(condition.getSelections())){
+            // 只根据id查询，page就不设置了
+            lists = repairTaskMapper.selectablesByIds(condition.getSelections());
+        }else{
+            lists = repairTaskMapper.selectables(pageList, condition);
+        }
+
         boolean filter = GlobalThreadLocal.setDataFilter(false);
 
         // 获取所有检修任务的id列表
