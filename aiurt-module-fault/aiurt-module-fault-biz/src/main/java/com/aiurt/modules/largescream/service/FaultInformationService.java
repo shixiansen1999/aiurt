@@ -24,6 +24,7 @@ import com.aiurt.modules.largescream.model.FaultScreenModule;
 import com.aiurt.modules.largescream.model.ReliabilityWorkTime;
 import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
 import com.aiurt.modules.position.entity.CsLine;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -834,6 +835,8 @@ public class FaultInformationService {
                     String time = hour + "h";
                     faultDatum.setTimeoutDuration(time);
 
+                    JSONObject csStationByCode = sysBaseApi.getCsStationByCode(faultDatum.getStationCode());
+                    faultDatum.setStationName(csStationByCode.getString("stationName"));
                     faultTimeOutList.add(faultDatum);
                 }
                 faultLevelDTO.setFaultLevelList(faultTimeOutList);

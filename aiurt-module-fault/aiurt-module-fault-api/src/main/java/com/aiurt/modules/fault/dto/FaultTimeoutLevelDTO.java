@@ -2,6 +2,7 @@ package com.aiurt.modules.fault.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
@@ -25,7 +26,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class FaultTimeoutLevelDTO {
+public class FaultTimeoutLevelDTO extends DictEntity {
     private static final long serialVersionUID = 1L;
     @ApiModelProperty("故障状态")
     @Dict(dicCode = "fault_status")
@@ -79,6 +80,9 @@ public class FaultTimeoutLevelDTO {
     @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
     @NotBlank(message = "请选择位置")
     private String stationCode;
+
+    @ApiModelProperty(value = "站点名称",  required = true)
+    private String stationName;
 
     /**设备编码*/
     @ApiModelProperty(value = "设备编码", required = true)
