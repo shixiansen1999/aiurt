@@ -393,4 +393,9 @@ public interface SysParamCodeConstant {
      * 企业微信跳转地址
      */
     String WECHAT_MESSAGE_URL = "wechat_message_url";
+
+    /**
+     * 企业微信认证url
+     */
+    String WECHAT_AUTHORIZE_URL = "wechat_authorize_url";
 }
