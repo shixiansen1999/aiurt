@@ -429,4 +429,9 @@ public class RepairTask extends BaseEntity {
     @ApiModelProperty(value = "检修单（树形）")
     @TableField(exist = false)
     List<RepairTaskResult> repairTaskResultList;
+
+    /**这个是列表查询里面用到的根据id查询，主要是导出使用*/
+    @ApiModelProperty(value = "查询的任务id列表")
+    @TableField(exist = false)
+    List<String> selections;
 }
