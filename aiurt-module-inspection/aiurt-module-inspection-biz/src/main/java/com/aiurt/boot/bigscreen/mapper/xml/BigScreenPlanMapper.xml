@@ -193,6 +193,10 @@
     su.job_grade,
     su.working_time,
     su.entry_date,
+    su.org_name,
+    su.permit_code,
+    su.card_code,
+    su.job_name,
     (
     SELECT
     GROUP_CONCAT( sr.role_name )
