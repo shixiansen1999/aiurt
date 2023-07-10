@@ -117,6 +117,8 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 			}else {
 				formatTaskCode = taskCode+"01";
 			}
+		} else {
+			formatTaskCode = taskCode+"01";
 		}
 		bdTrainTask.setTaskCode(formatTaskCode);
 		bdTrainTaskMapper.insert(bdTrainTask);

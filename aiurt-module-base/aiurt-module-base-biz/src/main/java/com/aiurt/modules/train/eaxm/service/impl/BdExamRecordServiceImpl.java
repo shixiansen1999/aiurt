@@ -255,6 +255,11 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
             if (!flag){
                 bdExamRecord.setIsRelease("3");
                 bdExamRecord.setCorrect(1);
+                //无简答，提交更新档案
+                TrainArchive archive = archiveService.getOne(new LambdaQueryWrapper<TrainArchive>()
+                        .eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0)
+                        .eq(TrainArchive::getUserId, bdExamRecord.getUserId()));
+                updateTrainRecord(archive.getId(),bdExamRecord);
             }else {
                 bdExamRecord.setIsRelease("2");
                 bdExamRecord.setCorrect(0);
@@ -288,7 +293,19 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
                 earlyClosure(flag,bdExamRecord);
             }
     }
-
+    public  void updateTrainRecord(String archiveId,BdExamRecord bdExamRecord){
+        if(ObjectUtil.isNotEmpty(archiveId)){
+            LambdaQueryWrapper<TrainRecord> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(TrainRecord::getDelFlag, CommonConstant.DEL_FLAG_0);
+            queryWrapper.eq(TrainRecord::getTrainArchiveId, archiveId);
+            queryWrapper.eq(TrainRecord::getTrainTaskId, bdExamRecord.getTrainTaskId());
+            TrainRecord trainRecord = recordService.getOne(queryWrapper);
+            if(ObjectUtil.isNotEmpty(trainRecord)){
+                trainRecord.setCheckGrade(ObjectUtil.isNotEmpty(bdExamRecord.getScore())?String.valueOf(bdExamRecord.getScore()):"0");
+                recordService.updateById(trainRecord);
+            }
+        }
+    }
     public void doDetail(BdExamRecordDTO bdExamRecordDTO,BdExamRecord bdExamRecord,Integer isTrue ,Integer score) {
         BdExamRecordDetail bdExamRecordDetail = new BdExamRecordDetail();
         bdExamRecordDetail.setAnswer(bdExamRecordDTO.getContent());
