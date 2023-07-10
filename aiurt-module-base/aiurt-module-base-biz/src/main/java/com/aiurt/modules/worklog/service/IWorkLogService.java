@@ -1,9 +1,7 @@
 package com.aiurt.modules.worklog.service;
 
 import com.aiurt.common.result.*;
-import com.aiurt.modules.worklog.dto.WorkLogDTO;
-import com.aiurt.modules.worklog.dto.WorkLogIndexDTO;
-import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
+import com.aiurt.modules.worklog.dto.*;
 import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.param.LogCountParam;
 import com.aiurt.modules.worklog.param.WorkLogParam;
@@ -179,5 +177,13 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @return
      */
     List<List<WorkLogDetailResult>> batchPrint(Page<WorkLogResult> page, WorkLogParam param, HttpServletRequest req);
+
+    /**
+     * 大屏-工作日志列表查询
+     * @param page
+     * @param workLogBigScreenReqDTO
+     * @return
+     */
+    IPage<WorkLogBigScreenRespDTO> bigScreenPageList(Page<WorkLogResult> page, WorkLogBigScreenReqDTO workLogBigScreenReqDTO);
 }
 

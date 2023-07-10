@@ -64,6 +64,29 @@
             wl.create_time DESC,id DESC
     </select>
 
+    <select id="bigScreenPageList" resultType="com.aiurt.modules.worklog.dto.WorkLogBigScreenRespDTO">
+        SELECT
+            wl.id,
+            wl.org_id,
+            wl.submit_time,
+            wl.status AS submitStatus,
+            wl.confirm_status AS confirmStatus,
+            sd.depart_name AS orgName
+        FROM
+            t_work_log wl
+        LEFT JOIN sys_depart sd ON sd.id = wl.org_id
+        WHERE
+            wl.del_flag = 0
+            <if test="workLogBigScreenReqDTO.teamId != null and workLogBigScreenReqDTO.teamId != ''">
+                AND wl.org_id=#{workLogBigScreenReqDTO.teamId}
+            </if>
+            <if test="workLogBigScreenReqDTO.submitTime != null">
+                AND DATE_FORMAT(wl.submit_time ,'%Y-%m-%d') = DATE_FORMAT(#{workLogBigScreenReqDTO.submitTime},'%Y-%m-%d')
+            </if>
+        ORDER BY
+            wl.submit_time DESC, id DESC
+    </select>
+
     <select id="exportXls" resultType="com.aiurt.common.result.WorkLogResult">
         SELECT
             wl.*,
