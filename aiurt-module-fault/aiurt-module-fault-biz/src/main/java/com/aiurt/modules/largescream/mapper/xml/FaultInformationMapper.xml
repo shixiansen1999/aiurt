@@ -338,6 +338,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
                 #{item}
             </foreach>
         </if>
+        order by sort,update_time,create_time
     </select>
 
 
