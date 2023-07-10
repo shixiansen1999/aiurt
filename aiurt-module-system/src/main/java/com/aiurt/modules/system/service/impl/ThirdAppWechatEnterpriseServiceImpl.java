@@ -49,6 +49,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -856,7 +857,13 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
         ThirdAppTypeItemVo config = thirdAppConfig.getWechatEnterprise();
         StringBuilder builder = new StringBuilder();
         // 构造企业微信OAuth2登录授权地址
-        builder.append("https://open.weixin.qq.com/connect/oauth2/authorize");
+        SysParamModel authorizeUrlModel = sysParamAPI.selectByCode(SysParamCodeConstant.WECHAT_AUTHORIZE_URL);
+        if (Objects.nonNull(authorizeUrlModel) && StrUtil.isNotBlank(authorizeUrlModel.getValue())) {
+            builder.append(authorizeUrlModel.getValue());
+        } else  {
+            builder.append("https://open.weixin.qq.com/connect/oauth2/authorize");
+        }
+
         // 企业的CorpID
         builder.append("?appid=").append(config.getClientId());
         SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.WECHAT_MESSAGE_URL);
@@ -1028,5 +1035,11 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
             }
         }
         return syncInfo;
+    }
+
+    public ThirdAppTypeItemVo getWechatConfig() {
+        ThirdAppTypeItemVo wechatEnterprise = thirdAppConfig.getWechatEnterprise();
+        wechatEnterprise.setClientSecret(null);
+        return wechatEnterprise;
     }
 }

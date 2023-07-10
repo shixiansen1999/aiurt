@@ -1,5 +1,7 @@
 package com.aiurt.config.thirdapp;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -7,6 +9,7 @@ import lombok.Data;
  * @author: jeecg-boot
  */
 @Data
+@ApiModel("第三方App配置")
 public class ThirdAppTypeItemVo {
 
     /**
@@ -16,6 +19,7 @@ public class ThirdAppTypeItemVo {
     /**
      * 应用Key
      */
+    @ApiModelProperty(value = "企业id")
     private String clientId;
     /**
      * 应用Secret
@@ -24,6 +28,7 @@ public class ThirdAppTypeItemVo {
     /**
      * 应用ID
      */
+    @ApiModelProperty(value = "应用id")
     private String agentId;
     /**
      * 目前仅企业微信用到：自建应用Secret

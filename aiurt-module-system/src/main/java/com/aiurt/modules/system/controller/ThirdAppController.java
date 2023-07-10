@@ -3,9 +3,12 @@ package com.aiurt.modules.system.controller;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.system.util.JwtUtil;
 import com.aiurt.config.thirdapp.ThirdAppConfig;
+import com.aiurt.config.thirdapp.ThirdAppTypeItemVo;
 import com.aiurt.modules.system.vo.thirdapp.SyncInfoVo;
 import com.alibaba.fastjson.JSONObject;
 import com.jeecg.dingtalk.api.core.response.Response;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.modules.system.service.impl.ThirdAppDingtalkServiceImpl;
@@ -24,6 +27,7 @@ import java.util.Map;
 @Slf4j
 @RestController("thirdAppController")
 @RequestMapping("/sys/thirdApp")
+@Api(tags = "第三方App对接")
 public class ThirdAppController {
 
     @Autowired
@@ -268,4 +272,14 @@ public class ThirdAppController {
         return Result.error("不识别的第三方APP");
     }
 
+    /**
+     * 查询企业微信配置
+     * @return
+     */
+    @GetMapping("/getWechatConfig")
+    @ApiOperation(value = "查询企业微信配置")
+    public Result<ThirdAppTypeItemVo> getWechatConfig() {
+        ThirdAppTypeItemVo vo = wechatEnterpriseService.getWechatConfig();
+        return Result.OK(vo);
+    }
 }
