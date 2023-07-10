@@ -92,6 +92,12 @@ public class CsSubsystem implements Serializable {
     @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     @MajorFilterColumn
     private String majorCode;
+
+    /**排序*/
+    @Excel(name = "排序", width = 15)
+    @ApiModelProperty(value = "排序")
+    private Integer sort;
+
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
     private String createBy;
