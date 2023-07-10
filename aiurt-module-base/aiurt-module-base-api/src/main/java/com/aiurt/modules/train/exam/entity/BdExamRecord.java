@@ -82,7 +82,7 @@ public class BdExamRecord implements Serializable {
 	@Excel(name = "总得分", width = 15)
     @ApiModelProperty(value = "总得分")
     private Integer score;
-	/**是否已经发布考试结果（0待复核、1已发布）*/
+	/**0未开始、1进行中，2待复核，3已结束*/
 	@Excel(name = "0未开始、1进行中，2待复核，3已结束", width = 15)
     @ApiModelProperty(value = "0未开始、1进行中，2待复核，3已结束")
     @Dict(dicCode = "task_tate")
