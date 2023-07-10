@@ -937,7 +937,7 @@ public class FaultInformationService {
                     if (planTime <= 0 || actualTime <= 0) {
                         faultSystemReliabilityDTO.setReliability("0");
                     } else {
-                        Double d = new BigDecimal(faultSystemReliabilityDTO.getActualRuntime() * 100 / plan).setScale(3, BigDecimal.ROUND_DOWN).doubleValue();
+                        Double d = new BigDecimal(faultSystemReliabilityDTO.getActualRuntime() * 100 / plan).setScale(4, BigDecimal.ROUND_DOWN).doubleValue();
                         faultSystemReliabilityDTO.setReliability(d + "%");
                     }
                 }
