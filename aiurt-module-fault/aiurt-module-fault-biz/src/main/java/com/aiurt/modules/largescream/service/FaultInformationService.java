@@ -732,8 +732,17 @@ public class FaultInformationService {
         List<FaultLargeInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataDatails(pageList, faultScreenModule);
         largeFaultDataInfo.stream().forEach(l -> {
             // 字典翻译
-            String statusName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream().filter(item -> item.getValue().equals(String.valueOf(l.getStatus()))).map(DictModel::getText).collect(Collectors.joining());
-            l.setStatusName(statusName);
+            /*String statusName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream().filter(item -> item.getValue().equals(String.valueOf(l.getStatus()))).map(DictModel::getText).collect(Collectors.joining());
+            l.setStatusName(statusName);*/
+
+            //0710状态值映射
+            if (l.getStatus().equals(FaultStatusEnum.Close.getStatus())) {
+                l.setStatusName("已完成");
+            } else if (l.getStatus().equals(FaultStatusEnum.HANGUP.getStatus())) {
+                l.setStatusName("已挂起");
+            }else {
+                l.setStatusName("维修中");
+            }
 
             String faultModeName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_MODE_CODE).stream().filter(item -> item.getValue().equals(String.valueOf(l.getFaultModeCode()))).map(DictModel::getText).collect(Collectors.joining());
             l.setFaultModeName(faultModeName);
