@@ -1,4 +1,4 @@
-package com.aiurt.modules.faultknowledgebase.handler;
+package com.aiurt.boot.standard.handler;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.device.entity.DeviceType;
@@ -6,7 +6,6 @@ import com.aiurt.modules.entity.Column;
 import com.aiurt.modules.handler.validator.ValidationResult;
 import com.aiurt.modules.handler.validator.rule.RowValidationRule;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.stereotype.Component;
 
@@ -18,10 +17,11 @@ import java.util.Map;
  * @create: 2023-07-03 11:50
  * @Description:
  */
-@Component("FaultKnowLedgeBaseRowDeviceTypeCodeValidationRuleHandle")
-public class FaultKnowLedgeBaseRowDeviceTypeCodeValidationRuleHandle implements RowValidationRule {
+@Component("PatrolStandardDeviceTypeRowValidationRuleHandle")
+public class PatrolStandardDeviceTypeRowValidationRuleHandle implements RowValidationRule {
     @Resource
     private ISysBaseAPI sysBaseApi;
+
     @Override
     public ValidationResult validate(Map<String, Column> row, Column column) {
         if (ObjectUtil.isEmpty(column.getData())) {
@@ -38,7 +38,7 @@ public class FaultKnowLedgeBaseRowDeviceTypeCodeValidationRuleHandle implements 
      * @return ValidationResult，包含验证状态和错误信息（如果有）。
      */
     private ValidationResult validateMajorAndSubsystem(Map<String, Column> row, Column column) {
-        Column majorCodeColumn = row.get("major_code");
+        Column majorCodeColumn = row.get("profession_code");
         if (majorCodeColumn != null) {
             return checkMajorAndSubsystem(majorCodeColumn, row, column);
         }
@@ -58,35 +58,32 @@ public class FaultKnowLedgeBaseRowDeviceTypeCodeValidationRuleHandle implements 
         JSONObject csMajorByName = sysBaseApi.getCsMajorByName((String) majorName);
 
         if (csMajorByName != null) {
-            return validateDeviceType(csMajorByName, subsystemName, column,row);
+            return validateDeviceType(csMajorByName, subsystemName, column);
         }
         return new ValidationResult(true, null);
     }
 
     /**
-     * 验证故障现象分类（故障知识分类）是否匹配主专业和子系统。
+     * 验证设备类型是否匹配主专业和子系统。
      *
      * @param csMajorByName 主专业的名称。
      * @param subsystemName 子系统名称。
      * @param column        正在被验证的数据集中的列。
      * @return ValidationResult，包含验证状态和错误信息（如果有）。
      */
-    private ValidationResult validateDeviceType(JSONObject csMajorByName, Object subsystemName, Column column,Map<String, Column> row) {
+    private ValidationResult validateDeviceType(JSONObject csMajorByName, Object subsystemName, Column column) {
         JSONObject systemName = sysBaseApi.getSystemName(csMajorByName.getString("majorCode"), (String) subsystemName);
 
         String systemCode = "";
         if (systemName != null) {
             systemCode = systemName.getString("systemCode");
         }
-        LambdaQueryWrapper<DeviceType> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(DeviceType::getMajorCode, csMajorByName.getString("majorCode")).eq(DeviceType::getSystemCode,(String)subsystemName);
 
         // 查询设备类型是否匹配专业和子系统
         DeviceType csMajorByCodeTypeName = sysBaseApi.getDeviceTypeByCode(csMajorByName.getString("majorCode"), systemCode, (String) column.getData());
         if (ObjectUtil.isEmpty(csMajorByCodeTypeName)) {
             return new ValidationResult(false, String.format("系统不存在该专业或该子系统的设备类型层级"));
         }
-
         return new ValidationResult(true, null);
     }
 
@@ -97,7 +94,7 @@ public class FaultKnowLedgeBaseRowDeviceTypeCodeValidationRuleHandle implements 
      * @return 子系统名称。
      */
     private Object getSubsystemName(Map<String, Column> row) {
-        Column subsystemCodeColumn = row.get("system_code");
+        Column subsystemCodeColumn = row.get("subsystem_code");
         if (subsystemCodeColumn != null) {
             return subsystemCodeColumn.getData();
         }

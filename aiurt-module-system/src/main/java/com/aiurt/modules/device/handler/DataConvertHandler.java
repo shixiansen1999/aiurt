@@ -1,6 +1,5 @@
 package com.aiurt.modules.device.handler;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.entity.Column;
 import com.aiurt.modules.handler.IRowDataConvertHandler;
@@ -47,21 +46,12 @@ public class DataConvertHandler implements IRowDataConvertHandler {
                 }
 
                 if ("station_code".equals(value.getColumn())) {
-                    if (stationCode == null) {
-                        return String.format("%s系统中不存在该线路下的站点", value.getName());
-                    } else {
-                        value.setData(stationCode);
-                    }
+                    value.setData(stationCode);
                 }
-
                 if ("position_code".equals(value.getColumn())) {
                     Object positionName = getPositionName(row);
                     JSONObject positionByName = sysBaseApi.getPositionByName((String)positionName, lineByName.getString("lineCode"), stationCode);
-                    if (ObjectUtil.isEmpty(positionByName)) {
-                        return String.format("%s系统中不存在该线路站点下的位置", value.getName());
-                    } else {
-                        value.setData(positionByName.getString("positionCode"));
-                    }
+                    value.setData(positionByName.getString("positionCode"));
                 }
             }
         }
