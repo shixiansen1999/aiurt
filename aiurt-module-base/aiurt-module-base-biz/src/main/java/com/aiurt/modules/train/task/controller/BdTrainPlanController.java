@@ -23,7 +23,6 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -76,8 +75,8 @@ public class BdTrainPlanController extends BaseController<BdTrainPlan, IBdTrainP
         if (Objects.isNull(sysUser)) {
             return Result.OK();
         }
-        //仅管理员查看
-        List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
+//        //仅管理员查看
+//        List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
 
         if (StrUtil.isNotBlank(bdTrainPlan.getPlanName())) {
             bdTrainPlan.setPlanName("%" + bdTrainPlan.getPlanName() + "%");
@@ -87,15 +86,15 @@ public class BdTrainPlanController extends BaseController<BdTrainPlan, IBdTrainP
         queryWrapper.eq(bdTrainPlan.getState() != null, "state", bdTrainPlan.getState());
         queryWrapper.eq(bdTrainPlan.getPlanYear() != null, "plan_year", bdTrainPlan.getPlanYear());
         queryWrapper.orderByDesc("id");
-        if (rolesByUsername.contains(TainPlanConstans.ADMIN)) {
-            String orgCode = sysUser.getOrgCode();
-            if (Objects.nonNull(orgCode))  {
-                SysDepartModel departByOrgCode = sysBaseAPI.getDepartByOrgCode(orgCode);
-                if (Objects.nonNull(departByOrgCode)) {
-                    queryWrapper.eq("dept_name", departByOrgCode.getDepartName());
-                }
-            }
-        }
+//        if (rolesByUsername.contains(TainPlanConstans.ADMIN)) {
+//            String orgCode = sysUser.getOrgCode();
+//            if (Objects.nonNull(orgCode))  {
+//                SysDepartModel departByOrgCode = sysBaseAPI.getDepartByOrgCode(orgCode);
+//                if (Objects.nonNull(departByOrgCode)) {
+//                    queryWrapper.eq("dept_name", departByOrgCode.getDepartName());
+//                }
+//            }
+//        }
 
         Page<BdTrainPlan> page = new Page<BdTrainPlan>(pageNo, pageSize);
         IPage<BdTrainPlan> pageList = bdTrainPlanService.page(page, queryWrapper);
