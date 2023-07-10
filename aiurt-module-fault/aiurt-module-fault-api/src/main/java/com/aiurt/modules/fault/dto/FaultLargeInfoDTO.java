@@ -74,7 +74,7 @@ public class FaultLargeInfoDTO extends DictEntity {
     private String realName;
 
     @ApiModelProperty("故障状态")
-    private String status;
+    private Integer status;
 
     @ApiModelProperty("故障状态名称")
     private String statusName;
