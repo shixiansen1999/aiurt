@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecgframework.poi.excel.annotation.Excel;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -67,4 +66,7 @@ public class PatrolCheckResultDTO extends PatrolCheckResult {
     @Excel(name = "程序及方法", width = 15)
     @ApiModelProperty(value = "程序及方法")
     private String procMethods;
+
+    @ApiModelProperty(value = "检查值")
+    private  String result;
 }
