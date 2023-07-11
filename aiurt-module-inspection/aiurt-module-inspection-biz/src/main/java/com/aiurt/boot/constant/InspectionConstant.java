@@ -302,6 +302,11 @@ public class InspectionConstant {
     public static final Integer PLAN_TODAY_4 = 4;
 
     /**
+     * 今日检修完成数
+     */
+    public static final Integer PLAN_TODAY_5 =5;
+
+    /**
      * 表示是
      */
     public static final String SHI = "是";

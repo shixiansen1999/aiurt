@@ -860,7 +860,7 @@ public class FaultInformationService {
                     }
                     //计算超时时长
                     long hour = DateUtil.between(faultDatum.getHappenTime(), new Date(), DateUnit.HOUR);
-                    String time = hour + "h";
+                    String time = hour + "小时";
                     faultDatum.setTimeoutDuration(time);
 
                     JSONObject csStationByCode = sysBaseApi.getCsStationByCode(faultDatum.getStationCode());

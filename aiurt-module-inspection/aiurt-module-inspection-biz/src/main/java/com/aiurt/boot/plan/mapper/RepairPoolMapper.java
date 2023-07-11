@@ -90,7 +90,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @param codeList
      * @return
      */
-    List<InspectionDTO> getInspectionTodayData(@Param("page") Page<InspectionDTO> page, @Param("date") Date date, @Param("codeList") List<String> codeList,@Param("lineCode")String lineCode);
+    List<InspectionDTO> getInspectionTodayData(@Param("page") Page<InspectionDTO> page, @Param("date") Date date, @Param("codeList") List<String> codeList,@Param("lineCode")String lineCode,@Param("status")Integer status);
 
     /**
      * 获取完成数量和未完成数量
