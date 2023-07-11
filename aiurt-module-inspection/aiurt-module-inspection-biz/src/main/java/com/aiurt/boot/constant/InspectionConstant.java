@@ -319,4 +319,9 @@ public class InspectionConstant {
      * 代表检修类型的字典
      */
     public static final Integer MODULES_1 = 1;
+
+    /**
+     * 今日检修完成数
+     */
+    public static final Integer PLAN_TODAY_5 =5;
 }
