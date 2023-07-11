@@ -2,7 +2,6 @@ package com.aiurt.boot.bigscreen.service;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.thread.ThreadUtil;
@@ -116,7 +115,8 @@ public class BigscreenPlanService {
 
             // 填充今日检修数（规则：当前时间在检修计划的开始时间和结束时间范围内）
             List<InspectionDTO> todayInspectionNum = repairPoolMapper.getInspectionTodayDataNoPage(new Date(), orgCodes,lineCode);
-            result.setTodayFinish(CollUtil.isNotEmpty(todayInspectionNum) ? todayInspectionNum.size() : 0L);
+            result.setTodaySum(CollUtil.isNotEmpty(todayInspectionNum) ? todayInspectionNum.size() : 0L);
+            result.setTodayFinish(CollUtil.isNotEmpty(todayInspectionNum) ? todayInspectionNum.stream().filter(t -> t.getStatus() == 8).count() : 0L);
         }
         return result;
     }
