@@ -555,7 +555,9 @@ public class PatrolScreenService {
         moduleType.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
         moduleType.setOrgCodes(orgCodes);
         moduleType.setLineCode(lineCode);
-        moduleType.setStationCode(stationCode);
+        if (StrUtil.isNotBlank(stationCode)) {
+            moduleType.setStationCodes(StrUtil.splitTrim(stationCode,","));
+        }
         moduleType.setUsername(username);
         if (StrUtil.isNotBlank(patrolDate)) {
             moduleType.setPatrolDate(DateUtil.parse(patrolDate,"yyyy-MM-dd"));

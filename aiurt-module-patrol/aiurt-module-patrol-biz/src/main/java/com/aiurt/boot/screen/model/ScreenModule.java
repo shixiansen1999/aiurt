@@ -69,7 +69,7 @@ public class ScreenModule {
     /**
      * 站点编号
      */
-    private String stationCode;
+    private List<String>  stationCodes;
     /**
      * 条件筛选的任务状态
      */
