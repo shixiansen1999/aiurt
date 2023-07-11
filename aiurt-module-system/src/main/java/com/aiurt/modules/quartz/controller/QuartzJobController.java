@@ -1,13 +1,10 @@
 package com.aiurt.modules.quartz.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.constant.SymbolConstant;
-import org.apache.shiro.authz.annotation.RequiresRoles;
-import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.constant.CommonConstant;
-import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecg.common.system.vo.LoginUser;
+import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.util.ImportExcelUtil;
+import com.aiurt.modules.quartz.entity.QuartzJob;
 import com.aiurt.modules.quartz.service.IQuartzJobService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -16,7 +13,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
-import com.aiurt.modules.quartz.entity.QuartzJob;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -68,6 +67,8 @@ public class QuartzJobController {
 			@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize, HttpServletRequest req) {
 		QueryWrapper<QuartzJob> queryWrapper = QueryGenerator.initQueryWrapper(quartzJob, req.getParameterMap());
 		Page<QuartzJob> page = new Page<QuartzJob>(pageNo, pageSize);
+		queryWrapper.ne("filter_status",1);
+		queryWrapper.or().isNull("filter_status");
 		IPage<QuartzJob> pageList = quartzJobService.page(page, queryWrapper);
         return Result.ok(pageList);
 

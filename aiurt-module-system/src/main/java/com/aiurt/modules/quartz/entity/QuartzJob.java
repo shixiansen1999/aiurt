@@ -1,17 +1,15 @@
 package com.aiurt.modules.quartz.entity;
 
-import java.io.Serializable;
-
 import com.aiurt.common.aspect.annotation.Dict;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import org.springframework.format.annotation.DateTimeFormat;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Data;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: 定时任务在线管理
@@ -57,5 +55,8 @@ public class QuartzJob implements Serializable {
 	@Excel(name="状态",width=15,dicCode="quartz_status")
 	@Dict(dicCode = "quartz_status")
 	private java.lang.Integer status;
+	/**定时任务类型。1培训定时任务*/
+	@Excel(name="定时任务类型",width=15,dicCode="quartz_status")
+	private java.lang.Integer filterStatus;
 
 }
