@@ -47,4 +47,5 @@ public class QuartzJobDTO implements Serializable {
     /**状态 0正常 -1停止*/
     @Dict(dicCode = "quartz_status")
     private Integer status;
+    private Integer filterStatus;
 }

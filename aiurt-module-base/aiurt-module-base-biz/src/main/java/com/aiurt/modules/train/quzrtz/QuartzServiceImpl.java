@@ -25,7 +25,7 @@ public class QuartzServiceImpl   {
         //参数
         quartzJobDTO.setDescription("");
         quartzJobDTO.setStatus(0);
-
+        quartzJobDTO.setFilterStatus(1);
         sysBaseAPI.saveAndScheduleJob(quartzJobDTO);
 
     }
