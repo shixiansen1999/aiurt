@@ -1039,7 +1039,9 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
 
     public ThirdAppTypeItemVo getWechatConfig() {
         ThirdAppTypeItemVo wechatEnterprise = thirdAppConfig.getWechatEnterprise();
-        wechatEnterprise.setClientSecret(null);
+        ThirdAppTypeItemVo vo = new ThirdAppTypeItemVo();
+        BeanUtils.copyProperties(wechatEnterprise, vo);
+        vo.setClientSecret(null);
         return wechatEnterprise;
     }
 }
