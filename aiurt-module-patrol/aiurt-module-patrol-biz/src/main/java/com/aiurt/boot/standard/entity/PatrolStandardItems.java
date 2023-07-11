@@ -111,6 +111,10 @@ public class PatrolStandardItems implements Serializable {
     /**检查值是否必填：0否、1是*/
     @ApiModelProperty(value = "检查值是否必填：0否、1是")
     private java.lang.Integer required;
+    /** 程序及方法*/
+    @Excel(name = "程序及方法", width = 15)
+    @ApiModelProperty(value = "程序及方法")
+    private String procMethods;
 	/**删除状态： 0未删除 1已删除*/
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")
     private java.lang.Integer delFlag;
