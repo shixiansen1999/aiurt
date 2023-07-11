@@ -296,4 +296,9 @@ public class InspectionConstant {
      * 今日检修数
      */
     public static final Integer PLAN_TODAY_4 =4;
+
+    /**
+     * 今日检修完成数
+     */
+    public static final Integer PLAN_TODAY_5 =5;
 }
