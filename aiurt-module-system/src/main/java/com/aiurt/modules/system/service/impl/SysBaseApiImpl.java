@@ -1790,7 +1790,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<SelectDeviceType> selectDeviceTypes = new ArrayList<>();
         if (StrUtil.isEmpty(value)) {
             // 一级专业显示
-            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).list();
+            List<DeviceType> deviceTypes = deviceTypeService.lambdaQuery().eq(DeviceType::getDelFlag,CommonConstant.DEL_FLAG_0).list();
             List<String> collect = deviceTypes.stream().map(DeviceType::getMajorCode).distinct().collect(Collectors.toList());
             List<CsMajor> majors = majorService.lambdaQuery().eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0)
                     .in(CsMajor::getMajorCode, collect).list();
@@ -3379,8 +3379,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             String departId = this.getDepartIdsByOrgCode(orgCode);
             if (StrUtil.isNotEmpty(departId) && flag == 0) {
                 list.remove(departId);
-            } else if (StrUtil.isNotEmpty(departId) && flag == 1) {
-                list.remove(orgCode);
+            } else if (StrUtil.isNotEmpty(departId)&&flag == 1) {
+                List<String> codes = StrUtil.splitTrim(orgCode, ",");
+                list.removeAll(codes);
             }
         }
         return list;
