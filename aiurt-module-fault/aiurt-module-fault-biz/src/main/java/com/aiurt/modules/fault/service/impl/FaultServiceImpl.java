@@ -2376,7 +2376,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         QueryWrapper<Fault> queryWrapper = QueryGenerator.initQueryWrapper(fault, req.getParameterMap());
         Page<Fault> page = new Page<>(pageNo, pageSize);
-       // PageOrderGenerator.initPage(page, fault, fault);
+        //PageOrderGenerator.initPage(page, fault, fault);
         //修改查询条件
         if (CollUtil.isNotEmpty(faultPhenomenonCodes)) {
             queryWrapper.in("fault_phenomenon", faultPhenomenonCodes);
@@ -2417,10 +2417,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 排序, 未完成(1)，挂起(3)，取消(0)，完成(2)
         queryWrapper.orderByAsc("(CASE WHEN state = 1 THEN 0 WHEN state = 3 THEN 1 WHEN state = 0 THEN 2 WHEN state = 2 THEN 3 ELSE 4 END)");
         // 待审批工单按故障发生时间从近到远排序；其他状态，按故障发生时间从近到远排序；
-        queryWrapper.orderByDesc("(case when status = 1 or state in(0,2,3) THEN happen_time ELSE 0 END)");
+        //queryWrapper.orderByDesc("(case when status = 1 or state in(0,2,3) THEN happen_time ELSE 0 END)");
         // 未完成状态，按故障持续时长从大到小排列，如果持续时长相同则按故障发生时间从近到远排序；
-        queryWrapper.orderByDesc("(CASE WHEN `status` in (3,4,5,6,7,9,11) THEN CASE WHEN duration IS NOT NULL THEN duration ELSE TIMESTAMPDIFF(SECOND,happen_time,NOW()) END END)");
-
+        //queryWrapper.orderByDesc("(CASE WHEN `status` in (3,4,5,6,7,9,11) THEN CASE WHEN duration IS NOT NULL THEN duration ELSE TIMESTAMPDIFF(SECOND,happen_time,NOW()) END END)");
+        queryWrapper.orderByDesc("create_time");
         // 未完成， 故障时长排序， 取消不用
         IPage<Fault> pageList = this.page(page, queryWrapper);
 
