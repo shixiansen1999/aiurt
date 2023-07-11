@@ -735,6 +735,21 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                         }
                     });
                 }
+
+                if (PatrolConstant.DATE_TYPE_SPECIALCHAR.equals(e.getInputType())) {
+                    //查询原标准项判断是否填写过
+                    PatrolStandardItems standardItems = patrolStandardItemsMapper.selectById(e.getOldId());
+                    if (ObjectUtil.isNotEmpty(standardItems) && !standardItems.getSpecialCharacters().equals(e.getSpecialCharacters())) {
+                        e.setResult(e.getSpecialCharacters());
+                    }
+                }
+                if (PatrolConstant.DEVICE_OUT.equals(e.getInputType())) {
+                    e.setResult(e.getWriteValue());
+                }
+                if (PatrolConstant.DEVICE_INP_TYPE.equals(e.getInputType())) {
+                    e.setResult(e.getCheckDictName());
+                }
+
                 String userName = patrolTaskMapper.getUserName(e.getUserId());
                 e.setCheckUserName(userName);
                 //获取这个单号下一个巡检项的所有附件
