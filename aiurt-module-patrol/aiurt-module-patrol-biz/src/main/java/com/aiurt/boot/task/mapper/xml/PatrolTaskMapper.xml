@@ -2170,6 +2170,13 @@
             (DATE_FORMAT(pt.end_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.today}, '%Y-%m-%d'))
             )
         </if>
+        <if test="condition.patrolDate != null">
+            AND (
+            (DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.patrolDate}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.end_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.patrolDate}, '%Y-%m-%d'))
+            )
+        </if>
         <if test="condition.username != null and condition.username != ''">
             and  ptu.user_name
             LIKE CONCAT('%', #{condition.username}, '%')
@@ -2197,8 +2204,11 @@
         left join patrol_standard ps on ps.id = ptss.standard_id and ps.del_flag = 0
         JOIN cs_station cs ON ptd.station_code = cs.station_code AND cs.del_flag = 0
         where 1=1
-        <if test="condition.stationCode != null and condition.stationCode != ''">
-            AND ptd.station_code = #{condition.stationCode}
+        <if test="condition.stationCodes != null and condition.stationCodes.size()!=0">
+            AND ptd.station_code in
+            <foreach collection="condition.stationCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         </if>
         <if test="condition.lineCode != null and condition.lineCode != ''">
             AND ptd.line_code = #{condition.lineCode}

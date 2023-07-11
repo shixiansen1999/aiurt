@@ -63,7 +63,7 @@ public class FaultDataAnalysisInfoDTO extends DictEntity {
     private String faultModeName;
 
     /**故障发生时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "MM月dd日 HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "M/d H:mm")
     @DateTimeFormat(pattern="MM月dd日 HH:mm" )
     @ApiModelProperty(value = "故障发生时间MM月dd日 HH:mm",  required = true)
     private Date happenTime;
