@@ -328,6 +328,7 @@
         su.avatar,
         su.permit_code,
         su.salary_code,
+        su.card_code,
         su.org_name as teamName
         FROM
         schedule_record sr

@@ -43,4 +43,6 @@ public class SysUserTeamDTO {
     @ApiModelProperty(value = "班次名称")
     private String scheduleItemName;
 
+    @ApiModelProperty("工作证编号")
+    private String cardCode;
 }
