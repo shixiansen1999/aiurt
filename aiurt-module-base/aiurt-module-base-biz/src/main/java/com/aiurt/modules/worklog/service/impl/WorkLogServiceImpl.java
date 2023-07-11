@@ -28,10 +28,7 @@ import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
 import com.aiurt.modules.worklog.constans.WorkLogConstans;
-import com.aiurt.modules.worklog.dto.WorkLogDTO;
-import com.aiurt.modules.worklog.dto.WorkLogIndexDTO;
-import com.aiurt.modules.worklog.dto.WorkLogIndexShowDTO;
-import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
+import com.aiurt.modules.worklog.dto.*;
 import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.entity.WorkLogEnclosure;
 import com.aiurt.modules.worklog.mapper.WorkLogEnclosureMapper;
@@ -401,6 +398,22 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             }
         }
         return getWorkLogResultIPage(page, param);
+    }
+
+    @Override
+    public IPage<WorkLogBigScreenRespDTO> bigScreenPageList(Page<WorkLogResult> page, WorkLogBigScreenReqDTO workLogBigScreenReqDTO) {
+        IPage<WorkLogBigScreenRespDTO> pageList = depotMapper.bigScreenPageList(page, workLogBigScreenReqDTO);
+        // 设置状态，待提交->待提交，已提交&未确认->待确认，已确认->已完成
+        pageList.getRecords().forEach(dto->{
+            if (WorkLogConstans.STATUS_0.equals(dto.getSubmitStatus())) {
+                dto.setStateName("待提交");
+            }else if (WorkLogConstans.CONFIRM_STATUS_1.equals(dto.getConfirmStatus())){
+                dto.setStateName("已完成");
+            }else{
+                dto.setStateName("待确认");
+            }
+        });
+        return pageList;
     }
 
     /**

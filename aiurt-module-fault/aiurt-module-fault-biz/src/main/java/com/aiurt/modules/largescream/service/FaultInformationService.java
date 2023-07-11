@@ -24,6 +24,7 @@ import com.aiurt.modules.largescream.model.FaultScreenModule;
 import com.aiurt.modules.largescream.model.ReliabilityWorkTime;
 import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
 import com.aiurt.modules.position.entity.CsLine;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -466,6 +467,12 @@ public class FaultInformationService {
             dto.setId(String.valueOf(i));
             dto.setMonth(String.valueOf(i + 1));
             dto.setFaultSum(yearFault);
+
+            faultDataStatisticsDTO.setFaultModeCode(FaultConstant.FAULT_MODE_CODE_0);
+            Integer selfCheckFaults = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
+            dto.setSelfCheckFaults(new BigDecimal(selfCheckFaults));
+
+            dto.setRepairFaults(new BigDecimal(yearFault - selfCheckFaults));
             dtoList.add(dto);
         }
         return dtoList;
@@ -500,6 +507,13 @@ public class FaultInformationService {
             dto.setSubSystemName(allSystemCode.get(i).getSubSystemName());
             dto.setShortenedForm(allSystemCode.get(i).getShortenedForm());
             dto.setFaultSum(yearFault);
+
+            faultDataStatisticsDTO.setFaultModeCode(FaultConstant.FAULT_MODE_CODE_0);
+            Integer selfCheckFaults = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
+            dto.setSelfCheckFaults(new BigDecimal(selfCheckFaults));
+
+            dto.setRepairFaults(new BigDecimal(yearFault - selfCheckFaults));
+
             dtoList.add(dto);
         }
         return dtoList;
@@ -719,8 +733,17 @@ public class FaultInformationService {
         List<FaultLargeInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataDatails(pageList, faultScreenModule);
         largeFaultDataInfo.stream().forEach(l -> {
             // 字典翻译
-            String statusName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream().filter(item -> item.getValue().equals(String.valueOf(l.getStatus()))).map(DictModel::getText).collect(Collectors.joining());
-            l.setStatusName(statusName);
+            /*String statusName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream().filter(item -> item.getValue().equals(String.valueOf(l.getStatus()))).map(DictModel::getText).collect(Collectors.joining());
+            l.setStatusName(statusName);*/
+
+            //0710状态值映射
+            if (l.getStatus().equals(FaultStatusEnum.Close.getStatus())) {
+                l.setStatusName("已完成");
+            } else if (l.getStatus().equals(FaultStatusEnum.HANGUP.getStatus())) {
+                l.setStatusName("已挂起");
+            }else {
+                l.setStatusName("维修中");
+            }
 
             String faultModeName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_MODE_CODE).stream().filter(item -> item.getValue().equals(String.valueOf(l.getFaultModeCode()))).map(DictModel::getText).collect(Collectors.joining());
             l.setFaultModeName(faultModeName);
@@ -752,6 +775,9 @@ public class FaultInformationService {
 
             String faultModeName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_MODE_CODE).stream().filter(item -> item.getValue().equals(String.valueOf(l.getFaultModeCode()))).map(DictModel::getText).collect(Collectors.joining());
             l.setFaultModeName(faultModeName);
+
+            String faultPhenomenonName = sysBaseApi.translateDictFromTable("fault_knowledge_base_type", "name", "code", l.getFaultPhenomenon());
+            l.setFaultPhenomenonName(faultPhenomenonName);
         });
         return largeFaultDataInfo;
     }
@@ -806,9 +832,11 @@ public class FaultInformationService {
                     }
                     //计算超时时长
                     long hour = DateUtil.between(faultDatum.getHappenTime(), new Date(), DateUnit.HOUR);
-                    String time = hour + "H";
+                    String time = hour + "h";
                     faultDatum.setTimeoutDuration(time);
 
+                    JSONObject csStationByCode = sysBaseApi.getCsStationByCode(faultDatum.getStationCode());
+                    faultDatum.setStationName(csStationByCode.getString("stationName"));
                     faultTimeOutList.add(faultDatum);
                 }
                 faultLevelDTO.setFaultLevelList(faultTimeOutList);
@@ -909,7 +937,7 @@ public class FaultInformationService {
                     if (planTime <= 0 || actualTime <= 0) {
                         faultSystemReliabilityDTO.setReliability("0");
                     } else {
-                        Double d = new BigDecimal(faultSystemReliabilityDTO.getActualRuntime() * 100 / plan).setScale(3, BigDecimal.ROUND_DOWN).doubleValue();
+                        Double d = new BigDecimal(faultSystemReliabilityDTO.getActualRuntime() * 100 / plan).setScale(4, BigDecimal.ROUND_DOWN).doubleValue();
                         faultSystemReliabilityDTO.setReliability(d + "%");
                     }
                 }

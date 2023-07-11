@@ -31,6 +31,10 @@ public class FaultLargeInfoDTO extends DictEntity {
     @ApiModelProperty(value = "主键")
     private String id;
 
+    /**故障报修编码*/
+    @ApiModelProperty(value = "故障报修编码")
+    private String faultCode;
+
     /**专业子系统编码*/
     @ApiModelProperty(value = "专业子系统编码")
     @SystemFilterColumn
@@ -70,7 +74,7 @@ public class FaultLargeInfoDTO extends DictEntity {
     private String realName;
 
     @ApiModelProperty("故障状态")
-    private String status;
+    private Integer status;
 
     @ApiModelProperty("故障状态名称")
     private String statusName;
@@ -87,5 +91,6 @@ public class FaultLargeInfoDTO extends DictEntity {
     @ApiModelProperty(value = "线路编码", required = true)
     private String lineCode;
 
-
+    @ApiModelProperty(value = "线路名称",  required = true)
+    private String lineName;
 }
