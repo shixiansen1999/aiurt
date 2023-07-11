@@ -2170,6 +2170,13 @@
             (DATE_FORMAT(pt.end_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.today}, '%Y-%m-%d'))
             )
         </if>
+        <if test="condition.patrolDate != null">
+            AND (
+            (DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.patrolDate}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.end_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.patrolDate}, '%Y-%m-%d'))
+            )
+        </if>
         <if test="condition.username != null and condition.username != ''">
             and  ptu.user_name
             LIKE CONCAT('%', #{condition.username}, '%')
