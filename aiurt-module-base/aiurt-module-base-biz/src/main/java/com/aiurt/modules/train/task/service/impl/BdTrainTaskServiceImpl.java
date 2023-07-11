@@ -172,8 +172,6 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 				bdTrainTask.setStudyResourceState(0);
 			}
 		}
-		List<TrainRecord> trainRecords = new ArrayList<>();
-		BdTrainTask trainTask = bdTrainTaskMapper.selectById(bdTrainTaskPage.getId());
 		//发布
 		if (bdTrainTask.getTaskState() == 1) {
 			//复制反馈表
@@ -191,9 +189,6 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 			}
 			studentFeedback.setTrainTaskId(bdTrainTask.getId());
 			copyDetail(studentFeedback);
-			if(0==trainTask.getExamStatus()){
-				constructArchive(trainRecords,trainTask,bdTrainTask.getTaskState());
-			}
 		}
 		//开始考试
 		if (bdTrainTask.getTaskState() == 4) {
@@ -212,38 +207,40 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 			quartzService.test(quartzJobDTO);
 			//保存定时任务id
 			bdTrainTask.setQuartzJobId(quartzJobDTO.getId());
-			constructArchive(trainRecords,trainTask,bdTrainTask.getTaskState());
-		}
-		if(CollUtil.isNotEmpty(trainRecords)){
-			recordService.saveBatch(trainRecords);
 		}
 		this.updateById(bdTrainTask);
 		return Result.OK("编辑成功!");
 	}
 
-	private void constructArchive(List<TrainRecord> trainRecords,BdTrainTask trainTask, Integer taskState) {
+	private void constructArchive(BdTrainTask trainTask) {
+		List<TrainRecord> trainRecords = new ArrayList<>();
 		List<BdTrainTaskUser> list = examRecordMapper.userList(trainTask.getId());
 		List<TrainArchive> archiveList = archiveService.list(new LambdaQueryWrapper<TrainArchive>().eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0));
 		Map<String, TrainArchive> archiveMap = archiveList.stream().collect(Collectors.toMap(TrainArchive::getUserId, Function.identity()));
-		list.forEach(e -> {
-			TrainArchive archive = archiveMap.get(e.getUserId());
-			if(ObjectUtil.isNotEmpty(archive)){
-				TrainRecord trainRecord = new TrainRecord();
-				trainRecord.setTrainArchiveId(archive.getId());
-				trainRecord.setTrainTime(trainTask.getStartDate());
-				trainRecord.setTaskGrade(trainTask.getTaskGrade());
-				trainRecord.setIsAnnualPlan(trainTask.getIsAnnualPlan());
-				trainRecord.setTrainContent(trainTask.getPlanSubName());
-				trainRecord.setHour(Integer.valueOf(String.valueOf(trainTask.getTaskHours())));
-				trainRecord.setTaskCode(trainTask.getTaskCode());
-				trainRecord.setTrainTaskId(trainTask.getId());
-				if(taskState == 1){
-					trainRecord.setCheckGrade("无考核");
+		if(CollUtil.isNotEmpty(list)){
+			list.forEach(e -> {
+				TrainArchive archive = archiveMap.get(e.getUserId());
+				if(ObjectUtil.isNotEmpty(archive)){
+					TrainRecord trainRecord = new TrainRecord();
+					trainRecord.setTrainArchiveId(archive.getId());
+					trainRecord.setTrainTime(trainTask.getStartDate());
+					trainRecord.setTaskGrade(trainTask.getTaskGrade());
+					trainRecord.setIsAnnualPlan(trainTask.getIsAnnualPlan());
+					trainRecord.setTrainContent(trainTask.getPlanSubName());
+					trainRecord.setHour(Integer.valueOf(String.valueOf(trainTask.getTaskHours())));
+					trainRecord.setTaskCode(trainTask.getTaskCode());
+					trainRecord.setTrainTaskId(trainTask.getId());
+					if(0==trainTask.getExamStatus()){
+						trainRecord.setCheckGrade("无考核");
+					}
+					trainRecords.add(trainRecord);
 				}
-				trainRecords.add(trainRecord);
-			}
 
-		});
+			});
+			if(CollUtil.isNotEmpty(trainRecords)){
+				recordService.saveBatch(trainRecords);
+			}
+		}
 	}
 
 	@Override
@@ -358,6 +355,7 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 			trainTask.setTaskState(2);
 			trainTask.setStopState(0);
 			trainTask.setNumber(trainTask.getNumber() + 1);
+			constructArchive(trainTask);
 		} else if (ObjectUtil.isNotNull(bdTrainTask.getStopState())) {
 			//继续,暂停培训
 			if (bdTrainTask.getStopState().equals(0)) {
