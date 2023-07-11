@@ -36,6 +36,7 @@ import com.aiurt.modules.faultcausesolution.dto.FaultCauseProportionNumDTO;
 import com.aiurt.modules.faultcausesolution.dto.FaultCauseSolutionDTO;
 import com.aiurt.modules.faultcausesolution.entity.FaultCauseSolution;
 import com.aiurt.modules.faultcausesolution.service.IFaultCauseSolutionService;
+import com.aiurt.modules.faultknowledgebase.constants.FaultKnowledgebaseConstant;
 import com.aiurt.modules.faultknowledgebase.dto.*;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
@@ -894,7 +895,8 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
                 FaultKnowledgeBase faultKnowledgeBase = null;
                 for (FaultKnowledgeBaseImportModel importModel : list) {
                     faultKnowledgeBase = new FaultKnowledgeBase();
-                    faultKnowledgeBase.setFaultPhenomenonCode(this.getFaultPhenomenonCode("GZXX"));
+                    String faultPhenomenonCode = this.getFaultPhenomenonCode(FaultKnowledgebaseConstant.FAULT_PHENOMENON_PREFIX);
+                    faultKnowledgeBase.setFaultPhenomenonCode(faultPhenomenonCode);
                     faultKnowledgeBase.setKnowledgeBaseTypeCode(importModel.getKnowledgeBaseTypeCode());
                     faultKnowledgeBase.setFaultPhenomenon(importModel.getFaultPhenomenon());
                     faultKnowledgeBase.setDeviceTypeCode(importModel.getDeviceTypeCode());
@@ -1597,7 +1599,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             //list转string
             getFaultCodeList(faultKnowledgeBase);
             // 获取故障现象编号
-            String faultPhenomenonCode = this.getFaultPhenomenonCode("GZXX");
+            String faultPhenomenonCode = this.getFaultPhenomenonCode(FaultKnowledgebaseConstant.FAULT_PHENOMENON_PREFIX);
             faultKnowledgeBase.setFaultPhenomenonCode(faultPhenomenonCode);
             faultKnowledgeBase.setStatus(FaultConstant.PENDING);
             faultKnowledgeBase.setScanNum(0);
@@ -1689,13 +1691,13 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     }
 
     /**
-     * 添加或编辑是同步数据至Elasticsearch
+     * 添加或编辑时同步数据至Elasticsearch
      *
      * @param faultKnowledgeBase
      * @param causeSolutions
      * @param sparePartInfos
      */
-    private void knowledgeBaseElasticData(FaultKnowledgeBase faultKnowledgeBase,
+    public void knowledgeBaseElasticData(FaultKnowledgeBase faultKnowledgeBase,
                                           List<CauseSolution> causeSolutions,
                                           List<FaultSparePart> sparePartInfos) {
         AsyncThreadPoolExecutorUtil executor = AsyncThreadPoolExecutorUtil.getExecutor();
@@ -1785,7 +1787,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
      *
      * @return
      */
-    private String getFaultPhenomenonCode(String prefix) {
+    public String getFaultPhenomenonCode(String prefix) {
         Snowflake snowflake = IdUtil.getSnowflake(1, 1);
         String code = String.format("%s%s", prefix, snowflake.nextIdStr());
         return code;
