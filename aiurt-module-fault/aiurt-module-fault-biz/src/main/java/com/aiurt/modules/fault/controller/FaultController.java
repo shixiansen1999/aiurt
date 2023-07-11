@@ -253,7 +253,19 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         faultService.hangUp(hangUpDTO);
         return Result.OK("操作成功");
     }
-
+    /**
+     * 工班长挂起
+     *
+     * @param hangUpDTO
+     * @return
+     */
+    @AutoLog(value = "工班长挂起", operateType = 3, operateTypeAlias = "工班长挂起", permissionUrl = PERMISSION_URL)
+    @ApiOperation(value = "工班长挂起", notes = "工班长挂起")
+    @PutMapping("/leaderHangUp")
+    public Result<?> leaderHangUp(@RequestBody HangUpDTO hangUpDTO) {
+        faultService.leaderHangUp(hangUpDTO);
+        return Result.OK("操作成功");
+    }
     /**
      * 审批挂起
      *
