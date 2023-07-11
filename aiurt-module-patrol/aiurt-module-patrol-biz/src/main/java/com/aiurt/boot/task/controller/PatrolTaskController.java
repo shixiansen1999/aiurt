@@ -772,6 +772,23 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         }
 
     }
+
+    /**
+     *打印巡视详情，上面的那个给大屏单独使用了
+     *
+     * @param ids
+     * @param req
+     * @return author lkj
+     */
+    @AutoLog(value = "巡检任务表-打印巡视详情")
+    @ApiOperation(value = "巡检任务表-打印巡视详情", notes = "巡检任务表-打印巡视详情")
+    @GetMapping(value = "/printPatrolTaskDetailById")
+    public Result<List<PrintPatrolTaskDTO>> printPatrolTaskDetailById(@RequestParam(name="ids",required=true) String ids,
+                                                                HttpServletRequest req) {
+        List<PrintPatrolTaskDTO> printPatrolTaskDTOS = patrolTaskService.printPatrolTaskById(ids);
+        return Result.OK(printPatrolTaskDTOS);
+    }
+
     /**
 
      *
