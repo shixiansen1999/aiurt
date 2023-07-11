@@ -123,6 +123,8 @@ public class BdTrainMakeupExamRecordServiceImpl extends ServiceImpl<BdTrainMakeu
         //参数
         quartzJobEnd.setParameter(bdExamRecord.getId());
         makeUpExamService.test(quartzJobStart,quartzJobEnd);
+        //保存补考开始考试的定时任务id
+        bdTrainMakeupExamRecord.setQuartzJobStartId(quartzJobStart.getId());
         //保存补考关闭考试的定时任务id
         bdTrainMakeupExamRecord.setQuartzJobId(quartzJobEnd.getId());
 

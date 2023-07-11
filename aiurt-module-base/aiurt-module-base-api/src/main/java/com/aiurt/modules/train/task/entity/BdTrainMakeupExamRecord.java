@@ -90,9 +90,13 @@ public class BdTrainMakeupExamRecord implements Serializable {
     @ApiModelProperty(value = "补考时间")
     private java.util.Date makeupTime;
     /**定时任务id*/
-    @Excel(name = "定时任务id", width = 15)
+    @Excel(name = "结束考试的定时任务id", width = 15)
     @ApiModelProperty(value = "定时任务id")
     private String  quartzJobId;
+    /**定时任务id*/
+    @Excel(name = "开始考试的定时任务id", width = 15)
+    @ApiModelProperty(value = "定时任务id")
+    private String  quartzJobStartId;
     /**考试记录id*/
     @ApiModelProperty(value = "考试记录id")
     private String examId;
