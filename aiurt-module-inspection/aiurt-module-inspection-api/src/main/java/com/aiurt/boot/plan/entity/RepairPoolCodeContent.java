@@ -82,6 +82,10 @@ public class RepairPoolCodeContent implements Serializable {
 	@Excel(name = "数据校验字段", width = 15)
     @ApiModelProperty(value = "数据校验字段")
     private java.lang.String dataCheck;
+    /**特殊字符*/
+    @Excel(name = "特殊字符", width = 15)
+    @ApiModelProperty(value = "特殊字符")
+    private java.lang.String specialCharacters;
 	/**删除状态*/
 	@Excel(name = "删除状态", width = 15)
     @ApiModelProperty(value = "删除状态")

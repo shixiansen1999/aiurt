@@ -848,6 +848,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 RepairTaskResult repairTaskResult = new RepairTaskResult();
                 repairTaskResult.setTaskDeviceRelId(id);
                 repairTaskResult.setDataCheck(repairPoolCodeContent.getDataCheck());
+                repairTaskResult.setSpecialCharacters(repairPoolCodeContent.getSpecialCharacters());
                 repairTaskResult.setHasChild(repairPoolCodeContent.getHasChild());
                 repairTaskResult.setDictCode(repairPoolCodeContent.getDictCode());
                 repairTaskResult.setQualityStandard(repairPoolCodeContent.getQualityStandard());

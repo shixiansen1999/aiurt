@@ -2,6 +2,7 @@ package com.aiurt.boot.task.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.jeecgframework.poi.excel.annotation.Excel;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotBlank;
@@ -33,6 +34,10 @@ public class WriteMonadDTO {
     @Max(value = 300,message = "输入项填写内容最大长度为300")
     @ApiModelProperty(value = "输入项填写内容")
     private java.lang.String note;
+
+    @Excel(name = "特殊字符输入结果", width = 15)
+    @ApiModelProperty(value = "特殊字符输入结果")
+    private java.lang.String specialCharactersResult;
 
     @Max(value = 300,message = "备注最大长度为300")
     @ApiModelProperty(value = "备注")
