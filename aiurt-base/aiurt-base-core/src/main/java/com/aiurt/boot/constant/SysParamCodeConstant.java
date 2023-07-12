@@ -416,4 +416,8 @@ public interface SysParamCodeConstant {
      * 企业微信认证url
      */
     String WECHAT_AUTHORIZE_URL = "wechat_authorize_url";
+    /**
+     * 故障操作日志查询是否根据处理时间升序排序
+     */
+    String FAULT_OPERATION_ORDER = "fault_operation_order";
 }

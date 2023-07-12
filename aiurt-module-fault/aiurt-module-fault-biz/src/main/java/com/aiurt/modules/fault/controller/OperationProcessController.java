@@ -1,7 +1,10 @@
 package com.aiurt.modules.fault.controller;
+
 import cn.hutool.core.date.BetweenFormater;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.fault.entity.OperationProcess;
@@ -12,13 +15,15 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -40,6 +45,9 @@ public class OperationProcessController extends BaseController<OperationProcess,
 
 	@Autowired
 	private ISysBaseAPI sysBaseAPI;
+
+	@Autowired
+	private ISysParamAPI iSysParamAPI;
 
 	/**
 	 * 分页列表查询
@@ -75,8 +83,15 @@ public class OperationProcessController extends BaseController<OperationProcess,
 				dealTime(process, between);
 			}
 		}
-		list = list.stream().
-				sorted(Comparator.comparing(OperationProcess::getProcessTime).reversed()).collect(Collectors.toList());
+		// 获取根据处理时间排序配置
+		SysParamModel orderParam = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_OPERATION_ORDER);
+		boolean b = ObjectUtil.isNotEmpty(orderParam) && "1".equals(orderParam.getValue());
+		if (b) {
+			list =  list.stream().sorted(Comparator.comparing(OperationProcess::getProcessTime)).collect(Collectors.toList());
+		} else {
+			list = list.stream().
+					sorted(Comparator.comparing(OperationProcess::getProcessTime).reversed()).collect(Collectors.toList());
+		}
 		return Result.OK(list);
 	}
 
