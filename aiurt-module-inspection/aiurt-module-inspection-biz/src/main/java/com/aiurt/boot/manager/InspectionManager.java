@@ -111,6 +111,20 @@ public class InspectionManager {
     }
 
     /**
+     * 翻译线路名称，根据站点获取的线路名称
+     *
+     * @param stationCodeList 站点code值
+     * @return
+     */
+    public String translateLineListByStationCodeList(List<String> stationCodeList) {
+        if (CollUtil.isEmpty(stationCodeList)) {
+            return "";
+        }
+        List<String> nameList = inspectionManagerMapper.translateLineListByStationCodeList(stationCodeList);
+        return CollUtil.isNotEmpty(nameList) ? StrUtil.join("；", nameList) : "";
+    }
+
+    /**
      * 翻译站点信息，先在redis里面找，没有再去数据库里面找
      *
      * @param codeList code值

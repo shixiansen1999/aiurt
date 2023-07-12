@@ -1,18 +1,18 @@
 package com.aiurt.boot.task.service.impl;
 
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.constant.PatrolConstant;
-import com.aiurt.boot.constant.PatrolMessageUrlConstant;
-import com.aiurt.boot.constant.RoleConstant;
-import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.boot.constant.*;
 import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
@@ -60,6 +60,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
@@ -70,17 +71,18 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
-import org.jeecg.common.system.vo.CsUserDepartModel;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.StationAndMacModel;
-import org.jeecg.common.system.vo.SysParamModel;
+import org.jeecg.common.system.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -102,6 +104,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Value("${jeecg.path.upload:/opt/upFiles}")
     private String path;
+    @Value("${jeecg.minio.bucketName}")
+    private String bucketName;
 
     @Autowired
     private PatrolTaskMapper patrolTaskMapper;
@@ -160,7 +164,26 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 //            return page;
 //        }
 
-        IPage<PatrolTaskParam> taskPage = patrolTaskMapper.getTaskList(page, patrolTaskParam);
+        IPage<PatrolTaskParam> taskPage = page;
+        if (CollUtil.isNotEmpty(patrolTaskParam.getSelections())){
+            // 只根据id查询
+            List<PatrolTaskParam> taskList = patrolTaskMapper.getTaskListByIds(patrolTaskParam.getSelections());
+            // 因为根据id查询只用于导出，就不设置页数之类的了
+            taskPage.setRecords(taskList);
+        }else{
+            taskPage = patrolTaskMapper.getTaskList(page, patrolTaskParam);
+        }
+
+        // 转化巡视时长
+        taskPage.getRecords().forEach(task->{
+            task.setDurationString(TimeUtil.translateTime(task.getDuration()));
+            // 实际巡视时长，只有wifi连接时间和提交时间都不为空时才有
+            if (ArrayUtil.isAllNotEmpty(task.getSubmitTime(), task.getWifiConnectTime())){
+                int actualDuration = (int) DateUtil.between(task.getWifiConnectTime(), task.getSubmitTime(), DateUnit.SECOND);
+                task.setActualDurationString(TimeUtil.translateTime(actualDuration));
+            }
+        });
+
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("patrol_task-%d").build();
         ExecutorService patrolTask = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
                 0L, TimeUnit.MILLISECONDS,
@@ -1307,12 +1330,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             boolean isWorkArea = WorkAreaStationCodeList.contains(stationCode);
             // 巡视标准时长，单位：秒
             Integer standardDuration = task.getStandardDuration();
+            // wifi最近连接巡视站点时间
+            Date recentConnectTime = sysBaseApi.getRecentConnectTimeByStationCode(sysUser.getUsername(),stationCode);
+            // 把提交任务时最近一次wifi连接记录存入patrol_task表
+            updateWrapper.set(PatrolTask::getWifiConnectTime, recentConnectTime);
             if (isWorkArea) {
                 // 工区，巡视时长等于上限时长。
                 updateWrapper.set(PatrolTask::getDuration, standardDuration);
             } else {
                 // 非工区，当巡视时长大于大于上限时长时，巡视时长等于上限时长。不然就是wifi最近连接巡视站点时间减提交时间
-                Date recentConnectTime = sysBaseApi.getRecentConnectTimeByStationCode(sysUser.getUsername(), stationCode);
                 if (ObjectUtil.isNull(recentConnectTime)) {
                     updateWrapper.set(PatrolTask::getDuration, standardDuration);
                 }else {
@@ -2458,6 +2484,74 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
+    public void exportExcel(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam, HttpServletRequest request, HttpServletResponse response) {
+        // 如果有selections，根据id查询，就不走分页查询
+        List<String> patrolTaskIdList;
+        if (StrUtil.isNotEmpty(request.getParameter("selections"))){
+            patrolTaskIdList = Arrays.asList(request.getParameter("selections").split(","));
+        }else{
+            IPage<PatrolTaskParam> taskPage = this.getTaskList(page, patrolTaskParam);
+            patrolTaskIdList = taskPage.getRecords().stream().map(PatrolTaskParam::getId).collect(Collectors.toList());
+        }
+        // 根据任务id，查询出需要导出的数据
+        List<PatrolTaskExportExcelDTO> list = patrolTaskMapper.queryPatrolTaskExportExcelDTOByIds(patrolTaskIdList);
+        // 任务状态字典
+        List<DictModel> statusDictItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS);
+        Map<String, String> statusDictMap = statusDictItems.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        // 任务领取方式字典
+        List<DictModel> sourceDictItems = sysBaseApi.getDictItems(PatrolDictCode.PATROL_TASK_ACCESS);
+        Map<String, String> sourceDictMap = sourceDictItems.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        // 将作废、漏检、状态翻译，时间转化成字符串
+        List<Map<String, Object>> mapList = list.stream().map(dto -> {
+            // 是否作废
+            if (PatrolConstant.TASK_DISCARD.equals(dto.getDiscardStatus())) {
+                dto.setDiscardStatusString("是");
+            } else {
+                dto.setDiscardStatusString("否");
+            }
+            // 是否漏检
+            if (PatrolConstant.OMIT_STATUS.equals(dto.getOmitStatus())) {
+                dto.setOmitStatusString("是");
+            } else {
+                dto.setOmitStatusString("否");
+            }
+            // 状态
+            dto.setStatusString(statusDictMap.get(dto.getStatus().toString()));
+            // 任务来源
+            dto.setSourceString(sourceDictMap.get(dto.getSource().toString()));
+            // 时间转化
+            dto.setDurationString(TimeUtil.translateTime(dto.getDuration()));
+            dto.setActualDurationString(TimeUtil.translateTime(dto.getActualDuration()));
+            return BeanUtil.beanToMap(dto);
+        }).collect(Collectors.toList());
+        // 导出excel
+        // 1.从minio获取模板文件
+        InputStream inputStream = MinioUtil.getMinioFile(bucketName, "excel/template/巡视列表导出模板.xlsx");
+        // 2.创建临时文件
+        File fileTemp= new File("/templates/patrolTaskExport.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(inputStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        TemplateExportParams exportParams = new TemplateExportParams(fileTemp.getAbsolutePath());
+        Map<String, Object> exportMap = new HashMap<>(Collections.singletonMap("maplist", mapList));
+        Workbook workbook = ExcelExportUtil.exportExcel(exportParams, exportMap);
+        try {// 设置返回的是附件，设置附件名称
+            String attachName = new String("巡视任务导出.xls".getBytes(), StandardCharsets.UTF_8);
+            response.setContentType("multipart/form-data");
+            response.setHeader("Content-Disposition", "attachment;fileName=" + attachName);
+            ServletOutputStream out = response.getOutputStream();
+            workbook.write(out);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        // 关闭临时文件
+        fileTemp.delete();
+    }
+
+    @Override
     public List<PrintPatrolTaskDTO> printPatrolTaskDeviceById(String ids) {
         List<PrintPatrolTaskDTO> arrayList = new ArrayList<>();
         List<String> idList = StrUtil.splitTrim(ids, ",");
@@ -2557,5 +2651,4 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             map.put("remark","本站 : \n"+set.toString()+text);
             return getPrint;
     }
-
 }

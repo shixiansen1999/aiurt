@@ -47,6 +47,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -771,6 +772,23 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         }
 
     }
+
+    /**
+     *打印巡视详情，上面的那个给大屏单独使用了
+     *
+     * @param ids
+     * @param req
+     * @return author lkj
+     */
+    @AutoLog(value = "巡检任务表-打印巡视详情")
+    @ApiOperation(value = "巡检任务表-打印巡视详情", notes = "巡检任务表-打印巡视详情")
+    @GetMapping(value = "/printPatrolTaskDetailById")
+    public Result<List<PrintPatrolTaskDTO>> printPatrolTaskDetailById(@RequestParam(name="ids",required=true) String ids,
+                                                                HttpServletRequest req) {
+        List<PrintPatrolTaskDTO> printPatrolTaskDTOS = patrolTaskService.printPatrolTaskById(ids);
+        return Result.OK(printPatrolTaskDTOS);
+    }
+
     /**
 
      *
@@ -814,5 +832,24 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     public Result spotCheck(@RequestBody PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         patrolTaskService.spotCheck(patrolTaskDTO);
         return Result.ok("抽巡成功");
+    }
+
+    /**
+     * 定制模板导出excel
+     * @param patrolTaskParam
+     * @param pageNo
+     * @param pageSize
+     * @param request
+     * @param response
+     */
+    @ApiOperation(value = "定制模板导出excel", notes = "定制模板导出excel")
+    @GetMapping("/exportExcel")
+    public void exportExcel(PatrolTaskParam patrolTaskParam,
+                            @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                            @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                            HttpServletRequest request, HttpServletResponse response){
+        Page<PatrolTaskParam> page = new Page<PatrolTaskParam>(pageNo, pageSize);
+        patrolTaskParam.setHavePrint(true);
+        patrolTaskService.exportExcel(page, patrolTaskParam, request, response);
     }
 }

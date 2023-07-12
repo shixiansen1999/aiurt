@@ -321,7 +321,7 @@
             </if>
         </where>
         GROUP BY rp.id
-        ORDER BY rp.start_time ASC, rp.type ASC, rp.create_time DESC
+        ORDER BY rp.type ASC, rp.start_time ASC, rp.create_time DESC
     </select>
      <select id="queryPlanStationList" resultType="com.aiurt.boot.plan.dto.StationPlanDTO">
         select cs.station_code as stationCode ,cs.station_name as stationName,cs.line_code as lineCode,cs.line_name as lineName

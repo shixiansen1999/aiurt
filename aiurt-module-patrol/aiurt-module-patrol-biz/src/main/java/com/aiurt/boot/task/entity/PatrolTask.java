@@ -360,4 +360,12 @@ public class PatrolTask extends DictEntity implements Serializable {
      */
     @ApiModelProperty(value = "巡视工时：单位秒")
     private Integer duration;
+
+    /**
+     * 执行任务时的wifi连接时间，也就是计算巡视时长开始时间
+     */
+    @ApiModelProperty(value = "执行任务时的wifi连接时间，也就是计算巡视时长开始时间")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date wifiConnectTime;
 }

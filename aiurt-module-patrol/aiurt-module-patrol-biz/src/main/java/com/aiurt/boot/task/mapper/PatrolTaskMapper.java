@@ -91,6 +91,13 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, @Param("patrolTask") PatrolTaskParam patrolTaskParam);
 
     /**
+     * 根据巡视任务id列表查询
+     * @param patrolTaskIdList 巡视任务id列表
+     * @return
+     */
+    List<PatrolTaskParam> getTaskListByIds(@Param("patrolTaskIdList") List<String> patrolTaskIdList);
+
+    /**
      * app-获取退回人的名称
      *
      * @param patrolReturnUserId
@@ -601,4 +608,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     IPage<ScheduleTask> getScheduleDeviceList(Page<ScheduleTask> page, @Param("condition")IndexScheduleDTO indexScheduleDTO);
 
     IPage<ScreenStatisticsTask> getStatisticsDataDeviceList(Page<ScreenStatisticsTask> page, @Param("condition") ScreenModule moduleType);
+
+    /**
+     * 根据巡视任务id，查询出要导出excel的数据
+     * @param patrolTaskIdList 巡视任务id列表
+     * @return 返回PatrolTaskExportExcelDTO对象的列表
+     */
+    List<PatrolTaskExportExcelDTO> queryPatrolTaskExportExcelDTOByIds(@Param("patrolTaskIdList") List<String> patrolTaskIdList);
 }
