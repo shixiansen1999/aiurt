@@ -1,8 +1,10 @@
 package com.aiurt.modules.train.eaxm.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordDetailMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
@@ -21,6 +23,11 @@ import com.aiurt.modules.train.task.mapper.BdTrainMakeupExamRecordMapper;
 import com.aiurt.modules.train.task.mapper.BdTrainTaskMapper;
 import com.aiurt.modules.train.task.mapper.BdTrainTaskUserMapper;
 import com.aiurt.modules.train.task.service.IBdTrainTaskService;
+import com.aiurt.modules.train.trainarchive.entity.TrainArchive;
+import com.aiurt.modules.train.trainarchive.service.ITrainArchiveService;
+import com.aiurt.modules.train.trainrecord.entity.TrainRecord;
+import com.aiurt.modules.train.trainrecord.service.ITrainRecordService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
@@ -66,6 +73,10 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
 
     @Autowired
     private ISysBaseAPI sysBaseAPI;
+    @Autowired
+    private ITrainArchiveService archiveService;
+    @Autowired
+    private ITrainRecordService recordService;
 
     @Override
     public Page<BdExamRecord> queryPageList(Page<BdExamRecord> pageList,BdExamRecord condition) {
@@ -236,6 +247,11 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
             if (!flag){
                 bdExamRecord.setIsRelease("3");
                 bdExamRecord.setCorrect(1);
+                //无简答，提交更新档案
+                TrainArchive archive = archiveService.getOne(new LambdaQueryWrapper<TrainArchive>()
+                        .eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0)
+                        .eq(TrainArchive::getUserId, bdExamRecord.getUserId()));
+                updateTrainRecord(archive.getId(),bdExamRecord);
             }else {
                 bdExamRecord.setIsRelease("2");
                 bdExamRecord.setCorrect(0);
@@ -269,7 +285,19 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
                 earlyClosure(flag,bdExamRecord);
             }
     }
-
+    public  void updateTrainRecord(String archiveId,BdExamRecord bdExamRecord){
+        if(ObjectUtil.isNotEmpty(archiveId)){
+            LambdaQueryWrapper<TrainRecord> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(TrainRecord::getDelFlag, CommonConstant.DEL_FLAG_0);
+            queryWrapper.eq(TrainRecord::getTrainArchiveId, archiveId);
+            queryWrapper.eq(TrainRecord::getTrainTaskId, bdExamRecord.getTrainTaskId());
+            TrainRecord trainRecord = recordService.getOne(queryWrapper);
+            if(ObjectUtil.isNotEmpty(trainRecord)){
+                trainRecord.setCheckGrade(ObjectUtil.isNotEmpty(bdExamRecord.getScore())?String.valueOf(bdExamRecord.getScore()):"0");
+                recordService.updateById(trainRecord);
+            }
+        }
+    }
     public void doDetail(BdExamRecordDTO bdExamRecordDTO,BdExamRecord bdExamRecord,Integer isTrue ,Integer score) {
         BdExamRecordDetail bdExamRecordDetail = new BdExamRecordDetail();
         bdExamRecordDetail.setAnswer(bdExamRecordDTO.getContent());
@@ -507,6 +535,7 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
 
     @Override
     public void  addList(List<BdAchievementDTO> bdAchievementDTOList){
+        List<TrainRecord> trainRecords = new ArrayList<>();
         bdAchievementDTOList.forEach(e -> {
             BdTrainTaskUser bdTrainTaskUser = bdExamRecordMapper.resultListss(e.getUserId(),e.getTrainTaskId(),e.getExamClassify(),e.getExamPaperId());
             if (ObjectUtil.isNotNull(bdTrainTaskUser)){
@@ -514,7 +543,34 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
             }else {
                     bdAchievementDTOList(e);
             }
+            BdTrainTask trainTask = bdTrainTaskMapper.selectOne(new LambdaQueryWrapper<BdTrainTask>().eq(BdTrainTask::getId, e.getTrainTaskId()));
+            TrainArchive archive = archiveService.getOne(new LambdaQueryWrapper<TrainArchive>().eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .eq(TrainArchive::getUserId,e.getUserId()));
+            if(ObjectUtil.isNotEmpty(trainTask)&&ObjectUtil.isNotEmpty(archive)){
+                TrainRecord trainRecord = recordService.getOne(new LambdaQueryWrapper<TrainRecord>().eq(TrainRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
+                        .eq(TrainRecord::getTrainArchiveId, archive.getId()).eq(TrainRecord::getTrainTaskId, trainTask.getId()));
+                if(ObjectUtil.isEmpty(trainRecord)) {
+                    TrainRecord   record = new TrainRecord();
+                    record.setTrainArchiveId(archive.getId());
+                    record.setTrainTime(trainTask.getStartDate());
+                    record.setTaskGrade(trainTask.getTaskGrade());
+                    record.setIsAnnualPlan(trainTask.getIsAnnualPlan());
+                    record.setTrainContent(trainTask.getPlanSubName());
+                    record.setHour(Integer.valueOf(String.valueOf(trainTask.getTaskHours())));
+                    record.setTaskCode(trainTask.getTaskCode());
+                    record.setCheckGrade(ObjectUtil.isNotEmpty(e.getScore())?String.valueOf(e.getScore()):"0");
+                    record.setTrainTaskId(trainTask.getId());
+                    trainRecords.add(record);
+                }else {
+                    trainRecord.setCheckGrade(ObjectUtil.isNotEmpty(e.getScore())?String.valueOf(e.getScore()):"0");
+                    recordService.updateById(trainRecord);
+
+                }
+            }
         });
+        if(CollUtil.isNotEmpty(trainRecords)){
+            recordService.saveBatch(trainRecords);
+        }
     }
     private void timeList(List<BdExamRecord> bdExamRecordList) {
         bdExamRecordList.forEach(e -> {

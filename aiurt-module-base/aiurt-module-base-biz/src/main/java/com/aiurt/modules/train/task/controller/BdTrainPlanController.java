@@ -1,5 +1,7 @@
 package com.aiurt.modules.train.task.controller;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -15,21 +17,25 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * @Description: 年计划
@@ -69,8 +75,8 @@ public class BdTrainPlanController extends BaseController<BdTrainPlan, IBdTrainP
         if (Objects.isNull(sysUser)) {
             return Result.OK();
         }
-        //仅管理员查看
-        List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
+//        //仅管理员查看
+//        List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
 
         if (StrUtil.isNotBlank(bdTrainPlan.getPlanName())) {
             bdTrainPlan.setPlanName("%" + bdTrainPlan.getPlanName() + "%");
@@ -80,15 +86,15 @@ public class BdTrainPlanController extends BaseController<BdTrainPlan, IBdTrainP
         queryWrapper.eq(bdTrainPlan.getState() != null, "state", bdTrainPlan.getState());
         queryWrapper.eq(bdTrainPlan.getPlanYear() != null, "plan_year", bdTrainPlan.getPlanYear());
         queryWrapper.orderByDesc("id");
-        if (rolesByUsername.contains(TainPlanConstans.ADMIN)) {
-            String orgCode = sysUser.getOrgCode();
-            if (Objects.nonNull(orgCode))  {
-                SysDepartModel departByOrgCode = sysBaseAPI.getDepartByOrgCode(orgCode);
-                if (Objects.nonNull(departByOrgCode)) {
-                    queryWrapper.eq("dept_name", departByOrgCode.getDepartName());
-                }
-            }
-        }
+//        if (rolesByUsername.contains(TainPlanConstans.ADMIN)) {
+//            String orgCode = sysUser.getOrgCode();
+//            if (Objects.nonNull(orgCode))  {
+//                SysDepartModel departByOrgCode = sysBaseAPI.getDepartByOrgCode(orgCode);
+//                if (Objects.nonNull(departByOrgCode)) {
+//                    queryWrapper.eq("dept_name", departByOrgCode.getDepartName());
+//                }
+//            }
+//        }
 
         Page<BdTrainPlan> page = new Page<BdTrainPlan>(pageNo, pageSize);
         IPage<BdTrainPlan> pageList = bdTrainPlanService.page(page, queryWrapper);
@@ -378,7 +384,40 @@ public class BdTrainPlanController extends BaseController<BdTrainPlan, IBdTrainP
         List<String> depts = bdTrainPlanService.getDept();
         return Result.OK(depts);
     }
-
+    /**
+     * 下载模板
+     *
+     * @param response 响应参数
+     */
+    @AutoLog(value = "年度培训计划-下载模板")
+    @ApiOperation(value = "年度培训计划-下载模板", notes = "年度培训计划-下载模板")
+    @RequestMapping(value = "/downloadTemple", method = RequestMethod.GET)
+    public void downloadTemple(HttpServletResponse response) throws IOException {
+        //获取输入流，原始模板位置
+        Resource resource = new ClassPathResource("/templates/trainplantemplate.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+        //2.获取临时文件
+        File fileTemp = new File("/templates/trainplantemplate.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+            String path = fileTemp.getAbsolutePath();
+            TemplateExportParams exportParams = new TemplateExportParams(path);
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(16);
+            Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+            String fileName = "全年培训计划表.xlsx";
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            response.setHeader("Content-Disposition", "attachment;filename=" + "全年培训计划表导入模板.xlsx");
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error(e.getMessage());
+        }
+    }
     @RequestMapping("noAuthDownLoad")
     @ApiOperation(value = "培训计划内容导入模板", notes = "培训计划内容导入模板")
     public String downLoad(HttpServletRequest request, HttpServletResponse response) {

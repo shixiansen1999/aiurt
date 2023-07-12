@@ -24,6 +24,7 @@ public class MakeUpExamServiceImpl {
         quartzJobStart.setJobClassName("com.aiurt.modules.train.quzrtz.job.MakeUpExamStartJob");
         quartzJobStart.setDescription("定时开始考试");
         quartzJobStart.setStatus(0);
+        quartzJobStart.setFilterStatus(1);
         sysBaseAPI.saveAndScheduleJob(quartzJobStart);
 
         //定时任务结束考试
@@ -34,6 +35,7 @@ public class MakeUpExamServiceImpl {
         quartzJobEnd.setJobClassName("com.aiurt.modules.train.quzrtz.job.MakeUpExamEndJob");
         quartzJobEnd.setDescription("定时任务结束考试");
         quartzJobEnd.setStatus(0);
+        quartzJobEnd.setFilterStatus(1);
         sysBaseAPI.saveAndScheduleJob(quartzJobEnd);
     }
 }
