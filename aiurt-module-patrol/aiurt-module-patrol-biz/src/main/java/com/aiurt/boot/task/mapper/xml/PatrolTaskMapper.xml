@@ -868,6 +868,13 @@
             and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
             )
         </if>
+        <if test="condition.startDate != null">
+            AND (
+            (DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
+            or
+            (DATE_FORMAT(pt.start_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.end_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d'))
+            )
+        </if>
         <if test="condition.orgCodes != null and condition.orgCodes.size > 0">
             AND pt.`code` IN(
             select distinct task_code
@@ -2160,11 +2167,11 @@
             (DATE_FORMAT(pt.end_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.today}, '%Y-%m-%d'))
             )
         </if>
-        <if test="condition.patrolDate != null">
+        <if test="condition.startDate != null">
             AND (
-            (DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.patrolDate}, '%Y-%m-%d'))
+            (DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
             or
-            (DATE_FORMAT(pt.end_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.patrolDate}, '%Y-%m-%d'))
+            (DATE_FORMAT(pt.start_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.end_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d'))
             )
         </if>
         <if test="condition.username != null and condition.username != ''">

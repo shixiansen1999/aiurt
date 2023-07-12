@@ -537,7 +537,7 @@ public class PatrolScreenService {
      * @return
      */
     public IPage<ScreenStatisticsTask> getStatisticsDataList(Page<ScreenStatisticsTask> page, Integer timeType,
-                                                             Integer screenModule, String lineCode,String stationCode,String username,String patrolDate) {
+                                                             Integer screenModule, String lineCode,String stationCode,String username,String startDate,String endDate) {
         // 默认本周
         if (ObjectUtil.isEmpty(timeType)) {
             timeType = ScreenConstant.THIS_WEEK;
@@ -559,8 +559,9 @@ public class PatrolScreenService {
             moduleType.setStationCodes(StrUtil.splitTrim(stationCode,","));
         }
         moduleType.setUsername(username);
-        if (StrUtil.isNotBlank(patrolDate)) {
-            moduleType.setPatrolDate(DateUtil.parse(patrolDate,"yyyy-MM-dd"));
+        if (StrUtil.isNotBlank(startDate)&&StrUtil.isNotBlank(endDate)) {
+            moduleType.setStartDate(DateUtil.parse(startDate,"yyyy-MM-dd"));
+            moduleType.setEndDate(DateUtil.parse(endDate,"yyyy-MM-dd"));
         }
         String dateTime = ScreenDateUtil.getDateTime(timeType);
         String[] split = dateTime.split(ScreenConstant.TIME_SEPARATOR);
