@@ -403,4 +403,9 @@ public interface SysParamCodeConstant {
      * 故障完成后是否给中心班组成员提示音
      */
     String FAULT_FINISH_CENTER_MSG = "fault_finish_center_msg";
+
+    /**
+     * 无故障时也生成生产日报的专业，多个专业使用英文逗号分隔
+     */
+    String GENERATE_REPORT_MAJOR = "generate_report_major";
 }
