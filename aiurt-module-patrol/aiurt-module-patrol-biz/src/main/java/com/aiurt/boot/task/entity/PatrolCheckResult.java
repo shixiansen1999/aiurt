@@ -106,6 +106,10 @@ public class PatrolCheckResult implements Serializable {
     @Excel(name = "检查值是否必填：0否、1是", width = 15)
     @ApiModelProperty(value = "检查值是否必填：0否、1是")
     private java.lang.Integer required;
+    /** 程序及方法*/
+    @Excel(name = "程序及方法", width = 15)
+    @ApiModelProperty(value = "程序及方法")
+    private String procMethods;
     /**检查值是否必填字典名：0否、1是*/
     @Excel(name = "检查值是否必填字典名：0否、1是", width = 15)
     @ApiModelProperty(value = "检查值是否必填字典名：0否、1是")
