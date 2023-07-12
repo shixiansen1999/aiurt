@@ -2925,7 +2925,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public JSONObject getCsStationByCode(String stationCode) {
-        CsStation csStation = csStationMapper.selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode, stationCode));
+        CsStation csStation = csStationMapper.selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode, stationCode).eq(CsStation::getDelFlag,CommonConstant.DEL_FLAG_0));
         if (Objects.isNull(csStation)) {
             return null;
         }
