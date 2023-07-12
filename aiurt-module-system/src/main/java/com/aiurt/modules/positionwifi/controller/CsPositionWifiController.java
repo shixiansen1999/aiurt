@@ -1,31 +1,29 @@
 package com.aiurt.modules.positionwifi.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.positionwifi.entity.CsPositionWifi;
 import com.aiurt.modules.positionwifi.service.ICsPositionWifiService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.query.QueryGenerator;
-
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.List;
 
  /**
  * @Description: wifi位置管理
@@ -92,10 +90,6 @@ public class CsPositionWifiController extends BaseController<CsPositionWifi, ICs
 		Result<CsPositionWifi> result = new Result<CsPositionWifi>();
 		csPositionWifi.setMac(StrUtil.swapCase(csPositionWifi.getMac()));
 		try {
-			final int count = (int) csPositionWifiService.count(new LambdaQueryWrapper<CsPositionWifi>().eq(CsPositionWifi::getName, csPositionWifi.getName()).eq(CsPositionWifi::getDelFlag, 0).last("limit 1"));
-			if (count > 0){
-				return Result.error("wifi名称不能重复");
-			}
 			final int MacCount = (int) csPositionWifiService.count(new LambdaQueryWrapper<CsPositionWifi>().eq(CsPositionWifi::getMac, csPositionWifi.getMac()).eq(CsPositionWifi::getDelFlag, 0).last("limit 1"));
 			if (MacCount > 0){
 				return Result.error("Mac地址不能重复");
