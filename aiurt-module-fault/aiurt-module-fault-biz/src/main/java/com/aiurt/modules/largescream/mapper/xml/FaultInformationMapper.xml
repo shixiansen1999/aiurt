@@ -971,8 +971,11 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         select code, happen_time, symptoms
         from fault
         where (status=9 or status=10 or status=7)
-        <if test="stationCode != null and stationCode != ''">
-            and station_code=#{stationCode}
+        <if test="stationCodeList != null and stationCodeList.size() != 0">
+            and station_code in
+            <foreach collection="stationCodeList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         </if>
     </select>
 </mapper>
