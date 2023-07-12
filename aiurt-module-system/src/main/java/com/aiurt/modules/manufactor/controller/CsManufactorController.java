@@ -140,7 +140,7 @@ public class CsManufactorController extends BaseController<CsManufactor,ICsManuf
 		deviceWrapper.eq(Device::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<Device> deviceList = deviceService.list(deviceWrapper);
 		if(!deviceList.isEmpty()){
-			return Result.error("该位置信息被设备主数据使用中，无法删除");
+			return Result.error("该厂商信息被设备主数据使用中，无法删除");
 		}
 		//判断物资主数据是否使用
 		LambdaQueryWrapper<MaterialBase> materWrapper =  new LambdaQueryWrapper<MaterialBase>();
@@ -148,7 +148,7 @@ public class CsManufactorController extends BaseController<CsManufactor,ICsManuf
 		materWrapper.eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<MaterialBase> materList = materialBaseService.list(materWrapper);
 		if(!materList.isEmpty()){
-			return Result.error("该位置信息被物资主数据使用中，无法删除");
+			return Result.error("该厂商信息被物资主数据使用中，无法删除");
 		}
 		csManufactor.setDelFlag(CommonConstant.DEL_FLAG_1);
 		csManufactorService.updateById(csManufactor);
