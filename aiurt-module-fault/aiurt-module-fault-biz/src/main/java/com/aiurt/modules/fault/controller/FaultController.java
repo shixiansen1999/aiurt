@@ -1,11 +1,8 @@
 package com.aiurt.modules.fault.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.date.DateUnit;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.aspect.annotation.PermissionData;
@@ -13,11 +10,9 @@ import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.basic.entity.CsWork;
-import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultDevice;
-import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.service.IFaultDeviceService;
 import com.aiurt.modules.fault.service.IFaultService;
@@ -35,19 +30,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.api.ISysParamAPI;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @Description: fault
@@ -260,7 +253,19 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         faultService.hangUp(hangUpDTO);
         return Result.OK("操作成功");
     }
-
+    /**
+     * 工班长挂起
+     *
+     * @param hangUpDTO
+     * @return
+     */
+    @AutoLog(value = "工班长挂起", operateType = 3, operateTypeAlias = "工班长挂起", permissionUrl = PERMISSION_URL)
+    @ApiOperation(value = "工班长挂起", notes = "工班长挂起")
+    @PutMapping("/leaderHangUp")
+    public Result<?> leaderHangUp(@RequestBody HangUpDTO hangUpDTO) {
+        faultService.leaderHangUp(hangUpDTO);
+        return Result.OK("操作成功");
+    }
     /**
      * 审批挂起
      *

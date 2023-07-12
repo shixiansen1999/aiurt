@@ -4,13 +4,11 @@ package com.aiurt.modules.fault.service;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
-import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.jeecg.common.system.vo.LoginUser;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -225,4 +223,10 @@ public interface IFaultService extends IService<Fault> {
      * @return
      */
     List<DeviceAssemblyDTO> queryDeviceAssemblyByDeviceCode(String deviceCode, String[] faultCauseSolutionIdList);
+
+    /**
+     * 工班长挂起
+     * @param hangUpDTO 挂起传的参数
+     */
+    void leaderHangUp(HangUpDTO hangUpDTO);
 }
