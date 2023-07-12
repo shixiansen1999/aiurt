@@ -125,6 +125,12 @@ public class InspectionCodeContent implements Serializable {
     @ApiModelProperty(value = "数据校验字段")
     private java.lang.String dataCheck;
 
+    /**特殊字符*/
+    @Excel(name = "特殊字符", width = 15)
+    @ApiModelProperty(value = "特殊字符")
+    private java.lang.String specialCharacters;
+
+
     /**检修标准id，关联inspection_code表的id*/
     @Excel(name = "检修标准id", width = 15)
     @ExcelExtend(isRequired = true)
