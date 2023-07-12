@@ -232,4 +232,7 @@ public class RepairPool implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "检修任务id")
     private java.lang.String taskId;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修人，多个使用英文‘;’连接")
+    private String repairUserNameString;
 }
