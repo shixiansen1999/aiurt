@@ -323,6 +323,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @AutoLog(value = "填写维修记录")
     @ApiOperation(value = "填写维修记录", notes = "填写维修记录")
     @PutMapping("/updateRepairRecord")
+    @LimitSubmit(key = "add:#updateRepairRecord")
     public Result<?> updateRepairRecord(@RequestBody RepairRecordDTO repairRecordDTO) {
         faultService.fillRepairRecord(repairRecordDTO);
         return Result.OK("操作成功");

@@ -1533,8 +1533,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 维修设备
         List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultCode);
         repairRecordDTO.setDeviceList(faultDeviceList);
-        if (Objects.nonNull(faultDeviceList)) {
+        if (CollUtil.isNotEmpty(faultDeviceList)) {
             repairRecordDTO.setDeviceCodes(StrUtil.join(",", faultDeviceList.stream().map(FaultDevice::getDeviceCode).collect(Collectors.toList())));
+            repairRecordDTO.setDeviceTypeCode(faultDeviceList.get(0).getDeviceTypeCode());
         }
 
         // 指派时间
@@ -1689,27 +1690,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
 
-
-        // sparePartService.remove(new LambdaQueryWrapper<DeviceChangeSparePart>().eq(DeviceChangeSparePart::getCode, faultCode));
+        fault.setException(0);
         if (CollUtil.isNotEmpty(deviceChangeList)) {
-
-            /*List<DeviceChangeSparePart> sparePartList = deviceChangeList.stream().map(sparePartStockDTO -> {
-                DeviceChangeSparePart part = DeviceChangeSparePart.builder()
-                        .newSparePartNum(sparePartStockDTO.getNewSparePartNum())
-                        .newSparePartCode(sparePartStockDTO.getNewSparePartCode())
-                        .oldSparePartCode(sparePartStockDTO.getOldSparePartCode())
-                        .deviceCode(sparePartStockDTO.getDeviceCode())
-                        .repairRecordId(one.getId())
-                        .code(faultCode)
-                        .consumables("0")
-                        .type(2)
-                        .materialBaseCode(sparePartStockDTO.getMaterialCode())
-                        .build();
-                return part;
-            }).collect(Collectors.toList());
-            sparePartService.saveBatch(sparePartList);*/
             // 对比标准是否异常
-            fault.setException(0);
             if (CollUtil.isNotEmpty(recordsList)) {
                 List<String> faultCauseSolutionIdList = recordsList.stream().map(FaultCauseUsageRecords::getFaultCauseSolutionId).collect(Collectors.toList());
                 String[] array = faultCauseSolutionIdList.stream().toArray(String[]::new);
@@ -1729,6 +1712,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                             return;
                         }
                     });
+                }
+            }
+        } else {
+            // 没有更新备件
+            if (CollUtil.isNotEmpty(recordsList)) {
+                List<String> faultCauseSolutionIdList = recordsList.stream().map(FaultCauseUsageRecords::getFaultCauseSolutionId).collect(Collectors.toList());
+                String[] array = faultCauseSolutionIdList.stream().toArray(String[]::new);
+                List<FaultSparePart> faultSparePartList = faultKnowledgeBaseService.getStandardRepairRequirements(array);
+                if (CollUtil.isNotEmpty(faultSparePartList)) {
+                    fault.setException(1);
                 }
             }
         }
@@ -1772,6 +1765,32 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 已解决
         SysParamModel submitParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_AUDIT);
         boolean submitValue = "1".equals(submitParamModel.getValue());
+        // 使用的解决方案
+        fault.setKnowledgeId(repairRecordDTO.getKnowledgeId());
+        one.setKnowledgeId(repairRecordDTO.getKnowledgeId());
+        //是否需要自动提交签名（通信需要、站台门不需要）
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_SUBMIT_SIGNATURE);
+        boolean value = "1".equals(paramModel.getValue());
+        if(value){
+            LoginUser user = sysBaseAPI.getUserById(loginUser.getId());
+            one.setSignPath(user.getSignatureUrl());
+        }else {
+            one.setSignPath(repairRecordDTO.getSignPath());
+        }
+
+        //更新维修时长
+        //获取维修单的挂起时长
+        int oneHangUpTime= one.getHangUpTime() != null ? one.getHangUpTime() : 0;
+        //维修时间减去挂起时长
+        int repairDuration1 = fault.getRepairDuration() != null ? fault.getRepairDuration() : 0;
+        long repairDuration = DateUtil.between(one.getEndTime(), one.getReceviceTime(), DateUnit.SECOND);
+        if (ObjectUtil.isNull(repairDuration)) {
+            repairDuration = 0L;
+        }
+        one.setRepairDuration((int) repairDuration - oneHangUpTime);
+
+        fault.setRepairDuration(one.getRepairDuration() + repairDuration1);
+
         if (flag.equals(solveStatus)) {
             Date date = new Date();
             fault.setEndTime(date);
@@ -1829,31 +1848,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             fault.setResolutionDuration((int) faultDuration);
         }
 
-        // 使用的解决方案
-        fault.setKnowledgeId(repairRecordDTO.getKnowledgeId());
-        one.setKnowledgeId(repairRecordDTO.getKnowledgeId());
-        //是否需要自动提交签名（通信需要、站台门不需要）
-        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_SUBMIT_SIGNATURE);
-        boolean value = "1".equals(paramModel.getValue());
-        if(value){
-            LoginUser user = sysBaseAPI.getUserById(loginUser.getId());
-            one.setSignPath(user.getSignatureUrl());
-        }else {
-            one.setSignPath(repairRecordDTO.getSignPath());
-        }
-
-        //更新维修时长
-        //获取维修单的挂起时长
-        int oneHangUpTime= one.getHangUpTime() != null ? one.getHangUpTime() : 0;
-        //维修时间减去挂起时长
-        int repairDuration1 = fault.getRepairDuration() != null ? fault.getRepairDuration() : 0;
-        long repairDuration = DateUtil.between(one.getEndTime(), one.getReceviceTime(), DateUnit.SECOND);
-        if (ObjectUtil.isNull(repairDuration)) {
-            repairDuration = 0L;
-        }
-        one.setRepairDuration((int) repairDuration - oneHangUpTime);
-
-        fault.setRepairDuration(one.getRepairDuration() + repairDuration1);
         updateById(fault);
 
         repairRecordService.updateById(one);
@@ -2407,14 +2401,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         QueryWrapper<Fault> queryWrapper = QueryGenerator.initQueryWrapper(fault, req.getParameterMap());
         Page<Fault> page = new Page<>(pageNo, pageSize);
-        PageOrderGenerator.initPage(page, fault, fault);
+        //PageOrderGenerator.initPage(page, fault, fault);
         //修改查询条件
         if (CollUtil.isNotEmpty(faultPhenomenonCodes)) {
             queryWrapper.in("fault_phenomenon", faultPhenomenonCodes);
             queryWrapper.or().like("code", faultPhenomenon);
         } else {
             if (StrUtil.isNotBlank(faultPhenomenon)) {
-                queryWrapper.like("code", faultPhenomenon);
+                queryWrapper.like("symptoms", faultPhenomenon);
             }
         }
         queryWrapper.apply(StrUtil.isNotBlank(stationCode), "(line_code = {0} or station_code = {0} or station_position_code = {0})", stationCode);
@@ -2422,7 +2416,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         queryWrapper.apply(StrUtil.isNotBlank(fault.getDeviceCode()), "(code in (select fault_code from fault_device where device_code =  {0}))", fault.getDeviceCode());
         // 负责人查询
         queryWrapper.apply(StrUtil.isNotBlank(appointUserName), "( appoint_user_name in (select username from sys_user where (username like concat('%', {0}, '%') or realname like concat('%', {0}, '%'))))", appointUserName);
-        queryWrapper.orderByDesc("create_time");
+
         if (StrUtil.isNotBlank(statusCondition)) {
             queryWrapper.in("status", StrUtil.split(statusCondition, ','));
         }
@@ -2445,7 +2439,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     faultDurationEnum.getStartValue(), faultDurationEnum.getEndValue(), date);
         }
 
-
+        // 排序, 未完成(1)，挂起(3)，取消(0)，完成(2)
+        queryWrapper.orderByAsc("(CASE WHEN state = 1 THEN 0 WHEN state = 3 THEN 1 WHEN state = 0 THEN 2 WHEN state = 2 THEN 3 ELSE 4 END)");
+        // 待审批工单按故障发生时间从近到远排序；其他状态，按故障发生时间从近到远排序；
+        //queryWrapper.orderByDesc("(case when status = 1 or state in(0,2,3) THEN happen_time ELSE 0 END)");
+        // 未完成状态，按故障持续时长从大到小排列，如果持续时长相同则按故障发生时间从近到远排序；
+        //queryWrapper.orderByDesc("(CASE WHEN `status` in (3,4,5,6,7,9,11) THEN CASE WHEN duration IS NOT NULL THEN duration ELSE TIMESTAMPDIFF(SECOND,happen_time,NOW()) END END)");
+        queryWrapper.orderByDesc("create_time");
+        // 未完成， 故障时长排序， 取消不用
         IPage<Fault> pageList = this.page(page, queryWrapper);
 
         List<Fault> records = pageList.getRecords();

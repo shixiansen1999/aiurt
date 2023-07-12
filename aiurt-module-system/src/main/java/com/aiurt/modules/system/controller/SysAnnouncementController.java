@@ -414,74 +414,41 @@ public class SysAnnouncementController {
         SysAnnouncementDTO result = new SysAnnouncementDTO();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String userId = sysUser.getId();
+        // Move the lock out of the loop
+        Lock lock = new ReentrantLock();
+        // 1.将系统消息补充到用户通告阅读标记表中,全部人员, 未删除,已发布
         // 1.将系统消息补充到用户通告阅读标记表中
-        LambdaQueryWrapper<SysAnnouncement> querySaWrapper = new LambdaQueryWrapper<SysAnnouncement>();
-        // 全部人员
-        querySaWrapper.eq(SysAnnouncement::getMsgType, CommonConstant.MSG_TYPE_ALL);
-        // 未删除
-        querySaWrapper.eq(SysAnnouncement::getDelFlag, CommonConstant.DEL_FLAG_0.toString());
-        // 已发布
-        querySaWrapper.eq(SysAnnouncement::getSendStatus, CommonConstant.HAS_SEND);
-
-        querySaWrapper.notInSql(SysAnnouncement::getId, "select annt_id from sys_announcement_send where user_id='" + userId + "'");
+        LambdaQueryWrapper<SysAnnouncement> querySaWrapper = new LambdaQueryWrapper<SysAnnouncement>()
+                .eq(SysAnnouncement::getMsgType, CommonConstant.MSG_TYPE_ALL)
+                .eq(SysAnnouncement::getDelFlag, CommonConstant.DEL_FLAG_0.toString())
+                .eq(SysAnnouncement::getSendStatus, CommonConstant.HAS_SEND)
+                .notInSql(SysAnnouncement::getId, "select annt_id from sys_announcement_send where user_id='" + userId + "'");
         List<SysAnnouncement> announcements = sysAnnouncementService.list(querySaWrapper);
-        if (announcements.size() > 0) {
-            for (int i = 0; i < announcements.size(); i++) {
-                Date endTime = announcements.get(i).getEndTime();
-                if (ObjectUtil.isNotEmpty(endTime) && endTime.before(sysUser.getCreateTime())) {
-                    // 新注册用户不看结束通知
-                    continue;
-                }
-                // 通知公告消息重复
-                // 因为websocket没有判断是否存在这个用户，要是判断会出现问题，故在此判断逻辑
-                //因为一个用户可以同时在不同设备同时登录，导致发布的websocket会同时请求这个接口从而产生重复数据，上锁限制
-                Lock lock = new ReentrantLock();
-                lock.lock();
-                try {
-                    LambdaQueryWrapper<SysAnnouncementSend> query = new LambdaQueryWrapper<>();
-                    query.eq(SysAnnouncementSend::getAnntId, announcements.get(i).getId());
-                    query.eq(SysAnnouncementSend::getUserId, userId);
-                    SysAnnouncementSend one = sysAnnouncementSendService.getOne(query);
-                    if (null == one) {
-                        log.info("listByUser接口新增了SysAnnouncementSend：pageSize{}：" + pageSize);
-                        SysAnnouncementSend announcementSend = new SysAnnouncementSend();
-                        announcementSend.setAnntId(announcements.get(i).getId());
-                        announcementSend.setUserId(userId);
-                        announcementSend.setReadFlag(CommonConstant.NO_READ_FLAG);
-                        sysAnnouncementSendService.save(announcementSend);
-                        log.info("announcementSend.toString()", announcementSend.toString());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    lock.unlock();
-                }
-            }
+        if (CollUtil.isNotEmpty(announcements)) {
+            announcements.stream()
+                    .filter(a -> ObjectUtil.isEmpty(a.getEndTime()) || !a.getEndTime().before(sysUser.getCreateTime()))
+                    .forEach(a -> {
+                        lock.lock();
+                        try {
+                            LambdaQueryWrapper<SysAnnouncementSend> query = new LambdaQueryWrapper<SysAnnouncementSend>()
+                                    .eq(SysAnnouncementSend::getAnntId, a.getId())
+                                    .eq(SysAnnouncementSend::getUserId, userId);
+                            if (sysAnnouncementSendService.count(query) > 0) {
+                                log.info("listByUser接口新增了SysAnnouncementSend：pageSize{}：" + pageSize);
+                                SysAnnouncementSend announcementSend = new SysAnnouncementSend();
+                                announcementSend.setAnntId(a.getId());
+                                announcementSend.setUserId(userId);
+                                announcementSend.setReadFlag(CommonConstant.NO_READ_FLAG);
+                                sysAnnouncementSendService.save(announcementSend);
+                                log.info("announcementSend.toString()", announcementSend.toString());
+                            }
+                        } catch (Exception e) {
+                            log.info(e.getMessage(), e);
+                        } finally {
+                            lock.unlock();
+                        }
+                    });
         }
-        // 2.查询用户未读的系统消息
-        // 通知
-        Page<SysAnnouncement> anntMsgList = new Page<SysAnnouncement>(0, pageSize);
-        anntMsgList = sysAnnouncementService.querySysCementPageByUserId(anntMsgList, userId, Arrays.asList(CommonConstant.MSG_CATEGORY_1));
-
-        // 消息
-        Page<SysAnnouncement> sysMsgList = new Page<SysAnnouncement>(0, pageSize);
-        sysMsgList = sysAnnouncementService.querySysCementPageByUserId(sysMsgList, userId, Arrays.asList(CommonConstant.MSG_CATEGORY_2, CommonConstant.MSG_CATEGORY_3));
-
-        // 我的待办任务
-        Page<SysTodoList> listPage = new Page<SysTodoList>(0, pageSize);
-        SysTodoList sysTodoList = new SysTodoList();
-        sysTodoList.setCurrentUserName(sysUser.getUsername());
-        // 待办或待阅
-        sysTodoList.setTodoType(CommonConstant.TODO_TYPE_0 + "," + CommonConstant.TODO_TYPE_2);
-        IPage<SysTodoList> todoTaskList = sysTodoListService.queryPageList(listPage, sysTodoList);
-
-        // 封装结果
-        result.setSysMsgList(sysMsgList.getRecords());
-        result.setSysMsgTotal(sysMsgList.getTotal());
-        result.setAnntMsgList(anntMsgList.getRecords());
-        result.setAnntMsgTotal(anntMsgList.getTotal());
-        result.setTodoTaskList(todoTaskList.getRecords());
-        result.setTodoTaskTotal(todoTaskList.getTotal());
         return Result.OK(result);
     }
 
