@@ -605,6 +605,13 @@ public class PatrolScreenService {
                 moduleType.setToday(new Date());
                 moduleType.setStatus(PatrolConstant.TASK_COMPLETE);
                 break;
+            // 未完成数
+            case 7:
+                moduleType.setStartTime(startTime);
+                moduleType.setEndTime(endTime);
+                moduleType.setStatus(PatrolConstant.TASK_COMPLETE);
+                moduleType.setScreenModule(screenModule);
+                break;
             // 默认计划数
             default:
                 moduleType.setStartTime(startTime);
@@ -636,6 +643,9 @@ public class PatrolScreenService {
                 case 6:
                     moduleType.setTaskDeviceStatus(i);
                     break;
+                // 未完成数
+                case 7:
+                    moduleType.setTaskDeviceStatus(j);
                 default:
                     break;
             }

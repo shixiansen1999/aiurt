@@ -160,8 +160,8 @@ public class BigscreenPlanService {
             return page;
         }
 
-        // 查询计划数、完成数
-        if (InspectionConstant.PLAN_TOTAL_1.equals(item) || InspectionConstant.PLAN_FINISH_2.equals(item)) {
+        // 查询计划数、完成数、未完成数
+        if (InspectionConstant.PLAN_TOTAL_1.equals(item) || InspectionConstant.PLAN_FINISH_2.equals(item)|| InspectionConstant.PLAN_UNFINISH_6.equals(item)) {
             result = repairPoolMapper.getInspectionData(page, orgCodes, item, time[0], time[1], lineCode);
         }
 
