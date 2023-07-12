@@ -86,5 +86,6 @@ public class ScreenModule {
 //     * 专业编号
 //     */
 //    private List<String> majors;
-    private Date patrolDate;
+    private Date startDate;
+    private Date endDate;
 }
