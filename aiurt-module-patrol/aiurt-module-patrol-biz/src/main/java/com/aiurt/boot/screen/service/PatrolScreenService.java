@@ -87,7 +87,7 @@ public class PatrolScreenService {
 
         List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
         if (CollectionUtil.isEmpty(orgCodes)) {
-            return new ScreenImportantData(0L, 0L, 0L);
+            return new ScreenImportantData(0L, 0L, 0L,0L);
         }
         ScreenModule module = new ScreenModule();
         module.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
@@ -104,6 +104,7 @@ public class PatrolScreenService {
             PatrolSituation taskDeviceCount = patrolTaskMapper.getTaskDeviceCount(module);
             data.setPatrolNumber(taskDeviceCount.getSum());
             data.setFinishNumber(taskDeviceCount.getFinish());
+            data.setUnFinishNumber(taskDeviceCount.getSum() - taskDeviceCount.getFinish());
             //漏巡
             String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
             String omitEndTime = this.getOmitDateScope(endTime).split(ScreenConstant.TIME_SEPARATOR)[1];
@@ -111,6 +112,7 @@ public class PatrolScreenService {
             module.setEndTime(DateUtil.parse(omitEndTime));
             PatrolSituation taskDeviceCount2 = patrolTaskMapper.getTaskDeviceCount(module);
             data.setOmitNumber(taskDeviceCount2.getOmit());
+
         } else {
             List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
             String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
@@ -123,6 +125,7 @@ public class PatrolScreenService {
             long omitNum = patrolTaskMapper.getScreenDataCount(module).stream().count();
             data.setPatrolNumber(planNum);
             data.setFinishNumber(finishNum);
+            data.setUnFinishNumber(planNum - finishNum);
             data.setOmitNumber(omitNum);
         }
         return data;

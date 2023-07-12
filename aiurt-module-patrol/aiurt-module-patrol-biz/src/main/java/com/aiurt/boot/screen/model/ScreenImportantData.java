@@ -26,6 +26,10 @@ public class ScreenImportantData {
      */
     @ApiModelProperty(value = "巡视完成数")
     private java.lang.Long finishNumber;
+
+    @ApiModelProperty(value = "巡视未完成数")
+    private java.lang.Long unFinishNumber;
+
     /**
      * 计划巡视数
      */
