@@ -1378,6 +1378,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 if (r.getStatusItem().equals(InspectionConstant.STATUS_ITEM_SPECIALCHAR_INPUT)) {
                     if (StrUtil.isNotBlank(r.getSpecialCharactersResult()) && !r.getSpecialCharacters().equals(r.getSpecialCharactersResult())) {
                         r.setInspeciontValueName(r.getSpecialCharactersResult());
+                        //app详情页面使用specialCharacters展示，因此赋值结果回给这个字段
+                        r.setSpecialCharacters(r.getSpecialCharactersResult());
                     }
                 }
             }
