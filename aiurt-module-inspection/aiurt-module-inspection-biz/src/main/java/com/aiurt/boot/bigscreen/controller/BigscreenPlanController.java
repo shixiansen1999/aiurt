@@ -61,7 +61,7 @@ public class BigscreenPlanController {
     @RequestMapping(value = "/getInspectionDataPage", method = RequestMethod.GET)
     public Result<IPage<InspectionDTO>> getInspectionDataPage(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode,
                                                               @ApiParam(name = "type", value = "类型:1：本周，2：上周，3：本月， 4：上月", defaultValue = "1") @RequestParam(value = "type",required = false) String type,
-                                                              @ApiParam(name = "item", value = "1计划数，2完成数，3漏检数，4今日检修数") @RequestParam(value = "item", required = false) Integer item,
+                                                              @ApiParam(name = "item", value = "1计划数，2完成数，3漏检数，4今日检修数,5今日检修已完成,6未完成数") @RequestParam(value = "item", required = false) Integer item,
                                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
         Page<InspectionDTO> page = new Page<>(pageNo, pageSize);

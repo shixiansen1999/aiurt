@@ -86,6 +86,9 @@
             <if test="item!=null and item==2">
                 and rp.`status` = 8
             </if>
+            <if test="item!=null and item==6">
+                and rp.`status` != 8
+            </if>
             <if test="lineCode != null and lineCode != ''">
                 and rr.line_code = #{lineCode}
             </if>
