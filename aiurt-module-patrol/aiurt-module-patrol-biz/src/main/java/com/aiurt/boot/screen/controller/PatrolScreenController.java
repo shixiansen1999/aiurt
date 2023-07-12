@@ -85,7 +85,7 @@ public class PatrolScreenController {
                                                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                                      @ApiParam(name = "timeType", value = "看板时间类型,不传默认本周：1本周、2上周、3本月、4上月")
                                                                              Integer timeType,
-                                                                     @ApiParam(name = "screenModule", value = "巡视数据统计模块标识，不传直接返空：1计划数、2完成数、3漏检数、4巡视异常数、5今日巡视数、6今日巡视完成数")
+                                                                     @ApiParam(name = "screenModule", value = "巡视数据统计模块标识，不传直接返空：1计划数、2完成数、3漏检数、4巡视异常数、5今日巡视数、6今日巡视完成数、7未完成")
                                                                              Integer screenModule,
                                                                      @ApiParam(name = "lineCode", value = "线路编号") String lineCode,
                                                                      @ApiParam(name = "stationCode", value = "站点") String stationCode,

@@ -109,6 +109,8 @@ public class BigscreenPlanService {
 
             // 填充检修完成数
             result.setFinish(CollUtil.isNotEmpty(inspectionDataNoPage) ? inspectionDataNoPage.stream().filter(re -> InspectionConstant.COMPLETED.equals(re.getStatus())).count() : 0L);
+            // 填充检修未完成数
+            result.setUnfinish(result.getSum() - result.getFinish());
 
             // 填充漏检数
             result.setOmit(0L);
@@ -158,8 +160,8 @@ public class BigscreenPlanService {
             return page;
         }
 
-        // 查询计划数、完成数
-        if (InspectionConstant.PLAN_TOTAL_1.equals(item) || InspectionConstant.PLAN_FINISH_2.equals(item)) {
+        // 查询计划数、完成数、未完成数
+        if (InspectionConstant.PLAN_TOTAL_1.equals(item) || InspectionConstant.PLAN_FINISH_2.equals(item)|| InspectionConstant.PLAN_UNFINISH_6.equals(item)) {
             result = repairPoolMapper.getInspectionData(page, orgCodes, item, time[0], time[1], lineCode);
         }
 
