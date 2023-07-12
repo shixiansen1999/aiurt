@@ -37,4 +37,8 @@ public class PatrolCheckDTO {
     @Excel(name = "数据校验表达式", width = 15)
     @ApiModelProperty(value = "数据校验表达式")
     private java.lang.String regular;
+    /**特殊字符*/
+    @Excel(name = "特殊字符", width = 15)
+    @ApiModelProperty(value = "特殊字符")
+    private java.lang.String specialCharacters;
 }

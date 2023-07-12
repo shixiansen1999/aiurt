@@ -570,6 +570,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 }
             }
             lm.put("regular", deviceAssemblyErrorModel.getRegular());
+            lm.put("specialCharacters", deviceAssemblyErrorModel.getSpecialCharacters());
             lm.put("itemParentMistake", deviceAssemblyErrorModel.getItemParentMistake());
             lm.put("orgName", deviceAssemblyErrorModel.getOrgName());
             lm.put("standardTypeName", deviceAssemblyErrorModel.getStandardTypeName());
@@ -812,8 +813,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         items.setCheck(PatrolConstant.IS_DEVICE_TYPE.equals(checkName) ? 1 : 0);
                     }
                     if (items.getCheck() == 0 && items.getHierarchyType() == 0) {
-                        if (ObjectUtil.isNotEmpty(items.getRegular()) || ObjectUtil.isNotEmpty(items.getQualityStandard()) || ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getInputTypeName()) || ObjectUtil.isNotEmpty(items.getRequiredDictName())) {
-                            stringBuilder.append("质量标准、检查值类型、检查值是否必填、关联数据字典、数据校验表达式不用填写，");
+                        if (ObjectUtil.isNotEmpty(items.getRegular()) || ObjectUtil.isNotEmpty(items.getQualityStandard()) || ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getInputTypeName()) || ObjectUtil.isNotEmpty(items.getRequiredDictName())|| ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                            stringBuilder.append("质量标准、检查值类型、检查值是否必填、关联数据字典、数据校验表达式、特殊字符不用填写，");
                         }
                     }
                     if (items.getCheck() == 1 && items.getHierarchyType() == 0) {
@@ -829,15 +830,19 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                             }
                         }
                         if (ObjectUtil.isNotEmpty(items.getInputTypeName())) {
-                            if (!(PatrolConstant.DATE_TYPE_IP + PatrolConstant.DATE_TYPE_OT + PatrolConstant.DATE_TYPE_NO).contains(items.getInputTypeName())) {
-                                stringBuilder.append("检查值类型选择不正确，");
-                            } else {
-                                if (items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_IP)) {
-                                    items.setInputType(3);
+                            List<DictModel> inputType = sysBaseApi.queryEnableDictItemsByCode("patrol_input_type");
+                            if (CollUtil.isNotEmpty(inputType)) {
+                                Map<String, String> collect = inputType.stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue));
+                                String value = collect.get(items.getInputTypeName());
+                                if (StrUtil.isEmpty(value)) {
+                                    stringBuilder.append("检查值类型选择不正确，");
                                 } else {
-                                    items.setInputType(items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_OT) ? 2 : 1);
+                                    items.setInputType(Integer.valueOf(value));
                                 }
+                            }else {
+                                stringBuilder.append("系统没有启用的检查值类型数据字典，");
                             }
+
                             if (items.getInputType() == 1) {
                                 if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular())) {
                                     stringBuilder.append("检查值类型为无时：关联数据字典、数据检验表达式不用填写");
@@ -894,15 +899,19 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                             }
                         }
                         if (ObjectUtil.isNotEmpty(items.getInputTypeName())) {
-                            if (!(PatrolConstant.DATE_TYPE_IP + PatrolConstant.DATE_TYPE_OT + PatrolConstant.DATE_TYPE_NO).contains(items.getInputTypeName())) {
-                                stringBuilder.append("检查值类型选择不正确，");
-                            } else {
-                                if (items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_IP)) {
-                                    items.setInputType(3);
+                            List<DictModel> inputType = sysBaseApi.queryEnableDictItemsByCode("patrol_input_type");
+                            if (CollUtil.isNotEmpty(inputType)) {
+                                Map<String, String> collect = inputType.stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue));
+                                String value = collect.get(items.getInputTypeName());
+                                if (StrUtil.isEmpty(value)) {
+                                    stringBuilder.append("检查值类型选择不正确，");
                                 } else {
-                                    items.setInputType(items.getInputTypeName().equals(PatrolConstant.DATE_TYPE_OT) ? 2 : 1);
+                                    items.setInputType(Integer.valueOf(value));
                                 }
+                            }else {
+                                stringBuilder.append("系统没有启用的检查值类型数据字典，");
                             }
+
                             if (items.getInputType() == 1) {
                                 if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular())) {
                                     stringBuilder.append("关联数据字典、数据校验表达式不用填写，");

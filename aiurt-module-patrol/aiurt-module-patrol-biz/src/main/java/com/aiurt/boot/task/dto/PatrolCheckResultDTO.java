@@ -60,4 +60,8 @@ public class PatrolCheckResultDTO extends PatrolCheckResult {
     @ApiModelProperty(value = "巡检人")
     private  String oldCode;
 
+
+
+    @ApiModelProperty(value = "检查值")
+    private  String result;
 }

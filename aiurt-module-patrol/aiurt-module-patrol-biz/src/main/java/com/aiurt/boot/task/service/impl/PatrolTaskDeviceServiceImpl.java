@@ -527,6 +527,20 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             }
             String userName = patrolTaskMapper.getUserName(c.getUserId());
             c.setCheckUserName(userName);
+
+            if (PatrolConstant.DATE_TYPE_SPECIALCHAR.equals(c.getInputType())) {
+                //查询原标准项判断是否填写过
+                PatrolStandardItems standardItems = patrolStandardItemsMapper.selectById(c.getOldId());
+                if (ObjectUtil.isNotEmpty(standardItems) && !standardItems.getSpecialCharacters().equals(c.getSpecialCharacters())) {
+                    c.setResult(c.getSpecialCharacters());
+                }
+            }
+            if (PatrolConstant.DEVICE_OUT.equals(c.getInputType())) {
+                c.setResult(c.getWriteValue());
+            }
+            if (PatrolConstant.DEVICE_INP_TYPE.equals(c.getInputType())) {
+                c.setResult(c.getCheckDictName());
+            }
         });
         // 统计检查项中正常项的数据
         long normalItem = Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList)
@@ -630,6 +644,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             result.setInputType(l.getInputType());  // 填写数据类型
             result.setDictCode(l.getDictCode());    // 关联的数据字典
             result.setRegular(l.getRegular());  // 数据校验表达式
+            result.setSpecialCharacters(l.getSpecialCharacters());  // 特殊字符输入
             result.setDelFlag(0);  // 数据校验表达式
             result.setRequired(l.getRequired()); // 检查值是否必填
             result.setProcMethods(l.getProcMethods()); // 程序及方法
@@ -717,6 +732,21 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                         }
                     });
                 }
+
+                if (PatrolConstant.DATE_TYPE_SPECIALCHAR.equals(e.getInputType())) {
+                    //查询原标准项判断是否填写过
+                    PatrolStandardItems standardItems = patrolStandardItemsMapper.selectById(e.getOldId());
+                    if (ObjectUtil.isNotEmpty(standardItems) && !standardItems.getSpecialCharacters().equals(e.getSpecialCharacters())) {
+                        e.setResult(e.getSpecialCharacters());
+                    }
+                }
+                if (PatrolConstant.DEVICE_OUT.equals(e.getInputType())) {
+                    e.setResult(e.getWriteValue());
+                }
+                if (PatrolConstant.DEVICE_INP_TYPE.equals(e.getInputType())) {
+                    e.setResult(e.getCheckDictName());
+                }
+
                 String userName = patrolTaskMapper.getUserName(e.getUserId());
                 e.setCheckUserName(userName);
                 //获取这个单号下一个巡检项的所有附件
