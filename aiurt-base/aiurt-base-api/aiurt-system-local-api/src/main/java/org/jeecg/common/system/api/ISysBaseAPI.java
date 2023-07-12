@@ -1119,10 +1119,17 @@ public interface ISysBaseAPI extends CommonAPI {
     Map<String, String> getMaterialNameByCode(List<String> materialCodes);
 
     /**
-     * 获取所有节假日
+     * 根据类型获取所有节假日
      * @return
      */
-    List<String> getAllHolidays();
+    List<Date> getAllHolidaysByType(Integer type);
+
+    /**
+     * 根据日期获取节假日
+     * @param date
+     * @return
+     */
+    List<JSONObject> querySysHolidaysByDate(Date date);
 
     /**
      * 根据故障编号获取备件更换信息

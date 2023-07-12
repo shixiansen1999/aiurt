@@ -7,7 +7,10 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.Week;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.CommonAPI;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.schedule.entity.Schedule;
@@ -37,9 +40,11 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecg.common.util.SpringContextUtils;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.entity.TemplateExportParams;
@@ -84,6 +89,9 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
     private IScheduleRuleItemService ruleItemService;
     @Autowired
     private IScheduleItemService ItemService;
+
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
 
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
@@ -177,6 +185,9 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
     public Result<Schedule> add(Schedule schedule) {
         Result<Schedule> result = new Result<Schedule>();
         List<ScheduleRuleItem> scheduleRuleItems = schedule.getScheduleRuleItems();
+        // 获取配置
+        SysParamModel param1 = iSysParamAPI.selectByCode(SysParamCodeConstant.SCHEDULE_FOR_REST);
+        SysParamModel param2 = iSysParamAPI.selectByCode(SysParamCodeConstant.SCHEDULE_FOR_WORK);
         for (ScheduleRuleItem scheduleRuleItem : scheduleRuleItems) {
             try {
                 Calendar start = Calendar.getInstance();
@@ -229,18 +240,24 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                             record.setItemName("休息");
                         }
 
-                        //  如果需要跳过节假日，并且当天和指定班次一样，则变更班次
-                        List<String> allHolidays = iSysBaseApi.getAllHolidays();
+                        // 节假日调整，变更班次
                         Date date = start.getTime();
-                        String format = DateUtil.format(date, "yyyy-MM-dd");
-                        if (CollUtil.isNotEmpty(allHolidays)) {
-                            List<String> collect = allHolidays.stream().filter(h -> h.equals(format)).collect(Collectors.toList());
-                            if (schedule.getIsHolidayAdjustment() && collect.size() == 1) {
-                                if (schedule.getBeforeItemId().equals(ruleItemId)) {
-                                    ScheduleItem scheduleItem2 = ItemService.getById(schedule.getAfterItemId());
-                                    record.setItemId(scheduleItem2.getId());
-                                    record.setItemName(scheduleItem2.getName());
-                                }
+                        List<JSONObject> jsonObjects = iSysBaseApi.querySysHolidaysByDate(DateUtil.beginOfDay(date));
+                        if (schedule.getIsHolidayAdjustment() && CollUtil.isNotEmpty(jsonObjects)) {
+                            if (jsonObjects.size() > 1) {
+                                throw new AiurtBootException(DateUtil.format(date, "yyyy-MM-dd") + ":该天存在多个节假日");
+                            }
+                            // 获取节假日调整配置
+                            ScheduleItem item1 = getItemByParam(param1);
+                            ScheduleItem item2 = getItemByParam(param2);
+                            JSONObject jsonObject = jsonObjects.get(0);
+                            // 节假日类型1调休，2补班，设置为根据配置获取的班次
+                            if (ObjectUtil.isNotEmpty(item1) && "1".equals(jsonObject.getString("type"))) {
+                                record.setItemId(item1.getId());
+                                record.setItemName(item1.getName());
+                            } else if (ObjectUtil.isNotEmpty(item2) && "2".equals(jsonObject.getString("type"))) {
+                                record.setItemId(item2.getId());
+                                record.setItemName(item2.getName());
                             }
                         }
                         recordService.save(record);
@@ -256,6 +273,18 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
         }
         result.success("添加成功！");
         return result;
+    }
+
+    @Override
+    public ScheduleItem getItemByParam(SysParamModel sysParamModel) {
+        if (ObjectUtil.isNotEmpty(sysParamModel)) {
+            try {
+                return ItemService.getOne(new LambdaQueryWrapper<ScheduleItem>().eq(ScheduleItem::getName, StrUtil.trim(sysParamModel.getValue())).eq(ScheduleItem::getDelFlag, CommonConstant.DEL_FLAG_0));
+            } catch (Exception e) {
+                throw new AiurtBootException("存在多个" + sysParamModel.getValue() + "，请检查班次信息");
+            }
+        }
+        return null;
     }
 
     @Override
