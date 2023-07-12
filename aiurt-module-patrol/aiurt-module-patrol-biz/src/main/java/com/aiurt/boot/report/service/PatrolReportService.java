@@ -814,7 +814,8 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         boolean b = "1".equals(sysParamModel.getValue());
         if (CollUtil.isNotEmpty(result) && b) {
             SysParamModel code = sysParamApi.selectByCode(SysParamCodeConstant.SPECIAL_TEAM);
-            List<LineOrStationDTO> dtoList = result.stream().filter(s -> !s.getCode().equals(code.getValue())).collect(Collectors.toList());
+            List<String> codes = StrUtil.splitTrim(code.getValue(), ",");
+            List<LineOrStationDTO> dtoList = result.stream().filter(s ->!codes.contains(s.getCode())).collect(Collectors.toList());
             return dtoList;
         }
         return result;
