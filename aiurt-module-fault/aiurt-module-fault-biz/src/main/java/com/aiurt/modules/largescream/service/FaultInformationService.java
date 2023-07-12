@@ -954,10 +954,10 @@ public class FaultInformationService {
 
     /**
      * 根据站点code，获取未完成故障（挂起+维修中）的故障现象、故障发生时间、故障code
-     * @param stationCode 要查询哪个站点的故障
+     * @param stationCodeList 要查询哪个站点的故障
      * @return
      */
-    public List<FaultUnfinishedSymptomsDTO> getUnfinishedSymptomsByStationCode(String stationCode) {
-        return faultInformationMapper.getUnfinishedSymptomsByStationCode(stationCode);
+    public List<FaultUnfinishedSymptomsDTO> getUnfinishedSymptomsByStationCode(List<String> stationCodeList) {
+        return faultInformationMapper.getUnfinishedSymptomsByStationCode(stationCodeList);
     }
 }
