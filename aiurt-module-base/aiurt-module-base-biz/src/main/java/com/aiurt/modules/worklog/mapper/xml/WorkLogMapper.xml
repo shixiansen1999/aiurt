@@ -295,6 +295,7 @@
             SELECT log_time, org_id
             FROM t_work_log
             WHERE id = #{id}
-        ) t2 ON t1.log_time = t2.log_time AND t1.org_id = t2.org_id;
+        ) t2 ON t1.log_time = t2.log_time AND t1.org_id = t2.org_id
+        ORDER BY create_time ASC;
     </select>
 </mapper>
