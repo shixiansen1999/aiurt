@@ -17,6 +17,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -242,7 +243,7 @@ public class FaultInformationController {
     @ApiOperation(value = "根据站点code，获取未完成故障（挂起+维修中）", notes = "根据站点code，获取未完成故障（挂起+维修中）")
     @GetMapping(value = "/getUnfinishedSymptomsByStationCode")
     public Result<List<FaultUnfinishedSymptomsDTO>> getUnfinishedSymptomsByStationCode(@RequestParam("stationCode") String stationCode){
-        List<FaultUnfinishedSymptomsDTO> list = faultInformationService.getUnfinishedSymptomsByStationCode(stationCode);
+        List<FaultUnfinishedSymptomsDTO> list = faultInformationService.getUnfinishedSymptomsByStationCode(Arrays.asList(stationCode.split(",")));
         return Result.ok(list);
     }
 }
