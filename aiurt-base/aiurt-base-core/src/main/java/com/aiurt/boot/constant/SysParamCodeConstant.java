@@ -416,4 +416,9 @@ public interface SysParamCodeConstant {
      * 假日类型为调休时调整的班次名称
      */
     String SCHEDULE_FOR_REST = "schedule_for_rest";
+
+    /**
+     * 企业微信认证url
+     */
+    String WECHAT_AUTHORIZE_URL = "wechat_authorize_url";
 }
