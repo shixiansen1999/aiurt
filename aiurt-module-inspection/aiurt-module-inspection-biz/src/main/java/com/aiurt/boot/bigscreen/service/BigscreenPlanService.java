@@ -109,6 +109,8 @@ public class BigscreenPlanService {
 
             // 填充检修完成数
             result.setFinish(CollUtil.isNotEmpty(inspectionDataNoPage) ? inspectionDataNoPage.stream().filter(re -> InspectionConstant.COMPLETED.equals(re.getStatus())).count() : 0L);
+            // 填充检修未完成数
+            result.setUnfinish(result.getSum() - result.getFinish());
 
             // 填充漏检数
             result.setOmit(0L);
