@@ -494,6 +494,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
 //            LoginUser user = new LoginUser();
         LoginUser user = userService.getUserById(log.getUserId());
         log.setUserName(user.getRealname());
+        log.setRemark(scheduleRecordREditDTO.getRemark());
         logService.save(log);
     }
 

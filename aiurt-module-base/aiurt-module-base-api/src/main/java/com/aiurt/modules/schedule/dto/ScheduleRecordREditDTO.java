@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
@@ -46,4 +47,7 @@ public class ScheduleRecordREditDTO {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "排班日期")
     private  Date  date;
+    /**备注*/
+    @ApiModelProperty(value = "备注")
+    private String remark;
 }
