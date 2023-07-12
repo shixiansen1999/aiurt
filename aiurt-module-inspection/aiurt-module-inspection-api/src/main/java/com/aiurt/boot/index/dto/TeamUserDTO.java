@@ -58,4 +58,14 @@ public class TeamUserDTO {
     private Date entryDate;
 
     private Long time;
+
+    @ApiModelProperty("班组名称")
+    private String orgName;
+    @ApiModelProperty("施工证编号")
+    private String permitCode;
+    @ApiModelProperty("工作证编号")
+    private String cardCode;
+    @ApiModelProperty("岗位")
+    @Dict(dicCode = "sys_post")
+    private String jobName;
 }

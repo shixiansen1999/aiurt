@@ -112,6 +112,9 @@
             <if test="lineCode != null and lineCode != ''">
                 and rr.line_code = #{lineCode}
             </if>
+            <if test="status != null ">
+                and rp.status = #{status}
+            </if>
         </where>
     </select>
     <select id="getNumByTimeAndOrgCode" resultType="com.aiurt.boot.index.dto.PlanIndexDTO">

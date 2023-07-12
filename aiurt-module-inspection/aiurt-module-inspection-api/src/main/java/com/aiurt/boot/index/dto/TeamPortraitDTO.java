@@ -19,6 +19,8 @@ public class TeamPortraitDTO {
     private String teamCode;
     @ApiModelProperty("班组名称")
     private String teamName;
+    @ApiModelProperty(value = "机构电话")
+    private String departPhoneNum;
     @ApiModelProperty("班组组长名称")
     private String teamLeaderName;
     @ApiModelProperty("班组负责线路")

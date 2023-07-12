@@ -2,7 +2,6 @@ package com.aiurt.boot.bigscreen.service;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.thread.ThreadUtil;
@@ -116,7 +115,8 @@ public class BigscreenPlanService {
 
             // 填充今日检修数（规则：当前时间在检修计划的开始时间和结束时间范围内）
             List<InspectionDTO> todayInspectionNum = repairPoolMapper.getInspectionTodayDataNoPage(new Date(), orgCodes,lineCode);
-            result.setTodayFinish(CollUtil.isNotEmpty(todayInspectionNum) ? todayInspectionNum.size() : 0L);
+            result.setTodaySum(CollUtil.isNotEmpty(todayInspectionNum) ? todayInspectionNum.size() : 0L);
+            result.setTodayFinish(CollUtil.isNotEmpty(todayInspectionNum) ? todayInspectionNum.stream().filter(t -> t.getStatus() == 8).count() : 0L);
         }
         return result;
     }
@@ -127,7 +127,7 @@ public class BigscreenPlanService {
      *
      * @param lineCode 线路code
      * @param type     类型:1：本周，2：上周，3：本月， 4：上月
-     * @param item     1计划数，2完成数，3漏检数，4今日检修数
+     * @param item     1计划数，2完成数，3漏检数，4今日检修数，5今日检修完成数
      * @param page     分页参数
      * @return
      */
@@ -166,7 +166,12 @@ public class BigscreenPlanService {
         // TODO 漏检
         // 查询今日检修
         if (InspectionConstant.PLAN_TODAY_4.equals(item)) {
-            result = repairPoolMapper.getInspectionTodayData(page, new Date(), orgCodes,lineCode);
+            result = repairPoolMapper.getInspectionTodayData(page, new Date(), orgCodes,lineCode,null);
+        }
+
+        // 查询今日检修已完成
+        if (InspectionConstant.PLAN_TODAY_5.equals(item)) {
+            result = repairPoolMapper.getInspectionTodayData(page, new Date(), orgCodes,lineCode,InspectionConstant.COMPLETED);
         }
 
         // 统一处理结果
