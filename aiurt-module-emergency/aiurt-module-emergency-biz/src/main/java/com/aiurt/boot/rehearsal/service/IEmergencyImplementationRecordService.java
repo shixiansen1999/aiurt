@@ -11,6 +11,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDeptUserModel;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -77,4 +80,14 @@ public interface IEmergencyImplementationRecordService extends IService<Emergenc
      * 应急模块-责任人信息
      */
     List<LoginUser> getDutyUser();
+
+    /**
+     * 导出闭环台账
+     * @param emergencyRecordDTO
+     * @param pageNo
+     * @param pageSize
+     * @param request
+     * @param response
+     */
+    void exportLedger(EmergencyRecordDTO emergencyRecordDTO, Integer pageNo, Integer pageSize, HttpServletRequest request, HttpServletResponse response);
 }

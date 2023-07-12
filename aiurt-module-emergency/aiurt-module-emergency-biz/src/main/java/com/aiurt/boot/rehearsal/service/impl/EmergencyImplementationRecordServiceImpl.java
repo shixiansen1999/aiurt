@@ -1,5 +1,9 @@
 package com.aiurt.boot.rehearsal.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.entity.ExportParams;
+import cn.afterturn.easypoi.excel.entity.params.ExcelExportEntity;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -8,6 +12,7 @@ import com.aiurt.boot.plan.service.IEmergencyPlanService;
 import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
 import com.aiurt.boot.rehearsal.constant.EmergencyDictConstant;
 import com.aiurt.boot.rehearsal.dto.EmergencyDeptDTO;
+import com.aiurt.boot.rehearsal.dto.EmergencyLedgerDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRecordDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalRegisterDTO;
 import com.aiurt.boot.rehearsal.entity.*;
@@ -22,17 +27,28 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.*;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @Description: emergency_implementation_record
@@ -225,6 +241,72 @@ public class EmergencyImplementationRecordServiceImpl extends ServiceImpl<Emerge
         }
         List<LoginUser> users = iSysBaseApi.getUserByDeptCode(orgCode);
         return users;
+    }
+
+    @Override
+    public void exportLedger(EmergencyRecordDTO emergencyRecordDTO, Integer pageNo, Integer pageSize, HttpServletRequest request, HttpServletResponse response){
+        // 需要的内容有: emergency_implementation_record表的rehearsal_time(实际演练时间)
+        //             emergency_rehearsal_month表的subject(演练科目)
+        //             emergency_record_question表的description(描述)和process_mode(处理方式)
+
+        List<String> recodeIdList;
+        // 如果有selections参数指定了id，就不用分页查询了
+        String selections = request.getParameter("selections");
+        if (StrUtil.isNotEmpty(selections)) {
+            recodeIdList = Arrays.asList(selections.split(","));
+        }else {
+            Page<EmergencyImplementationRecordVO> page = new Page<>(pageNo, pageSize);
+            IPage<EmergencyImplementationRecordVO> pageList = this.queryPageList(page, emergencyRecordDTO);
+            recodeIdList = pageList.getRecords().stream().map(EmergencyImplementationRecordVO::getId).collect(Collectors.toList());
+        }
+        if (CollUtil.isEmpty(recodeIdList)) {
+            throw new AiurtBootException("数据选择错误，请重新选择导出数据");
+        }
+        // 根据recodeIdList，查询所需的数据
+        List<EmergencyLedgerDTO> emergencyLedgerDTOList = this.baseMapper.queryLedger(recodeIdList);
+
+        // excel表中每行数据
+        List<Map<String, Object>> rowDataList = new ArrayList<>();
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        for (int i = 0; i < emergencyLedgerDTOList.size(); i++) {
+            EmergencyLedgerDTO ledgerDTO = emergencyLedgerDTOList.get(i);
+            // excel中每行的数据
+            Map<String, Object> rowMap = new HashMap<>();
+            rowMap.put("index", i + 1);
+            String question = String.format("在%s%s中发现%s", dateFormat.format(ledgerDTO.getRehearsalTime()), ledgerDTO.getSubject(), ledgerDTO.getDescription());
+            rowMap.put("question", question);
+            rowMap.put("measure", ledgerDTO.getProcessMode());
+            rowDataList.add(rowMap);
+        }
+
+        // excel表的设置
+        ExportParams exportParams = new ExportParams("演练问题闭环台账", "Sheet1");
+        // 表头的设置
+        List<ExcelExportEntity> keyList = new ArrayList<>();
+        ExcelExportEntity indexEntity = new ExcelExportEntity("序号", "index", 10);
+        ExcelExportEntity questionEntity = new ExcelExportEntity("演练时间及发现问题", "question", 80);
+        ExcelExportEntity measureEntity = new ExcelExportEntity("闭环措施", "measure", 50);
+        // 设置自动换行
+        questionEntity.setWrap(true);
+        measureEntity.setWrap(true);
+
+        keyList.add(indexEntity);
+        keyList.add(questionEntity);
+        keyList.add(measureEntity);
+        Workbook workbook = ExcelExportUtil.exportExcel(exportParams, keyList, rowDataList);
+        // 将workbook表写入response中
+        try {
+            String attachName = new String("演练问题闭环台账.xls".getBytes(), StandardCharsets.UTF_8);
+            response.setContentType("multipart/form-data");
+            response.setHeader("Content-Disposition", "attachment;fileName=" + attachName);
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
