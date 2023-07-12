@@ -293,6 +293,10 @@ public class InspectionConstant {
      */
     public static final Integer PLAN_FINISH_2 = 2;
     /**
+     * 未完成数
+     */
+    public static final Integer PLAN_UNFINISH_6 = 6;
+    /**
      * 漏检数
      */
     public static final Integer PLAN_MISSED_DETECTION_3 = 3;

@@ -31,6 +31,10 @@ public class ScreenModule {
      */
     private Integer status;
     /**
+     * 巡视数据统计模块标识
+     */
+    private Integer screenModule;
+    /**
      * 工单任务完成状态
      */
     private final Integer checkStatus = PatrolConstant.BILL_COMPLETE;
