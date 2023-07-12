@@ -3,6 +3,7 @@ package com.aiurt.modules.position.service.impl;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.position.mapper.CsLineMapper;
 import com.aiurt.modules.position.mapper.CsStationMapper;
 import com.aiurt.modules.position.service.ICsStationService;
@@ -53,7 +54,24 @@ public class CsStationServiceImpl extends ServiceImpl<CsStationMapper, CsStation
         }
         csStation.setUpdateTime(new Date());
         csStationMapper.insert(csStation);
-        return Result.OK("添加成功！");
+        CsStationPosition position = new CsStationPosition();
+        position.setId(csStation.getId());
+        position.setLevel(2);
+        position.setSort(csStation.getSort());
+        position.setPositionCode(csStation.getStationCode());
+        position.setPositionName(csStation.getStationName());
+        position.setLongitude(csStation.getLongitude());
+        position.setLatitude(csStation.getLatitude());
+        position.setPCode(csStation.getLineCode());
+        position.setPUrl(csStation.getLineName());
+        position.setCodeCc(csStation.getLineCode() + "/" + csStation.getStationCode());
+        position.setPositionType(csStation.getStationType());
+        position.setLength("");
+        position.setTitle(csStation.getStationName());
+        position.setValue(csStation.getStationCode());
+        position.setIsLeaf(false);
+        position.setFid(csStation.getLineCode());
+        return Result.OK("添加成功！", position);
     }
     /**
      * 修改
@@ -79,6 +97,23 @@ public class CsStationServiceImpl extends ServiceImpl<CsStationMapper, CsStation
         }
 
         csStationMapper.updateById(csStation);
-        return Result.OK("编辑成功！");
+        CsStationPosition position = new CsStationPosition();
+        position.setId(csStation.getId());
+        position.setLevel(2);
+        position.setSort(csStation.getSort());
+        position.setPositionCode(csStation.getStationCode());
+        position.setPositionName(csStation.getStationName());
+        position.setLongitude(csStation.getLongitude());
+        position.setLatitude(csStation.getLatitude());
+        position.setPCode(csStation.getLineCode());
+        position.setPUrl(csStation.getLineName());
+        position.setCodeCc(csStation.getLineCode() + "/" + csStation.getStationCode());
+        position.setPositionType(csStation.getStationType());
+        position.setLength("");
+        position.setTitle(csStation.getStationName());
+        position.setValue(csStation.getStationCode());
+        position.setIsLeaf(false);
+        position.setFid(csStation.getLineCode());
+        return Result.OK("编辑成功！", position);
     }
 }

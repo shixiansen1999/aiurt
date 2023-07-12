@@ -34,6 +34,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import com.aiurt.common.aspect.annotation.AutoLog;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -199,5 +200,30 @@ public class SparePartStockInfoController extends BaseController<SparePartStockI
 		result.setSuccess(true);
 		result.setResult(sparePartStockInfos);
 		return result;
+	}
+
+	/**
+	 * 下载导入模板
+	 * @param response
+	 * @param request
+	 * @throws IOException
+	 */
+	@ApiOperation(value = "系统管理-基础数据-下载导入模板", notes = "系统管理-基础数据-下载导入模板")
+	@GetMapping("/downloadTemplateExcel")
+	public void downloadTemplateExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		sparePartStockInfoService.downloadTemplateExcel(request, response);
+	}
+
+	/**
+	 * 系统管理-基础数据-备件仓库-导入
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ApiOperation(value = "系统管理-基础数据-备件仓库-导入", notes = "系统管理-基础数据-备件仓库-导入")
+	@PostMapping(value = "/importExcel")
+	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response){
+		return sparePartStockInfoService.importExcel(request, response);
+
 	}
 }
