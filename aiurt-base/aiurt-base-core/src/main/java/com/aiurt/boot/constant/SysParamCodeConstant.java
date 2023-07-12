@@ -393,8 +393,14 @@ public interface SysParamCodeConstant {
      * 企业微信跳转地址
      */
     String WECHAT_MESSAGE_URL = "wechat_message_url";
+
     /**
      * 故障操作日志查询是否根据处理时间升序排序
      */
     String FAULT_OPERATION_ORDER = "fault_operation_order";
+
+    /**
+     * 故障完成后是否给中心班组成员提示音
+     */
+    String FAULT_FINISH_CENTER_MSG = "fault_finish_center_msg";
 }
