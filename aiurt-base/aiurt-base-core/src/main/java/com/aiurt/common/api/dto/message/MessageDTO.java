@@ -105,6 +105,10 @@ public class MessageDTO implements Serializable {
      */
     protected Integer ringDuration;
     /**
+     * 铃声类型：1是故障完成给中心班组的提示音
+     */
+    protected Integer ringType;
+    /**
      * 消息类型：org.jeecg.common.constant.enums.MessageTypeEnum
      *  XT("system",  "系统消息")
      *  YJ("email",  "邮件消息")
