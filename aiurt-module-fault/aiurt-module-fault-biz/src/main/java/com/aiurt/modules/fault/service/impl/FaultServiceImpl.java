@@ -1834,6 +1834,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                         messageDTO.setPublishingContent("故障维修完成");
                         messageDTO.setIsRingBell(true);
                         messageDTO.setRingDuration(5);
+                        messageDTO.setRingType(1);
                         sendMessage(messageDTO, faultMessageDTO);
                     } catch (Exception e) {
                         log.error(e.getMessage(), e);
