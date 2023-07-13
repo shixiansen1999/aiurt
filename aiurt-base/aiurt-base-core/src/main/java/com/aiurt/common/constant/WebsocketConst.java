@@ -68,4 +68,9 @@ public class WebsocketConst {
      */
     public static final String RING_DURATION = "ring_duration";
 
+    /**
+     * 铃声类型：1故障完成之后，给中心班组提示音用的类型
+     */
+    public static final String RING_TYPE = "ring_type";
+
 }
