@@ -681,7 +681,10 @@ public class PatrolScreenService {
                 String omitStatusName = omitItems.get(String.valueOf(l.getOmitStatus()));
                 l.setStatusName(statusDictName);
                 l.setOmitStatusName(omitStatusName);
-                l.setUserInfo(CollUtil.join(indexUsers, ","));
+                //前端需要返回null，CollUtil.join的参数中为空集的话会返回空，所以先判空
+                if (CollUtil.isNotEmpty(indexUsers)) {
+                    l.setUserInfo(CollUtil.join(indexUsers, ","));
+                }
             });
             return pageList;
 
