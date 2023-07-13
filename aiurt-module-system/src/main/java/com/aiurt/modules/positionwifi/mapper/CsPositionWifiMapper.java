@@ -29,7 +29,7 @@ public interface CsPositionWifiMapper extends BaseMapper<CsPositionWifi> {
     List<StationAndMacModel> getStationAndMac(@Param("stationCodes") List<String> stationCodes,@Param("changeCode")List<String> changeCode);
 
     /**
-     * 根据mac地址获取station_code，如果该站点是换乘车站，那获取的就是换乘编码
+     * 根据mac地址获取station_code，如果该站点是换乘车站，那获取的就是换乘编码。mac地址只匹配11位
      * @param mac
      * @return
      */

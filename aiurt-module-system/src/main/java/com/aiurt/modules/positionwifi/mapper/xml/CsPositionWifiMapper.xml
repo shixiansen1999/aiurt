@@ -59,7 +59,7 @@
         FROM cs_station cs
         INNER JOIN cs_position_wifi cpw ON cpw.station_code = cs.station_code
         WHERE cs.del_flag=0 AND cpw.del_flag=0
-        AND cpw.mac=#{mac}
+        AND cpw.mac like CONCAT(LEFT(#{mac},16), "%")
         limit 1
     </select>
 </mapper>
