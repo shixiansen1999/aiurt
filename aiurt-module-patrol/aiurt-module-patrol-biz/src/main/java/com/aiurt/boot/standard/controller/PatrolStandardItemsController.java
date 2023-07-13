@@ -135,12 +135,12 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
     @AutoLog(value = "校验添加code唯一", operateType = 1, operateTypeAlias = "查询code唯一", module = ModuleType.PATROL)
     @ApiOperation(value = "校验添加code唯一", notes = "校验添加code唯一")
     @GetMapping(value = "/checkCode")
-    public void checkCode(
+    public Result<?> checkCode(
             @RequestParam(name = "code") String code,
             @RequestParam(name = "standardId") String standardId,
             @RequestParam(name = "id", required = false) String id) {
         patrolStandardItemsService.checkCode(code, standardId, id);
-
+        return Result.OK();
     }
 
     /**
