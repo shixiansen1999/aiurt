@@ -504,7 +504,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
     @NotNull
     private static Map<String, Object> getHeaderMap(PatrolTask patrolTask, PrintPatrolTaskDTO taskDTO) {
         Map<String, Object> map = MapUtils.newHashMap();
-        map.put("title", patrolTask.getName());
+        map.put("title", patrolTask.getName().replaceAll("\n", ""));
         map.put("patrolStation", taskDTO.getStationNames());
         map.put("patrolPerson", taskDTO.getUserName());
         map.put("checkUserName", taskDTO.getSpotCheckUserName());
