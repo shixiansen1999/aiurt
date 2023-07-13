@@ -457,7 +457,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     @Override
     public List<PatrolStationDTO> getBillGangedInfo(String taskId) {
         List<PatrolBillDTO> billGangedInfo = patrolTaskDeviceMapper.getBillGangedInfo(taskId);
-
+        billGangedInfo.forEach(b->{b.setTableName(b.getTableName().replaceAll("\n", ""));});
         Map<String, List<PatrolBillDTO>> collect = billGangedInfo.stream().filter((t) -> StrUtil.isNotBlank(t.getStationCode())).collect(Collectors.groupingBy(PatrolBillDTO::getStationCode));
         List<PatrolStationDTO> stationList = new ArrayList<>();
         for (Map.Entry<String, List<PatrolBillDTO>> entry : collect.entrySet()) {
