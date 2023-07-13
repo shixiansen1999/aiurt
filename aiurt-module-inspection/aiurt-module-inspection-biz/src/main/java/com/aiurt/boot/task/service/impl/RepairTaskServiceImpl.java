@@ -1375,6 +1375,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 if (r.getStatusItem().equals(InspectionConstant.STATUS_ITEM_INPUT)) {
                     r.setInspeciontValueName(r.getNote());
                 }
+                if (r.getStatusItem().equals(InspectionConstant.STATUS_ITEM_SPECIALCHAR_INPUT)) {
+                    if (StrUtil.isNotBlank(r.getSpecialCharactersResult()) && !r.getSpecialCharacters().equals(r.getSpecialCharactersResult())) {
+                        r.setInspeciontValueName(r.getSpecialCharactersResult());
+                        //app详情页面使用specialCharacters展示，因此赋值结果回给这个字段
+                        r.setSpecialCharacters(r.getSpecialCharactersResult());
+                    }
+                }
             }
         });
         return treeFirst(repairTaskResults1);
@@ -2394,6 +2401,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         result.setNote(monadDTO.getNote());
         result.setInspeciontValue(monadDTO.getInspeciontValue());
         result.setUnNote(monadDTO.getUnNote());
+        result.setSpecialCharactersResult(monadDTO.getSpecialCharactersResult());
 
         // 更新检修结果
         repairTaskResultMapper.updateById(result);
@@ -2470,7 +2478,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         return StrUtil.isEmpty(result.getStaffId())
                 || (monadDTO.getStatus() != null && !monadDTO.getStatus().equals(result.getStatus()))
                 || (monadDTO.getInspeciontValue() != null && !monadDTO.getInspeciontValue().equals(result.getInspeciontValue()))
-                || (StrUtil.isNotEmpty(monadDTO.getNote()) && !monadDTO.getNote().equals(result.getNote()));
+                || (StrUtil.isNotEmpty(monadDTO.getNote()) && !monadDTO.getNote().equals(result.getNote()))
+                || (StrUtil.isNotEmpty(monadDTO.getSpecialCharactersResult()) && !monadDTO.getSpecialCharactersResult().equals(result.getSpecialCharacters()));
     }
 
     /**

@@ -182,6 +182,10 @@ public class InspectionConstant {
      * 检修值：3输入项
      */
     public static final Integer STATUS_ITEM_INPUT = 3;
+    /**
+     * 检修值：3特殊字符输入
+     */
+    public static final Integer STATUS_ITEM_SPECIALCHAR_INPUT = 4;
 
     /**
      * 非法操作

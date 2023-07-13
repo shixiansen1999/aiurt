@@ -133,6 +133,14 @@ public class RepairTaskResult implements Serializable {
 	@Excel(name = "数据校验字段", width = 15)
     @ApiModelProperty(value = "数据校验字段")
     private java.lang.String dataCheck;
+    /**特殊字符输入*/
+    @Excel(name = "特殊字符输入", width = 15)
+    @ApiModelProperty(value = "特殊字符输入")
+    private java.lang.String specialCharacters;
+    /**特殊字符输入结果*/
+    @Excel(name = "特殊字符输入结果", width = 15)
+    @ApiModelProperty(value = "特殊字符输入结果")
+    private java.lang.String specialCharactersResult;
 	/**删除状态*/
 	@Excel(name = "删除状态", width = 15)
     @ApiModelProperty(value = "删除状态")
