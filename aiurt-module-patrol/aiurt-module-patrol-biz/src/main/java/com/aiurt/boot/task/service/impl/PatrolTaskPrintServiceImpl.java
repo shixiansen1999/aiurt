@@ -885,7 +885,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
     }
     public List<PatrolStationDTO> getBillGangedInfo(String taskId, String standardId) {
         List<PatrolBillDTO> billGangedInfo = patrolTaskDeviceMapper.getBillGanged(taskId,standardId);
-
+        billGangedInfo.forEach(b->{b.setTableName(b.getTableName().replaceAll("\n", ""));});
         Map<String, List<PatrolBillDTO>> collect = billGangedInfo.stream().filter((t) -> StrUtil.isNotBlank(t.getStationCode())).collect(Collectors.groupingBy(PatrolBillDTO::getStationCode));
         List<PatrolStationDTO> stationList = new ArrayList<>();
         for (Map.Entry<String, List<PatrolBillDTO>> entry : collect.entrySet()) {
