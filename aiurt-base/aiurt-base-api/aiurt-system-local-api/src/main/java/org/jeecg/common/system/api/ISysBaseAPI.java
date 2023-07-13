@@ -710,6 +710,7 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     Map<String, String> getStationNameByCode(List<String> stationCodes);
+
     /**
      * 根据站点编号获取线路站点名称,站点编号:线路名称/站点名称
      *
@@ -1120,6 +1121,7 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getMaterialNameByCode(String materialCode);
+
     /**
      * 根据多个物资编号获取物资名称,编号：名称
      * @param materialCodes
@@ -1204,7 +1206,7 @@ public interface ISysBaseAPI extends CommonAPI {
     List<String> getWifiMacByStationCode(List<String> stationCodes);
 
     /**
-     * 根据mac地址获取站点code，如果该站点是换乘车站，那获取的就是换乘编码
+     * 根据mac地址获取站点code，如果该站点是换乘车站，那获取的就是换乘编码。mac地址只匹配11位
      * @param mac
      * @return
      */
