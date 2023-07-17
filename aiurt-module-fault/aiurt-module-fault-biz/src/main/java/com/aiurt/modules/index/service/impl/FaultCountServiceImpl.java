@@ -283,7 +283,10 @@ public class FaultCountServiceImpl implements IFaultCountService {
                     faultDatum.setDeviceName(faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.joining(",")));
                 }
                 //班组名称和班组负责人
-                faultDatum.setTeamName(faultDatum.getFaultApplicantDept());
+                if (StrUtil.isNotBlank(faultDatum.getSysOrgCode())) {
+                    String name = sysBaseApi.getDepartNameByOrgCode(faultDatum.getSysOrgCode());
+                    faultDatum.setTeamName(name);
+                }
                 //获取填报人组织机构
                 Fault one = faultMap.getOrDefault(faultDatum.getCode(), new Fault());
 
