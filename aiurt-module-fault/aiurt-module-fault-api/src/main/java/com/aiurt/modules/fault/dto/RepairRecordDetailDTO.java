@@ -77,8 +77,12 @@ public class RepairRecordDetailDTO implements Serializable {
     private List<SysAttachment> sysAttachmentList;
 
     /**故障现象*/
-    @ApiModelProperty(value = "故障现象")
+    @ApiModelProperty(value = "故障现象分类编码")
     private String faultPhenomenon;
+
+    /**故障现象*/
+    @ApiModelProperty(value = "故障现象分类名称")
+    private String faultPhenomenonName;
 
 
     /**故障分析*/

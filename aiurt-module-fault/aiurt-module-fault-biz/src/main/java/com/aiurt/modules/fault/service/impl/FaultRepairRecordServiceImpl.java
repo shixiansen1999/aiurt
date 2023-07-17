@@ -90,7 +90,9 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
         recordDetailDTO.setStatus(fault.getStatus());
 //        recordDetailDT
         List<RepairRecordDetailDTO> detailDTOList = baseMapper.queryRecordByFaultCode(faultCode);
-
+        for (int i = 0; i < detailDTOList.size(); i++) {
+            
+        }
         // 参与人
         detailDTOList.stream().forEach(repairRecordDetailDTO -> {
             List<FaultRepairParticipants> list = participantsService.queryParticipantsByRecordId(repairRecordDetailDTO.getId());
@@ -113,6 +115,10 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
                 long between = DateUtil.between(time, startTime, DateUnit.MINUTE);
                 between = between == 0 ? 1: between;
                 repairRecordDetailDTO.setRepairDuration(between+"分钟");
+            }
+            if (StrUtil.isNotBlank(repairRecordDetailDTO.getFaultPhenomenon())) {
+                String s = sysBaseAPI.translateDictFromTable("fault_knowledge_base_type", "name", "code", repairRecordDetailDTO.getFaultPhenomenon());
+                repairRecordDetailDTO.setFaultPhenomenonName(s);
             }
         });
         recordDetailDTO.setDetailList(detailDTOList);
