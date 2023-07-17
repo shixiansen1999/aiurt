@@ -17,6 +17,7 @@ import com.aiurt.modules.index.service.IFaultCountService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.xiaoymin.knife4j.core.util.StrUtil;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsWorkAreaModel;
@@ -211,7 +212,11 @@ public class FaultCountServiceImpl implements IFaultCountService {
                     faultDatum.setDeviceName(faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.joining(",")));
                 }
                 //班组名称和班组负责人
-                faultDatum.setTeamName(faultDatum.getFaultApplicantDept());
+                if (StrUtil.isNotBlank(faultDatum.getSysOrgCode())) {
+                    String name = sysBaseApi.getDepartNameByOrgCode(faultDatum.getSysOrgCode());
+                    faultDatum.setTeamName(name);
+                }
+
                 //获取填报人组织机构
                 Fault one = faultMap.getOrDefault(faultDatum.getCode(), new Fault());
 
@@ -375,7 +380,10 @@ public class FaultCountServiceImpl implements IFaultCountService {
                     }
                 }
                 //班组名称和班组负责人
-                faultDatum.setTeamName(faultDatum.getFaultApplicantDept());
+                if (StrUtil.isNotBlank(faultDatum.getSysOrgCode())) {
+                    String name = sysBaseApi.getDepartNameByOrgCode(faultDatum.getSysOrgCode());
+                    faultDatum.setTeamName(name);
+                }
                 //获取填报人组织机构
                 Fault one = faultMap.getOrDefault(faultDatum.getCode(), new Fault());
 

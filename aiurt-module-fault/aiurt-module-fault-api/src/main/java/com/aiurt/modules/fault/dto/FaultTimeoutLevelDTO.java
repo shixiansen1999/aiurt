@@ -113,4 +113,8 @@ public class FaultTimeoutLevelDTO extends DictEntity {
     @ApiModelProperty("报修部门")
     private String faultApplicantDept;
 
+    /**所属部门*/
+    @ApiModelProperty(value = "所属部门")
+    private String sysOrgCode;
+
 }
