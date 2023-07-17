@@ -90,9 +90,6 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
         recordDetailDTO.setStatus(fault.getStatus());
 //        recordDetailDT
         List<RepairRecordDetailDTO> detailDTOList = baseMapper.queryRecordByFaultCode(faultCode);
-        for (int i = 0; i < detailDTOList.size(); i++) {
-            
-        }
         // 参与人
         detailDTOList.stream().forEach(repairRecordDetailDTO -> {
             List<FaultRepairParticipants> list = participantsService.queryParticipantsByRecordId(repairRecordDetailDTO.getId());
