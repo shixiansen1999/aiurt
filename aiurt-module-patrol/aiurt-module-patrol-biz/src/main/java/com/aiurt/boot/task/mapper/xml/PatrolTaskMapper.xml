@@ -665,7 +665,7 @@
         pt.`code`,
         pt.`status`,
         IF(3 = pt.source, concat(DATE_FORMAT(pt.start_date,'%Y-%m-%d'),'~',DATE_FORMAT(pt.end_date,'%Y-%m-%d')) ,DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') ) as patrolDate,
-        IF(1 = pt.auditor, pt.auditor_time, pt.submit_time) submitTime,
+        pt.submit_time as submitTime,
         GROUP_CONCAT(DISTINCT ptu.user_name SEPARATOR '；' ) userInfo,
         GROUP_CONCAT(DISTINCT cs.station_name SEPARATOR '；' ) stationInfo,
         GROUP_CONCAT(DISTINCT sd.depart_name SEPARATOR '；' ) orgInfo
