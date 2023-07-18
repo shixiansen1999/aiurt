@@ -301,11 +301,14 @@ public class IndexPlanService {
         int dayNum = getMonthDays(year, month);
 
         // 检修(key是日期，value是数量)
-        Map<String, Integer> inspectionMap = MapUtil.isNotEmpty(this.inspectionNumByDay(beginDate, dayNum)) ? this.inspectionNumByDay(beginDate, dayNum) : new HashMap<>(32);
+        Map<String, Integer> stringIntegerMap = this.inspectionNumByDay(beginDate, dayNum);
+        Map<String, Integer> inspectionMap = MapUtil.isNotEmpty(stringIntegerMap) ? stringIntegerMap : new HashMap<>(32);
         // 巡检
-        Map<String, Integer> patrolMap = CollUtil.isNotEmpty(patrolApi.getPatrolFinishNumber(year, month, request)) ? patrolApi.getPatrolFinishNumber(year, month,request) : new HashMap<>(32);
+        Map<String, Integer> patrolFinishNumber = patrolApi.getPatrolFinishNumber(year, month, request);
+        Map<String, Integer> patrolMap = CollUtil.isNotEmpty(patrolFinishNumber) ? patrolFinishNumber : new HashMap<>(32);
         // 故障
-        Map<String, Integer> faultMap = CollUtil.isNotEmpty(dailyFaultApi.getDailyFaultNum(year, month)) ? dailyFaultApi.getDailyFaultNum(year, month) : new HashMap<>(32);
+        Map<String, Integer> dailyFaultNum = dailyFaultApi.getDailyFaultNum(year, month);
+        Map<String, Integer> faultMap = CollUtil.isNotEmpty(dailyFaultNum) ? dailyFaultNum : new HashMap<>(32);
         // 施工
         Map<String, Integer> constructionMap = new HashMap<>(32);
         // 日程信息
