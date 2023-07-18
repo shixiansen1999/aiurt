@@ -3,6 +3,7 @@ package com.aiurt.modules.common.controller;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.common.dto.DeviceDTO;
 import com.aiurt.modules.common.entity.SelectDeviceType;
@@ -32,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
@@ -40,7 +42,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -93,6 +98,9 @@ public class CommonCtroller {
 
     @Autowired
     private IWorkAreaService workAreaService;
+
+    @Autowired
+    private ISysParamAPI sysParamApi;
 
     public Result<List<Device>> query() {
         return Result.OK();
@@ -549,5 +557,17 @@ public class CommonCtroller {
     public Result<List<SelectDeviceType>> getDeviceTypeList(@RequestParam(name="value",required = false) String value) {
         List<SelectDeviceType> deviceTypes = sysBaseApi.selectDeviceTypeList(value);
         return Result.OK(deviceTypes);
+    }
+
+
+    /**
+     * 获取企业微信私域授权地址
+     * @return
+     */
+    @ApiOperation(value="获取企业微信私域授权地址", notes="获取企业微信私域授权地址")
+    @GetMapping(value = "/getWcOauth")
+    public Result<String> getWcOauth() {
+        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.WX_OAUTH);
+        return Result.OK(paramModel.getValue());
     }
 }
