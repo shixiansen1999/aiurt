@@ -420,4 +420,8 @@ public interface SysParamCodeConstant {
      * 故障操作日志查询是否根据处理时间升序排序
      */
     String FAULT_OPERATION_ORDER = "fault_operation_order";
+    /**
+     * 获取企业微信私域授权地址
+     */
+    String WX_OAUTH = "wx_oauth";
 }
