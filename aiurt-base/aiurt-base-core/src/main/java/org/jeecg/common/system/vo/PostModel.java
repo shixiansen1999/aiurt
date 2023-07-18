@@ -30,4 +30,16 @@ public class PostModel implements Serializable {
 
     @ApiModelProperty(value = "用户组")
     private List<SysUserModel> children;
+
+    @ApiModelProperty(value = "岗位数据值")
+    private String value;
+
+    @ApiModelProperty(value = "岗位数据值")
+    private String key;
+
+    @ApiModelProperty(value = "岗位名称")
+    private String title;
+
+    @ApiModelProperty(value = "人员数量")
+    private Integer userNum;
 }
