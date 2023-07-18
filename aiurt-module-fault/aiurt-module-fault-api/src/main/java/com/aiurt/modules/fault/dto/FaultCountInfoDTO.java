@@ -9,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.hibernate.validator.constraints.Length;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -111,4 +110,7 @@ public class FaultCountInfoDTO {
     @NotNull(message = "请填写故障解决时间")
     private Date endTime;
 
+    /**所属部门*/
+    @ApiModelProperty(value = "所属部门")
+    private String sysOrgCode;
 }
