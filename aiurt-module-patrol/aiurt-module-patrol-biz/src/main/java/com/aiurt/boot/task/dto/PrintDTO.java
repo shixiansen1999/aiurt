@@ -32,6 +32,8 @@ public class PrintDTO {
     private String contentRemark;
     @ApiModelProperty(value = "巡检结果是否")
     private String result;
+    @ApiModelProperty(value = "巡检结果和备注")
+    private String resultAndRemark;
     @ApiModelProperty(value = "程序及方法")
     private String procMethods;
 }

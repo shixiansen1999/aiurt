@@ -156,7 +156,8 @@
         pcr.remark,
         pcr.`check`,
         ps.`code` as oldCode,
-        pcr.parent_id
+        pcr.parent_id,
+        pcr.proc_methods
         FROM
         patrol_check_result pcr
         LEFT JOIN patrol_standard_items ps on pcr.old_id = ps.id
