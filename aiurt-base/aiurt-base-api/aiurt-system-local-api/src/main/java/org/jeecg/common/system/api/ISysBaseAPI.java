@@ -99,6 +99,13 @@ public interface ISysBaseAPI extends CommonAPI {
     List<String> getRolesByUsername(String username);
 
     /**
+     * 根据用户id列表，获取用户的角色，多个角色使用英文逗号“,”分隔
+     * @param userIds 用户id列表，当此参数为空时，查询所有用户
+     * @return 返回一个map，key是用户id，value是用户角色(多个使用英文逗号“,”分隔)
+     */
+    Map<String, String> getRoleNamesByUserIds(List<String> userIds);
+
+    /**
      * 8通过用户账号查询部门集合
      *
      * @param username
