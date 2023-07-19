@@ -38,7 +38,10 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
 
@@ -330,19 +333,38 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
     })
     @RequestMapping(value = "/editById", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<String> editById(@RequestBody SysAnnouncement sysAnnouncement) {
-        List<SysAnnouncementSend> sendList = sysAnnouncement.getSendList();
-        if (CollUtil.isNotEmpty(sendList)){
-            sysInfoSendService.removeBatchByIds(sendList);
-            for (SysAnnouncementSend s : sendList){
-                SysAnnouncementSend send = new SysAnnouncementSend();
-                send.setAnntId(s.getAnntId());
-                send.setUserId(s.getUserId());
-                send.setReadFlag(s.getReadFlag());
-                send.setCreateBy(s.getCreateBy());
-                send.setCreateTime(s.getCreateTime());
-                send.setUpdateBy(s.getUpdateBy());
-                send.setUpdateTime(s.getUpdateTime());
-                sysInfoSendService.save(send);
+        sysInfoSendService.editById(sysAnnouncement);
+        List<SysAnnouncementSend> list = sysInfoSendService.list(new LambdaQueryWrapper<SysAnnouncementSend>().eq(SysAnnouncementSend::getAnntId, sysAnnouncement.getId()));
+        if (ObjectUtil.isNotEmpty(sysAnnouncement.getUserIds())){
+            List<LoginUser> loginUsers = iSysBaseAPI.queryUserByNames(sysAnnouncement.getUserIds().split( ","));
+            List<String> userIds = loginUsers.stream().map(LoginUser::getId).collect(Collectors.toList());
+            if(CollUtil.isEmpty(list)){
+                for (LoginUser user : loginUsers){
+                    SysAnnouncementSend send = new SysAnnouncementSend();
+                    send.setAnntId(sysAnnouncement.getId());
+                    send.setUserId(user.getId());
+                    send.setReadFlag(CommonConstant.NO_READ_FLAG);
+                    sysInfoSendService.save(send);
+                }
+            }else {
+                List<String> sendUserIds = list.stream().map(SysAnnouncementSend::getUserId).collect(Collectors.toList());
+                //添加
+                List<String> newUser = userIds.stream().filter(u -> !sendUserIds.contains(u)).collect(Collectors.toList());
+                for (String user : newUser){
+                    SysAnnouncementSend send = new SysAnnouncementSend();
+                    send.setAnntId(sysAnnouncement.getId());
+                    send.setUserId(user);
+                    send.setReadFlag(CommonConstant.NO_READ_FLAG);
+                    sysInfoSendService.save(send);
+                }
+                //删除
+                List<SysAnnouncementSend> delUserList = list.stream().filter(l -> !userIds.contains(l.getUserId())).collect(Collectors.toList());
+                sysInfoSendService.removeBatchByIds(delUserList);
+
+            }
+        }else {
+            if(ObjectUtil.isNotEmpty(list)){
+                sysInfoSendService.removeBatchByIds(list);
             }
         }
         bdInfoListService.updateById(sysAnnouncement);
