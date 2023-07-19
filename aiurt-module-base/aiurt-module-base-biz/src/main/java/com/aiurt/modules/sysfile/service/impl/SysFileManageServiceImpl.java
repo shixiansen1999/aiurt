@@ -310,7 +310,7 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
                 throw new AiurtBootException("Invalid fileSize: " + file.getFileSize());
             }
 
-            int fileSizeInBytes = Integer.parseInt(file.getFileSize());
+            long fileSizeInBytes = Long.parseLong(file.getFileSize());
             BigDecimal fileSizeInKB = NumberUtil.div(String.valueOf(fileSizeInBytes), String.valueOf(SysFileConstant.BYTES_IN_KB), 1);
             BigDecimal fileSizeInMB = NumberUtil.div(String.valueOf(fileSizeInBytes), String.valueOf(SysFileConstant.BYTES_IN_MB), 1);
 
@@ -318,8 +318,10 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
                 sysFile.setFileSize(fileSizeInBytes + SysFileConstant.B);
             } else if (fileSizeInBytes >= SysFileConstant.BYTES_IN_KB && fileSizeInBytes < SysFileConstant.BYTES_IN_MB) {
                 sysFile.setFileSize(fileSizeInKB.stripTrailingZeros().toPlainString() + SysFileConstant.KB);
-            } else if (fileSizeInBytes >= SysFileConstant.BYTES_IN_MB) {
+            } else if (fileSizeInBytes >= SysFileConstant.BYTES_IN_MB && fileSizeInBytes < SysFileConstant.BYTES_IN_GB) {
                 sysFile.setFileSize(fileSizeInMB.stripTrailingZeros().toPlainString() + SysFileConstant.MB);
+            } else if (fileSizeInBytes >= SysFileConstant.BYTES_IN_GB) {
+                sysFile.setFileSize(fileSizeInMB.stripTrailingZeros().toPlainString() + SysFileConstant.GB);
             }
         }
     }
