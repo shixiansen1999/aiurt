@@ -313,6 +313,7 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
             long fileSizeInBytes = Long.parseLong(file.getFileSize());
             BigDecimal fileSizeInKB = NumberUtil.div(String.valueOf(fileSizeInBytes), String.valueOf(SysFileConstant.BYTES_IN_KB), 1);
             BigDecimal fileSizeInMB = NumberUtil.div(String.valueOf(fileSizeInBytes), String.valueOf(SysFileConstant.BYTES_IN_MB), 1);
+            BigDecimal fileSizeInGB = NumberUtil.div(String.valueOf(fileSizeInBytes), String.valueOf(SysFileConstant.BYTES_IN_GB), 1);
 
             if (fileSizeInBytes >= 0 && fileSizeInBytes < SysFileConstant.BYTES_IN_KB) {
                 sysFile.setFileSize(fileSizeInBytes + SysFileConstant.B);
@@ -321,7 +322,7 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
             } else if (fileSizeInBytes >= SysFileConstant.BYTES_IN_MB && fileSizeInBytes < SysFileConstant.BYTES_IN_GB) {
                 sysFile.setFileSize(fileSizeInMB.stripTrailingZeros().toPlainString() + SysFileConstant.MB);
             } else if (fileSizeInBytes >= SysFileConstant.BYTES_IN_GB) {
-                sysFile.setFileSize(fileSizeInMB.stripTrailingZeros().toPlainString() + SysFileConstant.GB);
+                sysFile.setFileSize(fileSizeInGB.stripTrailingZeros().toPlainString() + SysFileConstant.GB);
             }
         }
     }
