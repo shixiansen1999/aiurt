@@ -3,22 +3,20 @@ package com.aiurt.modules.system.controller;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
-import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecg.common.system.vo.DictModel;
-import org.jeecg.common.system.vo.DictQuery;
-import org.jeecg.common.system.vo.LoginUser;
 import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.common.util.SqlInjectionUtil;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.modules.system.entity.SysDict;
 import com.aiurt.modules.system.entity.SysDictItem;
 import com.aiurt.modules.system.model.SysDictTree;
 import com.aiurt.modules.system.model.TreeSelectModel;
 import com.aiurt.modules.system.security.DictQueryBlackListHandler;
+import com.aiurt.modules.system.service.ISysDictItemService;
+import com.aiurt.modules.system.service.ISysDictService;
 import com.aiurt.modules.system.vo.SysDictPage;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -28,9 +26,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
-import com.aiurt.modules.system.entity.SysDict;
-import com.aiurt.modules.system.service.ISysDictItemService;
-import com.aiurt.modules.system.service.ISysDictService;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.DictQuery;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportCheckUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
@@ -475,6 +474,8 @@ public class SysDictController {
 		Set keys4 = redisTemplate.keys(CacheConstant.SYS_DEPART_IDS_CACHE + "*");
 		Set keys5 = redisTemplate.keys( "jmreport:cache:dict*");
 		Set keys6 = redisTemplate.keys( "jmreport:cache:dictTable*");
+		Set sysDict = redisTemplate.keys( "sys:cache:dict*");
+		Set sysDictTable = redisTemplate.keys( "sys:cache:dictTable*");
 		redisTemplate.delete(keys);
 		redisTemplate.delete(keys2);
 		redisTemplate.delete(keys21);
@@ -483,6 +484,8 @@ public class SysDictController {
 		redisTemplate.delete(keys5);
 		redisTemplate.delete(keys6);
 		redisTemplate.delete(keys7);
+		redisTemplate.delete(sysDict);
+		redisTemplate.delete(sysDictTable);
 		return result;
 	}
 
