@@ -86,6 +86,7 @@ public class CsStationServiceImpl extends ServiceImpl<CsStationMapper, CsStation
         LambdaQueryWrapper<CsStation> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsStation::getStationName, csStation.getStationName());
         nameWrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0);
+        nameWrapper.eq(CsStation::getLineCode, csStation.getLineCode());
         List<CsStation> stationList = csStationMapper.selectList(nameWrapper);
         if (!stationList.isEmpty() && !stationList.get(0).getId().equals(csStation.getId())) {
             return Result.error("二级名称重复，请重新填写！");
