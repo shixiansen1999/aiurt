@@ -939,6 +939,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                  postModel.setKey(dictModel.getValue());
                  postModel.setValue(dictModel.getValue());
                  postModel.setTitle(dictModel.getTitle());
+                 postModel.setIsPost(true);
                  //根据岗位查询用户信息
                 LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>()
                         .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0);
