@@ -1014,6 +1014,7 @@
         <foreach collection="condition.orgCodeList" index="index" item="item" open="(" close=")" separator=",">
             #{item}
         </foreach>
+        order by sort
     </select>
 
     <select id="countCompletedNumber" resultType="java.lang.Long">

@@ -162,6 +162,11 @@ public class SysDepart implements Serializable {
 	@ApiModelProperty(value = "机构编码层级结构")
 	private String orgCodeCc;
 
+	/**排序*/
+	@Excel(name = "排序", width = 15)
+	@ApiModelProperty(value = "排序")
+	private Integer sort;
+
 	/**
 	 * 重写equals方法
 	 */

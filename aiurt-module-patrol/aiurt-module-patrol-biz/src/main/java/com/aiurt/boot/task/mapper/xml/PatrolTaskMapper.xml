@@ -1056,6 +1056,7 @@
             </foreach>
         </if>
         GROUP BY sd.depart_name, sd.org_code
+        order by  sd.sort
     </select>
     <select id="getTasks" resultType="com.aiurt.boot.report.model.PatrolReport">
         SELECT count(pt.id) AS taskTotal,
@@ -1397,6 +1398,7 @@
             </foreach>
         </if>
         GROUP BY a.depart_name, a.org_code
+        order by a.sort
     </select>
     <select id="selectMonthOrg" resultType="com.aiurt.boot.report.model.dto.MonthDTO">
         select a.depart_name as orgName,a.org_code,
@@ -1429,6 +1431,7 @@
             </foreach>
         </if>
         GROUP BY a.depart_name,approvalPassTime
+        order by a.sort
     </select>
     <select id="selectLine" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
         select a.line_name as name, a.line_code as code

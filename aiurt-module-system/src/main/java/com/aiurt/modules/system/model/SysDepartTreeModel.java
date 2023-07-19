@@ -103,6 +103,7 @@ public class SysDepartTreeModel implements Serializable{
 
     private String color;
 
+    private Integer sort;
     /**
      * 将SysDepart对象转换成SysDepartTreeModel对象
      * @param sysDepart
@@ -142,6 +143,7 @@ public class SysDepartTreeModel implements Serializable{
         this.teamType =sysDepart.getTeamType();
         this.departFullName = sysDepart.getDepartFullName();
         this.departPhoneNum = sysDepart.getDepartPhoneNum();
+        this.sort = sysDepart.getSort();
     }
 
     public boolean getIsLeaf() {
