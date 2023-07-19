@@ -9,6 +9,7 @@
     <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
         #{item}
     </foreach>
+    order by sort
     </select>
 
 <select id="queryUserPageList" resultType="com.aiurt.modules.personnelgroupstatistics.model.PersonnelModel">
@@ -20,6 +21,7 @@
     <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
         #{item}
     </foreach>
+    order by sd.sort
     </select>
 
 <select id="userTrainFinishedNum" resultType="com.aiurt.modules.personnelgroupstatistics.dto.TrainTaskDTO">

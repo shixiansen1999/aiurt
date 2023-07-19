@@ -1031,7 +1031,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<SysDepartModel> getAllSysDepart() {
         List<SysDepartModel> departModelList = new ArrayList<SysDepartModel>();
-        List<SysDepart> departList = departMapper.selectList(new QueryWrapper<SysDepart>().eq("del_flag", "0"));
+        List<SysDepart> departList = departMapper.selectList(new QueryWrapper<SysDepart>().eq("del_flag", "0").orderByAsc("sort"));
         for (SysDepart depart : departList) {
             SysDepartModel model = new SysDepartModel();
             BeanUtils.copyProperties(depart, model);
@@ -3331,12 +3331,16 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         if (b) {
             SysParamModel code = sysParamApi.selectByCode(SysParamCodeConstant.SPECIAL_TEAM);
             String orgCode = code.getValue();
-            String departId = this.getDepartIdsByOrgCode(orgCode);
-            if (StrUtil.isNotEmpty(departId)&&flag == 0) {
-                list.remove(departId);
-            } else if (StrUtil.isNotEmpty(departId)&&flag == 1) {
+            if (StrUtil.isNotBlank(orgCode)) {
                 List<String> codes = StrUtil.splitTrim(orgCode, ",");
-                list.removeAll(codes);
+                LambdaQueryWrapper<SysDepart> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.in(SysDepart::getOrgCode, codes);
+                List<String> departId = sysDepartService.list(queryWrapper).stream().map(SysDepart::getId).collect(Collectors.toList());
+                if (CollUtil.isNotEmpty(departId)&&flag == 0) {
+                    list.removeAll(departId);
+                } else if (CollUtil.isNotEmpty(departId)&&flag == 1) {
+                    list.removeAll(codes);
+                }
             }
         }
         return list;
