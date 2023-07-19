@@ -21,12 +21,14 @@ public class PostModel implements Serializable {
     @ApiModelProperty(value = "主键")
     private String id;
 
-
     @ApiModelProperty(value = "岗位名称")
     private String label;
 
     @ApiModelProperty(value = "用户组")
     private List<SysUserModel> children;
+
+    @ApiModelProperty(value = "是否是岗位标记")
+    private Boolean isPost;
 
     @ApiModelProperty(value = "岗位数据值")
     private String value;
