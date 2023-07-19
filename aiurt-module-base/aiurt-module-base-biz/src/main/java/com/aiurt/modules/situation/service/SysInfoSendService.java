@@ -1,6 +1,7 @@
 package com.aiurt.modules.situation.service;
 
 
+import com.aiurt.modules.situation.entity.SysAnnouncement;
 import com.aiurt.modules.situation.entity.SysAnnouncementSend;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -17,4 +18,10 @@ public interface SysInfoSendService extends IService<SysAnnouncementSend> {
      * @param sysAnnouncementSend 修改参数
      */
     void updateReadFlag(SysAnnouncementSend sysAnnouncementSend);
+
+    /**
+     * 特情-编辑
+     * @param sysAnnouncement
+     */
+    void editById(SysAnnouncement sysAnnouncement);
 }
