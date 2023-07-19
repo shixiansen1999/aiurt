@@ -55,6 +55,8 @@ public class SelectTable {
     @ApiModelProperty(value = "人员数量")
     private Long userNum;
 
+    @ApiModelProperty(value = "当前部门及子级的人员数量")
+    private Long subUserNum;
     /**
      *
      */
@@ -99,4 +101,27 @@ public class SelectTable {
 
     @ApiModelProperty(value = "设备类型")
     private String deviceTypeCode;
+    @ApiModelProperty(value = "岗位")
+    private String postName;
+    @ApiModelProperty(value = "角色")
+    private String roleName;
+
+    // 递归计算 subUserNum
+    public Long calculateSubUserNum() {
+        if (children == null || children.isEmpty()) {
+            // 如果没有子部门，subUserNum 等于 userNum
+            if (userNum == null) {
+                userNum = 0L;
+            }
+            subUserNum = userNum;
+            return subUserNum;
+        }
+
+        // 遍历所有子部门，递归计算 subUserNum，并累加到当前部门的 subUserNum 上
+        subUserNum = userNum;
+        for (SelectTable child : children) {
+            subUserNum += child.calculateSubUserNum();
+        }
+        return subUserNum;
+    }
 }

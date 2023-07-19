@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserStationModel;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,9 +119,18 @@ public class CommonServiceImpl implements ICommonService {
         for (SelectTable entity : collect) {
             resultList.addAll(CollectionUtil.isEmpty(entity.getChildren()) ? Collections.emptyList() : entity.getChildren());
         }
-        dealUser(resultList, ignoreUserId,majorId);
+        List<DictModel> sysPost = sysBaseApi.getDictItems("sys_post");
+        Map<String, String> sysPostMap = new HashMap<>(1);
+        if (CollUtil.isNotEmpty(sysPost)) {
+           sysPostMap = sysPost.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
+        }
+        Map<String, String> roleNamesByUserIds = sysBaseApi.getRoleNamesByUserIds(null);
+        dealUser(resultList, ignoreUserId,majorId, sysPostMap, roleNamesByUserIds);
         List<SelectTable> tableList = screenTree(resultList, keys);
-
+        // 遍历所有部门，计算 subUserNum
+        for (SelectTable table : tableList) {
+            table.calculateSubUserNum();
+        }
         return tableList;
 //        return resultList;
     }
@@ -143,13 +153,13 @@ public class CommonServiceImpl implements ICommonService {
         return list;
     }
 
-    private void dealUser(List<SelectTable> children, String ignoreUserId,String majorId) {
+    private void dealUser(List<SelectTable> children, String ignoreUserId,String majorId, Map<String, String> sysPostMap, Map<String, String> roleNamesByUserIds) {
         if (CollectionUtil.isEmpty(children)) {
             return;
         }
         for (SelectTable child : children) {
             List<SelectTable> list = child.getChildren();
-            dealUser(list, ignoreUserId,majorId);
+            dealUser(list, ignoreUserId,majorId, sysPostMap, roleNamesByUserIds);
             if (CollectionUtil.isEmpty(list)) {
                 list = new ArrayList<>();
             }
@@ -171,8 +181,15 @@ public class CommonServiceImpl implements ICommonService {
                 table.setKey(sysUser.getId());
                 table.setValue(sysUser.getUsername());
                 table.setLabel(sysUser.getRealname());
+                table.setTitle(sysUser.getRealname());
                 table.setOrgCode(child.getKey());
                 table.setOrgName(child.getLabel());
+                List<String> jobNames = StrUtil.splitTrim(sysUser.getJobName(), ",");
+                if (CollUtil.isNotEmpty(jobNames)) {
+                    String postName = jobNames.stream().map(e -> sysPostMap.get(e)).collect(Collectors.joining(","));
+                    table.setPostName(postName);
+                }
+                table.setRoleName(roleNamesByUserIds.get(sysUser.getId()));
                 return table;
             }).collect(Collectors.toList());
             child.setUserNum((long) tableList.size());
