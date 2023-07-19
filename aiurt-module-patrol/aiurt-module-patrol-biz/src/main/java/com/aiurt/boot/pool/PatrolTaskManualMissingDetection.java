@@ -8,33 +8,25 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
-import com.aiurt.boot.drools.entity.DroolsRule;
-import com.aiurt.boot.drools.service.IDroolsRuleService;
-import com.aiurt.boot.drools.util.DroolsUtil;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskOrganization;
-import com.aiurt.boot.task.entity.PatrolTaskStandard;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.PatrolTaskStationMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskUserMapper;
 import com.aiurt.boot.task.service.IPatrolTaskOrganizationService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
-import com.aiurt.boot.task.service.IPatrolTaskStandardService;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.modules.todo.dto.TodoDTO;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
-import org.kie.api.runtime.KieSession;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -47,13 +39,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
- * 巡检任务漏检定时检测，使用drools的规则引擎判断是否漏检
+ * 巡视手工下发任务漏巡规则
  *
  * @author cgkj0
  */
 @Slf4j
 @Component
-public class PatrolTaskMissingDetectionByDrools implements Job {
+public class PatrolTaskManualMissingDetection implements Job {
 
     @Autowired
     private IPatrolTaskService patrolTaskService;
@@ -69,57 +61,31 @@ public class PatrolTaskMissingDetectionByDrools implements Job {
     private PatrolTaskStationMapper patrolTaskStationMapper;
     @Autowired
     private PatrolTaskUserMapper patrolTaskUserMapper;
-    @Autowired
-    private IDroolsRuleService droolsRuleService;
-    @Autowired
-    private IPatrolTaskStandardService patrolTaskStandardService;
 
-    @SneakyThrows
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void execute(JobExecutionContext context) throws JobExecutionException {
         taskDetection();
     }
 
-    public void execute() throws Exception {
+    public void execute() {
         taskDetection();
     }
 
     /**
-     * 周一和周五0点检测漏检的非手工下发任务
+     * 每天0点检测漏检的手工下发任务
      */
-    private void taskDetection() throws Exception {
-        // 不一定是周一和周五，这个要读取配置
-        // 读取配置，看是哪一天执行检测漏检的任务
-        SysParamModel patrolWeekDaysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_WEEKDAYS);
-        List<Integer> weekdayNums = null;
-        if (patrolWeekDaysParamModel != null && patrolWeekDaysParamModel.getValue() != null) {
-            // 系统配置里面，1周一 2周二...7周日，转化成hutool的DateUtil里面的 1表示周日，2表示周一
-            weekdayNums = StrUtil.splitTrim(patrolWeekDaysParamModel.getValue(), ",")
-                    .stream().map(item -> {
-                        int num = Integer.parseInt(item) + 1;
-                        if (num == 8) {
-                            return 1;
-                        } else {
-                            return num;
-                        }
-                    }).collect(Collectors.toList());
-        }
-
-        DroolsRule patrolTaskOmitRule = droolsRuleService.queryByName("patrol_task_omit_rule");
-        KieSession kieSession = DroolsUtil.reload(patrolTaskOmitRule.getRule());
-        kieSession.setGlobal("weekdayNums", weekdayNums);
+    private void taskDetection() {
 
         // 获取以下状态为0待指派、1待确认、2待执行、3已退回、4执行中的任务
         List<Integer> status = Arrays.asList(PatrolConstant.TASK_INIT, PatrolConstant.TASK_CONFIRM,
                 PatrolConstant.TASK_EXECUTE, PatrolConstant.TASK_RETURNED, PatrolConstant.TASK_RUNNING);
         List<PatrolTask> taskList = Optional.ofNullable(
                 patrolTaskService.lambdaQuery()
-                        .ne(PatrolTask::getSource, PatrolConstant.TASK_MANUAL)
+                        .eq(PatrolTask::getSource, PatrolConstant.TASK_MANUAL)
                         .in(PatrolTask::getStatus, status)
                         .eq(PatrolTask::getOmitStatus, PatrolConstant.UNOMIT_STATUS)
                         .eq(PatrolTask::getDiscardStatus,PatrolConstant.TASK_UNDISCARD)
-                        .and(wrapper -> wrapper.ne(PatrolTask::getPeriod, PatrolConstant.PLAN_PERIOD_THREE_MONTH).or().isNull(PatrolTask::getPeriod))
                         .list()
         ).orElseGet(Collections::emptyList);
         if (CollectionUtil.isEmpty(taskList)) {
@@ -145,37 +111,20 @@ public class PatrolTaskMissingDetectionByDrools implements Job {
                 return;
             }
             Date patrolDate = null;
-            if (null != l.getEndDate()) {
+            if (l.getSource().equals(PatrolConstant.TASK_MANUAL)) {
                 patrolDate = l.getEndDate();
             }else {
                 patrolDate = l.getPatrolDate();
+                if (ObjectUtil.isNotEmpty(l.getEndTime())) {
+                    String endTime = DateUtil.format(l.getEndTime(), "HH:mm:ss");
+                    patrolDate = DateUtil.parse(DateUtil.format(patrolDate, "yyyy-MM-dd " + endTime));
+                }
             }
-//            Date patrolDate = l.getPatrolDate();
-//            if (ObjectUtil.isNotEmpty(l.getEndTime())) {
-//                String endTime = DateUtil.format(l.getEndTime(), "HH:mm:ss");
-//                patrolDate = DateUtil.parse(DateUtil.format(patrolDate, "yyyy-MM-dd " + endTime));
-//            }
-//            // 当前时间
-//            Date now = new Date();
-//            int compare = DateUtil.compare(now, patrolDate);
-//            if (compare >= 0) {
-//                l.setOmitStatus(PatrolConstant.OMIT_STATUS);
-            // 这里使用drools规则判断是否是漏检
-            LambdaQueryWrapper<PatrolTaskStandard> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(PatrolTaskStandard::getTaskId, l.getId());
-            queryWrapper.eq(PatrolTaskStandard::getDelFlag, CommonConstant.DEL_FLAG_0);
-            List<PatrolTaskStandard> list = patrolTaskStandardService.list(queryWrapper);
-            PatrolTaskStandard patrolTaskStandard = null;
-            if (list.size() > 0) {
-                patrolTaskStandard = list.get(0); // 使用到patrolTaskStandard是因为里面有专业Code
-            }
-            // 注入fact对象
-            kieSession.insert(patrolTaskStandard);
-            kieSession.insert(l);
-            // 执行规则
-            kieSession.fireAllRules();
-
-            if (l.getOmitStatus().equals(PatrolConstant.OMIT_STATUS)) {
+            // 当前时间
+            Date now = new Date();
+            int compare = DateUtil.compare(now, patrolDate);
+            if (compare >= 0) {
+                l.setOmitStatus(PatrolConstant.OMIT_STATUS);
                 boolean update = patrolTaskService.updateById(l);
                 if (update) {
                     missNum.getAndAdd(1);
@@ -191,7 +140,7 @@ public class PatrolTaskMissingDetectionByDrools implements Job {
                     try {
                         TodoDTO todoDTO = new TodoDTO();
                         todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
-                        todoDTO.setTitle("巡视任务-漏检"+DateUtil.today());
+                        todoDTO.setTitle("巡视任务-漏检处置"+DateUtil.today());
                         todoDTO.setMsgAbstract("巡视任务-漏检");
                         todoDTO.setPublishingContent("巡视任务漏检，请尽快处置");
                         SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);
@@ -202,10 +151,9 @@ public class PatrolTaskMissingDetectionByDrools implements Job {
                         map.put("patrolTaskName",l.getName());
                         List<String>  station = patrolTaskStationMapper.getStationByTaskCode(l.getCode());
                         map.put("patrolStation", CollUtil.join(station,","));
-                        if (ObjectUtil.isNotEmpty(l.getStartTime()) && ObjectUtil.isNotEmpty(l.getEndTime())) {
-                            String date = DateUtil.format(patrolDate, "yyyy-MM-dd");
-                            map.put("patrolTaskTime",date+" "+DateUtil.format(l.getStartTime(),"HH:mm")+"-"+date+" "+DateUtil.format(l.getEndTime(),"HH:mm"));
-                        }
+                        String date = DateUtil.format(patrolDate, "yyyy-MM-dd");
+                        map.put("patrolTaskTime",date);
+
                         QueryWrapper<PatrolTaskUser> wrapper = new QueryWrapper<>();
                         wrapper.lambda().eq(PatrolTaskUser::getTaskCode, l.getCode()).eq(PatrolTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0);
                         List<PatrolTaskUser> taskUsers = patrolTaskUserMapper.selectList(wrapper);
@@ -214,7 +162,8 @@ public class PatrolTaskMissingDetectionByDrools implements Job {
                             List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
                             String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
                             map.put("patrolName", realNames);
-
+                        }else {
+                            map.put("patrolName", "-");
                         }
                         todoDTO.setData(map);
                         todoDTO.setProcessDefinitionName("巡视管理");
@@ -232,7 +181,6 @@ public class PatrolTaskMissingDetectionByDrools implements Job {
                 }
             }
         });
-        log.info("存在{}条任务记录漏检,并更新为已漏检状态！", missNum.get());
-        kieSession.dispose();  // 关闭会话
+        log.info("存在{}条手工下发任务记录漏检,并更新为已漏检状态！", missNum.get());
     }
 }
