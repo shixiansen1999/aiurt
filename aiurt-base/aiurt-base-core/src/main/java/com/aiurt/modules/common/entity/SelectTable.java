@@ -110,9 +110,6 @@ public class SelectTable {
     public Long calculateSubUserNum() {
         if (children == null || children.isEmpty()) {
             // 如果没有子部门，subUserNum 等于 userNum
-            if (userNum == null) {
-                userNum = 0L;
-            }
             subUserNum = userNum;
             return subUserNum;
         }
@@ -120,7 +117,9 @@ public class SelectTable {
         // 遍历所有子部门，递归计算 subUserNum，并累加到当前部门的 subUserNum 上
         subUserNum = userNum;
         for (SelectTable child : children) {
-            subUserNum += child.calculateSubUserNum();
+            if (child.userNum != null) {
+                subUserNum += child.calculateSubUserNum();
+            }
         }
         return subUserNum;
     }
