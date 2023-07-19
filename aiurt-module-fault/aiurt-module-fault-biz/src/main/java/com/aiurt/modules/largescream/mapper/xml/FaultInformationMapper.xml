@@ -184,9 +184,9 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
             </if>
             <if test="condition.unSo !=null and condition.unSo !=''">
                 and f.status != 12
-            </if>
-            <if test="condition.unSo !=null and condition.unSo !=''">
                 and f.status > 2
+                and date_format(f.approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{condition.startDate},'%Y-%m-%d')
+                and date_format(f.approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{condition.endDate},'%Y-%m-%d')
             </if>
             <if test="condition.weekAdd != null and condition.weekAdd !=''">
                 and date_format(f.happen_time ,'%Y-%m-%d') &gt;=  date_format(#{condition.startDate},'%Y-%m-%d')

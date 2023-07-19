@@ -491,6 +491,8 @@ public class FaultInformationService {
             faultDataStatisticsDTO.setFaultModeCode(FaultConstant.FAULT_MODE_CODE_0);
             Integer selfCheckFaults = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
             dto.setSelfCheckFaults(new BigDecimal(selfCheckFaults));
+            //还原报修方式为空,以备下次循环
+            faultDataStatisticsDTO.setFaultModeCode(null);
 
             dto.setRepairFaults(new BigDecimal(yearFault - selfCheckFaults));
             dtoList.add(dto);
@@ -531,6 +533,8 @@ public class FaultInformationService {
             faultDataStatisticsDTO.setFaultModeCode(FaultConstant.FAULT_MODE_CODE_0);
             Integer selfCheckFaults = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
             dto.setSelfCheckFaults(new BigDecimal(selfCheckFaults));
+            //还原报修方式为空,以备下次循环
+            faultDataStatisticsDTO.setFaultModeCode(null);
 
             dto.setRepairFaults(new BigDecimal(yearFault - selfCheckFaults));
 
@@ -709,6 +713,8 @@ public class FaultInformationService {
                 faultScreenModule.setUnSo(1);
                 faultScreenModule.setLineCode(lineCode);
                 faultScreenModule.setMajors(majors);
+                faultScreenModule.setStartDate(startDate);
+                faultScreenModule.setEndDate(endDate);
                 break;
             // 本周或本月新增
             case 3:
