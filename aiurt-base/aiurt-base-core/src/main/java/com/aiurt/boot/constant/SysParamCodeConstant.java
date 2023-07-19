@@ -421,4 +421,8 @@ public interface SysParamCodeConstant {
      * 企业微信认证url
      */
     String WECHAT_AUTHORIZE_URL = "wechat_authorize_url";
+    /**
+     * 获取企业微信私域授权地址
+     */
+    String WX_OAUTH = "wx_oauth";
 }
