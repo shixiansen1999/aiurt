@@ -1116,6 +1116,13 @@ public interface ISysBaseAPI extends CommonAPI {
     String getMaterialNameByCode(String materialCode);
 
     /**
+     * 根据物资编号获取物资规格型号
+     * @param materialCode
+     * @return
+     */
+    String getMaterialSpecificationByCode(String materialCode);
+
+    /**
      * 获取所有节假日
      * @return
      */
