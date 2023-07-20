@@ -82,6 +82,7 @@ where cm.major_code = #{majorCode} and cs.del_flag = 0 and cm.del_flag=0
                 </foreach>
             </if>
         </where>
+        order by sd.sort
     </select>
     <select id="getTeamBylineAndMajors" resultType="org.jeecg.common.system.vo.SysDepartModel">
         select DISTINCT sd.org_code,sd.depart_name  from sys_depart sd
