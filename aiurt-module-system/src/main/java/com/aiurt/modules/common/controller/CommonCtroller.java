@@ -490,25 +490,25 @@ public class CommonCtroller {
 
     /**
      * 角色树
-     *
+     * @param values 可以根据values查询，多个使用英文逗号分隔。有values时就不返回树结构了，而是列表
      * @return
      */
     @ApiOperation(value = "", notes = "角色树")
     @GetMapping(value = "/queryRoleUserTree")
-    public Result<List<CsRoleUserModel>> queryRoleUserTree() {
-        List<CsRoleUserModel> comboModels = sysBaseApi.queryRoleUserTree();
+    public Result<List<SysUserModel>> queryRoleUserTree(@RequestParam(value = "values",required = false) String values) {
+        List<SysUserModel> comboModels = sysBaseApi.queryRoleUserTree(values);
         return Result.OK(comboModels);
     }
 
     /**
      * 岗位树
-     *
+     * @param values 可以根据values查询，多个使用英文逗号分隔。有values时就不返回树结构了，而是列表
      * @return
      */
     @ApiOperation(value = "", notes = "岗位树")
     @GetMapping(value = "/queryPostUserTree")
-    public Result<List<PostModel>> queryPostUserTree() {
-        List<PostModel> list = sysBaseApi.queryPostUserTree();
+    public Result<List<SysUserModel>> queryPostUserTree(@RequestParam(value = "values",required = false) String values) {
+        List<SysUserModel> list = sysBaseApi.queryPostUserTree(values);
         return Result.OK(list);
     }
 
