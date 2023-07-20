@@ -890,7 +890,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                     List<SysUserModel> sysUserModelList = new ArrayList<>();
                     for (SysUser sysUser : sysUsers) {
                         SysUserModel sysUserModel = new SysUserModel();
-                        sysUserModel.setValue(sysUser.getId());
+                        sysUserModel.setId(sysUser.getId());
+                        sysUserModel.setValue(sysUser.getUsername());
                         sysUserModel.setLabel(sysUser.getRealname());
                         sysUserModel.setTitle(sysUser.getRealname());
                         sysUserModel.setIsPost(false);
