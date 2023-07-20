@@ -183,6 +183,7 @@ public class CommonServiceImpl implements ICommonService {
                 table.setValue(sysUser.getUsername());
                 table.setLabel(sysUser.getRealname());
                 table.setTitle(sysUser.getRealname());
+                table.setAvatar(sysUser.getAvatar());
                 table.setOrgCode(child.getKey());
                 table.setOrgName(child.getLabel());
                 List<String> jobNames = StrUtil.splitTrim(sysUser.getJobName(), ",");
