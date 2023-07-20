@@ -823,6 +823,7 @@
             AND  cs.line_code = #{condition.lineCode}
         </if>
         group by pto.org_code
+        order by sd.sort
     </select>
     <select id="getStatisticsDataList" resultType="com.aiurt.boot.screen.model.ScreenStatisticsTask">
         SELECT

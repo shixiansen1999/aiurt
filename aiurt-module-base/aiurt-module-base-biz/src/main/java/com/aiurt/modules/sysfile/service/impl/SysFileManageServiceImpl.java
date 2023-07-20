@@ -105,7 +105,7 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
                 SysFile sysFile = createSysFile(file, folderCodeCcMap);
                 save(sysFile);
                 saveSysFolderFilePermission(sysFile, permissionByFolderId);
-                saveEsDataAsync(sysFile);
+                /*saveEsDataAsync(sysFile);*/
             }
             result.success("添加成功！");
         } catch (Exception e) {
@@ -310,16 +310,19 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
                 throw new AiurtBootException("Invalid fileSize: " + file.getFileSize());
             }
 
-            int fileSizeInBytes = Integer.parseInt(file.getFileSize());
+            long fileSizeInBytes = Long.parseLong(file.getFileSize());
             BigDecimal fileSizeInKB = NumberUtil.div(String.valueOf(fileSizeInBytes), String.valueOf(SysFileConstant.BYTES_IN_KB), 1);
             BigDecimal fileSizeInMB = NumberUtil.div(String.valueOf(fileSizeInBytes), String.valueOf(SysFileConstant.BYTES_IN_MB), 1);
+            BigDecimal fileSizeInGB = NumberUtil.div(String.valueOf(fileSizeInBytes), String.valueOf(SysFileConstant.BYTES_IN_GB), 1);
 
             if (fileSizeInBytes >= 0 && fileSizeInBytes < SysFileConstant.BYTES_IN_KB) {
                 sysFile.setFileSize(fileSizeInBytes + SysFileConstant.B);
             } else if (fileSizeInBytes >= SysFileConstant.BYTES_IN_KB && fileSizeInBytes < SysFileConstant.BYTES_IN_MB) {
                 sysFile.setFileSize(fileSizeInKB.stripTrailingZeros().toPlainString() + SysFileConstant.KB);
-            } else if (fileSizeInBytes >= SysFileConstant.BYTES_IN_MB) {
+            } else if (fileSizeInBytes >= SysFileConstant.BYTES_IN_MB && fileSizeInBytes < SysFileConstant.BYTES_IN_GB) {
                 sysFile.setFileSize(fileSizeInMB.stripTrailingZeros().toPlainString() + SysFileConstant.MB);
+            } else if (fileSizeInBytes >= SysFileConstant.BYTES_IN_GB) {
+                sysFile.setFileSize(fileSizeInGB.stripTrailingZeros().toPlainString() + SysFileConstant.GB);
             }
         }
     }
