@@ -95,7 +95,7 @@ public class MinioUtil {
             PutObjectArgs objectArgs = PutObjectArgs.builder().object(objectName)
                     .bucket(newBucket)
                     .contentType("application/octet-stream")
-                    .stream(stream,stream.available(),-1).build();
+                    .stream(stream,file.getSize(),-1).build();
             minioClient.putObject(objectArgs);
             stream.close();
             fileUrl = objectName;
