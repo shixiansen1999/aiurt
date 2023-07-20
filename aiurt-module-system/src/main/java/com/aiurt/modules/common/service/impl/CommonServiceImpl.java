@@ -83,7 +83,7 @@ public class CommonServiceImpl implements ICommonService {
      * @return
      */
     @Override
-    public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId,String majorId,List<String> keys) {
+    public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId,String majorId,List<String> keys, List<String> values) {
         LambdaQueryWrapper<SysDepart> queryWrapper = new LambdaQueryWrapper<>();
         if (CollectionUtil.isNotEmpty(orgIds)) {
             queryWrapper.in(SysDepart::getId, orgIds);
@@ -127,15 +127,40 @@ public class CommonServiceImpl implements ICommonService {
         }
         Map<String, String> roleNamesByUserIds = sysBaseApi.getRoleNamesByUserIds(null);
         dealUser(resultList, ignoreUserId,majorId, sysPostMap, roleNamesByUserIds);
-        List<SelectTable> tableList = screenTree(resultList, keys);
         // 遍历所有部门，计算 subUserNum
-        for (SelectTable table : tableList) {
+        for (SelectTable table : resultList) {
             table.calculateSubUserNum();
+        }
+        List<SelectTable> tableList = screenTree(resultList, keys);
+        // 根据value过滤，返回一个非树形的集合
+        if (CollUtil.isNotEmpty(values)) {
+            ArrayList<SelectTable> result = new ArrayList<>();
+            reFilter(tableList, values, result);
+            tableList = result;
         }
         return tableList;
 //        return resultList;
     }
 
+    /**
+     * 递归过滤出包含的节点
+     * @param list
+     * @param values
+     * @param result
+     */
+    public void reFilter(List<SelectTable> list, List<String> values, List<SelectTable> result) {
+        if (CollUtil.isEmpty(list)) {
+            return;
+        }
+        for (SelectTable table : list) {
+            List<SelectTable> children = table.getChildren();
+            table.setChildren(null);
+            if (values.contains(table.getValue())) {
+                result.add(table);
+            }
+            reFilter(children, values, result);
+        }
+    }
 
     @Override
     public List<SelectTable> queryDevice(DeviceDTO deviceDTO) {
