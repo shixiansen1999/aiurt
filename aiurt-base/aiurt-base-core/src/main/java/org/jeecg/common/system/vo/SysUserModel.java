@@ -46,4 +46,7 @@ public class SysUserModel implements Serializable {
 
     @ApiModelProperty(value = "所属部门名称")
     private String orgName;
+
+    @ApiModelProperty(value = "头像")
+    private String avatar;
 }
