@@ -124,10 +124,6 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
         IPage<SysAnnouncement> pageList = bdInfoListService.page(page, queryWrapper);
         List<SysAnnouncement> records = pageList.getRecords();
         for (SysAnnouncement announcement : records) {
-            String msgContent = announcement.getMsgContent();
-            String replace = StrUtil.replace(msgContent, "<p>", "");
-            String replace1 = StrUtil.replace(replace, "</p>", "");
-            announcement.setMsgContent(replace1);
             bdInfoListService.getUserNames(announcement);
             List<SysAnnouncementSend> sendList = sysInfoSendService.list(new LambdaQueryWrapper<SysAnnouncementSend>().eq(SysAnnouncementSend::getAnntId, announcement.getId()));
             announcement.setSendList(sendList);
@@ -269,26 +265,15 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
     @RequestMapping(value = "/getMyInfo", method = RequestMethod.GET)
     public Result<List<SysAnnouncement>> getMyInfo(SysAnnouncement sysAnnouncement,
                                                         HttpServletRequest req) {
-        // Result<List<SysAnnouncement>> result = new Result<>();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysAnnouncement> myInfo = sysInfoListMapper.getMyInfo( sysUser.getId());
         List<SysAnnouncement> list = new ArrayList<>();
-        //List<SysAnnouncement> collect = myInfo.stream().filter(s -> "1".equals(s.getReadFlag())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(myInfo)) {
-           /* SysAnnouncement s = myInfo.get(0);
-            s.setReadCount(collect.size());
-            s.setUnreadCount(myInfo.size()-collect.size());
-            result.setSuccess(true);
-            result.setResult(page.setRecords(myInfo));
-            return result;*/
             for (SysAnnouncement announcement : myInfo) {
                 Date date = new Date();
                 if (ObjectUtil.isEmpty(announcement.getEndTime()) || announcement.getEndTime().before(date)) {
                     continue;
                 }
-                String msgContent = announcement.getMsgContent();
-                String replace = StrUtil.replace(msgContent, "<p>", "");
-                String replace1 = StrUtil.replace(replace, "</p>", "");
                 List<DictModel> level = iSysBaseAPI.getDictItems("level");
                 String s = level.stream().filter(l -> l.getValue().equals(announcement.getLevel())).map(DictModel::getText).collect(Collectors.joining());
                 if(ObjectUtil.isNotEmpty(announcement.getSender())){
@@ -298,12 +283,8 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
                     }
                 }
                 announcement.setLevel_dictText(s);
-                announcement.setMsgContent(replace1);
                 bdInfoListService.getUserNames(announcement);
                 list.add(announcement);
-                // result.setSuccess(true);
-                // result.setResult(list);
-                // return result;
             }
         }
         return Result.ok(list);
