@@ -717,6 +717,7 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     Map<String, String> getStationNameByCode(List<String> stationCodes);
+
     /**
      * 根据站点编号获取线路站点名称,站点编号:线路名称/站点名称
      *
@@ -1127,6 +1128,7 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getMaterialNameByCode(String materialCode);
+
     /**
      * 根据多个物资编号获取物资名称,编号：名称
      * @param materialCodes
@@ -1297,6 +1299,9 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<DeviceType> getAllDeviceType();
+
+
+
     /**
      * 根据部门code,查询部门下的子级部门codeList
      * @param code 部门code

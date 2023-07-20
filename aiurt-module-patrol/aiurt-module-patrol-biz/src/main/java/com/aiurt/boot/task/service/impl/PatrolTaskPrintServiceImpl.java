@@ -148,7 +148,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         //获取头部数据
         PrintPatrolTaskDTO taskDTO = getHeaderData(patrolTask);
         //填充头部Map
-        Map<String, Object> headerMap = getHeaderMap(patrolTask, taskDTO);
+        Map<String, Object> headerMap = getHeaderMap(patrolTask, taskDTO,patrolStandard.getName());
         //获取显示图片位置
         List<String> imageList = null;
         if (ObjectUtil.isNotEmpty(excelDictModel.getDescription())&&excelDictModel.getDescription().contains(",")){
@@ -247,7 +247,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         //获取头部数据
         PrintPatrolTaskDTO taskDTO = getHeaderData(patrolTask);
         //填充头部Map
-        Map<String, Object> headerMap = getHeaderMap(patrolTask, taskDTO);
+        Map<String, Object> headerMap = getHeaderMap(patrolTask, taskDTO, patrolStandard.getName());
         //获取签字图片Map
         //获取显示图片位置
         List<String> imageList = null;
@@ -497,14 +497,16 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
 
     /**
      * 填充头部Map
+     *
      * @param patrolTask
      * @param taskDTO
+     * @param name
      * @return
      */
     @NotNull
-    private static Map<String, Object> getHeaderMap(PatrolTask patrolTask, PrintPatrolTaskDTO taskDTO) {
+    private static Map<String, Object> getHeaderMap(PatrolTask patrolTask, PrintPatrolTaskDTO taskDTO, String name) {
         Map<String, Object> map = MapUtils.newHashMap();
-        map.put("title", patrolTask.getName());
+        map.put("title", name.replaceAll("\n", ""));
         map.put("patrolStation", taskDTO.getStationNames());
         map.put("patrolPerson", taskDTO.getUserName());
         map.put("checkUserName", taskDTO.getSpotCheckUserName());
@@ -883,7 +885,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
     }
     public List<PatrolStationDTO> getBillGangedInfo(String taskId, String standardId) {
         List<PatrolBillDTO> billGangedInfo = patrolTaskDeviceMapper.getBillGanged(taskId,standardId);
-
+        billGangedInfo.forEach(b->{b.setTableName(b.getTableName().replaceAll("\n", ""));});
         Map<String, List<PatrolBillDTO>> collect = billGangedInfo.stream().filter((t) -> StrUtil.isNotBlank(t.getStationCode())).collect(Collectors.groupingBy(PatrolBillDTO::getStationCode));
         List<PatrolStationDTO> stationList = new ArrayList<>();
         for (Map.Entry<String, List<PatrolBillDTO>> entry : collect.entrySet()) {

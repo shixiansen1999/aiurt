@@ -890,8 +890,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                     List<SysUserModel> sysUserModelList = new ArrayList<>();
                     for (SysUser sysUser : sysUsers) {
                         SysUserModel sysUserModel = new SysUserModel();
-                        sysUserModel.setId(sysUser.getId());
-                        sysUserModel.setValue(sysUser.getUsername());
+                        sysUserModel.setValue(sysUser.getId());
                         sysUserModel.setLabel(sysUser.getRealname());
                         sysUserModel.setTitle(sysUser.getRealname());
                         sysUserModel.setIsPost(false);
@@ -3770,6 +3769,23 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return deviceTypes;
     }
 
+
+    @Override
+    public List<String> getLineCodeByStationCode(List<String> stationCodes) {
+        if(CollUtil.isEmpty(stationCodes)){
+            return Collections.emptyList();
+        }
+        QueryWrapper<CsStation> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(CsStation::getDelFlag,CommonConstant.DEL_FLAG_0)
+                .in(CsStation::getStationCode,stationCodes);
+        List<CsStation> stations = csStationMapper.selectList(wrapper);
+        List<String> lineCodes = stations.stream()
+                .filter(l -> ObjectUtil.isNotEmpty(l.getLineCode()))
+                .map(CsStation::getLineCode)
+                .distinct()
+                .collect(Collectors.toList());
+        return lineCodes;
+    }
 
     @Override
     public List<String> getSysDepartList(String code) {

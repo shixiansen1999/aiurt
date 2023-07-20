@@ -317,7 +317,8 @@ public class BigscreenPlanService {
                     List<Date> inspectionTime = repairTaskMapper.getTaskInspectionTime(inspectionDTO.getCode());
 
                     // 29日 12：23
-                    inspectionDTO.setTime(CollUtil.isNotEmpty(inspectionTime) ? DateUtil.format(inspectionTime.get(0), "dd日 HH:mm") : "");
+                    inspectionDTO.setTime(CollUtil.isNotEmpty(inspectionTime) ? DateUtil.format(inspectionTime.get(0), "dd日 HH:mm") : null);
+
 
                     // 填充检修人
                     inspectionDTO.setRealName(finalUserMap.get(inspectionDTO.getTaskId()));

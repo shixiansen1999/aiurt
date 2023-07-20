@@ -13,6 +13,9 @@ sqlservername=$SQL_SERVER_DB_NAME
 sqlserverport=$SQL_SERVER_DB_PROT
 sqlserverusername=$SQL_SERVER_USERNAME
 sqlserverpassword=$SQL_SERVER_PASSWORD
+wechatclientid=$WECHAT_CLIENT_ID
+wechatclientsecret=$WECHAT_CLIENT_SECRET
+wechatagentid=$WECHAT_AGENT_ID
 
 if [ ! $mysqlip ]; then
     mysqlip="127.0.0.1"
@@ -57,8 +60,18 @@ fi
 if [ ! $sqlserverpassword ]; then
     sqlserverpassword="1qaz@2wsx"
 fi
+if [ ! $wechatclientid ]; then
+    wechatclientid="ww19d88c8272303c7b"
+fi
+if [ ! $wechatclientsecret ]; then
+    wechatclientsecret="kv1Aes4L4I_Abf013_vJWoyF281ok1TCTPhBnVpKsHY"
+fi
+if [ ! $wechatagentid ]; then
+    wechatagentid="1000014"
+fi
+
 applicationYml="/aiurt-platfrom/aiurt-module-system/config/application-docker.yml"
-if [ ! -z "$miniourl" ] && [ ! -z "$uploadtype" ] && [ ! -z "$mysqlip" ] && [ ! -z "$mysqlname" ] && [ ! -z "$mysqlport" ]  && [ ! -z "$redisip" ]  && [ ! -z "$redisport" ] && [ ! -z "$esurl" ] && [ ! -z "$mysqlpassword" ]; then
+if [ ! -z "$wechatclientsecret" ] && [ ! -z "$wechatagentid" ] && [ ! -z "$wechatclientid" ] && [ ! -z "$miniourl" ] && [ ! -z "$uploadtype" ] && [ ! -z "$mysqlip" ] && [ ! -z "$mysqlname" ] && [ ! -z "$mysqlport" ]  && [ ! -z "$redisip" ]  && [ ! -z "$redisport" ] && [ ! -z "$esurl" ] && [ ! -z "$mysqlpassword" ]; then
   needReMySqlIpChar="\$MYSQL_IP"
   needReMySqlNameChar="\$DB_NAME"
   needReMySqlPortChar="\$DB_PROT"
@@ -73,6 +86,9 @@ if [ ! -z "$miniourl" ] && [ ! -z "$uploadtype" ] && [ ! -z "$mysqlip" ] && [ ! 
   needsqlserverport="\$SQL_SERVER_DB_PROT"
   needsqlserverusername="\$SQL_SERVER_USERNAME"
   needsqlserverpassword="\$SQL_SERVER_PASSWORD"
+  needwechatclientid="\$WECHAT_CLIENT_ID"
+  needwechatclientsecret="\$WECHAT_CLIENT_SECRET"
+  needwechatagentid="\$WECHAT_AGENT_ID"
 
   if [ -f "$applicationYml"  ]; then
     sed -i "s|$needReMySqlIpChar|$mysqlip|g" $applicationYml
@@ -89,6 +105,9 @@ if [ ! -z "$miniourl" ] && [ ! -z "$uploadtype" ] && [ ! -z "$mysqlip" ] && [ ! 
     sed -i "s|$needsqlserverport|$sqlserverport|g" $applicationYml
     sed -i "s|$needsqlserverusername|$sqlserverusername|g" $applicationYml
     sed -i "s|$needsqlserverpassword|$sqlserverpassword|g" $applicationYml
+    sed -i "s|$needwechatclientid|$wechatclientid|g" $applicationYml
+    sed -i "s|$needwechatclientsecret|$wechatclientsecret|g" $applicationYml
+    sed -i "s|$needwechatagentid|$wechatagentid|g" $applicationYml
   fi
 fi
 cd /aiurt-platfrom/aiurt-module-system

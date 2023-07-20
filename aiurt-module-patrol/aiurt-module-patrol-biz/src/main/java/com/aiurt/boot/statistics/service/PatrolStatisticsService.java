@@ -477,6 +477,7 @@ public class PatrolStatisticsService {
         List<PatrolBillDTO> billGangedInfo = patrolTaskDeviceMapper.getBillGangedInfo(taskId);
         List<PatrolCheckResultDTO> patrolCheckResultDTOS = new ArrayList<PatrolCheckResultDTO>();
         for (PatrolBillDTO patrolBillDTO : billGangedInfo) {
+            patrolBillDTO.setTableName(patrolBillDTO.getTableName().replaceAll("\n", ""));
             PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumber(patrolBillDTO.getBillCode()))
                     .orElseGet(PatrolTaskDeviceParam::new);
             List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());

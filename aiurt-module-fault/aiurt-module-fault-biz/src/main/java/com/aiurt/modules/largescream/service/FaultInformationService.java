@@ -621,7 +621,7 @@ public class FaultInformationService {
 
         int count = 0;
         FaultDataAnalysisCountDTO countDTO = faultInformationMapper.countFaultDataInformation(getTime(0),getTime(1),lineCode, majors);
-        FaultDataAnalysisCountDTO countDTO1 = faultInformationMapper.countFaultDataInformation(null,null,lineCode, majors);
+        //FaultDataAnalysisCountDTO countDTO1 = faultInformationMapper.countFaultDataInformation(null,null,lineCode, majors);
         //总故障数
         if (Objects.nonNull(countDTO)) {
             result.setSum(countDTO.getSum());
@@ -629,9 +629,9 @@ public class FaultInformationService {
             result.setSum(0);
         }
 
-        //未修复数
-        if (Objects.nonNull(countDTO1)){
-            result.setUnSolve(countDTO1.getUnSolve());
+        //未修复数 (0713查本月未修复数)
+        if (Objects.nonNull(countDTO)){
+            result.setUnSolve(countDTO.getUnSolve());
         }else {
             result.setUnSolve(0);
         }

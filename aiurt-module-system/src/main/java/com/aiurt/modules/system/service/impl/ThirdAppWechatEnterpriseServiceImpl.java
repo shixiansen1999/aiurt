@@ -49,7 +49,6 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -854,20 +853,12 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
         entity.setTitle(announcement.getTitile());
         entity.setDescription(oConvertUtils.getString(announcement.getMsgAbstract(),""));
 
-        ThirdAppTypeItemVo config = thirdAppConfig.getWechatEnterprise();
+        //0712登录授权地址只需要企业微信跳转地址即可
         StringBuilder builder = new StringBuilder();
-        // 构造企业微信OAuth2登录授权地址
-        SysParamModel authorizeUrlModel = sysParamAPI.selectByCode(SysParamCodeConstant.WECHAT_AUTHORIZE_URL);
-        if (Objects.nonNull(authorizeUrlModel) && StrUtil.isNotBlank(authorizeUrlModel.getValue())) {
-            builder.append(authorizeUrlModel.getValue());
-        } else  {
-            builder.append("https://open.weixin.qq.com/connect/oauth2/authorize");
-        }
 
-        // 企业的CorpID
-        builder.append("?appid=").append(config.getClientId());
         SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.WECHAT_MESSAGE_URL);
-        builder.append("&redirect_uri=").append(sysParamModel.getValue());
+
+        builder.append(sysParamModel.getValue());
         String busType = announcement.getBusType();
         if (StrUtil.isNotEmpty(busType)) {
             if (busType.contains("fault")) {
@@ -1039,7 +1030,9 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
 
     public ThirdAppTypeItemVo getWechatConfig() {
         ThirdAppTypeItemVo wechatEnterprise = thirdAppConfig.getWechatEnterprise();
-        wechatEnterprise.setClientSecret(null);
+        ThirdAppTypeItemVo vo = new ThirdAppTypeItemVo();
+        BeanUtils.copyProperties(wechatEnterprise, vo);
+        vo.setClientSecret(null);
         return wechatEnterprise;
     }
 }

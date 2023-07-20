@@ -302,7 +302,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
             throw new AiurtBootException("没有班组信息");
         }
         List<String> depart;
-        if (StrUtil.isNotBlank(value)) {
+        if (StrUtil.isNotEmpty(value)) {
             List<String> codes = StrUtil.splitTrim(value, ",");
             depart = allSysDepart.stream().map(SysDepartModel::getOrgCode).filter(orgCode -> !codes.contains(orgCode)).collect(Collectors.toList());
         } else {
