@@ -896,6 +896,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                         sysUserModel.setTitle(sysUser.getRealname());
                         sysUserModel.setIsPost(false);
                         sysUserModel.setIsRole(false);
+                        sysUserModel.setAvatar(sysUser.getAvatar());
                         // 设置角色
                         sysUserModel.setRoleName(roleNameUserIdMap.get(sysUser.getId()));
                         // 设置岗位
@@ -962,6 +963,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                         sysUserModel.setTitle(sysUser.getRealname());
                         sysUserModel.setIsPost(false);
                         sysUserModel.setIsRole(false);
+                        sysUserModel.setAvatar(sysUser.getAvatar());
                         sysUserModelList.add(sysUserModel);
                         // 设置角色
                         sysUserModel.setRoleName(roleNameUserIdMap.get(sysUser.getId()));
