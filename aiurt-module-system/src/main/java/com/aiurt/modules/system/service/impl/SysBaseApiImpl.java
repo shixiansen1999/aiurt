@@ -1119,7 +1119,16 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         wrapper.eq(MaterialBase::getCode, materialCode);
         wrapper.eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0);
         MaterialBase one = materialBaseMapper.selectOne(wrapper);
-        return one.getName();
+        return one != null ? one.getName() : null;
+    }
+
+    @Override
+    public String getMaterialSpecificationByCode(String materialCode) {
+        LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MaterialBase::getCode, materialCode);
+        wrapper.eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0);
+        MaterialBase one = materialBaseMapper.selectOne(wrapper);
+        return one != null ? one.getSpecifications() : null;
     }
 
     @Override
