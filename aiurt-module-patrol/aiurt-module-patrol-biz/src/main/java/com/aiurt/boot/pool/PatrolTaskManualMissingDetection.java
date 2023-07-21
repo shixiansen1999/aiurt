@@ -110,16 +110,8 @@ public class PatrolTaskManualMissingDetection implements Job {
             if (null == l.getPatrolDate() && null == l.getEndDate()) {
                 return;
             }
-            Date patrolDate = null;
-            if (l.getSource().equals(PatrolConstant.TASK_MANUAL)) {
-                patrolDate = l.getEndDate();
-            }else {
-                patrolDate = l.getPatrolDate();
-                if (ObjectUtil.isNotEmpty(l.getEndTime())) {
-                    String endTime = DateUtil.format(l.getEndTime(), "HH:mm:ss");
-                    patrolDate = DateUtil.parse(DateUtil.format(patrolDate, "yyyy-MM-dd " + endTime));
-                }
-            }
+            Date patrolDate = l.getPatrolDate();
+
             // 当前时间
             Date now = new Date();
             int compare = DateUtil.compare(now, patrolDate);
