@@ -115,11 +115,11 @@ public class PatrolTaskMissingDetectionByDrools implements Job {
                 PatrolConstant.TASK_EXECUTE, PatrolConstant.TASK_RETURNED, PatrolConstant.TASK_RUNNING);
         List<PatrolTask> taskList = Optional.ofNullable(
                 patrolTaskService.lambdaQuery()
-                        .ne(PatrolTask::getSource, PatrolConstant.TASK_MANUAL)
                         .in(PatrolTask::getStatus, status)
                         .eq(PatrolTask::getOmitStatus, PatrolConstant.UNOMIT_STATUS)
                         .eq(PatrolTask::getDiscardStatus,PatrolConstant.TASK_UNDISCARD)
                         .and(wrapper -> wrapper.ne(PatrolTask::getPeriod, PatrolConstant.PLAN_PERIOD_THREE_MONTH).or().isNull(PatrolTask::getPeriod))
+                        .and(wrapper -> wrapper.ne(PatrolTask::getSource, PatrolConstant.TASK_MANUAL).or().isNull(PatrolTask::getSource))
                         .list()
         ).orElseGet(Collections::emptyList);
         if (CollectionUtil.isEmpty(taskList)) {
@@ -144,12 +144,8 @@ public class PatrolTaskMissingDetectionByDrools implements Job {
             if (null == l.getPatrolDate() && null == l.getEndDate()) {
                 return;
             }
-            Date patrolDate = null;
-            if (null != l.getEndDate()) {
-                patrolDate = l.getEndDate();
-            }else {
-                patrolDate = l.getPatrolDate();
-            }
+            Date patrolDate = l.getPatrolDate();
+
 //            Date patrolDate = l.getPatrolDate();
 //            if (ObjectUtil.isNotEmpty(l.getEndTime())) {
 //                String endTime = DateUtil.format(l.getEndTime(), "HH:mm:ss");
