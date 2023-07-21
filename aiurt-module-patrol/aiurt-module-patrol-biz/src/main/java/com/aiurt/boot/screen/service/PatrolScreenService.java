@@ -192,7 +192,7 @@ public class PatrolScreenService {
         List<PatrolTask> todayList = list.stream()
                 //.filter(l -> DateUtil.format(today, "yyyy-MM-dd").equals(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd")))
                 .filter(l -> {
-                    if (l.getSource() == 3) {
+                    if (l.getSource()!= null && l.getSource() == 3) {
                         // 使用 end_date 进行筛选
                         return DateUtil.format(today, "yyyy-MM-dd").equals(DateUtil.format(l.getEndDate(), "yyyy-MM-dd"));
                     } else {
