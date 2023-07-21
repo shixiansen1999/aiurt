@@ -18,7 +18,6 @@ import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.ScreenDurationTask;
 import com.aiurt.boot.screen.model.ScreenModule;
 import com.aiurt.boot.screen.service.PatrolScreenService;
-import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.statistics.dto.IndexCountDTO;
 import com.aiurt.boot.statistics.model.PatrolSituation;
@@ -217,13 +216,10 @@ public class PatrolApiServiceImpl implements PatrolApi {
     }
 
     @Override
-    public Map<String, Integer> getPatrolUserHours(int type, String teamId) {
+    public Map<String, Integer> getPatrolUserHours(Date startTime, Date endTime, String teamId) {
         Map<String, Integer> userDurationMap = new HashMap<>(16);
         // 班组的人员
         List<LoginUser> userList = sysBaseApi.getUserPersonnel(teamId);
-        String dateTime = ScreenDateUtil.getDateTime(type);
-        Date startTime = DateUtil.parse(dateTime.split(ScreenConstant.TIME_SEPARATOR)[0]);
-        Date endTime = DateUtil.parse(dateTime.split(ScreenConstant.TIME_SEPARATOR)[1]);
 
         // 获取巡视人员在指定时间范围内的任务时长(单位秒)
         List<ScreenDurationTask> list = patrolTaskUserMapper.getScreenUserDuration(startTime, endTime);
@@ -254,13 +250,13 @@ public class PatrolApiServiceImpl implements PatrolApi {
     }
 
     @Override
-    public Integer getPatrolHours(int type, String teamId) {
+    public Integer getPatrolHours(Date startTime, Date endTime, String teamId) {
         // 班组的人员
         List<LoginUser> userList = sysBaseApi.getUserPersonnel(teamId);
         if (CollUtil.isNotEmpty(userList)) {
-            String dateTime = ScreenDateUtil.getDateTime(type);
+            /*String dateTime = ScreenDateUtil.getDateTime(type);
             Date startTime = DateUtil.parse(dateTime.split(ScreenConstant.TIME_SEPARATOR)[0]);
-            Date endTime = DateUtil.parse(dateTime.split(ScreenConstant.TIME_SEPARATOR)[1]);
+            Date endTime = DateUtil.parse(dateTime.split(ScreenConstant.TIME_SEPARATOR)[1]);*/
 
             // 获取巡视人员在指定时间范围内的每一个任务的时长(单位秒)
             List<ScreenDurationTask> screenDuration = patrolTaskUserMapper.getScreenDuration(startTime, endTime, userList);
