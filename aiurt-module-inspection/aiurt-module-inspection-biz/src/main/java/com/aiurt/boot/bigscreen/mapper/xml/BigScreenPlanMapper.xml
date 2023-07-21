@@ -24,6 +24,7 @@
         </foreach>
     </if>
     group by teamId
+    order by sd.sort
 </select>
 
 <select id="getWorkAreaByCode" resultType="com.aiurt.boot.index.dto.TeamPortraitDTO">
