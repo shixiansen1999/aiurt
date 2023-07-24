@@ -24,6 +24,8 @@ import com.aiurt.modules.schedule.service.IScheduleItemService;
 import com.aiurt.modules.schedule.service.IScheduleRecordService;
 import com.aiurt.modules.schedule.service.IScheduleRuleItemService;
 import com.aiurt.modules.schedule.service.IScheduleService;
+import com.aiurt.modules.schedule.vo.RecordParam;
+import com.aiurt.modules.schedule.vo.ScheduleRecordVo;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -624,4 +626,37 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
         }
     }
 
+    @Override
+    public IPage<ScheduleRecordVo> nightCount(Page<ScheduleRecordVo> page, RecordParam param) {
+        Date startDate = DateUtils.getStartDate(param.getStartDate());
+        Date endDate = DateUtils.getEndDate(param.getEndDate());
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.GONGANXIAOFANG_ID);
+        String exOrgId = ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : null;
+        IPage<ScheduleRecordVo> page1 = scheduleMapper.queryUserForNightCount(page, param.getOrgId(), param.getUserName(), exOrgId);
+        List<ScheduleRecordVo> records = page1.getRecords();
+        String item = "夜班";
+        if (CollUtil.isNotEmpty(records)) {
+            records.forEach(vo -> {
+                LambdaQueryWrapper<ScheduleRecord> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(ScheduleRecord::getDelFlag, CommonConstant.DEL_FLAG_0);
+                wrapper.eq(ScheduleRecord::getUserId, vo.getUserId());
+                wrapper.ge(ScheduleRecord::getDate, startDate);
+                wrapper.le(ScheduleRecord::getDate, endDate);
+                wrapper.eq(ScheduleRecord::getItemName, item);
+                vo.setCount(recordService.count(wrapper));
+                if (new Date().before(endDate)) {
+                    wrapper = new LambdaQueryWrapper<>();
+                    wrapper.eq(ScheduleRecord::getDelFlag, CommonConstant.DEL_FLAG_0);
+                    wrapper.eq(ScheduleRecord::getUserId, vo.getUserId());
+                    wrapper.ge(ScheduleRecord::getDate, startDate);
+                    wrapper.le(ScheduleRecord::getDate, new Date());
+                    wrapper.eq(ScheduleRecord::getItemName, item);
+                    vo.setAct(recordService.count(wrapper));
+                } else {
+                    vo.setAct(vo.getCount());
+                }
+            });
+        }
+        return page1;
+    }
 }

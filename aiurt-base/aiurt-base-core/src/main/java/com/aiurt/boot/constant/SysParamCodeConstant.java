@@ -425,4 +425,9 @@ public interface SysParamCodeConstant {
      * 获取企业微信私域授权地址
      */
     String WX_OAUTH = "wx_oauth";
+
+    /**
+     * 公安消防班组id
+     */
+    String GONGANXIAOFANG_ID = "gonganxiaofang_id";
 }
