@@ -966,16 +966,25 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
     AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
     ) as result
     </select>
-    <select id="getUnfinishedSymptomsByStationCode"
-            resultType="com.aiurt.modules.fault.dto.FaultUnfinishedSymptomsDTO">
-        select code, happen_time, symptoms
-        from fault
-        where (status=9 or status=10 or status=7)
+    <select id="getUnfinishedFault"
+            resultType="com.aiurt.modules.fault.dto.FaultUnfinishedDTO">
+        select
+        f.code,
+        f.happen_time,
+        f.fault_phenomenon,
+        fkbt.name as fault_phenomenon_name
+        from fault f
+        left join fault_knowledge_base_type fkbt on f.fault_phenomenon=fkbt.code
+        where (f.status=9 or f.status=10 or f.status=7)
         <if test="stationCodeList != null and stationCodeList.size() != 0">
             and station_code in
             <foreach collection="stationCodeList" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
+        </if>
+        <if test="startDate != null and endDate != null">
+            and date_format(f.happen_time ,'%Y-%m-%d') &gt;=  date_format(#{startDate},'%Y-%m-%d')
+            and date_format(f.happen_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')
         </if>
     </select>
 </mapper>
