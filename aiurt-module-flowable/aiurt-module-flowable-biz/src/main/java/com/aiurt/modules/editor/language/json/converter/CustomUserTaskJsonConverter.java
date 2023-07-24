@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
+import com.aiurt.modules.modeler.entity.ActUserTypeEntity;
 import com.aiurt.modules.utils.ExtensionPropertiesUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -42,6 +43,20 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
      * 表单操作按钮
      */
     public static final String FORM_OPERATION = "formOperation";
+    /**
+     * 部门岗位集合
+     */
+    public static final String DEPT_POST_LIST = "deptPostList";
+
+    /**
+     * 多人审批规则
+     */
+    public static final String USER_TYPE = "userType";
+
+    /**
+     * 候选用户
+     */
+    public static final String USER_CANDIDATE_GROUPS = "userCandidateGroups";
 
     /**
      * 变量
@@ -80,7 +95,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
         super.convertElementToJson(propertiesNode, baseElement, converterContext);
         if (baseElement instanceof UserTask){
 
-             // usetask属性修改
+            // usetask属性修改
             Map<String, List<ExtensionAttribute>> attributes = baseElement.getAttributes();
             log.info("处理自定义属性:{}",JSON.toJSONString(attributes));
             attributes.forEach((key,list)->{
@@ -91,21 +106,20 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             });
 
             Map<String, List<ExtensionElement>> extensionElements = baseElement.getExtensionElements();
-            //  自定义属性:操作按钮
+
+            // 自定义属性:操作按钮
             List<ExtensionElement> formOperationElements = extensionElements.get(FORM_OPERATION);
             if (CollUtil.isNotEmpty(formOperationElements)) {
-                ArrayNode arrayNode = super.objectMapper.createArrayNode();
-                for (ExtensionElement e : formOperationElements) {
-                    ObjectNode objectNode = super.objectMapper.createObjectNode();
-
-                    Class clazz = ActOperationEntity.class;
-                    Field[] fields = clazz.getDeclaredFields();
-                    Arrays.stream(fields).filter(field -> !StrUtil.equals("serialVersionUID", field.getName())).forEach(field -> {
-                        objectNode.put(field.getName(), e.getAttributeValue(null, field.getName()));
-                    });
-                    arrayNode.add(objectNode);
-                }
+                ArrayNode arrayNode = convertExtensionElementsToJson(formOperationElements, ActOperationEntity.class);
                 propertiesNode.set(FORM_OPERATION, arrayNode);
+            }
+
+            // 多人审批规则
+            List<ExtensionElement> userTypeElements = extensionElements.get(USER_TYPE);
+            if (CollUtil.isNotEmpty(userTypeElements)) {
+                ExtensionElement extensionElement = userTypeElements.get(0);
+                ArrayNode arrayNode = convertExtensionElementsToJson(Collections.singletonList(extensionElement), ActUserTypeEntity.class);
+                propertiesNode.set(USER_TYPE, arrayNode);
             }
         }
     }
@@ -130,29 +144,15 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
     }
 
     private void addExtansionPropertiesElement(FlowElement flowElement, JsonNode elementNode) throws JsonProcessingException {
-        if (flowElement instanceof UserTask){
+        if (flowElement instanceof UserTask) {
             UserTask userTask = (UserTask) flowElement;
-            JsonNode expansionNode = JsonConverterUtil.getProperty(FORM_OPERATION, elementNode);
-            if (Objects.nonNull(expansionNode)) {
-                String json = objectMapper.writeValueAsString(expansionNode);
-                log.info("json->{}",json);
-                JSONArray jsonArray = JSONObject.parseArray(json);
-                for (int i = 0; i < jsonArray.size(); i++) {
-                    JSONObject jsonObject = jsonArray.getJSONObject(i);
-                    ExtensionElement ee = new ExtensionElement();
-                    ee.setName(FORM_OPERATION);
-                    ee.setNamespacePrefix(BpmnXMLConstants.FLOWABLE_EXTENSIONS_PREFIX);
-                    ee.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
-                    Set<String> keySet = jsonObject.keySet();
-                    keySet.stream().forEach(key-> {
-                        ExtensionAttribute attribute = new ExtensionAttribute();
-                        attribute.setName(key);
-                        attribute.setValue(jsonObject.getString(key));
-                        ee.addAttribute(attribute);
-                    });
-                    userTask.addExtensionElement(ee);
-                }
-            }
+
+            // 自定义属性:操作按钮
+            addExtensionElementToUserTask(userTask, FORM_OPERATION, JsonConverterUtil.getProperty(FORM_OPERATION, elementNode));
+            // 多人审批规则
+            addExtensionElementToUserTask(userTask, USER_TYPE, JsonConverterUtil.getProperty(USER_TYPE, elementNode));
+            // 候选用户
+            addExtensionElementToUserTask(userTask, USER_CANDIDATE_GROUPS, JsonConverterUtil.getProperty(USER_CANDIDATE_GROUPS, elementNode));
 
             // 选人类型， initiator是为：流程发起人, data
             addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.USER_TYPE);
@@ -162,52 +162,24 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.DEPT);
             // 指定人员
             addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.USER);
-
             // 动态人员
             addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.DYNAMIC_PERSON);
             // 人员类型: fixed ,dynim
-            addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, "dataType");
-
+            addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.DATA_TYPE);
             // 表单页面 类型
-            addCustomAttributeForPrefix(elementNode, userTask,  FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.FORM_TYPE);
+            addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.FORM_TYPE);
             // 表单设计器
-            addCustomAttributeForPrefix(elementNode, userTask, "flowable","formDynamicUrl");
+            addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.FORM_DYNAMIC_URL);
             // 表单url
-            addCustomAttributeForPrefix(elementNode, userTask,"flowable", "formUrl");
+            addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.FORM_URL);
             // 业务处理
-            addCustomAttributeForPrefix(elementNode, userTask, "flowable", "service");
+            addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.SERVICE);
             // 流程变量
-            addCustomAttributeForPrefix(elementNode, userTask,"flowable", "formtaskVariables");
+            addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.FORM_TASK_VARIABLES);
 
-            JsonNode deptPostList = JsonConverterUtil.getProperty("deptPostList", elementNode);
-
-            if (Objects.nonNull(deptPostList)) {
-                String json = objectMapper.writeValueAsString(deptPostList);
-                log.info("json->{}",json);
-                ExtensionElement ee = buildElement(deptPostList, json, "deptPostList", "deptPost");
-                userTask.addExtensionElement(ee);
-            }
-
-            // 候选用户
-            JsonNode userCandidateGroupNode = JsonConverterUtil.getProperty("userCandidateGroups", elementNode);
-            if (Objects.nonNull(userCandidateGroupNode)) {
-                String json = objectMapper.writeValueAsString(userCandidateGroupNode);
-
-                JSONObject jsonObject = JSONObject.parseObject(json);
-
-                ExtensionElement ee = new ExtensionElement();
-                ee.setName("userCandidateGroups");
-                ee.setNamespacePrefix(BpmnXMLConstants.FLOWABLE_EXTENSIONS_PREFIX);
-                ee.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
-                Set<String> keySet = jsonObject.keySet();
-                keySet.stream().forEach(key-> {
-                    ExtensionAttribute attribute = new ExtensionAttribute();
-                    attribute.setName(key);
-                    attribute.setValue(jsonObject.getString(key));
-                    ee.addAttribute(attribute);
-                });
-                userTask.addExtensionElement(ee);
-            }
+            // 部门岗位
+            JsonNode deptPostList = JsonConverterUtil.getProperty(DEPT_POST_LIST, elementNode);
+            addExtensionElementWithJson(userTask, DEPT_POST_LIST, deptPostList);
         }
     }
 
@@ -276,4 +248,77 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
         }
         return ee;
     }
+
+    /**
+     * 向用户任务（UserTask）添加扩展元素（ExtensionElement）。
+     *
+     * @param userTask      用户任务对象，用于添加扩展元素
+     * @param extensionName 扩展元素的名称
+     * @param extensionData 扩展元素的数据，以 JSON 格式表示
+     * @throws JsonProcessingException 如果 JSON 转换过程中出现异常
+     */
+    private void addExtensionElementToUserTask(UserTask userTask, String extensionName, JsonNode extensionData) throws JsonProcessingException {
+        if (Objects.nonNull(extensionData)) {
+            String json = objectMapper.writeValueAsString(extensionData);
+            log.info("json->{}", json);
+
+            JSONArray extensionArray = JSONObject.parseArray(json);
+            for (int i = 0; i < extensionArray.size(); i++) {
+                JSONObject extensionObject = extensionArray.getJSONObject(i);
+                ExtensionElement extensionElement = new ExtensionElement();
+                extensionElement.setName(extensionName);
+                extensionElement.setNamespacePrefix(BpmnXMLConstants.FLOWABLE_EXTENSIONS_PREFIX);
+                extensionElement.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
+
+                Set<String> keySet = extensionObject.keySet();
+                keySet.forEach(key -> {
+                    ExtensionAttribute attribute = new ExtensionAttribute();
+                    attribute.setName(key);
+                    attribute.setValue(extensionObject.getString(key));
+                    extensionElement.addAttribute(attribute);
+                });
+
+                userTask.addExtensionElement(extensionElement);
+            }
+        }
+    }
+
+    /**
+     * 向用户任务（UserTask）添加带有 JSON 数据的扩展元素（ExtensionElement）。
+     *
+     * @param userTask     用户任务对象，用于添加扩展元素
+     * @param propertyName 扩展元素的属性名称
+     * @param jsonNode     扩展元素的 JSON 数据
+     * @throws JsonProcessingException 如果 JSON 转换过程中出现异常
+     */
+    private void addExtensionElementWithJson(UserTask userTask, String propertyName, JsonNode jsonNode) throws JsonProcessingException {
+        if (Objects.nonNull(jsonNode)) {
+            String json = objectMapper.writeValueAsString(jsonNode);
+            log.info("json->{}", json);
+            // 这里将 "deptPostList" 用作属性名称和元素名称
+            ExtensionElement ee = buildElement(jsonNode, json, propertyName, "deptPost");
+            userTask.addExtensionElement(ee);
+        }
+    }
+
+    /**
+     * 将扩展元素列表转换为 JSON 数组，并根据指定类（clazz）的字段将属性名和属性值添加到 JSON 对象中。
+     *
+     * @param extensionElements 扩展元素列表，用于生成 JSON 数组
+     * @param clazz             指定的类，用于获取字段信息
+     * @return 生成的 JSON 数组（ArrayNode），包含扩展元素的属性名和属性值
+     */
+    private ArrayNode convertExtensionElementsToJson(List<ExtensionElement> extensionElements, Class<?> clazz) {
+        ArrayNode arrayNode = super.objectMapper.createArrayNode();
+        for (ExtensionElement e : extensionElements) {
+            ObjectNode objectNode = super.objectMapper.createObjectNode();
+            Field[] fields = clazz.getDeclaredFields();
+            Arrays.stream(fields).filter(field -> !StrUtil.equals("serialVersionUID", field.getName())).forEach(field -> {
+                objectNode.put(field.getName(), e.getAttributeValue(null, field.getName()));
+            });
+            arrayNode.add(objectNode);
+        }
+        return arrayNode;
+    }
+
 }
