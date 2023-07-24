@@ -424,4 +424,20 @@ public interface SysParamCodeConstant {
      * 获取企业微信私域授权地址
      */
     String WX_OAUTH = "wx_oauth";
+    /**
+     * 获取施工计划登录token所需客户ID
+     */
+    String CLIENT_ID="clientId";
+    /**
+     * 获取施工计划登录token所需客户密钥
+     */
+    String CLIENT_SECRET="clientSecret";
+    /**
+     * 获取施工计划登录token所需授权类似
+     */
+    String GRANT_TYPE="grantType";
+    /**
+     * 获取施工计划登录门户url
+     */
+    String CONSTRUCTION_URL="construction_url";
 }
