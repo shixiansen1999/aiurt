@@ -1123,6 +1123,13 @@ public interface ISysBaseAPI extends CommonAPI {
     String getMaterialNameByCode(String materialCode);
 
     /**
+     * 根据物资编号获取物资规格型号
+     * @param materialCode
+     * @return
+     */
+    String getMaterialSpecificationByCode(String materialCode);
+
+    /**
      * 根据多个物资编号获取物资名称,编号：名称
      * @param materialCodes
      * @return
