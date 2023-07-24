@@ -134,11 +134,11 @@ public class PatrolStatisticsService {
             overviewInfoCount = patrolTaskMapper.getOverviewInfoCount(indexCountDTO);
         }
 
-        // 漏巡数统计
-        List<Date> startList = this.getOmitDateScope(startDate);
-        List<Date> endList = this.getOmitDateScope(endDate);
+        // 上周期漏巡数统计
+        List<Date> startList = this.getOmitDateScope(new Date());
+        /*List<Date> endList = this.getOmitDateScope(endDate);*/
         Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
-        Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
+        Date endTime = startList.stream().max(Comparator.comparingLong(Date::getTime)).get();
         IndexCountDTO indexCountOmitDTO = new IndexCountDTO(startTime, endTime, filterConditions);
         PatrolSituation overviewInfoOmitCount = new PatrolSituation();
         //根据配置决定是否需要把工单数量作为任务数量
