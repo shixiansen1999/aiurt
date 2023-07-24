@@ -5,7 +5,6 @@ import com.aiurt.boot.dto.UserTeamParameter;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
 
 import javax.servlet.http.HttpServletRequest;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +38,6 @@ public interface PatrolApi {
 
     /**
      * 大屏班组画像班组巡视总工时统计，2023-06-12 通信6期改成单位秒
-     * @param type
      * @param teamId
      * @return
      */

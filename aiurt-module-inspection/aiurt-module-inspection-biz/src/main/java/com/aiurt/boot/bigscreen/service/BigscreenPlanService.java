@@ -79,47 +79,51 @@ public class BigscreenPlanService {
      * 获取大屏的检修概况数量
      *
      * @param lineCode 线路code
-     * @param type     类型:1：本周，2：上周，3：本月， 4：上月
+     * @param startDate
+     * @param endDate
      * @return
      */
-    public PlanIndexDTO getOverviewInfo(String lineCode, String type) {
+    public PlanIndexDTO getOverviewInfo(String lineCode,String startDate,String endDate) {
         PlanIndexDTO result = new PlanIndexDTO();
 
-        // 根据类型获取开始时间和结束时间
-        Date[] time = getTimeByType(type);
+        Date startTime = DateUtil.parse(startDate);
+        Date endTime = DateUtil.parse(endDate);
 
-        if (time.length > 0) {
-            // 根据自身管理专业和传入线路过滤出班组
-            List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
+        // 根据自身管理专业和传入线路过滤出班组
+        List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
 
-            // 筛选出来的班组为空，则直接返回
-            if (CollUtil.isEmpty(orgCodes)) {
-                result.setSum(0L);
-                result.setFinish(0L);
-                result.setOmit(0L);
-                result.setTodayFinish(0L);
-                return result;
-            }
-
-            // 根据传入的进行时间过滤
-            List<InspectionDTO> inspectionDataNoPage = repairPoolMapper.getInspectionDataNoPage(orgCodes, null, time[0], time[1],lineCode);
-
-            // 填充计划检修数
-            result.setSum(CollUtil.isNotEmpty(inspectionDataNoPage) ? inspectionDataNoPage.size() : 0L);
-
-            // 填充检修完成数
-            result.setFinish(CollUtil.isNotEmpty(inspectionDataNoPage) ? inspectionDataNoPage.stream().filter(re -> InspectionConstant.COMPLETED.equals(re.getStatus())).count() : 0L);
-            // 填充检修未完成数
-            result.setUnfinish(result.getSum() - result.getFinish());
-
-            // 填充漏检数
+        // 筛选出来的班组为空，则直接返回
+        if (CollUtil.isEmpty(orgCodes)) {
+            result.setSum(0L);
+            result.setFinish(0L);
             result.setOmit(0L);
-
-            // 填充今日检修数（规则：当前时间在检修计划的开始时间和结束时间范围内）
-            List<InspectionDTO> todayInspectionNum = repairPoolMapper.getInspectionTodayDataNoPage(new Date(), orgCodes,lineCode);
-            result.setTodaySum(CollUtil.isNotEmpty(todayInspectionNum) ? todayInspectionNum.size() : 0L);
-            result.setTodayFinish(CollUtil.isNotEmpty(todayInspectionNum) ? todayInspectionNum.stream().filter(t -> t.getStatus() == 8).count() : 0L);
+            result.setTodayFinish(0L);
+            return result;
         }
+
+        // 根据传入的进行时间过滤
+        List<InspectionDTO> inspectionDataNoPage = repairPoolMapper.getInspectionDataNoPage(orgCodes, null, startTime, endTime,lineCode);
+
+        // 填充计划检修数
+        result.setSum(CollUtil.isNotEmpty(inspectionDataNoPage) ? inspectionDataNoPage.size() : 0L);
+
+        // 填充检修完成数
+        result.setFinish(CollUtil.isNotEmpty(inspectionDataNoPage) ? inspectionDataNoPage.stream().filter(re -> InspectionConstant.COMPLETED.equals(re.getStatus())).count() : 0L);
+        result.setFinishRate("0");
+        if (result.getSum() != 0) {
+            String finishRate = String.format("%.1f", (1.0 * result.getFinish() / result.getSum()) * 100);
+            result.setFinishRate(finishRate);
+        }
+        // 填充检修未完成数
+        result.setUnfinish(result.getSum() - result.getFinish());
+
+        // 填充漏检数
+        result.setOmit(0L);
+
+        // 填充今日检修数（规则：当前时间在检修计划的开始时间和结束时间范围内）
+        List<InspectionDTO> todayInspectionNum = repairPoolMapper.getInspectionTodayDataNoPage(new Date(), orgCodes,lineCode);
+        result.setTodaySum(CollUtil.isNotEmpty(todayInspectionNum) ? todayInspectionNum.size() : 0L);
+        result.setTodayFinish(CollUtil.isNotEmpty(todayInspectionNum) ? todayInspectionNum.stream().filter(t -> t.getStatus() == 8).count() : 0L);
         return result;
     }
 
@@ -128,31 +132,20 @@ public class BigscreenPlanService {
      * 功能：巡检修数据分析->检修数据统计(带分页)
      *
      * @param lineCode 线路code
-     * @param type     类型:1：本周，2：上周，3：本月， 4：上月
      * @param item     1计划数，2完成数，3漏检数，4今日检修数，5今日检修完成数
      * @param page     分页参数
      * @return
      */
-    public IPage<InspectionDTO> getInspectionDataPage(String lineCode, String type, Integer item, Page<InspectionDTO> page) {
+    public IPage<InspectionDTO> getInspectionDataPage(String lineCode,String startDate,String endDate, Integer item, Page<InspectionDTO> page) {
         List<InspectionDTO> result = new ArrayList<>();
-
-        // 校验,必填字段为空则直接返回
-        if (StrUtil.isEmpty(type)) {
-            return page;
-        }
 
         // 默认查询的是计划总数
         if (ObjectUtil.isEmpty(item)) {
             item = InspectionConstant.PLAN_TOTAL_1;
         }
 
-        // 根据类型获取开始时间和结束时间
-        Date[] time = getTimeByType(type);
-
-        // 时间为空直接返回
-        if (time.length <= 0) {
-            return page;
-        }
+        Date startTime = DateUtil.parse(startDate);
+        Date endTime = DateUtil.parse(endDate);
 
         List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
         // 通过传入的线路和自身管理的专业没有查询到班组，则直接返回
@@ -162,7 +155,7 @@ public class BigscreenPlanService {
 
         // 查询计划数、完成数、未完成数
         if (InspectionConstant.PLAN_TOTAL_1.equals(item) || InspectionConstant.PLAN_FINISH_2.equals(item)|| InspectionConstant.PLAN_UNFINISH_6.equals(item)) {
-            result = repairPoolMapper.getInspectionData(page, orgCodes, item, time[0], time[1], lineCode);
+            result = repairPoolMapper.getInspectionData(page, orgCodes, item, startTime, endTime, lineCode);
         }
 
         // TODO 漏检
@@ -334,16 +327,11 @@ public class BigscreenPlanService {
      * @param lineCode 线路code
      * @return
      */
-    public List<PlanIndexDTO> getTaskCompletion(String lineCode) {
+    public List<PlanIndexDTO> getTaskCompletion(String lineCode,String startDate,String endDate) {
         List<PlanIndexDTO> result = Collections.synchronizedList(new ArrayList<>());
 
-        // 默认是本周的时间范围
-        Date[] time = getTimeByType(InspectionConstant.THIS_WEEK_1);
-
-        // 时间范围为空直接返回
-        if (time.length <= 0) {
-            return result;
-        }
+        Date startTime = DateUtil.parse(startDate);
+        Date endTime = DateUtil.parse(endDate);
 
         // 通过传入线路和自身专业过滤出班组详细信息
         List<SysDepartModel> teamBylineAndMajors = sysBaseAPI.getTeamBylineAndMajors(lineCode);
@@ -353,7 +341,7 @@ public class BigscreenPlanService {
                 PlanIndexDTO planIndexDTO = new PlanIndexDTO();
 
                 // 查询已完成数量、未完成数量
-                planIndexDTO = repairPoolMapper.getNumByTimeAndOrgCode(teamBylineAndMajor.getOrgCode(), time[0], time[1],lineCode);
+                planIndexDTO = repairPoolMapper.getNumByTimeAndOrgCode(teamBylineAndMajor.getOrgCode(), startTime,endTime,lineCode);
 
                 // 填充班组名称
                 planIndexDTO.setTeamName(teamBylineAndMajor.getDepartName());
