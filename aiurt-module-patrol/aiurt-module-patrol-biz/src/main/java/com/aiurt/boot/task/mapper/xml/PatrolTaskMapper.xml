@@ -823,6 +823,7 @@
             AND  cs.line_code = #{condition.lineCode}
         </if>
         group by pto.org_code
+        order by sd.sort
     </select>
     <select id="getStatisticsDataList" resultType="com.aiurt.boot.screen.model.ScreenStatisticsTask">
         SELECT
@@ -855,7 +856,7 @@
             AND pt.`status` = #{condition.status}
         </if>
         <if test="condition.screenModule != null and condition.screenModule == 7 ">
-            AND pt.`status` != #{condition.status}
+            AND pt.`status` != #{condition.unFinish}
         </if>
         <if test="condition.omit != null">
             AND pt.omit_status = #{condition.omit}
@@ -875,13 +876,6 @@
             or
             (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d')
             and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
-            )
-        </if>
-        <if test="condition.startDate != null">
-            AND (
-            (DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
-            or
-            (DATE_FORMAT(pt.start_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.end_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d'))
             )
         </if>
         <if test="condition.orgCodes != null and condition.orgCodes.size > 0">
@@ -2191,13 +2185,6 @@
             or
             (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.today}, '%Y-%m-%d')
             and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.today}, '%Y-%m-%d'))
-            )
-        </if>
-        <if test="condition.startDate != null">
-            AND (
-            (DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
-            or
-            (DATE_FORMAT(pt.start_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.end_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d'))
             )
         </if>
         <if test="condition.username != null and condition.username != ''">

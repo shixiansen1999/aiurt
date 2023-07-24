@@ -53,8 +53,8 @@
         </if>
         <!--首页工作日志需要的时间范围的查询-->
         <if test="param.startDate != null and param.endDate != null">
-            AND DATE_FORMAT(wl.submit_time, "%Y-%m-%d") >= DATE_FORMAT(#{param.startDate}, "%Y-%m-%d")
-            AND DATE_FORMAT(wl.submit_time, "%Y-%m-%d") &lt;= DATE_FORMAT(#{param.endDate}, "%Y-%m-%d")
+            AND DATE_FORMAT(wl.log_time, "%Y-%m-%d") >= DATE_FORMAT(#{param.startDate}, "%Y-%m-%d")
+            AND DATE_FORMAT(wl.log_time, "%Y-%m-%d") &lt;= DATE_FORMAT(#{param.endDate}, "%Y-%m-%d")
         </if>
         <!--首页工作日志需要的根据是否提交的查询-->
         <if test="param.status != null">

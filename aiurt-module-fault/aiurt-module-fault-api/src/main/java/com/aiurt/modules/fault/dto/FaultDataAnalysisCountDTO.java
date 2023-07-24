@@ -1,15 +1,12 @@
 package com.aiurt.modules.fault.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * 功能描述
@@ -35,6 +32,12 @@ public class FaultDataAnalysisCountDTO implements Serializable {
      */
     @ApiModelProperty(value = "未修复故障数")
     private Integer unSolve;
+
+    /**
+     * 挂起故障数
+     */
+    @ApiModelProperty(value = "挂起故障数")
+    private Integer hangUpNum;
 
     /**
      * 今日新增数量

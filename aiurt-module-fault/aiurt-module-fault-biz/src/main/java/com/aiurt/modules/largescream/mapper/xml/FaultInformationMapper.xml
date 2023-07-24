@@ -155,6 +155,12 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
             <if test="condition.todaySolve != null and condition.todaySolve !=''">
                 and f.status = 12
             </if>
+            <if test="condition.hangUp != null">
+                and f.status = 10
+            </if>
+            <if test="condition.solve != null">
+                and f.status = 12
+            </if>
             <if test=" condition.todaySolve != null and condition.todaySolve !=''">
                 and date_format(f.end_time ,'%Y-%m-%d') &gt;=  date_format(#{condition.todayStartDate},'%Y-%m-%d')
                 and date_format(f.end_time ,'%Y-%m-%d') &lt;= date_format(#{condition.todayEndDate},'%Y-%m-%d')
@@ -165,7 +171,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
 
     <select id="getLargeFaultDataDatails" resultType="com.aiurt.modules.fault.dto.FaultLargeInfoDTO">
         select f.id, f.sub_system_code, cs.system_name, f.fault_mode_code, f.station_code, ct.station_name,
-        f.happen_time, f.appoint_user_name, s.realname as real_name, f.status, f.fault_phenomenon, f.line_code
+        f.happen_time, f.appoint_user_name, s.realname as real_name, f.status, f.fault_phenomenon, f.line_code,f.code
         from fault f
         left join cs_subsystem cs on cs.system_code = f.sub_system_code
         left join  cs_line cl on cl.line_code = f.line_code
@@ -219,6 +225,11 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
             <if test=" condition.todaySolve != null and condition.todaySolve !=''">
                 and date_format(f.end_time ,'%Y-%m-%d') &gt;=  date_format(#{condition.todayStartDate},'%Y-%m-%d')
                 and date_format(f.end_time ,'%Y-%m-%d') &lt;= date_format(#{condition.todayEndDate},'%Y-%m-%d')
+            </if>
+            <if test="condition.hangUp != null">
+                and f.status = 10
+                and date_format(f.approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{condition.startDate},'%Y-%m-%d')
+                and date_format(f.approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{condition.endDate},'%Y-%m-%d')
             </if>
         </where>
         group by f.id
@@ -297,11 +308,11 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
     <select id="getYearFault" resultType="java.lang.Integer">
         select count(*) from fault where 1=1
         and status > 2
-        <if test="condition.firstDay != null and condition.firstDay != ''">
-            and DATE_FORMAT(approval_pass_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.firstDay},'%Y-%m-%d')
+        <if test="condition.startDate != null and condition.startDate != ''">
+            and DATE_FORMAT(approval_pass_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate},'%Y-%m-%d')
         </if>
-        <if test="condition.lastDay != null and condition.lastDay != ''">
-            and DATE_FORMAT(approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.lastDay},'%Y-%m-%d')
+        <if test="condition.endDate != null and condition.endDate != ''">
+            and DATE_FORMAT(approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate},'%Y-%m-%d')
         </if>
         <if test="condition.lineCode != null and condition.lineCode != ''">
             and line_code  = #{condition.lineCode}
@@ -724,23 +735,27 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
     </select>
 
     <select id="countFaultDataInformation" resultType="com.aiurt.modules.fault.dto.FaultDataAnalysisCountDTO">
-        SELECT count(*) as sum ,COUNT( CASE WHEN `status` !=12 and `status` >2 THEN 1 ELSE NULL END ) AS `un_solve` from fault
+        SELECT ifnull(count(*),0) as sum ,
+        ifnull(COUNT( CASE WHEN `status` !=12 and `status` >2 THEN 1 ELSE NULL END ) ,0) AS `un_solve` ,
+        ifnull(COUNT( CASE WHEN `status` = 10 THEN 1 ELSE NULL END ) ,0) AS hangUpNum
+        from fault
         <where>
             status > 2
-            <if test="weekStartDate!=null and weekEndDate!=null">
-                and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{weekStartDate},'%Y-%m-%d')
+            <if test="weekStartDate != null and weekEndDate != null">
+                and date_format(approval_pass_time ,'%Y-%m-%d') &gt;= date_format(#{weekStartDate},'%Y-%m-%d')
                 and date_format(approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{weekEndDate},'%Y-%m-%d')
             </if>
             <if test="lineCode != null and lineCode != ''">
-                and line_code  = #{lineCode}
+                and line_code = #{lineCode}
             </if>
-            <if test="majors != null and majors.size>0 ">
+            <if test="majors != null and majors.size > 0">
                 and major_code in
                 <foreach collection="majors" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
-            </if>
+            </if>;
         </where>
+
     </select>
     <select id="getFilterFaultUserDuration" resultType="com.aiurt.modules.largescream.model.FaultDurationTask">
   select
@@ -966,16 +981,25 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
     AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
     ) as result
     </select>
-    <select id="getUnfinishedSymptomsByStationCode"
-            resultType="com.aiurt.modules.fault.dto.FaultUnfinishedSymptomsDTO">
-        select code, happen_time, symptoms
-        from fault
-        where (status=9 or status=10 or status=7)
+    <select id="getUnfinishedFault"
+            resultType="com.aiurt.modules.fault.dto.FaultUnfinishedDTO">
+        select
+        f.code,
+        f.happen_time,
+        f.fault_phenomenon,
+        fkbt.name as fault_phenomenon_name
+        from fault f
+        left join fault_knowledge_base_type fkbt on f.fault_phenomenon=fkbt.code
+        where (f.status=9 or f.status=10 or f.status=7)
         <if test="stationCodeList != null and stationCodeList.size() != 0">
             and station_code in
             <foreach collection="stationCodeList" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
+        </if>
+        <if test="startDate != null and endDate != null">
+            and date_format(f.happen_time ,'%Y-%m-%d') &gt;=  date_format(#{startDate},'%Y-%m-%d')
+            and date_format(f.happen_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')
         </if>
     </select>
 </mapper>
