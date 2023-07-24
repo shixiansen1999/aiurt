@@ -103,8 +103,8 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         <where>
             status > 2
             <if test="weekStartDate!=null and weekEndDate!=null">
-                and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{weekStartDate},'%Y-%m-%d')
-                and date_format(approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{weekEndDate},'%Y-%m-%d')
+                and date_format(happen_time ,'%Y-%m-%d') &gt;=  date_format(#{weekStartDate},'%Y-%m-%d')
+                and date_format(happen_time ,'%Y-%m-%d') &lt;= date_format(#{weekEndDate},'%Y-%m-%d')
             </if>
             <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
@@ -171,7 +171,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
 
     <select id="getLargeFaultDataDatails" resultType="com.aiurt.modules.fault.dto.FaultLargeInfoDTO">
         select f.id, f.sub_system_code, cs.system_name, f.fault_mode_code, f.station_code, ct.station_name,
-        f.happen_time, f.appoint_user_name, s.realname as real_name, f.status, f.fault_phenomenon, f.line_code,f.code
+        f.happen_time, f.appoint_user_name, s.realname as real_name, f.status, f.fault_phenomenon, f.line_code,f.code as faultCode
         from fault f
         left join cs_subsystem cs on cs.system_code = f.sub_system_code
         left join  cs_line cl on cl.line_code = f.line_code
