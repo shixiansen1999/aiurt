@@ -42,6 +42,7 @@ import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -91,6 +92,8 @@ public class IndexPlanService {
     private RepairPoolCodeMapper poolCodeMapper;
     @Autowired
     private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private RestTemplate restTemplate;
 
     /**
      * 获取计划概览信息
@@ -307,7 +310,7 @@ public class IndexPlanService {
         // 故障
         Map<String, Integer> faultMap = CollUtil.isNotEmpty(dailyFaultApi.getDailyFaultNum(year, month)) ? dailyFaultApi.getDailyFaultNum(year, month) : new HashMap<>(32);
         // 施工
-        Map<String, Integer> constructionMap = new HashMap<>(32);
+        Map<String, Integer> constructionMap = this.constructionNumByDay(beginDate, dayNum);
         // 日程信息
         Map<String, List<DailySchedule>> scheduleMap = MapUtil.isNotEmpty(baseApi.queryDailyScheduleList(year, month)) ? baseApi.queryDailyScheduleList(year, month) : new HashMap<>(32);
 
@@ -316,9 +319,10 @@ public class IndexPlanService {
             for (int i = 0; i < dayNum; i++) {
                 // 偏移日期
                 String currDateStr = DateUtil.format(DateUtil.offsetDay(beginDate, i), "yyyy/MM/dd");
+                String otherDateStr = DateUtil.format(DateUtil.offsetDay(beginDate, i), "yyyy-MM-dd");
                 DayTodoDTO dayTodoDTO = new DayTodoDTO();
                 dayTodoDTO.setCurrDate(currDateStr);
-                dayTodoDTO.setConstructionNum(ObjectUtil.isEmpty(constructionMap.get(currDateStr)) ? 0 : constructionMap.get(currDateStr));
+                dayTodoDTO.setConstructionNum(ObjectUtil.isEmpty(constructionMap.get(otherDateStr)) ? 0 : constructionMap.get(otherDateStr));
                 dayTodoDTO.setFaultNum(ObjectUtil.isEmpty(faultMap.get(currDateStr)) ? 0 : faultMap.get(currDateStr));
                 dayTodoDTO.setInspectionNum(ObjectUtil.isEmpty(inspectionMap.get(currDateStr)) ? 0 : inspectionMap.get(currDateStr));
                 dayTodoDTO.setPatrolNum(ObjectUtil.isEmpty(patrolMap.get(currDateStr)) ? 0 : patrolMap.get(currDateStr));
@@ -329,6 +333,29 @@ public class IndexPlanService {
         }
 
         return result;
+    }
+
+    /**
+     * 按天查询检修任务完成数
+     *
+     * @param beginDate
+     * @param dayNum
+     * @return
+     */
+    private Map<String, Integer> constructionNumByDay(Date beginDate, int dayNum) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(beginDate);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        Date newBeginDate = calendar.getTime();
+        calendar.add(Calendar.DATE, dayNum - 1);
+        Date endDate = calendar.getTime();
+
+        List<ConstructionNumDTO> constructionNumByDay = indexPlanMapper.getConstructionNumByDay(newBeginDate, endDate);
+        return constructionNumByDay
+                .stream().collect(Collectors.toMap(ConstructionNumDTO::getTaskDate, ConstructionNumDTO::getNum));
     }
 
     /**
