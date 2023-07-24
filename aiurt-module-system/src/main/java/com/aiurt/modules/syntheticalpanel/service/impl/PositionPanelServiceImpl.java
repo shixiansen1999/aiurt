@@ -28,7 +28,7 @@ public class PositionPanelServiceImpl implements PositionPanelService {
 
     @Override
     public List<CsStation> readAll(PositionPanelModel positionPanel) {
-        List<CsStation> stations = positionPanelMapper.getStations();
+        List<CsStation> stations = positionPanelMapper.getStations(positionPanel);
         return stations;
     }
 
