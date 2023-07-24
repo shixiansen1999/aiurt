@@ -347,4 +347,101 @@ public interface SysParamCodeConstant {
      * 	工作内容是否需要查出所有未完成故障
      */
     String 	WORKLOG_UNFINISH_FAULT = "worklog_unfinish_fault";
+    /**
+     * 取消去办理的消息类型
+     */
+    String NO_DEAL_MESSAGE_TYPE = "no_deal_message_type";
+    /**
+     * 故障未领取时要给予当班人员提示音
+     */
+    String NO_RECEIVE_FAULT_REMIND = "no_receive_fault_remind";
+    /**
+     * 故障领取后两小时未更新任务状态需给予维修人提示音
+     */
+    String RECEIVE_FAULT_NO_UPDATE = "receive_fault_no_update";
+    /**
+     * 故障领取后多久未更新任务状态需给予维修人提示音，单位为秒
+     */
+    String NO_UPDATE_DELAY = "no_update_delay";
+    /**
+     * 故障领取后未更新任务状态需给予维修人提示音的间隔，单位为秒
+     */
+    String NO_UPDATE_PERIOD = "no_update_period";
+    /**
+     * 故障多久未领取时要给予当班人员提示音，单位为秒
+     */
+    String NO_RECEIVE_DELAY = "no_receive_delay";
+    /**
+     * 故障未领取时要给予当班人员提示音的间隔，单位为秒
+     */
+    String NO_RECEIVE_PERIOD = "no_receive_period";
+    /**
+     * 故障领取后两小时未更新任务状态需给予维修人提示音（每两小时提醒5秒）
+     */
+    String FAULT_RECEIVE_NO_UPDATE_RING_DURATION = "fault_receive_no_update_ring_duration";
+    /**
+     * 故障未领取时要给予当班人员提示音（每两分钟提醒20秒）
+     */
+    String NO_RECEIVE_FAULT_RING_DURATION = "no_receive_fault_ring_duration";
+    /**
+     * 根据配置，传参开始时间，获取施工计划导入列表
+     */
+    String LAST_MONTH = "start_month";
+    /**
+     * 根据配置，传参结束时间，获取施工计划导入列表
+     */
+    String NEW_MONTH = "end_month";
+
+
+
+    /**
+     * 无故障时也生成生产日报的专业，多个专业使用英文逗号分隔
+     */
+    String GENERATE_REPORT_MAJOR = "generate_report_major";
+    /**
+     * 企业微信跳转地址
+     */
+    String WECHAT_MESSAGE_URL = "wechat_message_url";
+    /**
+     * 节假日类型为补班时调整的班次名称
+     */
+    String SCHEDULE_FOR_WORK = "schedule_for_work";
+    /**
+     * 假日类型为调休时调整的班次名称
+     */
+    String SCHEDULE_FOR_REST = "schedule_for_rest";
+
+    /**
+     * 故障完成后是否给中心班组成员提示音
+     */
+    String FAULT_FINISH_CENTER_MSG = "fault_finish_center_msg";
+
+    /**
+     * 企业微信认证url
+     */
+    String WECHAT_AUTHORIZE_URL = "wechat_authorize_url";
+    /**
+     * 故障操作日志查询是否根据处理时间升序排序
+     */
+    String FAULT_OPERATION_ORDER = "fault_operation_order";
+    /**
+     * 获取企业微信私域授权地址
+     */
+    String WX_OAUTH = "wx_oauth";
+    /**
+     * 获取施工计划登录token所需客户ID
+     */
+    String CLIENT_ID="clientId";
+    /**
+     * 获取施工计划登录token所需客户密钥
+     */
+    String CLIENT_SECRET="clientSecret";
+    /**
+     * 获取施工计划登录token所需授权类似
+     */
+    String GRANT_TYPE="grantType";
+    /**
+     * 获取施工计划登录门户url
+     */
+    String CONSTRUCTION_URL="construction_url";
 }
