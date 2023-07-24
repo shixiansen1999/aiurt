@@ -248,4 +248,11 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     List<PatrolBillDTO> getBillGanged(@Param("taskId") String taskId, @Param("standardId") String standardId);
+    /**
+     * 用户连接站点wifi的当前位置
+     *
+     * @param username
+     * @return
+     */
+    List<String> getSysUserPositionCurrent(@Param("username")String username);
 }
