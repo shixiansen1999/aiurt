@@ -8,8 +8,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -88,5 +90,15 @@ public class PositionPanelModel implements Serializable {
     private Integer openStatus;
 
     private List<SysUser> userList;
+
+    /**查询故障发生时间大于哪个时间点*/
+    @ApiModelProperty(value = "查询故障发生时间大于哪个时间点")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date startDate;
+
+    /**查询故障发生时间小于哪个时间点*/
+    @ApiModelProperty(value = "查询故障发生时间小于哪个时间点")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date endDate;
 
 }

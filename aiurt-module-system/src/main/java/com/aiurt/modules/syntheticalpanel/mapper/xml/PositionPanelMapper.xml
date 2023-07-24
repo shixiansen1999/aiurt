@@ -33,6 +33,10 @@
     ifnull(( select count(*)
     from fault
     where (status=9 or status=10 or status=7)
+    <if test="positionPanel.startDate != null and positionPanel.endDate != null">
+        and date_format(happen_time ,'%Y-%m-%d') &gt;=  date_format(#{positionPanel.startDate},'%Y-%m-%d')
+        and date_format(happen_time ,'%Y-%m-%d') &lt;= date_format(#{positionPanel.endDate},'%Y-%m-%d')
+    </if>
     and station_code=cs.station_code),0) as faultNum
     FROM
     cs_station cs
