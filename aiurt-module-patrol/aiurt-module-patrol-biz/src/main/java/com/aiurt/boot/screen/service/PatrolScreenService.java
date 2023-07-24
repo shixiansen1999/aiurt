@@ -758,12 +758,12 @@ public class PatrolScreenService {
             if (date.before(firstDate)) {
                 Date start = Date.from(localDate.minusDays(7).atStartOfDay().atZone(zoneId).toInstant());
                 // 第一次漏检往前1天
-                Date end = Date.from(localDate.minusDays(7 - betweenDay).atStartOfDay().atZone(zoneId).toInstant());
-                return DateUtil.format(start, "yyyy-MM-dd 00:00:00").concat(ScreenConstant.TIME_SEPARATOR).concat(DateUtil.format(end, "yyyy-MM-dd 00:00:00"));
-
+                Date end = Date.from(localDate.minusDays(7 - betweenDay + 1).atStartOfDay().atZone(zoneId).toInstant());
+                return DateUtil.format(start, "yyyy-MM-dd 00:00:00").concat(ScreenConstant.TIME_SEPARATOR).concat(DateUtil.format(end, "yyyy-MM-dd 23:59:59"));
             } else {
                 // 第一次漏检往后推两次检修间隔天数
-                return DateUtil.format(firstDate, "yyyy-MM-dd 00:00:00").concat(ScreenConstant.TIME_SEPARATOR).concat(DateUtil.format(secondDate, "yyyy-MM-dd 00:00:00"));
+                secondDate = Date.from(localDate.plusDays(betweenDay - 1).atStartOfDay().atZone(zoneId).toInstant());
+                return DateUtil.format(firstDate, "yyyy-MM-dd 00:00:00").concat(ScreenConstant.TIME_SEPARATOR).concat(DateUtil.format(secondDate, "yyyy-MM-dd 23:59:59"));
 
             }
         }
