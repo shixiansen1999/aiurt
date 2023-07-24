@@ -379,4 +379,22 @@
 		  and su.org_code = #{orgCode}
 		group by su.id
 	</select>
+
+	<select id="getRoleNamesByUserIds" resultType="java.util.Map">
+		SELECT
+			su.id AS userId,
+			group_concat(sr.role_name) AS roleName
+		FROM sys_user su
+		INNER JOIN sys_user_role sur on su.id=sur.user_id
+		INNER JOIN sys_role sr ON sr.id=sur.role_id
+		<where>
+			<if test="userIds != null and userIds.size() != 0">
+				su.id IN
+				<foreach collection="userIds" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		GROUP BY su.id
+	</select>
 </mapper>

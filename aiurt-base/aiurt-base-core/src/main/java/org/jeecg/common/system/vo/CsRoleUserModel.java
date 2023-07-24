@@ -22,7 +22,7 @@ public class CsRoleUserModel implements Serializable {
     @ApiModelProperty(value = "主键")
     private String id;
 
-    @ApiModelProperty(value = "角色id")
+    @ApiModelProperty(value = "角色编码")
     private String value;
 
     @ApiModelProperty(value = "角色编码")
@@ -31,9 +31,15 @@ public class CsRoleUserModel implements Serializable {
     @ApiModelProperty(value = "角色名称")
     private String label;
 
-    @ApiModelProperty(value = "标记")
-    private Boolean isOrg;
-
     @ApiModelProperty(value = "用户组")
     private List<SysUserModel> children;
+
+    @ApiModelProperty(value = "是否是角色标记")
+    private Boolean isRole;
+
+    @ApiModelProperty(value = "角色名称")
+    private String title;
+
+    @ApiModelProperty(value = "人员数量")
+    private Integer userNum;
 }

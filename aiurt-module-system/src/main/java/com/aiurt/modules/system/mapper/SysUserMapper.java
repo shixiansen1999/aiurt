@@ -289,4 +289,11 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 	 * @return
 	 */
 	List<LoginUser> getSeniorityNumber(@Param("orgCode") String orgCode);
+
+	/**
+	 * 根据用户id列表，获取用户的角色，多个角色使用英文逗号“,”分隔
+	 * @param userIds 用户id列表，当此参数为空时，查询所有用户
+	 * @return 返回一个List<Map<String, String>>，Map中是类似{"userId":"xxx","roleName":"xxx"}的形式
+	 */
+    List<Map<String, String>> getRoleNamesByUserIds(@Param("userIds") List<String> userIds);
 }
