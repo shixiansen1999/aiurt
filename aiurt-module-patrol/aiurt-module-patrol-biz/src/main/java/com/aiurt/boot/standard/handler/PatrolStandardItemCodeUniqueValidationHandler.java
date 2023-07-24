@@ -33,8 +33,8 @@ public class PatrolStandardItemCodeUniqueValidationHandler implements Validation
         // 获取当前列的值
         Object currentValue = currentColumn.getData();
         if (ObjectUtil.isNotEmpty(currentValue)) {
-            PatrolStandardItems patrolStandardItems = patrolStandardItemsMapper.selectOne(new QueryWrapper<PatrolStandardItems>().lambda().eq(PatrolStandardItems::getCode, currentValue).eq(PatrolStandardItems::getDelFlag, 0));
-            if (ObjectUtil.isNotEmpty(patrolStandardItems)) {
+            Long itemNums = patrolStandardItemsMapper.selectCount(new QueryWrapper<PatrolStandardItems>().lambda().eq(PatrolStandardItems::getCode, currentValue).eq(PatrolStandardItems::getDelFlag, 0));
+            if (itemNums>0) {
                 return new ValidationResult(false, String.format("%s该字段值在数据库中已存在", currentColumn.getName()));
             }
         }
