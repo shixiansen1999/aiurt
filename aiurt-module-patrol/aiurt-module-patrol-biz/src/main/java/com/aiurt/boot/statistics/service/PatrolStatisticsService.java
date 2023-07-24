@@ -135,7 +135,7 @@ public class PatrolStatisticsService {
         }
 
         // 上周期漏巡数统计
-        List<Date> startList = this.getOmitDateScope(new Date());
+        List<Date> startList = this.getOmitDateScope(DateUtil.parse("2023-07-23"));
         /*List<Date> endList = this.getOmitDateScope(endDate);*/
         Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
         Date endTime = startList.stream().max(Comparator.comparingLong(Date::getTime)).get();
@@ -236,14 +236,14 @@ public class PatrolStatisticsService {
             if (date.before(firstDate)) {
                 Date start = Date.from(localDate.minusDays(7).atStartOfDay().atZone(zoneId).toInstant());
                 // 第一次漏检往前1天
-                Date end = Date.from(localDate.minusDays(7 - betweenDay).atStartOfDay().atZone(zoneId).toInstant());
+                Date end = Date.from(localDate.minusDays(7 - betweenDay + 1).atStartOfDay().atZone(zoneId).toInstant());
                 return Arrays.asList(DateUtil.parse(DateUtil.format(start, "yyyy-MM-dd 00:00:00")),
-                        DateUtil.parse(DateUtil.format(end, "yyyy-MM-dd 00:00:00")));
+                        DateUtil.parse(DateUtil.format(end, "yyyy-MM-dd 23:59:59")));
             } else {
                 // 第一次漏检往后推两次检修间隔天数
-                secondDate = Date.from(localDate.plusDays(betweenDay).atStartOfDay().atZone(zoneId).toInstant());
+                secondDate = Date.from(localDate.plusDays(betweenDay - 1).atStartOfDay().atZone(zoneId).toInstant());
                 return Arrays.asList(DateUtil.parse(DateUtil.format(firstDate, "yyyy-MM-dd 00:00:00")),
-                        DateUtil.parse(DateUtil.format(secondDate, "yyyy-MM-dd 00:00:00")));
+                        DateUtil.parse(DateUtil.format(secondDate, "yyyy-MM-dd 23:59:59")));
             }
         }
     }
