@@ -25,7 +25,7 @@ import java.util.*;
 @Slf4j
 @Component
 
-public class constructionWeekPlanJob implements Job {
+public class ConstructionWeekPlanJob implements Job {
 
     @Autowired
     private RestTemplate restTemplate;
