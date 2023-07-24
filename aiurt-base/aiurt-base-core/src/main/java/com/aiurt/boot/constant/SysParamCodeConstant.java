@@ -318,19 +318,6 @@ public interface SysParamCodeConstant {
      * 通信分部编码
      */
     String 	SPECIAL_TEAM = "special_team";
-    /**
-     * 根据配置，获取施工计划导入列表
-     */
-    String CONSTRUCTION_WEEK_PLAN_COMMAND = "construction_week_plan_command";
-
-    /**
-     * 根据配置，传参部门，获取施工计划导入列表
-     */
-    String DEPARTMENT_NAME = "department_name";
-    /**
-     * 根据配置，传参状态，获取施工计划导入列表
-     */
-    String PLAN_ISTATE = "planIstate";
 
     /**
      * app端检修工单填写同行人是否可选全部班组
@@ -338,11 +325,11 @@ public interface SysParamCodeConstant {
     String INSPECTION_PEER_ALL_USER = "inspection_peer_all_user";
 
     String INSPECTION_SIGN_MULTI = "inspection_sign_multi";
-    String APP_PATROL_TASK_POOL_SORT = "app_patrol_task_pool_sort";
     /**
      * 	工作内容是否需要查出所有未完成故障
      */
     String 	WORKLOG_UNFINISH_FAULT = "worklog_unfinish_fault";
+    String APP_PATROL_TASK_POOL_SORT = "app_patrol_task_pool_sort";
     /**
      * 取消去办理的消息类型
      */
@@ -380,6 +367,19 @@ public interface SysParamCodeConstant {
      */
     String NO_RECEIVE_FAULT_RING_DURATION = "no_receive_fault_ring_duration";
     /**
+     * 根据配置，获取施工计划导入列表
+     */
+    String CONSTRUCTION_WEEK_PLAN_COMMAND = "construction_week_plan_command";
+
+    /**
+     * 根据配置，传参部门，获取施工计划导入列表
+     */
+    String DEPARTMENT_NAME = "department_name";
+    /**
+     * 根据配置，传参状态，获取施工计划导入列表
+     */
+    String PLAN_ISTATE = "planIstate";
+    /**
      * 根据配置，传参开始时间，获取施工计划导入列表
      */
     String LAST_MONTH = "start_month";
@@ -389,15 +389,25 @@ public interface SysParamCodeConstant {
     String NEW_MONTH = "end_month";
 
 
+    /**
+     * 企业微信跳转地址
+     */
+    String WECHAT_MESSAGE_URL = "wechat_message_url";
+
+    /**
+     * 故障操作日志查询是否根据处理时间升序排序
+     */
+    String FAULT_OPERATION_ORDER = "fault_operation_order";
+
+    /**
+     * 故障完成后是否给中心班组成员提示音
+     */
+    String FAULT_FINISH_CENTER_MSG = "fault_finish_center_msg";
 
     /**
      * 无故障时也生成生产日报的专业，多个专业使用英文逗号分隔
      */
     String GENERATE_REPORT_MAJOR = "generate_report_major";
-    /**
-     * 企业微信跳转地址
-     */
-    String WECHAT_MESSAGE_URL = "wechat_message_url";
     /**
      * 节假日类型为补班时调整的班次名称
      */
@@ -408,18 +418,9 @@ public interface SysParamCodeConstant {
     String SCHEDULE_FOR_REST = "schedule_for_rest";
 
     /**
-     * 故障完成后是否给中心班组成员提示音
-     */
-    String FAULT_FINISH_CENTER_MSG = "fault_finish_center_msg";
-
-    /**
      * 企业微信认证url
      */
     String WECHAT_AUTHORIZE_URL = "wechat_authorize_url";
-    /**
-     * 故障操作日志查询是否根据处理时间升序排序
-     */
-    String FAULT_OPERATION_ORDER = "fault_operation_order";
     /**
      * 获取企业微信私域授权地址
      */
@@ -444,4 +445,9 @@ public interface SysParamCodeConstant {
      * 大屏人员信息工班长排在首位
      */
     String FOREMAN_SORT = "foreman_sort";
+
+    /**
+     * 公安消防班组id
+     */
+    String GONGANXIAOFANG_ID = "gonganxiaofang_id";
 }

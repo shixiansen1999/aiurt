@@ -2,7 +2,10 @@ package com.aiurt.modules.schedule.mapper;
 
 
 import com.aiurt.modules.schedule.entity.Schedule;
+import com.aiurt.modules.schedule.vo.ScheduleRecordVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
@@ -29,4 +32,6 @@ public interface ScheduleMapper extends BaseMapper<Schedule> {
      * @return
      */
     SysDepartModel getDepartByName(@Param("departName")String departName);
+
+    IPage<ScheduleRecordVo> queryUserForNightCount(@Param("page") Page page, @Param("orgId") String orgId, @Param("userName") String userName, @Param("exOrgId") String exOrgId);
 }
