@@ -14,10 +14,12 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -237,13 +239,17 @@ public class FaultInformationController {
     /**
      * 根据站点code，获取未完成故障（挂起+维修中）的故障现象、故障发生时间、故障code
      * @param stationCode 要查询哪个站点的故障
+     * @param startDate 查询故障发生时间大于哪个时间点
+     * @param endDate 查询故障发生时间小于哪个时间点
      * @return
      */
     @AutoLog(value = "根据站点code，获取未完成故障（挂起+维修中）", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "根据站点code，获取未完成故障（挂起+维修中）", notes = "根据站点code，获取未完成故障（挂起+维修中）")
-    @GetMapping(value = "/getUnfinishedSymptomsByStationCode")
-    public Result<List<FaultUnfinishedSymptomsDTO>> getUnfinishedSymptomsByStationCode(@RequestParam("stationCode") String stationCode){
-        List<FaultUnfinishedSymptomsDTO> list = faultInformationService.getUnfinishedSymptomsByStationCode(Arrays.asList(stationCode.split(",")));
+    @GetMapping(value = "/getUnfinishedFault")
+    public Result<List<FaultUnfinishedDTO>> getUnfinishedFault(@RequestParam("stationCode") String stationCode,
+                                                               @RequestParam(value = "startDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+                                                               @RequestParam(value = "endDate",required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate){
+        List<FaultUnfinishedDTO> list = faultInformationService.getUnfinishedFault(Arrays.asList(stationCode.split(",")), startDate, endDate);
         return Result.ok(list);
     }
 }
