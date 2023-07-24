@@ -3,18 +3,19 @@ package com.aiurt.modules.syntheticalpanel.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.syntheticalpanel.mapper.PositionPanelMapper;
 import com.aiurt.modules.syntheticalpanel.model.PositionPanelModel;
 import com.aiurt.modules.syntheticalpanel.service.PositionPanelService;
 import com.aiurt.modules.system.entity.SysUser;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -25,7 +26,8 @@ public class PositionPanelServiceImpl implements PositionPanelService {
 
     @Autowired
     private PositionPanelMapper positionPanelMapper;
-
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
     @Override
     public List<CsStation> readAll(PositionPanelModel positionPanel) {
         List<CsStation> stations = positionPanelMapper.getStations();
@@ -42,7 +44,8 @@ public class PositionPanelServiceImpl implements PositionPanelService {
                 List<PositionPanelModel> collect = list.stream().filter(p -> p.getOrgCode()!=null).collect(Collectors.toList());
                 if (CollectionUtil.isNotEmpty(collect)) {
                     for (PositionPanelModel panel : collect) {
-                        List<SysUser> userById = positionPanelMapper.getUserById(panel.getOrgCode());
+                        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FOREMAN_SORT);
+                        List<SysUser> userById = positionPanelMapper.getUserById(panel.getOrgCode(),paramModel.getValue());
                         panel.setUserList(userById);
                     }
                     positionPanels.addAll(collect);

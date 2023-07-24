@@ -425,4 +425,8 @@ public interface SysParamCodeConstant {
      * 获取企业微信私域授权地址
      */
     String WX_OAUTH = "wx_oauth";
+    /**
+     * 大屏人员信息工班长排在首位
+     */
+    String FOREMAN_SORT = "foreman_sort";
 }
