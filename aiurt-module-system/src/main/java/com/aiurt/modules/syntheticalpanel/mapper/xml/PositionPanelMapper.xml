@@ -87,14 +87,16 @@
 
 <select id="getUserById" resultType="com.aiurt.modules.system.entity.SysUser">
     SELECT
-            id,
-            username,
-            realname,
-            avatar
+    su.id,
+    su.username,
+    su.realname,
+    su.avatar,
+    if((select ifnull(count(*),0) from sys_user_role v left join sys_role a on v.role_id =a.id where v.user_id = su.id and a.role_code = #{foreman})>0,0,1) as isForeman
     FROM
-            sys_user
+    sys_user su
     WHERE
-            del_flag = 0
-      AND org_code= #{orgCode}
+    su.del_flag = 0
+    AND su.org_code= #{orgCode}
+    order by isForeman
     </select>
 </mapper>

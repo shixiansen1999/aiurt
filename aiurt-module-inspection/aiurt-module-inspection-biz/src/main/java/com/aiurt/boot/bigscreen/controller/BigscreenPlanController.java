@@ -36,15 +36,15 @@ public class BigscreenPlanController {
      * 获取大屏的检修重要数据展示
      *
      * @param lineCode 线路code
-     * @param type     类型:1：本周，2：上周，3：本月， 4：上月
      * @return
      */
     @AutoLog(value = "获取大屏的检修概况数量", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "获取大屏的检修概况数量", notes = "获取大屏的检修概况数量")
     @RequestMapping(value = "/overviewInfo", method = RequestMethod.GET)
     public Result<PlanIndexDTO> getOverviewInfo(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode,
-                                                @ApiParam(name = "type", value = "类型:1：本周，2：上周，3：本月， 4：上月", defaultValue = "1") @RequestParam("type") String type) {
-        PlanIndexDTO result = bigscreenPlanService.getOverviewInfo(lineCode, type);
+                                                @ApiParam(name = "startDate", value = "开始时间") String startDate,
+                                                @ApiParam(name = "endDate", value = "结束时间") String endDate) {
+        PlanIndexDTO result = bigscreenPlanService.getOverviewInfo(lineCode, startDate,endDate);
         return Result.OK(result);
     }
 
@@ -52,7 +52,6 @@ public class BigscreenPlanController {
      * 功能：巡检修数据分析->检修数据统计（带分页）
      *
      * @param lineCode 线路code
-     * @param type     类型:1：本周，2：上周，3：本月， 4：上月
      * @param item     1计划数，2完成数，3漏检数，4今日检修数
      * @return
      */
@@ -60,12 +59,13 @@ public class BigscreenPlanController {
     @ApiOperation(value = "巡检修数据分析-检修数据统计（带分页）", notes = "巡检修数据分析-检修数据统计（带分页）")
     @RequestMapping(value = "/getInspectionDataPage", method = RequestMethod.GET)
     public Result<IPage<InspectionDTO>> getInspectionDataPage(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode,
-                                                              @ApiParam(name = "type", value = "类型:1：本周，2：上周，3：本月， 4：上月", defaultValue = "1") @RequestParam(value = "type",required = false) String type,
                                                               @ApiParam(name = "item", value = "1计划数，2完成数，3漏检数，4今日检修数,5今日检修已完成,6未完成数") @RequestParam(value = "item", required = false) Integer item,
+                                                              @ApiParam(name = "startDate", value = "开始日期") String startDate,
+                                                              @ApiParam(name = "endDate", value = "结束日期") String endDate,
                                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
         Page<InspectionDTO> page = new Page<>(pageNo, pageSize);
-        IPage<InspectionDTO> result = bigscreenPlanService.getInspectionDataPage(lineCode, type, item, page);
+        IPage<InspectionDTO> result = bigscreenPlanService.getInspectionDataPage(lineCode,startDate,endDate, item, page);
         return Result.OK(result);
     }
 
@@ -96,8 +96,10 @@ public class BigscreenPlanController {
     @AutoLog(value = "巡检修数据分析-检修任务完成情况", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "巡检修数据分析-检修任务完成情况", notes = "巡检修数据分析-检修任务完成情况")
     @RequestMapping(value = "/getTaskCompletion", method = RequestMethod.GET)
-    public Result<List<PlanIndexDTO>> getTaskCompletion(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode) {
-        List<PlanIndexDTO> result = bigscreenPlanService.getTaskCompletion(lineCode);
+    public Result<List<PlanIndexDTO>> getTaskCompletion(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode,
+                                                        @ApiParam(name = "startDate", value = "开始时间") String startDate,
+                                                        @ApiParam(name = "endDate", value = "结束时间") String endDate) {
+        List<PlanIndexDTO> result = bigscreenPlanService.getTaskCompletion(lineCode,startDate,endDate);
         return Result.OK(result);
     }
 
@@ -105,7 +107,6 @@ public class BigscreenPlanController {
     /**
      * 功能：班组画像
      *
-     * @param type 类型:1：本周，2：上周，3：本月， 4：上月
      * @return
      */
     @AutoLog(value = "班组画像", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")

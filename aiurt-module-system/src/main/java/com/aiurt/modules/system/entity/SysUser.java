@@ -327,6 +327,10 @@ public class SysUser implements Serializable {
     @TableField(exist = false)
     private String systemId;
 
+    @ApiModelProperty(value = "是否是工班长,0 是，1否")
+    @TableField(exist = false)
+    private Integer isForeman;
+
     /**
      * 签名
      */

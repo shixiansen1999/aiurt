@@ -46,4 +46,10 @@ public class ScreenStatistics {
      */
     @ApiModelProperty(value = "今日巡视完成数")
     private java.lang.Long todayFinishNum;
+
+    /**
+     * 已完成率
+     */
+    @ApiModelProperty(value = "已完成率")
+    private String finishRate;
 }
