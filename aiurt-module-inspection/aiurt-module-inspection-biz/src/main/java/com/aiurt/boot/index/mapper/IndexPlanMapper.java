@@ -1,23 +1,15 @@
 package com.aiurt.boot.index.mapper;
 
+import com.aiurt.boot.index.dto.ConstructionNumDTO;
 import com.aiurt.boot.index.dto.TaskDetailsDTO;
 import com.aiurt.boot.index.dto.TaskDetailsReq;
 import com.aiurt.boot.index.dto.TaskStateDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
-import com.aiurt.boot.plan.entity.RepairPoolDeviceRel;
-import com.aiurt.boot.plan.entity.RepairPoolOrgRel;
-import com.aiurt.boot.plan.entity.RepairPoolRel;
-import com.aiurt.boot.plan.entity.RepairPoolStationRel;
-import com.aiurt.common.aspect.annotation.DataColumn;
-import com.aiurt.common.aspect.annotation.DataPermission;
-import com.aiurt.common.aspect.annotation.EnableDataPerm;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @Description: 首页检修模块
@@ -64,4 +56,6 @@ public interface IndexPlanMapper  {
      * @return
      */
     List<TaskStateDTO> selectStationState(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
+
+    List<ConstructionNumDTO> getConstructionNumByDay(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
 }
