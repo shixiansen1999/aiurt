@@ -331,7 +331,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         scrap.setStatus(1);
                         scrap.setSysOrgCode(user.getOrgCode());
                         scrap.setMaterialCode(lendStockDTO.getOldMaterialCode());
-                        scrap.setWarehouseCode(lendStockDTO.getWarehouseCode());
+                        scrap.setWarehouseCode(stockInfo.getWarehouseCode());
                         scrap.setNum(1);
                         scrap.setFaultCode(faultCode);
                         scrap.setScrapTime(new Date());
@@ -402,6 +402,8 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         lendOutOrder.setNum(lendStockDTO.getNewSparePartNum());
                         lendOutOrder.setWarehouseCode(lendStockDTO.getWarehouseCode());
                         lendOutOrder.setApplyOutTime(new Date());
+                        lendOutOrder.setConfirmTime(new Date());
+                        lendOutOrder.setConfirmUserId(user.getId());
                         lendOutOrder.setStatus(2);
                         lendOutOrder.setApplyUserId(user.getUsername());
                         lendOutOrder.setMaterialCode(lendStockDTO.getMaterialCode());
@@ -515,6 +517,8 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         borrowingOutOrder.setNum(sparePartInOrder.getNum());
                         borrowingOutOrder.setApplyOutTime(new Date());
                         borrowingOutOrder.setApplyUserId(user.getUsername());
+                        borrowingOutOrder.setConfirmTime(new Date());
+                        borrowingOutOrder.setConfirmUserId(user.getId());
                         borrowingOutOrder.setStatus(2);
                         List<SparePartOutOrder> outOrders = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>()
                                 .eq(SparePartOutOrder::getStatus,2)
