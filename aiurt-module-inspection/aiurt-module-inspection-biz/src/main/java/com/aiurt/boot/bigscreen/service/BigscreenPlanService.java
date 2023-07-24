@@ -11,6 +11,7 @@ import com.aiurt.boot.api.PatrolApi;
 import com.aiurt.boot.bigscreen.mapper.BigScreenPlanMapper;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.index.dto.*;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.plan.dto.CodeManageDTO;
@@ -21,16 +22,16 @@ import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.aiurt.boot.task.mapper.RepairTaskUserMapper;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
+import com.aiurt.modules.schedule.dto.ScheduleBigScreenDTO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserMajorModel;
-import org.jeecg.common.system.vo.DictModel;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
@@ -74,6 +75,9 @@ public class BigscreenPlanService {
 
     @Resource
     private DailyFaultApi dailyFaultApi;
+
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
 
     /**
      * 获取大屏的检修概况数量
@@ -444,7 +448,7 @@ public class BigscreenPlanService {
      * @param endTime
      * @return
      */
-    public List<TeamPortraitDTO> getTeamPortrait(Date startTime, Date endTime) {
+    public List<TeamPortraitDTO> getTeamPortrait(String lineCode, Date startTime, Date endTime) {
         //获取用户拥有的专业下的所有班组
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(sysUser.getId());
@@ -461,6 +465,17 @@ public class BigscreenPlanService {
                 }
             }
         }
+        if (StrUtil.isNotBlank(lineCode)) {
+            //测试班组
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.TEST_ORGCODE);
+            String value = paramModel.getValue();
+
+            // 查询总班组数,排除测试班组,不包含最顶层分部
+            List<String> list = sysBaseAPI.getTeamBylineAndMajor(lineCode);
+            List<String> orgCodes = list.stream().filter(orgCode -> !value.contains(orgCode)).collect(Collectors.toList());
+            teamPortraitDTOS = teamPortraitDTOS.stream().filter(e -> orgCodes.contains(e.getTeamCode())).collect(Collectors.toList());
+        }
+
         if (CollUtil.isNotEmpty(teamPortraitDTOS)) {
             int i = 0;
             List<String> teamIds = teamPortraitDTOS.stream()

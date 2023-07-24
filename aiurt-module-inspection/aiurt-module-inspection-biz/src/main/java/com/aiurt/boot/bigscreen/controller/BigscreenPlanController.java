@@ -117,9 +117,10 @@ public class BigscreenPlanController {
     @AutoLog(value = "班组画像", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "班组画像", notes = "班组画像")
     @RequestMapping(value = "/getTeamPortrait", method = RequestMethod.GET)
-    public Result<List<TeamPortraitDTO>> getTeamPortrait(@ApiParam(name = "startTime", value = "开始时间") @RequestParam(value = "startTime") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startTime,
+    public Result<List<TeamPortraitDTO>> getTeamPortrait(@RequestParam(required = false, defaultValue = "") String lineCode,
+                                                         @ApiParam(name = "startTime", value = "开始时间") @RequestParam(value = "startTime") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startTime,
                                                          @ApiParam(name = "endTime", value = "结束时间") @RequestParam(value = "endTime") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endTime) {
-        List<TeamPortraitDTO> result = bigscreenPlanService.getTeamPortrait(startTime, endTime);
+        List<TeamPortraitDTO> result = bigscreenPlanService.getTeamPortrait(lineCode, startTime, endTime);
         return Result.OK(result);
     }
 
