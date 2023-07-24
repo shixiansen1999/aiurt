@@ -105,7 +105,7 @@ public class SysFileManageServiceImpl extends ServiceImpl<SysFileManageMapper, S
                 SysFile sysFile = createSysFile(file, folderCodeCcMap);
                 save(sysFile);
                 saveSysFolderFilePermission(sysFile, permissionByFolderId);
-                saveEsDataAsync(sysFile);
+                /*saveEsDataAsync(sysFile);*/
             }
             result.success("添加成功！");
         } catch (Exception e) {
