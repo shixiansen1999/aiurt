@@ -32,10 +32,10 @@ public class FaultDataStatisticsDTO extends DictEntity implements Serializable {
     private String month;
 
     @ApiModelProperty("第一天")
-    private String firstDay;
+    private String startDate;
 
     @ApiModelProperty("最后一天")
-    private String lastDay;
+    private String endDate;
 
     /**报修方式*/
     @ApiModelProperty("报修方式")
@@ -83,9 +83,6 @@ public class FaultDataStatisticsDTO extends DictEntity implements Serializable {
 
     @ApiModelProperty("未完成故障数量")
     private BigDecimal undoneFaults;
-
-    @ApiModelProperty("类型:1：本周，2：上周，3：本月， 4：上月")
-    private Integer boardTimeType;
 
     private List<String> majorCodes;
 
