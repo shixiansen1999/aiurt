@@ -135,7 +135,7 @@ public class PatrolStatisticsService {
         }
 
         // 上周期漏巡数统计
-        List<Date> startList = this.getOmitDateScope(DateUtil.parse("2023-07-23"));
+        List<Date> startList = this.getOmitDateScope(new Date());
         /*List<Date> endList = this.getOmitDateScope(endDate);*/
         Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
         Date endTime = startList.stream().max(Comparator.comparingLong(Date::getTime)).get();
@@ -347,10 +347,11 @@ public class PatrolStatisticsService {
 
         Integer omitStatus = indexTaskDTO.getOmitStatus();
         if (ObjectUtil.isNotEmpty(omitStatus) && PatrolConstant.OMIT_STATUS.equals(omitStatus)) {
-            Date startDate = this.getOmitDateScope(indexTaskDTO.getStartDate()).stream().min(Comparator.comparingLong(Date::getTime)).get();
-            Date endDate = this.getOmitDateScope(indexTaskDTO.getEndDate()).stream().max(Comparator.comparingLong(Date::getTime)).get();
-            indexTaskDTO.setStartDate(startDate);
-            indexTaskDTO.setEndDate(endDate);
+            List<Date> startList = this.getOmitDateScope(new Date());
+            Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
+            Date endTime = startList.stream().max(Comparator.comparingLong(Date::getTime)).get();
+            indexTaskDTO.setStartDate(startTime);
+            indexTaskDTO.setEndDate(endTime);
         } else {
             indexTaskDTO.setOmitStatus(null);
         }
@@ -510,10 +511,11 @@ public class PatrolStatisticsService {
 
         Integer omitStatus = indexTaskDTO.getOmitStatus();
         if (ObjectUtil.isNotEmpty(omitStatus) && PatrolConstant.OMIT_STATUS.equals(omitStatus)) {
-            Date startDate = this.getOmitDateScope(indexTaskDTO.getStartDate()).stream().min(Comparator.comparingLong(Date::getTime)).get();
-            Date endDate = this.getOmitDateScope(indexTaskDTO.getEndDate()).stream().max(Comparator.comparingLong(Date::getTime)).get();
-            indexTaskDTO.setStartDate(startDate);
-            indexTaskDTO.setEndDate(endDate);
+            List<Date> startList = this.getOmitDateScope(new Date());
+            Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
+            Date endTime = startList.stream().max(Comparator.comparingLong(Date::getTime)).get();
+            indexTaskDTO.setStartDate(startTime);
+            indexTaskDTO.setEndDate(endTime);
             Integer[] i = {0,1};
             indexTaskDTO.setTaskDeviceStatus(i);
         } else {
