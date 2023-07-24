@@ -1,6 +1,7 @@
 package com.aiurt.boot.weeklyplan.job;
 
 import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.boot.weeklyplan.dto.ConstructionWeekPlanDTO;
 import com.aiurt.boot.weeklyplan.entity.ConstructionWeekPlanCommand;
 import com.aiurt.boot.weeklyplan.mapper.ConstructionWeekPlanCommandMapper;
 import com.aiurt.boot.weeklyplan.service.IConstructionWeekPlanCommandService;
@@ -16,15 +17,17 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-
 public class ConstructionWeekPlanJob implements Job {
 
     @Autowired
@@ -37,6 +40,7 @@ public class ConstructionWeekPlanJob implements Job {
     private ISysBaseAPI sysBaseApi;
     @Autowired
     private ISysParamAPI sysParamApi;
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         log.info("******正在导入施工计划数据...******");
@@ -48,28 +52,20 @@ public class ConstructionWeekPlanJob implements Job {
         log.info("******施工计划数据导入完成！*******");
     }
 
-
     void generateWeekPlan() throws ParseException {
 
-        // 定义请求URL和请求参数
         // 定义请求URL和请求参数
         SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.CONSTRUCTION_WEEK_PLAN_COMMAND);
         String url = sysParamModel.getValue();
 //        String url = "http://10.100.100.11:30300/cims/pool/pool/noGetwayGetPlan";
         Map params = new HashMap<String, Object>();
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
         SysParamModel start = sysParamApi.selectByCode(SysParamCodeConstant.LAST_MONTH);
         SysParamModel end = sysParamApi.selectByCode(SysParamCodeConstant.NEW_MONTH);
-        int lastMonth = month-Integer.valueOf(start.getValue());
-        int newMonth = month+Integer.valueOf(end.getValue());
-        String startDate = year + "-" + lastMonth + "-" + day;
-        String endDate = year + "-" + newMonth + "-" + day;
-        params.put("taskDateStart", startDate);
-        params.put("taskDateEnd", endDate);
+        LocalDate currentDate = LocalDate.now();
+        LocalDate startDate = currentDate.minusMonths(Integer.valueOf(start.getValue()));
+        LocalDate endDate = currentDate.plusMonths(Integer.valueOf(end.getValue()));
+        params.put("taskDateStart", String.valueOf(startDate));
+        params.put("taskDateEnd", String.valueOf(endDate));
         SysParamModel planIstate = sysParamApi.selectByCode(SysParamCodeConstant.PLAN_ISTATE);
         params.put("planIstate", planIstate.getValue());
         SysParamModel department = sysParamApi.selectByCode(SysParamCodeConstant.DEPARTMENT_NAME);
@@ -78,125 +74,98 @@ public class ConstructionWeekPlanJob implements Job {
         JSONObject resultList = restTemplate.postForObject(url, json, JSONObject.class);
         JSONArray result = resultList.getJSONArray("data");
         ArrayList<ConstructionWeekPlanCommand> list = new ArrayList<>();
+        //数据预加载
+        List<DictModel> constructionCategory = sysBaseApi.queryEnableDictItemsByCode("construction_category");
+        Map<String, String> category = constructionCategory.stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue, (t1, t2) -> t1));
+
+        List<DictModel> constructionPlanTypec = sysBaseApi.queryEnableDictItemsByCode("construction_plan_typec");
+        Map<String, String> typec = constructionPlanTypec.stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue, (t1, t2) -> t1));
+
+        List<DictModel> constructionNature = sysBaseApi.queryEnableDictItemsByCode("construction_nature");
+        Map<String, String> nature = constructionNature.stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue, (t1, t2) -> t1));
+
+        List<DictModel> departs = commandMapper.selectOrgName();
+        Map<String, String> depart = departs.stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue, (t1, t2) -> t1));
+        List<DictModel> stations = commandMapper.selectStationName();
+        Map<String, String> station = stations.stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue, (t1, t2) -> t1));
+
         // 遍历结果,存入数据库中
         for (int i = 0; i < result.size(); i++) {
             JSONObject plan = result.getJSONObject(i);
-
-            String indocno = plan.getString("indocno");
-            String weekday = plan.getString("weekday");
-            String taskDate = plan.getString("taskDate");
-            String taskStaffNum = plan.getString("taskStaffNum");
-            String taskTime = plan.getString("taskTime");
-            String protectiveMeasure = plan.getString("protectiveMeasure");
-            String type = plan.getString("type");
-            String departmentName = plan.getString("departmentName");
-            String taskRange = plan.getString("taskRange");
-            String taskContent = plan.getString("taskContent");
-            String chargeStaffName = plan.getString("chargeStaffName");
-            String largeAppliances = plan.getString("largeAppliances");
-            String lineStaffName = plan.getString("lineStaffName");
-            String dispatchStaffName = plan.getString("dispatchStaffName");
-            String remark = plan.getString("remark");
-            String assistStationName = plan.getString("assistStationName");
-            String planChange = plan.getString("planChange");
-            String nature = plan.getString("nature");
-            String ipowerRequirement = plan.getString("ipowerRequirement");
-            String powerSupplyRequirement = plan.getString("powerSupplyRequirement");
-            String firstStationName = plan.getString("firstStationName");
-            String secondStationName = plan.getString("secondStationName");
-            String substationName = plan.getString("substationName");
-            String applyStaffName = plan.getString("applyStaffName");
-            String formStatus = plan.getString("formStatus");
-            String applyFormStatus = plan.getString("applyFormStatus");
-            String lineFormStatus = plan.getString("lineFormStatus");
-            String dispatchFormStatus = plan.getString("dispatchFormStatus");
-            String plantype = plan.getString("plantype");
-            String planno = plan.getString("planno");
+            ConstructionWeekPlanDTO dto = plan.toJavaObject(ConstructionWeekPlanDTO.class);
 
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             ConstructionWeekPlanCommand command = new ConstructionWeekPlanCommand();
-            command.setId(indocno);
-            command.setWeekday(Integer.parseInt(weekday));
-            command.setTaskDate(sdf.parse(taskDate));
-            command.setTaskStaffNum(Integer.parseInt(taskStaffNum));
-            String[] split = taskTime.split(",");
+            command.setId(dto.getIndocno());
+            command.setWeekday(Integer.parseInt(dto.getWeekday()));
+            command.setTaskDate(sdf.parse(dto.getTaskDate()));
+            command.setTaskStaffNum(Integer.parseInt(dto.getTaskStaffNum()));
+            String[] split = dto.getTaskTime().split(",");
             command.setTaskStartTime(sdf.parse(split[0]));
             command.setTaskEndTime(sdf.parse(split[1]));
-            command.setProtectiveMeasure(protectiveMeasure);
-            if (type!=null){
-                DictModel model = sysBaseApi.queryEnableDictItemsByCode("construction_category")
-                        .stream().filter(l -> l.getText().equals(type))
-                        .findFirst().orElse(null);
-                if (model !=null){
-                    command.setType(Integer.valueOf(model.getValue()));
+            command.setProtectiveMeasure(dto.getProtectiveMeasure());
+            if (dto.getType()!=null){
+                String type = category.get(dto.getType());
+                if (type!=null){
+                    command.setType(Integer.valueOf(type));
                 }
             }
-            if (departmentName!=null){
-                String[] split1 = departmentName.split("-");
+            if (dto.getDepartmentName()!=null){
+                String[] split1 = dto.getDepartmentName().split("-");
                 String orgName=null;
                 if (split1.length >= 2 && split1[1]!=null){
                     orgName=split1[1];
                 }else {
                     orgName=split1[0];
                 }
-                String orgCode = commandMapper.selectOrgName(orgName);
-                command.setOrgCode(orgCode);
+                command.setOrgCode(depart.get(orgName));
             }
-            command.setTaskRange(taskRange);
-            command.setTaskContent(taskContent);
+            command.setTaskRange(dto.getTaskRange());
+            command.setTaskContent(dto.getTaskContent());
 //            chargeStaffName
-            command.setLargeAppliances(largeAppliances);
+            command.setLargeAppliances(dto.getLargeAppliances());
 //            lineStaffName
 //            dispatchStaffName
-            command.setRemark(remark);
-            if (assistStationName!=null){
-                String assistStationCode = commandMapper.selectStationName(assistStationName);
+            command.setRemark(dto.getRemark());
+            if (dto.getAssistStationName()!=null){
 //                command.setAssistStationCode(assistStationCode);
-                command.setCoordinationDepartmentCode(assistStationCode);
+                command.setCoordinationDepartmentCode(dto.getAssistStationName());
             }
-            command.setPlanChange(Integer.parseInt(planChange));
-            if (nature!=null){
-                DictModel model = sysBaseApi.queryEnableDictItemsByCode("construction_nature")
-                        .stream().filter(l -> l.getText().equals(nature))
-                        .findFirst().orElse(null);
+            command.setPlanChange(Integer.parseInt(dto.getPlanChange()));
+            if (dto.getNature()!=null){
+                String model = nature.get(dto.getNature());
                 if (model !=null){
-                    command.setNature(Integer.valueOf(model.getValue()));
+                    command.setNature(Integer.valueOf(model));
                 }
             }
-            command.setPowerSupplyRequirementId(ipowerRequirement);
-            command.setPowerSupplyRequirementContent(powerSupplyRequirement);
-            if (firstStationName!=null){
-                String stationCode = commandMapper.selectStationName(firstStationName);
-                command.setFirstStationCode(stationCode);
+            command.setPowerSupplyRequirementId(dto.getIpowerRequirement());
+            command.setPowerSupplyRequirementContent(dto.getPowerSupplyRequirement());
+            if (dto.getFirstStationName()!=null){
+                command.setFirstStationCode(station.get(dto.getFirstStationName()));
             }
-            if (secondStationName!=null){
-                String stationCode = commandMapper.selectStationName(secondStationName);
-                command.setSecondStationCode(stationCode);
+            if (dto.getSecondStationName()!=null){
+                command.setSecondStationCode(station.get(dto.getSecondStationName()));
             }
-            if (substationName!=null){
-                String stationCode = commandMapper.selectStationName(substationName);
-                command.setSubstationCode(stationCode);
+            if (dto.getSubstationName()!=null){
+                command.setSubstationCode(station.get(dto.getSubstationName()));
             }
 //            applyStaffName
-            command.setFormStatus(Integer.parseInt(formStatus));
-            command.setApplyFormStatus(Integer.parseInt(applyFormStatus));
-            command.setLineStatus(Integer.parseInt(lineFormStatus));
-            command.setDispatchStatus(Integer.parseInt(dispatchFormStatus));
-            if (plantype!=null){
-                DictModel model = sysBaseApi.queryEnableDictItemsByCode("construction_plan_typec")
-                        .stream().filter(l -> l.getText().equals(plantype))
-                        .findFirst().orElse(null);
-                if (model !=null){
-                    command.setPlanType(Integer.valueOf(model.getValue()));
+            command.setFormStatus(Integer.parseInt(dto.getFormStatus()));
+            command.setApplyFormStatus(Integer.parseInt(dto.getApplyFormStatus()));
+            command.setLineStatus(Integer.parseInt(dto.getLineFormStatus()));
+            command.setDispatchStatus(Integer.parseInt(dto.getDispatchFormStatus()));
+            if (dto.getPlantype()!=null){
+                String type1 = typec.get(dto.getPlantype());
+                if (type1 !=null){
+                    command.setPlanType(Integer.valueOf(type1));
                 }
             }
-            command.setCode(planno);
+            command.setCode(dto.getPlanno());
             Date date = new Date();
             command.setUpdateTime(date);
             list.add(command);
         }
         if (result.size()>0 && result!=null){
-//            commandMapper.delete(null);
             commandService.saveOrUpdateBatch(list);
         }
     }
