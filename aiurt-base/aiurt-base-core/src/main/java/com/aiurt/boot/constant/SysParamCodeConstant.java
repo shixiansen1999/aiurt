@@ -440,4 +440,8 @@ public interface SysParamCodeConstant {
      * 获取施工计划登录门户url
      */
     String CONSTRUCTION_URL="construction_url";
+    /**
+     * 大屏人员信息工班长排在首位
+     */
+    String FOREMAN_SORT = "foreman_sort";
 }
