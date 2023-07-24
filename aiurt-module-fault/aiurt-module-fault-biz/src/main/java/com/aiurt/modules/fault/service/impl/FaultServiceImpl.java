@@ -24,7 +24,6 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.CommonUtils;
 import com.aiurt.common.util.RedisUtil;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
-import com.aiurt.modules.base.PageOrderGenerator;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.fault.constants.FaultConstant;
@@ -1490,7 +1489,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .map(sparepart -> {
                     SparePartStockDTO build = SparePartStockDTO.builder()
                             .deviceCode(sparepart.getDeviceCode())
-                            .materialCode(sparepart.getNewSparePartCode())
+                            .materialCode(sparepart.getMaterialBaseCode())
                             .newSparePartCode(sparepart.getNewSparePartCode())
                             .newSparePartName(sparepart.getNewSparePartName())
                             .name(sparepart.getNewSparePartName())
@@ -1639,6 +1638,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             sparePartBaseApi.addSparePartOutOrder(deviceChangeList, faultCode);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            throw  new AiurtBootException(e.getMessage());
         }
         //sparePartBaseApi.updateSparePartOutOrder(updateMap);
 
@@ -1898,7 +1898,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     dataList.add(dto);
                 });
                 try {
-                    sparePartBaseApi.dealChangeSparePartV2(dataList);
+                    //sparePartBaseApi.dealChangeSparePartV2(dataList);
+                    sparePartBaseApi.dealChangeSparePart(dataList);
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }
@@ -2074,7 +2075,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 dataList.add(dto);
             });
             try {
-                sparePartBaseApi.dealChangeSparePartV2(dataList);
+                //sparePartBaseApi.dealChangeSparePartV2(dataList);
+                sparePartBaseApi.dealChangeSparePart(dataList);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
             }
