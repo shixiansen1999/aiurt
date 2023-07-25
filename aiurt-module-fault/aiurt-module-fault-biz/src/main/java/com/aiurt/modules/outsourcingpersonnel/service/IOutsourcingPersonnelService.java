@@ -9,6 +9,7 @@ import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -52,4 +53,6 @@ public interface IOutsourcingPersonnelService extends IService<OutsourcingPerson
      * @return
      */
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
+
+    void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException;
 }

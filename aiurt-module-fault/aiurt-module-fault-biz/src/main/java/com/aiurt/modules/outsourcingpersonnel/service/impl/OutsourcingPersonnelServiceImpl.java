@@ -6,6 +6,7 @@ import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.result.OutsourcingPersonnelResult;
@@ -15,9 +16,11 @@ import com.aiurt.modules.outsourcingpersonnel.entity.OutsourcingPersonnel;
 import com.aiurt.modules.outsourcingpersonnel.mapper.OutsourcingPersonnelMapper;
 import com.aiurt.modules.outsourcingpersonnel.param.OutsourcingPersonnelParam;
 import com.aiurt.modules.outsourcingpersonnel.service.IOutsourcingPersonnelService;
+import com.aiurt.modules.outsourcingpersonnel.util.ExcelSelectListUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -26,8 +29,10 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,9 +41,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -260,5 +263,41 @@ public class OutsourcingPersonnelServiceImpl extends ServiceImpl<OutsourcingPers
             e.printStackTrace();
         }
         return XlsUtil.importReturnRes(errorLines, successLines, errorMessage,true,url);
+    }
+
+    @Override
+    public void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        //获取输入流，原始模板位置
+        org.springframework.core.io.Resource resource = new ClassPathResource("/templates/outsourcingPersonnel.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+        //2.获取临时文件
+        File fileTemp = new File("/templates/outsourcingPersonnel.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        String path = fileTemp.getAbsolutePath();
+        TemplateExportParams exportParams = new TemplateExportParams(path);
+        Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(16);
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+        CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+        List<DictModel> belongUnit = bean.queryDictItemsByCode("belong_unit");
+        ExcelSelectListUtil.selectList(workbook, "所属单位", 1, 1, belongUnit);
+        List<DictModel> subsystemModels = bean.queryTableDictItemsByCode("cs_subsystem", "system_name", "system_code");
+        ExcelSelectListUtil.selectList(workbook, "所属专业系统", 3, 3, subsystemModels);
+        String fileName = "委外人员导入模板.xlsx";
+        try {
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            response.setHeader("Content-Disposition", "attachment;filename=" + "委外人员导入模板.xlsx");
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
