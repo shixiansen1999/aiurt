@@ -255,22 +255,12 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     .set(PatrolTaskDevice::getStatus, PatrolConstant.BILL_COMPLETE)
                     .set(PatrolTaskDevice::getMac, patrolTaskDevice.getMac())
                     .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
-            //mac地址匹配
-            List<String> wifiMac = sysBaseApi.getWifiMacByStationCode(Collections.singletonList(taskDevice.getStationCode()));
-            if (CollUtil.isNotEmpty(wifiMac) && StrUtil.isNotEmpty(patrolTaskDevice.getMac())) {
-                //忽略大小写，只匹配前11位数字
-                String mac1 = patrolTaskDevice.getMac();
-                String substring1 = mac1.substring(0, mac1.length() - 1);
-                String join = CollUtil.join(wifiMac, ",");
-                if (join.toLowerCase().contains(substring1.toLowerCase())) {
-                    updateWrapper.set(PatrolTaskDevice::getMacStatus, 1);
-                } else {
-                    updateWrapper.set(PatrolTaskDevice::getMacStatus, 0);
-                }
-            } else {
-                updateWrapper.set(PatrolTaskDevice::getMacStatus, 0);
+            //mac地址匹配,获取用户当前位置
+            List<String> stationCodes = patrolTaskDeviceMapper.getSysUserPositionCurrent(sysUser.getUsername());
+            updateWrapper.set(PatrolTaskDevice::getMacStatus, 0);
+            if (CollUtil.isNotEmpty(stationCodes) && stationCodes.contains(taskDevice.getStationCode())) {
+                updateWrapper.set(PatrolTaskDevice::getMacStatus, 1);
             }
-
             // 提交工单时，更新该工单的巡视时长
             Date startTime = taskDevice.getStartTime();
             int duration = 0;
