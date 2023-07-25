@@ -425,4 +425,8 @@ public interface SysParamCodeConstant {
      * 获取企业微信私域授权地址
      */
     String WX_OAUTH = "wx_oauth";
+    /**
+     * 日完成事项是否统计的维保数按照维保开始时间计算
+     */
+    String INSPECTION_STARTTIME = "inspection_starttime";
 }
