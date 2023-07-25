@@ -432,4 +432,9 @@ public interface SysParamCodeConstant {
      * 大屏人员信息工班长排在首位
      */
     String FOREMAN_SORT = "foreman_sort";
+
+    /**
+     * 公安消防班组id
+     */
+    String GONGANXIAOFANG_ID = "gonganxiaofang_id";
 }

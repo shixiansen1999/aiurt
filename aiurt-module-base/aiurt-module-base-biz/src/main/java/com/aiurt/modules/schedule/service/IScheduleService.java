@@ -2,6 +2,8 @@ package com.aiurt.modules.schedule.service;
 
 import com.aiurt.modules.schedule.entity.Schedule;
 import com.aiurt.modules.schedule.entity.ScheduleItem;
+import com.aiurt.modules.schedule.vo.RecordParam;
+import com.aiurt.modules.schedule.vo.ScheduleRecordVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -38,4 +40,6 @@ public interface IScheduleService extends IService<Schedule> {
      * @return
      */
     ScheduleItem getItemByParam(SysParamModel sysParamModel);
+
+    IPage<ScheduleRecordVo> nightCount(Page<ScheduleRecordVo> page, RecordParam param);
 }
