@@ -74,9 +74,10 @@
 <select id="getRepairDuration" resultType="com.aiurt.modules.fault.dto.RepairRecordDetailDTO">
     select
     a.id,
+    f.`code`,
     a.appoint_user_name,
     su.realname as appoint_real_name,
-    ifnull(sum(a.response_duration), 0) as duration,
+    ifnull(f.response_duration, 0) as duration,
     a.start_time,
     a.end_time
     from
@@ -92,6 +93,7 @@
             #{item.id}
         </foreach>
     </if>
+    group by f.`code`
     </select>
 
 <select id="getInspecitonTotalTime" resultType="com.aiurt.boot.index.dto.TaskUserDTO">

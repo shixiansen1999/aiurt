@@ -295,7 +295,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                     }
                     String isType = sysBaseApi.translateDict("inspection_project", Convert.toStr(e.getType()));
                     e.setIsType(isType);
-                    String sStatusItem = sysBaseApi.translateDict("patrol_input_type", e.getStatusItem());
+                    String sStatusItem = sysBaseApi.translateDict("inspection_status_item", e.getStatusItem());
                     e.setSStatusItem(sStatusItem);
                     String isInspectionType = sysBaseApi.translateDict("inspection_value", e.getInspectionType());
                     e.setIsInspectionType(isInspectionType);
@@ -349,7 +349,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
         ExcelSelectListUtil.selectList(workbook, "层级类型", 9, 9, hierarchyTypeModels);
         List<DictModel> isStandardModels = bean.queryDictItemsByCode("patrol_check");
         ExcelSelectListUtil.selectList(workbook, "是否为检修项目", 14, 14, isStandardModels);
-        List<DictModel> requiredDictModels = bean.queryDictItemsByCode("patrol_input_type");
+        List<DictModel> requiredDictModels = bean.queryDictItemsByCode("inspection_status_item");
         ExcelSelectListUtil.selectList(workbook, "检查值类型", 16, 16, requiredDictModels);
         List<DictModel> requiredModels = bean.queryDictItemsByCode("patrol_item_required");
         ExcelSelectListUtil.selectList(workbook, "检查值是否必填", 17, 17, requiredModels);

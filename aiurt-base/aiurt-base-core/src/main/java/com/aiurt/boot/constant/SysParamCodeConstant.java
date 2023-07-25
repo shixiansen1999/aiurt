@@ -437,4 +437,12 @@ public interface SysParamCodeConstant {
      * 公安消防班组id
      */
     String GONGANXIAOFANG_ID = "gonganxiaofang_id";
+    /**
+     * 日完成事项是否统计的维保数按照维保开始时间计算
+     */
+    String INSPECTION_STARTTIME = "inspection_starttime";
+    /**
+     * 工作日志只获取班组数量,组织机构类型不为公司部门
+     */
+    String WORK_LOG_ORG_CATEGORY = "work_log_org_category";
 }
