@@ -200,7 +200,7 @@ public class OutsourcingPersonnelServiceImpl extends ServiceImpl<OutsourcingPers
                     error.append("输入所属单位不规范;");
                 }
             }
-            if (StrUtil.isBlank(input.getCompany())) {
+            if (StrUtil.isBlank(input.getPosition())) {
                 error.append("职位名称不能为空;");
             }
             if (StrUtil.isBlank(input.getSystemName())) {
