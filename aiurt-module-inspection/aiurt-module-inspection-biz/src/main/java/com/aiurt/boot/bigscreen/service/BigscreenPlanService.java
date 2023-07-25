@@ -11,6 +11,7 @@ import com.aiurt.boot.api.PatrolApi;
 import com.aiurt.boot.bigscreen.mapper.BigScreenPlanMapper;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.index.dto.*;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.plan.dto.CodeManageDTO;
@@ -21,16 +22,16 @@ import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.aiurt.boot.task.mapper.RepairTaskUserMapper;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
+import com.aiurt.modules.schedule.dto.ScheduleBigScreenDTO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserMajorModel;
-import org.jeecg.common.system.vo.DictModel;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
@@ -74,6 +75,9 @@ public class BigscreenPlanService {
 
     @Resource
     private DailyFaultApi dailyFaultApi;
+
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
 
     /**
      * 获取大屏的检修概况数量
@@ -428,10 +432,11 @@ public class BigscreenPlanService {
     /**
      * 功能：班组画像
      *
-     * @param type 类型:1：本周，2：上周，3：本月， 4：上月
+     * @param startTime
+     * @param endTime
      * @return
      */
-    public List<TeamPortraitDTO> getTeamPortrait(Integer type) {
+    public List<TeamPortraitDTO> getTeamPortrait(String lineCode, Date startTime, Date endTime) {
         //获取用户拥有的专业下的所有班组
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(sysUser.getId());
@@ -448,6 +453,17 @@ public class BigscreenPlanService {
                 }
             }
         }
+        if (StrUtil.isNotBlank(lineCode)) {
+            //测试班组
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.TEST_ORGCODE);
+            String value = paramModel.getValue();
+
+            // 查询总班组数,排除测试班组,不包含最顶层分部
+            List<String> list = sysBaseAPI.getTeamBylineAndMajor(lineCode);
+            List<String> orgCodes = list.stream().filter(orgCode -> !value.contains(orgCode)).collect(Collectors.toList());
+            teamPortraitDTOS = teamPortraitDTOS.stream().filter(e -> orgCodes.contains(e.getTeamCode())).collect(Collectors.toList());
+        }
+
         if (CollUtil.isNotEmpty(teamPortraitDTOS)) {
             int i = 0;
             List<String> teamIds = teamPortraitDTOS.stream()
@@ -461,7 +477,7 @@ public class BigscreenPlanService {
 
             ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
             for (TeamPortraitDTO teamPortraitDTO : teamPortraitDTOS) {
-                threadPoolExecutor.execute(() -> this.executeMethod(type, userMap, teamPortraitDTO));
+                threadPoolExecutor.execute(() -> this.executeMethod(startTime,endTime, userMap, teamPortraitDTO));
 //                this.executeMethod(type, userMap, teamPortraitDTO);
             }
             threadPoolExecutor.shutdown();
@@ -476,7 +492,7 @@ public class BigscreenPlanService {
         return teamPortraitDTOS;
     }
 
-    private void executeMethod(Integer type, Map<String, List<LoginUser>> userMap, TeamPortraitDTO teamPortraitDTO) {
+    private void executeMethod(Date startTime, Date endTime, Map<String, List<LoginUser>> userMap, TeamPortraitDTO teamPortraitDTO) {
         //找到当前班组关联的工区信息
         List<TeamPortraitDTO> workAreaById = bigScreenPlanMapper.getWorkAreaByCode(teamPortraitDTO.getTeamCode());
         if (CollUtil.isNotEmpty(workAreaById)) {
@@ -558,13 +574,13 @@ public class BigscreenPlanService {
                 teamPortraitDTO.setStaffOnDuty(CollUtil.join(onDuty, ","));
             }
         }
-        Date[] timeByType = getTimeByType(String.valueOf(type));
-        if (timeByType.length > 0 && CollUtil.isNotEmpty(userList)) {
+        // Date[] timeByType = getTimeByType(String.valueOf(type));
+        if (ObjectUtil.isAllNotEmpty(startTime, endTime) && CollUtil.isNotEmpty(userList)) {
             //获取一周内的班组平均维修响应时间
-            List<RepairRecordDetailDTO> repairDuration = bigScreenPlanMapper.getRepairDuration(userList, timeByType[0], timeByType[1]);
+            List<RepairRecordDetailDTO> repairDuration = bigScreenPlanMapper.getRepairDuration(userList, startTime, endTime);
             getAverageTime(repairDuration, teamPortraitDTO);
             //获取总工时
-            getTotalTimes(teamPortraitDTO, userList, type, timeByType);
+            getTotalTimes(teamPortraitDTO, userList, startTime, endTime);
         } else {
             teamPortraitDTO.setAverageTime(0);
             teamPortraitDTO.setPatrolTotalTime(0);
@@ -588,7 +604,7 @@ public class BigscreenPlanService {
         }
     }
 
-    public void getTotalTimes(TeamPortraitDTO teamPortraitDTO, List<LoginUser> userList, Integer type, Date[] timeByType) {
+    public void getTotalTimes(TeamPortraitDTO teamPortraitDTO, List<LoginUser> userList, Date startTime, Date endTime) {
         //一位小数点，四舍五入
 //        //获取班组维修总工时
 //        BigDecimal faultHours = dailyFaultApi.getFaultHours(type, teamPortraitDTO.getTeamId());
@@ -642,21 +658,21 @@ public class BigscreenPlanService {
         AtomicReference<Integer> inspectionHours = new AtomicReference<>(0);
 
         executor.execute(() -> {
-            faultHours.set(dailyFaultApi.getFaultHours(type, teamPortraitDTO.getTeamId()));
+            faultHours.set(dailyFaultApi.getFaultHours(startTime, endTime, teamPortraitDTO.getTeamId()));
             latch.countDown();
         });
 
         executor.execute(() -> {
-            patrolHours.set(patrolApi.getPatrolHours(type, teamPortraitDTO.getTeamId()));
+            patrolHours.set(patrolApi.getPatrolHours(startTime, endTime, teamPortraitDTO.getTeamId()));
             latch.countDown();
         });
 
         executor.execute(() -> {
             if (CollUtil.isNotEmpty(userList)) {
                 //获取本班组指派人在指定时间范围内的所有任务时长(单位秒)
-                List<TaskUserDTO> inspecitonTotalTime = bigScreenPlanMapper.getInspecitonTotalTime(userList, timeByType[0], timeByType[1]);
+                List<TaskUserDTO> inspecitonTotalTime = bigScreenPlanMapper.getInspecitonTotalTime(userList, startTime, endTime);
                 //获取本班组同行人在指定时间范围内的所有任务时长(单位秒)
-                List<TaskUserDTO> inspecitonTotalTimeByPeer = bigScreenPlanMapper.getInspecitonTotalTimeByPeer(userList, timeByType[0], timeByType[1]);
+                List<TaskUserDTO> inspecitonTotalTimeByPeer = bigScreenPlanMapper.getInspecitonTotalTimeByPeer(userList, startTime, endTime);
                 // List<String> collect = inspecitonTotalTime.stream().map(TaskUserDTO::getTaskId).collect(Collectors.toList());
                 //若同行人和指派人同属一个班组，则该班组只取一次工时，不能累加
                 // 通信6期，累加
@@ -698,10 +714,11 @@ public class BigscreenPlanService {
     /**
      * 功能：班组画像-详情
      *
-     * @param type 类型:1：本周，2：上周，3：本月， 4：上月
+     * @param startTime
+     * @param endTime
      * @return
      */
-    public IPage<TeamUserDTO> getTeamPortraitDetails(Integer type, String teamId, Integer pageNo, Integer pageSize) {
+    public IPage<TeamUserDTO> getTeamPortraitDetails(Date startTime, Date endTime, String teamId, Integer pageNo, Integer pageSize) {
         // 班组的人员
         Page<TeamUserDTO> page = new Page<>(pageNo, pageSize);
         if (StrUtil.isNotEmpty(teamId)) {
@@ -709,34 +726,32 @@ public class BigscreenPlanService {
 
             if (CollUtil.isNotEmpty(userList)) {
                 //获取每个班组成员的总工时
-                getEveryOneTotalTimes(userList, type, teamId);
+                getEveryOneTotalTimes(userList, startTime, endTime, teamId);
             }
             page.setRecords(userList);
         }
         return page;
     }
 
-    public void getEveryOneTotalTimes(List<TeamUserDTO> userList, Integer type, String teamId) {
+    public void getEveryOneTotalTimes(List<TeamUserDTO> userList, Date startTime, Date endTime, String teamId) {
         //两位有效小数点，四舍五入
         //获取维修任务人员个人个人总工时
-        Map<String, BigDecimal> faultUserHours = dailyFaultApi.getFaultUserHours(type, teamId);
+        Map<String, BigDecimal> faultUserHours = dailyFaultApi.getFaultUserHours(startTime, endTime, teamId);
         //获取巡检任务人员个人总工时和同行人个人总工时
-        Map<String, Integer> patrolUserHours = patrolApi.getPatrolUserHours(type, teamId);
+        Map<String, Integer> patrolUserHours = patrolApi.getPatrolUserHours(startTime, endTime, teamId);
         //获取检修任务人员个人总工时和同行人个人总工时
-        Date[] timeByType = getTimeByType(String.valueOf(type));
         Map<String, Long> collect1 = new HashMap<>(16);
         Map<String, Long> collect2 = new HashMap<>(16);
 
-        if (timeByType.length > 0) {
-            List<TeamUserDTO> reconditionTime = bigScreenPlanMapper.getReconditionTime(userList, timeByType[0], timeByType[1]);
-            List<TeamUserDTO> reconditionTimeByPeer = bigScreenPlanMapper.getReconditionTimeByPeer(userList, timeByType[0], timeByType[1]);
-            collect1 = reconditionTime.stream().collect(Collectors.toMap(TeamUserDTO::getUserId,
-                    v -> ObjectUtil.isEmpty(v.getTime()) ? 0L : v.getTime(), (a, b) -> a));
 
-            collect2 = reconditionTimeByPeer.stream().collect(Collectors.toMap(TeamUserDTO::getUserId,
-                    v -> ObjectUtil.isEmpty(v.getTime()) ? 0L : v.getTime(), (a, b) -> a));
+        List<TeamUserDTO> reconditionTime = bigScreenPlanMapper.getReconditionTime(userList, startTime, endTime);
+        List<TeamUserDTO> reconditionTimeByPeer = bigScreenPlanMapper.getReconditionTimeByPeer(userList, startTime, endTime);
+        collect1 = reconditionTime.stream().collect(Collectors.toMap(TeamUserDTO::getUserId,
+                v -> ObjectUtil.isEmpty(v.getTime()) ? 0L : v.getTime(), (a, b) -> a));
 
-        }
+        collect2 = reconditionTimeByPeer.stream().collect(Collectors.toMap(TeamUserDTO::getUserId,
+                v -> ObjectUtil.isEmpty(v.getTime()) ? 0L : v.getTime(), (a, b) -> a));
+
 
         for (TeamUserDTO teamUserDTO : userList) {
             //获取个人工作年限

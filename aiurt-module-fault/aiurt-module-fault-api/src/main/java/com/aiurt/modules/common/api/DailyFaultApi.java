@@ -5,6 +5,7 @@ import com.aiurt.modules.fault.dto.FaultReportDTO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,19 +36,21 @@ public interface DailyFaultApi {
 
     /**
      * 大屏班组画像维修工时统计，用户ID:维修时长
-     * @param type
+     * @param startTime
+     * @param endTime
      * @param teamId
      * @return
      */
-    Map<String, BigDecimal> getFaultUserHours(int type, String teamId);
+    Map<String, BigDecimal> getFaultUserHours(Date startTime, Date endTime, String teamId);
 
     /**
      * 大屏班组画像维修总工时统计
-     * @param type
+     * @param startTime
+     * @param endTime
      * @param teamId
      * @return
      */
-    BigDecimal getFaultHours(int type, String teamId);
+    BigDecimal getFaultHours(Date startTime, Date endTime, String teamId);
 
     /**
      * 报表班组工时统计

@@ -5,6 +5,7 @@ import com.aiurt.boot.dto.UserTeamParameter;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,18 +31,21 @@ public interface PatrolApi {
 
     /**
      * 大屏班组画像巡视工时统计，用户ID:巡视时长 2023-06-12通信6期改为单位秒
-     * @param type
+     * @param startTime
+     * @param endTime
      * @param teamId
      * @return
      */
-    Map<String, Integer> getPatrolUserHours(int type, String teamId);
+    Map<String, Integer> getPatrolUserHours(Date startTime, Date endTime, String teamId);
 
     /**
      * 大屏班组画像班组巡视总工时统计，2023-06-12 通信6期改成单位秒
+     * @param startTime
+     * @param endTime
      * @param teamId
      * @return
      */
-    Integer getPatrolHours(int type, String teamId);
+    Integer getPatrolHours(Date startTime, Date endTime, String teamId);
 
     /**
      * 统计报表-人员班组巡检参数接口返回
