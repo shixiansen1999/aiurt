@@ -158,6 +158,11 @@ public class PatrolScreenService {
             PatrolSituation taskDeviceCount = patrolTaskMapper.getTaskDeviceCount(module);
             data.setPlanNum(taskDeviceCount.getSum());
             data.setFinishNum(taskDeviceCount.getFinish());
+            data.setFinishRate("0");
+            if (data.getPlanNum() != 0) {
+                String finishRate = String.format("%.1f", (1.0 * data.getFinishNum() / data.getPlanNum()) * 100);
+                data.setFinishRate(finishRate);
+            }
             data.setAbnormalNum(taskDeviceCount.getAbnormal());
             //漏巡条件构建
             String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
