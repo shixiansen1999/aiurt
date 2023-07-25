@@ -120,7 +120,7 @@
 <select id="getRepairDurationByOrg"
             resultType="com.aiurt.modules.personnelgroupstatistics.dto.FaultRepairRecordDTO">
     select
-    f.response_duration as responseDuration
+    IFNULL(f.response_duration,0) as responseDuration
     from
     fault f
     left join sys_depart sd on f.sys_org_code = sd.org_code
