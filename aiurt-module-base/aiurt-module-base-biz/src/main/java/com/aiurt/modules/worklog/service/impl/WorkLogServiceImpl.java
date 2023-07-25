@@ -281,10 +281,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         if (!admin) {
-            // 首页-工作日志，获取的是本班组的
-            if (Integer.valueOf(1).equals(param.getIsMyTeam())) {
-                param.setDepartList(Collections.singletonList(user.getOrgId()));
-            } else if(CollUtil.isNotEmpty(departByUserId)){
+            if(CollUtil.isNotEmpty(departByUserId)){
                 List<String> departIdsByUserId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
                 param.setDepartList(departIdsByUserId);
             }
@@ -386,10 +383,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
         if (!admin) {
-            // 首页-工作日志，获取的是本班组的
-            if (Integer.valueOf(1).equals(param.getIsMyTeam())) {
-                param.setDepartList(Collections.singletonList(user.getOrgId()));
-            }else if(CollUtil.isNotEmpty(departByUserId)){
+            if(CollUtil.isNotEmpty(departByUserId)){
                 List<String> departIdsByUserId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
                 param.setDepartList(departIdsByUserId);
             }
@@ -1425,18 +1419,27 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         boolean isAdmin = SecurityUtils.getSubject().hasRole("admin") || SecurityUtils.getSubject().hasRole("zhuren");
-        int teamNum = 1;
-        if (isAdmin){
+        // 权限部门的orgId
+        List<String> orgIdList = null;
 
-            /*teamNum = iSysBaseAPI.getAllSysDepart().size();*/
+        // 登录人的权限班组数量
+        int teamNum;
+        //只获取班组数量,组织机构类型不为公司部门
+        String orgCategory = "3,4,5";
+        if (isAdmin){
+            // 管理员和主任获取所有部门
             List<SysDepartModel> allSysDepart = iSysBaseAPI.getAllSysDepart();
-            //只获取班组数量,组织机构类型不为公司部门
-            String orgCategory = "3,4,5";
-            List<SysDepartModel> modelList = allSysDepart.stream().filter(s -> orgCategory.contains(s.getOrgCategory())).collect(Collectors.toList());
-            teamNum = modelList.size();
+            teamNum = (int) allSysDepart.stream().filter(s -> orgCategory.contains(s.getOrgCategory())).count();
+        }else {
+            // 其他角色获取权限部门的班组数量
+            List<CsUserDepartModel> permitDepartList = iSysBaseAPI.getDepartByUserId(loginUser.getId());
+            List<CsUserDepartModel> filterDepartList = permitDepartList.stream().filter(s -> orgCategory.contains(s.getOrgCategory())).collect(Collectors.toList());
+            teamNum = filterDepartList.size();
+            // 获取权限部门的orgId
+            orgIdList = filterDepartList.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
         }
 
-        // 应提交日志数，每个班组每天是2个，如果是管理员或者主任，获取的就是所以班组的
+        // 应提交日志数，每个班组每天是2个
         Integer shouldSubmitNum = 2 * teamNum * days;
         // 已提交日志数
         Integer submitNum = this.baseMapper.getSubmitNum(startDate, endDate, isAdmin ? null : loginUser.getOrgId());
@@ -1446,7 +1449,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         LambdaQueryWrapper<WorkLog> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(WorkLog::getDelFlag, CommonConstant.DEL_FLAG_0);
         queryWrapper.eq(WorkLog::getStatus, 1);
-        queryWrapper.eq(!isAdmin, WorkLog::getOrgId, loginUser.getOrgId());
+        // 权限部门id过滤
+        queryWrapper.in((!isAdmin && CollUtil.isNotEmpty(orgIdList)), WorkLog::getOrgId, orgIdList);
         queryWrapper.ge(WorkLog::getSubmitTime, DateUtil.beginOfDay(startDate));
         queryWrapper.le(WorkLog::getSubmitTime, DateUtil.endOfDay(endDate));
         queryWrapper.orderByDesc(WorkLog::getSubmitTime);
