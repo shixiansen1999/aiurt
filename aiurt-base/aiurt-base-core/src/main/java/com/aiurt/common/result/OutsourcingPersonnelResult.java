@@ -1,5 +1,6 @@
 package com.aiurt.common.result;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -45,6 +46,7 @@ public class OutsourcingPersonnelResult {
 	/**所属单位*/
 	@Excel(name = "所属单位", width = 15)
     @ApiModelProperty(value = "所属单位")
+	@Dict(dicCode = "belong_unit")
 	private  String  company;
 
 	/**职位名称*/
