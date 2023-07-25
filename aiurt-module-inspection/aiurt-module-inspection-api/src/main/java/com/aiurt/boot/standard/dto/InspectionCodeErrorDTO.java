@@ -152,7 +152,7 @@ public class InspectionCodeErrorDTO {
     @ExcelExtend(isRequired = true)
     @TableField(updateStrategy = FieldStrategy.IGNORED,exist = false)
     @ApiModelProperty(value = "数据字典：1 无、2 选择项、3 输入项")
-    @Dict(dicCode = "patrol_input_type")
+    @Dict(dicCode = "inspection_status_item")
     private java.lang.String sStatusItem;
 
 
