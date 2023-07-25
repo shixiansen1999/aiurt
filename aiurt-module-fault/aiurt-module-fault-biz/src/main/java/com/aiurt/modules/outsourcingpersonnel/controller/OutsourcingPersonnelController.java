@@ -221,7 +221,8 @@ public class OutsourcingPersonnelController extends BaseController<OutsourcingPe
     @ApiOperation(value = "下载委外人员导入信息模板", notes = "下载委外人员导入信息模板")
     @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
     public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
-        XlsUtil.getExcel(response, "templates/outsourcingPersonnel.xlsx", "委外人员导入模板.xlsx");
+        outsourcingPersonnelService.getImportTemplate(response,request);
+        //XlsUtil.getExcel(response, "templates/outsourcingPersonnel.xlsx", "委外人员导入模板.xlsx");
     }
 
 }
