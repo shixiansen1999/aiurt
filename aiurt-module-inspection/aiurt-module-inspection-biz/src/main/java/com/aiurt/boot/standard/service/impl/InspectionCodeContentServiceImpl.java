@@ -6,15 +6,12 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.standard.dto.InspectionCodeContentDTO;
-import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.boot.standard.mapper.InspectionCodeContentMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeContentService;
-import com.aiurt.boot.standard.vo.InspectionCodeVo;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.oConvertUtils;
-import com.alibaba.druid.util.StringUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -25,7 +22,6 @@ import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.util.StringUtil;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
@@ -388,7 +384,7 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
             String typeName = inspectionType.stream().map(DictModel::getText).collect(Collectors.joining());
             dto.setIsType(typeName);
             //检查值类型
-            List<DictModel> appointDevice = sysBaseApi.getDictItems("patrol_input_type");
+            List<DictModel> appointDevice = sysBaseApi.getDictItems("inspection_status_item");
             appointDevice= appointDevice.stream().filter(f -> (String.valueOf(dto.getStatusItem())).equals(f.getValue())).collect(Collectors.toList());
             String  relatedDevice = appointDevice.stream().map(DictModel::getText).collect(Collectors.joining());
             dto.setSStatusItem(relatedDevice);
@@ -525,7 +521,7 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
                             error =false;
                         }
                     }else{
-                        List<DictModel> isItem = sysBaseApi.getDictItems("patrol_input_type");
+                        List<DictModel> isItem = sysBaseApi.getDictItems("inspection_status_item");
                         List<String> collect = isItem.stream().map(DictModel::getValue).collect(Collectors.toList());
                         if(!collect.contains(inspectionCodeContentDto.getSStatusItem())){
                             errorMessage.add("检查值类型不是下拉框内的内容，忽略导入");
@@ -561,7 +557,7 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
                         }
                     }
                     if(StrUtil.isNotEmpty(inspectionCodeContentDto.getSStatusItem())){
-                        List<DictModel> isItem = sysBaseApi.getDictItems("patrol_input_type");
+                        List<DictModel> isItem = sysBaseApi.getDictItems("inspection_status_item");
                         List<String> collect = isItem.stream().map(DictModel::getValue).collect(Collectors.toList());
                         if(collect.contains(inspectionCodeContentDto.getSStatusItem())){
                             inspectionCodeContent.setStatusItem(Integer.valueOf(inspectionCodeContentDto.getSStatusItem()));
@@ -651,7 +647,7 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
                         //检查值类型字典值翻译
                         String statusItem = null;
                         if(ObjectUtil.isNotNull(dto.getSStatusItem())){
-                            List<DictModel> appointDevice = sysBaseApi.getDictItems("patrol_input_type");
+                            List<DictModel> appointDevice = sysBaseApi.getDictItems("inspection_status_item");
                             List<String> collect = appointDevice.stream().map(DictModel::getValue).collect(Collectors.toList());
                             if(collect.contains(dto.getSStatusItem())){
                                 appointDevice= appointDevice.stream().filter(f -> (String.valueOf(dto.getSStatusItem())).equals(f.getValue())).collect(Collectors.toList());
