@@ -8,6 +8,7 @@ import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @Description: sys_holidays
@@ -26,4 +27,6 @@ public interface ISysHolidaysService extends IService<SysHolidays> {
     void checkDate(SysHolidays sysHolidays, Boolean isEdit);
 
     IPage<SysHolidays> queryPage(Page<SysHolidays> page, SysHolidays sysHolidays);
+
+    void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException;
 }

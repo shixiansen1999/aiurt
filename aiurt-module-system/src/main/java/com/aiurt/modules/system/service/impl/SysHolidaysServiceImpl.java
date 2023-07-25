@@ -9,6 +9,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.TimeUtil;
 import com.aiurt.common.util.XlsUtil;
@@ -16,28 +17,30 @@ import com.aiurt.modules.system.dto.SysHolidaysImportDTO;
 import com.aiurt.modules.system.entity.SysHolidays;
 import com.aiurt.modules.system.mapper.SysHolidaysMapper;
 import com.aiurt.modules.system.service.ISysHolidaysService;
+import com.aiurt.modules.system.util.ExcelSelectListUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.util.SpringContextUtils;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -146,7 +149,7 @@ public class SysHolidaysServiceImpl extends ServiceImpl<SysHolidaysMapper, SysHo
                     targetList.add(sysHolidays);
                 });
                 this.saveBatch(targetList);
-                return Result.ok("文件导入成功！数据行数：" + list.size());
+                return XlsUtil.importReturnRes(errorLines, targetList.size(), errorMessage, true, null);
             } catch (Exception e) {
                 //update-begin-author:taoyan date:20211124 for: 导入数据重复增加提示
                 String msg = e.getMessage();
@@ -234,22 +237,24 @@ public class SysHolidaysServiceImpl extends ServiceImpl<SysHolidaysMapper, SysHo
                 }
             }
             boolean b = ObjectUtil.isNotEmpty(sysHoliday.getStartDate()) && ObjectUtil.isNotEmpty(sysHoliday.getEndDate());
-            if (b && sysHoliday.getStartDate().after(sysHoliday.getEndDate())) {
-                error.append("结束日期不能小于开始日期;");
-            } else {
-                // 获取开始日期到结束日期之间的所有日期
-                List<DateTime> dateList = DateUtil.rangeToList(sysHoliday.getStartDate(), sysHoliday.getEndDate(), DateField.DAY_OF_YEAR);
-                int size = dateTimes.size() + dateList.size();
-                dateTimes.addAll(dateList);
-                // 判断填写的日期是否有重复或已包含的日期
-                if (dateTimes.size() < size) {
-                    error.append("该日期范围内已填写有节假日，请检查冲突;");
-                }
-                if (CollUtil.isNotEmpty(allHolidays)) {
-                    // 判断系统中是否已存在节假日
-                    dateList.retainAll(allHolidays);
-                    if (CollUtil.isNotEmpty(dateList)) {
-                        error.append("该日期范围内系统中已存在节假日;");
+            if (b) {
+                if (sysHoliday.getStartDate().after(sysHoliday.getEndDate())) {
+                    error.append("结束日期不能小于开始日期;");
+                } else {
+                    // 获取开始日期到结束日期之间的所有日期
+                    List<DateTime> dateList = DateUtil.rangeToList(sysHoliday.getStartDate(), sysHoliday.getEndDate(), DateField.DAY_OF_YEAR);
+                    int size = dateTimes.size() + dateList.size();
+                    dateTimes.addAll(dateList);
+                    // 判断填写的日期是否有重复或已包含的日期
+                    if (dateTimes.size() < size) {
+                        error.append("该日期范围内已填写有节假日，请检查冲突;");
+                    }
+                    if (CollUtil.isNotEmpty(allHolidays)) {
+                        // 判断系统中是否已存在节假日
+                        dateList.retainAll(allHolidays);
+                        if (CollUtil.isNotEmpty(dateList)) {
+                            error.append("该日期范围内系统中已存在节假日;");
+                        }
                     }
                 }
             }
@@ -272,5 +277,39 @@ public class SysHolidaysServiceImpl extends ServiceImpl<SysHolidaysMapper, SysHo
             }
         }
         return errorLines;
+    }
+
+    @Override
+    public void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        //获取输入流，原始模板位置
+        org.springframework.core.io.Resource resource = new ClassPathResource("/templates/holidays.xlsx");
+        InputStream resourceAsStream = resource.getInputStream();
+        //2.获取临时文件
+        File fileTemp = new File("/templates/holidays.xlsx");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        String path = fileTemp.getAbsolutePath();
+        TemplateExportParams exportParams = new TemplateExportParams(path);
+        Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(16);
+        Workbook workbook = ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+        CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+        List<DictModel> holidaysType = bean.queryDictItemsByCode("holidays_type");
+        ExcelSelectListUtil.selectList(workbook, "类型", 3, 3, holidaysType);
+        String fileName = "节假日表导入模板.xlsx";
+        try {
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            response.setHeader("Content-Disposition", "attachment;filename=" + "节假日表导入模板.xlsx");
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -164,6 +164,7 @@ public class SysHolidaysController extends BaseController<SysHolidays, ISysHolid
 	 @ApiOperation(value="节假日表模板下载", notes="节假日表模板下载")
 	 @RequestMapping(value = "/exportTemplateXls",method = RequestMethod.GET)
 	 public void exportTemplateXl(HttpServletResponse response, HttpServletRequest request) throws IOException {
-		 XlsUtil.getExcel(response, "templates/holidays.xlsx", "节假日表导入模板.xlsx");
+		 sysHolidaysService.getImportTemplate(response,request);
+		 //XlsUtil.getExcel(response, "templates/holidays.xlsx", "节假日表导入模板.xlsx");
 	 }
 }
