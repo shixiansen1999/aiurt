@@ -1,4 +1,4 @@
-package com.aiurt.modules.device.handler;
+package com.aiurt.boot.standard.handler;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.device.entity.DeviceType;
@@ -17,8 +17,8 @@ import java.util.Map;
  * @create: 2023-07-03 11:50
  * @Description:
  */
-@Component("DeviceRowDeviceTypeValidationRuleHandle")
-public class DeviceRowDeviceTypeValidationRuleHandle  implements RowValidationRule {
+@Component("PatrolStandardDeviceTypeRowValidationRuleHandle")
+public class PatrolStandardDeviceTypeRowValidationRuleHandle implements RowValidationRule {
     @Resource
     private ISysBaseAPI sysBaseApi;
 
@@ -38,7 +38,7 @@ public class DeviceRowDeviceTypeValidationRuleHandle  implements RowValidationRu
      * @return ValidationResult，包含验证状态和错误信息（如果有）。
      */
     private ValidationResult validateMajorAndSubsystem(Map<String, Column> row, Column column) {
-        Column majorCodeColumn = row.get("major_code");
+        Column majorCodeColumn = row.get("profession_code");
         if (majorCodeColumn != null) {
             return checkMajorAndSubsystem(majorCodeColumn, row, column);
         }
@@ -94,7 +94,7 @@ public class DeviceRowDeviceTypeValidationRuleHandle  implements RowValidationRu
      * @return 子系统名称。
      */
     private Object getSubsystemName(Map<String, Column> row) {
-        Column subsystemCodeColumn = row.get("system_code");
+        Column subsystemCodeColumn = row.get("subsystem_code");
         if (subsystemCodeColumn != null) {
             return subsystemCodeColumn.getData();
         }
