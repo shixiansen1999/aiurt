@@ -1,13 +1,17 @@
 package com.aiurt.modules.user.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.aiurt.modules.user.dto.FlowUserRelationRespDTO;
+import com.aiurt.modules.user.enums.FlowUserRelationEnum;
 import com.aiurt.modules.user.mapper.FlowUserMapper;
 import com.aiurt.modules.user.service.IFlowUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author fgw
@@ -67,5 +71,23 @@ public class FlowUserServiceImpl implements IFlowUserService {
     @Override
     public List<String> getUserName(String name) {
         return flowUserMapper.getUserName(name);
+    }
+
+    /**
+     * 流程办理人关系下拉树
+     *
+     * @return
+     */
+    @Override
+    public List<FlowUserRelationRespDTO> queryRelationList() {
+        List<FlowUserRelationRespDTO> dtoList = Arrays.stream(FlowUserRelationEnum.values()).map(flowUserRelationEnum -> {
+            FlowUserRelationRespDTO flowUserRelationRespDTO = new FlowUserRelationRespDTO();
+            flowUserRelationRespDTO.setValue(flowUserRelationEnum.getCode());
+            flowUserRelationRespDTO.setTitle(flowUserRelationEnum.getMessage());
+            flowUserRelationRespDTO.setLabel(flowUserRelationEnum.getMessage());
+
+            return flowUserRelationRespDTO;
+        }).collect(Collectors.toList());
+        return dtoList;
     }
 }
