@@ -450,4 +450,8 @@ public interface SysParamCodeConstant {
      * 公安消防班组id
      */
     String GONGANXIAOFANG_ID = "gonganxiaofang_id";
+    /**
+     * 日完成事项是否统计的维保数按照维保开始时间计算
+     */
+    String INSPECTION_STARTTIME = "inspection_starttime";
 }

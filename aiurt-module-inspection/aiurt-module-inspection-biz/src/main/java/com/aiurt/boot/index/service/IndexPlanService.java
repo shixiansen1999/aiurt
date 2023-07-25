@@ -371,7 +371,7 @@ public class IndexPlanService {
     private Map<String, Integer> inspectionNumByDay(Date beginDate, int dayNum) {
         Map<String, Integer> result = new HashMap<>(32);
         //根据配置决定统计的维保数按照维保开始时间还是提交时间进行筛选
-        SysParamModel sysParam = iSysParamAPI.selectByCode(SysParamCodeConstant.AUTO_CC);
+        SysParamModel sysParam = iSysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_STARTTIME);
         boolean autoCc = "1".equals(sysParam.getValue());
         List<RepairTaskNum> repairTaskNums = new ArrayList<>();
         if (autoCc) {
@@ -516,7 +516,7 @@ public class IndexPlanService {
      */
     public IPage<RepairPoolDetailsDTO> getMaintenanceSituation(Page<RepairPoolDetailsDTO> page, Date startDate, String stationCode) {
         // //根据配置决定统计的维保数按照维保开始时间还是提交时间进行筛选
-        SysParamModel sysParam = iSysParamAPI.selectByCode(SysParamCodeConstant.AUTO_CC);
+        SysParamModel sysParam = iSysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_STARTTIME);
         // 查询维修任务池的维修情况列表
         List<RepairPoolDetailsDTO> result = repairTaskMapper.getMaintenanceSituation(page, startDate, stationCode,sysParam.getValue());
 
