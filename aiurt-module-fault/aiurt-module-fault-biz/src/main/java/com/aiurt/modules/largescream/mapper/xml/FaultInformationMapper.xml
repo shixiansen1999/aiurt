@@ -975,7 +975,7 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         fkbt.name as fault_phenomenon_name
         from fault f
         left join fault_knowledge_base_type fkbt on f.fault_phenomenon=fkbt.code
-        where (f.status=9 or f.status=10 or f.status=7)
+        where (f.status > 2 and f.status &lt; 12)
         <if test="stationCodeList != null and stationCodeList.size() != 0">
             and station_code in
             <foreach collection="stationCodeList" item="item" open="(" separator="," close=")">

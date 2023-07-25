@@ -237,14 +237,14 @@ public class FaultInformationController {
     }
 
     /**
-     * 根据站点code，获取未完成故障（挂起+维修中）的故障现象、故障发生时间、故障code
+     * 根据站点code，获取未完成故障（除了待审核、作废、已完成的故障外的所有故障）的故障现象、故障发生时间、故障code
      * @param stationCode 要查询哪个站点的故障
      * @param startDate 查询故障发生时间大于哪个时间点
      * @param endDate 查询故障发生时间小于哪个时间点
      * @return
      */
-    @AutoLog(value = "根据站点code，获取未完成故障（挂起+维修中）", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
-    @ApiOperation(value = "根据站点code，获取未完成故障（挂起+维修中）", notes = "根据站点code，获取未完成故障（挂起+维修中）")
+    @AutoLog(value = "根据站点code，获取未完成故障（除了待审核、作废、已完成的故障外的所有故障）", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "根据站点code，获取未完成故障（除了待审核、作废、已完成的故障外的所有故障）", notes = "根据站点code，获取未完成故障（除了待审核、作废、已完成的故障外的所有故障）")
     @GetMapping(value = "/getUnfinishedFault")
     public Result<List<FaultUnfinishedDTO>> getUnfinishedFault(@RequestParam("stationCode") String stationCode,
                                                                @RequestParam(value = "startDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
