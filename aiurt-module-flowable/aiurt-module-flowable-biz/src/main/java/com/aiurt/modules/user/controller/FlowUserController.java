@@ -3,6 +3,7 @@ package com.aiurt.modules.user.controller;
 import com.aiurt.modules.user.dto.FlowUserRelationRespDTO;
 import com.aiurt.modules.user.service.IFlowUserService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ public class FlowUserController {
      * @return
      */
     @GetMapping("queryRelationList")
+    @ApiOperation("流程选人关系列表")
     public Result<List<FlowUserRelationRespDTO>> queryRelationList() {
         List<FlowUserRelationRespDTO> list = flowUserService.queryRelationList();
         return Result.OK(list);

@@ -85,7 +85,6 @@ public class FlowUserServiceImpl implements IFlowUserService {
             flowUserRelationRespDTO.setValue(flowUserRelationEnum.getCode());
             flowUserRelationRespDTO.setTitle(flowUserRelationEnum.getMessage());
             flowUserRelationRespDTO.setLabel(flowUserRelationEnum.getMessage());
-
             return flowUserRelationRespDTO;
         }).collect(Collectors.toList());
         return dtoList;

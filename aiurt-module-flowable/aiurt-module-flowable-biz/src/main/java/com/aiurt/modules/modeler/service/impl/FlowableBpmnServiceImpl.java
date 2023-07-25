@@ -129,6 +129,9 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
             modelInfoVo.setModelName(model.getName());
             modelInfoVo.setModelKey(model.getKey());
             modelInfoVo.setFileName(model.getName());
+            if (StrUtil.isNotBlank(streamStr)) {
+                streamStr = StrUtil.replaceIgnoreCase(streamStr, "&quot;", "&#34;");
+            }
             modelInfoVo.setModelXml(streamStr);
         } catch (Exception e) {
             throw new AiurtBootException("系统中不存在该流程模型，请刷新尝试！");
