@@ -577,7 +577,7 @@
             or
             (
             DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
             )
             )
         </if>
@@ -623,7 +623,7 @@
             or
             (
             DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
             )
             )
         </if>
@@ -882,7 +882,7 @@
             AND (
             (DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
             or
-            (DATE_FORMAT(pt.start_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.end_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d'))
+            (DATE_FORMAT(pt.start_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.end_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
             )
         </if>
         <if test="condition.orgCodes != null and condition.orgCodes.size > 0">
@@ -2198,7 +2198,7 @@
             AND (
             (DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
             or
-            (DATE_FORMAT(pt.start_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.end_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d'))
+            (DATE_FORMAT(pt.start_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.end_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
             )
         </if>
         <if test="condition.username != null and condition.username != ''">
