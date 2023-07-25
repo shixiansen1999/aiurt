@@ -116,8 +116,14 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             List<ExtensionElement> userTypeElements = extensionElements.get(USER_TYPE);
             if (CollUtil.isNotEmpty(userTypeElements)) {
                 ExtensionElement extensionElement = userTypeElements.get(0);
-                ArrayNode arrayNode = convertExtensionElementsToJson(Collections.singletonList(extensionElement), ActUserTypeEntity.class);
-                propertiesNode.set(USER_TYPE, arrayNode);
+
+                ObjectNode objectNode = super.objectMapper.createObjectNode();
+                Field[] fields = ActUserTypeEntity.class.getDeclaredFields();
+                Arrays.stream(fields).filter(field -> !StrUtil.equalsAnyIgnoreCase(SERIAL_VERSION_UID, field.getName())).forEach(field -> {
+                    objectNode.put(field.getName(), extensionElement.getAttributeValue(null, field.getName()));
+                });
+
+                propertiesNode.set(USER_TYPE, objectNode);
             }
 
             // 选人将 flowable:userassignee 属性转换为 JSON 格式
