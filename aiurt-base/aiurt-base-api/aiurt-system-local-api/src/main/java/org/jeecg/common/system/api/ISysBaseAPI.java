@@ -1297,5 +1297,15 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return 用户信息
      */
     JSONObject queryByWorkNoUser(String workNo);
+
+    /**
+     * 根据给定的参数获取符合条件的用户名称列表。
+     *
+     * @param roleCodes 角色代码列表，用于筛选符合条件的用户
+     * @param orgIds    组织ID列表，用于筛选符合条件的用户
+     * @param posts     岗位列表，用于筛选符合条件的用户
+     * @return 符合条件的用户账号并去重的列表
+     */
+    List<String> getUserNameByParams(List<String> roleCodes, List<String> orgIds, List<String> posts);
 }
 

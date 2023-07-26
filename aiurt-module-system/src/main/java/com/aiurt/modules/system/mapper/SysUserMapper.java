@@ -289,4 +289,13 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 	 * @return
 	 */
 	List<LoginUser> getSeniorityNumber(@Param("orgCode") String orgCode);
+	/**
+	 * 根据给定的参数获取符合条件的用户名称列表。
+	 *
+	 * @param roleCodes 角色代码列表，用于筛选符合条件的用户
+	 * @param orgIds    组织ID列表，用于筛选符合条件的用户
+	 * @param posts     岗位列表，用于筛选符合条件的用户
+	 * @return 符合条件的用户名称列表
+	 */
+	List<String> getUserNameByParams(@Param("roleCodes") List<String> roleCodes, @Param("orgIds") List<String> orgIds, @Param("posts") List<String> posts);
 }

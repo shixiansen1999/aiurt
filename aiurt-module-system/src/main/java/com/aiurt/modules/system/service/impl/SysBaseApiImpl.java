@@ -3668,4 +3668,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return JSONObject.parseObject(JSON.toJSONString(loginUser));
     }
+
+    @Override
+    public List<String> getUserNameByParams(List<String> roleCodes, List<String> orgIds, List<String> posts) {
+        return userMapper.getUserNameByParams(roleCodes,orgIds,posts);
+    }
 }
