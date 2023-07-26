@@ -114,4 +114,21 @@
         </where>
         GROUP BY rpsr.station_code
     </select>
+
+    <select id="getConstructionNumByDay" resultType="com.aiurt.boot.index.dto.ConstructionNumDTO">
+        SELECT
+        DATE_FORMAT( task_date, '%Y-%m-%d' ) AS taskDate,
+        COUNT(*) AS num
+        FROM
+        construction_week_plan_command cwpc
+        <where>
+            cwpc.task_date is not null
+            <if test="startTime!=null and endTime!=null">
+                and date_format(cwpc.task_date ,'%Y-%m-%d') &gt;= date_format(#{startTime},'%Y-%m-%d')
+                and date_format(cwpc.task_date ,'%Y-%m-%d') &lt;= date_format(#{endTime},'%Y-%m-%d')
+            </if>
+        </where>
+        GROUP BY
+        taskDate;
+    </select>
 </mapper>

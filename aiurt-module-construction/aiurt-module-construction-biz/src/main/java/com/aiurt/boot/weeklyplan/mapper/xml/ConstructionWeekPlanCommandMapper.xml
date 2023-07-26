@@ -137,20 +137,17 @@
         group by cwpc.id
     </select>
 
-    <select id="selectLineName" resultType="java.lang.String">
-        select line_code from construction_week_plan_line where
-            line_name = #{name}
-            limit 1
+    <select id="selectLineName" resultType="org.jeecg.common.system.vo.DictModel">
+        select line.line_name as "value",line.line_code as "text" from construction_week_plan_line line where
+            del_flag=0
     </select>
-    <select id="selectStationName" resultType="java.lang.String">
-        select station_code from construction_week_plan_station where
-            station_name = #{name}
-            limit 1
+    <select id="selectStationName" resultType="org.jeecg.common.system.vo.DictModel">
+        select station.station_code as "value",station.station_name as "text" from construction_week_plan_station station where
+            del_flag=0
     </select>
-    <select id="selectOrgName" resultType="java.lang.String">
-        select id from construction_week_plan_org where
-            depart_name = #{name}
-            limit 1
+    <select id="selectOrgName" resultType="org.jeecg.common.system.vo.DictModel">
+        select org.id as "value",org.depart_name as "text" from construction_week_plan_org org
+        where del_flag=0
     </select>
 
     <insert id="batchInsert" parameterType="com.aiurt.boot.weeklyplan.vo.ConstructionWeekPlanCommandVO">

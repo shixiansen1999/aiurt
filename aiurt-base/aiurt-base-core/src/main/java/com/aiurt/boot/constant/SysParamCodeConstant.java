@@ -442,4 +442,22 @@ public interface SysParamCodeConstant {
      * 公安消防班组id
      */
     String GONGANXIAOFANG_ID = "gonganxiaofang_id";
+
+
+    /**
+     * 获取施工计划登录token所需客户ID
+     */
+    String CLIENT_ID="clientId";
+    /**
+     * 获取施工计划登录token所需客户密钥
+     */
+    String CLIENT_SECRET="clientSecret";
+    /**
+     * 获取施工计划登录token所需授权类似
+     */
+    String GRANT_TYPE="grantType";
+    /**
+     * 获取施工计划登录门户url
+     */
+    String CONSTRUCTION_URL="construction_url";
 }

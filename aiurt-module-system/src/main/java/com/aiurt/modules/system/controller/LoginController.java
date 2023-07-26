@@ -36,6 +36,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -920,8 +921,14 @@ public class LoginController {
 
 	@GetMapping("/getSsoToken")
 	@ApiOperation("获取泛微token信息")
-	public Result<String> getSsoToken() {
-		String ssoToken = weaverSsoService.ssoToken();
+	public Result<String> getSsoToken(@RequestParam(name = "identifier",required=false) String identifier)throws JsonProcessingException {
+		String ssoToken=null;
+		if (identifier == null || identifier.isEmpty()) {
+			ssoToken = weaverSsoService.ssoToken();
+		}else {
+			ssoToken = weaverSsoService.ssoTokenByIdentifier(identifier);
+		}
+
 		return Result.OK(ssoToken);
 	}
 
