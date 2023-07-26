@@ -68,6 +68,7 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -281,10 +282,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         if (!admin) {
-            // 首页-工作日志，获取的是本班组的
-            if (Integer.valueOf(1).equals(param.getIsMyTeam())) {
-                param.setDepartList(Collections.singletonList(user.getOrgId()));
-            } else if(CollUtil.isNotEmpty(departByUserId)){
+            if(CollUtil.isNotEmpty(departByUserId)){
                 List<String> departIdsByUserId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
                 param.setDepartList(departIdsByUserId);
             }
@@ -386,10 +384,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         List<CsUserDepartModel> departByUserId = iSysBaseAPI.getDepartByUserId(user.getId());
         if (!admin) {
-            // 首页-工作日志，获取的是本班组的
-            if (Integer.valueOf(1).equals(param.getIsMyTeam())) {
-                param.setDepartList(Collections.singletonList(user.getOrgId()));
-            }else if(CollUtil.isNotEmpty(departByUserId)){
+            if(CollUtil.isNotEmpty(departByUserId)){
                 List<String> departIdsByUserId = departByUserId.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
                 param.setDepartList(departIdsByUserId);
             }
@@ -398,6 +393,99 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             }
         }
         return getWorkLogResultIPage(page, param);
+    }
+
+    @Override
+    public Page<WorkLogIndexUnSubmitRespDTO> getIndexUnSubmitWorkLogList(WorkLogIndexUnSubmitReqDTO workLogIndexUnSubmitReqDTO) {
+        // 查询开始时间和查询结束时间
+        Date startDate = workLogIndexUnSubmitReqDTO.getStartDate();
+        Date endDate = workLogIndexUnSubmitReqDTO.getEndDate();
+
+        // --开始时间不小于结束时间的话，直接返回
+
+        // 查看开始时间到结束时间有多少天
+        int days = (int) DateUtil.between(startDate, endDate, DateUnit.DAY) + 1;
+
+        // 获取权限部门，如果是管理员和主任就是获取所有部门
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        boolean isAdmin = SecurityUtils.getSubject().hasRole("admin") || SecurityUtils.getSubject().hasRole("zhuren");
+        List<SysDepartModel> permitDepart;
+        //只获取班组,不获取组织机构类型和公司部门
+        String orgCategory = "3,4,5";
+        if (isAdmin){
+            // 管理员和主任获取所有部门
+            permitDepart = iSysBaseAPI.getAllSysDepart().stream().filter(s -> orgCategory.contains(s.getOrgCategory())).collect(Collectors.toList());
+        }else {
+            // 其他角色获取权限部门
+            List<CsUserDepartModel> csUserDepartModelList = iSysBaseAPI.getDepartByUserId(loginUser.getId())
+                    .stream().filter(s -> orgCategory.contains(s.getOrgCategory())).collect(Collectors.toList());
+            permitDepart = csUserDepartModelList.stream().map(s->{
+                SysDepartModel sysDepartModel = new SysDepartModel();
+                BeanUtils.copyProperties(s, sysDepartModel);
+                return sysDepartModel;
+            }).collect(Collectors.toList());
+        }
+        // --权限部门为空的话直接返回
+        if (CollUtil.isEmpty(permitDepart)){
+            return new Page<>(workLogIndexUnSubmitReqDTO.getPageNo(), workLogIndexUnSubmitReqDTO.getPageSize());
+        }
+
+        // 班组查询的话
+        String orgId = workLogIndexUnSubmitReqDTO.getOrgId();
+        if (StrUtil.isNotEmpty(orgId)){
+            permitDepart = permitDepart.stream().filter(d->orgId.equals(d.getId())).collect(Collectors.toList());
+        }
+
+        // 根据权限部门和查询日期，获取已提交的日志
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        List<String> orgIdList = permitDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+        List<WorkLog> submitWorkLogList = depotMapper.queryWorKLogByOrgIdAndDate(orgIdList, startDate, endDate);
+        // 将workLogList根据(orgId, -, logTime)连接作为key，提交个数作为value，做一个Map
+        Map<String, Long> submitWorkLogMap = submitWorkLogList.stream()
+                .collect(Collectors.groupingBy(w -> w.getOrgId() + "-" + dateFormat.format(w.getLogTime()), Collectors.counting()));
+
+        // 根据权限部门，开始时间和结束时间，先组合成一个初步的WorkLogIndexUnSubmitRespDTO列表
+        List<WorkLogIndexUnSubmitRespDTO> list = new ArrayList<>();
+        permitDepart.forEach(depart->{
+            // 开始时间走到结束时间
+            for (int i = 0; i < days; i++) {
+                Date logTime = DateUtil.offsetDay(startDate, i);
+                WorkLogIndexUnSubmitRespDTO respDTO = new WorkLogIndexUnSubmitRespDTO();
+                respDTO.setOrgId(depart.getId());
+                respDTO.setOrgName(depart.getDepartName());
+                respDTO.setLogTime(logTime);
+                // 如果当前时间大于应提交日期，deadLineFlag等于true
+                respDTO.setDeadLineFlag(DateUtil.compare(DateUtil.beginOfDay(new Date()), DateUtil.beginOfDay(logTime)) > 0);
+
+                // 查看这个班组这一天的提交日志的数量
+                Long submitNum = submitWorkLogMap.get(depart.getId() + "-" + dateFormat.format(logTime));
+                if (submitNum == null || submitNum == 0L){
+                    // 没有提交记录
+                    // 每个班组每天应该提交2个日志
+                    respDTO.setUnSubmitNum(2);
+                    list.add(respDTO);
+                }else if (submitNum == 1L) {
+                    // 提交了一条
+                    respDTO.setUnSubmitNum(1);
+                    list.add(respDTO);
+                }
+                // 提交了两条以上的，不加入list
+            }
+        });
+
+        // 组装结果
+        int pageNo = workLogIndexUnSubmitReqDTO.getPageNo();
+        int pageSize = workLogIndexUnSubmitReqDTO.getPageSize();
+        Page<WorkLogIndexUnSubmitRespDTO> pageList = new Page<>(pageNo, pageSize);
+        pageList.setTotal(list.size());
+        pageList.setPages(list.size() / pageSize + 1);
+        // 排序
+        list.sort(Comparator.comparing(WorkLogIndexUnSubmitRespDTO::getLogTime).thenComparing(WorkLogIndexUnSubmitRespDTO::getOrgId));
+
+        List<WorkLogIndexUnSubmitRespDTO> records = list.stream().skip((pageNo - 1) * pageSize).limit(pageSize).collect(Collectors.toList());
+        pageList.setRecords(records);
+
+        return pageList;
     }
 
     @Override
@@ -1425,18 +1513,27 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         boolean isAdmin = SecurityUtils.getSubject().hasRole("admin") || SecurityUtils.getSubject().hasRole("zhuren");
-        int teamNum = 1;
-        if (isAdmin){
+        // 权限部门的orgId
+        List<String> orgIdList = null;
 
-            /*teamNum = iSysBaseAPI.getAllSysDepart().size();*/
+        // 登录人的权限班组数量
+        int teamNum;
+        //只获取班组数量,组织机构类型不为公司部门
+        String orgCategory = "3,4,5";
+        if (isAdmin){
+            // 管理员和主任获取所有部门
             List<SysDepartModel> allSysDepart = iSysBaseAPI.getAllSysDepart();
-            //只获取班组数量,组织机构类型不为公司部门
-            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_LOG_ORG_CATEGORY);
-            List<SysDepartModel> modelList = allSysDepart.stream().filter(s -> StrUtil.splitTrim(sysParamModel.getValue(),",").contains(s.getOrgCategory())).collect(Collectors.toList());
-            teamNum = modelList.size();
+            teamNum = (int) allSysDepart.stream().filter(s -> orgCategory.contains(s.getOrgCategory())).count();
+        }else {
+            // 其他角色获取权限部门的班组数量
+            List<CsUserDepartModel> permitDepartList = iSysBaseAPI.getDepartByUserId(loginUser.getId());
+            List<CsUserDepartModel> filterDepartList = permitDepartList.stream().filter(s -> orgCategory.contains(s.getOrgCategory())).collect(Collectors.toList());
+            teamNum = filterDepartList.size();
+            // 获取权限部门的orgId
+            orgIdList = filterDepartList.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
         }
 
-        // 应提交日志数，每个班组每天是2个，如果是管理员或者主任，获取的就是所以班组的
+        // 应提交日志数，每个班组每天是2个
         Integer shouldSubmitNum = 2 * teamNum * days;
         // 已提交日志数
         Integer submitNum = this.baseMapper.getSubmitNum(startDate, endDate, isAdmin ? null : loginUser.getOrgId());
@@ -1446,7 +1543,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         LambdaQueryWrapper<WorkLog> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(WorkLog::getDelFlag, CommonConstant.DEL_FLAG_0);
         queryWrapper.eq(WorkLog::getStatus, 1);
-        queryWrapper.eq(!isAdmin, WorkLog::getOrgId, loginUser.getOrgId());
+        // 权限部门id过滤
+        queryWrapper.in((!isAdmin && CollUtil.isNotEmpty(orgIdList)), WorkLog::getOrgId, orgIdList);
         queryWrapper.ge(WorkLog::getSubmitTime, DateUtil.beginOfDay(startDate));
         queryWrapper.le(WorkLog::getSubmitTime, DateUtil.endOfDay(endDate));
         queryWrapper.orderByDesc(WorkLog::getSubmitTime);

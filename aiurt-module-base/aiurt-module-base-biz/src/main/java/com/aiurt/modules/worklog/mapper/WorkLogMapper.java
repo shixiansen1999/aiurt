@@ -157,5 +157,16 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
      * @return
      */
     List<String> getSameDayIdList(@Param("id") String id);
+
+    /**
+     * 根据组织机构以及查询日期查询工作日志
+     * @param orgIdList
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<WorkLog> queryWorKLogByOrgIdAndDate(@Param("orgIdList") List<String> orgIdList,
+                                             @Param("startDate") Date startDate,
+                                             @Param("endDate") Date endDate);
 }
 
