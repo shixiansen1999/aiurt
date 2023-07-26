@@ -10,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 首页-工作日志-未提交日志的请求DTO
@@ -28,5 +29,5 @@ public class WorkLogIndexUnSubmitReqDTO extends BaseEntity implements Serializab
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date endDate;
     @ApiModelProperty(value = "查询的班组id")
-    private String orgId;
+    private List<String> orgIdList;
 }

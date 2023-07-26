@@ -335,9 +335,10 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
     /**
      * 获取用户班组
      * @param id
+     * @param workLogOrgCategory 实施配置里面组织机构是班组的编码
      * @return
      */
-    List<OverhaulStatisticsDTOS> getUserOrgCategory(@Param("id") String id);
+    List<OverhaulStatisticsDTOS> getUserOrgCategory(@Param("id") String id, @Param("workLogOrgCategory") String workLogOrgCategory);
 
     /**
      * 查询检修站点

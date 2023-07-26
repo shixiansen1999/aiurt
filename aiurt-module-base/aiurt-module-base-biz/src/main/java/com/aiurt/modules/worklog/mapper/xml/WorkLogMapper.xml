@@ -15,10 +15,10 @@
         LEFT JOIN sys_user su ON wl.succeed_id = su.id
         LEFT JOIN sys_user sur ON wl.submit_id = sur.id
         LEFT JOIN sys_depart sd ON sd.id = wl.org_id
+        <!--工作日志查询只获取班组的，不获取公司的和组织机构的-->
+        INNER JOIN sys_param sp ON sp.`code` = #{workLogOrgCategory} AND find_in_set(sd.org_category, sp.`value`)
         WHERE
             wl.del_flag = 0
-            <!--工作日志查询只获取班组的，不获取公司的和组织机构的-->
-            AND sd.org_category IN (3,4,5)
         <if test="param.selections !=null and param.selections.size()>0">
             and wl.id in
             <foreach collection="param.selections" separator="," open="(" close=")" item="id">
@@ -311,8 +311,11 @@
                 </foreach>
             </if>
             <if test="startDate != null and endDate != null">
-                and DATE_FORMAT(log_time, "%Y-%m-%d") >= DATE_FORMAT(#{startDate}, "%Y-%m-%d")
-                and DATE_FORMAT(log_time, "%Y-%m-%d") &lt;= DATE_FORMAT(#{endDate}, "%Y-%m-%d")
+                and DATE_FORMAT(twl.log_time, "%Y-%m-%d") >= DATE_FORMAT(#{startDate}, "%Y-%m-%d")
+                and DATE_FORMAT(twl.log_time, "%Y-%m-%d") &lt;= DATE_FORMAT(#{endDate}, "%Y-%m-%d")
+            </if>
+            <if test="status != null">
+                and twl.status = #{status}
             </if>
         </where>
     </select>
