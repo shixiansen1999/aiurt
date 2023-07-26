@@ -22,19 +22,20 @@ public class DeviceTypeCodeNameConvertHandler implements IRowDataConvertHandler 
 
     @Override
     public String convert(Column value, Map<String, Column> row) {
+        if (value.getData() != null) {
+            Column majorCodeColumn = row.get("profession_code");
 
-        Column majorCodeColumn = row.get("profession_code");
+            Column subsystemCodeColumn = row.get("subsystem_code");
+            Object subsystem = subsystemCodeColumn.getData();
 
-        Column subsystemCodeColumn = row.get("subsystem_code");
-        Object subsystem = subsystemCodeColumn.getData();
+            LambdaQueryWrapper<DeviceType> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(DeviceType::getMajorCode, (String) majorCodeColumn.getData()).eq(DeviceType::getSystemCode, (String) subsystem);
 
-        LambdaQueryWrapper<DeviceType> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(DeviceType::getMajorCode, (String) majorCodeColumn.getData()).eq(DeviceType::getSystemCode, (String) subsystem);
-
-        // 查询设备类型是否匹配专业和子系统
-        DeviceType csMajorByCodeTypeName = sysBaseApi.getDeviceTypeByCode((String) majorCodeColumn.getData(), (String) subsystem, (String) value.getData());
-        if (ObjectUtil.isNotNull(csMajorByCodeTypeName)) {
-            value.setData(csMajorByCodeTypeName.getCode());
+            // 查询设备类型是否匹配专业和子系统
+            DeviceType csMajorByCodeTypeName = sysBaseApi.getDeviceTypeByCode((String) majorCodeColumn.getData(), (String) subsystem, (String) value.getData());
+            if (ObjectUtil.isNotNull(csMajorByCodeTypeName)) {
+                value.setData(csMajorByCodeTypeName.getCode());
+            }
         }
         return null;
     }
