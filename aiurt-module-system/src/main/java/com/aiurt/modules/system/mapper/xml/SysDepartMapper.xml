@@ -51,4 +51,12 @@
     <select id="queryCompByOrgCode" resultType="com.aiurt.modules.system.entity.SysDepart">
 		select * from sys_depart where del_flag = '0' and org_category='1' and org_code= #{orgCode,jdbcType=VARCHAR}
 	</select>
+    <select id="getUserOrgCategory" resultType="org.jeecg.common.system.vo.SysDepartModel">
+        SELECT
+        sd.*
+        FROM sys_depart sd
+        <!--只获取班组，不获取类型为组织机构和公司的-->
+        INNER JOIN sys_param sp ON find_in_set(sd.org_category, sp.`value`) AND sp.`code`=#{workLogOrgCategory}
+        WHERE sd.org_code_cc LIKE CONCAT ('%',#{orgCode},'%' )
+    </select>
 </mapper>

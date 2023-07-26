@@ -3,7 +3,11 @@ package com.aiurt.modules.worklog.controller;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.worklog.dto.WorkLogIndexDTO;
+import com.aiurt.modules.worklog.dto.WorkLogIndexUnSubmitReqDTO;
+import com.aiurt.modules.worklog.dto.WorkLogIndexUnSubmitRespDTO;
 import com.aiurt.modules.worklog.service.IWorkLogService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -11,13 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 首页-工作日志
@@ -54,5 +56,18 @@ public class WorkLogIndexController {
                                                    HttpServletRequest request) {
         WorkLogIndexDTO workLogIndexDTO = workLogDepotService.getOverviewInfo(startDate, endDate, request);
         return Result.ok(workLogIndexDTO);
+    }
+
+    /**
+     * 首页-工作日志-未提交日志
+     * @param workLogIndexUnSubmitReqDTO 请求DTO
+     * @return
+     */
+    @AutoLog(value = "首页-工作日志", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "首页-工作日志-未提交日志", notes = "首页-工作日志-未提交日志")
+    @GetMapping("/getIndexUnSubmitWorkLog")
+    public Result<IPage<WorkLogIndexUnSubmitRespDTO>> getIndexUnSubmitWorkLog(WorkLogIndexUnSubmitReqDTO workLogIndexUnSubmitReqDTO){
+        Page<WorkLogIndexUnSubmitRespDTO> pageList = workLogDepotService.getIndexUnSubmitWorkLogList(workLogIndexUnSubmitReqDTO);
+        return Result.ok(pageList);
     }
 }

@@ -185,5 +185,12 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @return
      */
     IPage<WorkLogBigScreenRespDTO> bigScreenPageList(Page<WorkLogResult> page, WorkLogBigScreenReqDTO workLogBigScreenReqDTO);
+
+    /**
+     * 首页-工作日志-未提交日志
+     * @param workLogIndexUnSubmitReqDTO
+     * @return
+     */
+    Page<WorkLogIndexUnSubmitRespDTO> getIndexUnSubmitWorkLogList(WorkLogIndexUnSubmitReqDTO workLogIndexUnSubmitReqDTO);
 }
 
