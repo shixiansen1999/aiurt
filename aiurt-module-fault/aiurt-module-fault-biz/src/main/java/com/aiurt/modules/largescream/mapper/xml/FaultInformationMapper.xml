@@ -983,8 +983,8 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
             </foreach>
         </if>
         <if test="startDate != null and endDate != null">
-            and date_format(f.happen_time ,'%Y-%m-%d') &gt;=  date_format(#{startDate},'%Y-%m-%d')
-            and date_format(f.happen_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')
+            and date_format(f.approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{startDate},'%Y-%m-%d')
+            and date_format(f.approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')
         </if>
     </select>
 </mapper>

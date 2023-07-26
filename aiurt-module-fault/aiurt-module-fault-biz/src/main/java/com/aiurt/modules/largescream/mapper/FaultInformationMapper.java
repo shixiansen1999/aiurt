@@ -449,8 +449,8 @@ public interface FaultInformationMapper {
     /**
      * 根据站点code，获取未完成故障（除了待审核、作废、已完成的故障外的所有故障）的故障现象、故障发生时间、故障code
      * @param stationCodeList 要查询哪个站点的故障
-     * @param startDate 查询故障发生时间大于哪个时间点
-     * @param endDate 查询故障发生时间小于哪个时间点
+     * @param startDate 查询故障时间(approval_pass_time)大于哪个时间点
+     * @param endDate 查询故障时间(approval_pass_time)小于哪个时间点
      * @return
      */
     List<FaultUnfinishedDTO> getUnfinishedFault(@Param("stationCodeList") List<String> stationCodeList,
