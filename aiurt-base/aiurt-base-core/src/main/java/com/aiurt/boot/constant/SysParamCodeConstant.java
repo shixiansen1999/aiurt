@@ -425,4 +425,8 @@ public interface SysParamCodeConstant {
      * 获取企业微信私域授权地址
      */
     String WX_OAUTH = "wx_oauth";
+    /**
+     * 工作日志只获取班组数量,组织机构类型不为公司部门
+     */
+    String WORK_LOG_ORG_CATEGORY = "work_log_org_category";
 }

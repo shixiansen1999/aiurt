@@ -68,7 +68,6 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -410,15 +409,16 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         boolean isAdmin = SecurityUtils.getSubject().hasRole("admin") || SecurityUtils.getSubject().hasRole("zhuren");
         List<SysDepartModel> permitDepart;
-        //只获取班组,不获取组织机构类型和公司部门
-        String orgCategory = "3,4,5";
+        //只获取班组数量,组织机构类型不为公司部门
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_LOG_ORG_CATEGORY);
+        List<String> orgCategoryList = StrUtil.splitTrim(sysParamModel.getValue(), ",");
         if (isAdmin){
             // 管理员和主任获取所有部门
-            permitDepart = iSysBaseAPI.getAllSysDepart().stream().filter(s -> orgCategory.contains(s.getOrgCategory())).collect(Collectors.toList());
+            permitDepart = iSysBaseAPI.getAllSysDepart().stream().filter(s -> orgCategoryList.contains(s.getOrgCategory())).collect(Collectors.toList());
         }else {
             // 其他角色获取权限部门
             List<CsUserDepartModel> csUserDepartModelList = iSysBaseAPI.getDepartByUserId(loginUser.getId())
-                    .stream().filter(s -> orgCategory.contains(s.getOrgCategory())).collect(Collectors.toList());
+                    .stream().filter(s -> orgCategoryList.contains(s.getOrgCategory())).collect(Collectors.toList());
             permitDepart = csUserDepartModelList.stream().map(s->{
                 SysDepartModel sysDepartModel = new SysDepartModel();
                 BeanUtils.copyProperties(s, sysDepartModel);
@@ -431,9 +431,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
 
         // 班组查询的话
-        String orgId = workLogIndexUnSubmitReqDTO.getOrgId();
-        if (StrUtil.isNotEmpty(orgId)){
-            permitDepart = permitDepart.stream().filter(d->orgId.equals(d.getId())).collect(Collectors.toList());
+        List<String> searchOrgIdList = workLogIndexUnSubmitReqDTO.getOrgIdList();
+        if (CollUtil.isNotEmpty(searchOrgIdList)){
+            permitDepart = permitDepart.stream().filter(d->searchOrgIdList.contains(d.getId())).collect(Collectors.toList());
         }
 
         // 根据权限部门和查询日期，获取已提交的日志
@@ -1519,15 +1519,16 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         // 登录人的权限班组数量
         int teamNum;
         //只获取班组数量,组织机构类型不为公司部门
-        String orgCategory = "3,4,5";
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_LOG_ORG_CATEGORY);
+        List<String> orgCategoryList = StrUtil.splitTrim(sysParamModel.getValue(), ",");
         if (isAdmin){
             // 管理员和主任获取所有部门
             List<SysDepartModel> allSysDepart = iSysBaseAPI.getAllSysDepart();
-            teamNum = (int) allSysDepart.stream().filter(s -> orgCategory.contains(s.getOrgCategory())).count();
+            teamNum = (int) allSysDepart.stream().filter(s -> orgCategoryList.contains(s.getOrgCategory())).count();
         }else {
             // 其他角色获取权限部门的班组数量
             List<CsUserDepartModel> permitDepartList = iSysBaseAPI.getDepartByUserId(loginUser.getId());
-            List<CsUserDepartModel> filterDepartList = permitDepartList.stream().filter(s -> orgCategory.contains(s.getOrgCategory())).collect(Collectors.toList());
+            List<CsUserDepartModel> filterDepartList = permitDepartList.stream().filter(s -> orgCategoryList.contains(s.getOrgCategory())).collect(Collectors.toList());
             teamNum = filterDepartList.size();
             // 获取权限部门的orgId
             orgIdList = filterDepartList.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
