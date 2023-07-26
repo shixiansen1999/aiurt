@@ -338,11 +338,11 @@ public interface SysParamCodeConstant {
     String INSPECTION_PEER_ALL_USER = "inspection_peer_all_user";
 
     String INSPECTION_SIGN_MULTI = "inspection_sign_multi";
-    String APP_PATROL_TASK_POOL_SORT = "app_patrol_task_pool_sort";
     /**
      * 	工作内容是否需要查出所有未完成故障
      */
     String 	WORKLOG_UNFINISH_FAULT = "worklog_unfinish_fault";
+    String APP_PATROL_TASK_POOL_SORT = "app_patrol_task_pool_sort";
     /**
      * 取消去办理的消息类型
      */
@@ -457,4 +457,5 @@ public interface SysParamCodeConstant {
      * 获取施工计划登录门户url
      */
     String CONSTRUCTION_URL="construction_url";
+
 }
