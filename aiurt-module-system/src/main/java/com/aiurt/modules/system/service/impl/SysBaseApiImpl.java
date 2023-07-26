@@ -2279,7 +2279,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public JSONObject getSystemName(String majorCode, String systemName) {
         LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CsSubsystem::getSystemName, systemName).eq(CsSubsystem::getMajorCode, majorCode).eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+        wrapper.eq(CsSubsystem::getSystemName, systemName).eq(StrUtil.isNotEmpty(majorCode), CsSubsystem::getMajorCode, majorCode).eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
         CsSubsystem subsystem = subsystemMapper.selectOne(wrapper);
         if (Objects.isNull(subsystem)) {
             return null;
