@@ -311,8 +311,11 @@
                 </foreach>
             </if>
             <if test="startDate != null and endDate != null">
-                and DATE_FORMAT(log_time, "%Y-%m-%d") >= DATE_FORMAT(#{startDate}, "%Y-%m-%d")
-                and DATE_FORMAT(log_time, "%Y-%m-%d") &lt;= DATE_FORMAT(#{endDate}, "%Y-%m-%d")
+                and DATE_FORMAT(twl.log_time, "%Y-%m-%d") >= DATE_FORMAT(#{startDate}, "%Y-%m-%d")
+                and DATE_FORMAT(twl.log_time, "%Y-%m-%d") &lt;= DATE_FORMAT(#{endDate}, "%Y-%m-%d")
+            </if>
+            <if test="status != null">
+                and twl.status = #{status}
             </if>
         </where>
     </select>

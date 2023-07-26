@@ -400,7 +400,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         Date startDate = workLogIndexUnSubmitReqDTO.getStartDate();
         Date endDate = workLogIndexUnSubmitReqDTO.getEndDate();
 
-        // --开始时间不小于结束时间的话，直接返回
+        // --开始时间大于结束时间的话，直接返回
+        if (endDate.before(startDate)){
+            return new Page<>(workLogIndexUnSubmitReqDTO.getPageNo(), workLogIndexUnSubmitReqDTO.getPageSize());
+        }
 
         // 查看开始时间到结束时间有多少天
         int days = (int) DateUtil.between(startDate, endDate, DateUnit.DAY) + 1;
@@ -439,7 +442,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         // 根据权限部门和查询日期，获取已提交的日志
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         List<String> orgIdList = permitDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
-        List<WorkLog> submitWorkLogList = depotMapper.queryWorKLogByOrgIdAndDate(orgIdList, startDate, endDate);
+        List<WorkLog> submitWorkLogList = depotMapper.queryWorKLogByOrgIdAndDate(orgIdList, startDate, endDate, WorkLogConstans.STATUS_1);
         // 将workLogList根据(orgId, -, logTime)连接作为key，提交个数作为value，做一个Map
         Map<String, Long> submitWorkLogMap = submitWorkLogList.stream()
                 .collect(Collectors.groupingBy(w -> w.getOrgId() + "-" + dateFormat.format(w.getLogTime()), Collectors.counting()));
