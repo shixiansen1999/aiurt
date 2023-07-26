@@ -23,7 +23,7 @@ public class CommonValidationHandler {
     public static ValidationResult validateForNoInspectionProject(Map<String, Column> row, Column column) {
         Column type = row.get("type");
         if (ObjectUtil.isNotEmpty(type)) {
-            if (InspectionConstant.FOU.equals(String.valueOf(type.getData())) && ObjectUtil.isEmpty(column.getData())) {
+            if (InspectionConstant.FOU.equals(String.valueOf(type.getData())) && ObjectUtil.isNotEmpty(column.getData())) {
                 return new ValidationResult(false, String.format("是否为检查项为否时，%s字段不用填写", column.getName()));
             }
         }
