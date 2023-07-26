@@ -1541,7 +1541,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         // 应提交日志数，每个班组每天是2个
         Integer shouldSubmitNum = 2 * teamNum * days;
         // 已提交日志数
-        Integer submitNum = this.baseMapper.getSubmitNum(startDate, endDate, isAdmin ? null : loginUser.getOrgId());
+        Integer submitNum = this.baseMapper.getSubmitNum(startDate, endDate, isAdmin ? null : orgIdList);
         // 未提交数，应提交-已提交
         Integer unSubmitNum = Math.max(shouldSubmitNum - submitNum, 0);
         // 获取前7个已提交的日志
