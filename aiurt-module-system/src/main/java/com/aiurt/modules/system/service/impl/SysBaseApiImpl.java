@@ -2090,7 +2090,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         } else {
             List<SysDepartModel> list = new ArrayList<>();
             for (SysDepartModel model : sysDepartModels) {
-                List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getOrgCode());
+                List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getOrgCode(), SysParamCodeConstant.WORK_LOG_ORG_CATEGORY);
                 if (CollUtil.isNotEmpty(models)) {
                     list.addAll(models);
                 }
@@ -2403,7 +2403,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         //获取用户的所属部门及所属部门子部门
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String orgCode = user.getOrgCode();
-        return sysDepartMapper.getUserOrgCategory(orgCode);
+        return sysDepartMapper.getUserOrgCategory(orgCode, SysParamCodeConstant.WORK_LOG_ORG_CATEGORY);
     }
 
     @Override

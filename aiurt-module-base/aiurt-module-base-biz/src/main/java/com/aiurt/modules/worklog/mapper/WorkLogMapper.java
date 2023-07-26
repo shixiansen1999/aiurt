@@ -37,12 +37,15 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
      * 查询日志
      * @param page
      * @param param
+     * @param workLogOrgCategory 实施配置里面组织机构是班组的编码
      * @return
      */
     @DataPermission({
             @DataColumn(key = "deptName",value = "sd.org_code")
     })
-    IPage<WorkLogResult> queryWorkLog(IPage<WorkLogResult> page, @Param("param") WorkLogParam param);
+    IPage<WorkLogResult> queryWorkLog(IPage<WorkLogResult> page,
+                                      @Param("param") WorkLogParam param,
+                                      @Param("workLogOrgCategory") String workLogOrgCategory);
 
     /**
      * 大屏-工作日志列表查询

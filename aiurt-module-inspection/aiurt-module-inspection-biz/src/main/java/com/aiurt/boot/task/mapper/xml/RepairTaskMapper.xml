@@ -817,8 +817,9 @@
         a.depart_name as orgName
         from
         sys_depart a
+        <!--只获取班组，不获取类型为组织机构和公司的-->
+        INNER JOIN sys_param sp ON find_in_set(a.org_category, sp.`value`) AND sp.`code`= #{workLogOrgCategory}
         where a.parent_id=#{id}
-        and a.org_category in(3,4,5)
     </select>
 
     <select id="getRepairTaskStation" resultType="java.lang.String">

@@ -511,7 +511,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
      * @return
      */
     private IPage<WorkLogResult> getWorkLogResultIPage(IPage<WorkLogResult> page, WorkLogParam param) {
-        IPage<WorkLogResult> result = depotMapper.queryWorkLog(page, param);
+        IPage<WorkLogResult> result = depotMapper.queryWorkLog(page, param, SysParamCodeConstant.WORK_LOG_ORG_CATEGORY);
         List<WorkLogResult> records = result.getRecords();
         boolean b = GlobalThreadLocal.setDataFilter(false);
         //todo 待处理
