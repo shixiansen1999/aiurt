@@ -148,10 +148,10 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
      * 获取已提交的日志数
      * @param startDate
      * @param endDate
-     * @param orgId
+     * @param orgIdList
      * @return
      */
-    Integer getSubmitNum(@Param("startDate") Date startDate,@Param("endDate") Date endDate, @Param("orgId") String orgId);
+    Integer getSubmitNum(@Param("startDate") Date startDate,@Param("endDate") Date endDate, @Param("orgIdList") List<String> orgIdList);
 
 
     /**
