@@ -55,6 +55,10 @@ public class ScreenModule {
      */
     private Integer abnormal;
     /**
+     * 异常状态
+     */
+    private Integer unFinish;
+    /**
      * 作废状态
      */
     private Integer discardStatus;
@@ -90,6 +94,4 @@ public class ScreenModule {
 //     * 专业编号
 //     */
 //    private List<String> majors;
-    private Date startDate;
-    private Date endDate;
 }
