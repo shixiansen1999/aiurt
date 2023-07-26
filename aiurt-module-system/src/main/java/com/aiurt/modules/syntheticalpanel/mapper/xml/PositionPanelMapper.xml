@@ -34,8 +34,8 @@
     from fault
     where (status > 2 and status &lt; 12)
     <if test="positionPanel.startDate != null and positionPanel.endDate != null">
-        and date_format(happen_time ,'%Y-%m-%d') &gt;=  date_format(#{positionPanel.startDate},'%Y-%m-%d')
-        and date_format(happen_time ,'%Y-%m-%d') &lt;= date_format(#{positionPanel.endDate},'%Y-%m-%d')
+        and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{positionPanel.startDate},'%Y-%m-%d')
+        and date_format(approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{positionPanel.endDate},'%Y-%m-%d')
     </if>
     and station_code=cs.station_code),0) as faultNum
     FROM
