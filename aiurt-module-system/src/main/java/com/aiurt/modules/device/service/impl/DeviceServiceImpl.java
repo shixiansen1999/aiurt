@@ -635,7 +635,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 
 			}
 			//文件中
-			List<DeviceModel> fileList = list.stream().filter(e -> e.getCode().equals(code)).collect(Collectors.toList());
+			List<DeviceModel> fileList = list.stream().filter(e -> e.getCode().equals(code)&&!e.equals(deviceModel)).collect(Collectors.toList());
 			if(CollUtil.isNotEmpty(fileList)){
 				stringBuilder.append("文件中存在相同的设备编号，");
 			}
