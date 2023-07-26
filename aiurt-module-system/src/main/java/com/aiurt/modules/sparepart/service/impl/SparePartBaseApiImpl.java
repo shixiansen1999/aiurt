@@ -51,6 +51,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -138,9 +139,21 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
         // 1.插入数据 ：需要往spare_part_malfunction备件履历表、spare_part_replace备件更换记录表、备件报废表spare_part_scrap插入数据
         // spare_part_malfunction备件履历表
         List<SparePartMalfunction> malfunctionList = new ArrayList<>();
+        List<DeviceChangeSparePart> deviceChangeSpareParts = new ArrayList<>();
+        List<SparePartReplace> replaceList = new ArrayList<>();
+        List<DeviceAssembly> assemblyList = new ArrayList<>();
+        List<DeviceAssembly> deleteAssemblyList = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(sparePartList)) {
+            List<MaterialBase> materialBases = materialBaseService.list(new LambdaQueryWrapper<MaterialBase>().eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0));
+            Map<String, MaterialBase> baseMap = materialBases.stream().collect(Collectors.toMap(MaterialBase::getCode,Function.identity(), (m1,m2) -> m2));
+            List<Device> deviceList = deviceService.list(new LambdaQueryWrapper<Device>().eq(Device::getDelFlag, CommonConstant.DEL_FLAG_0));
+            Map<String, Device> deviceMap = deviceList.stream().collect(Collectors.toMap(Device::getCode, Function.identity(), (m1,m2) -> m2));
             List<DeviceAssembly> deviceAssemblyList = deviceAssemblyService.list();
             Set<String> assemblyCodeSet = deviceAssemblyList.stream().map(DeviceAssembly::getCode).collect(Collectors.toSet());
+            Map<String, DeviceAssembly> deviceAssemblyMap = deviceAssemblyList.stream().collect(Collectors.toMap(DeviceAssembly::getCode,Function.identity(), (m1,m2) -> m2));
+            List<LoginUser> loginUsers = sysBaseApi.queryAllUsers();
+            Map<String, LoginUser> userMap = loginUsers.stream().collect(Collectors.toMap(LoginUser::getUsername, Function.identity(), (m1,m2) -> m2));
+
             // 插入到组件表中
             sparePartList.stream().forEach(deviceChange -> {
                 // 线处理
@@ -156,9 +169,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                     outOrderService.getById(outOrderId);
                 }
                 String deviceCode = deviceChange.getDeviceCode();
-                LambdaQueryWrapper<Device> queryWrapper = new LambdaQueryWrapper<>();
-                queryWrapper.eq(Device::getCode, deviceCode).eq(Device::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
-                Device device = deviceService.getBaseMapper().selectOne(queryWrapper);
+                Device device = deviceMap.get(deviceCode);
                 if (Objects.isNull(device)) {
                     return;
                 }
@@ -167,9 +178,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 String materialBaseCode = deviceChange.getMaterialBaseCode();
                 String newSparePartSplitCode = deviceChange.getNewSparePartSplitCode();
                 List<String> codes = StrUtil.splitTrim(newSparePartSplitCode, ",");
-                LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
-                wrapper.eq(MaterialBase::getCode, materialBaseCode).eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
-                MaterialBase materialBase = materialBaseService.getBaseMapper().selectOne(wrapper);
+                MaterialBase materialBase = baseMap.get(materialBaseCode);
                 if (Objects.isNull(materialBase)) {
                     return;
                 }
@@ -205,15 +214,13 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                     deviceAssembly.setBuyDate(new Date());
                     deviceAssembly.setOnlineDate(new Date());
                     deviceAssembly.setUnit(materialBase.getUnit());
-                    deviceAssemblyService.save(deviceAssembly);
-
-                   // list.add(replace);
+                    assemblyList.add(deviceAssembly);
                 }
                 DeviceChangeSparePart deviceChangeSparePart = new DeviceChangeSparePart();
                 String newSpitCode = CollUtil.join(splitCodes, ",");
                 deviceChange.setNewSparePartSplitCode(newSpitCode);
                 BeanUtils.copyProperties(deviceChange,deviceChangeSparePart);
-                sparePartService.updateById(deviceChangeSparePart);
+                deviceChangeSpareParts.add(deviceChangeSparePart);
                 // spare_part_replace备件更换记录表
                 SparePartReplace replace = new SparePartReplace();
                 replace.setMaintenanceRecord(faultCode);
@@ -223,15 +230,11 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 // 被替换的组件
                 replace.setReplaceSubassemblyCode(oldSparePartCode);
                 replace.setSubassemblyCode(newSpitCode);
-                partReplaceService.save(replace);
+                replaceList.add(replace);
                 if (StrUtil.isNotBlank(oldSparePartCode)) {
-
-                    LambdaQueryWrapper<DeviceAssembly> assemblyLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                    assemblyLambdaQueryWrapper.eq(DeviceAssembly::getDeviceCode, deviceCode)
-                            .eq(DeviceAssembly::getCode, oldSparePartCode).last("limit 1");
-                    DeviceAssembly deviceAssembly = deviceAssemblyService.getBaseMapper().selectOne(assemblyLambdaQueryWrapper);
+                    DeviceAssembly deviceAssembly = deviceAssemblyMap.get(oldSparePartCode);
                     if (Objects.nonNull(deviceAssembly)) {
-                        deviceAssemblyService.removeById(deviceAssembly);
+                        deleteAssemblyList.add(deviceAssembly);
                     }
                 }
             });
@@ -247,7 +250,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 }
                 // 需要往spare_part_malfunction备件履历表
                 String createBy = deviceChangeDTO.getCreateBy();
-                LoginUser loginUser = sysBaseApi.getUserByName(createBy);
+                LoginUser loginUser = userMap.get(createBy);
                 SparePartMalfunction sparePartMalfunction = new SparePartMalfunction();
                 sparePartMalfunction.setOutOrderId(outOrderId);
                 sparePartMalfunction.setMaintenanceRecord(faultCode);
@@ -268,6 +271,23 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
         // 保存数据
         if (CollectionUtil.isNotEmpty(malfunctionList)) {
             sparePartMalfunctionService.saveBatch(malfunctionList);
+        }
+        // 保存数据
+        if (CollectionUtil.isNotEmpty(replaceList)) {
+            partReplaceService.saveBatch(replaceList);
+        }
+
+        // 删除数据
+        if (CollectionUtil.isNotEmpty(deleteAssemblyList)) {
+            deviceAssemblyService.removeBatchByIds(deleteAssemblyList);
+        }
+        // 保存数据
+        if (CollectionUtil.isNotEmpty(assemblyList)) {
+            deviceAssemblyService.saveBatch(assemblyList);
+        }
+        // 更新数据
+        if (CollectionUtil.isNotEmpty(deviceChangeSpareParts)) {
+            sparePartService.updateBatchById(deviceChangeSpareParts);
         }
 
     }
