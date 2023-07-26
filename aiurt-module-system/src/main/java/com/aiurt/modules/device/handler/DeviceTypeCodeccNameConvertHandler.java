@@ -20,19 +20,20 @@ public class DeviceTypeCodeccNameConvertHandler implements IRowDataConvertHandle
     private ISysBaseAPI sysBaseApi;
     @Override
     public String convert(Column value, Map<String, Column> row) {
+        if (value.getData() != null) {
+            Column majorCodeColumn = row.get("major_code");
 
-        Column majorCodeColumn = row.get("major_code");
+            Column subsystemCodeColumn = row.get("system_code") != null ? row.get("system_code") : row.get("subsystem_code");
+            Object subsystem = subsystemCodeColumn.getData();
 
-        Column subsystemCodeColumn = row.get("system_code");
-        Object subsystem = subsystemCodeColumn.getData();
-
-        // 查询设备类型是否匹配专业和子系统
-        DeviceType csMajorByCodeTypeName = sysBaseApi.getDeviceTypeByCode((String)majorCodeColumn.getData(), (String)subsystem, (String) value.getData());
-        if (ObjectUtil.isNotNull(csMajorByCodeTypeName)) {
-            if ("device_type_code_cc".equals(value.getColumn())) {
-                value.setData(csMajorByCodeTypeName.getCodeCc());
-            } else {
-                value.setData(csMajorByCodeTypeName.getCode());
+            // 查询设备类型是否匹配专业和子系统
+            DeviceType csMajorByCodeTypeName = sysBaseApi.getDeviceTypeByCode((String)majorCodeColumn.getData(), (String)subsystem, (String) value.getData());
+            if (ObjectUtil.isNotNull(csMajorByCodeTypeName)) {
+                if ("device_type_code_cc".equals(value.getColumn())) {
+                    value.setData(csMajorByCodeTypeName.getCodeCc());
+                } else {
+                    value.setData(csMajorByCodeTypeName.getCode());
+                }
             }
         }
         return null;
