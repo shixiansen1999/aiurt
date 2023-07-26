@@ -21,7 +21,7 @@ public interface ICommonService {
      * @param majorId 专业id
      * @return
      */
-    public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId,String majorId,List<String> keys);
+    public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId,String majorId,List<String> keys, List<String> values);
 
     /**
      * 查询设备
