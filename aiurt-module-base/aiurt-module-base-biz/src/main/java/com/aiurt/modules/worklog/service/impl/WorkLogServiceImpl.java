@@ -1431,8 +1431,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             /*teamNum = iSysBaseAPI.getAllSysDepart().size();*/
             List<SysDepartModel> allSysDepart = iSysBaseAPI.getAllSysDepart();
             //只获取班组数量,组织机构类型不为公司部门
-            String orgCategory = "3,4,5";
-            List<SysDepartModel> modelList = allSysDepart.stream().filter(s -> orgCategory.contains(s.getOrgCategory())).collect(Collectors.toList());
+            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_LOG_ORG_CATEGORY);
+            List<SysDepartModel> modelList = allSysDepart.stream().filter(s -> StrUtil.splitTrim(sysParamModel.getValue(),",").contains(s.getOrgCategory())).collect(Collectors.toList());
             teamNum = modelList.size();
         }
 

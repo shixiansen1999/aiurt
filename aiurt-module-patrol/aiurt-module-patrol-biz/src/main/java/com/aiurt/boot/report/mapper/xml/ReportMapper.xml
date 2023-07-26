@@ -26,7 +26,7 @@
             or
             (
             DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
             )
             )
         </if>
@@ -94,7 +94,7 @@
             or
             (
             DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
             )
             )
         </if>
@@ -159,7 +159,7 @@ FROM
          or
          (
          DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-         and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+         and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
          )
          )
         </if>
@@ -224,7 +224,7 @@ FROM
          or
          (
          DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-         and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+         and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
          )
          )
         </if>
@@ -291,7 +291,7 @@ FROM
             or
             (
             DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
             )
             )
         </if>
@@ -357,7 +357,7 @@ FROM
             or
             (
             DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
             )
             )
         </if>
@@ -413,7 +413,7 @@ FROM
            or
            (
            DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-           and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+           and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
            )
            )
         </if>
