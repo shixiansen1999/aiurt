@@ -157,6 +157,10 @@ public class DeviceModel implements Serializable {
     @ApiModelProperty(value = "错误原因")
     @TableField(exist = false)
     private  String  deviceMistake;
+    /**错误原因*/
+    @ApiModelProperty(value = "组件错误数")
+    @TableField(exist = false)
+    private  Integer  errorLines;
 
     /**组件*/
     @ExcelCollection(name = "组件")
