@@ -425,6 +425,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             permitDepart = csUserDepartModelList.stream().map(s->{
                 SysDepartModel sysDepartModel = new SysDepartModel();
                 BeanUtils.copyProperties(s, sysDepartModel);
+                sysDepartModel.setId(s.getDepartId());
                 return sysDepartModel;
             }).collect(Collectors.toList());
         }
