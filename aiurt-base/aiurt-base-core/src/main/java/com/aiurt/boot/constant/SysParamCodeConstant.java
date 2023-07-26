@@ -437,4 +437,9 @@ public interface SysParamCodeConstant {
      * 工作日志只获取班组数量,组织机构类型不为公司部门
      */
     String WORK_LOG_ORG_CATEGORY = "work_log_org_category";
+
+    /**
+     * 公安消防班组id
+     */
+    String GONGANXIAOFANG_ID = "gonganxiaofang_id";
 }

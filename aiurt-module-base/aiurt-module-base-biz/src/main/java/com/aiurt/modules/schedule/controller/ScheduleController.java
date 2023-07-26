@@ -22,7 +22,6 @@ import com.aiurt.modules.schedule.service.IScheduleService;
 import com.aiurt.modules.schedule.util.ImportExcelUtil;
 import com.aiurt.modules.schedule.vo.RecordParam;
 import com.aiurt.modules.schedule.vo.ScheduleRecordVo;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -34,11 +33,15 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -472,48 +475,35 @@ public class ScheduleController {
     @AutoLog(value = "夜班人员统计")
     @ApiOperation(value = "夜班人员统计", notes = "夜班人员统计板")
     @RequestMapping("count")
-    public Result<IPage<ScheduleRecordVo>> count(RecordParam param) {
-        Date startDate = DateUtils.getStartDate(param.getStartDate());
-        Date endDate = DateUtils.getEndDate(param.getEndDate());
-        Result<IPage<ScheduleRecordVo>> result = new Result<>();
-        IPage<ScheduleRecordVo> page = new Page<ScheduleRecordVo>();
-        // todo 后期修改
-        List<LoginUser> userList = new ArrayList<>();
-//        List<LoginUser> userList = userService.selectUserByRoleAndDepartment("jishuyuan", param.getOrgId(), param.getUserName());
+    public Result<IPage<ScheduleRecordVo>> count(RecordParam param,
+                                                 @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        Page<ScheduleRecordVo> page = new Page<>(pageNo, pageSize);
+        IPage<ScheduleRecordVo> pageList = scheduleService.nightCount(page, param);
+        return Result.ok(pageList);
+    }
 
-        if (userList != null && userList.size() > 0) {
-            List<ScheduleRecordVo> list = new ArrayList<>(userList.size());
-            userList.forEach(sysUser -> {
-                ScheduleRecordVo vo = new ScheduleRecordVo();
-                vo.setUserId(sysUser.getId());
-                vo.setDepartment(sysUser.getOrgName());
-                vo.setUsername(sysUser.getRealname());
-                QueryWrapper wrapper = new QueryWrapper();
-                wrapper.eq("user_id", sysUser.getId());
-                wrapper.ge("date", startDate);
-                wrapper.le("date", endDate);
-                wrapper.like("item_name", "夜");
-                vo.setCount((long) recordService.count(wrapper));
-                if (new Date().before(endDate)) {
-                    wrapper = new QueryWrapper();
-                    wrapper.eq("user_id", sysUser.getId());
-                    wrapper.ge("date", startDate);
-                    wrapper.le("date", new Date());
-                    wrapper.like("item_name", "夜");
-                    vo.setAct((long) recordService.count(wrapper));
-                } else {
-                    vo.setAct(vo.getCount());
-                }
-                list.add(vo);
-            });
-            page.setRecords(list);
-            page.setCurrent(1);
-            page.setTotal(list.size());
-            page.setSize(list.size());
-        }
-
-        result.setResult(page);
-        return result;
+    /**
+     * 导出excel
+     * @param param
+     * @return
+     */
+    @AutoLog(value = "导出excel")
+    @ApiOperation(value="导出excel", notes="导出excel")
+    @RequestMapping(value = "/exportNightXls")
+    public ModelAndView exportXls(RecordParam param,
+                                  @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                  @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize){
+        //Step.2 AutoPoi 导出Excel
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        Page<ScheduleRecordVo> page = new Page<ScheduleRecordVo>(pageNo, pageSize);
+        IPage<ScheduleRecordVo> pageList = scheduleService.nightCount(page, param);
+        //导出文件名称
+        mv.addObject(NormalExcelConstants.FILE_NAME, "通信分部夜班统计导出");
+        mv.addObject(NormalExcelConstants.CLASS, ScheduleRecordVo.class);
+        mv.addObject(NormalExcelConstants.PARAMS, new org.jeecgframework.poi.excel.entity.ExportParams("通信分部夜班统计导出",  "通信分部夜班统计导出", ExcelType.XSSF));
+        mv.addObject(NormalExcelConstants.DATA_LIST, pageList.getRecords());
+        return mv;
     }
 
     @AutoLog(value = "校验本年度是否有存在节假日")
