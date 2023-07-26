@@ -28,7 +28,7 @@ public interface PositionPanelMapper {
      * @param
      * @return
      */
-    List<CsStation> getStations();
+    List<CsStation> getStations(@Param("positionPanel") PositionPanelModel positionPanel);
 
     /**
      * 通过站点名称查询班组信息
