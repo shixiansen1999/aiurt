@@ -449,6 +449,18 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
+    public Map<String, String> getRoleNamesByUserIds(List<String> userIds) {
+        // 直接数据库查询只能返回list，要遍历转化成<userId,roleName>的map
+        List<Map<String, String>> mapList = userMapper.getRoleNamesByUserIds(userIds);
+        Map<String, String> roleNameUserIdMap = new HashMap<>();
+        if (CollUtil.isEmpty(mapList)){
+            return roleNameUserIdMap;
+        }
+        mapList.forEach(perMap->roleNameUserIdMap.put(perMap.get("userId"), perMap.get("roleName")));
+        return roleNameUserIdMap;
+    }
+
+    @Override
     public List<String> getDepartIdsByUsername(String username) {
         List<SysDepart> list = sysDepartService.queryDepartsByUsername(username);
         List<String> result = new ArrayList<>(list.size());
@@ -846,15 +858,23 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
 
     @Override
-    public List<CsRoleUserModel>queryRoleUserTree(){
-        List<CsRoleUserModel> list = new ArrayList<>();
+    public List<SysUserModel>queryRoleUserTree(String values){
+        // 将查询岗位，并转成map
+        List<DictModel> sysPost = this.getDictItems("sys_post");
+        Map<String, String> sysPostMap = sysPost.stream()
+                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
+
+        List<SysUserModel> list = new ArrayList<>();
         List<SysRole> roleList = roleMapper.selectList(new QueryWrapper<SysRole>());
         for (SysRole role : roleList) {
-            CsRoleUserModel csRoleUserModel = new CsRoleUserModel();
-            csRoleUserModel.setValue(role.getId());
-            csRoleUserModel.setKey(role.getRoleCode());
-            csRoleUserModel.setLabel(role.getRoleName());
-            csRoleUserModel.setIsOrg(true);
+            SysUserModel roleSysUserModel = new SysUserModel();
+            roleSysUserModel.setId(role.getId());
+            roleSysUserModel.setTitle(role.getRoleName());
+            roleSysUserModel.setValue(role.getRoleCode());
+            roleSysUserModel.setKey(role.getRoleCode());
+            roleSysUserModel.setLabel(role.getRoleName());
+            roleSysUserModel.setIsRole(true);
+            roleSysUserModel.setIsPost(false);
             LambdaQueryWrapper<SysUserRole> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(SysUserRole::getRoleId,role.getId());
             List<SysUserRole> sysUserRoles = sysUserRoleMapper.selectList(lambdaQueryWrapper);
@@ -864,49 +884,164 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                         .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
                         .in(SysUser::getId, collect));
                 if (CollUtil.isNotEmpty(sysUsers)){
+                    // 获取用户角色名称的map：roleNameUserIdMap，key是用户id，value是角色名称
+                    List<String> userIds = sysUsers.stream().map(SysUser::getId).collect(Collectors.toList());
+                    Map<String, String> roleNameUserIdMap = getRoleNamesByUserIds(userIds);
+
                     List<SysUserModel> sysUserModelList = new ArrayList<>();
                     for (SysUser sysUser : sysUsers) {
                         SysUserModel sysUserModel = new SysUserModel();
-                        sysUserModel.setValue(sysUser.getId());
+                        sysUserModel.setId(sysUser.getId());
+                        sysUserModel.setKey(sysUser.getId());
+                        sysUserModel.setValue(sysUser.getUsername());
                         sysUserModel.setLabel(sysUser.getRealname());
-                        sysUserModel.setIsOrg(false);
+                        sysUserModel.setTitle(sysUser.getRealname());
+                        sysUserModel.setIsPost(false);
+                        sysUserModel.setIsRole(false);
+                        sysUserModel.setAvatar(sysUser.getAvatar());
+                        // 设置角色
+                        sysUserModel.setRoleName(roleNameUserIdMap.get(sysUser.getId()));
+                        // 设置岗位
+                        String postValueString = sysUser.getJobName();
+                        if (StrUtil.isNotEmpty(postValueString)){
+                            String postName = Arrays.stream(postValueString.split(","))
+                                    .map(sysPostMap::get).collect(Collectors.joining(","));
+                            sysUserModel.setPostName(postName);
+                        }
+                        // 所属部门
+                        sysUserModel.setOrgCode(sysUser.getOrgCode());
+                        sysUserModel.setOrgName(sysUser.getOrgName());
+
                         sysUserModelList.add(sysUserModel);
                     }
-                    csRoleUserModel.setChildren(sysUserModelList);
+                    roleSysUserModel.setChildren(sysUserModelList);
                 }
             }
-            list.add(csRoleUserModel);
+            // 该角色一共有多少人
+            if (CollUtil.isEmpty(roleSysUserModel.getChildren())){
+                roleSysUserModel.setUserNum(0);
+            }else{
+                roleSysUserModel.setUserNum(roleSysUserModel.getChildren().size());
+            }
+            list.add(roleSysUserModel);
         }
-        return  list;
+
+        // 如果有values进行查询，返回的直接是列表，就不做树返回了
+        if (StrUtil.isNotEmpty(values) && CollUtil.isNotEmpty(list)){
+            List<String> searchValueList = Arrays.asList(values.split(","));
+            List<SysUserModel> searchResultList = new ArrayList<>();
+            list.forEach(role->{
+                if (searchValueList.contains(role.getValue())) {
+                    searchResultList.add(role);
+                }
+                // 因为角色下的children就是人员，树级结构只有两层，不用递归
+                List<SysUserModel> userList = Optional.ofNullable(role.getChildren()).orElseGet(ArrayList::new);
+                searchResultList.addAll(userList.stream().filter(user->searchValueList.contains(user.getValue())).collect(Collectors.toList()));
+                // 而且查询的话，角色下的children就不要了
+                role.setChildren(null);
+            });
+            // searchResultList根据value去重
+            return searchResultList.stream().collect(
+                    Collectors.collectingAndThen(
+                            Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(SysUserModel::getValue))),
+                            ArrayList::new
+                    )
+            );
+        }
+
+        return list;
     }
 
     @Override
-    public List<PostModel>queryPostUserTree(){
-        List<PostModel> list = new ArrayList<>();
+    public List<SysUserModel>queryPostUserTree(String values){
+        List<SysUserModel> list = new ArrayList<>();
         List<DictModel> sysPost = this.getDictItems("sys_post");
+        Map<String, String> sysPostMap = sysPost.stream()
+                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
+
         if (CollUtil.isNotEmpty(sysPost)){
             for (DictModel dictModel : sysPost) {
-                 PostModel postModel = new PostModel();
-                 postModel.setLabel(dictModel.getText());
-                 postModel.setIsOrg(true);
+                SysUserModel postSysUserModel = new SysUserModel();
+                postSysUserModel.setLabel(dictModel.getText());
+                postSysUserModel.setKey(dictModel.getValue());
+                postSysUserModel.setValue(dictModel.getValue());
+                postSysUserModel.setTitle(dictModel.getTitle());
+                postSysUserModel.setIsPost(true);
+                postSysUserModel.setIsRole(false);
                  //根据岗位查询用户信息
-                List<SysUser> sysUsers = userMapper.selectList(new LambdaQueryWrapper<SysUser>()
-                        .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
-                        .eq(SysUser::getJobName, dictModel.getValue()));
+                LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>()
+                        .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+                        //.eq(SysUser::getJobName, dictModel.getValue());
+                // 用户有可能有多个岗位
+                queryWrapper.last("AND FIND_IN_SET('" + dictModel.getValue() + "', job_name)");
+                List<SysUser> sysUsers = userMapper.selectList(queryWrapper);
+
                 if (CollUtil.isNotEmpty(sysUsers)){
+                    // 获取用户角色名称的map：roleNameUserIdMap，key是用户id，value是角色名称
+                    List<String> userIds = sysUsers.stream().map(SysUser::getId).collect(Collectors.toList());
+                    Map<String, String> roleNameUserIdMap = getRoleNamesByUserIds(userIds);
+
                     List<SysUserModel> sysUserModelList = new ArrayList<>();
                     for (SysUser sysUser : sysUsers) {
                         SysUserModel sysUserModel = new SysUserModel();
-                        sysUserModel.setValue(sysUser.getId());
+                        sysUserModel.setId(sysUser.getId());
+                        sysUserModel.setKey(sysUser.getId());
+                        sysUserModel.setValue(sysUser.getUsername());
                         sysUserModel.setLabel(sysUser.getRealname());
-                        sysUserModel.setIsOrg(false);
+                        sysUserModel.setTitle(sysUser.getRealname());
+                        sysUserModel.setIsPost(false);
+                        sysUserModel.setIsRole(false);
+                        sysUserModel.setAvatar(sysUser.getAvatar());
                         sysUserModelList.add(sysUserModel);
+                        // 设置角色
+                        sysUserModel.setRoleName(roleNameUserIdMap.get(sysUser.getId()));
+                        // 设置岗位
+                        String postValueString = sysUser.getJobName();
+                        if (StrUtil.isNotEmpty(postValueString)){
+                            String postName = Arrays.stream(postValueString.split(","))
+                                    .map(sysPostMap::get).collect(Collectors.joining(","));
+                            sysUserModel.setPostName(postName);
+                        }
+                        // 所属部门
+                        sysUserModel.setOrgCode(sysUser.getOrgCode());
+                        sysUserModel.setOrgName(sysUser.getOrgName());
                     }
-                    postModel.setChildren(sysUserModelList);
+                    postSysUserModel.setChildren(sysUserModelList);
                 }
-                list.add(postModel);
+                // 该岗位一共有多少人
+                if (CollUtil.isEmpty(postSysUserModel.getChildren())){
+                    postSysUserModel.setUserNum(0);
+                }else{
+                    postSysUserModel.setUserNum(postSysUserModel.getChildren().size());
+                }
+
+                list.add(postSysUserModel);
             }
         }
+
+        // 如果有values进行查询，返回的直接是列表，就不做树返回了
+        if (StrUtil.isNotEmpty(values) && CollUtil.isNotEmpty(list)){
+            List<String> searchValueList = Arrays.asList(values.split(","));
+            List<SysUserModel> searchResultList = new ArrayList<>();
+            list.forEach(post->{
+                if (searchValueList.contains(post.getValue())) {
+                    searchResultList.add(post);
+                }
+                // 因为角色下的children就是人员，树级结构只有两层，不用递归
+                List<SysUserModel> userList = Optional.ofNullable(post.getChildren()).orElseGet(ArrayList::new);
+                searchResultList.addAll(userList.stream().filter(user->searchValueList.contains(user.getValue())).collect(Collectors.toList()));
+                // 而且查询的话，角色下的children就不要了
+                post.setChildren(null);
+            });
+            // searchResultList根据value去重
+            return searchResultList.stream().collect(
+                    Collectors.collectingAndThen(
+                            Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(SysUserModel::getValue))),
+                            ArrayList::new
+                    )
+            );
+        }
+
         return list;
     }
 
