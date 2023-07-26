@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
@@ -128,18 +129,26 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
 
             // 选人将 flowable:userassignee 属性转换为 JSON 格式
             List<ExtensionElement> userAssigneeElements = extensionElements.get(FlowModelExtElementConstant.EXT_USER_ASSIGNEE);
-            if (CollUtil.isNotEmpty(userAssigneeElements)) {
-                ExtensionElement userAssigneeElement = userAssigneeElements.get(0);
-                String name = userAssigneeElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_USER_NAME);
-                String value = userAssigneeElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_USER_VALUE);
-                String alias = userAssigneeElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_USER_ALIAS);
-                JsonNode jsonNode = parseUserAssigneeValue(value);
-                ObjectNode userAssigneeNode = objectMapper.createObjectNode();
-                userAssigneeNode.put(FlowModelExtElementConstant.EXT_USER_NAME, StrUtil.isNotBlank(name) ? name : "");
-                userAssigneeNode.set(FlowModelExtElementConstant.EXT_USER_VALUE, jsonNode);
-                userAssigneeNode.put(FlowModelExtElementConstant.EXT_USER_ALIAS, alias);
-                propertiesNode.set(FlowModelExtElementConstant.EXT_USER_ASSIGNEE, userAssigneeNode);
-            }
+            buildJsonElement(propertiesNode, userAssigneeElements, FlowModelExtElementConstant.EXT_USER_ASSIGNEE);
+
+            // 抄送人
+            List<ExtensionElement> carbonCopyElements = extensionElements.get(FlowModelExtElementConstant.EXT_CARBON_COPY);
+            buildJsonElement(propertiesNode, carbonCopyElements, FlowModelExtElementConstant.EXT_CARBON_COPY);
+        }
+    }
+
+    private void buildJsonElement(ObjectNode propertiesNode, List<ExtensionElement> extensionElementList, String elementName) {
+        if (CollUtil.isNotEmpty(extensionElementList)) {
+            ExtensionElement extensionElement = extensionElementList.get(0);
+            String name = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_USER_NAME);
+            String value = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_USER_VALUE);
+            String alias = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_USER_ALIAS);
+            JsonNode jsonNode = parseUserAssigneeValue(value);
+            ObjectNode objectNode = objectMapper.createObjectNode();
+            objectNode.put(FlowModelExtElementConstant.EXT_USER_NAME, StrUtil.isNotBlank(name) ? name : "");
+            objectNode.set(FlowModelExtElementConstant.EXT_USER_VALUE, jsonNode);
+            objectNode.put(FlowModelExtElementConstant.EXT_USER_ALIAS, alias);
+            propertiesNode.set(elementName, objectNode);
         }
     }
 
@@ -174,6 +183,10 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_USER_ASSIGNEE,
                     JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_USER_ASSIGNEE, elementNode));
 
+            // 抄送人
+            addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_CARBON_COPY,
+                    JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_CARBON_COPY, elementNode));
+
             // 1.0选人
             // 选人类型， initiator是为：流程发起人, data
             addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.USER_TYPE);
@@ -205,12 +218,37 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
         }
     }
 
+    /**
+     * 属性
+     * @param elementNode
+     * @param userTask
+     * @param prefix
+     * @param attr
+     */
     private void addCustomAttributeForPrefix(JsonNode elementNode, UserTask userTask, String prefix, String attr) {
         String formType = JsonConverterUtil.getPropertyValueAsString(attr, elementNode);
         if (StrUtil.isNotBlank(formType)) {
             ExtensionAttribute attribute = new ExtensionAttribute();
             attribute.setName(attr);
             attribute.setValue(formType);
+            attribute.setNamespacePrefix(prefix);
+            attribute.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
+            userTask.addAttribute(attribute);
+        }
+    }
+
+    /**
+     * 构造属性
+     * @param value 属性值
+     * @param userTask 任务节点
+     * @param prefix 前缀
+     * @param attr xml 节点属性
+     */
+    private void addCustomAttributeForPrefix(String value, UserTask userTask, String prefix, String attr) {
+        if (StrUtil.isNotBlank(value)) {
+            ExtensionAttribute attribute = new ExtensionAttribute();
+            attribute.setName(attr);
+            attribute.setValue(value);
             attribute.setNamespacePrefix(prefix);
             attribute.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
             userTask.addAttribute(attribute);
@@ -230,24 +268,19 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
 
 
     /**
-     * json 字符转为 JsonNode
+     * json 字符转为 JsonNode,json对象非json数组
      * @param value
      * @return
      */
     private JsonNode parseUserAssigneeValue(String value) {
         ObjectMapper objectMapper = new ObjectMapper();
-        ArrayNode arrayNode = objectMapper.createArrayNode();
         try {
             JsonNode jsonNode = objectMapper.readTree(value);
-            if (jsonNode instanceof ArrayNode) {
-                arrayNode = (ArrayNode) jsonNode;
-            } else if (jsonNode instanceof ObjectNode) {
-                arrayNode.add(jsonNode);
-            }
+            return jsonNode;
         } catch (IOException e) {
             // ignore exception
         }
-        return arrayNode;
+        return null;
     }
 
 
@@ -293,7 +326,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                     ExtensionElement ee = getExtensionElement(extensionName, jsonObject);
                     userTask.addExtensionElement(ee);
                 }
-            }else {
+            } else if (extensionData.isObject()) {
                 JSONObject jsonObject = JSONObject.parseObject(json);
                 ExtensionElement ee = getExtensionElement(extensionName, jsonObject);
                 userTask.addExtensionElement(ee);
