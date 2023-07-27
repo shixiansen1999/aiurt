@@ -1,4 +1,4 @@
-package com.aiurt.boot.standard.handler;
+package com.aiurt.modules.device.handler;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.entity.Column;
@@ -16,19 +16,13 @@ import java.util.Map;
  * @create: 2023-06-28 15:23
  * @Description:
  */
-@Component("InspectionCodeRowSystemValidationRuleHandler")
-public class InspectionCodeRowSystemValidationRuleHandler implements RowValidationRule {
+@Component("DeviceRowSystemValidationRuleHandler")
+public class DeviceRowSystemValidationRuleHandler implements RowValidationRule {
     @Resource
     private ISysBaseAPI sysBaseApi;
 
     @Override
     public ValidationResult validate(Map<String, Column> row, Column column) {
-        //如果设备类型不为空，则子系统不能为空
-        Column deviceTypeCode = row.get("device_type_code");
-        if ( ObjectUtil.isNotEmpty(deviceTypeCode)&&ObjectUtil.isNotEmpty((String) deviceTypeCode.getData())) {
-            return new ValidationResult(false, "设备类型不为空，子系统必填");
-        }
-
         Object systemName = column.getData();
         Column majorName = row.get("major_code");
 
