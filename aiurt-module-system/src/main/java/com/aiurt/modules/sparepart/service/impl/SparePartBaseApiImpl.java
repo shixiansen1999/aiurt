@@ -32,7 +32,9 @@ import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.service.*;
 import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.service.ISysDepartService;
+import com.aiurt.modules.system.service.ISysUserService;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -109,6 +111,8 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
     private ISysParamAPI iSysParamAPI;
     @Autowired
     private SparePartLendMapper sparePartLendMapper;
+    @Autowired
+    private ISysUserService userService;
 
 
 
@@ -141,18 +145,23 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
         List<SparePartMalfunction> malfunctionList = new ArrayList<>();
         List<DeviceChangeSparePart> deviceChangeSpareParts = new ArrayList<>();
         List<SparePartReplace> replaceList = new ArrayList<>();
-        List<DeviceAssembly> assemblyList = new ArrayList<>();
         List<DeviceAssembly> deleteAssemblyList = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(sparePartList)) {
-            List<MaterialBase> materialBases = materialBaseService.list(new LambdaQueryWrapper<MaterialBase>().eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0));
+
+            List<String> materialBaseCodes = sparePartList.stream().map(DeviceChangeSparePartDTO::getMaterialBaseCode).collect(Collectors.toList());
+            List<MaterialBase> materialBases = materialBaseService.list(new LambdaQueryWrapper<MaterialBase>()
+                    .eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0).in(MaterialBase::getCode,materialBaseCodes));
             Map<String, MaterialBase> baseMap = materialBases.stream().collect(Collectors.toMap(MaterialBase::getCode,Function.identity(), (m1,m2) -> m2));
-            List<Device> deviceList = deviceService.list(new LambdaQueryWrapper<Device>().eq(Device::getDelFlag, CommonConstant.DEL_FLAG_0));
+
+            List<String> deviceCodes = sparePartList.stream().map(DeviceChangeSparePartDTO::getDeviceCode).collect(Collectors.toList());
+            List<Device> deviceList = deviceService.list(new LambdaQueryWrapper<Device>()
+                    .eq(Device::getDelFlag, CommonConstant.DEL_FLAG_0).in(Device::getCode,deviceCodes));
             Map<String, Device> deviceMap = deviceList.stream().collect(Collectors.toMap(Device::getCode, Function.identity(), (m1,m2) -> m2));
-            List<DeviceAssembly> deviceAssemblyList = deviceAssemblyService.list();
-            Set<String> assemblyCodeSet = deviceAssemblyList.stream().map(DeviceAssembly::getCode).collect(Collectors.toSet());
-            Map<String, DeviceAssembly> deviceAssemblyMap = deviceAssemblyList.stream().collect(Collectors.toMap(DeviceAssembly::getCode,Function.identity(), (m1,m2) -> m2));
-            List<LoginUser> loginUsers = sysBaseApi.queryAllUsers();
-            Map<String, LoginUser> userMap = loginUsers.stream().collect(Collectors.toMap(LoginUser::getUsername, Function.identity(), (m1,m2) -> m2));
+
+            List<String> createBys = sparePartList.stream().map(DeviceChangeSparePartDTO::getCreateBy).collect(Collectors.toList());
+            List<SysUser> loginUsers = userService.list(new LambdaQueryWrapper<SysUser>()
+                    .eq(SysUser::getDelFlag,CommonConstant.DEL_FLAG_0).in(SysUser::getUsername,createBys));
+            Map<String, SysUser> userMap = loginUsers.stream().collect(Collectors.toMap(SysUser::getUsername, Function.identity(), (m1,m2) -> m2));
 
             // 插入到组件表中
             sparePartList.stream().forEach(deviceChange -> {
@@ -182,19 +191,25 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 if (Objects.isNull(materialBase)) {
                     return;
                 }
-                Integer newSparePartNum = Optional.ofNullable(deviceChange.getNewSparePartNum()).orElse(1);
+                Integer newSparePartNum = Optional.ofNullable(deviceChange.getNewSparePartNum()).orElse(0);
                 List<String> splitCodes = new ArrayList<>();
                 for (int i = 0; i < newSparePartNum; i++) {
                     String key = codes.get(i);
-                    if (assemblyCodeSet.contains(key)) {
+                    //查询数据库是否存在该编码
+                    DeviceAssembly assembly = deviceAssemblyService.getBaseMapper().selectOne(new LambdaQueryWrapper<DeviceAssembly>()
+                            .eq(DeviceAssembly::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceAssembly::getCode,key));
+                    if(ObjectUtil.isNotEmpty(assembly)){
                         int num = 1;
                         String format = "";
+                        DeviceAssembly deviceAssembly = new DeviceAssembly();
                         do {
                             String number = String.format("%04d", num);
                             format = materialBase.getCode() + number;
+                            //生成的编码是否在数据库已经被生成
+                            deviceAssembly = deviceAssemblyService.getBaseMapper().selectOne(new LambdaQueryWrapper<DeviceAssembly>()
+                                    .eq(DeviceAssembly::getDelFlag,CommonConstant.DEL_FLAG_0).eq(DeviceAssembly::getCode,format));
                             num = num + 1;
-                        } while (assemblyCodeSet.contains(format));
-                        assemblyCodeSet.add(format);
+                        } while (ObjectUtil.isNotEmpty(deviceAssembly));
                         key = format;
                     }
                     splitCodes.add(key);
@@ -214,7 +229,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                     deviceAssembly.setBuyDate(new Date());
                     deviceAssembly.setOnlineDate(new Date());
                     deviceAssembly.setUnit(materialBase.getUnit());
-                    assemblyList.add(deviceAssembly);
+                    deviceAssemblyService.save(deviceAssembly);
                 }
                 DeviceChangeSparePart deviceChangeSparePart = new DeviceChangeSparePart();
                 String newSpitCode = CollUtil.join(splitCodes, ",");
@@ -232,7 +247,10 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 replace.setSubassemblyCode(newSpitCode);
                 replaceList.add(replace);
                 if (StrUtil.isNotBlank(oldSparePartCode)) {
-                    DeviceAssembly deviceAssembly = deviceAssemblyMap.get(oldSparePartCode);
+                    LambdaQueryWrapper<DeviceAssembly> assemblyLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                    assemblyLambdaQueryWrapper.eq(DeviceAssembly::getDeviceCode, deviceCode).eq(DeviceAssembly::getDelFlag,CommonConstant.DEL_FLAG_0)
+                            .eq(DeviceAssembly::getCode, oldSparePartCode).last("limit 1");
+                    DeviceAssembly deviceAssembly = deviceAssemblyService.getBaseMapper().selectOne(assemblyLambdaQueryWrapper);
                     if (Objects.nonNull(deviceAssembly)) {
                         deleteAssemblyList.add(deviceAssembly);
                     }
@@ -250,7 +268,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 }
                 // 需要往spare_part_malfunction备件履历表
                 String createBy = deviceChangeDTO.getCreateBy();
-                LoginUser loginUser = userMap.get(createBy);
+                SysUser loginUser = userMap.get(createBy);
                 SparePartMalfunction sparePartMalfunction = new SparePartMalfunction();
                 sparePartMalfunction.setOutOrderId(outOrderId);
                 sparePartMalfunction.setMaintenanceRecord(faultCode);
@@ -280,10 +298,6 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
         // 删除数据
         if (CollectionUtil.isNotEmpty(deleteAssemblyList)) {
             deviceAssemblyService.removeBatchByIds(deleteAssemblyList);
-        }
-        // 保存数据
-        if (CollectionUtil.isNotEmpty(assemblyList)) {
-            deviceAssemblyService.saveBatch(assemblyList);
         }
         // 更新数据
         if (CollectionUtil.isNotEmpty(deviceChangeSpareParts)) {
