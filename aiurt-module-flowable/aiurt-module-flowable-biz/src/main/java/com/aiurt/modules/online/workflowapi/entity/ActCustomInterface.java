@@ -1,7 +1,9 @@
-package com.aiurt.modules.system.entity;
+package com.aiurt.modules.online.workflowapi.entity;
 
+import com.aiurt.modules.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -16,56 +18,55 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * @Description: 系统用户被选用频率表
- * @Author: aiurt
- * @Date:   2023-07-24
+ * @Description: act_custom_interface
+ * @Author: wgp
+ * @Date:   2023-07-25
  * @Version: V1.0
  */
 @Data
-@TableName("sys_user_usage")
+@TableName("act_custom_interface")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="sys_user_usage对象", description="系统用户被选用频率表")
-public class SysUserUsage implements Serializable {
+@ApiModel(value="act_custom_interface对象", description="act_custom_interface")
+public class ActCustomInterface extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private String id;
-	/**创建人*/
+	/**接口名称*/
+	@Excel(name = "接口名称", width = 15)
+    @ApiModelProperty(value = "接口名称")
+    private String name;
+	/**接口路径*/
+	@Excel(name = "接口路径", width = 15)
+    @ApiModelProperty(value = "接口路径")
+    private String path;
+	/**接口分类*/
+	@Excel(name = "接口分类", width = 15)
+    @ApiModelProperty(value = "接口分类")
+    private Integer type;
+    /**创建人*/
     @ApiModelProperty(value = "创建人")
     private String createBy;
-	/**创建日期*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    /**创建日期*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建日期")
     private Date createTime;
-	/**更新人*/
+    /**更新人*/
     @ApiModelProperty(value = "更新人")
     private String updateBy;
-	/**更新日期*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    /**更新日期*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新日期")
     private Date updateTime;
-	/**所属部门*/
-    @ApiModelProperty(value = "所属部门")
-    private String sysOrgCode;
-	/**逻辑删除*/
-	@Excel(name = "逻辑删除", width = 15)
-    @ApiModelProperty(value = "逻辑删除")
+    /**
+     * 删除状态 0-未删除 1-已删除
+     */
+    @ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
+    @TableLogic
     private Integer delFlag;
-	/**用户id*/
-	@Excel(name = "用户id", width = 15)
-    @ApiModelProperty(value = "用户id")
-    private String userId;
-	/**人员被使用的频率计数*/
-	@Excel(name = "人员被使用的频率计数", width = 15)
-    @ApiModelProperty(value = "人员被使用的频率计数")
-    private Integer usageCount;
-	/**被使用人员的唯一标识符*/
-	@Excel(name = "被使用人员的唯一标识符", width = 15)
-    @ApiModelProperty(value = "被使用人员的唯一标识符")
-    private String personnelId;
 }

@@ -145,7 +145,7 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 	@AutoLog(value = "flowable流程模板定义信息-通过id删除")
 	@ApiOperation(value="flowable流程模板定义信息-通过id删除", notes="flowable流程模板定义信息-通过id删除")
 	@DeleteMapping(value = "/delete")
-	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+	public Result<String> delete(@RequestParam(name="id",required=true) String id, @RequestParam(value = "type", required = false) String type) {
 		List<String> list = new ArrayList<>();
 		list.add(id);
 		actCustomModelInfoService.deleteById(list);

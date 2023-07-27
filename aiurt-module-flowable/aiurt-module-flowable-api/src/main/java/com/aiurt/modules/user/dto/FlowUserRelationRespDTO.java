@@ -1,4 +1,4 @@
-package com.aiurt.modules.system.dto;
+package com.aiurt.modules.user.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -11,24 +11,20 @@ import java.io.Serializable;
  */
 @Data
 @ApiModel("常用选择")
-public class SysUserUsageRespDTO implements Serializable {
+public class FlowUserRelationRespDTO implements Serializable {
 
 
-    @ApiModelProperty("用户id")
-    private String userId;
+
 
     private String value;
 
-    @ApiModelProperty("用户姓名")
-    private String userName;
+
 
     private String title;
 
     private String label;
 
 
-    @ApiModelProperty("机构id")
-    private String orgId;
 
     @ApiModelProperty("所属部门")
     private String orgName;
@@ -49,7 +45,7 @@ public class SysUserUsageRespDTO implements Serializable {
     private Boolean isRole = false;
 
     @ApiModelProperty("是否关系")
-    private Boolean isRelation = false;
+    private Boolean isRelation = true;
 
     @ApiModelProperty("所属岗位，多个用逗号隔开")
     private String postName;

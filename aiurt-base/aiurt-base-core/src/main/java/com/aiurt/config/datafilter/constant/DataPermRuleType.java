@@ -54,7 +54,7 @@ public final class DataPermRuleType {
     private static final Map<Object, String> DICT_MAP = new HashMap<>(8);
 
     static {
-        DICT_MAP.put(TYPE_USER_ONLY, "查看全部");
+        DICT_MAP.put(TYPE_ALL, "查看全部");
         DICT_MAP.put(TYPE_USER_ONLY, "仅查看当前用户");
         DICT_MAP.put(TYPE_DEPT_ONLY, "仅查看所在部门");
         DICT_MAP.put(TYPE_MANAGE_DEPT, "仅查看管理的部门");

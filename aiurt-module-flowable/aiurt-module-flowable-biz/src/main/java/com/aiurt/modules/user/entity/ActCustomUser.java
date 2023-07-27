@@ -1,4 +1,4 @@
-package com.aiurt.modules.system.entity;
+package com.aiurt.modules.user.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -16,17 +16,17 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * @Description: 系统用户被选用频率表
+ * @Description: 流程办理人与抄送人
  * @Author: aiurt
- * @Date:   2023-07-24
+ * @Date:   2023-07-25
  * @Version: V1.0
  */
 @Data
-@TableName("sys_user_usage")
+@TableName("act_custom_user")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="sys_user_usage对象", description="系统用户被选用频率表")
-public class SysUserUsage implements Serializable {
+@ApiModel(value="act_custom_user对象", description="流程办理人与抄送人")
+public class ActCustomUser implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
@@ -52,20 +52,36 @@ public class SysUserUsage implements Serializable {
 	/**所属部门*/
     @ApiModelProperty(value = "所属部门")
     private String sysOrgCode;
-	/**逻辑删除*/
-	@Excel(name = "逻辑删除", width = 15)
-    @ApiModelProperty(value = "逻辑删除")
+	/**0-未删除，1已删除*/
+	@Excel(name = "0-未删除，1已删除", width = 15)
+    @ApiModelProperty(value = "0-未删除，1已删除")
     private Integer delFlag;
-	/**用户id*/
-	@Excel(name = "用户id", width = 15)
-    @ApiModelProperty(value = "用户id")
-    private String userId;
-	/**人员被使用的频率计数*/
-	@Excel(name = "人员被使用的频率计数", width = 15)
-    @ApiModelProperty(value = "人员被使用的频率计数")
-    private Integer usageCount;
-	/**被使用人员的唯一标识符*/
-	@Excel(name = "被使用人员的唯一标识符", width = 15)
-    @ApiModelProperty(value = "被使用人员的唯一标识符")
-    private String personnelId;
+	/**流程引擎的定义Id*/
+	@Excel(name = "流程引擎的定义Id", width = 15)
+    @ApiModelProperty(value = "流程引擎的定义Id")
+    private String processDefinitionId;
+	/**任务定义id*/
+	@Excel(name = "任务定义id", width = 15)
+    @ApiModelProperty(value = "任务定义id")
+    private String taskId;
+	/**用户账号*/
+	@Excel(name = "用户账号", width = 15)
+    @ApiModelProperty(value = "用户账号")
+    private String userName;
+	/**机构id*/
+	@Excel(name = "机构id", width = 15)
+    @ApiModelProperty(value = "机构id")
+    private String orgId;
+	/**岗位字典值*/
+	@Excel(name = "岗位字典值", width = 15)
+    @ApiModelProperty(value = "岗位字典值")
+    private String post;
+	/**角色编码*/
+	@Excel(name = "角色编码", width = 15)
+    @ApiModelProperty(value = "角色编码")
+    private String roleCode;
+    /**类型，0：办理人，1：抄送人*/
+	@Excel(name = "类型，0：办理人，1：抄送人", width = 15)
+    @ApiModelProperty(value = "类型，0：办理人，1：抄送人")
+    private String type;
 }

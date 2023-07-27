@@ -38,22 +38,14 @@ public class SysUserUsageController extends BaseController<SysUserUsage, ISysUse
 	/**
 	 * 分页列表查询
 	 *
-	 * @param sysUserUsage
-	 * @param pageNo
-	 * @param pageSize
-	 * @param req
+	 * @param name
 	 * @return
 	 */
-	@ApiOperation(value="系统用户被选用频率表-分页列表查询", notes="系统用户被选用频率表-分页列表查询")
-	@GetMapping(value = "/list")
-	public Result<IPage<SysUserUsage>> queryPageList(SysUserUsage sysUserUsage,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		QueryWrapper<SysUserUsage> queryWrapper = QueryGenerator.initQueryWrapper(sysUserUsage, req.getParameterMap());
-		Page<SysUserUsage> page = new Page<SysUserUsage>(pageNo, pageSize);
-		IPage<SysUserUsage> pageList = sysUserUsageService.page(page, queryWrapper);
-		return Result.OK(pageList);
+	@ApiOperation(value="搜索", notes="搜索")
+	@GetMapping(value = "/globalSearch")
+	public Result<List<SysUserUsageRespDTO>> globalSearch(@RequestParam(required = false, value = "name") String name) {
+		List<SysUserUsageRespDTO> result = sysUserUsageService.globalSearch(name);
+		return Result.OK(result);
 	}
 
 	/**
@@ -62,7 +54,7 @@ public class SysUserUsageController extends BaseController<SysUserUsage, ISysUse
 	 */
 	@ApiOperation(value="常用选择", notes="常用选择下拉列表")
 	@GetMapping(value = "/queryList")
-	public Result<List<SysUserUsageRespDTO>> queryList(String search) {
+	public Result<List<SysUserUsageRespDTO>> queryList(@RequestParam(required = false, value = "search")String search) {
 		List<SysUserUsageRespDTO> result = sysUserUsageService.queryList(search);
 		return Result.OK(result);
 	}

@@ -20,4 +20,11 @@ public interface ISysUserUsageService extends IService<SysUserUsage> {
      * @return
      */
     List<SysUserUsageRespDTO> queryList(String search);
+
+    /**
+     * 全局搜索
+     * @param name
+     * @return
+     */
+    List<SysUserUsageRespDTO> globalSearch(String name);
 }
