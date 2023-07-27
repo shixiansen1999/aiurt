@@ -73,7 +73,7 @@ public class PatrolTaskMissingDetection implements Job {
     }
 
     /**
-     * 周一和周五0点检测漏检的任务
+     * 周一和周五0点检测漏检的非手工下发任务
      */
     private void taskDetection() {
 
@@ -82,6 +82,7 @@ public class PatrolTaskMissingDetection implements Job {
                 PatrolConstant.TASK_EXECUTE, PatrolConstant.TASK_RETURNED, PatrolConstant.TASK_RUNNING);
         List<PatrolTask> taskList = Optional.ofNullable(
                 patrolTaskService.lambdaQuery()
+                        .ne(PatrolTask::getSource, PatrolConstant.TASK_MANUAL)
                         .in(PatrolTask::getStatus, status)
                         .eq(PatrolTask::getOmitStatus, PatrolConstant.UNOMIT_STATUS)
                         .eq(PatrolTask::getDiscardStatus,PatrolConstant.TASK_UNDISCARD)
