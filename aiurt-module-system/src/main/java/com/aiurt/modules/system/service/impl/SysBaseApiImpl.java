@@ -3745,7 +3745,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<LoginUser> queryAllUsers() {
         QueryWrapper<SysUser> wrapper = new QueryWrapper<>();
-        wrapper.lambda().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0).select(SysUser::getId, SysUser::getRealname);
+        wrapper.lambda().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0).select(SysUser::getId,SysUser::getRealname,SysUser::getOrgId);
         List<SysUser> users = userMapper.selectList(wrapper);
         if (CollectionUtil.isEmpty(users)) {
             return Collections.emptyList();
