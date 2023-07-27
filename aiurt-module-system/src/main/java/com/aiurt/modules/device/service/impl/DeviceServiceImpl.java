@@ -582,7 +582,9 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				device.setMajorCode(major.getMajorCode());
 
 				LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
-				wrapper.eq(CsSubsystem::getSystemName, systemCodeName).eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
+				wrapper.eq(CsSubsystem::getSystemName, systemCodeName)
+						.eq(CsSubsystem::getMajorCode, major.getMajorCode())
+						.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
 				CsSubsystem subsystem = csSubsystemService.getOne(wrapper);
 				if (ObjectUtil.isNotEmpty(subsystem)) {
 					device.setSystemCode(subsystem.getSystemCode());
@@ -670,7 +672,9 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		}
 		if (StrUtil.isNotEmpty(stationCodeName)) {
 			LambdaQueryWrapper<CsStation> csStationWrapper = new LambdaQueryWrapper<>();
-			csStationWrapper.eq(CsStation::getStationName, stationCodeName).eq(CsStation::getDelFlag, 0);
+			csStationWrapper.eq(CsStation::getStationName, stationCodeName)
+					.eq(CsStation::getLineCode, device.getLineCode())
+					.eq(CsStation::getDelFlag, 0);
 			CsStation one = csStationService.getOne(csStationWrapper);
 			if (ObjectUtil.isEmpty(one)) {
 				stringBuilder.append("系统不存在该站点，");
