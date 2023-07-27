@@ -190,7 +190,7 @@ public class PlusDataPermissionHandler {
         // 处理标记@StaionFilterColumn、@SystemFilterColumn、@MajorFilterColumn、@DeptFilterColumn、@UserFilterColumn
         handleFilterColumn(info, ruleType, ruleValue, sysUser, filterClause);
 
-        return Arrays.asList(filterClause.toString());
+        return StrUtil.isNotEmpty(filterClause.toString()) ? Arrays.asList(filterClause.toString()) : null;
     }
 
     private List<String> handleDataPermission(DataColumn[] dataColumns, String ruleType, LoginUser sysUser) {
