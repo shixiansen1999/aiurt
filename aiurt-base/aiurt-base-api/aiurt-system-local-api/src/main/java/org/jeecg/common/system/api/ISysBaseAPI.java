@@ -1307,5 +1307,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return 符合条件的用户账号并去重的列表
      */
     List<String> getUserNameByParams(List<String> roleCodes, List<String> orgIds, List<String> posts);
+
+    /**
+     * 获取角色信息
+     * @param roleCode
+     * @return
+     */
+    List<SysUserRoleModel> getRole(List<String> roleCode);
 }
 
