@@ -260,6 +260,10 @@ public class FaultCountServiceImpl implements IFaultCountService {
         boolean b = GlobalThreadLocal.setDataFilter(false);
         //通过真实姓名模糊查询username
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultCountInfoReq.getAppointUserName());
+        // 如果有通过appointUserName进行查询，但是appointUserName对应的userName是空的，直接返回
+        if (cn.hutool.core.util.StrUtil.isNotEmpty(faultCountInfoReq.getAppointUserName()) && CollUtil.isEmpty(userNameByRealName)){
+            return page;
+        }
         GlobalThreadLocal.setDataFilter(b);
         List<FaultCountInfosDTO> faultData = faultCountMapper.getFaultCountInfos(faultCountInfoReq.getType(), page, faultCountInfoReq, null, null,userNameByRealName);
         boolean b1 = GlobalThreadLocal.setDataFilter(false);
@@ -333,6 +337,10 @@ public class FaultCountServiceImpl implements IFaultCountService {
         List<String> stationCodeList = null;
 
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultTimeoutLevelReq.getAppointUserName());
+        // 如果有通过appointUserName进行查询，但是appointUserName对应的userName是空的，直接返回
+        if (cn.hutool.core.util.StrUtil.isNotEmpty(faultTimeoutLevelReq.getAppointUserName()) && CollUtil.isEmpty(userNameByRealName)){
+            return page;
+        }
         GlobalThreadLocal.setDataFilter(b);
         Date date = new Date();
         List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq, majors, stationCodeList, lv1Hours, lv2Hours, lv3Hours, userNameByRealName,date);
