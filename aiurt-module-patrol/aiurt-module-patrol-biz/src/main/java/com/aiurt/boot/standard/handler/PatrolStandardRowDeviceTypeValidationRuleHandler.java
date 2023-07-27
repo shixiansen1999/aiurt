@@ -117,7 +117,7 @@ public class PatrolStandardRowDeviceTypeValidationRuleHandler implements RowVali
         }
 
         // 查询设备类型是否匹配专业和子系统
-        DeviceType csMajorByCodeTypeName = sysBaseApi.getCsMajorByCodeTypeName(csMajorByName.getString("majorCode"), (String) column.getData(), systemCode);
+        DeviceType csMajorByCodeTypeName = sysBaseApi.getDeviceTypeByCode(csMajorByName.getString("majorCode"), (String) column.getData(), systemCode);
         if (ObjectUtil.isEmpty(csMajorByCodeTypeName)) {
             return new ValidationResult(false, String.format("系统不存在该专业或该子系统的设备类型"));
         }

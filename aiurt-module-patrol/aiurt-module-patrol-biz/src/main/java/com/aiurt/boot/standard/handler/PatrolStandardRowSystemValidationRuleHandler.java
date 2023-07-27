@@ -23,6 +23,12 @@ public class PatrolStandardRowSystemValidationRuleHandler implements RowValidati
 
     @Override
     public ValidationResult validate(Map<String, Column> row, Column column) {
+        //如果设备类型不为空，则子系统不能为空
+        Column deviceTypeCode = row.get("device_type_code");
+        if ( ObjectUtil.isNotEmpty(deviceTypeCode)&&ObjectUtil.isNotEmpty((String) deviceTypeCode.getData())) {
+            return new ValidationResult(false, "设备类型不为空，子系统必填");
+        }
+
         Object systemName = column.getData();
         Column majorName = row.get("profession_code");
 
