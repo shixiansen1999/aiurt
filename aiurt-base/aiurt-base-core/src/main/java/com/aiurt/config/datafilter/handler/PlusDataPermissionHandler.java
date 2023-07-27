@@ -155,9 +155,9 @@ public class PlusDataPermissionHandler {
         List<String> sqlList = new LinkedList<>();
 
         for (Map.Entry<String, String> entry : dataPermMap.entrySet()) {
-            String filterClause = doBuildDataFilter(info, entry.getKey(), entry.getValue(), mappedStatementId);
-            if (StringUtils.isNotBlank(filterClause)) {
-                sqlList.add(filterClause);
+            List<String> filterClauses = doBuildDataFilter(info, entry.getKey(), entry.getValue(), mappedStatementId);
+            if (CollUtil.isNotEmpty(filterClauses)) {
+                sqlList.addAll(filterClauses);
             }
         }
 
@@ -176,26 +176,24 @@ public class PlusDataPermissionHandler {
     /**
      * 构造数据过滤sql
      */
-    private String doBuildDataFilter(ModelDataPermInfo info, String ruleType, String ruleValue, String mappedStatementId) {
+    private List<String> doBuildDataFilter(ModelDataPermInfo info, String ruleType, String ruleValue, String mappedStatementId) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         StringBuilder filterClause = new StringBuilder(128);
 
         // 处理mapper上标记有@DataPermission
         DataColumn[] dataColumns = findAnnotation(mappedStatementId);
         if (ArrayUtil.isNotEmpty(dataColumns)) {
-            filterClause = handleDataPermission(dataColumns, ruleType, sysUser);
-            if (ObjectUtil.isNotEmpty(filterClause)) {
-                return filterClause.toString();
-            }
+            return handleDataPermission(dataColumns, ruleType, sysUser);
         }
 
         // 兼容之前的数据权限过滤方式
         // 处理标记@StaionFilterColumn、@SystemFilterColumn、@MajorFilterColumn、@DeptFilterColumn、@UserFilterColumn
         handleFilterColumn(info, ruleType, ruleValue, sysUser, filterClause);
-        return filterClause.toString();
+
+        return Arrays.asList(filterClause.toString());
     }
 
-    private StringBuilder handleDataPermission(DataColumn[] dataColumns, String ruleType, LoginUser sysUser) {
+    private List<String> handleDataPermission(DataColumn[] dataColumns, String ruleType, LoginUser sysUser) {
         StandardEvaluationContext context = new StandardEvaluationContext();
         DataScopeType type = DataScopeType.findCode(ruleType);
         // 添加登录用户信息
@@ -203,7 +201,7 @@ public class PlusDataPermissionHandler {
         // 添加bean解析器
         context.setBeanResolver(beanResolver);
 
-        StringBuilder filterClause = new StringBuilder();
+        List<String> filterClauses = CollUtil.newArrayList();
         boolean isSuccess = false;
         for (DataColumn dataColumn : dataColumns) {
             // 不包含 key 变量 则不处理
@@ -220,16 +218,18 @@ public class PlusDataPermissionHandler {
 
             // 解析sql模板并填充
             String sql = parser.parseExpression(type.getSqlTemplate(), parserContext).getValue(context, String.class);
-            filterClause.append(sql);
-            isSuccess = true;
+            if(StrUtil.isNotEmpty(sql)){
+                filterClauses.add(sql);
+                isSuccess = true;
+            }
         }
 
         // 未处理成功则填充兜底方案
         if (!isSuccess && StringUtils.isNotBlank(type.getElseSql())) {
-            filterClause.append(type.getElseSql());
+            filterClauses.add(type.getElseSql());
         }
 
-        return filterClause;
+        return filterClauses;
     }
 
     private void handleFilterColumn(ModelDataPermInfo info, String ruleType, String ruleValue, LoginUser sysUser, StringBuilder filter) {
