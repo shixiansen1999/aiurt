@@ -16,8 +16,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.manager.PatrolManager;
-import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.task.dto.*;
@@ -25,10 +23,7 @@ import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.mapper.PatrolCheckResultMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
-import com.aiurt.boot.task.mapper.PatrolTaskOrganizationMapper;
-import com.aiurt.boot.task.mapper.PatrolTaskStandardMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskStationMapper;
-import com.aiurt.boot.task.mapper.PatrolTaskUserMapper;
 import com.aiurt.boot.task.param.CustomCellMergeHandler;
 import com.aiurt.boot.task.service.*;
 import com.aiurt.common.util.FilePrintUtils;
@@ -73,36 +68,13 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
     @Autowired
     private PatrolTaskMapper patrolTaskMapper;
     @Autowired
-    private IPatrolTaskDeviceService patrolTaskDeviceService;
-    @Autowired
-    private PatrolTaskUserMapper patrolTaskUserMapper;
-    @Autowired
-    private IPatrolSamplePersonService patrolSamplePersonService;
-    @Autowired
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
-    @Autowired
-    private IPatrolCheckResultService patrolCheckResultService;
     @Autowired
     private PatrolCheckResultMapper patrolCheckResultMapper;
     @Autowired
-    private IPatrolTaskOrganizationService patrolTaskOrganizationService;
-    @Autowired
-    private PatrolTaskOrganizationMapper patrolTaskOrganizationMapper;
-    @Autowired
-    private IPatrolTaskStationService patrolTaskStationService;
-    @Autowired
     private PatrolTaskStationMapper patrolTaskStationMapper;
     @Autowired
-    private IPatrolTaskStandardService patrolTaskStandardService;
-    @Autowired
-    private PatrolTaskStandardMapper patrolTaskStandardMapper;
-
-    @Autowired
-    private PatrolPlanMapper patrolPlanMapper;
-    @Autowired
     private PatrolStandardMapper patrolStandardMapper;
-    @Autowired
-    private PatrolManager manager;
     @Autowired
     private ISysBaseAPI sysBaseApi;
 
@@ -135,6 +107,8 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
            return printPatrolTaskByCommonTpl(id,null,standardId);
         }else if (excelName.contains("patrol-type8")){
            return printPatrolTaskByCommonTpl(id,"patrolType8",standardId);
+        } else if (excelName.contains("wireless11")) {
+           return printPatrolTaskByCommonTpl(id,"wireless11",standardId);
         }
         // 模板文件路径
         String templateFileName = "patrol" +"/" + "template" + "/" + excelName;
@@ -405,18 +379,32 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                             .filter(c -> c.getCheck() == 1)
                             .filter(c -> c.getParentId().equals(oldId))
                             .collect(Collectors.toList());
+                    List<String> procMethodsList = new ArrayList<>() ;
                     childDTOs.forEach(c->{
                         if(Objects.nonNull(c) && ObjectUtil.isNotEmpty(c.getCheckResult()) && c.getCheckResult().equals(0)){
                             flag.set(true);
                             stringBuffer.append(c.getQualityStandard()).append(":异常").append("\n (").append(c.getRemark()).append(")");
                             stringBuffer.append(",");
                         }
+                        procMethodsList.add(c.getProcMethods());
                     });
+                    List<String> stringList = procMethodsList.stream().distinct().collect(Collectors.toList());
+                    String procMethods = stringList.stream().collect(Collectors.joining(","));
                     if(flag.get()){
                         stringBuffer.deleteCharAt(stringBuffer.length()-1);
                         headerMap.put(str,stringBuffer.toString());
+                        if (StrUtil.isNotEmpty(procMethods) && !"null".equals(procMethods)){
+                            headerMap.put("procMethods"+str,procMethods);
+                        }else {
+                            headerMap.put("procMethods"+str,null);
+                        }
                     }else{
                         headerMap.put(str,null);
+                        if (StrUtil.isNotEmpty(procMethods) && !"null".equals(procMethods)){
+                            headerMap.put("procMethods"+str,procMethods);
+                        }else {
+                            headerMap.put("procMethods"+str,null);
+                        }
                     }
                 }
                 getCctvSystem.add(printDTO);
@@ -452,14 +440,17 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                 if (ObjectUtil.isEmpty(patrolCheckResultDTO)){
                     headerMap.put(str,"☐正常 ☐异常");
                   //  printDTO.setResult("☐正常 ☐异常");
+                    headerMap.put("procMethods"+str,null);
                 }else if(ObjectUtil.isNotEmpty(patrolCheckResultDTO.getCheckResult())){
                     if(patrolCheckResultDTO.getCheckResult().equals(0)){
                         remark.append(i).append(".").append(patrolCheckResultDTO.getContent()).append("-")
                                 .append(patrolCheckResultDTO.getQualityStandard()).append(":").append(patrolCheckResultDTO.getRemark()).append("\n");
                         headerMap.put(str,"☐正常 ☑异常");
                         i.getAndIncrement();
+                        headerMap.put("procMethods"+str,patrolCheckResultDTO.getProcMethods());
                     }else {
                         headerMap.put(str,"☑正常 ☐异常");
+                        headerMap.put("procMethods"+str,patrolCheckResultDTO.getProcMethods());
                     }
                 }
                 //getNetworkManage.add(printDTO);
@@ -584,7 +575,17 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             FilePrintUtils.mergeCellsInColumnRange(workbook,true, startRow, endRow, lastColumn +1, lastColumn +3);
             //设置列宽
             FilePrintUtils.setColumnWidth(sheet,0,15);
-        }else{
+        }else if("wireless11".equals(type)){
+            //自动换行
+            // setWrapText(workbook,1,startRow,endRow,0,0);
+            FilePrintUtils.setWrapText(workbook,15,1,1,1,1,true);
+            FilePrintUtils.setWrapText(workbook,7, startRow, endRow,0, 1,false);
+            //合并指定范围行的单元格
+            FilePrintUtils.mergeCellsInColumnRange(workbook,true, startRow, endRow, firstColumn, lastColumn);
+            //设置第一列列宽
+            FilePrintUtils.setColumnWidth(sheet,0,17);
+        }
+        else {
             //自动换行
             // setWrapText(workbook,1,startRow,endRow,0,0);
             FilePrintUtils.addReturn(workbook, startRow, endRow,0,0);
@@ -706,6 +707,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     map.put("resultTrue"+str,"☐正常");
                     map.put("resultFalse"+str,"☐异常");
                     map.put("remark"+str,null);
+                    map.put("procMethods"+str,null);
 //                    printDTO.setResult("");
 //                    printDTO.setResultTrue();
 //                    printDTO.setResultFalse("☐异常");
@@ -718,24 +720,34 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     List<PatrolCheckResultDTO> childDTOs =  checkDTOs.stream()
                             .filter(c -> c.getParentId().equals(oldId))
                             .collect(Collectors.toList());
+                    List<String> procMethodsList = new ArrayList<>() ;
                     childDTOs.forEach(c->{
                         if(ObjectUtil.isNotEmpty(c)&& ObjectUtil.isNotEmpty(c.getCheckResult()) && c.getCheckResult().equals(0)){
                             flag.set(true);
                             stringBuffer.append(c.getQualityStandard()).append(":异常").append("\n (").append(c.getRemark()).append(")");
                             stringBuffer.append(",");
                         }
+                        procMethodsList.add(c.getProcMethods());
                     });
+                    List<String> stringList = procMethodsList.stream().distinct().collect(Collectors.toList());
+                    String procMethods = stringList.stream().collect(Collectors.joining(","));
                     if(flag.get()){
                         map.put("result"+str,"☑是 ☐否");
                         map.put("resultTrue"+str,"☐正常");
                         map.put("resultFalse"+str,"☑异常");
                         stringBuffer.deleteCharAt(stringBuffer.length()-1);
                         map.put("remark"+str,stringBuffer.toString());
+                        if (StrUtil.isNotEmpty(procMethods) && !"null".equals(procMethods)){
+                            map.put("procMethods"+str,procMethods);
+                        }else {
+                            map.put("procMethods"+str,null);
+                        }
 //                        printDTO.setResult("☑是 ☐否");
 //                        printDTO.setResultTrue("☐正常");
 //                        printDTO.setResultFalse("☑异常");
 //                        printDTO.setRemark(stringBuffer.toString());
                     }else{
+                        map.put("procMethods"+str,null);
                         map.put("result"+str,"☑是 ☐否");
                         map.put("resultTrue"+str,"☑正常");
                         map.put("resultFalse"+str,"☐异常");
@@ -744,7 +756,11 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                         }else {
                             map.put("remark"+str,null);
                         }
-
+                        if (StrUtil.isNotEmpty(procMethods) && !"null".equals(procMethods)){
+                            map.put("procMethods"+str,procMethods);
+                        }else {
+                            map.put("procMethods"+str,null);
+                        }
 //                        printDTO.setResult("☑是 ☐否");
 //                        printDTO.setResultTrue("☑正常");
 //                        printDTO.setResultFalse("☐异常");
@@ -801,6 +817,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
 
     /**
      * 获取打印的业务数据
+     *
      * @param id
      * @return
      */
@@ -831,11 +848,16 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     if(ObjectUtil.isEmpty(t.getCheckResult())){
                         printDTO.setResultTrue("☐正常");
                         printDTO.setResultFalse("☐异常");
-                        printDTO.setResult("☐正常\n☐异常");
+                        printDTO.setResult("☐正常 ☐异常");
                     }else {
                         printDTO.setResultTrue(t.getCheckResult()==0?"☐正常":"☑正常");
                         printDTO.setResultFalse(t.getCheckResult()==0?"☑异常":"☐异常");
-                        printDTO.setResult(t.getCheckResult()==0?"☐正常\n☑异常":"☑正常\n☐异常");
+                        printDTO.setResult(t.getCheckResult()==0?"☐正常 ☑异常":"☑正常 ☐异常");
+                        if (ObjectUtil.isNotEmpty(t.getRemark())){
+                            printDTO.setResultAndRemark(t.getCheckResult()==0?"☐正常 ☑异常"+"("+t.getRemark()+")":"☑正常 ☐异常"+"("+t.getRemark()+")");
+                        }else {
+                            printDTO.setResultAndRemark(t.getCheckResult()==0?"☐正常 ☑异常":"☑正常 ☐异常");
+                        }
                     }
 //                    printDTO.setResult(result);
 //                    printDTO.setContentRemark(contentRemark);

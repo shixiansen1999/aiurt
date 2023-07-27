@@ -447,7 +447,7 @@ public interface SysParamCodeConstant {
     String FOREMAN_SORT = "foreman_sort";
 
     /**
-     * 公安消防班组id
+     * 日完成事项是否统计的维保数按照维保开始时间计算
      */
     String GONGANXIAOFANG_ID = "gonganxiaofang_id";
     /**

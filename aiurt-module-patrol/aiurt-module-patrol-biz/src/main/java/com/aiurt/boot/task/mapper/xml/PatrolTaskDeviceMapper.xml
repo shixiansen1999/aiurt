@@ -423,4 +423,11 @@
             AND ps.id = #{standardId}
         </if>
     </select>
+
+    <select id="getSysUserPositionCurrent" resultType="java.lang.String">
+        select cs.station_code
+        from sys_user_position_current a
+        left join cs_station cs on (a.station_code = cs.station_code or a.station_code = cs.change_code) and cs.del_flag = 0
+        where a.create_by = #{username}
+    </select>
 </mapper>
