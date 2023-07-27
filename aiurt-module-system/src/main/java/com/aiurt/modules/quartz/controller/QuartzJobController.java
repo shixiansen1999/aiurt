@@ -67,7 +67,7 @@ public class QuartzJobController {
 			@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize, HttpServletRequest req) {
 		QueryWrapper<QuartzJob> queryWrapper = QueryGenerator.initQueryWrapper(quartzJob, req.getParameterMap());
 		Page<QuartzJob> page = new Page<QuartzJob>(pageNo, pageSize);
-		queryWrapper.and(wrapper->wrapper.ne("filter_status",1).or().isNull("filter_status"));
+		queryWrapper.lambda().and(wrapper->wrapper.ne(QuartzJob::getFilterStatus,1).or().isNull(QuartzJob::getFilterStatus));
 		IPage<QuartzJob> pageList = quartzJobService.page(page, queryWrapper);
         return Result.ok(pageList);
 
