@@ -25,7 +25,7 @@ public class InspectionCodeRowSystemValidationRuleHandler implements RowValidati
     public ValidationResult validate(Map<String, Column> row, Column column) {
         //如果设备类型不为空，则子系统不能为空
         Column deviceTypeCode = row.get("device_type_code");
-        if ( ObjectUtil.isNotEmpty(deviceTypeCode)&&ObjectUtil.isNotEmpty((String) deviceTypeCode.getData())) {
+        if ( ObjectUtil.isNotEmpty(deviceTypeCode)&&ObjectUtil.isNotEmpty(deviceTypeCode.getData())&&ObjectUtil.isEmpty(column.getData())) {
             return new ValidationResult(false, "设备类型不为空，子系统必填");
         }
 
