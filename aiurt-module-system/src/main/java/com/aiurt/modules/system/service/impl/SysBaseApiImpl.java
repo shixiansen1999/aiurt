@@ -858,22 +858,23 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
 
     @Override
-    public List<CsRoleUserModel>queryRoleUserTree(){
+    public List<SysUserModel>queryRoleUserTree(String values){
         // 将查询岗位，并转成map
         List<DictModel> sysPost = this.getDictItems("sys_post");
         Map<String, String> sysPostMap = sysPost.stream()
                 .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
 
-        List<CsRoleUserModel> list = new ArrayList<>();
+        List<SysUserModel> list = new ArrayList<>();
         List<SysRole> roleList = roleMapper.selectList(new QueryWrapper<SysRole>());
         for (SysRole role : roleList) {
-            CsRoleUserModel csRoleUserModel = new CsRoleUserModel();
-            csRoleUserModel.setId(role.getId());
-            csRoleUserModel.setTitle(role.getRoleName());
-            csRoleUserModel.setValue(role.getRoleCode());
-            csRoleUserModel.setKey(role.getRoleCode());
-            csRoleUserModel.setLabel(role.getRoleName());
-            csRoleUserModel.setIsRole(true);
+            SysUserModel roleSysUserModel = new SysUserModel();
+            roleSysUserModel.setId(role.getId());
+            roleSysUserModel.setTitle(role.getRoleName());
+            roleSysUserModel.setValue(role.getRoleCode());
+            roleSysUserModel.setKey(role.getRoleCode());
+            roleSysUserModel.setLabel(role.getRoleName());
+            roleSysUserModel.setIsRole(true);
+            roleSysUserModel.setIsPost(false);
             LambdaQueryWrapper<SysUserRole> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(SysUserRole::getRoleId,role.getId());
             List<SysUserRole> sysUserRoles = sysUserRoleMapper.selectList(lambdaQueryWrapper);
@@ -890,11 +891,14 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                     List<SysUserModel> sysUserModelList = new ArrayList<>();
                     for (SysUser sysUser : sysUsers) {
                         SysUserModel sysUserModel = new SysUserModel();
-                        sysUserModel.setValue(sysUser.getId());
+                        sysUserModel.setId(sysUser.getId());
+                        sysUserModel.setKey(sysUser.getId());
+                        sysUserModel.setValue(sysUser.getUsername());
                         sysUserModel.setLabel(sysUser.getRealname());
                         sysUserModel.setTitle(sysUser.getRealname());
                         sysUserModel.setIsPost(false);
                         sysUserModel.setIsRole(false);
+                        sysUserModel.setAvatar(sysUser.getAvatar());
                         // 设置角色
                         sysUserModel.setRoleName(roleNameUserIdMap.get(sysUser.getId()));
                         // 设置岗位
@@ -910,35 +914,60 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
                         sysUserModelList.add(sysUserModel);
                     }
-                    csRoleUserModel.setChildren(sysUserModelList);
+                    roleSysUserModel.setChildren(sysUserModelList);
                 }
             }
             // 该角色一共有多少人
-            if (CollUtil.isEmpty(csRoleUserModel.getChildren())){
-                csRoleUserModel.setUserNum(0);
+            if (CollUtil.isEmpty(roleSysUserModel.getChildren())){
+                roleSysUserModel.setUserNum(0);
             }else{
-                csRoleUserModel.setUserNum(csRoleUserModel.getChildren().size());
+                roleSysUserModel.setUserNum(roleSysUserModel.getChildren().size());
             }
-            list.add(csRoleUserModel);
+            list.add(roleSysUserModel);
         }
-        return  list;
+
+        // 如果有values进行查询，返回的直接是列表，就不做树返回了
+        if (StrUtil.isNotEmpty(values) && CollUtil.isNotEmpty(list)){
+            List<String> searchValueList = Arrays.asList(values.split(","));
+            List<SysUserModel> searchResultList = new ArrayList<>();
+            list.forEach(role->{
+                if (searchValueList.contains(role.getValue())) {
+                    searchResultList.add(role);
+                }
+                // 因为角色下的children就是人员，树级结构只有两层，不用递归
+                List<SysUserModel> userList = Optional.ofNullable(role.getChildren()).orElseGet(ArrayList::new);
+                searchResultList.addAll(userList.stream().filter(user->searchValueList.contains(user.getValue())).collect(Collectors.toList()));
+                // 而且查询的话，角色下的children就不要了
+                role.setChildren(null);
+            });
+            // searchResultList根据value去重
+            return searchResultList.stream().collect(
+                    Collectors.collectingAndThen(
+                            Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(SysUserModel::getValue))),
+                            ArrayList::new
+                    )
+            );
+        }
+
+        return list;
     }
 
     @Override
-    public List<PostModel>queryPostUserTree(){
-        List<PostModel> list = new ArrayList<>();
+    public List<SysUserModel>queryPostUserTree(String values){
+        List<SysUserModel> list = new ArrayList<>();
         List<DictModel> sysPost = this.getDictItems("sys_post");
         Map<String, String> sysPostMap = sysPost.stream()
                 .collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
 
         if (CollUtil.isNotEmpty(sysPost)){
             for (DictModel dictModel : sysPost) {
-                 PostModel postModel = new PostModel();
-                 postModel.setLabel(dictModel.getText());
-                 postModel.setKey(dictModel.getValue());
-                 postModel.setValue(dictModel.getValue());
-                 postModel.setTitle(dictModel.getTitle());
-                 postModel.setIsPost(true);
+                SysUserModel postSysUserModel = new SysUserModel();
+                postSysUserModel.setLabel(dictModel.getText());
+                postSysUserModel.setKey(dictModel.getValue());
+                postSysUserModel.setValue(dictModel.getValue());
+                postSysUserModel.setTitle(dictModel.getTitle());
+                postSysUserModel.setIsPost(true);
+                postSysUserModel.setIsRole(false);
                  //根据岗位查询用户信息
                 LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>()
                         .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0);
@@ -956,11 +985,13 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                     for (SysUser sysUser : sysUsers) {
                         SysUserModel sysUserModel = new SysUserModel();
                         sysUserModel.setId(sysUser.getId());
+                        sysUserModel.setKey(sysUser.getId());
                         sysUserModel.setValue(sysUser.getUsername());
                         sysUserModel.setLabel(sysUser.getRealname());
                         sysUserModel.setTitle(sysUser.getRealname());
                         sysUserModel.setIsPost(false);
                         sysUserModel.setIsRole(false);
+                        sysUserModel.setAvatar(sysUser.getAvatar());
                         sysUserModelList.add(sysUserModel);
                         // 设置角色
                         sysUserModel.setRoleName(roleNameUserIdMap.get(sysUser.getId()));
@@ -975,18 +1006,42 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                         sysUserModel.setOrgCode(sysUser.getOrgCode());
                         sysUserModel.setOrgName(sysUser.getOrgName());
                     }
-                    postModel.setChildren(sysUserModelList);
+                    postSysUserModel.setChildren(sysUserModelList);
                 }
                 // 该岗位一共有多少人
-                if (CollUtil.isEmpty(postModel.getChildren())){
-                    postModel.setUserNum(0);
+                if (CollUtil.isEmpty(postSysUserModel.getChildren())){
+                    postSysUserModel.setUserNum(0);
                 }else{
-                    postModel.setUserNum(postModel.getChildren().size());
+                    postSysUserModel.setUserNum(postSysUserModel.getChildren().size());
                 }
 
-                list.add(postModel);
+                list.add(postSysUserModel);
             }
         }
+
+        // 如果有values进行查询，返回的直接是列表，就不做树返回了
+        if (StrUtil.isNotEmpty(values) && CollUtil.isNotEmpty(list)){
+            List<String> searchValueList = Arrays.asList(values.split(","));
+            List<SysUserModel> searchResultList = new ArrayList<>();
+            list.forEach(post->{
+                if (searchValueList.contains(post.getValue())) {
+                    searchResultList.add(post);
+                }
+                // 因为角色下的children就是人员，树级结构只有两层，不用递归
+                List<SysUserModel> userList = Optional.ofNullable(post.getChildren()).orElseGet(ArrayList::new);
+                searchResultList.addAll(userList.stream().filter(user->searchValueList.contains(user.getValue())).collect(Collectors.toList()));
+                // 而且查询的话，角色下的children就不要了
+                post.setChildren(null);
+            });
+            // searchResultList根据value去重
+            return searchResultList.stream().collect(
+                    Collectors.collectingAndThen(
+                            Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(SysUserModel::getValue))),
+                            ArrayList::new
+                    )
+            );
+        }
+
         return list;
     }
 
@@ -1064,7 +1119,16 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         wrapper.eq(MaterialBase::getCode, materialCode);
         wrapper.eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0);
         MaterialBase one = materialBaseMapper.selectOne(wrapper);
-        return one.getName();
+        return one != null ? one.getName() : null;
+    }
+
+    @Override
+    public String getMaterialSpecificationByCode(String materialCode) {
+        LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MaterialBase::getCode, materialCode);
+        wrapper.eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0);
+        MaterialBase one = materialBaseMapper.selectOne(wrapper);
+        return one != null ? one.getSpecifications() : null;
     }
 
     @Override
@@ -2172,7 +2236,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         } else {
             List<SysDepartModel> list = new ArrayList<>();
             for (SysDepartModel model : sysDepartModels) {
-                List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getOrgCode());
+                List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getOrgCode(), SysParamCodeConstant.WORK_LOG_ORG_CATEGORY);
                 if (CollUtil.isNotEmpty(models)) {
                     list.addAll(models);
                 }
@@ -2226,7 +2290,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public JSONObject getSystemName(String majorCode, String systemName) {
         LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CsSubsystem::getSystemName, systemName).eq(CsSubsystem::getMajorCode, majorCode).eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+        wrapper.eq(CsSubsystem::getSystemName, systemName).eq(StrUtil.isNotEmpty(majorCode), CsSubsystem::getMajorCode, majorCode).eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
         CsSubsystem subsystem = subsystemMapper.selectOne(wrapper);
         if (Objects.isNull(subsystem)) {
             return null;
@@ -2523,7 +2587,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         //获取用户的所属部门及所属部门子部门
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String orgCode = user.getOrgCode();
-        return sysDepartMapper.getUserOrgCategory(orgCode);
+        return sysDepartMapper.getUserOrgCategory(orgCode, SysParamCodeConstant.WORK_LOG_ORG_CATEGORY);
     }
 
     @Override
@@ -3796,5 +3860,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             BeanUtils.copyProperties(sysUser, loginUser);
         }
         return JSONObject.parseObject(JSON.toJSONString(loginUser));
+    }
+
+    @Override
+    public List<String> getUserNameByParams(List<String> roleCodes, List<String> orgIds, List<String> posts) {
+        return userMapper.getUserNameByParams(roleCodes,orgIds,posts);
     }
 }

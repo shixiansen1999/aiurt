@@ -168,6 +168,7 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
         List<SparePartStockDTO> consumableList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("1", sparepart.getConsumables()))
                 .map(sparepart -> {
                     SparePartStockDTO build = SparePartStockDTO.builder()
+                            .materialCode(sparepart.getMaterialBaseCode())
                             .deviceCode(sparepart.getDeviceCode())
                             .newSparePartCode(sparepart.getNewSparePartCode())
                             .newSparePartName(sparepart.getNewSparePartName())

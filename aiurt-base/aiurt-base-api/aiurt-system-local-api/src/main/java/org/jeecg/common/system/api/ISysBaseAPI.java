@@ -209,18 +209,19 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 角色树
-     * @param
+     * @param values 可以根据values查询，多个使用英文逗号分隔。有values时就不返回树结构了，而是列表
      * @return
      */
-    public List<CsRoleUserModel> queryRoleUserTree();
+    public List<SysUserModel> queryRoleUserTree(String values);
 
 
     /**
      * 岗位树
+     * @param values 可以根据values查询，多个使用英文逗号分隔。有values时就不返回树结构了，而是列表
      * @param
      * @return
      */
-    public List<PostModel> queryPostUserTree();
+    public List<SysUserModel> queryPostUserTree(String values);
 
     /**
      * 22通过用户账号查询角色Id集合
@@ -1130,6 +1131,13 @@ public interface ISysBaseAPI extends CommonAPI {
     String getMaterialNameByCode(String materialCode);
 
     /**
+     * 根据物资编号获取物资规格型号
+     * @param materialCode
+     * @return
+     */
+    String getMaterialSpecificationByCode(String materialCode);
+
+    /**
      * 根据多个物资编号获取物资名称,编号：名称
      * @param materialCodes
      * @return
@@ -1315,5 +1323,15 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return 用户信息
      */
     JSONObject queryByWorkNoUser(String workNo);
+
+    /**
+     * 根据给定的参数获取符合条件的用户名称列表。
+     *
+     * @param roleCodes 角色代码列表，用于筛选符合条件的用户
+     * @param orgIds    组织ID列表，用于筛选符合条件的用户
+     * @param posts     岗位列表，用于筛选符合条件的用户
+     * @return 符合条件的用户账号并去重的列表
+     */
+    List<String> getUserNameByParams(List<String> roleCodes, List<String> orgIds, List<String> posts);
 }
 

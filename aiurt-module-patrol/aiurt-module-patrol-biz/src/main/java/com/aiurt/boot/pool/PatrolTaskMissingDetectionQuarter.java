@@ -86,11 +86,11 @@ public class PatrolTaskMissingDetectionQuarter implements Job {
                 PatrolConstant.TASK_EXECUTE, PatrolConstant.TASK_RETURNED, PatrolConstant.TASK_RUNNING);
         List<PatrolTask> taskList = Optional.ofNullable(
                 patrolTaskService.lambdaQuery()
-                        .ne(PatrolTask::getSource, PatrolConstant.TASK_MANUAL)
                         .in(PatrolTask::getStatus, status)
                         .eq(PatrolTask::getOmitStatus, PatrolConstant.UNOMIT_STATUS)
                         .eq(PatrolTask::getDiscardStatus,PatrolConstant.TASK_UNDISCARD)
                         .eq(PatrolTask::getPeriod,PatrolConstant.PLAN_PERIOD_THREE_MONTH)
+                        .and(wrapper -> wrapper.ne(PatrolTask::getSource, PatrolConstant.TASK_MANUAL).or().isNull(PatrolTask::getSource))
                         .list()
         ).orElseGet(Collections::emptyList);
 
@@ -114,15 +114,10 @@ public class PatrolTaskMissingDetectionQuarter implements Job {
             if (null == l.getPatrolDate() && null == l.getEndDate()) {
                 return;
             }
-            Date patrolDate = null;
-            if (l.getSource().equals(PatrolConstant.TASK_MANUAL)) {
-                patrolDate = l.getEndDate();
-            }else {
-                patrolDate = l.getPatrolDate();
-                if (ObjectUtil.isNotEmpty(l.getEndTime())) {
-                    String endTime = DateUtil.format(l.getEndTime(), "HH:mm:ss");
-                    patrolDate = DateUtil.parse(DateUtil.format(patrolDate, "yyyy-MM-dd " + endTime));
-                }
+            Date patrolDate =  l.getPatrolDate();
+            if (ObjectUtil.isNotEmpty(l.getEndTime())) {
+                String endTime = DateUtil.format(l.getEndTime(), "HH:mm:ss");
+                patrolDate = DateUtil.parse(DateUtil.format(patrolDate, "yyyy-MM-dd " + endTime));
             }
             // 当前时间
             Date now = new Date();

@@ -460,7 +460,8 @@ public class CommonCtroller {
     @ApiOperation("根据机构人员树")
     public Result<List<SelectTable>> queryDepartUserTree(@RequestParam(value = "majorId",required = false) String majorId,
                                                          @RequestParam(value = "mark",required = false) String mark,
-                                                         @RequestParam(value = "username", required = false) String username) {
+                                                         @RequestParam(value = "username", required = false) String username,
+                                                         @RequestParam(value = "values", required = false) List<String> values) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> list = new ArrayList<>();
         if(StrUtil.isNotBlank(mark)){
@@ -474,7 +475,7 @@ public class CommonCtroller {
             ignoreUserId = sysBaseApi.getUserByUserName(username);
         }
 
-        List<SelectTable> tables = commonService.queryDepartUserTree(list, ignoreUserId,majorId,null);
+        List<SelectTable> tables = commonService.queryDepartUserTree(list, ignoreUserId,majorId,null, values);
         return Result.OK(tables);
 
 
@@ -484,31 +485,31 @@ public class CommonCtroller {
     @ApiOperation("筛选机构人员树")
     public Result<List<SelectTable>> filterDepartUserTree(@RequestParam(value = "majorId",required = false) String majorId,
                                                           @RequestParam(value = "keys",required = false) List<String> keys) {
-        List<SelectTable> tables = commonService.queryDepartUserTree(null, null,majorId,keys);
+        List<SelectTable> tables = commonService.queryDepartUserTree(null, null,majorId,keys, null);
         return Result.OK(tables);
     }
 
     /**
      * 角色树
-     *
+     * @param values 可以根据values查询，多个使用英文逗号分隔。有values时就不返回树结构了，而是列表
      * @return
      */
     @ApiOperation(value = "", notes = "角色树")
     @GetMapping(value = "/queryRoleUserTree")
-    public Result<List<CsRoleUserModel>> queryRoleUserTree() {
-        List<CsRoleUserModel> comboModels = sysBaseApi.queryRoleUserTree();
+    public Result<List<SysUserModel>> queryRoleUserTree(@RequestParam(value = "values",required = false) String values) {
+        List<SysUserModel> comboModels = sysBaseApi.queryRoleUserTree(values);
         return Result.OK(comboModels);
     }
 
     /**
      * 岗位树
-     *
+     * @param values 可以根据values查询，多个使用英文逗号分隔。有values时就不返回树结构了，而是列表
      * @return
      */
     @ApiOperation(value = "", notes = "岗位树")
     @GetMapping(value = "/queryPostUserTree")
-    public Result<List<PostModel>> queryPostUserTree() {
-        List<PostModel> list = sysBaseApi.queryPostUserTree();
+    public Result<List<SysUserModel>> queryPostUserTree(@RequestParam(value = "values",required = false) String values) {
+        List<SysUserModel> list = sysBaseApi.queryPostUserTree(values);
         return Result.OK(list);
     }
 

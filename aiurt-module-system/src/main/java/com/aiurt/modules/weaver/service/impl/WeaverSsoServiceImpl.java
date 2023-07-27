@@ -4,15 +4,21 @@ import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.asymmetric.KeyType;
 import cn.hutool.crypto.asymmetric.RSA;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.modules.weaver.service.IWeaverSsoService;
 import com.aiurt.modules.weaver.service.entity.WeaverSsoRestultDTO;
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -41,8 +47,8 @@ public class WeaverSsoServiceImpl implements IWeaverSsoService {
 
     @Autowired
     private RestTemplate restTemplate;
-
-
+    @Autowired
+    private ISysParamAPI sysParamApi;
 
     /**
      * 调用ecology注册接口,根据appid进行注册,将返回服务端公钥和Secret信息
@@ -148,4 +154,23 @@ public class WeaverSsoServiceImpl implements IWeaverSsoService {
         log.info("请求的token:{}", result);
         return result;
     }
+
+    @Override
+    public String ssoTokenByIdentifier(String identifier) throws JsonProcessingException {
+        String url = sysParamApi.selectByCode(SysParamCodeConstant.CONSTRUCTION_URL).getValue();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        MultiValueMap<String, String> params = new LinkedMultiValueMap();
+        params.add("client_id", sysParamApi.selectByCode(SysParamCodeConstant.CLIENT_ID).getValue());
+        params.add("client_secret", sysParamApi.selectByCode(SysParamCodeConstant.CLIENT_SECRET).getValue());
+        params.add("grant_type", sysParamApi.selectByCode(SysParamCodeConstant.GRANT_TYPE).getValue());
+        HttpEntity httpEntity = new HttpEntity(params, headers);
+        String result = restTemplate.postForObject(url,httpEntity, String.class);
+        log.info("请求的token:{}", result);
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(result);
+        String accessToken = jsonNode.get("access_token").asText();
+        return accessToken;
+    }
+
 }

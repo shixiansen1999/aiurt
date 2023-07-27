@@ -28,7 +28,7 @@ public interface PositionPanelMapper {
      * @param
      * @return
      */
-    List<CsStation> getStations();
+    List<CsStation> getStations(@Param("positionPanel") PositionPanelModel positionPanel);
 
     /**
      * 通过站点名称查询班组信息
@@ -58,7 +58,8 @@ public interface PositionPanelMapper {
      * 通过id查询班组人员信息
      *
      * @param orgCode
+     * @param foreman
      * @return
      */
-    List<SysUser> getUserById(@Param("orgCode")String orgCode);
+    List<SysUser> getUserById(@Param("orgCode")String orgCode,@Param("foreman")String foreman);
 }

@@ -206,7 +206,6 @@ public class SysAnnouncement implements Serializable {
     @TableField(exist = false)
     private String eTime;
 
-
     /**
      * 特情等级
      */
@@ -215,13 +214,27 @@ public class SysAnnouncement implements Serializable {
     @ApiModelProperty("特情等级")
     private java.lang.String level;
 
+    /**
+     * 流程名称
+     */
+    @ApiModelProperty("流程名称")
     private String processName;
 
     private String processCode;
-
+    /**
+     * 任务ID
+     */
+    @ApiModelProperty("任务ID")
     private String taskId;
-
+    /**
+     * 流程定义Key
+     */
+    @ApiModelProperty("流程定义Key")
     private String processDefinitionKey;
-
+    /**
+     * 流程实例ID
+     */
+    @ApiModelProperty("流程实例ID")
     private String processInstanceId;
+
 }

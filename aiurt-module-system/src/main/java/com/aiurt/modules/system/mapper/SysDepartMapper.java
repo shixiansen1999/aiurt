@@ -3,9 +3,9 @@ package com.aiurt.modules.system.mapper;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.jeecg.common.system.vo.SysDepartModel;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -118,8 +118,9 @@ public interface SysDepartMapper extends BaseMapper<SysDepart> {
 	/**
 	 * 通过id，查询改id的子级
 	 * @param orgCode
+	 * @param workLogOrgCategory 实施配置里面组织机构是班组的编码
 	 * @return
 	 */
-	@Select("select * from sys_depart where  org_code_cc LIKE CONCAT ('%',#{orgCode},'%' )  and org_category in(3,4,5)")
-	List<SysDepartModel> getUserOrgCategory(@Param("orgCode")String orgCode);
+	List<SysDepartModel> getUserOrgCategory(@Param("orgCode")String orgCode,
+											@Param("workLogOrgCategory") String workLogOrgCategory);
 }

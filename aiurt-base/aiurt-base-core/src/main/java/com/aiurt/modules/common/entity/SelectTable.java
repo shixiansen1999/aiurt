@@ -105,6 +105,8 @@ public class SelectTable {
     private String postName;
     @ApiModelProperty(value = "角色")
     private String roleName;
+    @ApiModelProperty(value = "头像")
+    private String avatar;
 
     // 递归计算 subUserNum
     public Long calculateSubUserNum() {

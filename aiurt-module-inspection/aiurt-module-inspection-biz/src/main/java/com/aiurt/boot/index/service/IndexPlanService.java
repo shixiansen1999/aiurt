@@ -42,6 +42,7 @@ import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -91,6 +92,8 @@ public class IndexPlanService {
     private RepairPoolCodeMapper poolCodeMapper;
     @Autowired
     private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private RestTemplate restTemplate;
 
     /**
      * 获取计划概览信息
@@ -310,7 +313,7 @@ public class IndexPlanService {
         Map<String, Integer> dailyFaultNum = dailyFaultApi.getDailyFaultNum(year, month);
         Map<String, Integer> faultMap = CollUtil.isNotEmpty(dailyFaultNum) ? dailyFaultNum : new HashMap<>(32);
         // 施工
-        Map<String, Integer> constructionMap = new HashMap<>(32);
+        Map<String, Integer> constructionMap = this.constructionNumByDay(beginDate, dayNum);
         // 日程信息
         Map<String, List<DailySchedule>> scheduleMap = MapUtil.isNotEmpty(baseApi.queryDailyScheduleList(year, month)) ? baseApi.queryDailyScheduleList(year, month) : new HashMap<>(32);
 
@@ -319,9 +322,10 @@ public class IndexPlanService {
             for (int i = 0; i < dayNum; i++) {
                 // 偏移日期
                 String currDateStr = DateUtil.format(DateUtil.offsetDay(beginDate, i), "yyyy/MM/dd");
+                String otherDateStr = DateUtil.format(DateUtil.offsetDay(beginDate, i), "yyyy-MM-dd");
                 DayTodoDTO dayTodoDTO = new DayTodoDTO();
                 dayTodoDTO.setCurrDate(currDateStr);
-                dayTodoDTO.setConstructionNum(ObjectUtil.isEmpty(constructionMap.get(currDateStr)) ? 0 : constructionMap.get(currDateStr));
+                dayTodoDTO.setConstructionNum(ObjectUtil.isEmpty(constructionMap.get(otherDateStr)) ? 0 : constructionMap.get(otherDateStr));
                 dayTodoDTO.setFaultNum(ObjectUtil.isEmpty(faultMap.get(currDateStr)) ? 0 : faultMap.get(currDateStr));
                 dayTodoDTO.setInspectionNum(ObjectUtil.isEmpty(inspectionMap.get(currDateStr)) ? 0 : inspectionMap.get(currDateStr));
                 dayTodoDTO.setPatrolNum(ObjectUtil.isEmpty(patrolMap.get(currDateStr)) ? 0 : patrolMap.get(currDateStr));
@@ -341,10 +345,33 @@ public class IndexPlanService {
      * @param dayNum
      * @return
      */
+    private Map<String, Integer> constructionNumByDay(Date beginDate, int dayNum) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(beginDate);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        Date newBeginDate = calendar.getTime();
+        calendar.add(Calendar.DATE, dayNum - 1);
+        Date endDate = calendar.getTime();
+
+        List<ConstructionNumDTO> constructionNumByDay = indexPlanMapper.getConstructionNumByDay(newBeginDate, endDate);
+        return constructionNumByDay
+                .stream().collect(Collectors.toMap(ConstructionNumDTO::getTaskDate, ConstructionNumDTO::getNum));
+    }
+
+    /**
+     * 按天查询检修任务完成数
+     *
+     * @param beginDate
+     * @param dayNum
+     * @return
+     */
     private Map<String, Integer> inspectionNumByDay(Date beginDate, int dayNum) {
         Map<String, Integer> result = new HashMap<>(32);
         //根据配置决定统计的维保数按照维保开始时间还是提交时间进行筛选
-        SysParamModel sysParam = iSysParamAPI.selectByCode(SysParamCodeConstant.AUTO_CC);
+        SysParamModel sysParam = iSysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_STARTTIME);
         boolean autoCc = "1".equals(sysParam.getValue());
         List<RepairTaskNum> repairTaskNums = new ArrayList<>();
         if (autoCc) {
@@ -489,7 +516,7 @@ public class IndexPlanService {
      */
     public IPage<RepairPoolDetailsDTO> getMaintenanceSituation(Page<RepairPoolDetailsDTO> page, Date startDate, String stationCode) {
         // //根据配置决定统计的维保数按照维保开始时间还是提交时间进行筛选
-        SysParamModel sysParam = iSysParamAPI.selectByCode(SysParamCodeConstant.AUTO_CC);
+        SysParamModel sysParam = iSysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_STARTTIME);
         // 查询维修任务池的维修情况列表
         List<RepairPoolDetailsDTO> result = repairTaskMapper.getMaintenanceSituation(page, startDate, stationCode,sysParam.getValue());
 

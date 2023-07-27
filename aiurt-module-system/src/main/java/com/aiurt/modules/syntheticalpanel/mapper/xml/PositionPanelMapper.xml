@@ -32,7 +32,11 @@
     wa.`name` as teamName,
     ifnull(( select count(*)
     from fault
-    where (status=9 or status=10 or status=7)
+    where (status > 2 and status &lt; 12)
+    <if test="positionPanel.startDate != null and positionPanel.endDate != null">
+        and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{positionPanel.startDate},'%Y-%m-%d')
+        and date_format(approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{positionPanel.endDate},'%Y-%m-%d')
+    </if>
     and station_code=cs.station_code),0) as faultNum
     FROM
     cs_station cs
@@ -83,14 +87,16 @@
 
 <select id="getUserById" resultType="com.aiurt.modules.system.entity.SysUser">
     SELECT
-            id,
-            username,
-            realname,
-            avatar
+    su.id,
+    su.username,
+    su.realname,
+    su.avatar,
+    if((select ifnull(count(*),0) from sys_user_role v left join sys_role a on v.role_id =a.id where v.user_id = su.id and a.role_code = #{foreman})>0,0,1) as isForeman
     FROM
-            sys_user
+    sys_user su
     WHERE
-            del_flag = 0
-      AND org_code= #{orgCode}
+    su.del_flag = 0
+    AND su.org_code= #{orgCode}
+    order by isForeman
     </select>
 </mapper>

@@ -47,4 +47,8 @@ public class CsUserDepartModel {
     @ApiModelProperty(value = "子级")
     private List<CsUserDepartModel> childrenList;
     private String color;
+
+    /**机构类别 1组织机构，2岗位*/
+    @ApiModelProperty(value = "机构类别")
+    private String orgCategory;
 }

@@ -164,11 +164,11 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 }
                 // 原组件
                 String oldSparePartCode = deviceChange.getOldSparePartCode();
-                String newSparePartCode = deviceChange.getNewSparePartCode();
+                String materialBaseCode = deviceChange.getMaterialBaseCode();
                 String newSparePartSplitCode = deviceChange.getNewSparePartSplitCode();
                 List<String> codes = StrUtil.splitTrim(newSparePartSplitCode, ",");
                 LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
-                wrapper.eq(MaterialBase::getCode, newSparePartCode).eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
+                wrapper.eq(MaterialBase::getCode, materialBaseCode).eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0).last("limit 1");
                 MaterialBase materialBase = materialBaseService.getBaseMapper().selectOne(wrapper);
                 if (Objects.isNull(materialBase)) {
                     return;
@@ -309,6 +309,14 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 recoverSparePart(deviceChangeSparePartList);
                 }
                 for (SparePartStockDTO lendStockDTO : unExitFaultSparePartList) {
+                    //判断新组件的数量是否大于备件库存
+                    SparePartStock sparePartStock = sparePartStockService.getOne(new LambdaQueryWrapper<SparePartStock>()
+                            .eq(SparePartStock::getDelFlag, CommonConstant.DEL_FLAG_0)
+                            .eq(SparePartStock::getWarehouseCode, lendStockDTO.getWarehouseCode())
+                            .eq(SparePartStock::getMaterialCode, lendStockDTO.getMaterialCode()));
+                    if(lendStockDTO.getNewSparePartNum()>sparePartStock.getNum()){
+                        throw new AiurtBootException("更换的数量大于库存数量！");
+                    }
                     DeviceChangeSparePart sparePart = new DeviceChangeSparePart();
                     sparePart.setCode(faultCode);
                     //原组件数量默认1
@@ -323,7 +331,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         scrap.setStatus(1);
                         scrap.setSysOrgCode(user.getOrgCode());
                         scrap.setMaterialCode(lendStockDTO.getOldMaterialCode());
-                        scrap.setWarehouseCode(lendStockDTO.getWarehouseCode());
+                        scrap.setWarehouseCode(stockInfo.getWarehouseCode());
                         scrap.setNum(1);
                         scrap.setFaultCode(faultCode);
                         scrap.setScrapTime(new Date());
@@ -365,7 +373,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                             e.printStackTrace();
                         }
                         sparePart.setScrapId(scrap.getId());
-                       /* QueryWrapper<DeviceAssembly> queryWrapper = new QueryWrapper();
+                        QueryWrapper<DeviceAssembly> queryWrapper = new QueryWrapper();
                         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
                         List<DeviceAssembly> deviceAssemblyList = deviceAssemblyService.list(queryWrapper);
                         Set<String> assemblyCodeSet = deviceAssemblyList.stream().map(DeviceAssembly::getCode).collect(Collectors.toSet());
@@ -375,15 +383,16 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         for (Integer i = 0; i < newSparePartNum; i++) {
                             String format = "";
                              do {
-                                 String number = String.format("%06d",num );
+                                 String number = String.format("%04d", num);
                                  format = lendStockDTO.getMaterialCode() + number;
                                  num = num + 1;
                             } while (assemblyCodeSet.contains(format));
                             strings.add(format);
                         }
-                        String codes = strings.stream().collect(Collectors.joining(","));*/
+                        String codes = strings.stream().collect(Collectors.joining(","));
                         sparePart.setDeviceCode(lendStockDTO.getDeviceCode());
-                        // sparePart.setNewSparePartSplitCode(codes);
+                         sparePart.setNewSparePartSplitCode(codes);
+                         sparePart.setNewSparePartCode(codes);
                     }
                     sparePart.setNewSparePartNum(lendStockDTO.getNewSparePartNum());
                     sparePart.setNewOrgCode(user.getOrgCode());
@@ -393,6 +402,8 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         lendOutOrder.setNum(lendStockDTO.getNewSparePartNum());
                         lendOutOrder.setWarehouseCode(lendStockDTO.getWarehouseCode());
                         lendOutOrder.setApplyOutTime(new Date());
+                        lendOutOrder.setConfirmTime(new Date());
+                        lendOutOrder.setConfirmUserId(user.getId());
                         lendOutOrder.setStatus(2);
                         lendOutOrder.setApplyUserId(user.getUsername());
                         lendOutOrder.setMaterialCode(lendStockDTO.getMaterialCode());
@@ -468,7 +479,9 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
 
                         //5.借入仓库库存数做加法
 
-                        SparePartStock  borrowingStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode, lendOutOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode, stockInfo.getWarehouseCode()));
+                        SparePartStock  borrowingStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>()
+                                .eq(SparePartStock::getMaterialCode, lendOutOrder.getMaterialCode())
+                                .eq(SparePartStock::getWarehouseCode, stockInfo.getWarehouseCode()));
                         SparePartStock partStock = new SparePartStock();
                         if (null != borrowingStock) {
                             borrowingStock.setNum(borrowingStock.getNum() + sparePartLend.getLendNum());
@@ -504,6 +517,8 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         borrowingOutOrder.setNum(sparePartInOrder.getNum());
                         borrowingOutOrder.setApplyOutTime(new Date());
                         borrowingOutOrder.setApplyUserId(user.getUsername());
+                        borrowingOutOrder.setConfirmTime(new Date());
+                        borrowingOutOrder.setConfirmUserId(user.getId());
                         borrowingOutOrder.setStatus(2);
                         List<SparePartOutOrder> outOrders = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>()
                                 .eq(SparePartOutOrder::getStatus,2)
@@ -528,7 +543,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         //2023-03-30 测试说不发消息
                         //sendOutboundMessages(borrowingOutOrder,user);
                     }
-                    sparePart.setNewSparePartCode(lendStockDTO.getNewSparePartCode());
+//                    sparePart.setNewSparePartCode(lendStockDTO.getNewSparePartCode());
                     sparePartService.getBaseMapper().insert(sparePart);
                 }
             }

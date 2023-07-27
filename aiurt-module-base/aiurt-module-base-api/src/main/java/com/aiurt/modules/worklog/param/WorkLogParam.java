@@ -36,7 +36,8 @@ public class WorkLogParam {
     /**提交状态，0已提交 1未提交，首页的工作日志模块所用*/
     @ApiModelProperty(value = "提交状态，0已提交 1未提交")
     private Integer status;
-    /**是否获取本班组数据的权限控制,修改departList,0或空为否，1为是，首页的工作日志模块所用*/
+    /**是否获取本班组数据的权限控制,修改departList,0或空为否，1为是，首页的工作日志模块所用
+     * 现在这个字段没用了，因为都是获取权限部门的工作日志*/
     @ApiModelProperty(value = "否获取本班组数据的权限控制,0或空为否，1为是")
     private Integer isMyTeam;
 

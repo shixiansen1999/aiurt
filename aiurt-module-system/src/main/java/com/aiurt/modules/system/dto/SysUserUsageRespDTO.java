@@ -24,6 +24,8 @@ public class SysUserUsageRespDTO implements Serializable {
 
     private String title;
 
+    private String label;
+
 
     @ApiModelProperty("机构id")
     private String orgId;
@@ -45,6 +47,9 @@ public class SysUserUsageRespDTO implements Serializable {
 
     @ApiModelProperty("是否角色")
     private Boolean isRole = false;
+
+    @ApiModelProperty("是否关系")
+    private Boolean isRelation = false;
 
     @ApiModelProperty("所属岗位，多个用逗号隔开")
     private String postName;

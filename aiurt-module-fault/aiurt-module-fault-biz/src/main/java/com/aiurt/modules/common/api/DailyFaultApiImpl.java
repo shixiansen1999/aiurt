@@ -20,7 +20,6 @@ import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.index.mapper.FaultCountMapper;
 import com.aiurt.modules.largescream.mapper.FaultInformationMapper;
 import com.aiurt.modules.largescream.model.FaultDurationTask;
-import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.xiaoymin.knife4j.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -171,18 +170,16 @@ public class DailyFaultApiImpl implements DailyFaultApi {
 
     /**
      * 班组画像获取维修工时
-     * @param type
+     * @param startTime
+     * @param endTime
      * @param teamId
      * @return
      */
     @Override
-    public Map<String, BigDecimal> getFaultUserHours(int type, String teamId) {
+    public Map<String, BigDecimal> getFaultUserHours(Date startTime, Date endTime, String teamId) {
         Map<String, BigDecimal> userDurationMap = new HashMap<>(32);
         // 班组的人员
         List<LoginUser> userList = sysBaseApi.getUserPersonnel(teamId);
-        String dateTime = FaultLargeDateUtil.getDateTime(type);
-        Date startTime = DateUtil.parse(dateTime.split("~")[0]);
-        Date endTime = DateUtil.parse(dateTime.split("~")[1]);
         SysParamModel filterParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_FILTER);
         boolean filterValue = "1".equals(filterParamModel.getValue());
         List<FaultDurationTask> faultUserDuration  = new ArrayList<>();
@@ -217,18 +214,19 @@ public class DailyFaultApiImpl implements DailyFaultApi {
 
     /**
      * 班组画像获取维修工时（参与人和执行人不是同一个）
-     * @param type
+     * @param startTime
+     * @param endTime
      * @param teamId
      * @return
      */
     @Override
-    public BigDecimal getFaultHours(int type, String teamId) {
+    public BigDecimal getFaultHours(Date startTime, Date endTime, String teamId) {
         // 班组的人员
         List<LoginUser> userList = sysBaseApi.getUserPersonnel(teamId);
         if (CollUtil.isNotEmpty(userList)) {
-            String dateTime = FaultLargeDateUtil.getDateTime(type);
+            /*String dateTime = FaultLargeDateUtil.getDateTime(type);
             Date startTime = DateUtil.parse(dateTime.split("~")[0]);
-            Date endTime = DateUtil.parse(dateTime.split("~")[1]);
+            Date endTime = DateUtil.parse(dateTime.split("~")[1]);*/
             SysParamModel filterParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_FILTER);
             boolean filterValue = "1".equals(filterParamModel.getValue());
             List<FaultDurationTask> faultByIdDuration = new ArrayList<>();

@@ -38,7 +38,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -76,23 +75,22 @@ public class FaultInformationService {
     /**
      * 综合大屏-故障信息统计数量
      *
-     * @param boardTimeType
      * @param lineCode
+     * @param startDate
+     * @param endDate
      * @return
      */
-    public FaultLargeCountDTO queryLargeFaultInformation(Integer boardTimeType, String lineCode) {
+    public FaultLargeCountDTO queryLargeFaultInformation(String lineCode,String startDate,String endDate) {
         FaultLargeCountDTO result = new FaultLargeCountDTO();
-        String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
-        String[] split = dateTime.split("~");
-        Date startDate = DateUtil.parse(split[0]);
-        Date endDate = DateUtil.parse(split[1]);
+        Date startTime = DateUtil.parse(startDate);
+        Date endTime = DateUtil.parse(endDate);
 
         //获取当前登录人的专业编码
         List<String> majors = getCurrentLoginUserMajors();
 
         int count = 0;
 
-        List<Fault> faultList = faultInformationMapper.queryLargeFaultInformation(startDate, endDate, lineCode, majors);
+        List<Fault> faultList = faultInformationMapper.queryLargeFaultInformation(startTime, endTime, lineCode, majors);
 
         List<Fault> faultList1 = faultInformationMapper.queryLargeFaultInformation(getTime(0), getTime(1), lineCode, majors);
 
@@ -142,35 +140,25 @@ public class FaultInformationService {
     /**
      * 综合大屏-故障信息统计详情
      *
-     * @param boardTimeType
+
      * @param lineCode
      * @return
      */
-    public List<FaultLargeInfoDTO> getLargeFaultDatails(Integer boardTimeType, Integer faultModule, String lineCode) {
+    public List<FaultLargeInfoDTO> getLargeFaultDatails(String startDate,String endDate, Integer faultModule, String lineCode) {
         FaultScreenModule faultScreenModule = new FaultScreenModule();
-        String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
-        String[] split = dateTime.split("~");
-        Date startDate = DateUtil.parse(split[0]);
-        Date endDate = DateUtil.parse(split[1]);
+        Date startTime = DateUtil.parse(startDate);
+        Date endTime = DateUtil.parse(endDate);
 
         //获取当前登录人的专业编码
         List<String> majors = getCurrentLoginUserMajors();
-
+        faultScreenModule.setLineCode(lineCode);
+        faultScreenModule.setMajors(majors);
+        faultScreenModule.setStartDate(startTime);
+        faultScreenModule.setEndDate(endTime);
         switch (faultModule) {
-            // 总故障数详情
-            case 1:
-                faultScreenModule.setStartDate(startDate);
-                faultScreenModule.setEndDate(endDate);
-                faultScreenModule.setLineCode(lineCode);
-                faultScreenModule.setMajors(majors);
-                break;
             // 未解决故障
             case 2:
-                faultScreenModule.setStartDate(startDate);
-                faultScreenModule.setEndDate(endDate);
                 faultScreenModule.setUnSo(1);
-                faultScreenModule.setLineCode(lineCode);
-                faultScreenModule.setMajors(majors);
                 break;
             // 当日新增
             case 3:
@@ -179,8 +167,6 @@ public class FaultInformationService {
                 faultScreenModule.setTodayStartDate(DateUtil.beginOfDay(new Date()));
                 faultScreenModule.setTodayEndDate(DateUtil.endOfDay(new Date()));
                 faultScreenModule.setTodayAdd(1);
-                faultScreenModule.setLineCode(lineCode);
-                faultScreenModule.setMajors(majors);
                 break;
             // 当日已解决
             case 4:
@@ -189,8 +175,14 @@ public class FaultInformationService {
                 faultScreenModule.setTodayStartDate(DateUtil.beginOfDay(new Date()));
                 faultScreenModule.setTodayEndDate(DateUtil.endOfDay(new Date()));
                 faultScreenModule.setTodaySolve(1);
-                faultScreenModule.setLineCode(lineCode);
-                faultScreenModule.setMajors(majors);
+                break;
+            // 挂起数
+            case 5:
+                faultScreenModule.setHangUp(1);
+                break;
+            // 解决数
+            case 6:
+                faultScreenModule.setSolve(1);
                 break;
             default:
         }
@@ -225,20 +217,17 @@ public class FaultInformationService {
     /**
      * 综合大屏-故障信息统计列表
      *
-     * @param boardTimeType
      * @param lineCode
      * @return
      */
-    public List<FaultLargeInfoDTO> getLargeFaultInfo(Integer boardTimeType, String lineCode) {
-        String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
-        String[] split = dateTime.split("~");
-        Date startDate = DateUtil.parse(split[0]);
-        Date endDate = DateUtil.parse(split[1]);
+    public List<FaultLargeInfoDTO> getLargeFaultInfo(String lineCode,String startDate,String endDate) {
+        Date startTime = DateUtil.parse(startDate);
+        Date endTime = DateUtil.parse(endDate);
 
         //获取当前登录人的专业编码
         List<String> majors = getCurrentLoginUserMajors();
 
-        List<FaultLargeInfoDTO> largeFaultInfo = faultInformationMapper.getLargeFaultInfo(startDate, endDate, lineCode, majors);
+        List<FaultLargeInfoDTO> largeFaultInfo = faultInformationMapper.getLargeFaultInfo(startTime, endTime, lineCode, majors);
         largeFaultInfo.stream().forEach(l -> {
             // 字典翻译
             /*String statusName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream().filter(item -> item.getValue().equals(String.valueOf(l.getStatus()))).map(DictModel::getText).collect(Collectors.joining());
@@ -260,15 +249,12 @@ public class FaultInformationService {
     /**
      * 线路故障统计
      *
-     * @param boardTimeType
      * @return
      */
-    public List<FaultLargeLineInfoDTO> getLargeLineFaultInfo(Integer boardTimeType,String lineCode) {
+    public List<FaultLargeLineInfoDTO> getLargeLineFaultInfo(String lineCode,String startDate,String endDate) {
         List<FaultLargeLineInfoDTO> largeLineInfoDtos = new ArrayList<>();
-        String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
-        String[] split = dateTime.split("~");
-        Date startDate = DateUtil.parse(split[0]);
-        Date endDate = DateUtil.parse(split[1]);
+        Date startTime = DateUtil.parse(startDate);
+        Date endTime = DateUtil.parse(endDate);
 
         //获取当前登录人的专业编码
         List<String> majors = getCurrentLoginUserMajors();
@@ -297,7 +283,7 @@ public class FaultInformationService {
                 list = new ArrayList<>(allLine);
             }
         }
-        List<Fault> largeLineFaultInfo = faultInformationMapper.getLargeLineFaultInfo(startDate, endDate, majors,lineCode);
+        List<Fault> largeLineFaultInfo = faultInformationMapper.getLargeLineFaultInfo(startTime, endTime, majors,lineCode);
         //根据line_code分组，查询同一条线路下的所有故障
         Map<String, List<Fault>> collect = new HashMap<>();
         if (flag) {
@@ -481,8 +467,8 @@ public class FaultInformationService {
             Map<String, String> map = FaultLargeDateUtil.getMonthFirstAndLast(i);
             String firstDay = map.get("firstDay");
             String lastDay = map.get("lastDay");
-            faultDataStatisticsDTO.setFirstDay(firstDay);
-            faultDataStatisticsDTO.setLastDay(lastDay);
+            faultDataStatisticsDTO.setStartDate(firstDay);
+            faultDataStatisticsDTO.setEndDate(lastDay);
             Integer yearFault = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
             dto.setId(String.valueOf(i));
             dto.setMonth(String.valueOf(i + 1));
@@ -515,8 +501,8 @@ public class FaultInformationService {
             Map<String, String> map = FaultLargeDateUtil.getMonthFirstAndLast(i - 1);
             firstDay = map.get("firstDay");
             lastDay = map.get("lastDay");
-            faultDataStatisticsDTO.setFirstDay(firstDay);
-            faultDataStatisticsDTO.setLastDay(lastDay);
+            faultDataStatisticsDTO.setStartDate(firstDay);
+            faultDataStatisticsDTO.setEndDate(lastDay);
         }
 
         List<FaultDataStatisticsDTO> allSystemCode = faultInformationMapper.getAllSystemCode(majorCodes);
@@ -550,15 +536,6 @@ public class FaultInformationService {
         List<String> majorCodes = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
         faultDataStatisticsDTO.setMajorCodes(majorCodes);
 
-        if (faultDataStatisticsDTO.getBoardTimeType() != null) {
-            String dateTime = FaultLargeDateUtil.getDateTime(faultDataStatisticsDTO.getBoardTimeType());
-            String[] split = dateTime.split("~");
-            Date startDate = DateUtil.parse(split[0]);
-            Date endDate = DateUtil.parse(split[1]);
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            faultDataStatisticsDTO.setFirstDay(format.format(startDate));
-            faultDataStatisticsDTO.setLastDay(format.format(endDate));
-        }
         //总数
         Integer yearFault = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
         if (yearFault != 0) {
@@ -607,43 +584,37 @@ public class FaultInformationService {
      * @param lineCode
      * @return
      */
-    public FaultDataAnalysisCountDTO queryLargeFaultDataCount(Integer boardTimeType, String lineCode) {
+    public FaultDataAnalysisCountDTO queryLargeFaultDataCount(String startDate,String endDate, String lineCode) {
         FaultDataAnalysisCountDTO result = new FaultDataAnalysisCountDTO();
 
         //获取本周或本月时间
-        String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
-        String[] split = dateTime.split("~");
-        Date weekStartDate = DateUtil.parse(split[0]);
-        Date weekEndDate = DateUtil.parse(split[1]);
+        Date startTime = DateUtil.parse(startDate);
+        Date endTime = DateUtil.parse(endDate);
 
         //获取当前登录人的专业编码
         List<String> majors = getCurrentLoginUserMajors();
 
         int count = 0;
-        FaultDataAnalysisCountDTO countDTO = faultInformationMapper.countFaultDataInformation(getTime(0),getTime(1),lineCode, majors);
+        FaultDataAnalysisCountDTO countDTO = faultInformationMapper.countFaultDataInformation(startTime,endTime,lineCode, majors);
         //FaultDataAnalysisCountDTO countDTO1 = faultInformationMapper.countFaultDataInformation(null,null,lineCode, majors);
         //总故障数
-        if (Objects.nonNull(countDTO)) {
-            result.setSum(countDTO.getSum());
-        } else {
-            result.setSum(0);
-        }
+        result.setSum(countDTO.getSum());
 
-        //未修复数 (0713查本月未修复数)
-        if (Objects.nonNull(countDTO)){
-            result.setUnSolve(countDTO.getUnSolve());
-        }else {
-            result.setUnSolve(0);
-        }
+        //未修复数
+        result.setUnSolve(countDTO.getUnSolve());
+
+        //挂起数
+        result.setHangUpNum(countDTO.getHangUpNum());
+
         //本周已解决
-        List<Fault> faultDataInformationweekSolve = faultInformationMapper.queryFaultDataInformationWeekSolve(weekStartDate, weekEndDate, lineCode, majors);
+        List<Fault> faultDataInformationweekSolve = faultInformationMapper.queryFaultDataInformationWeekSolve(startTime, endTime, lineCode, majors);
         if (CollUtil.isNotEmpty(faultDataInformationweekSolve)) {
             result.setWeekSolve(faultDataInformationweekSolve.size());
         } else {
             result.setWeekSolve(0);
         }
         //本周新增
-        List<Fault> faultDataInformationweekAdd = faultInformationMapper.queryFaultDataInformationWeekAdd(weekStartDate, weekEndDate, lineCode, majors);
+        List<Fault> faultDataInformationweekAdd = faultInformationMapper.queryFaultDataInformationWeekAdd(startTime, endTime, lineCode, majors);
         if (CollUtil.isNotEmpty(faultDataInformationweekAdd)) {
             result.setWeekAdd(faultDataInformationweekAdd.size());
         } else {
@@ -681,17 +652,13 @@ public class FaultInformationService {
 
         Integer pageNo = largeFaultDataDatailDTO.getPageNo();
         Integer pageSize = largeFaultDataDatailDTO.getPageSize();
-        Integer boardTimeType = largeFaultDataDatailDTO.getBoardTimeType();
 
         String lineCode = largeFaultDataDatailDTO.getLineCode();
 
 
         FaultScreenModule faultScreenModule = new FaultScreenModule();
-        //本周或本月时间
-        String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
-        String[] split = dateTime.split("~");
-        Date startDate = DateUtil.parse(split[0]);
-        Date endDate = DateUtil.parse(split[1]);
+        Date startTime = DateUtil.parse(largeFaultDataDatailDTO.getStartDate());
+        Date endTime = DateUtil.parse(largeFaultDataDatailDTO.getEndDate());
 
         //获取当前登录人的专业编码
         List<String> majors = getCurrentLoginUserMajors();
@@ -699,38 +666,28 @@ public class FaultInformationService {
         if (ObjectUtil.isEmpty(faultModule)) {
             faultModule = 1;
         }
+        faultScreenModule.setStartDate(startTime);
+        faultScreenModule.setEndDate(endTime);
+        faultScreenModule.setLineCode(lineCode);
+        faultScreenModule.setMajors(majors);
         switch (faultModule) {
             // 故障总数
             case 1:
                 faultScreenModule.setStartDate(getTime(0));
                 faultScreenModule.setEndDate(getTime(1));
                 faultScreenModule.setMoonSolve(1);
-                faultScreenModule.setLineCode(lineCode);
-                faultScreenModule.setMajors(majors);
                 break;
             // 未解决故障
             case 2:
                 faultScreenModule.setUnSo(1);
-                faultScreenModule.setLineCode(lineCode);
-                faultScreenModule.setMajors(majors);
-                faultScreenModule.setStartDate(startDate);
-                faultScreenModule.setEndDate(endDate);
                 break;
             // 本周或本月新增
             case 3:
-                faultScreenModule.setStartDate(startDate);
-                faultScreenModule.setEndDate(endDate);
                 faultScreenModule.setWeekAdd(1);
-                faultScreenModule.setLineCode(lineCode);
-                faultScreenModule.setMajors(majors);
                 break;
             // 本周或本月修复
             case 4:
-                faultScreenModule.setStartDate(startDate);
-                faultScreenModule.setEndDate(endDate);
                 faultScreenModule.setWeekSolve(1);
-                faultScreenModule.setLineCode(lineCode);
-                faultScreenModule.setMajors(majors);
                 break;
             // 当日新增
             case 5:
@@ -739,8 +696,6 @@ public class FaultInformationService {
                 faultScreenModule.setTodayStartDate(DateUtil.beginOfDay(new Date()));
                 faultScreenModule.setTodayEndDate(DateUtil.endOfDay(new Date()));
                 faultScreenModule.setTodayAdd(1);
-                faultScreenModule.setLineCode(lineCode);
-                faultScreenModule.setMajors(majors);
                 break;
             // 当日已解决
             case 6:
@@ -749,8 +704,10 @@ public class FaultInformationService {
                 faultScreenModule.setTodayStartDate(DateUtil.beginOfDay(new Date()));
                 faultScreenModule.setTodayEndDate(DateUtil.endOfDay(new Date()));
                 faultScreenModule.setTodaySolve(1);
-                faultScreenModule.setLineCode(lineCode);
-                faultScreenModule.setMajors(majors);
+                break;
+            // 挂起数
+            case 7:
+                faultScreenModule.setHangUp(1);
                 break;
             default:
         }
@@ -758,7 +715,7 @@ public class FaultInformationService {
         Page<FaultLargeInfoDTO> pageList = new Page<>(pageNo, pageSize);
         List<FaultLargeInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataDatails(pageList, faultScreenModule);
         largeFaultDataInfo.stream().forEach(l -> {
-            // 字典翻译
+            // 字典翻译faultScreenModule = {FaultScreenModule@25749} "FaultScreenModule(startDate=2023-07-24 00:00:00, endDate=2023-07-30 00:00:00, status=null, moonSolve=null, unSo=1, solve=null, hangUp=null, todaySolve=null, todayAdd=null, weekSolve=null, weekAdd=null, todayStartDate=null, todayEndDate=null, lineCode=null, majors=[1001, XH001])"
             /*String statusName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream().filter(item -> item.getValue().equals(String.valueOf(l.getStatus()))).map(DictModel::getText).collect(Collectors.joining());
             l.setStatusName(statusName);*/
 
@@ -773,6 +730,9 @@ public class FaultInformationService {
 
             String faultModeName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_MODE_CODE).stream().filter(item -> item.getValue().equals(String.valueOf(l.getFaultModeCode()))).map(DictModel::getText).collect(Collectors.joining());
             l.setFaultModeName(faultModeName);
+
+            String faultPhenomenonName = sysBaseApi.translateDictFromTable("fault_knowledge_base_type", "name", "code", l.getFaultPhenomenon());
+            l.setFaultPhenomenonName(faultPhenomenonName);
         });
         return pageList.setRecords(largeFaultDataInfo);
     }
@@ -784,16 +744,14 @@ public class FaultInformationService {
      * @param lineCode
      * @return
      */
-    public List<FaultDataAnalysisInfoDTO> getLargeFaultDataInfo(Integer boardTimeType, String lineCode) {
-        String dateTime1 = FaultLargeDateUtil.getDateTime(boardTimeType);
-        String[] split1 = dateTime1.split("~");
-        Date startDate = DateUtil.parse(split1[0]);
-        Date endDate = DateUtil.parse(split1[1]);
+    public List<FaultDataAnalysisInfoDTO> getLargeFaultDataInfo(String startDate,String endDate, String lineCode) {
+        Date startTime = DateUtil.parse(startDate);
+        Date endTime = DateUtil.parse(endDate);
 
         //获取当前登录人的专业编码
         List<String> majors = getCurrentLoginUserMajors();
 
-        List<FaultDataAnalysisInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataInfo(startDate, endDate, lineCode, majors);
+        List<FaultDataAnalysisInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataInfo(startTime, endTime, lineCode, majors);
         largeFaultDataInfo.stream().forEach(l -> {
             // 字典翻译
             /*String statusName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream().filter(item -> item.getValue().equals(String.valueOf(l.getStatus()))).map(DictModel::getText).collect(Collectors.joining());
@@ -820,17 +778,13 @@ public class FaultInformationService {
     /**
      * 故障超时等级详情
      *
-     * @param boardTimeType
      * @param lineCode
      * @return
      */
-    public List<FaultLevelDTO> getFaultLevelInfo(Integer boardTimeType, String lineCode) {
+    public List<FaultLevelDTO> getFaultLevelInfo(String startDate,String endDate, String lineCode) {
         List<FaultLevelDTO> faultLevelList = new ArrayList<>();
-        //设置时间查询条件
-        String dateTime1 = FaultLargeDateUtil.getDateTime(boardTimeType);
-        String[] split1 = dateTime1.split("~");
-        Date startDate = DateUtil.parse(split1[0]);
-        Date endDate = DateUtil.parse(split1[1]);
+        Date startTime = DateUtil.parse(startDate);
+        Date endTime = DateUtil.parse(endDate);
 
         //登录人专业
         List<String> majors = getCurrentLoginUserMajors();
@@ -850,7 +804,7 @@ public class FaultInformationService {
             } else if (level == 3) {
                 faultLevelDTO.setLevel("三级");
             }
-            List<FaultTimeoutLevelDTO> faultData = faultInformationMapper.getFaultData(level, startDate, endDate, lineCode, majors, lv1Hours, lv2Hours, lv3Hours);
+            List<FaultTimeoutLevelDTO> faultData = faultInformationMapper.getFaultData(level, startTime, endTime, lineCode, majors, lv1Hours, lv2Hours, lv3Hours);
             //计算i级故障数量
             faultLevelDTO.setFaultNumber(faultData.size());
 
@@ -886,36 +840,25 @@ public class FaultInformationService {
     /**
      * 子系统可靠度
      *
-     * @param boardTimeType
      * @return
      */
-    public List<FaultSystemReliabilityDTO> getSystemReliability(Integer boardTimeType,String lineCode) {
+    public List<FaultSystemReliabilityDTO> getSystemReliability(String lineCode,String startDate,String endDate) {
         List<FaultSystemReliabilityDTO> reliabilityList = new ArrayList<>();
-        //设置时间获取本月/周小时数
-        String dateTime1 = FaultLargeDateUtil.getDateHours(boardTimeType);
-        String[] split1 = dateTime1.split("~");
-        Date startDate1 = DateUtil.parse(split1[0]);
-        Date endDate1 = DateUtil.parse(split1[1]);
+        Date startTime = DateUtil.parse(startDate);
+        Date endTime = DateUtil.parse(endDate);
 
         //获取登录人专业
         List<String> majors = getCurrentLoginUserMajors();
 
         List<String> currentLoginUserSubsystems = getCurrentLoginUserSubsystems();
-
-        //本周/本月时长总数
-        Integer time = Math.toIntExact(DateUtil.between(startDate1, endDate1, DateUnit.MINUTE));
         //计划时长
         Double planTime = null;
         //实际时长
         Double actualTime = null;
-        //设置时间查询条件
-        String dateTime = FaultLargeDateUtil.getDateTimes(boardTimeType);
-        String[] split = dateTime.split("~");
-        Date startDate = DateUtil.parse(split[0]);
-        Date endDate = DateUtil.parse(split[1]);
+
 
         //查询按系统分类好的并计算了故障消耗总时长的记录
-        List<FaultSystemTimesDTO> systemFaultSum = faultInformationMapper.getSystemFaultSum(startDate, endDate, majors,lineCode);
+        List<FaultSystemTimesDTO> systemFaultSum = faultInformationMapper.getSystemFaultSum(startTime, endTime, majors,lineCode);
         //查询子系统设备数
 
         List<FaultSystemDeviceSumDTO> systemDeviceSum = faultInformationMapper.getLineSystem(lineCode,currentLoginUserSubsystems);
@@ -1015,11 +958,13 @@ public class FaultInformationService {
     }
 
     /**
-     * 根据站点code，获取未完成故障（挂起+维修中）的故障现象、故障发生时间、故障code
+     * 根据站点code，获取未完成故障（除了待审核、作废、已完成的故障外的所有故障）的故障现象、故障发生时间、故障code
      * @param stationCodeList 要查询哪个站点的故障
+     * @param startDate 查询故障发生时间大于哪个时间点
+     * @param endDate 查询故障发生时间小于哪个时间点
      * @return
      */
-    public List<FaultUnfinishedSymptomsDTO> getUnfinishedSymptomsByStationCode(List<String> stationCodeList) {
-        return faultInformationMapper.getUnfinishedSymptomsByStationCode(stationCodeList);
+    public List<FaultUnfinishedDTO> getUnfinishedFault(List<String> stationCodeList, Date startDate, Date endDate) {
+        return faultInformationMapper.getUnfinishedFault(stationCodeList, startDate, endDate);
     }
 }

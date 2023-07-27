@@ -14,10 +14,12 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -39,38 +41,41 @@ public class FaultInformationController {
     @AutoLog(value = "综合大屏-故障信息统计")
     @ApiOperation(value="综合大屏-故障信息统计", notes="综合大屏-故障信息统计")
     @GetMapping(value = "/queryLargeFaultInformation")
-    public Result<FaultLargeCountDTO> queryFaultCount(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam(value="boardTimeType",required = false)Integer boardTimeType,
-                                                 @ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode){
-        FaultLargeCountDTO faultLargeCountDTO = faultInformationService.queryLargeFaultInformation(boardTimeType,lineCode);
+    public Result<FaultLargeCountDTO> queryFaultCount(@ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode,
+                                                      @ApiParam(name = "startDate", value = "开始时间") String startDate,
+                                                      @ApiParam(name = "endDate", value = "结束时间") String endDate){
+        FaultLargeCountDTO faultLargeCountDTO = faultInformationService.queryLargeFaultInformation(lineCode,startDate,endDate);
         return Result.ok(faultLargeCountDTO);
     }
 
     @AutoLog(value = "综合大屏-故障信息统计详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "综合大屏-故障信息统计详情", notes = "综合大屏-故障信息统计详情")
     @RequestMapping(value = "/getLargeFaultDatails", method = RequestMethod.GET)
-    public Result<List<FaultLargeInfoDTO>> getLargeFaultDatails(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam("boardTimeType")Integer boardTimeType,
-                                                                @ApiParam(name = "faultModule", value = "故障信息统计详情模块：1:总故障数 2:未解决故障数 3:当日新增 4:当日已解决") @RequestParam("faultModule")Integer faultModule,
+    public Result<List<FaultLargeInfoDTO>> getLargeFaultDatails( @ApiParam(name = "startDate", value = "开始时间") String startDate, @ApiParam(name = "endDate", value = "结束时间") String endDate,
+                                                                @ApiParam(name = "faultModule", value = "故障信息统计详情模块：1:总故障数 2:未解决故障数 3:当日新增 4:当日已解决 5 挂起数 6 解决数") @RequestParam("faultModule")Integer faultModule,
                                                              @ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode){
-        List<FaultLargeInfoDTO> largeFaultDatails = faultInformationService.getLargeFaultDatails(boardTimeType, faultModule, lineCode);
+        List<FaultLargeInfoDTO> largeFaultDatails = faultInformationService.getLargeFaultDatails(startDate,endDate, faultModule, lineCode);
         return Result.ok(largeFaultDatails);
     }
 
     @AutoLog(value = "综合大屏-故障信息统计列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "综合大屏-故障信息统计列表", notes = "综合大屏-故障信息统计列表")
     @RequestMapping(value = "/getLargeFaultInfo", method = RequestMethod.GET)
-    public Result<List<FaultLargeInfoDTO>> getLargeFaultInfo(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam(value="boardTimeType",required = false)Integer boardTimeType,
-                                                             @ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode){
-        List<FaultLargeInfoDTO> largeFaultInfo = faultInformationService.getLargeFaultInfo(boardTimeType, lineCode);
+    public Result<List<FaultLargeInfoDTO>> getLargeFaultInfo(@ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode,
+                                                             @ApiParam(name = "startDate", value = "开始时间") String startDate,
+                                                             @ApiParam(name = "endDate", value = "结束时间") String endDate){
+        List<FaultLargeInfoDTO> largeFaultInfo = faultInformationService.getLargeFaultInfo(lineCode,startDate,endDate);
         return Result.ok(largeFaultInfo);
     }
 
     @AutoLog(value = "综合大屏-线路故障统计", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "综合大屏-线路故障统计", notes = "综合大屏-线路故障统计")
     @RequestMapping(value = "/getLargeLineFaultInfo", method = RequestMethod.GET)
-    public Result<List<FaultLargeLineInfoDTO>> getLargeLineFaultInfo(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam(value="boardTimeType",required = false)Integer boardTimeType,
-                                                                     @ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode)
+    public Result<List<FaultLargeLineInfoDTO>> getLargeLineFaultInfo(@ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode,
+                                                                     @ApiParam(name = "startDate", value = "开始时间") String startDate,
+                                                                     @ApiParam(name = "endDate", value = "结束时间") String endDate)
     {
-        List<FaultLargeLineInfoDTO> largeLineFaultInfo = faultInformationService.getLargeLineFaultInfo(boardTimeType,lineCode);
+        List<FaultLargeLineInfoDTO> largeLineFaultInfo = faultInformationService.getLargeLineFaultInfo(lineCode,startDate,endDate);
         return Result.ok(largeLineFaultInfo);
     }
 
@@ -144,16 +149,16 @@ public class FaultInformationController {
 
     /**
      * 故障数据统计接口
-     * @param boardTimeType
      * @param lineCode
      * @return
      */
     @AutoLog(value = "大屏-故障数据分析-故障数据统计")
     @ApiOperation(value="大屏-故障数据分析-故障数据统计", notes="大屏-故障数据分析-故障数据统计")
     @GetMapping(value = "/queryLargeFaultDataCount")
-    public Result<FaultDataAnalysisCountDTO> queryLargeFaultDataCount(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam(value="boardTimeType",required = false)Integer boardTimeType,
+    public Result<FaultDataAnalysisCountDTO> queryLargeFaultDataCount( @ApiParam(name = "startDate", value = "开始时间") String startDate,
+                                                                       @ApiParam(name = "endDate", value = "结束时间") String endDate,
                                                                       @ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode){
-        FaultDataAnalysisCountDTO faultDataAnalysisCountDTO = faultInformationService.queryLargeFaultDataCount(boardTimeType,lineCode);
+        FaultDataAnalysisCountDTO faultDataAnalysisCountDTO = faultInformationService.queryLargeFaultDataCount(startDate,endDate,lineCode);
         return Result.ok(faultDataAnalysisCountDTO);
     }
 
@@ -172,31 +177,31 @@ public class FaultInformationController {
 
     /**
      * 故障数据统计列表接口
-     * @param boardTimeType
      * @param lineCode
      * @return
      */
     @AutoLog(value = "大屏-故障数据分析-故障数据统计列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "大屏-故障数据分析-故障数据统计列表", notes = "大屏-故障数据分析-故障数据统计列表")
     @RequestMapping(value = "/getLargeFaultDataInfo", method = RequestMethod.GET)
-    public Result<List<FaultDataAnalysisInfoDTO>> getLargeFaultDataInfo(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam(value="boardTimeType",required = false)Integer boardTimeType,
+    public Result<List<FaultDataAnalysisInfoDTO>> getLargeFaultDataInfo(@ApiParam(name = "startDate", value = "开始时间") String startDate,
+                                                                        @ApiParam(name = "endDate", value = "结束时间") String endDate,
                                                                         @ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode){
-        List<FaultDataAnalysisInfoDTO> largeFaultDataInfo = faultInformationService.getLargeFaultDataInfo(boardTimeType,lineCode);
+        List<FaultDataAnalysisInfoDTO> largeFaultDataInfo = faultInformationService.getLargeFaultDataInfo(startDate,endDate,lineCode);
         return Result.ok(largeFaultDataInfo);
     }
 
     /**
      * 大屏-故障数据分析-故障超时等级详情接口
-     * @param boardTimeType
      * @param lineCode
      * @return
      */
     @AutoLog(value = "大屏-故障数据分析-故障超时等级详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "大屏-故障数据分析-故障超时等级详情", notes = "大屏-故障数据分析-故障超时等级详情")
     @RequestMapping(value = "/getFaultLevelInfo", method = RequestMethod.GET)
-    public Result<List<FaultLevelDTO>> getFaultLevelInfo(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam(value="boardTimeType",required = false)Integer boardTimeType,
+    public Result<List<FaultLevelDTO>> getFaultLevelInfo( @ApiParam(name = "startDate", value = "开始时间") String startDate,
+                                                          @ApiParam(name = "endDate", value = "结束时间") String endDate,
                                                          @ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode){
-        List<FaultLevelDTO> faultLevelInfo = faultInformationService.getFaultLevelInfo(boardTimeType, lineCode);
+        List<FaultLevelDTO> faultLevelInfo = faultInformationService.getFaultLevelInfo(startDate,endDate, lineCode);
         return Result.OK(faultLevelInfo);
     }
 
@@ -208,10 +213,10 @@ public class FaultInformationController {
     @AutoLog(value = "综合大屏-子系统可靠度", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "综合大屏-子系统可靠度", notes = "综合大屏-子系统可靠度")
     @RequestMapping(value = "/getSystemReliability", method = RequestMethod.GET)
-    public Result<List<FaultSystemReliabilityDTO>> getSystemReliability(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1")
-                                                                            @RequestParam(value="boardTimeType",required = false)Integer boardTimeType,
-                                                                            @RequestParam(value="lineCode",required = false)String lineCode){
-        List<FaultSystemReliabilityDTO> systemReliability = faultInformationService.getSystemReliability(boardTimeType,lineCode);
+    public Result<List<FaultSystemReliabilityDTO>> getSystemReliability(@RequestParam(value="lineCode",required = false)String lineCode,
+                                                                        @ApiParam(name = "startDate", value = "开始时间") String startDate,
+                                                                        @ApiParam(name = "endDate", value = "结束时间") String endDate){
+        List<FaultSystemReliabilityDTO> systemReliability = faultInformationService.getSystemReliability(lineCode,startDate,endDate);
         return Result.ok(systemReliability);
     }
     /**
@@ -235,15 +240,19 @@ public class FaultInformationController {
     }
 
     /**
-     * 根据站点code，获取未完成故障（挂起+维修中）的故障现象、故障发生时间、故障code
+     * 根据站点code，获取未完成故障（除了待审核、作废、已完成的故障外的所有故障）的故障现象、故障发生时间、故障code
      * @param stationCode 要查询哪个站点的故障
+     * @param startDate 查询故障发生时间大于哪个时间点
+     * @param endDate 查询故障发生时间小于哪个时间点
      * @return
      */
-    @AutoLog(value = "根据站点code，获取未完成故障（挂起+维修中）", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
-    @ApiOperation(value = "根据站点code，获取未完成故障（挂起+维修中）", notes = "根据站点code，获取未完成故障（挂起+维修中）")
-    @GetMapping(value = "/getUnfinishedSymptomsByStationCode")
-    public Result<List<FaultUnfinishedSymptomsDTO>> getUnfinishedSymptomsByStationCode(@RequestParam("stationCode") String stationCode){
-        List<FaultUnfinishedSymptomsDTO> list = faultInformationService.getUnfinishedSymptomsByStationCode(Arrays.asList(stationCode.split(",")));
+    @AutoLog(value = "根据站点code，获取未完成故障（除了待审核、作废、已完成的故障外的所有故障）", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "根据站点code，获取未完成故障（除了待审核、作废、已完成的故障外的所有故障）", notes = "根据站点code，获取未完成故障（除了待审核、作废、已完成的故障外的所有故障）")
+    @GetMapping(value = "/getUnfinishedFault")
+    public Result<List<FaultUnfinishedDTO>> getUnfinishedFault(@RequestParam("stationCode") String stationCode,
+                                                               @RequestParam(value = "startDate", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+                                                               @RequestParam(value = "endDate",required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate){
+        List<FaultUnfinishedDTO> list = faultInformationService.getUnfinishedFault(Arrays.asList(stationCode.split(",")), startDate, endDate);
         return Result.ok(list);
     }
 }

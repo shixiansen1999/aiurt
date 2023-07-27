@@ -44,6 +44,14 @@ public class FaultScreenModule {
      */
     private Integer unSo;
     /**
+     * 解决状态
+     */
+    private Integer solve;
+    /**
+     * 挂起状态
+     */
+    private Integer hangUp;
+    /**
      * 当日已解决状态
      */
     private Integer todaySolve;

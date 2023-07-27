@@ -577,7 +577,7 @@
             or
             (
             DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
             )
             )
         </if>
@@ -623,7 +623,7 @@
             or
             (
             DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
-            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+            and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
             )
             )
         </if>
@@ -856,7 +856,7 @@
             AND pt.`status` = #{condition.status}
         </if>
         <if test="condition.screenModule != null and condition.screenModule == 7 ">
-            AND pt.`status` != #{condition.status}
+            AND pt.`status` != #{condition.unFinish}
         </if>
         <if test="condition.omit != null">
             AND pt.omit_status = #{condition.omit}
@@ -876,13 +876,6 @@
             or
             (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime}, '%Y-%m-%d')
             and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime}, '%Y-%m-%d'))
-            )
-        </if>
-        <if test="condition.startDate != null">
-            AND (
-            (DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
-            or
-            (DATE_FORMAT(pt.start_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.end_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d'))
             )
         </if>
         <if test="condition.orgCodes != null and condition.orgCodes.size > 0">
@@ -1469,8 +1462,9 @@
                a.depart_name  as name,
                a.org_category as orgCategory
         from sys_depart a
+        <!--只获取班组，不获取类型为组织机构和公司的-->
+        INNER JOIN sys_param sp ON find_in_set(a.org_category, sp.`value`) AND sp.`code`= #{workLogOrgCategory}
         where org_code_cc LIKE CONCAT('%', #{orgCode}, '%')
-          and a.org_category in (3, 4, 5)
     </select>
     <select id="getUserPlanNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
         SELECT COUNt(pt.id) as planTaskNumber,
@@ -2192,13 +2186,6 @@
             or
             (DATE_FORMAT(pt.start_date,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.today}, '%Y-%m-%d')
             and DATE_FORMAT(pt.end_date,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.today}, '%Y-%m-%d'))
-            )
-        </if>
-        <if test="condition.startDate != null">
-            AND (
-            (DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d'))
-            or
-            (DATE_FORMAT(pt.start_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(pt.end_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d'))
             )
         </if>
         <if test="condition.username != null and condition.username != ''">

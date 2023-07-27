@@ -15,6 +15,31 @@ public interface FlowModelAttConstant {
     String FORM_TYPE = "formType";
 
     /**
+     * 人员类型
+     */
+    String DATA_TYPE = "dataType";
+
+    /**
+     * 表单设计器
+     */
+    String FORM_DYNAMIC_URL = "formDynamicUrl";
+
+    /**
+     * 表单url
+     */
+    String FORM_URL = "formUrl";
+
+    /**
+     * 业务处理
+     */
+    String SERVICE = "service";
+
+    /**
+     * 流程变量
+     */
+    String FORM_TASK_VARIABLES = "formtaskVariables";
+
+    /**
      * 业务表单
      */
     String STATIC_FORM_TYPE = "1";
@@ -23,26 +48,6 @@ public interface FlowModelAttConstant {
      * 表单类型0， 表单设计器，动态
      */
     String DYNAMIC_FORM_TYPE = "0";
-
-    /**
-     * 页面url
-     */
-    String FORM_URL = "formUrl";
-
-    /**
-     *
-     */
-    String FORM_DYNAMIC_URL = "formDynamicUrl";
-
-    /**
-     * 业务操作接口
-     */
-    String SERVICE = "service";
-
-    /**
-     * 流程变量
-     */
-    String FORM_TASK_VARIABLES = "formtaskVariables";
 
     /**
      * 角色配置

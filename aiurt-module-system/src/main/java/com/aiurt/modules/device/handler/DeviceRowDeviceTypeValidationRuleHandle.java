@@ -25,7 +25,7 @@ public class DeviceRowDeviceTypeValidationRuleHandle  implements RowValidationRu
     @Override
     public ValidationResult validate(Map<String, Column> row, Column column) {
         if (ObjectUtil.isEmpty(column.getData())) {
-            return new ValidationResult(false, String.format("%s该字段值不能为空", column.getName()));
+            return new ValidationResult(true, null);
         }
         return validateMajorAndSubsystem(row, column);
     }

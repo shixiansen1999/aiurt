@@ -12,7 +12,6 @@ import com.aiurt.boot.constant.PatrolDictCode;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.*;
-import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.statistics.model.PatrolSituation;
 import com.aiurt.boot.task.dto.TemperatureHumidityDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
@@ -71,19 +70,14 @@ public class PatrolScreenService {
     /**
      * 大屏巡视模块-重要数据展示
      *
-     * @param timeType
      * @param lineCode
+     * @param startDate
+     * @param endDate
      * @return
      */
-    public ScreenImportantData getImportantData(Integer timeType, String lineCode) {
-        // 默认本周
-        if (ObjectUtil.isEmpty(timeType)) {
-            timeType = ScreenConstant.THIS_WEEK;
-        }
-        String dateTime = ScreenDateUtil.getDateTime(timeType);
-        String[] split = dateTime.split(ScreenConstant.TIME_SEPARATOR);
-        Date startTime = DateUtil.parse(split[0]);
-        Date endTime = DateUtil.parse(split[1]);
+    public ScreenImportantData getImportantData(String lineCode,String startDate,String endDate) {
+        Date startTime = DateUtil.parse(startDate);
+        Date endTime = DateUtil.parse(endDate);
 
         List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
         if (CollectionUtil.isEmpty(orgCodes)) {
@@ -134,23 +128,16 @@ public class PatrolScreenService {
     /**
      * 大屏巡视模块-巡视数据统计
      *
-     * @param timeType
      * @param lineCode
      * @return
      */
-    public ScreenStatistics getStatisticsData(Integer timeType, String lineCode) {
-        // 默认本周
-        if (ObjectUtil.isEmpty(timeType)) {
-            timeType = ScreenConstant.THIS_WEEK;
-        }
-        String dateTime = ScreenDateUtil.getDateTime(timeType);
-        String[] split = dateTime.split(ScreenConstant.TIME_SEPARATOR);
-        Date startTime = DateUtil.parse(split[0]);
-        Date endTime = DateUtil.parse(split[1]);
+    public ScreenStatistics getStatisticsData( String lineCode,String startDate,String endDate) {
+        Date startTime = DateUtil.parse(startDate);
+        Date endTime = DateUtil.parse(endDate);
 
         List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
         if (CollectionUtil.isEmpty(orgCodes)) {
-            return new ScreenStatistics(0L, 0L, 0L, 0L, 0L, 0L);
+            return new ScreenStatistics(0L, 0L, 0L, 0L, 0L, 0L,"0");
         }
         ScreenStatistics data = new ScreenStatistics();
         ScreenModule module = new ScreenModule();
@@ -171,6 +158,11 @@ public class PatrolScreenService {
             PatrolSituation taskDeviceCount = patrolTaskMapper.getTaskDeviceCount(module);
             data.setPlanNum(taskDeviceCount.getSum());
             data.setFinishNum(taskDeviceCount.getFinish());
+            data.setFinishRate("0");
+            if (data.getPlanNum() != 0) {
+                String finishRate = String.format("%.1f", (1.0 * data.getFinishNum() / data.getPlanNum()) * 100);
+                data.setFinishRate(finishRate);
+            }
             data.setAbnormalNum(taskDeviceCount.getAbnormal());
             //漏巡条件构建
             String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
@@ -189,10 +181,10 @@ public class PatrolScreenService {
 
         }else {
         List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
-        List<PatrolTask> todayList = list.stream()
+        /*List<PatrolTask> todayList = list.stream()
                 //.filter(l -> DateUtil.format(today, "yyyy-MM-dd").equals(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd")))
                 .filter(l -> {
-                    if (l.getSource() == 3) {
+                    if (l.getSource()!= null && l.getSource() == 3) {
                         // 使用 end_date 进行筛选
                         return DateUtil.format(today, "yyyy-MM-dd").equals(DateUtil.format(l.getEndDate(), "yyyy-MM-dd"));
                     } else {
@@ -206,7 +198,7 @@ public class PatrolScreenService {
             module.setStartTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 00:00:00")));
             module.setEndTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 23:59:59")));
             todayList = patrolTaskMapper.getScreenDataCount(module);
-        }
+        }*/
 
         long planNum = list.stream().count();
         long finishNum = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
@@ -219,15 +211,20 @@ public class PatrolScreenService {
         long omitNum = patrolTaskMapper.getScreenDataCount(module).stream().count();
 
         long abnormalNum = list.stream().filter(l -> PatrolConstant.TASK_ABNORMAL.equals(l.getAbnormalState())).count();
-        long todayNum = todayList.stream().count();
-        long todayFinishNum = todayList.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
+        /*long todayNum = todayList.stream().count();
+        long todayFinishNum = todayList.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();*/
 
         data.setPlanNum(planNum);
         data.setFinishNum(finishNum);
+        data.setFinishRate("0");
+        if (planNum != 0) {
+            String finishRate = String.format("%.1f", (1.0 * data.getFinishNum() / data.getPlanNum()) * 100);
+            data.setFinishRate(finishRate);
+        }
         data.setOmitNum(omitNum);
         data.setAbnormalNum(abnormalNum);
-        data.setTodayNum(todayNum);
-        data.setTodayFinishNum(todayFinishNum);
+        /*data.setTodayNum(todayNum);
+        data.setTodayFinishNum(todayFinishNum);*/
         }
         return data;
     }
@@ -236,19 +233,12 @@ public class PatrolScreenService {
      * 大屏巡视模块-巡视数据统计任务列表
      *
      * @param page
-     * @param timeType
      * @param lineCode
      * @return
      */
-    public IPage<ScreenStatisticsTask> getStatisticsTaskInfo(Page<ScreenStatisticsTask> page, Integer timeType, String lineCode) {
-        // 默认本周
-        if (ObjectUtil.isEmpty(timeType)) {
-            timeType = ScreenConstant.THIS_WEEK;
-        }
-        String dateTime = ScreenDateUtil.getDateTime(timeType);
-        String[] split = dateTime.split(ScreenConstant.TIME_SEPARATOR);
-        Date startTime = DateUtil.parse(split[0]);
-        Date endTime = DateUtil.parse(split[1]);
+    public IPage<ScreenStatisticsTask> getStatisticsTaskInfo(Page<ScreenStatisticsTask> page, String startDate,String endDate, String lineCode) {
+        Date startTime = DateUtil.parse(startDate);
+        Date endTime = DateUtil.parse(endDate);
 
         List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
         if (CollectionUtil.isEmpty(orgCodes)) {
@@ -462,11 +452,10 @@ public class PatrolScreenService {
      * @param lineCode
      * @return
      */
-    public List<ScreenStatisticsGraph> getStatisticsGraph(String lineCode) {
-        String dateTime = ScreenDateUtil.getDateTime(ScreenConstant.THIS_WEEK);
-        String[] split = dateTime.split(ScreenConstant.TIME_SEPARATOR);
-        Date startTime = DateUtil.parse(split[0]);
-        Date endTime = DateUtil.parse(split[1]);
+    public List<ScreenStatisticsGraph> getStatisticsGraph(String lineCode,String startDate,String endDate) {
+
+        Date startTime = DateUtil.parse(startDate);
+        Date endTime = DateUtil.parse(endDate);
 
         List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
         if (CollectionUtil.isEmpty(orgCodes)) {
@@ -539,12 +528,8 @@ public class PatrolScreenService {
      * @param lineCode
      * @return
      */
-    public IPage<ScreenStatisticsTask> getStatisticsDataList(Page<ScreenStatisticsTask> page, Integer timeType,
+    public IPage<ScreenStatisticsTask> getStatisticsDataList(Page<ScreenStatisticsTask> page,
                                                              Integer screenModule, String lineCode,String stationCode,String username,String startDate,String endDate) {
-        // 默认本周
-        if (ObjectUtil.isEmpty(timeType)) {
-            timeType = ScreenConstant.THIS_WEEK;
-        }
         // 模块参数未传直接返回空
         if (ObjectUtil.isEmpty(screenModule)) {
             return page;
@@ -562,60 +547,47 @@ public class PatrolScreenService {
             moduleType.setStationCodes(StrUtil.splitTrim(stationCode,","));
         }
         moduleType.setUsername(username);
-        if (StrUtil.isNotBlank(startDate)&&StrUtil.isNotBlank(endDate)) {
-            moduleType.setStartDate(DateUtil.parse(startDate,"yyyy-MM-dd"));
-            moduleType.setEndDate(DateUtil.parse(endDate,"yyyy-MM-dd"));
-        }
-        String dateTime = ScreenDateUtil.getDateTime(timeType);
-        String[] split = dateTime.split(ScreenConstant.TIME_SEPARATOR);
-        Date startTime = DateUtil.parse(split[0]);
-        Date endTime = DateUtil.parse(split[1]);
+        moduleType.setStartTime(DateUtil.parse(startDate,"yyyy-MM-dd"));
+        moduleType.setEndTime(DateUtil.parse(endDate,"yyyy-MM-dd"));
         switch (screenModule) {
-            // 计划数
-            case 1:
-                moduleType.setStartTime(startTime);
-                moduleType.setEndTime(endTime);
-                break;
             // 完成数
             case 2:
-                moduleType.setStartTime(startTime);
-                moduleType.setEndTime(endTime);
                 moduleType.setStatus(PatrolConstant.TASK_COMPLETE);
                 break;
             // 漏巡数
             case 3:
-                String omitStartTime = this.getOmitDateScope(startTime).split(ScreenConstant.TIME_SEPARATOR)[0];
-                String omitEndTime = this.getOmitDateScope(endTime).split(ScreenConstant.TIME_SEPARATOR)[1];
+                String omitStartTime = this.getOmitDateScope(moduleType.getStartTime()).split(ScreenConstant.TIME_SEPARATOR)[0];
+                String omitEndTime = this.getOmitDateScope(moduleType.getEndTime()).split(ScreenConstant.TIME_SEPARATOR)[1];
                 moduleType.setStartTime(DateUtil.parse(omitStartTime));
                 moduleType.setEndTime(DateUtil.parse(omitEndTime));
                 moduleType.setOmit(PatrolConstant.OMIT_STATUS);
                 break;
             // 巡视异常数
             case 4:
-                moduleType.setStartTime(startTime);
-                moduleType.setEndTime(endTime);
                 moduleType.setAbnormal(PatrolConstant.TASK_ABNORMAL);
                 break;
             // 今日巡视数
             case 5:
+                moduleType.setStartTime(null);
+                moduleType.setEndTime(null);
                 moduleType.setToday(new Date());
                 break;
             // 今日巡视完成数
             case 6:
+                moduleType.setStartTime(null);
+                moduleType.setEndTime(null);
                 moduleType.setToday(new Date());
                 moduleType.setStatus(PatrolConstant.TASK_COMPLETE);
                 break;
             // 未完成数
             case 7:
-                moduleType.setStartTime(startTime);
-                moduleType.setEndTime(endTime);
-                moduleType.setStatus(PatrolConstant.TASK_COMPLETE);
+                moduleType.setUnFinish(PatrolConstant.TASK_COMPLETE);
                 moduleType.setScreenModule(screenModule);
                 break;
             // 默认计划数
             default:
-                moduleType.setStartTime(startTime);
-                moduleType.setEndTime(endTime);
+                moduleType.setStartTime(DateUtil.parse(startDate,"yyyy-MM-dd"));
+                moduleType.setEndTime(DateUtil.parse(endDate,"yyyy-MM-dd"));
                 break;
         }
 
@@ -791,12 +763,12 @@ public class PatrolScreenService {
             if (date.before(firstDate)) {
                 Date start = Date.from(localDate.minusDays(7).atStartOfDay().atZone(zoneId).toInstant());
                 // 第一次漏检往前1天
-                Date end = Date.from(localDate.minusDays(7 - betweenDay).atStartOfDay().atZone(zoneId).toInstant());
-                return DateUtil.format(start, "yyyy-MM-dd 00:00:00").concat(ScreenConstant.TIME_SEPARATOR).concat(DateUtil.format(end, "yyyy-MM-dd 00:00:00"));
-
+                Date end = Date.from(localDate.minusDays(7 - betweenDay + 1).atStartOfDay().atZone(zoneId).toInstant());
+                return DateUtil.format(start, "yyyy-MM-dd 00:00:00").concat(ScreenConstant.TIME_SEPARATOR).concat(DateUtil.format(end, "yyyy-MM-dd 23:59:59"));
             } else {
                 // 第一次漏检往后推两次检修间隔天数
-                return DateUtil.format(firstDate, "yyyy-MM-dd 00:00:00").concat(ScreenConstant.TIME_SEPARATOR).concat(DateUtil.format(secondDate, "yyyy-MM-dd 00:00:00"));
+                secondDate = Date.from(localDate.plusDays(betweenDay - 1).atStartOfDay().atZone(zoneId).toInstant());
+                return DateUtil.format(firstDate, "yyyy-MM-dd 00:00:00").concat(ScreenConstant.TIME_SEPARATOR).concat(DateUtil.format(secondDate, "yyyy-MM-dd 23:59:59"));
 
             }
         }

@@ -445,9 +445,10 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     /**
      * 获取自己及管辖的班组
      * @param orgCode
+     * @param workLogOrgCategory 实施配置里面组织机构是班组的编码
      * @return
      */
-    List<LineOrStationDTO> getUserOrgCategory(String orgCode);
+    List<LineOrStationDTO> getUserOrgCategory(@Param("orgCode") String orgCode, @Param("workLogOrgCategory") String workLogOrgCategory);
 
     /**
      * 计算指派的计划数
