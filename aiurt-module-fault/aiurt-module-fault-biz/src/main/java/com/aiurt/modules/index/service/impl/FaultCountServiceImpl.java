@@ -187,6 +187,10 @@ public class FaultCountServiceImpl implements IFaultCountService {
         boolean b = GlobalThreadLocal.setDataFilter(false);
 
         List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultCountInfoReq.getAppointUserName());
+        // 如果有通过appointUserName进行查询，但是appointUserName对应的userName是空的，直接返回
+        if (cn.hutool.core.util.StrUtil.isNotEmpty(faultCountInfoReq.getAppointUserName()) && CollUtil.isEmpty(userNameByRealName)){
+            return page;
+        }
         GlobalThreadLocal.setDataFilter(b);
         List<FaultCountInfoDTO> faultData = faultCountMapper.getFaultCountInfo(faultCountInfoReq.getType(), page, faultCountInfoReq, null, null,userNameByRealName);
         if (CollUtil.isNotEmpty(faultData)) {
