@@ -687,7 +687,7 @@ public interface ISysBaseAPI extends CommonAPI {
     DeviceType getCsMajorByCodeTypeName(String majorCode, String deviceTypeName, String systemCode);
 
     /**
-     * 根据专业code、子系统code、设备类型层级名称 ，查询设备类型信息
+     * 根据专业code、子系统code、设备类型层级名称(用/分开) ，查询设备类型信息
      * @param majorCode
      * @param systemCode
      * @param deviceTypeName
