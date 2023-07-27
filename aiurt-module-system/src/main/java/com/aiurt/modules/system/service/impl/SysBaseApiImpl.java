@@ -95,6 +95,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.base.Joiner;
+import liquibase.pro.packaged.S;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -3865,5 +3866,24 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<String> getUserNameByParams(List<String> roleCodes, List<String> orgIds, List<String> posts) {
         return userMapper.getUserNameByParams(roleCodes,orgIds,posts);
+    }
+
+    @Override
+    public List<SysUserRoleModel> getRole(List<String> roleCode) {
+        LambdaQueryWrapper<SysRole> lam = new LambdaQueryWrapper<>();
+        if (CollUtil.isNotEmpty(roleCode)) {
+            lam.in(SysRole::getRoleCode, roleCode);
+        }
+
+        List<SysRole> sysRoles = roleMapper.selectList(lam);
+
+        List<SysUserRoleModel> result = Optional.ofNullable(sysRoles).orElse(CollUtil.newArrayList()).stream().map(sysRole -> {
+            SysUserRoleModel sysUserRoleModel = new SysUserRoleModel();
+            sysUserRoleModel.setRoleCode(sysRole.getRoleCode());
+            sysUserRoleModel.setRoleName(sysRole.getRoleName());
+            return sysUserRoleModel;
+        }).collect(Collectors.toList());
+
+        return result;
     }
 }
