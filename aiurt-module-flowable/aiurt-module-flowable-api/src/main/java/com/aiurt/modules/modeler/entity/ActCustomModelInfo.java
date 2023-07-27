@@ -49,7 +49,7 @@ public class ActCustomModelInfo implements Serializable {
     private String name;
 	/**流程标识*/
     @ApiModelProperty(value = "流程标识", required = true)
-    @Pattern(regexp = "^\\w+$", message = "流程标识只能由数字、26个英文字母或者下划线组成")
+    @Pattern(regexp = "^[a-zA-Z_][a-zA-Z0-9_-]*$", message = "流程标识只能以下划线(_)或字母开头，只能包含中划线(-)，下划线，字母和数字")
     private String modelKey;
 
 	/**模型key*/
