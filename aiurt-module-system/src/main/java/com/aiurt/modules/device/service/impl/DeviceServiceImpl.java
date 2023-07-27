@@ -670,7 +670,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		}else {
 			stringBuilder.append("设备位置不能为空，");
 		}
-		if (StrUtil.isNotEmpty(stationCodeName)) {
+		if (StrUtil.isNotEmpty(stationCodeName) && StrUtil.isNotEmpty(device.getLineCode())) {
 			LambdaQueryWrapper<CsStation> csStationWrapper = new LambdaQueryWrapper<>();
 			csStationWrapper.eq(CsStation::getStationName, stationCodeName)
 					.eq(CsStation::getLineCode, device.getLineCode())
@@ -682,7 +682,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				device.setStationCode(one.getStationCode());
 			}
 		}
-		if (StrUtil.isNotEmpty(positionCodeName)) {
+		if (StrUtil.isNotEmpty(positionCodeName)&& StrUtil.isNotEmpty(device.getStationCode())) {
 			LambdaQueryWrapper<CsStationPosition> positionWrapper = new LambdaQueryWrapper<>();
 			positionWrapper.eq(CsStationPosition::getPositionName, positionCodeName).eq(CsStationPosition::getDelFlag, 0);
 			positionWrapper.eq(CsStationPosition::getLineCode, device.getLineCode()).eq(CsStationPosition::getStaionCode, device.getStationCode());
