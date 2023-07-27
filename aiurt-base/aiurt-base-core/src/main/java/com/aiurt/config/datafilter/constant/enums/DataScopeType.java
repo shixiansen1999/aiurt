@@ -45,19 +45,19 @@ public enum DataScopeType {
     TYPE_DEPT_ONLY("TYPE_DEPT_ONLY", " #{#deptName} = '#{#sysUser.orgCode}' ", ""),
 
     /**
-     * 查看管理线路
-     */
-    TYPE_MANAGE_STATION_ONLY("TYPE_MANAGE_STATION_ONLY", "", ""),
-
-    /**
      * 仅查看管理站点
      */
-    TYPE_USER_ONLY("TYPE_USER_ONLY", " #{#stationName} IN ( #{@sdss.getStationByUserIdStr( #sysUser.id )}) ", ""),
+    TYPE_MANAGE_STATION_ONLY("TYPE_MANAGE_STATION_ONLY", " #{#stationName} IN ( #{@sdss.getStationByUserIdStr( #sysUser.id )}) ", ""),
 
     /**
      * 仅查看当前用户
      */
-    TYPE_MANAGE_LINE_ONLY("TYPE_MANAGE_LINE_ONLY", " #{#userName} = '#{#sysUser.id}' ", "");
+    TYPE_USER_ONLY("TYPE_USER_ONLY", " #{#userName} = '#{#sysUser.id}' ", ""),
+
+    /**
+     * 查看管理线路
+     */
+    TYPE_MANAGE_LINE_ONLY("TYPE_MANAGE_LINE_ONLY", "", "");
 
     private final String code;
 
