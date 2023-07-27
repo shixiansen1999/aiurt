@@ -46,7 +46,7 @@ public class CsStationPosition implements Serializable {
 	/**删除标志*/
 	@Excel(name = "删除标志", width = 15)
     @ApiModelProperty(value = "删除标志")
-    @TableLogic
+    @TableLogic(value = "0", delval = "1")
     private Integer delFlag;
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
