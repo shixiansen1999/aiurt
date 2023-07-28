@@ -173,7 +173,7 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 
 	@ApiOperation(value = "获取连接条件配置的字段名称下拉列表")
 	@GetMapping(value = "/getFilterFieldNamesDropdown")
-	public Result<?> getFilterFieldNamesDropdown(@RequestParam(name="modelId") String modelId) {
+	public Result<List<ConnectionConditionConfigDTO>> getFilterFieldNamesDropdown(@RequestParam(name="modelId") String modelId) {
 		List<ConnectionConditionConfigDTO> flowConditionDtos = actCustomVariableService.getFilterFieldNamesDropdown(modelId);
 		return Result.OK(flowConditionDtos);
 	}
