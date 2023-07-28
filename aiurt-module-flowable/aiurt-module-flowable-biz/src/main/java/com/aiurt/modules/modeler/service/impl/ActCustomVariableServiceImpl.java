@@ -5,19 +5,14 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.modeler.dto.ConnectionConditionConfigDTO;
-import com.aiurt.modules.modeler.dto.ConnectionConditionConfigDTO;
 import com.aiurt.modules.modeler.entity.ActCustomVariable;
 import com.aiurt.modules.modeler.mapper.ActCustomVariableMapper;
 import com.aiurt.modules.modeler.service.IActCustomVariableService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import jdk.nashorn.internal.runtime.options.Option;
-import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.DictModel;
-import org.jeecg.common.system.vo.SysUserRoleModel;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.SysUserRoleModel;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.*;

@@ -24,7 +24,6 @@ public class FlowTaskCompleteCommentDTO implements Serializable {
      * 流程任务的批注内容。
      */
     @ApiModelProperty(value = "流程任务的批注内容")
-   // @NotBlank(message = "数据验证失败，任务审批内容不能为空！")
     private String comment;
 
 

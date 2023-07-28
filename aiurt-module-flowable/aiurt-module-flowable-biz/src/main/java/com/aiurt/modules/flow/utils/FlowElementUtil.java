@@ -18,10 +18,17 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.*;
+import org.flowable.common.engine.api.delegate.Expression;
 import org.flowable.engine.HistoryService;
+import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
+import org.flowable.engine.impl.Condition;
+import org.flowable.engine.impl.el.UelExpressionCondition;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
+import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.engine.repository.ProcessDefinition;
+import org.flowable.engine.runtime.Execution;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
@@ -341,5 +348,60 @@ public class FlowElementUtil {
         }
 
         return false;
+    }
+
+    /**
+     * 获取下一个节点
+     * @param execution
+     * @param sourceFlowElement
+     * @return
+     */
+    public FlowElement getTargetFlowElement(Execution execution, FlowElement sourceFlowElement) {
+        //遇到下一个节点是UserTask就返回
+        FlowElement flowElement = null;
+        if (sourceFlowElement instanceof FlowNode) {
+            //当前节点必须是FlowNode才做处理，比如UserTask或者GateWay
+            FlowNode thisFlowNode = (FlowNode) sourceFlowElement;
+            if (thisFlowNode.getOutgoingFlows().size() == 1) {
+                //如果只有一条连接线，直接找这条连接线的出口节点，然后继续递归获得接下来的节点
+                SequenceFlow sequenceFlow = thisFlowNode.getOutgoingFlows().get(0);
+                FlowElement targetFlowElement = sequenceFlow.getTargetFlowElement();
+                if (targetFlowElement instanceof UserTask) {
+                    flowElement = targetFlowElement;
+                } else {
+                    flowElement = getTargetFlowElement(execution, targetFlowElement);
+                }
+            } else if (thisFlowNode.getOutgoingFlows().size() > 1) {
+                //如果有多条连接线，遍历连接线，找出一个连接线条件执行为True的，获得它的出口节点
+                for (SequenceFlow sequenceFlow : thisFlowNode.getOutgoingFlows()) {
+                    boolean result = true;
+                    if (StrUtil.isNotBlank(sequenceFlow.getConditionExpression())) {
+                        //计算连接线上的表达式
+                        Expression expression = CommandContextUtil.getProcessEngineConfiguration().getExpressionManager().createExpression(sequenceFlow.getConditionExpression());
+                        Condition condition = new UelExpressionCondition(expression);
+                        result = condition.evaluate(sequenceFlow.getId(), (ExecutionEntity) execution);
+                    }
+                    if (result) {
+                        FlowElement targetFlowElement = sequenceFlow.getTargetFlowElement();
+                        if (targetFlowElement instanceof UserTask) {
+                            flowElement = targetFlowElement;
+                        } else {
+                            flowElement = getTargetFlowElement(execution, targetFlowElement);
+                        }
+                    }
+                }
+            }
+        }
+        return flowElement;
+    }
+
+    /**
+     *
+     * @param activityId  id of the multi-instance activity (id attribute in the BPMN XML)
+     * @param  parentExecutionId  can be the process instance id
+     * @param assigneeList username
+     */
+    public void addMultiInstanceExecution(String activityId, String parentExecutionId, List<String> assigneeList) {
+        // 设置多实例
     }
 }
