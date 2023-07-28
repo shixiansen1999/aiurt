@@ -391,17 +391,13 @@ public class FlowApiServiceImpl implements FlowApiService {
                     flowElementUtil.setBusinessKeyForProcessInstance(task.getProcessInstanceId(), o);
                 }
             }
-        } else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE, FlowApprovalType.REFUSE)) {
+        } else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE, FlowApprovalType.REFUSE, FlowApprovalType.REJECT)) {
             if (Objects.nonNull(busData)) {
                 flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
             }
-            // 完成任务
-            taskService.complete(taskId, variableData);
-            // 驳回
-        } else if (StrUtil.equalsIgnoreCase(FlowApprovalType.REJECT, approvalType)) {
-            if (Objects.nonNull(busData)) {
-                flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
-            }
+
+            //
+
             // 完成任务
             taskService.complete(taskId, variableData);
         } else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.CANCEL, approvalType)) {
@@ -424,6 +420,10 @@ public class FlowApiServiceImpl implements FlowApiService {
             param.setUsername(comment.getDelegateAssignee());
             param.setTaskId(taskId);
             turnTask(param);
+
+            // 加签
+        } else if (StrUtil.equalsIgnoreCase(FlowApprovalType.ADD_USER, approvalType)) {
+
         }
 
         // 判断当前完成执行的任务，是否存在抄送设置
