@@ -118,6 +118,8 @@ public interface FlowModelAttConstant {
 
     String FLOW_CONDITION = "flowCondition";
 
+    String FLOW_RELATION = "flowRelation";
+
     String NAME = "name";
 
     String CODE = "code";

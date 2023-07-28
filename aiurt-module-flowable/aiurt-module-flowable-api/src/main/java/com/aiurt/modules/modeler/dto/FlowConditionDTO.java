@@ -18,7 +18,12 @@ import java.io.Serializable;
 public class FlowConditionDTO implements Serializable {
 
     /**
-     * 名称
+     * 编号
+     */
+    private String number;
+
+    /**
+     * 字段名称
      */
     private String name;
 
@@ -28,12 +33,12 @@ public class FlowConditionDTO implements Serializable {
     private String code;
 
     /**
-     * 条件
+     * 条件规则
      */
     private String condition;
 
     /**
-     * 值
+     * 条件值
      */
     private String value;
 
