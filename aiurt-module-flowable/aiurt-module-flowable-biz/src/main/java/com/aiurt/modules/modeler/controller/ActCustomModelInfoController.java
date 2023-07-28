@@ -122,7 +122,7 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 	@AutoLog(value = "flowable流程模板定义信息-编辑")
 	@ApiOperation(value="flowable流程模板定义信息-编辑", notes="flowable流程模板定义信息-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody ActCustomModelInfo actCustomModelInfo) {
+	public Result<String> edit(@RequestBody @Valid  ActCustomModelInfo actCustomModelInfo) {
 
 		ActCustomModelInfo one = actCustomModelInfoService.getById(actCustomModelInfo.getId());
 		if (Objects.isNull(one)) {

@@ -2,6 +2,7 @@ package com.aiurt.modules.user.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -55,6 +56,7 @@ public class ActCustomUser implements Serializable {
 	/**0-未删除，1已删除*/
 	@Excel(name = "0-未删除，1已删除", width = 15)
     @ApiModelProperty(value = "0-未删除，1已删除")
+    @TableLogic
     private Integer delFlag;
 	/**流程引擎的定义Id*/
 	@Excel(name = "流程引擎的定义Id", width = 15)
