@@ -89,6 +89,10 @@ public class PatrolTaskDevice implements Serializable {
     @Excel(name = "wifi mac地址", width = 15)
     @ApiModelProperty(value = "wifi mac地址")
     private String mac;
+    /**mac实时站点位置*/
+    @Excel(name = "mac实时站点位置", width = 15)
+    @ApiModelProperty(value = "mac实时站点位置")
+    private String macStationCode;
     /**
      * mac匹配；0异常；1正常
      */

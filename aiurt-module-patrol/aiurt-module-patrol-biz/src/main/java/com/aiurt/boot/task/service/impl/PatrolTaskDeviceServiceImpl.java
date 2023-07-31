@@ -256,10 +256,17 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     .set(PatrolTaskDevice::getMac, patrolTaskDevice.getMac())
                     .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
             //mac地址匹配,获取用户当前位置
-            List<String> stationCodes = patrolTaskDeviceMapper.getSysUserPositionCurrent(sysUser.getUsername());
-            updateWrapper.set(PatrolTaskDevice::getMacStatus, 0);
-            if (CollUtil.isNotEmpty(stationCodes) && stationCodes.contains(taskDevice.getStationCode())) {
-                updateWrapper.set(PatrolTaskDevice::getMacStatus, 1);
+            SysUserPositionCurrentDTO sysUserPositionCurrent = patrolTaskDeviceMapper.getSysUserPositionCurrent(sysUser.getUsername());
+
+            updateWrapper.set(PatrolTaskDevice::getMac, sysUserPositionCurrent.getBssid());
+            updateWrapper.set(PatrolTaskDevice::getMacStationCode, sysUserPositionCurrent.getOldStationCode());
+            if (ObjectUtil.isNotNull(sysUserPositionCurrent) && StrUtil.isNotBlank(sysUserPositionCurrent.getStationCode())) {
+                List<String> stationCodes = StrUtil.splitTrim(sysUserPositionCurrent.getStationCode(), ",");
+                if (stationCodes.contains(taskDevice.getStationCode())) {
+                    updateWrapper.set(PatrolTaskDevice::getMacStatus, 1);
+                }
+            }else {
+                updateWrapper.set(PatrolTaskDevice::getMacStatus, 0);
             }
             // 提交工单时，更新该工单的巡视时长
             Date startTime = taskDevice.getStartTime();
