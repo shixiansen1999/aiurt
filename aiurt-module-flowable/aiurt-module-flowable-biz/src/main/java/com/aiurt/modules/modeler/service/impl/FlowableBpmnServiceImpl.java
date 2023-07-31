@@ -24,13 +24,18 @@ import com.aiurt.modules.modeler.service.IFlowableModelService;
 import com.aiurt.modules.user.entity.ActCustomUser;
 import com.aiurt.modules.user.service.IActCustomUserService;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.Process;
 import org.flowable.bpmn.model.*;
@@ -45,6 +50,7 @@ import org.flowable.ui.modeler.domain.Model;
 import org.flowable.ui.modeler.model.ModelRepresentation;
 import org.flowable.ui.modeler.service.ConverterContext;
 import org.flowable.ui.modeler.serviceapi.ModelService;
+import org.jeecg.common.system.api.ISysUserUsageApi;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -109,6 +115,9 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
     @Autowired
     private IActCustomUserService userService;
 
+    @Autowired
+    private ISysUserUsageApi sysUserUsageApi;
+
     @Override
     public Model createInitBpmn(ActCustomModelInfo modelInfo, LoginUser user) {
         ModelRepresentation modelRepresentation = new ModelRepresentation();
@@ -159,6 +168,8 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
     @Override
     public String importBpmnModel(String modelId, String fileName, ByteArrayInputStream modelStream, LoginUser user) {
 
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
         // 获取model
         Model processModel = modelService.getModel(modelId);
         if (StringUtils.isBlank(fileName)) {
@@ -200,6 +211,27 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
         // 设置模板json格式
         ObjectNode modelNode = bpmnJsonConverter.convertToJson(bpmnModel, converterContext);
+
+        // 常用人员
+        if (Objects.nonNull(modelNode)) {
+
+            String jsonStr =  modelNode.toString();
+
+            Object read = JsonPath.read(jsonStr, "$.childShapes[*].properties.userassignee[*].user");
+
+            //
+            Gson gson = new Gson();
+            List<List<FlowUserAttributeModel>> modelList = gson.fromJson(JSON.toJSONString(read), new TypeToken<List<List<FlowUserAttributeModel>>>() {}.getType());
+            Set<String> set = modelList.stream()
+                    .flatMap(List::stream)
+                    .map(FlowUserAttributeModel::getValue)
+                    .collect(Collectors.toSet());
+
+            // 更新常用人员数据；
+
+            sysUserUsageApi.updateSysUserUsage(loginUser.getId(), new ArrayList<>(set));
+        }
+
 
         AbstractModel savedModel = modelService.saveModel(modelId, processModel.getName(), processModel.getKey(),
                 processModel.getDescription(), modelNode.toString(), false,
