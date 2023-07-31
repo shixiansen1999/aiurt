@@ -162,9 +162,15 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
         String processedExpressionWithStr = FlowRelationUtil.replaceOperators(replacedExpressionWithStr, "||", "&&");
         String processedExpressionWithNameStr = FlowRelationUtil.replaceOperators(replacedExpressionWithNameStr, "或者", "并且");
 
-        propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, String.format("<![CDATA[%s]]", processedExpressionWithStr));
+        if (StrUtil.isNotEmpty(processedExpressionWithStr)){
+            propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, String.format("<![CDATA[%s]]", processedExpressionWithStr));
+        }
+
         flowNode.set(EDITOR_SHAPE_PROPERTIES, propertiesNode);
-        flowRelationObjectNode.put("relationAlias", processedExpressionWithNameStr);
+        if(StrUtil.isNotEmpty(processedExpressionWithNameStr)){
+            flowRelationObjectNode.put("relationAlias", processedExpressionWithNameStr);
+        }
+
         flowNode.set(FlowModelAttConstant.FLOW_RELATION, flowRelationObjectNode);
         shapesArrayNode.add(flowNode);
     }

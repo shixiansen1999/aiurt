@@ -1,5 +1,6 @@
 package com.aiurt.modules.utils;
 
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -35,6 +36,9 @@ public class FlowRelationUtil {
      * @return 替换后的字符串。
      */
     public static String replacePlaceholders(String input, Map<String, String> replacements) {
+        if(StrUtil.isEmpty(input)|| MapUtil.isEmpty(replacements)){
+            return input;
+        }
         // 使用正则表达式匹配 [1]、[2]、[3] 等模式，并使用捕获组
         Matcher matcher = PATTERN.matcher(input);
 
@@ -68,6 +72,9 @@ public class FlowRelationUtil {
      * @return 替换后的字符串。
      */
     public static String replaceOperators(String input, String orReplacement, String andReplacement) {
+        if(StrUtil.isEmpty(input)){
+            return input;
+        }
         return input.replace("or", StrUtil.isNotBlank(orReplacement) ? orReplacement : "||").replace("and", StrUtil.isNotEmpty(andReplacement) ? andReplacement : "&&");
     }
 
