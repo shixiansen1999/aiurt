@@ -328,7 +328,7 @@
                 cs.station_name
         FROM
                 patrol_task_device ptd
-        left join cs_station cs on ptd.station_code = cs.station_code  and cs.del_flag = 0
+        left join cs_station cs on (ptd.station_code = cs.station_code or ptd.station_code = cs.change_code) and cs.del_flag = 0
         WHERE 1=1 and
           ptd.task_id = #{id}
           AND ptd.del_flag = 0
@@ -369,7 +369,7 @@
         cs.station_name
         FROM
         patrol_task_device ptd
-        left join cs_station cs on ptd.station_code = cs.station_code  and cs.del_flag = 0
+        left join cs_station cs on (ptd.station_code = cs.station_code or ptd.station_code = cs.change_code) and cs.del_flag = 0
         WHERE 1=1 and
          ptd.id = #{id}
         AND ptd.del_flag = 0
@@ -424,10 +424,14 @@
         </if>
     </select>
 
-    <select id="getSysUserPositionCurrent" resultType="java.lang.String">
-        select cs.station_code
+    <select id="getSysUserPositionCurrent" resultType="com.aiurt.boot.task.dto.SysUserPositionCurrentDTO">
+        select
+        CONCAT_WS(',',cs.station_code) as stationCode,
+        a.bssid,
+        a.station_code as oldStationCode
         from sys_user_position_current a
         left join cs_station cs on (a.station_code = cs.station_code or a.station_code = cs.change_code) and cs.del_flag = 0
         where a.create_by = #{username}
+        group by a.id
     </select>
 </mapper>

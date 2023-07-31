@@ -62,14 +62,18 @@ public class SysUserPositionCurrentServiceImpl extends ServiceImpl<SysUserPositi
         Date wifiConnectTime = sysUserPositionCurrent.getUploadTime();
 
         // 如果本次连接站点和one中获取的数据库的站点一致，不更新upload_time
-        // 否则更新upload_time, station_code, last_upload_time, last_station_code
+        // 否则更新upload_time, station_code, last_upload_time, last_station_code, last_bssid
         if (StrUtil.equals(one.getStationCode(), sysUserPositionCurrent.getStationCode())) {
             sysUserPositionCurrent.setUploadTime(null);
-            // 这里也要增加last_station_code，因为设置了null值也更新，不过设置的和原来的一样，相当于没更新
+            // 这里也要增加last_station_code，因为设置了null值也更新，而sysUserPositionCurrent.getLastStationCode=null
+            // 不过设置的和原来的一样，相当于没更新
+            // 同理，last_bssid也一样
             sysUserPositionCurrent.setLastStationCode(one.getLastStationCode());
+            sysUserPositionCurrent.setLastBssid(one.getLastBssid());
         }else {
             sysUserPositionCurrent.setLastUploadTime(one.getUploadTime());
             sysUserPositionCurrent.setLastStationCode(one.getStationCode());
+            sysUserPositionCurrent.setLastBssid(one.getBssid());
         }
 
         // 如果one.getUpdateTime与当前wifi连接时间的时间间隔大于wifiUpdateInterval，就更新upload_time，无论是否同站点
