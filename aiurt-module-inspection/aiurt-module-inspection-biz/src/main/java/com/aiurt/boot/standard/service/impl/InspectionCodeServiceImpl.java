@@ -770,6 +770,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                 checkMap3.put("无", 1);
                 checkMap3.put("选择项", 2);
                 checkMap3.put("输入项", 3);
+                checkMap3.put("特殊字符输入", 4);
 
                 //层级转换
                 String  hierarchyType= checkMap.get(hierarchyTypeName);
@@ -855,13 +856,13 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                                 }
                             }
                             if (items.getStatusItem() == 1) {
-                                if (ObjectUtil.isNotEmpty(items.getDictCode()) && ObjectUtil.isNotEmpty(items.getDataCheck())) {
-                                    contentStringBuilder.append("关联数据字典、数据校验表达式不用填写，");
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) ||  ObjectUtil.isNotEmpty(items.getDataCheck())||  ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                                    contentStringBuilder.append("关联数据字典、数据校验表达式、检查值不用填写，");
                                 }
                             }
                             if (items.getStatusItem() == 2) {
-                                if (ObjectUtil.isNotEmpty(items.getDataCheck())) {
-                                    contentStringBuilder.append("数据校验表达式不用填写，");
+                                if (ObjectUtil.isNotEmpty(items.getDataCheck())||  ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                                    contentStringBuilder.append("数据校验表达式、检查值不用填写，");
                                 } else {
                                     if (ObjectUtil.isNotEmpty(items.getDictCode())) {
                                         String dictCode = inspectionCodeContentMapper.getDictCode(items.getDictCode());
@@ -870,12 +871,14 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                                         } else {
                                             contentStringBuilder.append("关联数据字典选择不正确，");
                                         }
+                                    } else {
+                                        contentStringBuilder.append("关联数据字典选择不能为空，");
                                     }
                                 }
                             }
                             if (items.getStatusItem() == 3) {
-                                if (ObjectUtil.isNotEmpty(items.getDictCode())) {
-                                    contentStringBuilder.append("关联数据字典不用填写，");
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) ||  ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                                    contentStringBuilder.append("关联数据字典、检查值不用填写，");
                                 } else {
                                     if (ObjectUtil.isNotEmpty(items.getDataCheck())) {
                                         List<DictModel> regex = sysBaseApi.getDictItems("regex");
@@ -889,6 +892,8 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                                         } else {
                                             contentStringBuilder.append("数据校验表达式选择不正确，");
                                         }
+                                    } else {
+                                        contentStringBuilder.append("数据校验表达式选择不能为空，");
                                     }
                                 }
                             }
@@ -924,28 +929,29 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                                 }
                             }
                             if (items.getStatusItem() == 1) {
-                                if (ObjectUtil.isNotEmpty(items.getDictCode()) && ObjectUtil.isNotEmpty(items.getDataCheck())) {
-                                    contentStringBuilder.append("关联数据字典、数据校验表达式不用填写，");
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) ||  ObjectUtil.isNotEmpty(items.getDataCheck())||  ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                                    contentStringBuilder.append("关联数据字典、数据校验表达式、检查值不用填写，");
                                 }
                             }
                             if (items.getStatusItem() == 2) {
-                                if (ObjectUtil.isNotEmpty(items.getDataCheck())) {
-                                    contentStringBuilder.append("数据校验表达式不用填写，");
+                                if (ObjectUtil.isNotEmpty(items.getDataCheck())||  ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                                    contentStringBuilder.append("数据校验表达式、检查值不用填写，");
                                 } else {
                                     if (ObjectUtil.isNotEmpty(items.getDictCode())) {
                                         String dictCode = inspectionCodeContentMapper.getDictCode(items.getDictCode());
-
                                         if (ObjectUtil.isNotEmpty(dictCode)) {
                                             items.setDictCode(dictCode);
                                         } else {
                                             contentStringBuilder.append("关联数据字典选择不正确，");
                                         }
+                                    } else {
+                                        contentStringBuilder.append("关联数据字典选择不能为空，");
                                     }
                                 }
                             }
                             if (items.getStatusItem() == 3) {
-                                if (ObjectUtil.isNotEmpty(items.getDictCode())) {
-                                    contentStringBuilder.append("关联数据字典不用填写，");
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) ||  ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                                    contentStringBuilder.append("关联数据字典、检查值不用填写，");
                                 } else {
                                     if (ObjectUtil.isNotEmpty(items.getDataCheck())) {
                                         List<DictModel> regex = sysBaseApi.getDictItems("regex");
@@ -959,20 +965,24 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                                         } else {
                                             contentStringBuilder.append("数据校验表达式选择不正确，");
                                         }
-                                        /*String dictCode = inspectionCodeContentMapper.getDictCode(items.getDataCheck());
-                                        if (ObjectUtil.isNotEmpty(dictCode)) {
-                                            items.setDataCheck(dictCode);
-                                        } else {
-                                            contentStringBuilder.append("数据校验表达式选择不正确，");
-                                        }*/
+                                    } else {
+                                        contentStringBuilder.append("数据校验表达式选择不能为空，");
                                     }
+                                }
+                            }
+                            if (items.getStatusItem() == 4) {
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getDataCheck())) {
+                                    contentStringBuilder.append("检查值类型为检查值时：关联数据字典、数据检验表达式不用填写，");
+                                }
+                                if (ObjectUtil.isEmpty(items.getSpecialCharacters())) {
+                                    contentStringBuilder.append("检查值不能为空，");
                                 }
                             }
                         }
                         else
                         {
                             if(ObjectUtil.isNotEmpty(items.getDataCheck())||ObjectUtil.isNotEmpty(items.getDictCode())) {
-                                contentStringBuilder.append("关联数据字典、数据校验表达式不用填写，");
+                                contentStringBuilder.append("关联数据字典、数据校验表达式、检查值不用填写，");
                             }
                         }
                     }
@@ -1043,6 +1053,8 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                 }
             }
             lm.put("regular", inspectionCodeErrorDto.getDataCheck());
+            lm.put("specialCharacters", inspectionCodeErrorDto.getSpecialCharacters());
+            lm.put("procMethods", inspectionCodeErrorDto.getProcMethods());
             lm.put("itemParentMistake", inspectionCodeErrorDto.getCodeContentErrorReason());
             lm.put("repairType",inspectionCodeErrorDto.getRepairTypeName());
             lm.put("orgName", inspectionCodeErrorDto.getOrgName());
