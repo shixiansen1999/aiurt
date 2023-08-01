@@ -83,4 +83,22 @@ public interface BdQuestionMapper extends BaseMapper<BdQuestion> {
      * @return
      */
     List<BdQuestion> getOptions(@Param("quesId")List<String> quesId);
+    /**
+     * 随机抽取试题
+     *
+     * @param categoryIds 习题类别
+     * @param choiceQuestionNum 选择题数量
+     * @param shortAnswerQuestionNum 简答题数量
+     * @return
+     */
+
+    List<BdQuestion> randomSelectionQuestion(@Param("categoryIds")List<String> categoryIds, @Param("choiceQuestionNum")Integer choiceQuestionNum, @Param("shortAnswerQuestionNum")Integer shortAnswerQuestionNum);
+    /**
+     * 获取题目数量
+     *
+     * @param categoryIds 习题类别
+     * @param queTypes 题目类型 ,1选择题,2简答题
+     * @return
+     */
+    Integer getQuestionNum(@Param("categoryIds")List<String>  categoryIds,  @Param("queTypes")String queTypes);
 }
