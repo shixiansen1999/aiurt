@@ -36,31 +36,15 @@ public class FlowRelationUtil {
      * @return 替换后的字符串。
      */
     public static String replacePlaceholders(String input, Map<String, String> replacements) {
-        if(StrUtil.isEmpty(input)|| MapUtil.isEmpty(replacements)){
+        if (StrUtil.isEmpty(input) || MapUtil.isEmpty(replacements)) {
             return input;
         }
-        // 使用正则表达式匹配 [1]、[2]、[3] 等模式，并使用捕获组
-        Matcher matcher = PATTERN.matcher(input);
-
-        // 替换匹配到的模式
-        StringBuffer result = new StringBuffer();
-        while (matcher.find()) {
-            // 匹配到的整个模式，例如 [1]、[2]、[3]
-            String matched = matcher.group();
-            // 提取出数字部分，作为key，例如 "1"、"2"、"3"
-            String key = matcher.group(1);
-            // 根据key获取对应的替换值
-            String replacement = replacements.get(key);
-            if (replacement != null) {
-                matcher.appendReplacement(result, replacement);
-            } else {
-                // 如果没有找到替换值，保持原样
-                matcher.appendReplacement(result, matched);
-            }
+        for (Map.Entry<String, String> entry : replacements.entrySet()) {
+            String placeholder = entry.getKey();
+            String replacement = entry.getValue();
+            input = input.replace(placeholder, replacement);
         }
-        matcher.appendTail(result);
-
-        return result.toString();
+        return input;
     }
 
     /**
@@ -72,7 +56,7 @@ public class FlowRelationUtil {
      * @return 替换后的字符串。
      */
     public static String replaceOperators(String input, String orReplacement, String andReplacement) {
-        if(StrUtil.isEmpty(input)){
+        if (StrUtil.isEmpty(input)) {
             return input;
         }
         return input.replace("or", StrUtil.isNotBlank(orReplacement) ? orReplacement : "||").replace("and", StrUtil.isNotEmpty(andReplacement) ? andReplacement : "&&");
@@ -111,12 +95,13 @@ public class FlowRelationUtil {
         }
         return null;
     }
+
     /**
      * 将 ArrayNode 对象转换为指定类类型的对象列表。
      *
-     * @param arrayNode   ArrayNode 对象，包含要转换的数据列表。
-     * @param clazz       要转换成的类类型。
-     * @param <T>         转换后的对象类型。
+     * @param arrayNode ArrayNode 对象，包含要转换的数据列表。
+     * @param clazz     要转换成的类类型。
+     * @param <T>       转换后的对象类型。
      * @return 转换后的对象列表，如果转换失败返回空列表。
      */
     public static <T> List<T> parseJsonToList(ArrayNode arrayNode, Class<T> clazz) {
@@ -132,9 +117,9 @@ public class FlowRelationUtil {
     public static void main(String[] args) {
         String input = "假如我有([1]or[2])and[3]";
         Map<String, String> replacements = new HashMap<>();
-        replacements.put("1", "你");
-        replacements.put("2", "我");
-        replacements.put("3", "他");
+        replacements.put("[1]", "你");
+        replacements.put("[2]", "我");
+        replacements.put("[3]", "他");
         String replaced = replacePlaceholders(input, replacements);
         System.out.println(replaced);
     }

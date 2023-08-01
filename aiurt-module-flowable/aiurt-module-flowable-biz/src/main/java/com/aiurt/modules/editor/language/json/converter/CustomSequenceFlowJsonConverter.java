@@ -157,21 +157,24 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
         }
 
         // 处理条件关系表达式,设计 <![CDATA[${var:equals(name,"李四")} && ${var:lt(money, 100)}]]
-        String replacedExpressionWithStr = FlowRelationUtil.replacePlaceholders(relationValue, relationMaps.getNumberRelationMap());
-        String replacedExpressionWithNameStr = FlowRelationUtil.replacePlaceholders(relationValue, relationMaps.getNumberRelationNameMap());
-        String processedExpressionWithStr = FlowRelationUtil.replaceOperators(replacedExpressionWithStr, "||", "&&");
-        String processedExpressionWithNameStr = FlowRelationUtil.replaceOperators(replacedExpressionWithNameStr, "或者", "并且");
+        if(StrUtil.isNotEmpty(relationValue)){
+            String replacedExpressionWithStr = FlowRelationUtil.replacePlaceholders(relationValue, relationMaps.getNumberRelationMap());
+            String replacedExpressionWithNameStr = FlowRelationUtil.replacePlaceholders(relationValue, relationMaps.getNumberRelationNameMap());
+            String processedExpressionWithStr = FlowRelationUtil.replaceOperators(replacedExpressionWithStr, "||", "&&");
+            String processedExpressionWithNameStr = FlowRelationUtil.replaceOperators(replacedExpressionWithNameStr, "或者", "并且");
 
-        if (StrUtil.isNotEmpty(processedExpressionWithStr)){
-            propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, String.format("<![CDATA[%s]]", processedExpressionWithStr));
+            if (StrUtil.isNotEmpty(processedExpressionWithStr)){
+                propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, String.format("<![CDATA[%s]]", processedExpressionWithStr));
+            }
+
+            flowNode.set(EDITOR_SHAPE_PROPERTIES, propertiesNode);
+            if(StrUtil.isNotEmpty(processedExpressionWithNameStr)){
+                flowRelationObjectNode.put("relationAlias", processedExpressionWithNameStr);
+            }
+
+            flowNode.set(FlowModelAttConstant.FLOW_RELATION, flowRelationObjectNode);
         }
 
-        flowNode.set(EDITOR_SHAPE_PROPERTIES, propertiesNode);
-        if(StrUtil.isNotEmpty(processedExpressionWithNameStr)){
-            flowRelationObjectNode.put("relationAlias", processedExpressionWithNameStr);
-        }
-
-        flowNode.set(FlowModelAttConstant.FLOW_RELATION, flowRelationObjectNode);
         shapesArrayNode.add(flowNode);
     }
 
@@ -256,11 +259,11 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
 
         for (FlowConditionDTO flowConditionDTO : dtoList) {
             String exp = generateExpression(flowConditionDTO);
-            relationMaps.addNumberRelation(flowConditionDTO.getNumber(), String.format("${var:%s(%s)}", exp));
+            relationMaps.addNumberRelation(flowConditionDTO.getNumber(), String.format("${var:%s(%s)}",flowConditionDTO.getCondition(), exp));
 
-            FlowConditionEnum flowConditionEnum = FlowConditionEnum.getByCode(flowConditionDTO.getCode());
-            String name = ObjectUtil.isNotEmpty(flowConditionEnum) ? flowConditionEnum.getName() : "";
-            relationMaps.addNumberRelationName(flowConditionDTO.getNumber(), String.format("%s %s %s", flowConditionDTO.getName(), name, flowConditionDTO.getValue()));
+            FlowConditionEnum flowConditionEnum = FlowConditionEnum.getByCode(flowConditionDTO.getCondition());
+            String conditionName = ObjectUtil.isNotEmpty(flowConditionEnum) ? flowConditionEnum.getName() : "";
+            relationMaps.addNumberRelationName(flowConditionDTO.getNumber(), String.format("%s %s %s", flowConditionDTO.getName(), conditionName, flowConditionDTO.getValue()));
         }
 
         return relationMaps;
