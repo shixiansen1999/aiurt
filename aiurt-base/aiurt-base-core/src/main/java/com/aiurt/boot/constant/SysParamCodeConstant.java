@@ -426,6 +426,25 @@ public interface SysParamCodeConstant {
      */
     String WX_OAUTH = "wx_oauth";
     /**
+     * 大屏人员信息工班长排在首位
+     */
+    String FOREMAN_SORT = "foreman_sort";
+    /**
+     * 日完成事项是否统计的维保数按照维保开始时间计算
+     */
+    String INSPECTION_STARTTIME = "inspection_starttime";
+    /**
+     * 工作日志只获取班组数量,组织机构类型不为公司部门
+     */
+    String WORK_LOG_ORG_CATEGORY = "work_log_org_category";
+
+    /**
+     * 公安消防班组id
+     */
+    String GONGANXIAOFANG_ID = "gonganxiaofang_id";
+
+
+    /**
      * 获取施工计划登录token所需客户ID
      */
     String CLIENT_ID="clientId";
@@ -442,20 +461,19 @@ public interface SysParamCodeConstant {
      */
     String CONSTRUCTION_URL="construction_url";
     /**
-     * 大屏人员信息工班长排在首位
+     * 故障挂起超时未处理提醒
      */
-    String FOREMAN_SORT = "foreman_sort";
-
+    String HANG_UP_REMIND = "hang_up_remind";
     /**
-     * 日完成事项是否统计的维保数按照维保开始时间计算
+     * 故障挂起超时未处理提醒的初始延时时长，单位为小时
      */
-    String GONGANXIAOFANG_ID = "gonganxiaofang_id";
+    String HUR_DELAY = "hur_delay";
     /**
-     * 日完成事项是否统计的维保数按照维保开始时间计算
+     * 故障挂起超时未处理提醒的间隔时长，单位为小时
      */
-    String INSPECTION_STARTTIME = "inspection_starttime";
+    String HUR_PERIOD = "hur_period";
     /**
-     * 工作日志只获取班组数量,组织机构类型不为公司部门
+     * 故障挂起超时未处理提醒的铃声时长，单位为秒
      */
-    String WORK_LOG_ORG_CATEGORY = "work_log_org_category";
+    String HUR_RING_DURATION = "hur_ring_duration";
 }
