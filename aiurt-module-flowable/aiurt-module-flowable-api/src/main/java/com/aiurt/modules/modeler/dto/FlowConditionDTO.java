@@ -41,6 +41,10 @@ public class FlowConditionDTO implements Serializable {
      * 条件值
      */
     private String value;
+    /**
+     * 中文条件值
+     */
+    private String chineseValue;
 
     /**
      * 关系

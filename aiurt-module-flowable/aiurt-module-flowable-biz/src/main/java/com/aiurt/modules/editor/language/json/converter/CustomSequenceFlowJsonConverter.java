@@ -263,7 +263,7 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
 
             FlowConditionEnum flowConditionEnum = FlowConditionEnum.getByCode(flowConditionDTO.getCondition());
             String conditionName = ObjectUtil.isNotEmpty(flowConditionEnum) ? flowConditionEnum.getName() : "";
-            relationMaps.addNumberRelationName(flowConditionDTO.getNumber(), String.format("%s %s %s", flowConditionDTO.getName(), conditionName, flowConditionDTO.getValue()));
+            relationMaps.addNumberRelationName(flowConditionDTO.getNumber(), String.format("%s %s %s", flowConditionDTO.getName(), conditionName, flowConditionDTO.getChineseValue()));
         }
 
         return relationMaps;
