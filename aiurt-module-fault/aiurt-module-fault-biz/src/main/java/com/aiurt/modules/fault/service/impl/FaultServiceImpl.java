@@ -1342,6 +1342,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 messageDTO.setIsRingBell(true);
                 sendMessage(messageDTO, faultMessageDTO);
 
+                // 故障挂起超时未处理提醒
+                processHangUpTimeOutToRemind(fault);
             } else {
                 FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
                 BeanUtil.copyProperties(fault, faultMessageDTO);
@@ -1374,6 +1376,15 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void processHangUpTimeOutToRemind(Fault fault) {
+        // 根据配置决定：故障挂起超时未处理提醒
+        SysParamModel remindParam = iSysParamAPI.selectByCode(SysParamCodeConstant.HANG_UP_REMIND);
+        boolean b = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && FaultStatusEnum.HANGUP.getStatus().equals(fault.getStatus());
+        if (b) {
+            faultRemind.processFaultHangUpTimeOut(fault);
         }
     }
 
@@ -4032,5 +4043,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 更新工班长指派的任务
         todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_HANG_UP.getType(), faultCode, user.getUsername(), "1");
 
+        // 故障挂起超时未处理提醒
+        processHangUpTimeOutToRemind(fault);
     }
 }
