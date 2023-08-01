@@ -1,6 +1,7 @@
 package com.aiurt.modules.editor.language.json.converter;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
@@ -157,21 +158,28 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
         }
 
         // 处理条件关系表达式,设计 <![CDATA[${var:equals(name,"李四")} && ${var:lt(money, 100)}]]
-        if(StrUtil.isNotEmpty(relationValue)){
-            String replacedExpressionWithStr = FlowRelationUtil.replacePlaceholders(relationValue, relationMaps.getNumberRelationMap());
-            String replacedExpressionWithNameStr = FlowRelationUtil.replacePlaceholders(relationValue, relationMaps.getNumberRelationNameMap());
-            String processedExpressionWithStr = FlowRelationUtil.replaceOperators(replacedExpressionWithStr, "||", "&&");
-            String processedExpressionWithNameStr = FlowRelationUtil.replaceOperators(replacedExpressionWithNameStr, "或者", "并且");
-
-            if (StrUtil.isNotEmpty(processedExpressionWithStr)){
-                propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, String.format("<![CDATA[%s]]", processedExpressionWithStr));
+        if (StrUtil.isEmpty(relationValue)) {
+            if (ObjectUtil.isNotEmpty(relationMaps) && MapUtil.isNotEmpty(relationMaps.getNumberRelationMap())) {
+                relationValue = relationMaps.getNumberRelationMap().keySet().stream().findFirst().orElse("[1]");
+            } else {
+                relationValue = "[1]";
             }
+        }
 
-            flowNode.set(EDITOR_SHAPE_PROPERTIES, propertiesNode);
-            if(StrUtil.isNotEmpty(processedExpressionWithNameStr)){
+        String replacedExpressionWithStr = FlowRelationUtil.replacePlaceholders(relationValue, relationMaps.getNumberRelationMap());
+        String replacedExpressionWithNameStr = FlowRelationUtil.replacePlaceholders(relationValue, relationMaps.getNumberRelationNameMap());
+        String processedExpressionWithStr = FlowRelationUtil.replaceOperators(replacedExpressionWithStr, "||", "&&");
+        String processedExpressionWithNameStr = FlowRelationUtil.replaceOperators(replacedExpressionWithNameStr, "或者", "并且");
+
+        if (StrUtil.isNotEmpty(processedExpressionWithStr)) {
+            propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, String.format("<![CDATA[%s]]>", processedExpressionWithStr));
+        }
+        flowNode.set(EDITOR_SHAPE_PROPERTIES, propertiesNode);
+
+        if (ObjectUtil.isNotEmpty(flowRelationObjectNode)) {
+            if (StrUtil.isNotEmpty(processedExpressionWithNameStr)) {
                 flowRelationObjectNode.put("relationAlias", processedExpressionWithNameStr);
             }
-
             flowNode.set(FlowModelAttConstant.FLOW_RELATION, flowRelationObjectNode);
         }
 
@@ -208,10 +216,12 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
                 }
 
                 // 流转条件关系
-                JsonNode relationNode = elementNode.get(FlowModelAttConstant.FLOW_RELATION);
-                if (ObjectUtil.isNotEmpty(relationNode)) {
-                    addExtansionPropertiesElemt(relationNode, sequenceFlow, FlowModelAttConstant.FLOW_RELATION);
-                }
+                addExtansionPropertiesElemt(elementNode, sequenceFlow, FlowModelAttConstant.FLOW_RELATION);
+//                JsonNode relationNode = elementNode.get(FlowModelAttConstant.FLOW_RELATION);
+//                if (ObjectUtil.isNotEmpty(relationNode)) {
+//
+//
+//                }
 
             }
         } catch (JsonProcessingException e) {
@@ -263,7 +273,7 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
 
             FlowConditionEnum flowConditionEnum = FlowConditionEnum.getByCode(flowConditionDTO.getCondition());
             String conditionName = ObjectUtil.isNotEmpty(flowConditionEnum) ? flowConditionEnum.getName() : "";
-            relationMaps.addNumberRelationName(flowConditionDTO.getNumber(), String.format("%s %s %s", flowConditionDTO.getName(), conditionName, flowConditionDTO.getValue()));
+            relationMaps.addNumberRelationName(flowConditionDTO.getNumber(), String.format("%s %s %s", flowConditionDTO.getName(), conditionName, flowConditionDTO.getChineseValue()));
         }
 
         return relationMaps;
