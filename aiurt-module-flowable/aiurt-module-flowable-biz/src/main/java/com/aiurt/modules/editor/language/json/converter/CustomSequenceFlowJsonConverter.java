@@ -172,7 +172,7 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
         String processedExpressionWithNameStr = FlowRelationUtil.replaceOperators(replacedExpressionWithNameStr, "或者", "并且");
 
         if (StrUtil.isNotEmpty(processedExpressionWithStr)) {
-            propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, String.format("<![CDATA[%s]]>", processedExpressionWithStr));
+            propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, String.format("<![CDATA[%s]]", processedExpressionWithStr));
         }
         flowNode.set(EDITOR_SHAPE_PROPERTIES, propertiesNode);
 
@@ -217,12 +217,6 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
 
                 // 流转条件关系
                 addExtansionPropertiesElemt(elementNode, sequenceFlow, FlowModelAttConstant.FLOW_RELATION);
-//                JsonNode relationNode = elementNode.get(FlowModelAttConstant.FLOW_RELATION);
-//                if (ObjectUtil.isNotEmpty(relationNode)) {
-//
-//
-//                }
-
             }
         } catch (JsonProcessingException e) {
             log.error("将JSON数据转换为扩展元素时发生错误: {}", e.getMessage());
