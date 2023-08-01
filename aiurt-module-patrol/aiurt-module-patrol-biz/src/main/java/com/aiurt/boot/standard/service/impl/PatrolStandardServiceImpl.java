@@ -888,7 +888,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                             }
                             if (items.getInputType() == 4) {
                                 if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular())) {
-                                    stringBuilder.append("检查值类型为检查值时：关联数据字典、数据检验表达式不用填写，");
+                                    stringBuilder.append("检查值类型为特殊字符输入时：关联数据字典、数据检验表达式不用填写，");
                                 }
                                 if (ObjectUtil.isEmpty(items.getSpecialCharacters())) {
                                     stringBuilder.append("检查值不能为空，");
@@ -969,7 +969,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                             }
                             if (items.getInputType() == 4) {
                                 if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular())) {
-                                    stringBuilder.append("检查值类型为检查值时：关联数据字典、数据检验表达式不用填写，");
+                                    stringBuilder.append("检查值类型为特殊字符输入时：关联数据字典、数据检验表达式不用填写，");
                                 }
                                 if (ObjectUtil.isEmpty(items.getSpecialCharacters())) {
                                     stringBuilder.append("检查值不能为空，");
