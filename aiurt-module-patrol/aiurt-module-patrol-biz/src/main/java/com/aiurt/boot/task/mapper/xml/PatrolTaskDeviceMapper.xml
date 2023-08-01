@@ -426,7 +426,7 @@
 
     <select id="getSysUserPositionCurrent" resultType="com.aiurt.boot.task.dto.SysUserPositionCurrentDTO">
         select
-        CONCAT_WS(',',cs.station_code) as stationCode,
+        GROUP_CONCAT(DISTINCT cs.station_code SEPARATOR ',' ) as stationCode,
         a.bssid,
         a.station_code as oldStationCode
         from sys_user_position_current a
