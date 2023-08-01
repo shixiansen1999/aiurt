@@ -106,9 +106,13 @@ public class PatrolStandardErrorModel {
     @ApiModelProperty(value = "数据校验表达式")
     private java.lang.String regular;
     /**特殊字符*/
-    @Excel(name = "特殊字符", width = 15)
-    @ApiModelProperty(value = "特殊字符")
+    @Excel(name = "检查值", width = 15)
+    @ApiModelProperty(value = "检查值")
     private java.lang.String specialCharacters;
+    /** 程序及方法*/
+    @Excel(name = "程序及方法", width = 15)
+    @ApiModelProperty(value = "程序及方法")
+    private String procMethods;
     /**检查值是否必填：0否、1是*/
     @ApiModelProperty(value = "检查值是否必填：0否、1是")
     private java.lang.Integer required;

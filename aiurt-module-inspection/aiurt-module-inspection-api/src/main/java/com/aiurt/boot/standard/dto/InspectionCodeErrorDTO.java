@@ -166,6 +166,16 @@ public class InspectionCodeErrorDTO {
     @ApiModelProperty(value = "数据校验字段")
     private java.lang.String dataCheck;
 
+    /**特殊字符*/
+    @Excel(name = "检查值", width = 15)
+    @ApiModelProperty(value = "检查值")
+    private java.lang.String specialCharacters;
+
+    /** 程序及方法*/
+    @Excel(name = "程序及方法", width = 15)
+    @ApiModelProperty(value = "程序及方法")
+    private String procMethods;
+
     @TableField(exist = false)
     @ApiModelProperty(value = "检查项类型名称")
     private java.lang.String typeName;
