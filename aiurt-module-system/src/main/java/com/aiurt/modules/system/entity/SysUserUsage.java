@@ -67,5 +67,5 @@ public class SysUserUsage implements Serializable {
 	/**被使用人员的唯一标识符*/
 	@Excel(name = "被使用人员的唯一标识符", width = 15)
     @ApiModelProperty(value = "被使用人员的唯一标识符")
-    private String personnelId;
+    private String personnelUserName;
 }

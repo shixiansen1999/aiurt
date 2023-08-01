@@ -5,6 +5,7 @@ import com.aiurt.modules.system.entity.SysUserUsage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @Description: 系统用户被选用频率表
@@ -27,4 +28,11 @@ public interface ISysUserUsageService extends IService<SysUserUsage> {
      * @return
      */
     List<SysUserUsageRespDTO> globalSearch(String name);
+
+    /**
+     * 查询当前用户的数据
+     * @param userId
+     * @return
+     */
+    Set<String> queryUserNameSetByUserId(String userId);
 }

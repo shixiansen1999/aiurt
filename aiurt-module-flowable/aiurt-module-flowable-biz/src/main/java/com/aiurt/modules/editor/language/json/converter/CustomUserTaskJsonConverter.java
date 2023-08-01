@@ -213,8 +213,6 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
 
 
             addCustomAttributeForPrefix(elementNode, userTask,"flowable", "formtaskVariables");
-
-
         }
     }
 
