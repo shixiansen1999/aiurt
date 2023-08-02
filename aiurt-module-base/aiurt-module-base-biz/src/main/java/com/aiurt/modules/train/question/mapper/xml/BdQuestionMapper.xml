@@ -93,7 +93,70 @@
         GROUP BY bdq.id
     </select>
 
-   <!-- <select id="getQues" resultType="com.aiurt.modules.train.question.entity.BdQuestion">
-        select * from bd_question where id = #{questionId}
-    </select>-->
+    <select id="randomSelectionQuestion" resultType="com.aiurt.modules.train.question.entity.BdQuestion">
+        (select
+        t1.id as id,
+        t2.id as categoryId,
+        t1.content as content,
+        t1.que_type as queType,
+        t1.create_time as createTime,
+        t2.name as categoryName
+        from bd_question  t1
+        LEFT JOIN bd_question_category t2 ON t1.category_id = t2.id
+        where t1.idel = 0
+        <if test="categoryIds != null and categoryIds.size() != 0">
+            and t1.category_id in
+            <foreach collection="categoryIds" item="item" open="(" close=")" index="" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="choiceQuestionNum != null">
+            and t1.que_type in (1,2)
+            ORDER BY RAND() LIMIT #{choiceQuestionNum}
+        </if>)
+        UNION ALL
+        (select
+        t1.id as id,
+        t2.id as categoryId,
+        t1.content as content,
+        t1.que_type as queType,
+        t1.create_time as createTime,
+        t2.name as categoryName
+        from bd_question  t1
+        LEFT JOIN bd_question_category t2 ON t1.category_id = t2.id
+        where t1.idel = 0
+        <if test="categoryIds != null and categoryIds.size() != 0">
+            and t1.category_id in
+            <foreach collection="categoryIds" item="item" open="(" close=")" index="" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="shortAnswerQuestionNum != null">
+            and t1.que_type = 3
+            ORDER BY RAND() LIMIT #{shortAnswerQuestionNum}
+        </if>)
+    </select>
+
+    <select id="getQuestionNum" resultType="java.lang.Integer">
+        select
+        ifnull(count(*),0)
+        from bd_question
+        where idel = 0
+        <if test="categoryIds != null and categoryIds.size() != 0">
+            and category_id in
+            <foreach collection="categoryIds" item="item" open="(" close=")" index="" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        <if test="queTypes != null and queTypes == 1">
+            and que_type in (1,2)
+        </if>
+        <if test="queTypes != null and queTypes == 2">
+            and que_type = 3
+        </if>
+    </select>
+
+    <!-- <select id="getQues" resultType="com.aiurt.modules.train.question.entity.BdQuestion">
+         select * from bd_question where id = #{questionId}
+     </select>-->
 </mapper>
