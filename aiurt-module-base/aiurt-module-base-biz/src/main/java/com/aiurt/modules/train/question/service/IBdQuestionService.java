@@ -1,9 +1,10 @@
 package com.aiurt.modules.train.question.service;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.apache.ibatis.annotations.Param;
+import com.aiurt.modules.train.question.dto.BdQuestionDTO;
 import com.aiurt.modules.train.question.entity.BdQuestion;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -52,4 +53,21 @@ public interface IBdQuestionService extends IService<BdQuestion> {
      * @return
      */
     List<BdQuestion> getLearningMaterials(@Param("id") String id);
+    /**
+     * 随机抽取试题
+     *
+     * @param categoryIds 习题类别
+     * @param choiceQuestionNum 选择题数量
+     * @param shortAnswerQuestionNum 简答题数量
+     * @return
+     */
+    List<BdQuestion> randomSelectionQuestion(String categoryIds, Integer choiceQuestionNum, Integer shortAnswerQuestionNum);
+
+    /**
+     * 获取题目数量
+     *
+     * @param categoryIds 习题类别
+     * @return
+     */
+    BdQuestionDTO getQuestionNum(String categoryIds);
 }
