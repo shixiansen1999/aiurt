@@ -3,6 +3,7 @@ package com.aiurt.modules.train.question.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.train.question.dto.BdQuestionDTO;
 import com.aiurt.modules.train.question.entity.BdQuestion;
 import com.aiurt.modules.train.question.entity.BdQuestionOptions;
 import com.aiurt.modules.train.question.entity.BdQuestionOptionsAtt;
@@ -144,8 +145,15 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
     }
 
     @Override
-    public Integer getQuestionNum(String categoryIds, String queTypes) {
-        return  bdQuestionMapper.getQuestionNum(StrUtil.isNotBlank(categoryIds) ? StrUtil.splitTrim(categoryIds, ",") : null, queTypes);
+    public BdQuestionDTO getQuestionNum(String categoryIds) {
+
+        Integer choiceQuestionNum = bdQuestionMapper.getQuestionNum(StrUtil.isNotBlank(categoryIds) ? StrUtil.splitTrim(categoryIds, ",") : null, 1);
+        Integer shortAnswerQuestionNum = bdQuestionMapper.getQuestionNum(StrUtil.isNotBlank(categoryIds) ? StrUtil.splitTrim(categoryIds, ",") : null, 2);
+        BdQuestionDTO dto = new BdQuestionDTO();
+        dto.setChoiceQuestionNum(choiceQuestionNum);
+        dto.setShortAnswerQuestionNum(shortAnswerQuestionNum);
+
+        return dto;
     }
 
     private void modifyDelete(BdQuestion bdQuestion) {

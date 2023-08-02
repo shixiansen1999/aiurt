@@ -1,5 +1,6 @@
 package com.aiurt.modules.train.question.service;
 
+import com.aiurt.modules.train.question.dto.BdQuestionDTO;
 import com.aiurt.modules.train.question.entity.BdQuestion;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -66,8 +67,7 @@ public interface IBdQuestionService extends IService<BdQuestion> {
      * 获取题目数量
      *
      * @param categoryIds 习题类别
-     * @param queTypes 题目类型
      * @return
      */
-    Integer getQuestionNum(String categoryIds, String queTypes);
+    BdQuestionDTO getQuestionNum(String categoryIds);
 }

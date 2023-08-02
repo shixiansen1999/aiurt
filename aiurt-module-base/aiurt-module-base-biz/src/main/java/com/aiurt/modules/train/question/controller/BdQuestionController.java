@@ -2,6 +2,7 @@ package com.aiurt.modules.train.question.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.train.question.dto.BdQuestionDTO;
 import com.aiurt.modules.train.question.entity.BdQuestion;
 import com.aiurt.modules.train.question.service.IBdQuestionService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -204,16 +205,14 @@ public class BdQuestionController extends BaseController<BdQuestion, IBdQuestion
 	  * 获取题目数量
 	  *
 	  * @param categoryIds 习题类别
-	  * @param queTypes 题目类型 ,1选择题,2简答题
 	  * @return
 	  */
 	 @AutoLog(value = "考卷习题-获取题目数量")
 	 @ApiOperation(value="考卷习题-获取题目数量", notes="考卷习题-获取题目数量")
 	 @GetMapping(value = "/getQuestionNum")
-	 public Result<?> getQuestionNum( @ApiParam(name="categoryIds",value = "习题类别(多选逗号隔开)") @RequestParam(name="categoryIds",required = false)String categoryIds,
-											   @ApiParam(name="queTypes",value = "题目类型,1选择题，2简答题") @RequestParam(name="queTypes") String queTypes) {
+	 public Result<?> getQuestionNum( @ApiParam(name="categoryIds",value = "习题类别(多选逗号隔开)") @RequestParam(name="categoryIds",required = false)String categoryIds) {
 
-		 Integer num = bdQuestionService.getQuestionNum(categoryIds, queTypes);
-		 return Result.OK(num);
+		 BdQuestionDTO bdQuestionDTO = bdQuestionService.getQuestionNum(categoryIds);
+		 return Result.OK(bdQuestionDTO);
 	 }
 }

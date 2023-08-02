@@ -97,8 +97,8 @@ public interface BdQuestionMapper extends BaseMapper<BdQuestion> {
      * 获取题目数量
      *
      * @param categoryIds 习题类别
-     * @param queTypes 题目类型 ,1选择题,2简答题
+     * @param queType 题目类型 ,1选择题,2简答题
      * @return
      */
-    Integer getQuestionNum(@Param("categoryIds")List<String>  categoryIds,  @Param("queTypes")String queTypes);
+    Integer getQuestionNum(@Param("categoryIds")List<String>  categoryIds,  @Param("queTypes")Integer queType);
 }
