@@ -1,5 +1,6 @@
 package com.aiurt.modules.online.workflowapi.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.base.BaseEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -47,6 +48,10 @@ public class ActCustomInterface extends BaseEntity implements Serializable {
 	@Excel(name = "接口分类", width = 15)
     @ApiModelProperty(value = "接口分类")
     private Integer type;
+    /**接口所属模块*/
+    @Excel(name = "接口所属模块", width = 15)
+    @ApiModelProperty(value = "接口所属模块")
+    private Integer module;
     /**创建人*/
     @ApiModelProperty(value = "创建人")
     private String createBy;
@@ -63,6 +68,10 @@ public class ActCustomInterface extends BaseEntity implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新日期")
     private Date updateTime;
+    /**所属部门*/
+    @ApiModelProperty(value = "所属部门")
+    @Dict(dicCode = "org_code", dicText = "depart_name", dictTable = "sys_depart")
+    private String sysOrgCode;
     /**
      * 删除状态 0-未删除 1-已删除
      */
