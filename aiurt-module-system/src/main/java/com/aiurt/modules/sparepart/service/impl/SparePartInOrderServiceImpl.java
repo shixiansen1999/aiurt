@@ -132,11 +132,41 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partInOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partInOrder.getWarehouseCode()));
         if(null!=sparePartStock){
             sparePartStock.setNum(sparePartStock.getNum()+partInOrder.getNum());
+
+            // 更新全新数量
+            if (sparePartStock.getNewNum() != null && partInOrder.getNewNum() != null){
+                sparePartStock.setNewNum(sparePartStock.getNewNum() + partInOrder.getNewNum());
+            }else if (partInOrder.getNewNum() != null){
+                sparePartStock.setNewNum(partInOrder.getNewNum());
+            }
+            // 更新已使用数量
+            if (sparePartStock.getUsedNum() != null && partInOrder.getUsedNum() != null){
+                sparePartStock.setUsedNum(sparePartStock.getUsedNum() + partInOrder.getUsedNum());
+            }else if (partInOrder.getUsedNum() != null){
+                sparePartStock.setUsedNum(partInOrder.getUsedNum());
+            }
+            // 更新待报损数量
+            if (sparePartStock.getScrapNum() != null && partInOrder.getScrapNum() != null){
+                sparePartStock.setScrapNum(sparePartStock.getScrapNum() + partInOrder.getScrapNum());
+            }else if(partInOrder.getScrapNum() != null){
+                sparePartStock.setScrapNum(partInOrder.getScrapNum());
+            }
+            // 更新委外送修数量
+            if (sparePartStock.getOutsourceRepairNum() != null && partInOrder.getOutsourceRepairNum() != null){
+                sparePartStock.setOutsourceRepairNum(sparePartStock.getOutsourceRepairNum() + partInOrder.getOutsourceRepairNum());
+            }else if (partInOrder.getOutsourceRepairNum() != null){
+                sparePartStock.setOutsourceRepairNum(partInOrder.getOutsourceRepairNum());
+            }
+
             sparePartStockMapper.updateById(sparePartStock);
         }else{
             SparePartStock stock = new SparePartStock();
             stock.setMaterialCode(partInOrder.getMaterialCode());
             stock.setNum(partInOrder.getNum());
+            stock.setNewNum(partInOrder.getNewNum());
+            stock.setUsedNum(partInOrder.getUsedNum());
+            stock.setScrapNum(partInOrder.getScrapNum());
+            stock.setOutsourceRepairNum(partInOrder.getOutsourceRepairNum());
             stock.setWarehouseCode(partInOrder.getWarehouseCode());
             //存仓库组织机构的关联班组
             String orgCode = sysBaseApi.getDepartByWarehouseCode(partInOrder.getWarehouseCode());
