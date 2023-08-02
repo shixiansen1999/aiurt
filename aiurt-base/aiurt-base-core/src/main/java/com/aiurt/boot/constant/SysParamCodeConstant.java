@@ -460,4 +460,9 @@ public interface SysParamCodeConstant {
      * 获取施工计划登录门户url
      */
     String CONSTRUCTION_URL="construction_url";
+
+    /**
+     * 备件管理是否启用全新数量、已使用数量、待报废数量、委外送修数量
+     */
+    String SPARE_PART_EXTRA_NUM = "spare_part_extra_num";
 }
