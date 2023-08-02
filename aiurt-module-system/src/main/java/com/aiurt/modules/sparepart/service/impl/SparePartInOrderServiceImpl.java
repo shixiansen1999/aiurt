@@ -9,6 +9,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.modules.material.entity.MaterialBase;
@@ -37,10 +38,8 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserDepartModel;
-import org.jeecg.common.system.vo.DictModel;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.*;
 import org.jeecg.common.util.SpringContextUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +80,8 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
     private String upLoadPath;
     @Autowired
     private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private ISysParamAPI sysParamApi;
     @Autowired
     private IMaterialBaseService materialBaseService;
     @Autowired
@@ -180,11 +181,20 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
 
     @Override
     public void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        // 根据配置来获取模板文件的地址
+        String filePath;
+        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.SPARE_PART_EXTRA_NUM);
+        if ("1".equals(sysParamModel.getValue())){
+            filePath = "/templates/sparePartInOrderTemplateSignal.xlsx";
+        }else{
+            filePath = "/templates/sparePartInOrderTemplate.xlsx";
+        }
+
         //获取输入流，原始模板位置
-        Resource resource = new ClassPathResource("/templates/sparePartInOrderTemplate.xlsx");
+        Resource resource = new ClassPathResource(filePath);
         InputStream resourceAsStream = resource.getInputStream();
         //2.获取临时文件
-        File fileTemp = new File("/templates/sparePartInOrderTemplate.xlsx");
+        File fileTemp = new File(filePath);
         try {
             //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
             FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
