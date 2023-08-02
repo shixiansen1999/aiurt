@@ -120,6 +120,8 @@ public interface FlowModelAttConstant {
 
     String FLOW_RELATION = "flowRelation";
 
+    String  TRANSFER_TYPE= "transferType";
+
     String NAME = "name";
 
     String CODE = "code";
