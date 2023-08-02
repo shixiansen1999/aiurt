@@ -7,6 +7,7 @@ import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
@@ -389,6 +390,10 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         String materialCode = sparePartInOrderImportExcelDTO.getMaterialCode();
         String name = sparePartInOrderImportExcelDTO.getName();
         String num = sparePartInOrderImportExcelDTO.getNum();
+        String newNum = sparePartInOrderImportExcelDTO.getNewNum();
+        String usedNum = sparePartInOrderImportExcelDTO.getUsedNum();
+        String scrapNum = sparePartInOrderImportExcelDTO.getScrapNum();
+        String outsourceRepairNum = sparePartInOrderImportExcelDTO.getOutsourceRepairNum();
 
         // 专业和子系统是否在系统中存在
         if (ObjectUtil.isNotEmpty(majorName)) {
@@ -496,6 +501,37 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
             errorMessage.append("入库数量必须填写，");
         }
 
+        // 从实施配置中看是否需要验证全新数量、已使用数量、待报废数量、委外送修数量
+        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.SPARE_PART_EXTRA_NUM);
+        if ("1".equals(sysParamModel.getValue())){
+            // 入库数量，用来判断是否全新数量+已使用数量=入库数量
+            boolean numIsNum = StrUtil.isNotEmpty(num) && NumberUtil.isInteger(num);
+            // 全新数量
+            boolean newNumIsNum = StrUtil.isNotEmpty(newNum) && NumberUtil.isInteger(newNum);
+            // 已使用数量
+            boolean usedNumIsNum = StrUtil.isNotEmpty(usedNum) && NumberUtil.isInteger(usedNum);
+            // 待报废数量
+            boolean scrapNumIsNum = StrUtil.isNotEmpty(scrapNum) && NumberUtil.isInteger(scrapNum);
+            // 委外送修数量
+            boolean outsourceRepairNumIsNum = StrUtil.isNotEmpty(outsourceRepairNum) && NumberUtil.isInteger(outsourceRepairNum);
+
+            if (!newNumIsNum){
+                errorMessage.append("全新数量要必填且为数字，");
+            }
+            if (!usedNumIsNum){
+                errorMessage.append("已使用数量要必填且为数字，");
+            }
+            if (!scrapNumIsNum){
+                errorMessage.append("待报废数量要必填且为数字，");
+            }
+            if (!outsourceRepairNumIsNum){
+                errorMessage.append("委外送修数量要必填且为数字，");
+            }
+            if (numIsNum && newNumIsNum && usedNumIsNum && (Integer.parseInt(newNum) + Integer.parseInt(usedNum) != Integer.parseInt(num))){
+                errorMessage.append("全新数量+已使用数量应当等于入库数量，");
+            }
+        }
+
     }
 
 
@@ -523,12 +559,21 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
     }
 
     private Result<?> getErrorExcel(int errorLines,int successLines, List<SparePartInOrderImportExcelDTO> list, String url, String type) throws IOException {
+        // 根据配置来获取错误模板文件的地址
+        String errorFilePath;
+        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.SPARE_PART_EXTRA_NUM);
+        if ("1".equals(sysParamModel.getValue())){
+            errorFilePath = "/templates/sparePartInOrderErrorSignal.xlsx";
+        }else{
+            errorFilePath = "/templates/sparePartInOrderError.xlsx";
+        }
+
         //创建导入失败错误报告,进行模板导出
-        org.springframework.core.io.Resource resource = new ClassPathResource("/templates/sparePartInOrderError.xlsx");
+        org.springframework.core.io.Resource resource = new ClassPathResource(errorFilePath);
         InputStream resourceAsStream = resource.getInputStream();
 
         //2.获取临时文件
-        File fileTemp = new File("/templates/sparePartInOrderError.xlsx");
+        File fileTemp = new File(errorFilePath);
         try {
             //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
             FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
@@ -575,6 +620,10 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
             lm.put("materialCode", sparePartInOrderImportExcelDTO.getMaterialCode());
             lm.put("name", sparePartInOrderImportExcelDTO.getName());
             lm.put("num", sparePartInOrderImportExcelDTO.getNum());
+            lm.put("newNum", sparePartInOrderImportExcelDTO.getNewNum());
+            lm.put("usedNum", sparePartInOrderImportExcelDTO.getUsedNum());
+            lm.put("scrapNum", sparePartInOrderImportExcelDTO.getScrapNum());
+            lm.put("outsourceRepairNum", sparePartInOrderImportExcelDTO.getOutsourceRepairNum());
             lm.put("errorReason", sparePartInOrderImportExcelDTO.getErrorReason());
             listMap.add(lm);
         }
