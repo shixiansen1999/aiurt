@@ -48,7 +48,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
     /**
      * 多人审批规则
      */
-    public static final String USER_TYPE = "userType";
+    public static final String MULTI_APPROVAL_RULE = "multiApprovalRule";
 
     /**
      * 候选用户
@@ -114,7 +114,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             }
 
             // 多人审批规则
-            List<ExtensionElement> userTypeElements = extensionElements.get(USER_TYPE);
+            List<ExtensionElement> userTypeElements = extensionElements.get(MULTI_APPROVAL_RULE);
             if (CollUtil.isNotEmpty(userTypeElements)) {
                 ExtensionElement extensionElement = userTypeElements.get(0);
 
@@ -124,7 +124,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                     objectNode.put(field.getName(), extensionElement.getAttributeValue(null, field.getName()));
                 });
 
-                propertiesNode.set(USER_TYPE, objectNode);
+                propertiesNode.set(MULTI_APPROVAL_RULE, objectNode);
             }
 
             // 选人将 flowable:userassignee 属性转换为 JSON 格式
@@ -178,7 +178,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             // 自定义属性:操作按钮
             addExtensionElementToUserTask(userTask, FORM_OPERATION, JsonConverterUtil.getProperty(FORM_OPERATION, elementNode));
             // 多人审批规则
-            addExtensionElementToUserTask(userTask, USER_TYPE, JsonConverterUtil.getProperty(USER_TYPE, elementNode));
+            addExtensionElementToUserTask(userTask, MULTI_APPROVAL_RULE, JsonConverterUtil.getProperty(MULTI_APPROVAL_RULE, elementNode));
             // 选人
             addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_USER_ASSIGNEE,
                     JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_USER_ASSIGNEE, elementNode));
