@@ -997,7 +997,7 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
                  */
                 String weChatUserName = null;
 
-                String URL = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserid?access_token="+accessToken;
+                String URL = "https://home.ccqgqywx.com:10443/cgi-bin/user/getuserid?access_token="+accessToken;
                 HttpRequest httpRequest = HttpUtil.createGet(URL);
                 String body = "{\"mobile\":"+user.getPhone()+"}";
                 httpRequest.body(body);
