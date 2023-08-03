@@ -547,16 +547,28 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
 
             if (!newNumIsNum){
                 errorMessage.append("全新数量要必填且为数字，");
+            }else {
+                sparePartInOrder.setNewNum(Integer.valueOf(newNum));
             }
+
             if (!usedNumIsNum){
                 errorMessage.append("已使用数量要必填且为数字，");
+            }else{
+                sparePartInOrder.setUsedNum(Integer.valueOf(usedNum));
             }
+
             if (!scrapNumIsNum){
                 errorMessage.append("待报废数量要必填且为数字，");
+            }else{
+                sparePartInOrder.setScrapNum(Integer.valueOf(scrapNum));
             }
+
             if (!outsourceRepairNumIsNum){
                 errorMessage.append("委外送修数量要必填且为数字，");
+            }else {
+                sparePartInOrder.setOutsourceRepairNum(Integer.valueOf(outsourceRepairNum));
             }
+
             if (numIsNum && newNumIsNum && usedNumIsNum && (Integer.parseInt(newNum) + Integer.parseInt(usedNum) != Integer.parseInt(num))){
                 errorMessage.append("全新数量+已使用数量应当等于入库数量，");
             }
