@@ -34,4 +34,9 @@ public interface FlowModelExtElementConstant {
      * 抄送人标签
      */
     String EXT_CARBON_COPY = "carboncopy";
+
+    /**
+     * 自动选人
+     */
+    String EXT_AUTO_SELECT = "autoselect";
 }
