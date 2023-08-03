@@ -6,6 +6,7 @@ import com.aiurt.modules.common.constant.FlowModelAttConstant;
 import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.aiurt.modules.modeler.entity.ActUserTypeEntity;
+import com.aiurt.modules.modeler.entity.AutoSelectEntity;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -134,6 +135,20 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             // 抄送人
             List<ExtensionElement> carbonCopyElements = extensionElements.get(FlowModelExtElementConstant.EXT_CARBON_COPY);
             buildJsonElement(propertiesNode, carbonCopyElements, FlowModelExtElementConstant.EXT_CARBON_COPY);
+
+            // 自动选人
+            List<ExtensionElement> autoSelectElements = extensionElements.get(FlowModelExtElementConstant.EXT_AUTO_SELECT);
+            if (CollUtil.isNotEmpty(autoSelectElements)) {
+                ExtensionElement extensionElement = userTypeElements.get(0);
+
+                ObjectNode objectNode = super.objectMapper.createObjectNode();
+                Field[] fields = AutoSelectEntity.class.getDeclaredFields();
+                Arrays.stream(fields).filter(field -> !StrUtil.equalsAnyIgnoreCase(SERIAL_VERSION_UID, field.getName())).forEach(field -> {
+                    objectNode.put(field.getName(), extensionElement.getAttributeValue(null, field.getName()));
+                });
+
+                propertiesNode.set(FlowModelExtElementConstant.EXT_AUTO_SELECT, objectNode);
+            }
         }
     }
 
