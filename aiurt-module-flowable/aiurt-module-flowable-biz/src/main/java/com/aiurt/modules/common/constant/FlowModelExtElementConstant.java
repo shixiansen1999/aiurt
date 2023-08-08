@@ -39,4 +39,9 @@ public interface FlowModelExtElementConstant {
      * 自动选人
      */
     String EXT_AUTO_SELECT = "autoselect";
+
+    /**
+     * 多人审批规则
+     */
+    String EXT_MULTI_APPROVAL_RULE = "multiApprovalRule";
 }

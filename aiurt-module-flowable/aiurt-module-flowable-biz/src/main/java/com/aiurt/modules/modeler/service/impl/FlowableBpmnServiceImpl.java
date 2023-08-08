@@ -344,22 +344,14 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                 if (element instanceof UserTask) {
                     this.buildUserTaskExt((UserTask) element, taskExtList, userList);
                 }else if (element instanceof SequenceFlow) {
-                    ActCustomTaskExt flowTaskExt = this.buildTaskExt((SequenceFlow) element);
+                    // ActCustomTaskExt flowTaskExt = this.buildTaskExt((SequenceFlow) element);
                 }
             }
         }
 
     }
 
-    private ActCustomTaskExt buildTaskExt(SequenceFlow element) {
-        ActCustomTaskExt taskExt = new ActCustomTaskExt();
-        String id = element.getId();
 
-        String conditionExpression = element.getConditionExpression();
-        taskExt.setTaskId(id);
-        taskExt.setConditionExpression(conditionExpression);
-        return taskExt;
-    }
 
     /**
      * 构建属性
@@ -408,9 +400,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
             }
         }
 
-        if (variable.size() > 0) {
-            flowTaskExt.setVariableListJson(variable.toJSONString());
-        }
+
         if (form.size() > 0) {
             flowTaskExt.setFormJson(form.toJSONString());
         }
@@ -421,8 +411,26 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
             List<JSONObject> operationList = this.buildOperationListExtensionElement(extensionMap);
             Optional.ofNullable(operationList).ifPresent(list -> flowTaskExt.setOperationListJson(JSON.toJSONString(list)));
 
+            // 办理规则
+            List<ExtensionElement> userTypeElements = extensionMap.get(FlowModelExtElementConstant.EXT_MULTI_APPROVAL_RULE);
+            if (CollUtil.isNotEmpty(userTypeElements)) {
+                ExtensionElement extensionElement = userTypeElements.get(0);
+                String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_USER_VALUE);
+                flowTaskExt.setUserType(attributeValue);
+            }
+
+            // 是否自动选人
+            List<ExtensionElement> autoSelectElements = extensionMap.get(FlowModelExtElementConstant.EXT_AUTO_SELECT);
+            if (CollUtil.isNotEmpty(autoSelectElements)) {
+                ExtensionElement extensionElement = autoSelectElements.get(0);
+                String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_USER_VALUE);
+                // 需要转换
+                flowTaskExt.setIsAutoSelect(attributeValue);
+            }
+
             // 办理人
             addUser(userTask,extensionMap, userList, FlowModelExtElementConstant.EXT_USER_ASSIGNEE, "0");
+
             // 抄送人
             addUser(userTask, extensionMap, userList, FlowModelExtElementConstant.EXT_CARBON_COPY, "1");
         }
