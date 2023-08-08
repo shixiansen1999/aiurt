@@ -3400,7 +3400,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             excelDictModel = sysBaseApi.dictById(inspectionCode.getPrintTemplate());
             excelName = excelDictModel.getValue();
         }else {
-            excelName = "telephone_system.xlsx";
+            excelName = "equipment.xlsx";
         }
         // 模板文件路径
         String templateFileName = "patrol" +"/" + "template" + "/" + excelName;
@@ -3431,7 +3431,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.FALSE).build();
             FillConfig fillConfig = FillConfig.builder().direction(WriteDirectionEnum.HORIZONTAL).build();
             //填充列表数据
-            excelWriter = fillData(id, excelName, excelWriter, writeSheet,headerMap,filePath,code,fillConfig);
+            excelWriter = fillData(id, excelName, excelWriter, writeSheet,headerMap,filePath,deviceId,fillConfig);
             //填充表头
             excelWriter.fill(headerMap, writeSheet);
             //填充图片
@@ -3454,8 +3454,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     private ExcelWriter fillData(String id, String excelName, ExcelWriter excelWriter, WriteSheet writeSheet, Map<String, Object> headerMap, String filePath, String deviceId, FillConfig fillConfig) {
-        List<String> patrolData = new ArrayList<>();
-        if ("equipment.xlsx".equals(excelName)){
+        List<PrintDataDTO> patrolData = new ArrayList<>();
+        if ("equipment.xlsx".equals(excelName)||"platformDoors.xlsx".equals(excelName)){
             patrolData = getEquipment(headerMap,deviceId);
             //填充列表数据
             excelWriter.fill(new FillWrapper("list",patrolData),fillConfig,writeSheet);
@@ -3463,18 +3463,21 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         return excelWriter;
     }
 
-    private List<String> getEquipment(Map<String, Object> headerMap, String deviceId) {
-        List<String> equipmentList= new ArrayList<>();
+    private List<PrintDataDTO> getEquipment(Map<String, Object> headerMap, String deviceId) {
+        List<PrintDataDTO> equipmentList= new ArrayList<>();
         List<RepairTaskResult> resultList = repairTaskMapper.selectSingle(deviceId, null);
         //过滤出为检查项的数据
         List<RepairTaskResult> checkDTOs = resultList.stream().filter(c -> c.getType() != 0).collect(Collectors.toList());
         AtomicInteger i = new AtomicInteger(1);
         StringBuilder text  = new StringBuilder();
         checkDTOs.forEach(r->{
+            PrintDataDTO printDataDTO = new PrintDataDTO();
              if (1==r.getStatus()){
-                 equipmentList.add("√");
+                 printDataDTO.setData("√");
+                 equipmentList.add(printDataDTO);
              }else {
-                 equipmentList.add("");
+                 printDataDTO.setData("");
+                 equipmentList.add(printDataDTO);
                  text.append(i).append(".").append(r.getUnNote()).append("\n");
                  i.getAndIncrement();
              }
@@ -3523,7 +3526,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         Map<String, Object> map = MapUtils.newHashMap();
         map.put("siteName", repairTask.getSiteName());
         map.put("startTime", DateUtil.format(repairTask.getStartTime(),"yyyy-MM-dd HH:mm"));
-        map.put("startOverhaulTime(", DateUtil.format(repairTask.getStartOverhaulTime(),"yyyy-MM-dd HH:mm"));
+        map.put("startOverhaulTime", DateUtil.format(repairTask.getStartOverhaulTime(),"yyyy-MM-dd HH:mm"));
         map.put("peerName", repairTask.getPeerName());
         map.put("overhaulName", repairTask.getOverhaulName());
         return map;
