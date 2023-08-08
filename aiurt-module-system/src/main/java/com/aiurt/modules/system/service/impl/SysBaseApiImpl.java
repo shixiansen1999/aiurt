@@ -1121,6 +1121,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         for (SysUser user : sysUsers) {
             LoginUser loginUser = new LoginUser();
             BeanUtils.copyProperties(user, loginUser);
+            // 封装部门、角色、岗位
             loginUsers.add(loginUser);
         }
         return loginUsers;

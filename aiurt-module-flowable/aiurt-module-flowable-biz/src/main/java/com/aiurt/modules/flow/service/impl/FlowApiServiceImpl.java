@@ -31,6 +31,8 @@ import com.aiurt.modules.online.businessdata.entity.ActCustomBusinessData;
 import com.aiurt.modules.online.businessdata.service.IActCustomBusinessDataService;
 import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.aiurt.modules.online.page.service.IActCustomPageService;
+import com.aiurt.modules.user.entity.ActCustomUser;
+import com.aiurt.modules.user.service.IActCustomUserService;
 import com.aiurt.modules.user.service.IFlowUserService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -133,6 +135,9 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Autowired
     @Lazy
     private ISTodoBaseAPI todoBaseApi;
+
+    @Autowired
+    private IActCustomUserService actCustomUserService;
     /**
      * @param startBpmnDTO
      * @return
@@ -1883,6 +1888,77 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         taskInfoDTO.setBusData(actCustomBusinessData.getData());
         return taskInfoDTO;
+    }
+
+    @Override
+    public List<ProcessParticipantsInfoDTO> getProcessParticipantsInfo(String processInstanceId, String taskId) {
+        List<ProcessParticipantsInfoDTO> result = CollUtil.newArrayList();
+        Task task = this.getProcessInstanceActiveTask(processInstanceId, taskId);
+        if (task == null) {
+            throw new AiurtBootException("数据验证失败，请核对指定的任务Id，请刷新后重试！");
+        }
+
+        Execution execution = runtimeService.createExecutionQuery()
+                .processInstanceId(processInstanceId)
+                .singleResult();
+        String taskDefinitionKey = task.getTaskDefinitionKey();
+        String processDefinitionId = task.getProcessDefinitionId();
+
+        FlowElement flowElement = flowElementUtil.getTargetFlowElement(execution, flowElementUtil.getFlowElement(processDefinitionId, taskDefinitionKey));
+        // 假设 flowElement 是 FlowElement 对象
+        if (flowElement instanceof UserTask) {
+            UserTask userTask = (UserTask) flowElement;
+
+            // 获取任务 ID
+            String nextTaskId = userTask.getId();
+            ActCustomUser customUserByTaskInfo = actCustomUserService.getActCustomUserByTaskInfo(processDefinitionId, nextTaskId, FlowConstant.USER_TYPE_0);
+            if (ObjectUtil.isEmpty(customUserByTaskInfo)) {
+                return CollUtil.newArrayList();
+            }
+
+            String[] userNames = StrUtil.split(customUserByTaskInfo.getUserName(), ",");
+            List<String> roleCodes = StrUtil.split(customUserByTaskInfo.getRoleCode(), ',');
+            List<String> orgIds = StrUtil.split(customUserByTaskInfo.getOrgId(), ',');
+            List<String> posts = StrUtil.split(customUserByTaskInfo.getPost(), ',');
+
+            if (ObjectUtil.isEmpty(userNames) && CollUtil.isEmpty(roleCodes) && CollUtil.isEmpty(orgIds) && CollUtil.isEmpty(posts)) {
+                return CollUtil.newArrayList();
+            }
+
+            // 用户维度
+            List<LoginUser> loginUsers = sysBaseAPI.queryUserByNames(userNames);
+            if(CollUtil.isNotEmpty(loginUsers)){
+                ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
+                processParticipantsInfoDTO.setTitle("用户");
+
+                List<ProcessParticipantsInfoDetailsDTO> data = CollUtil.newArrayList();
+                for (LoginUser loginUser : loginUsers) {
+                    ProcessParticipantsInfoDetailsDTO processParticipantsInfoDetailsDTO = new ProcessParticipantsInfoDetailsDTO();
+                    processParticipantsInfoDetailsDTO.setId(loginUser.getId());
+                    processParticipantsInfoDetailsDTO.setKey(loginUser.getId());
+                    processParticipantsInfoDetailsDTO.setLabel(loginUser.getRealname());
+                    processParticipantsInfoDetailsDTO.setValue(loginUser.getUsername());
+                    processParticipantsInfoDetailsDTO.setAvatar(loginUser.getAvatar());
+                    processParticipantsInfoDetailsDTO.setOrgName(loginUser.getOrgName());
+                    processParticipantsInfoDetailsDTO.setPostName(loginUser.getPost());
+                    processParticipantsInfoDetailsDTO.setRoleName(loginUser.getRoleNames());
+                    data.add(processParticipantsInfoDetailsDTO);
+                }
+                if(CollUtil.isNotEmpty(data)){
+                    processParticipantsInfoDTO.setData(data);
+                }
+
+                result.add(processParticipantsInfoDTO);
+            }
+
+            // 部门维度
+            // 1.查询部门
+            // 2.一个个查询部门下的人员
+            // 角色维度
+            // 岗位维度
+
+        }
+        return null;
     }
 
     private List<FlowElement> getChildUserTaskList(

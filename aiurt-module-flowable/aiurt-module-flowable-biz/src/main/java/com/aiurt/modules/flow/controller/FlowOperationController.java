@@ -350,5 +350,24 @@ public class FlowOperationController {
         return Result.OK(taskInfoVo);
     }
 
+    /**
+     * 获取办理时选人维度列表。
+     *
+     * @param processInstanceId 流程引擎的实例Id。
+     * @param taskId            任务Id。
+     * @return
+     */
+    @GetMapping("/getProcessParticipantsInfo")
+    @ApiOperation(value = "获取办理时选人维度列表", notes = "获取办理时选人维度列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "processInstanceId", value = "流程实例id", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "taskId", value = "流程任务id", required = true, paramType = "query")
+    })
+    public Result<List<ProcessParticipantsInfoDTO>> getProcessParticipantsInfo(@RequestParam(value = "processInstanceId") String processInstanceId,
+                                                                               @RequestParam(value = "taskId") String taskId) {
+        List<ProcessParticipantsInfoDTO> result = flowApiService.getProcessParticipantsInfo(processInstanceId,taskId);
+        return Result.OK(result);
+    }
+
 
 }
