@@ -728,7 +728,7 @@ public class LoginController {
 		String accessToken = enterpriseService.getAccessToken();
 		log.info("请求参数：code->{}, accessToken->{}", code, accessToken);
 		// 该接口用于根据code获取成员信息，适用于自建应用与代开发应用
-		String url = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token="+accessToken+"&code="+code;
+		String url = "https://home.ccqgqywx.com:10443/cgi-bin/user/getuserinfo?access_token="+accessToken+"&code="+code;
 		Map userinfoResult  =  RestUtil.get(url);
 		// 请请求结果{"errcode": 0,"errmsg": "ok","userid":"USERID","user_ticket": "USER_TICKET"}
 
@@ -746,7 +746,7 @@ public class LoginController {
 		}
 
 		// 获取访问用户敏感信息接口
-	    String userDetailUrl ="https://qyapi.weixin.qq.com/cgi-bin/auth/getuserdetail?access_token="+accessToken+"&userid="+userId;
+	    String userDetailUrl ="https://home.ccqgqywx.com:10443/cgi-bin/auth/getuserdetail?access_token="+accessToken+"&userid="+userId;
 		// 请求参数
 		JSONObject params = new JSONObject();
 		params.put("user_ticket", userTicket);
@@ -818,7 +818,7 @@ public class LoginController {
 		String accessToken = enterpriseService.getAccessToken();
 		String ticket =(String)redisUtil.get("ticket");
 		if (ObjectUtil.isEmpty(ticket)){
-			Map response1 = RestUtil.get("https://qyapi.weixin.qq.com/cgi-bin/get_jsapi_ticket?access_token="+accessToken);
+			Map response1 = RestUtil.get("https://home.ccqgqywx.com:10443/cgi-bin/get_jsapi_ticket?access_token="+accessToken);
 			log.info("请求结果:->{}", JSONObject.toJSONString(response1));
 			String ticket1 = (String)response1.get("ticket");
 			Integer expiresIn = (Integer) response1.get("expires_in");

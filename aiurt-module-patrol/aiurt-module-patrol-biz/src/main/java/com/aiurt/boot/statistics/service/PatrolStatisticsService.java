@@ -259,8 +259,8 @@ public class PatrolStatisticsService {
     public IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, PatrolCondition patrolCondition, HttpServletRequest request) {
         Integer omitStatus = patrolCondition.getOmitStatus();
         if (ObjectUtil.isNotEmpty(omitStatus) && PatrolConstant.OMIT_STATUS.equals(omitStatus)) {
-            Date startDate = this.getOmitDateScope(patrolCondition.getStartDate()).stream().min(Comparator.comparingLong(Date::getTime)).get();
-            Date endDate = this.getOmitDateScope(patrolCondition.getEndDate()).stream().max(Comparator.comparingLong(Date::getTime)).get();
+            Date startDate = this.getOmitDateScope(new Date()).stream().min(Comparator.comparingLong(Date::getTime)).get();
+            Date endDate = this.getOmitDateScope(new Date()).stream().max(Comparator.comparingLong(Date::getTime)).get();
             patrolCondition.setStartDate(startDate);
             patrolCondition.setEndDate(endDate);
         } else {
