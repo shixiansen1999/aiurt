@@ -82,7 +82,6 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -305,6 +304,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 
 		List<String> errorMessage = new ArrayList<>();
 		int successLines = 0;
+		int total = 0;
 		String url = null;
 		// 错误信息
 		int  errorLines = 0;
@@ -343,7 +343,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 					if (ObjectUtil.isNotEmpty(deviceModel)) {
 						StringBuilder stringBuilder = new StringBuilder();
 						//基础信息数据校验
-						baseMassageCheck(deviceModel, device, stringBuilder);
+						baseMassageCheck(list,deviceModel, device, stringBuilder);
 
 						//详细信息数据校验
 						detailMassageCheck(deviceModel, device, stringBuilder);
@@ -365,19 +365,17 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 							stringBuilder.append("数据库已存在该数据,");
 						}
 						//组件数据校验
-						AtomicInteger atomicInteger =new AtomicInteger(0);
-						atomicInteger.set(errorLines);
-						List<DeviceAssemblyModel> deviceAssemblyModels = deviceAssemblyCheck(deviceModel,atomicInteger);
-
+						List<DeviceAssemblyModel> deviceAssemblyModels = deviceAssemblyCheck(deviceModel,errorLines);
+						errorLines = deviceModel.getErrorLines();
 						if (stringBuilder.length() > 0) {
 							// 截取字符
 							stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 							deviceModel.setDeviceMistake(stringBuilder.toString());
 							errorLines++;
 						}
-						errorLines = errorLines +atomicInteger.get();
 						List<DeviceAssembly> deviceAssemblies = new ArrayList<>();
 						if (CollUtil.isNotEmpty(deviceAssemblyModels)) {
+							total = total+deviceAssemblyModels.size();
 							//有组件
 							for (DeviceAssemblyModel deviceAssemblyModel : deviceAssemblyModels) {
 								if (errorLines > 0) {
@@ -397,6 +395,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 								}
 							}
 						}else {
+							total++;
 							//没有组件
 							if (errorLines > 0) {
 								//生成错误信息
@@ -416,7 +415,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				}
 				if (errorLines > 0) {
 					//错误报告下载
-					return getErrorExcel(errorLines,list,deviceAssemblyErrorModels,errorMessage,successLines,url, type);
+					return getErrorExcel(errorLines,list,deviceAssemblyErrorModels,errorMessage,total-errorLines,url, type);
 				}
 
 				for (Device device : deviceList) {
@@ -565,7 +564,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		}
 	}
 
-	private void baseMassageCheck(DeviceModel deviceModel,Device device,StringBuilder stringBuilder) {
+	private void baseMassageCheck(List<DeviceModel> list,DeviceModel deviceModel,Device device,StringBuilder stringBuilder) {
 		String majorCodeName = deviceModel.getMajorCodeName();
 		String systemCodeName = deviceModel.getSystemCodeName();
 		String deviceTypeCodeName = deviceModel.getDeviceTypeCodeName();
@@ -583,7 +582,9 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				device.setMajorCode(major.getMajorCode());
 
 				LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
-				wrapper.eq(CsSubsystem::getSystemName, systemCodeName).eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
+				wrapper.eq(CsSubsystem::getSystemName, systemCodeName)
+						.eq(CsSubsystem::getMajorCode, major.getMajorCode())
+						.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
 				CsSubsystem subsystem = csSubsystemService.getOne(wrapper);
 				if (ObjectUtil.isNotEmpty(subsystem)) {
 					device.setSystemCode(subsystem.getSystemCode());
@@ -635,7 +636,16 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				stringBuilder.append("系统不存在该设备状态，");
 
 			}
-
+			//文件中
+			List<DeviceModel> fileList = list.stream().filter(e -> e.getCode().equals(code)&&!e.equals(deviceModel)).collect(Collectors.toList());
+			if(CollUtil.isNotEmpty(fileList)){
+				stringBuilder.append("文件中存在相同的设备编号，");
+			}
+			//数据库中
+			boolean exist = deviceMapper.exists(new LambdaQueryWrapper<Device>().eq(Device::getCode, code));
+			if(exist){
+				stringBuilder.append("系统已存在该设备编号，");
+			}
 		} else {
 			stringBuilder.append("所属专业，子系统，设备类型，设备编号，设备名称，设备状态不能为空，");
 		}
@@ -660,9 +670,11 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		}else {
 			stringBuilder.append("设备位置不能为空，");
 		}
-		if (StrUtil.isNotEmpty(stationCodeName)) {
+		if (StrUtil.isNotEmpty(stationCodeName) && StrUtil.isNotEmpty(device.getLineCode())) {
 			LambdaQueryWrapper<CsStation> csStationWrapper = new LambdaQueryWrapper<>();
-			csStationWrapper.eq(CsStation::getStationName, stationCodeName).eq(CsStation::getDelFlag, 0);
+			csStationWrapper.eq(CsStation::getStationName, stationCodeName)
+					.eq(CsStation::getLineCode, device.getLineCode())
+					.eq(CsStation::getDelFlag, 0);
 			CsStation one = csStationService.getOne(csStationWrapper);
 			if (ObjectUtil.isEmpty(one)) {
 				stringBuilder.append("系统不存在该站点，");
@@ -670,7 +682,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				device.setStationCode(one.getStationCode());
 			}
 		}
-		if (StrUtil.isNotEmpty(positionCodeName)) {
+		if (StrUtil.isNotEmpty(positionCodeName)&& StrUtil.isNotEmpty(device.getStationCode())) {
 			LambdaQueryWrapper<CsStationPosition> positionWrapper = new LambdaQueryWrapper<>();
 			positionWrapper.eq(CsStationPosition::getPositionName, positionCodeName).eq(CsStationPosition::getDelFlag, 0);
 			positionWrapper.eq(CsStationPosition::getLineCode, device.getLineCode()).eq(CsStationPosition::getStaionCode, device.getStationCode());
@@ -856,7 +868,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		return XlsUtil.importReturnRes(errorLines, successLines, errorMessage,true,url);
 	}
 
-	private List<DeviceAssemblyModel> deviceAssemblyCheck(DeviceModel deviceModel,AtomicInteger atomicInteger) {
+	private List<DeviceAssemblyModel> deviceAssemblyCheck(DeviceModel deviceModel, int errorLines) {
 		List<DeviceAssemblyModel> deviceAssemblyList = deviceModel.getDeviceAssemblyModelList();
 		Iterator<DeviceAssemblyModel> iterator = deviceAssemblyList.iterator();
 		while (iterator.hasNext()) {
@@ -866,7 +878,6 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 				iterator.remove();
 			}
 		}
-		Integer errorNumber = 0;
 		if (CollUtil.isNotEmpty(deviceAssemblyList)) {
 			Map<Object, Integer> duplicateData = new HashMap<>();
 			int i = 0;
@@ -922,13 +933,13 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 					// 截取字符
 					stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 					deviceAssembly.setMistake(stringBuilder.toString());
-					errorNumber++;
+					errorLines++;
 				}
 				deviceAssembly.setDeviceCode(deviceModel.getCode());
 				i++;
 			}
-			atomicInteger.set(errorNumber);
 		}
+		deviceModel.setErrorLines(errorLines);
 		return deviceAssemblyList;
 	}
 	/**

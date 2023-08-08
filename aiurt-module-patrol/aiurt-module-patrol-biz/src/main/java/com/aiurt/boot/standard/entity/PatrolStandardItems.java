@@ -84,7 +84,7 @@ public class PatrolStandardItems implements Serializable {
     private java.lang.String parentId;
 	/**数据填写类型：1开关项(即二选一)、2选择项、3输入项*/
     @TableField(updateStrategy = FieldStrategy.IGNORED)
-    @ApiModelProperty(value = "数据填写类型：1开关项(即二选一)、2选择项、3输入项")
+    @ApiModelProperty(value = "数据填写类型：1开关项(即二选一)、2选择项、3输入项、4特殊字符输入")
     private java.lang.Integer inputType;
     /**数据填写类型：1开关项(即二选一)、2选择项、3输入项*/
 	@Excel(name = "检查值类型", width = 15)
@@ -105,8 +105,8 @@ public class PatrolStandardItems implements Serializable {
     @ApiModelProperty(value = "数据校验表达式")
     private java.lang.String regular;
     /**特殊字符*/
-    @Excel(name = "特殊字符", width = 15)
-    @ApiModelProperty(value = "特殊字符")
+    @Excel(name = "检查值", width = 15)
+    @ApiModelProperty(value = "检查值")
     private java.lang.String specialCharacters;
     /**检查值是否必填：0否、1是*/
     @ApiModelProperty(value = "检查值是否必填：0否、1是")
