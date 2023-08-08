@@ -136,7 +136,8 @@ public class InspectionCode extends DictEntity implements Serializable {
     @ApiModelProperty(value = "是否指定设备")
     @TableField(exist = false)
     private java.lang.String specifyDevice;
-
+    @ApiModelProperty(value = "打印模板文件名称(来源字典值)")
+    private java.lang.String printTemplate;
     @ExcelCollection(name = "配置项")
     @ApiModelProperty(value = "配置项")
     @TableField(exist = false)

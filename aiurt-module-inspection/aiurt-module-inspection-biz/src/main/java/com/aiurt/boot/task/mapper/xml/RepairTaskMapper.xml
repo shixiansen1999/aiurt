@@ -180,6 +180,7 @@
         t2.duration as duration,
         t3.major_code as majorCode,
         t3.subsystem_code as systemCode,
+        t3.code ,
         t3.device_type_code as deviceTypeCode,
         t2.device_code as equipmentCode,
         t2.submit_time as submitTime,
