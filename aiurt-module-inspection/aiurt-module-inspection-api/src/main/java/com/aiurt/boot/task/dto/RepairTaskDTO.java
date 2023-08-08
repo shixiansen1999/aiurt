@@ -61,6 +61,9 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "检修任务单状态")
     private String taskStatus;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修任务code")
+    private String code;
     /** 检修任务状态名称*/
     @TableField(exist = false)
     @ApiModelProperty(value = "检修任务单状态名称")

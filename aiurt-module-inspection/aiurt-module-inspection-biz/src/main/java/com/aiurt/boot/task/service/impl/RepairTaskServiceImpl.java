@@ -23,6 +23,9 @@ import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.plan.service.IRepairPoolService;
+import com.aiurt.boot.standard.entity.InspectionCode;
+import com.aiurt.boot.standard.mapper.InspectionCodeMapper;
+import com.aiurt.boot.task.CustomCellMergeHandler;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
@@ -36,12 +39,18 @@ import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtNoDataException;
 import com.aiurt.common.result.SpareResult;
-import com.aiurt.common.util.ArchiveUtils;
-import com.aiurt.common.util.DateUtils;
-import com.aiurt.common.util.PdfUtil;
-import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.common.util.*;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
+import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.todo.dto.TodoDTO;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.enums.WriteDirectionEnum;
+import com.alibaba.excel.metadata.data.WriteCellData;
+import com.alibaba.excel.util.MapUtils;
+import com.alibaba.excel.write.metadata.WriteSheet;
+import com.alibaba.excel.write.metadata.fill.FillConfig;
+import com.alibaba.excel.write.metadata.fill.FillWrapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
@@ -50,7 +59,10 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -59,6 +71,7 @@ import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.system.vo.SysParamModel;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,6 +84,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -82,8 +96,10 @@ import java.util.stream.Collectors;
  * @Version: V1.0
  */
 @Service
+@Slf4j
 public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairTask> implements IRepairTaskService, InspectionApi {
-
+    @Value("${jeecg.path.upload:/opt/upFiles}")
+    private String path;
     @Autowired
     private RepairTaskMapper repairTaskMapper;
     @Autowired
@@ -106,6 +122,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     private RepairPoolMapper repairPoolMapper;
     @Autowired
     private RepairTaskEnclosureMapper repairTaskEnclosureMapper;
+    @Autowired
+    private InspectionCodeMapper inspectionCodeMapper;
     @Resource
     private ISysBaseAPI sysBaseApi;
     @Resource
@@ -3368,6 +3386,181 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         return taskSignUserDTOList;
     }
 
+    @Override
+    public String printTask(String id, String code, String deviceId) {
+        Page<RepairTask> pageList = new Page<>(1, 10);
+        RepairTask patrolTask = new RepairTask();
+        patrolTask.setSelections(Collections.singletonList(id));
+        RepairTask repairTask = selectables(pageList,patrolTask).getRecords().get(0);
+        InspectionCode inspectionCode = inspectionCodeMapper.selectOne(new LambdaQueryWrapper<InspectionCode>()
+                .eq(InspectionCode::getCode,code).eq(InspectionCode::getDelFlag,CommonConstant.DEL_FLAG_0));
+        String excelName = null;
+        DictModel excelDictModel = new DictModel();
+        if (StrUtil.isNotEmpty(inspectionCode.getPrintTemplate())){
+            excelDictModel = sysBaseApi.dictById(inspectionCode.getPrintTemplate());
+            excelName = excelDictModel.getValue();
+        }else {
+            excelName = "equipment.xlsx";
+        }
+        // 模板文件路径
+        String templateFileName = "patrol" +"/" + "template" + "/" + excelName;
+        log.info("templateFileName:"+templateFileName);
+
+        // 填充数据后的文件路径
+        String fileName = inspectionCode.getTitle() + System.currentTimeMillis() + ".xlsx";
+        fileName = fileName.replaceAll("[/*?:\"<>|]", "-");
+        String relatiePath = "/" + "patrol" + "/" + "print" + "/" + fileName;
+        String filePath = path +"/" +  fileName;
+        //填充头部Map
+        Map<String, Object> headerMap = getHeaderData(repairTask);
+        //获取显示图片位置
+        List<String> imageList = null;
+        if (ObjectUtil.isNotEmpty(excelDictModel.getDescription())&&excelDictModel.getDescription().contains(",")){
+            imageList = Arrays.asList(excelDictModel.getDescription().split(","));
+        }
+        //文件打印签名
+        Map<String, Object> imageMap = getSignImageMap(patrolTask,imageList);
+
+        InputStream minioFile2 = MinioUtil.getMinioFile("platform", templateFileName);
+        ExcelWriter excelWriter = null;
+        try {
+            excelWriter = EasyExcel.write(filePath).withTemplate(minioFile2).build();
+            int[] mergeColumnIndex = {0,1,2};
+            CustomCellMergeHandler customCellMergeStrategy = new CustomCellMergeHandler(3,mergeColumnIndex);
+            WriteSheet writeSheet = EasyExcel.writerSheet().registerWriteHandler(customCellMergeStrategy).build();
+            //FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.FALSE).build();
+            FillConfig fillConfig = FillConfig.builder().direction(WriteDirectionEnum.HORIZONTAL).build();
+            //填充列表数据
+            excelWriter = fillData(id, excelName, excelWriter, writeSheet,headerMap,filePath,deviceId,fillConfig);
+            //填充表头
+            excelWriter.fill(headerMap, writeSheet);
+            //填充图片
+            excelWriter.fill(imageMap, writeSheet);
+            excelWriter.finish();
+            //对已填充数据的文件进行后处理
+            processFilledFile(filePath);
+
+            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        SysAttachment sysAttachment = new SysAttachment();
+        sysAttachment.setFileName(fileName);
+        sysAttachment.setFilePath(relatiePath);
+        sysAttachment.setType("minio");
+        sysBaseApi.saveSysAttachment(sysAttachment);
+
+        return sysAttachment.getId()+"?fileName="+sysAttachment.getFileName();
+    }
+
+    private ExcelWriter fillData(String id, String excelName, ExcelWriter excelWriter, WriteSheet writeSheet, Map<String, Object> headerMap, String filePath, String deviceId, FillConfig fillConfig) {
+        List<PrintDataDTO> patrolData = new ArrayList<>();
+        if ("equipment.xlsx".equals(excelName)||"platformDoors.xlsx".equals(excelName)){
+            patrolData = getEquipment(headerMap,deviceId);
+            //填充列表数据
+            excelWriter.fill(new FillWrapper("list",patrolData),fillConfig,writeSheet);
+        }
+        return excelWriter;
+    }
+
+    private List<PrintDataDTO> getEquipment(Map<String, Object> headerMap, String deviceId) {
+        List<PrintDataDTO> equipmentList= new ArrayList<>();
+        List<RepairTaskResult> resultList = repairTaskMapper.selectSingle(deviceId, null);
+        //过滤出为检查项的数据
+        List<RepairTaskResult> checkDTOs = resultList.stream().filter(c -> c.getType() != 0).collect(Collectors.toList());
+        AtomicInteger i = new AtomicInteger(1);
+        StringBuilder text  = new StringBuilder();
+        checkDTOs.forEach(r->{
+            PrintDataDTO printDataDTO = new PrintDataDTO();
+             if (1==r.getStatus()){
+                 printDataDTO.setData("√");
+                 equipmentList.add(printDataDTO);
+             }else {
+                 printDataDTO.setData("");
+                 equipmentList.add(printDataDTO);
+                 text.append(i).append(".").append(r.getUnNote()).append("\n");
+                 i.getAndIncrement();
+             }
+        });
+        headerMap.put("unNote",text);
+        return equipmentList;
+    }
+
+    /**
+     * 定制模板的文件后处理
+     * @param filePath
+     * @throws IOException
+     */
+    private static void processFilledFile(String filePath) throws IOException {
+        try (InputStream inputStream = new FileInputStream(filePath);
+             Workbook workbook = WorkbookFactory.create(inputStream)) {
+            Sheet sheet  = workbook.getSheetAt(0);
+            //打印设置
+            FilePrintUtils.printSet(sheet);
+
+            // 保存修改后的Excel文件
+            OutputStream outputStream = null;
+            try{
+                outputStream = new FileOutputStream(filePath);
+                workbook.write(outputStream);
+            }finally {
+                if (null!=inputStream){
+                    inputStream.close();
+                }
+                if (null!=outputStream){
+                    outputStream.close();
+                }
+                if (null!=workbook){
+                    workbook.close();
+                }
+            }
+        }
+    }
+    /**
+     * 获取头部数据
+     * @param repairTask
+     * @return
+     */
+    @NotNull
+    private Map<String, Object> getHeaderData(RepairTask repairTask) {
+        Map<String, Object> map = MapUtils.newHashMap();
+        map.put("siteName", repairTask.getSiteName());
+        map.put("startTime", DateUtil.format(repairTask.getStartTime(),"yyyy-MM-dd HH:mm"));
+        map.put("startOverhaulTime", DateUtil.format(repairTask.getStartOverhaulTime(),"yyyy-MM-dd HH:mm"));
+        map.put("peerName", repairTask.getPeerName());
+        map.put("overhaulName", repairTask.getOverhaulName());
+        return map;
+    }
+    /**
+     * 获取签字图片Map
+     *
+     * @param repairTask
+     * @param columnRangeList
+     * @return
+     */
+    @NotNull
+    private Map<String, Object> getSignImageMap(RepairTask repairTask, List<String> columnRangeList) {
+        Map<String, Object> imageMap = MapUtils.newHashMap();
+        if(StrUtil.isNotEmpty(repairTask.getConfirmUrl())&& repairTask.getConfirmUrl().indexOf("?")!=-1){
+            int index =  repairTask.getConfirmUrl().indexOf("?");
+            SysAttachment sysAttachment = sysBaseApi.getFilePath(repairTask.getConfirmUrl().substring(0, index));
+            InputStream inputStream = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
+            if(ObjectUtil.isEmpty(inputStream)){
+                imageMap.put("signImage",null);
+            } else {
+                try {
+                    byte[] convert = FilePrintUtils.convert(inputStream);
+                    WriteCellData writeImageData = FilePrintUtils.writeCellImageData(convert,columnRangeList);
+                    imageMap.put("signImage",writeImageData);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }else{
+            imageMap.put("signImage",null);
+        }
+        return imageMap;
+    }
     @Override
     public List<PrintRepairTaskDTO> printRepairTaskById(String ids) {
         List<String> idList = StrUtil.splitTrim(ids, ",");
