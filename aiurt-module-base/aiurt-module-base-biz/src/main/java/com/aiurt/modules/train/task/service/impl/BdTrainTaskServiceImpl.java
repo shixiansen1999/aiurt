@@ -99,27 +99,7 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void saveMain(BdTrainTask bdTrainTask, List<BdTrainTaskSign> bdTrainTaskSignList) {
-		int year = DateUtil.year(new Date());
-		int month = DateUtil.month(new Date())+1;
-		String taskCode = "YY-THXH-"+month+"-"+year+"-";
-		String formatTaskCode = "";
-		List<BdTrainTask> bdTrainTasks = bdTrainTaskMapper.selectList(new LambdaQueryWrapper<BdTrainTask>());
-		if(CollUtil.isNotEmpty(bdTrainTasks)){
-			List<String> taskCodes = bdTrainTasks.stream().filter(e->ObjectUtil.isNotEmpty(e.getTaskCode())).map(BdTrainTask::getTaskCode).collect(Collectors.toList());
-			if(CollUtil.isNotEmpty(taskCodes)){
-				Integer number = 1;
-				do{
-					String format = String.format("%02d",number );
-					formatTaskCode = taskCode+format;
-					number++;
-				}
-				while (taskCodes.contains(formatTaskCode));
-			}else {
-				formatTaskCode = taskCode+"01";
-			}
-		} else {
-			formatTaskCode = taskCode+"01";
-		}
+		String formatTaskCode = taskCode(bdTrainTask.getTrainLine());
 		bdTrainTask.setTaskCode(formatTaskCode);
 		bdTrainTaskMapper.insert(bdTrainTask);
 		if(bdTrainTaskSignList!=null && bdTrainTaskSignList.size()>0) {
@@ -130,7 +110,29 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 			}
 		}
 	}
-
+public String taskCode(Integer trainLine){
+	int year = DateUtil.year(new Date());
+	String taskCode = "YY-THXH-"+trainLine+"-"+year+"-";
+	String formatTaskCode = "";
+	List<BdTrainTask> bdTrainTasks = bdTrainTaskMapper.selectList(new LambdaQueryWrapper<BdTrainTask>());
+	if(CollUtil.isNotEmpty(bdTrainTasks)){
+		List<String> taskCodes = bdTrainTasks.stream().filter(e->ObjectUtil.isNotEmpty(e.getTaskCode())).map(BdTrainTask::getTaskCode).collect(Collectors.toList());
+		if(CollUtil.isNotEmpty(taskCodes)){
+			Integer number = 1;
+			do{
+				String format = String.format("%02d",number );
+				formatTaskCode = taskCode+format;
+				number++;
+			}
+			while (taskCodes.contains(formatTaskCode));
+		}else {
+			formatTaskCode = taskCode+"01";
+		}
+	} else {
+		formatTaskCode = taskCode+"01";
+	}
+	return  formatTaskCode;
+}
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateMain(BdTrainTask bdTrainTask,List<BdTrainTaskSign> bdTrainTaskSignList) {
@@ -171,6 +173,8 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 				bdTrainTask.setMakeUpState(0);
 				bdTrainTask.setStudyResourceState(0);
 			}
+			String formatTaskCode = taskCode(bdTrainTask.getTrainLine());
+			bdTrainTask.setTaskCode(formatTaskCode);
 		}
 		//发布
 		if (bdTrainTask.getTaskState() == 1) {
