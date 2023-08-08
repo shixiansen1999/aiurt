@@ -458,4 +458,20 @@ public interface SysParamCodeConstant {
      */
     String CONSTRUCTION_URL="construction_url";
 
+    /**
+     * 故障挂起超时未处理提醒
+     */
+    String HANG_UP_REMIND = "hang_up_remind";
+    /**
+     * 故障挂起超时未处理提醒的初始延时时长，单位为小时
+     */
+    String HUR_DELAY = "hur_delay";
+    /**
+     * 故障挂起超时未处理提醒的间隔时长，单位为小时
+     */
+    String HUR_PERIOD = "hur_period";
+    /**
+     * 故障挂起超时未处理提醒的铃声时长，单位为秒
+     */
+    String HUR_RING_DURATION = "hur_ring_duration";
 }

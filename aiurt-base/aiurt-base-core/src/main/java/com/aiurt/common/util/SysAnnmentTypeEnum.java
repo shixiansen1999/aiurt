@@ -29,6 +29,10 @@ public enum SysAnnmentTypeEnum {
      */
     NO_RECEIVE_FAULT("no_receive_fault", "component", "","故障业务消息"),
     /**
+     * 故障挂起超时未处理提醒
+     */
+    HANG_UP_REMIND("hang_up_remind", "component", "","故障业务消息"),
+    /**
      * 周计划
      */
     OPERATE_PLAN("week_plan", "component","","周计划业务消息"),
