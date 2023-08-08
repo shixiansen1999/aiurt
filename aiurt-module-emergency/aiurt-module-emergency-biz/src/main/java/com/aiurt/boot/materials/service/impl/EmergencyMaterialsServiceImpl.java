@@ -1586,8 +1586,7 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
                     }
                     if (count == 3 || count == 2) {
                         if (depositPositionName.size() > 2) {
-                            int i = model.getDepositPositionName().indexOf("/", 2);
-                            positionCode = emergencyMaterialsMapper.getPositionCode(lineCode, stationCode, model.getDepositPositionName().substring(i));
+                            positionCode = emergencyMaterialsMapper.getPositionCode(lineCode, stationCode, depositPositionName.get(2));
                         }
                         if (ObjectUtil.isNotEmpty(lineCode) && ObjectUtil.isNotEmpty(stationCode)) {
                             LambdaQueryWrapper<EmergencyMaterials> queryWrapper = new LambdaQueryWrapper<>();
