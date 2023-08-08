@@ -51,7 +51,7 @@
         t.line_name pUrl
         FROM
         cs_station t1
-        LEFT JOIN cs_line t ON t.line_code = t1.line_code
+        LEFT JOIN cs_line t ON t.line_code = t1.line_code and t.del_flag = 0
         <where>
             <if test="position.positionType != null  and position.positionType != ''"> and t1.station_type = #{position.positionType}</if>
             <if test="position.positionName != null  and position.positionName != ''"> and t1.station_name like concat('%', #{position.positionName}, '%')</if>
@@ -72,7 +72,7 @@
         t.station_name pUrl
         FROM
         cs_station_position t2
-        LEFT JOIN cs_station t ON t.station_code = t2.staion_code
+        LEFT JOIN cs_station t ON t.station_code = t2.staion_code and t.del_flag = 0
         <where>
             <if test="position.positionType != null  and position.positionType != ''"> and t2.position_type = #{position.positionType}</if>
             <if test="position.positionName != null  and position.positionName != ''"> and t2.position_name like concat('%', #{position.positionName}, '%')</if>
