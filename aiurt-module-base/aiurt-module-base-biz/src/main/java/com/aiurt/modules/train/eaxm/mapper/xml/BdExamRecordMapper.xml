@@ -371,8 +371,8 @@
                 where id=#{trainTaskId})as isRelease,tt.exam_plan_time as examPlanTime,tt.exam_classify as examClassify,
         (SELECT COUNT(er.is_pass = 1 AND er.exam_classify=1 OR NULL )FROM bd_exam_record as er WHERE er.train_task_id =#{trainTaskId} )as passesNumber,
             (
-        SELECT `name`
-            FROM bd_team
+        SELECT `depart_name`
+            FROM sys_depart
             WHERE  id = tt.task_team_id
             ) AS taskTeamName,
             ifnull(
