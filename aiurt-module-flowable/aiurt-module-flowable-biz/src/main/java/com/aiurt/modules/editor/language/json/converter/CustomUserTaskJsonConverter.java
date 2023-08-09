@@ -139,7 +139,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 boolean isFirstUserTask = isFirstUserTask(userTask);
 
                 if (!isFirstUserTask) {
-                    propertiesNode.put(PROPERTY_MULTIINSTANCE_COLLECTION, "assigneeList_usertask_"+baseElement.getId());
+                    propertiesNode.put(PROPERTY_MULTIINSTANCE_COLLECTION, "assigneeList_userTask_"+baseElement.getId());
                     propertiesNode.put(PROPERTY_MULTIINSTANCE_VARIABLE, "assignee");
                     propertiesNode.putNull(PROPERTY_MULTIINSTANCE_VARIABLE_AGGREGATIONS);
 
@@ -291,61 +291,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
         }
     }
 
-    public static void main(String[] args) {
-        String v = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<definitions xmlns=\"http://www.omg.org/spec/BPMN/20100524/MODEL\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:flowable=\"http://flowable.org/bpmn\" xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" xmlns:omgdc=\"http://www.omg.org/spec/DD/20100524/DC\" xmlns:omgdi=\"http://www.omg.org/spec/DD/20100524/DI\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://flowable.org/test\" exporter=\"Flowable Open Source Modeler\" exporterVersion=\"6.7.2\">\n" +
-                "  <process id=\"test0001\" name=\"test0001\" isExecutable=\"true\">\n" +
-                "    <startEvent id=\"startEvent1\">\n" +
-                "      <outgoing>Flow_1dwhrr1</outgoing>\n" +
-                "    </startEvent>\n" +
-                "    <sequenceFlow id=\"Flow_1dwhrr1\" sourceRef=\"startEvent1\" targetRef=\"Activity_0jnxa6u\" />\n" +
-                "    <endEvent id=\"Event_118lroh\">\n" +
-                "      <incoming>Flow_0m4y72z</incoming>\n" +
-                "    </endEvent>\n" +
-                "    <sequenceFlow id=\"Flow_0m4y72z\" sourceRef=\"Activity_0jnxa6u\" targetRef=\"Event_118lroh\" />\n" +
-                "    <userTask id=\"Activity_0jnxa6u\">\n" +
-                "      <extensionElements>\n" +
-                "        <flowable:carboncopy value=\"{}\" />\n" +
-                "        <flowable:userassignee value=\"{}\" />\n" +
-                "        <flowable:autoselect value=\"false\" />\n" +
-                "        <flowable:multiApprovalRule value=\"taskMultiInstanceType-3\" />\n" +
-                "      </extensionElements>\n" +
-                "      <incoming>Flow_1dwhrr1</incoming>\n" +
-                "      <outgoing>Flow_0m4y72z</outgoing>\n" +
-                "    </userTask>\n" +
-                "  </process>\n" +
-                "  <bpmndi:BPMNDiagram id=\"BPMNDiagram_test0001\">\n" +
-                "    <bpmndi:BPMNPlane id=\"BPMNPlane_test0001\" bpmnElement=\"test0001\">\n" +
-                "      <bpmndi:BPMNEdge id=\"Flow_1dwhrr1_di\" bpmnElement=\"Flow_1dwhrr1\">\n" +
-                "        <omgdi:waypoint x=\"130\" y=\"178\" />\n" +
-                "        <omgdi:waypoint x=\"180\" y=\"178\" />\n" +
-                "      </bpmndi:BPMNEdge>\n" +
-                "      <bpmndi:BPMNEdge id=\"Flow_0m4y72z_di\" bpmnElement=\"Flow_0m4y72z\">\n" +
-                "        <omgdi:waypoint x=\"280\" y=\"178\" />\n" +
-                "        <omgdi:waypoint x=\"332\" y=\"178\" />\n" +
-                "      </bpmndi:BPMNEdge>\n" +
-                "      <bpmndi:BPMNShape id=\"BPMNShape_startEvent1\" bpmnElement=\"startEvent1\">\n" +
-                "        <omgdc:Bounds x=\"100\" y=\"163\" width=\"30\" height=\"30\" />\n" +
-                "      </bpmndi:BPMNShape>\n" +
-                "      <bpmndi:BPMNShape id=\"Event_118lroh_di\" bpmnElement=\"Event_118lroh\">\n" +
-                "        <omgdc:Bounds x=\"332\" y=\"160\" width=\"36\" height=\"36\" />\n" +
-                "      </bpmndi:BPMNShape>\n" +
-                "      <bpmndi:BPMNShape id=\"Activity_1tw11re_di\" bpmnElement=\"Activity_0jnxa6u\">\n" +
-                "        <omgdc:Bounds x=\"180\" y=\"138\" width=\"100\" height=\"80\" />\n" +
-                "      </bpmndi:BPMNShape>\n" +
-                "    </bpmndi:BPMNPlane>\n" +
-                "  </bpmndi:BPMNDiagram>\n" +
-                "</definitions>\n";
 
-        System.out.println(v.replaceAll("\n"," "));
-
-        String v2 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <definitions xmlns=\"http://www.omg.org/spec/BPMN/20100524/MODEL\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:flowable=\"http://flowable.org/bpmn\" xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" xmlns:omgdc=\"http://www.omg.org/spec/DD/20100524/DC\" xmlns:omgdi=\"http://www.omg.org/spec/DD/20100524/DI\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://flowable.org/test\" exporter=\"Flowable Open Source Modeler\" exporterVersion=\"6.7.2\">   <process id=\"test0001\" name=\"test0001\" isExecutable=\"true\">     <startEvent id=\"startEvent1\">       <outgoing>Flow_1dwhrr1</outgoing>     </startEvent>     <sequenceFlow id=\"Flow_1dwhrr1\" sourceRef=\"startEvent1\" targetRef=\"Activity_0jnxa6u\" />     <endEvent id=\"Event_118lroh\">       <incoming>Flow_0m4y72z</incoming>     </endEvent>     <sequenceFlow id=\"Flow_0m4y72z\" sourceRef=\"Activity_0jnxa6u\" targetRef=\"Event_118lroh\" />     <userTask id=\"Activity_0jnxa6u\">       <extensionElements>         <flowable:carboncopy value=\"{}\" />         <flowable:userassignee value=\"{}\" />         <flowable:autoselect value=\"false\" />         <flowable:multiApprovalRule value=\"taskMultiInstanceType-3\" />       </extensionElements>       <incoming>Flow_1dwhrr1</incoming>       <outgoing>Flow_0m4y72z</outgoing>     </userTask>   </process>   <bpmndi:BPMNDiagram id=\"BPMNDiagram_test0001\">     <bpmndi:BPMNPlane id=\"BPMNPlane_test0001\" bpmnElement=\"test0001\">       <bpmndi:BPMNEdge id=\"Flow_1dwhrr1_di\" bpmnElement=\"Flow_1dwhrr1\">         <omgdi:waypoint x=\"130\" y=\"178\" />         <omgdi:waypoint x=\"180\" y=\"178\" />       </bpmndi:BPMNEdge>       <bpmndi:BPMNEdge id=\"Flow_0m4y72z_di\" bpmnElement=\"Flow_0m4y72z\">         <omgdi:waypoint x=\"280\" y=\"178\" />         <omgdi:waypoint x=\"332\" y=\"178\" />       </bpmndi:BPMNEdge>       <bpmndi:BPMNShape id=\"BPMNShape_startEvent1\" bpmnElement=\"startEvent1\">         <omgdc:Bounds x=\"100\" y=\"163\" width=\"30\" height=\"30\" />       </bpmndi:BPMNShape>       <bpmndi:BPMNShape id=\"Event_118lroh_di\" bpmnElement=\"Event_118lroh\">         <omgdc:Bounds x=\"332\" y=\"160\" width=\"36\" height=\"36\" />       </bpmndi:BPMNShape>       <bpmndi:BPMNShape id=\"Activity_1tw11re_di\" bpmnElement=\"Activity_0jnxa6u\">         <omgdc:Bounds x=\"180\" y=\"138\" width=\"100\" height=\"80\" />       </bpmndi:BPMNShape>     </bpmndi:BPMNPlane>   </bpmndi:BPMNDiagram> </definitions> ";
-
-
-        String v3 =   "<?xml version='1.0' encoding='UTF-8'?>\n<definitions xmlns=\"http://www.omg.org/spec/BPMN/20100524/MODEL\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:flowable=\"http://flowable.org/bpmn\" xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" xmlns:omgdc=\"http://www.omg.org/spec/DD/20100524/DC\" xmlns:omgdi=\"http://www.omg.org/spec/DD/20100524/DI\" typeLanguage=\"http://www.w3.org/2001/XMLSchema\" expressionLanguage=\"http://www.w3.org/1999/XPath\" targetNamespace=\"http://flowable.org/modeler\" exporter=\"Flowable Open Source Modeler\" exporterVersion=\"6.7.2\">\n  <process id=\"test0001\" name=\"test0001\" isExecutable=\"true\">\n    <startEvent id=\"startEvent1\"/>\n    <sequenceFlow id=\"Flow_1dwhrr1\" sourceRef=\"startEvent1\" targetRef=\"Activity_0jnxa6u\"/>\n    <endEvent id=\"Event_118lroh\"/>\n    <sequenceFlow id=\"Flow_0m4y72z\" sourceRef=\"Activity_0jnxa6u\" targetRef=\"Event_118lroh\"/>\n    <userTask id=\"Activity_0jnxa6u\" flowable:assignee=\"${assignee}\">\n      <extensionElements>\n        <modeler:initiator-can-complete xmlns:modeler=\"http://flowable.org/modeler\"><![CDATA[true]]></modeler:initiator-can-complete>\n        <flowable:multiApprovalRule xmlns:flowable=\"http://flowable.org/bpmn\" value=\"taskMultiInstanceType-1\"/>\n        <flowable:userassignee xmlns:flowable=\"http://flowable.org/bpmn\" name=\"\" value=\"{}\"/>\n        <flowable:carboncopy xmlns:flowable=\"http://flowable.org/bpmn\" name=\"\" value=\"{}\"/>\n      </extensionElements>\n      <multiInstanceLoopCharacteristics isSequential=\"false\" flowable:collection=\"assigneeList_usertask_Activity_0jnxa6u\" flowable:elementVariable=\"assignee\">\n        <extensionElements/>\n        <completionCondition>${nrOfCompletedInstances >= 1}</completionCondition>\n      </multiInstanceLoopCharacteristics>\n    </userTask>\n  </process>\n  <bpmndi:BPMNDiagram id=\"BPMNDiagram_test0001\">\n    <bpmndi:BPMNPlane bpmnElement=\"test0001\" id=\"BPMNPlane_test0001\">\n      <bpmndi:BPMNShape bpmnElement=\"startEvent1\" id=\"BPMNShape_startEvent1\">\n        <omgdc:Bounds height=\"30.0\" width=\"30.0\" x=\"100.0\" y=\"163.0\"/>\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape bpmnElement=\"Event_118lroh\" id=\"BPMNShape_Event_118lroh\">\n        <omgdc:Bounds height=\"36.0\" width=\"36.0\" x=\"332.0\" y=\"160.0\"/>\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape bpmnElement=\"Activity_0jnxa6u\" id=\"BPMNShape_Activity_0jnxa6u\">\n        <omgdc:Bounds height=\"80.0\" width=\"100.0\" x=\"180.0\" y=\"138.0\"/>\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNEdge bpmnElement=\"Flow_1dwhrr1\" id=\"BPMNEdge_Flow_1dwhrr1\" flowable:sourceDockerX=\"15.0\" flowable:sourceDockerY=\"15.0\" flowable:targetDockerX=\"50.0\" flowable:targetDockerY=\"40.0\">\n        <omgdi:waypoint x=\"129.9499986183554\" y=\"178.0\"/>\n        <omgdi:waypoint x=\"180.0\" y=\"178.0\"/>\n      </bpmndi:BPMNEdge>\n      <bpmndi:BPMNEdge bpmnElement=\"Flow_0m4y72z\" id=\"BPMNEdge_Flow_0m4y72z\" flowable:sourceDockerX=\"50.0\" flowable:sourceDockerY=\"40.0\" flowable:targetDockerX=\"18.0\" flowable:targetDockerY=\"18.0\">\n        <omgdi:waypoint x=\"279.95000000000005\" y=\"178.0\"/>\n        <omgdi:waypoint x=\"332.0\" y=\"178.0\"/>\n      </bpmndi:BPMNEdge>\n    </bpmndi:BPMNPlane>\n  </bpmndi:BPMNDiagram>\n</definitions>";
-
-        System.out.println(v3);
-    }
 
 
     /**

@@ -401,9 +401,6 @@ public class FlowApiServiceImpl implements FlowApiService {
             if (Objects.nonNull(busData)) {
                 flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
             }
-
-            //
-
             // 完成任务
             taskService.complete(taskId, variableData);
         } else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.CANCEL, approvalType)) {
@@ -467,6 +464,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                 String variableName = variable.getVariableName();
                 variableData.put(variableName, busData.get(variableName));
             });
+
+            //todo 新增系统变量
         }
     }
 
