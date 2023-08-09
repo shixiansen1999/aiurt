@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 public class HangUpRemindJob implements Job {
 
     private String parameter;
+    private static final int LEN = 3;
 
     @Autowired
     private IFaultService faultService;
@@ -64,14 +65,18 @@ public class HangUpRemindJob implements Job {
         try {
             SysParamModel remindParam = iSysParamApi.selectByCode(SysParamCodeConstant.HANG_UP_REMIND);
             List<String> paramList = StrUtil.splitTrim(parameter, StrUtil.COMMA);
-            DateTime updateTime = DateUtil.parse(paramList.get(2), "yyyy-MM-dd HH:mm:ss");
-            Fault fault = faultService.getOne(new LambdaQueryWrapper<Fault>().eq(Fault::getCode, paramList.get(0)).eq(Fault::getStatus, paramList.get(1)).eq(Fault::getUpdateTime, updateTime), false);
+            DateTime updateTime = null;
+            if (paramList.size() == LEN) {
+                updateTime = DateUtil.parse(paramList.get(2), "yyyy-MM-dd HH:mm:ss");
+            }
+            Fault fault = faultService.getOne(new LambdaQueryWrapper<Fault>().eq(Fault::getCode, paramList.get(0)).eq(Fault::getStatus, paramList.get(1)).eq(ObjectUtil.isNotEmpty(updateTime), Fault::getUpdateTime, updateTime), false);
             // 判断配置开启否，故障还是挂起否
             boolean b = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && ObjectUtil.isNotEmpty(fault);
             if (b) {
                 // 任务执行逻辑
                 // 获取今日当班人员
-                List<SysUserTeamDTO> userList = baseApi.getTodayOndutyDetailNoPage(CollUtil.newArrayList(fault.getSysOrgCode()), new Date());
+                Date now = new Date();
+                List<SysUserTeamDTO> userList = baseApi.getTodayOndutyDetailNoPage(CollUtil.newArrayList(fault.getSysOrgCode()), now);
                 List<String> collect = CollUtil.isNotEmpty(userList) ? userList.stream().map(SysUserTeamDTO::getUsername).distinct().collect(Collectors.toList()) : new ArrayList<>();
                 // 获取故障所属班组的班组长
                 String foreman = sysBaseApi.getUserNameByOrgCodeAndRoleCode(CollUtil.newArrayList(fault.getSysOrgCode()), CollUtil.newArrayList(RoleConstant.FOREMAN));
@@ -82,7 +87,6 @@ public class HangUpRemindJob implements Job {
                     }
                 }
                 // 发送消息给今日当班人员和班组长
-                Date now = new Date();
                 long between = DateUtil.between(updateTime, now, DateUnit.SECOND);
                 String msg = "故障挂起已超过" + secondToTime(between);
                 if (CollUtil.isNotEmpty(collect)) {

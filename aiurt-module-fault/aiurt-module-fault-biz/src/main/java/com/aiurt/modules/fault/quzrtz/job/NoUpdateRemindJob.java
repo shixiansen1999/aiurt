@@ -39,6 +39,7 @@ import java.util.List;
 public class NoUpdateRemindJob implements Job {
 
     private String parameter;
+    private static final int LEN = 3;
 
     @Autowired
     private FaultMapper faultMapper;
@@ -60,7 +61,10 @@ public class NoUpdateRemindJob implements Job {
         try {
             SysParamModel remindParam = iSysParamApi.selectByCode(SysParamCodeConstant.HANG_UP_REMIND);
             List<String> paramList = StrUtil.splitTrim(parameter, StrUtil.COMMA);
-            DateTime updateTime = DateUtil.parse(paramList.get(2), "yyyy-MM-dd HH:mm:ss");
+            DateTime updateTime = null;
+            if (paramList.size() == LEN) {
+                updateTime = DateUtil.parse(paramList.get(2), "yyyy-MM-dd HH:mm:ss");
+            }
             FaultForSendMessageDTO faultForSendMessageDTO = faultMapper.queryForSendMessage(paramList.get(0), Integer.parseInt(paramList.get(1)), updateTime);
             // 判断配置开启否，故障状态更新否
             boolean b = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && ObjectUtil.isNotEmpty(faultForSendMessageDTO);
