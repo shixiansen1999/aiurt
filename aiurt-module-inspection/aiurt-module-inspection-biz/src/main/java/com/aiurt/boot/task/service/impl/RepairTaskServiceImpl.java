@@ -3468,10 +3468,22 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         List<PrintDataDTO> equipmentList= new ArrayList<>();
         List<RepairTaskResult> resultList = repairTaskMapper.selectSingle(deviceId, null);
         //过滤为部署检查项的
-        List<RepairTaskResult> checks = resultList.stream().filter(c -> c.getType() != 1).collect(Collectors.toList());
+        List<RepairTaskResult> checks = resultList.stream().filter(c -> c.getPid().equals("0")).collect(Collectors.toList());
         AtomicInteger i = new AtomicInteger(1);
         StringBuilder text  = new StringBuilder();
         checks.forEach(r->{
+            if (r.getType()==1){
+                PrintDataDTO printDataDTO = new PrintDataDTO();
+                if (1==r.getStatus()){
+                    printDataDTO.setData("√");
+                    equipmentList.add(printDataDTO);
+                }else {
+                    printDataDTO.setData("✕");
+                    equipmentList.add(printDataDTO);
+                    text.append(i).append(".").append(r.getName()).append(":").append(r.getUnNote()).append("\n");
+                    i.getAndIncrement();
+                }
+            }else {
             List<RepairTaskResult> checkPid = resultList.stream().filter(c -> c.getPid().equals(r.getId())).collect(Collectors.toList());
             checkPid.forEach(check->{
                 PrintDataDTO printDataDTO = new PrintDataDTO();
@@ -3484,7 +3496,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     text.append(i).append(".").append(r.getName()).append("-").append(check.getName()).append(":").append(check.getUnNote()).append("\n");
                     i.getAndIncrement();
                 }
-            });
+            });}
         });
         headerMap.put("unNote",text.toString());
         return equipmentList;
