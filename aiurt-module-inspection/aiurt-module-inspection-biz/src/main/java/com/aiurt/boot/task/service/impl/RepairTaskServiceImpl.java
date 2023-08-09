@@ -59,6 +59,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
+import liquibase.pro.packaged.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -3476,9 +3477,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                  printDataDTO.setData("√");
                  equipmentList.add(printDataDTO);
              }else {
-                 printDataDTO.setData("");
+                 printDataDTO.setData("✕");
                  equipmentList.add(printDataDTO);
-                 text.append(i).append(".").append(r.getUnNote()).append("\n");
+                 RepairTaskResult collect = resultList.stream().filter(c -> c.getId().equals(r.getPid())).findFirst().orElseGet(RepairTaskResult::new);
+                 text.append(i).append(".").append(collect.getName()).append("-").append(r.getName()).append(":").append(r.getUnNote()).append("\n");
                  i.getAndIncrement();
              }
         });
