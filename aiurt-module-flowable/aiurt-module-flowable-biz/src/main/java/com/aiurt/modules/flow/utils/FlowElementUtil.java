@@ -350,15 +350,28 @@ public class FlowElementUtil {
         return false;
     }
 
+
     /**
-     * 获取下一个节点
+     * 获取下一个代办的节点
      * @param execution
      * @param sourceFlowElement
      * @return
      */
-    public FlowElement getTargetFlowElement(Execution execution, FlowElement sourceFlowElement) {
+    public List<FlowElement> getTargetFlowElement(Execution execution, FlowElement sourceFlowElement) {
+        List<FlowElement> flowElementList = new ArrayList<>();
+        getTargetFlowElement(execution, sourceFlowElement, flowElementList);
+        return flowElementList;
+    }
+
+    /**
+     * 获取下一个代办的节点
+     * @param execution
+     * @param sourceFlowElement
+     * @param flowElementList
+     * @return
+     */
+    public void getTargetFlowElement(Execution execution, FlowElement sourceFlowElement, List<FlowElement> flowElementList) {
         //遇到下一个节点是UserTask就返回
-        FlowElement flowElement = null;
         if (sourceFlowElement instanceof FlowNode) {
             //当前节点必须是FlowNode才做处理，比如UserTask或者GateWay
             FlowNode thisFlowNode = (FlowNode) sourceFlowElement;
@@ -367,9 +380,9 @@ public class FlowElementUtil {
                 SequenceFlow sequenceFlow = thisFlowNode.getOutgoingFlows().get(0);
                 FlowElement targetFlowElement = sequenceFlow.getTargetFlowElement();
                 if (targetFlowElement instanceof UserTask) {
-                    flowElement = targetFlowElement;
+                    flowElementList.add(targetFlowElement);
                 } else {
-                    flowElement = getTargetFlowElement(execution, targetFlowElement);
+                   getTargetFlowElement(execution, targetFlowElement, flowElementList);
                 }
             } else if (thisFlowNode.getOutgoingFlows().size() > 1) {
                 //如果有多条连接线，遍历连接线，找出一个连接线条件执行为True的，获得它的出口节点
@@ -384,15 +397,14 @@ public class FlowElementUtil {
                     if (result) {
                         FlowElement targetFlowElement = sequenceFlow.getTargetFlowElement();
                         if (targetFlowElement instanceof UserTask) {
-                            flowElement = targetFlowElement;
+                            flowElementList.add(targetFlowElement);
                         } else {
-                            flowElement = getTargetFlowElement(execution, targetFlowElement);
+                            getTargetFlowElement(execution, targetFlowElement, flowElementList);
                         }
                     }
                 }
             }
         }
-        return flowElement;
     }
 
     /**
