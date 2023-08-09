@@ -1,0 +1,135 @@
+package com.aiurt.modules.online.workflowapi.controller;
+
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.online.workflowapi.entity.ActCustomInterface;
+import com.aiurt.modules.online.workflowapi.service.IActCustomInterfaceService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+
+ /**
+ * @Description: act_custom_interface
+ * @Author: wgp
+ * @Date:   2023-07-25
+ * @Version: V1.0
+ */
+@Api(tags="流程接口")
+@RestController
+@RequestMapping("/workflowapi/actCustomInterface")
+@Slf4j
+public class ActCustomInterfaceController extends BaseController<ActCustomInterface, IActCustomInterfaceService> {
+	@Autowired
+	private IActCustomInterfaceService actCustomInterfaceService;
+
+	/**
+	 * 分页列表查询
+	 *
+	 * @param actCustomInterface
+	 * @param pageNo
+	 * @param pageSize
+	 * @param req
+	 * @return
+	 */
+	@AutoLog(value = "act_custom_interface-分页列表查询")
+	@ApiOperation(value="act_custom_interface-分页列表查询", notes="act_custom_interface-分页列表查询")
+	@GetMapping(value = "/list")
+	public Result<IPage<ActCustomInterface>> queryPageList(ActCustomInterface actCustomInterface,
+														   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+														   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+														   HttpServletRequest req) {
+		QueryWrapper<ActCustomInterface> queryWrapper = QueryGenerator.initQueryWrapper(actCustomInterface, req.getParameterMap());
+		Page<ActCustomInterface> page = new Page<>(pageNo, pageSize);
+		IPage<ActCustomInterface> pageList = actCustomInterfaceService.page(page, queryWrapper);
+		return Result.OK(pageList);
+	}
+
+	/**
+	 *   添加
+	 *
+	 * @param actCustomInterface
+	 * @return
+	 */
+	@AutoLog(value = "act_custom_interface-添加")
+	@ApiOperation(value="act_custom_interface-添加", notes="act_custom_interface-添加")
+	@PostMapping(value = "/add")
+	public Result<String> add(@RequestBody ActCustomInterface actCustomInterface) {
+		// 检查数据库中是否已存在具有相同name的记录
+		if (actCustomInterfaceService.isNameExists(actCustomInterface.getName(),null)) {
+			return Result.error("名称已存在，请使用其他名称！");
+		}
+
+		actCustomInterfaceService.save(actCustomInterface);
+		return Result.OK("添加成功！");
+	}
+
+	/**
+	 *  编辑
+	 *
+	 * @param actCustomInterface
+	 * @return
+	 */
+	@AutoLog(value = "act_custom_interface-编辑")
+	@ApiOperation(value="act_custom_interface-编辑", notes="act_custom_interface-编辑")
+	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+	public Result<String> edit(@RequestBody ActCustomInterface actCustomInterface) {
+		// 检查数据库中是否已存在具有相同name的记录
+		if (actCustomInterfaceService.isNameExists(actCustomInterface.getName(), actCustomInterface.getId())) {
+			return Result.error("名称已存在，请使用其他名称！");
+		}
+		actCustomInterfaceService.updateById(actCustomInterface);
+		return Result.OK("编辑成功!");
+	}
+
+	/**
+	 *   通过id删除
+	 *
+	 * @param id
+	 * @return
+	 */
+	@AutoLog(value = "act_custom_interface-通过id删除")
+	@ApiOperation(value="act_custom_interface-通过id删除", notes="act_custom_interface-通过id删除")
+	@DeleteMapping(value = "/delete")
+	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+		actCustomInterfaceService.removeById(id);
+		return Result.OK("删除成功!");
+	}
+
+	/**
+	 *  批量删除
+	 *
+	 * @param ids
+	 * @return
+	 */
+	@AutoLog(value = "act_custom_interface-批量删除")
+	@ApiOperation(value="act_custom_interface-批量删除", notes="act_custom_interface-批量删除")
+	@DeleteMapping(value = "/deleteBatch")
+	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
+		this.actCustomInterfaceService.removeByIds(Arrays.asList(ids.split(",")));
+		return Result.OK("批量删除成功!");
+	}
+
+	/**
+	 * 通过id查询
+	 *
+	 * @param id
+	 * @return
+	 */
+	@ApiOperation(value="act_custom_interface-通过id查询", notes="act_custom_interface-通过id查询")
+	@GetMapping(value = "/queryById")
+	public Result<ActCustomInterface> queryById(@RequestParam(name="id",required=true) String id) {
+		ActCustomInterface actCustomInterface = actCustomInterfaceService.getById(id);
+		return Result.OK(actCustomInterface);
+	}
+
+}

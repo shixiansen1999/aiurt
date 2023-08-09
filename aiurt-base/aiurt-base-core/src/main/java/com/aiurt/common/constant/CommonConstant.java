@@ -665,4 +665,9 @@ public interface CommonConstant {
   * 站点是换乘车站。在cs_station中，is_change=1表示该站点是换乘车站
   */
  Integer STATION_IS_CHANGE = 1;
+
+ /**
+  * 根节点标识
+  */
+ public static final String ROOT_NODE_ID = "0";
 }
