@@ -88,6 +88,8 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
     @Override
     public BdQuestion bdQuestion(String id) {
         BdQuestion bdQuestion = bdQuestionMapper.bdQuestion(id);
+        String queTypeName = iSysBaseAPI.translateDict("que_type", String.valueOf(bdQuestion.getQueType()));
+        bdQuestion.setQueTypeName(queTypeName);
         List<BdQuestionOptions> lists = bdQuestionMapper.lists(id);
         List<BdQuestionOptionsAtt> enclosures = bdQuestionMapper.listss(id);
         if (ObjectUtil.isNotNull(bdQuestion)){
