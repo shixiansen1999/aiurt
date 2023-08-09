@@ -3482,7 +3482,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                  i.getAndIncrement();
              }
         });
-        headerMap.put("unNote",text);
+        headerMap.put("unNote",text.toString());
         return equipmentList;
     }
 
