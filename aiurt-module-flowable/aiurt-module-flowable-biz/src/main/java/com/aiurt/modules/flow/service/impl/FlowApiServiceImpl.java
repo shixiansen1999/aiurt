@@ -588,9 +588,9 @@ public class FlowApiServiceImpl implements FlowApiService {
                 objectList = objectList.stream().sorted(Comparator.comparing(ActOperationEntity::getShowOrder)).collect(Collectors.toList());
                 taskInfoDTO.setOperationList(objectList);
             }
-            if (StrUtil.isNotBlank(flowTaskExt.getVariableListJson())) {
+            /*if (StrUtil.isNotBlank(flowTaskExt.getVariableListJson())) {
                 // taskInfoDTO.setVariableList(JSON.parseArray(flowTaskExt.getVariableListJson(), JSONObject.class));
-            }
+            }*/
             String formJson = flowTaskExt.getFormJson();
             if (StrUtil.isNotBlank(formJson)) {
                 // 表单类型
