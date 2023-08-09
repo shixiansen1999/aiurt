@@ -354,10 +354,10 @@
                <if test="condition.examinationType != null ">
                    and t2.exam_classify = #{condition.examinationType}
                </if>
-               <if test="condition.times !=null ">
+               <if test="condition.times !=null and condition.times != ''">
                    and DATE_FORMAT(t2.start_exam_time, '%Y-%m-%d') = DATE_FORMAT(#{condition.times}, '%Y-%m-%d')
                </if>
-               <if test="condition.examTaskName !=null">
+               <if test="condition.examTaskName !=null and condition.examTaskName != ''">
                    and t2.exam_task_name LIKE CONCAT ('%', #{condition.examTaskName}, '%')
                </if>
                    and t2.task_state in(6,7)
