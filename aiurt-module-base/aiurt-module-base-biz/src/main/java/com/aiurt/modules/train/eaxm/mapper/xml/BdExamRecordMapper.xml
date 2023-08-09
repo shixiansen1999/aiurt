@@ -386,7 +386,8 @@
                     ),
                     0
                 ) AS referenceNumber,
-            ifnull((SELECT COUNT(er.user_id AND er.exam_classify=1 OR NULL)
+            <!--交卷了才不算缺考，因为到考试时间结束时，会自动在bd_exam_record生成一条记录，不能根据bd_exam_record有无数据来判定是否参加了考试-->
+            ifnull((SELECT COUNT(er.user_id AND er.exam_classify=1 AND er.is_submit = 1 OR NULL)
                     FROM bd_exam_record AS er
                     WHERE train_task_id=#{trainTaskId}),0)AS actualReferenceNumber
         FROM bd_train_task as tt
@@ -408,8 +409,11 @@
                 where id = er.user_id)AS name
         FROM bd_exam_record as er
         WHERE
+        <!--交卷了才不算缺考，因为到考试时间结束时，会自动在bd_exam_record生成一条记录，不能根据bd_exam_record有无数据来判定是否缺考
+        并且补考的也算是缺考-->
+        er.is_submit = 1 AND er.exam_classify = 1
         <if test="trainTaskId !=null and trainTaskId != ''">
-            er.train_task_id = #{trainTaskId}
+            AND er.train_task_id = #{trainTaskId}
         </if>
     </select>
     <select id="actualReferenceNames" resultType="java.lang.String">
