@@ -459,6 +459,8 @@ where tt.id =#{id}
         a.realname as realname,
         a.org_code as orgName,
         b.depart_name as teamName,
+        a.phone,
+	    a.card_code as identityNumber,
         (
         CASE
         WHEN a.status = 2 THEN
