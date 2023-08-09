@@ -69,6 +69,7 @@ import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.jetbrains.annotations.NotNull;
@@ -1951,12 +1952,34 @@ public class FlowApiServiceImpl implements FlowApiService {
                 result.add(processParticipantsInfoDTO);
             }
 
+
             // 部门维度
             // 1.查询部门
+            if(CollUtil.isNotEmpty(orgIds)){
+                List<LoginUser> useList = sysBaseAPI.getUseList(orgIds);
+                for (String orgId : orgIds) {
+                                 }
+            }
+
             // 2.一个个查询部门下的人员
             // 角色维度
-            // 岗位维度
+            //            Map<String, String> roleNamesByUserIds = sysBaseAPI.getRoleNamesByUserIds(null);
 
+            // 岗位维度
+            List<DictModel> sysPost = sysBaseAPI.getDictItems("sys_post");
+            Map<String, String> sysPostMap = new HashMap<>(16);
+            if (CollUtil.isNotEmpty(sysPost)) {
+                sysPostMap = sysPost.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
+            }
+            if(CollUtil.isNotEmpty(posts)){
+                ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
+                processParticipantsInfoDTO.setTitle("岗位");
+                for (String post : posts) {
+                    ProcessParticipantsInfoDetailsDTO processParticipantsInfoDetailsDTO = new ProcessParticipantsInfoDetailsDTO();
+                    processParticipantsInfoDetailsDTO.setLabel(sysPostMap.get(post));
+                    processParticipantsInfoDetailsDTO.setIsPost(true);
+                }
+            }
         }
         return null;
     }
