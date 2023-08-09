@@ -575,6 +575,13 @@ public interface ISysBaseAPI extends CommonAPI {
     void deleteAndStopJob(QuartzJobDTO quartzJobDTO);
 
     /**
+     * 通过任务id获取定时任务
+     * @param id
+     * @return
+     */
+    QuartzJobDTO getQuartzJobById(String id);
+
+    /**
      * 通过部门编号查询部门信息
      *
      * @param orgCode
