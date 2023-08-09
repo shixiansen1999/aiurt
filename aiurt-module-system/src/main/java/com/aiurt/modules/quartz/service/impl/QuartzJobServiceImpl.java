@@ -1,13 +1,14 @@
 package com.aiurt.modules.quartz.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.DateUtils;
+import com.aiurt.modules.quartz.entity.QuartzJob;
+import com.aiurt.modules.quartz.mapper.QuartzJobMapper;
 import com.aiurt.modules.quartz.service.IQuartzJobService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import com.aiurt.modules.quartz.entity.QuartzJob;
-import com.aiurt.modules.quartz.mapper.QuartzJobMapper;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,8 +52,13 @@ public class QuartzJobServiceImpl extends ServiceImpl<QuartzJobMapper, QuartzJob
 		boolean success = this.save(quartzJob);
 		if (success) {
 			if (CommonConstant.STATUS_NORMAL.equals(quartzJob.getStatus())) {
-				// 定时器添加
-				this.schedulerAdd(quartzJob.getId(), quartzJob.getJobClassName().trim(), quartzJob.getCronExpression().trim(), quartzJob.getParameter());
+				if (ObjectUtil.isNotEmpty(quartzJob.getTrigger())) {
+					// 定时器添加（使用自定义触发器）
+					this.schedulerAdd(quartzJob.getId(), quartzJob.getJobClassName().trim(), quartzJob.getTrigger(), quartzJob.getParameter());
+				} else {
+					// 定时器添加
+					this.schedulerAdd(quartzJob.getId(), quartzJob.getJobClassName().trim(), quartzJob.getCronExpression().trim(), quartzJob.getParameter());
+				}
 			}
 		}
 		return success;
@@ -148,6 +154,32 @@ public class QuartzJobServiceImpl extends ServiceImpl<QuartzJobMapper, QuartzJob
 
 			// 按新的cronExpression表达式构建一个新的trigger
 			CronTrigger trigger = TriggerBuilder.newTrigger().withIdentity(id).withSchedule(scheduleBuilder).build();
+
+			scheduler.scheduleJob(jobDetail, trigger);
+		} catch (SchedulerException e) {
+			throw new AiurtBootException("创建定时任务失败", e);
+		} catch (RuntimeException e) {
+			throw new AiurtBootException(e.getMessage(), e);
+		}catch (Exception e) {
+			throw new AiurtBootException("后台找不到该类名：" + jobClassName, e);
+		}
+	}
+
+	/**
+	 * 自定义触发器添加定时任务
+	 * @param id
+	 * @param jobClassName
+	 * @param trigger
+	 * @param parameter
+	 */
+	private void schedulerAdd(String id, String jobClassName, Trigger trigger, String parameter) {
+		try {
+			// 启动调度器
+			scheduler.start();
+
+			// 构建job信息
+			JobDetail jobDetail = JobBuilder.newJob(getClass(jobClassName).getClass()).withIdentity(id).usingJobData("parameter", parameter).build();
+
 
 			scheduler.scheduleJob(jobDetail, trigger);
 		} catch (SchedulerException e) {
