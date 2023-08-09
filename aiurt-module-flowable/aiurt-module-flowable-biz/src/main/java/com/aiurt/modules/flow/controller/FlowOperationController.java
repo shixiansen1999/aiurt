@@ -170,11 +170,7 @@ public class FlowOperationController {
     /**
      * 已办任务
      *
-     * @param processDefinitionName 流程名。
-     * @param beginDate             流程发起开始时间。
-     * @param endDate               流程发起结束时间。
-     * @param pageNo                当前页。
-     * @param pageSize              每页数量。
+     * @param historicTaskReqDTO
      * @return 查询结果应答。
      */
     @PostMapping("/listHistoricTask")

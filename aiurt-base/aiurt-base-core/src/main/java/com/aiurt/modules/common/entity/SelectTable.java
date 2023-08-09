@@ -1,5 +1,6 @@
 package com.aiurt.modules.common.entity;
 
+import cn.hutool.core.collection.CollUtil;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -7,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jeecg.common.system.vo.SysUserModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,7 +110,10 @@ public class SelectTable {
     @ApiModelProperty(value = "头像")
     private String avatar;
 
-    // 递归计算 subUserNum
+    /**
+     * 递归计算 subUserNum
+     * @return
+     */
     public Long calculateSubUserNum() {
         if (children == null || children.isEmpty()) {
             // 如果没有子部门，subUserNum 等于 userNum
@@ -125,4 +130,34 @@ public class SelectTable {
         }
         return subUserNum;
     }
+
+    private List<SysUserModel> convertToSysUserModelList(List<SelectTable> resultList) {
+        List<SysUserModel> sysUserModels = new ArrayList<>();
+
+        for (SelectTable selectTable : resultList) {
+            SysUserModel sysUserModel = new SysUserModel();
+            sysUserModel.setId(selectTable.getId());
+            sysUserModel.setKey(selectTable.getKey());
+            sysUserModel.setValue(selectTable.getValue());
+            sysUserModel.setLabel(selectTable.getLabel());
+            sysUserModel.setTitle(selectTable.getLabel());
+            sysUserModel.setIsOrg(selectTable.getIsOrg());
+            sysUserModel.setRoleName(selectTable.getRoleName());
+            sysUserModel.setPostName(selectTable.getPostName());
+            sysUserModel.setOrgCode(selectTable.getOrgCode());
+            sysUserModel.setOrgName(selectTable.getOrgName());
+            sysUserModel.setAvatar(selectTable.getAvatar());
+            sysUserModel.setUserNum(selectTable.getUserNum());
+
+            // 递归转换子部门信息
+            if (CollUtil.isNotEmpty(selectTable.getChildren())) {
+                sysUserModel.setChildren(convertToSysUserModelList(selectTable.getChildren()));
+            }
+
+            sysUserModels.add(sysUserModel);
+        }
+
+        return sysUserModels;
+    }
+
 }

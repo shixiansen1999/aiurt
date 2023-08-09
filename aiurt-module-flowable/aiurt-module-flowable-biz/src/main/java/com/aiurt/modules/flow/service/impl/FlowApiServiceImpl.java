@@ -69,9 +69,9 @@ import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysUserModel;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -1893,6 +1893,7 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Override
     public List<ProcessParticipantsInfoDTO> getProcessParticipantsInfo(String processInstanceId, String taskId) {
         List<ProcessParticipantsInfoDTO> result = CollUtil.newArrayList();
+
         Task task = this.getProcessInstanceActiveTask(processInstanceId, taskId);
         if (task == null) {
             throw new AiurtBootException("数据验证失败，请核对指定的任务Id，请刷新后重试！");
@@ -1904,83 +1905,144 @@ public class FlowApiServiceImpl implements FlowApiService {
         String taskDefinitionKey = task.getTaskDefinitionKey();
         String processDefinitionId = task.getProcessDefinitionId();
 
-        FlowElement flowElement = flowElementUtil.getTargetFlowElement(execution, flowElementUtil.getFlowElement(processDefinitionId, taskDefinitionKey));
-        // 假设 flowElement 是 FlowElement 对象
-        if (flowElement instanceof UserTask) {
-            UserTask userTask = (UserTask) flowElement;
+        List<FlowElement> targetFlowElement = flowElementUtil.getTargetFlowElement(execution, flowElementUtil.getFlowElement(processDefinitionId, taskDefinitionKey));
 
-            // 获取任务 ID
-            String nextTaskId = userTask.getId();
-            ActCustomUser customUserByTaskInfo = actCustomUserService.getActCustomUserByTaskInfo(processDefinitionId, nextTaskId, FlowConstant.USER_TYPE_0);
-            if (ObjectUtil.isEmpty(customUserByTaskInfo)) {
-                return CollUtil.newArrayList();
-            }
+        if (CollUtil.isEmpty(targetFlowElement)) {
+            return CollUtil.newArrayList();
+        }
 
-            String[] userNames = StrUtil.split(customUserByTaskInfo.getUserName(), ",");
-            List<String> roleCodes = StrUtil.split(customUserByTaskInfo.getRoleCode(), ',');
-            List<String> orgIds = StrUtil.split(customUserByTaskInfo.getOrgId(), ',');
-            List<String> posts = StrUtil.split(customUserByTaskInfo.getPost(), ',');
-
-            if (ObjectUtil.isEmpty(userNames) && CollUtil.isEmpty(roleCodes) && CollUtil.isEmpty(orgIds) && CollUtil.isEmpty(posts)) {
-                return CollUtil.newArrayList();
-            }
-
-            // 用户维度
-            List<LoginUser> loginUsers = sysBaseAPI.queryUserByNames(userNames);
-            if(CollUtil.isNotEmpty(loginUsers)){
+        for (FlowElement flowElement : targetFlowElement) {
+            if (flowElement instanceof UserTask) {
+                UserTask userTask = (UserTask) flowElement;
                 ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
-                processParticipantsInfoDTO.setTitle("用户");
+                processParticipantsInfoDTO.setTitle(userTask.getName());
+                processParticipantsInfoDTO.setNodeId(userTask.getId());
+                processParticipantsInfoDTO.setOptions(CollUtil.newArrayList());
 
-                List<ProcessParticipantsInfoDetailsDTO> data = CollUtil.newArrayList();
-                for (LoginUser loginUser : loginUsers) {
-                    ProcessParticipantsInfoDetailsDTO processParticipantsInfoDetailsDTO = new ProcessParticipantsInfoDetailsDTO();
-                    processParticipantsInfoDetailsDTO.setId(loginUser.getId());
-                    processParticipantsInfoDetailsDTO.setKey(loginUser.getId());
-                    processParticipantsInfoDetailsDTO.setLabel(loginUser.getRealname());
-                    processParticipantsInfoDetailsDTO.setValue(loginUser.getUsername());
-                    processParticipantsInfoDetailsDTO.setAvatar(loginUser.getAvatar());
-                    processParticipantsInfoDetailsDTO.setOrgName(loginUser.getOrgName());
-                    processParticipantsInfoDetailsDTO.setPostName(loginUser.getPost());
-                    processParticipantsInfoDetailsDTO.setRoleName(loginUser.getRoleNames());
-                    data.add(processParticipantsInfoDetailsDTO);
-                }
-                if(CollUtil.isNotEmpty(data)){
-                    processParticipantsInfoDTO.setData(data);
+                // 获取下一个节点ID
+                String nextTaskId = userTask.getId();
+                ActCustomUser customUserByTaskInfo = actCustomUserService.getActCustomUserByTaskInfo(processDefinitionId, nextTaskId, FlowConstant.USER_TYPE_0);
+                if (ObjectUtil.isEmpty(customUserByTaskInfo)) {
+                    result.add(processParticipantsInfoDTO);
+                    continue;
                 }
 
-                result.add(processParticipantsInfoDTO);
-            }
+                // 用户维度
+                String[] userNames = StrUtil.split(customUserByTaskInfo.getUserName(), ",");
+                buildUserParticipantsInfo(sysBaseAPI.queryUserByNames(userNames), processParticipantsInfoDTO.getOptions());
 
+                // 部门维度
+                buildDepartUserTree(customUserByTaskInfo.getOrgId(),processParticipantsInfoDTO.getOptions());
 
-            // 部门维度
-            // 1.查询部门
-            if(CollUtil.isNotEmpty(orgIds)){
-                List<LoginUser> useList = sysBaseAPI.getUseList(orgIds);
-                for (String orgId : orgIds) {
-                                 }
-            }
+                // 角色维度
+                buildRoleParticipantsInfo(customUserByTaskInfo.getRoleCode(), processParticipantsInfoDTO.getOptions());
 
-            // 2.一个个查询部门下的人员
-            // 角色维度
-            //            Map<String, String> roleNamesByUserIds = sysBaseAPI.getRoleNamesByUserIds(null);
-
-            // 岗位维度
-            List<DictModel> sysPost = sysBaseAPI.getDictItems("sys_post");
-            Map<String, String> sysPostMap = new HashMap<>(16);
-            if (CollUtil.isNotEmpty(sysPost)) {
-                sysPostMap = sysPost.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
-            }
-            if(CollUtil.isNotEmpty(posts)){
-                ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
-                processParticipantsInfoDTO.setTitle("岗位");
-                for (String post : posts) {
-                    ProcessParticipantsInfoDetailsDTO processParticipantsInfoDetailsDTO = new ProcessParticipantsInfoDetailsDTO();
-                    processParticipantsInfoDetailsDTO.setLabel(sysPostMap.get(post));
-                    processParticipantsInfoDetailsDTO.setIsPost(true);
-                }
+                // 岗位维度
+                buildPostParticipantsInfo(customUserByTaskInfo.getPost(), processParticipantsInfoDTO.getOptions());
             }
         }
-        return null;
+        return result;
+    }
+
+    /**
+     * 构建用户维度的流程参与者信息
+     *
+     * @param loginUsers 用户列表
+     * @param result     结果列表，用于存储构建的参与者信息对象
+     */
+    private void buildUserParticipantsInfo(List<LoginUser> loginUsers, List<ProcessParticipantsInfoDTO> result) {
+        if (CollUtil.isEmpty(loginUsers)) {
+            return;
+        }
+
+        List<SysUserModel> data = CollUtil.newArrayList();
+        for (LoginUser loginUser : loginUsers) {
+            SysUserModel sysUserModel = buildSysUserModel(loginUser);
+            if (ObjectUtil.isNotEmpty(sysUserModel)) {
+                data.add(sysUserModel);
+            }
+        }
+
+        if (CollUtil.isNotEmpty(data)) {
+            ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
+            processParticipantsInfoDTO.setTitle("用户");
+            processParticipantsInfoDTO.setData(data);
+            result.add(processParticipantsInfoDTO);
+        }
+    }
+
+    /**
+     * 构建部门维度的流程参与者信息
+     *
+     * @param departIdStr 部门id字符串，多个使用","分割
+     * @param result      结果列表，用于存储构建的参与者信息对象
+     */
+    private void buildDepartUserTree(String departIdStr, List<ProcessParticipantsInfoDTO> result) {
+        if (StrUtil.isEmpty(departIdStr)) {
+            return;
+        }
+
+        List<SysUserModel> sysUserModels = sysBaseAPI.queryDepartUserTree(departIdStr);
+        if (CollUtil.isNotEmpty(sysUserModels)) {
+            ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
+            processParticipantsInfoDTO.setTitle("部门");
+            processParticipantsInfoDTO.setData(sysUserModels);
+            result.add(processParticipantsInfoDTO);
+        }
+    }
+
+    /**
+     * 构建角色维度的流程参与者信息
+     *
+     * @param roleCodes 角色编码字符串，多个使用","分割
+     * @param result    结果列表，用于存储构建的参与者信息对象
+     */
+    private void buildRoleParticipantsInfo(String roleCodes, List<ProcessParticipantsInfoDTO> result) {
+        if (StrUtil.isEmpty(roleCodes)) {
+            return;
+        }
+
+        List<SysUserModel> sysUserModels = sysBaseAPI.queryRoleUserTree(roleCodes,Boolean.TRUE);
+        if (CollUtil.isNotEmpty(sysUserModels)) {
+            ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
+            processParticipantsInfoDTO.setTitle("角色");
+            processParticipantsInfoDTO.setData(sysUserModels);
+            result.add(processParticipantsInfoDTO);
+        }
+    }
+
+    /**
+     * 构建岗位维度的流程参与者信息
+     *
+     * @param postCodes 岗位编码字符串，多个使用","分割
+     * @param result    结果列表，用于存储构建的参与者信息对象
+     */
+    private void buildPostParticipantsInfo(String postCodes, List<ProcessParticipantsInfoDTO> result) {
+        if (StrUtil.isEmpty(postCodes)) {
+            return;
+        }
+
+        List<SysUserModel> sysUserModels = sysBaseAPI.queryPostUserTree(postCodes, Boolean.TRUE);
+        if (CollUtil.isNotEmpty(sysUserModels)) {
+            ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
+            processParticipantsInfoDTO.setTitle("岗位");
+            processParticipantsInfoDTO.setData(sysUserModels);
+            result.add(processParticipantsInfoDTO);
+        }
+    }
+
+    @NotNull
+    private SysUserModel buildSysUserModel(LoginUser loginUser) {
+        SysUserModel sysUserModel = new SysUserModel();
+        sysUserModel.setId(loginUser.getId());
+        sysUserModel.setKey(loginUser.getId());
+        sysUserModel.setLabel(loginUser.getRealname());
+        sysUserModel.setValue(loginUser.getUsername());
+        sysUserModel.setAvatar(loginUser.getAvatar());
+        sysUserModel.setOrgName(loginUser.getOrgName());
+        sysUserModel.setPostName(loginUser.getPostNames());
+        sysUserModel.setRoleName(loginUser.getRoleNames());
+        return sysUserModel;
     }
 
     private List<FlowElement> getChildUserTaskList(

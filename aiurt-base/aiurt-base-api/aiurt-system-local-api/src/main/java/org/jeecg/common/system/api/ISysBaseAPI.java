@@ -209,19 +209,30 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 角色树
-     * @param values 可以根据values查询，多个使用英文逗号分隔。有values时就不返回树结构了，而是列表
+     *
+     * @param values       可以根据values查询，多个使用英文逗号分隔。
+     * @param isTreeReturn 有values时,true返回树结构,false返回列表
      * @return
      */
-    public List<SysUserModel> queryRoleUserTree(String values);
+    public List<SysUserModel> queryRoleUserTree(String values,Boolean isTreeReturn);
 
 
     /**
      * 岗位树
-     * @param values 可以根据values查询，多个使用英文逗号分隔。有values时就不返回树结构了，而是列表
-     * @param
+     *
+     * @param values       可以根据values查询，多个使用英文逗号分隔。有values时就不返回树结构了，而是列表
+     * @param isTreeReturn 有values时,true返回树结构,false返回列表
      * @return
      */
-    public List<SysUserModel> queryPostUserTree(String values);
+    public List<SysUserModel> queryPostUserTree(String values,Boolean isTreeReturn);
+
+    /**
+     * 组织机构树
+     *
+     * @param departIdStr 可以根据departIdStr查询，多个使用英文逗号分隔。
+     * @return
+     */
+    List<SysUserModel> queryDepartUserTree(String departIdStr);
 
     /**
      * 22通过用户账号查询角色Id集合

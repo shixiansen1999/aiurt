@@ -2,8 +2,10 @@ package com.aiurt.modules.flow.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.jeecg.common.system.vo.SysUserModel;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,5 +19,10 @@ public class ProcessParticipantsInfoDTO implements Serializable {
     @ApiModelProperty("维度标题")
     private String title;
 
-    private List<ProcessParticipantsInfoDetailsDTO> data;
+    @ApiModelProperty("流程节点id")
+    private String nodeId;
+
+    private List<ProcessParticipantsInfoDTO> options;
+
+    private List<SysUserModel> data;
 }

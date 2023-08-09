@@ -6,6 +6,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
@@ -105,6 +106,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.*;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -859,7 +861,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
 
     @Override
-    public List<SysUserModel>queryRoleUserTree(String values){
+    public List<SysUserModel>queryRoleUserTree(String values,Boolean isTreeReturn){
         // 将查询岗位，并转成map
         List<DictModel> sysPost = this.getDictItems("sys_post");
         Map<String, String> sysPostMap = sysPost.stream()
@@ -920,9 +922,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             }
             // 该角色一共有多少人
             if (CollUtil.isEmpty(roleSysUserModel.getChildren())){
-                roleSysUserModel.setUserNum(0);
+                roleSysUserModel.setUserNum(0L);
             }else{
-                roleSysUserModel.setUserNum(roleSysUserModel.getChildren().size());
+                roleSysUserModel.setUserNum((long) roleSysUserModel.getChildren().size());
             }
             list.add(roleSysUserModel);
         }
@@ -935,11 +937,14 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 if (searchValueList.contains(role.getValue())) {
                     searchResultList.add(role);
                 }
-                // 因为角色下的children就是人员，树级结构只有两层，不用递归
-                List<SysUserModel> userList = Optional.ofNullable(role.getChildren()).orElseGet(ArrayList::new);
-                searchResultList.addAll(userList.stream().filter(user->searchValueList.contains(user.getValue())).collect(Collectors.toList()));
-                // 而且查询的话，角色下的children就不要了
-                role.setChildren(null);
+
+                if (!isTreeReturn) {
+                    // 因为角色下的children就是人员，树级结构只有两层，不用递归
+                    List<SysUserModel> userList = Optional.ofNullable(role.getChildren()).orElseGet(ArrayList::new);
+                    searchResultList.addAll(userList.stream().filter(user -> searchValueList.contains(user.getValue())).collect(Collectors.toList()));
+                    // 而且查询的话，角色下的children就不要了
+                    role.setChildren(null);
+                }
             });
             // searchResultList根据value去重
             return searchResultList.stream().collect(
@@ -954,7 +959,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<SysUserModel>queryPostUserTree(String values){
+    public List<SysUserModel> queryPostUserTree(String values, Boolean isTreeReturn) {
         List<SysUserModel> list = new ArrayList<>();
         List<DictModel> sysPost = this.getDictItems("sys_post");
         Map<String, String> sysPostMap = sysPost.stream()
@@ -1011,9 +1016,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 }
                 // 该岗位一共有多少人
                 if (CollUtil.isEmpty(postSysUserModel.getChildren())){
-                    postSysUserModel.setUserNum(0);
+                    postSysUserModel.setUserNum(0L);
                 }else{
-                    postSysUserModel.setUserNum(postSysUserModel.getChildren().size());
+                    postSysUserModel.setUserNum((long) postSysUserModel.getChildren().size());
                 }
 
                 list.add(postSysUserModel);
@@ -1028,11 +1033,14 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 if (searchValueList.contains(post.getValue())) {
                     searchResultList.add(post);
                 }
-                // 因为角色下的children就是人员，树级结构只有两层，不用递归
-                List<SysUserModel> userList = Optional.ofNullable(post.getChildren()).orElseGet(ArrayList::new);
-                searchResultList.addAll(userList.stream().filter(user->searchValueList.contains(user.getValue())).collect(Collectors.toList()));
-                // 而且查询的话，角色下的children就不要了
-                post.setChildren(null);
+
+                if (!isTreeReturn) {
+                    // 因为角色下的children就是人员，树级结构只有两层，不用递归
+                    List<SysUserModel> userList = Optional.ofNullable(post.getChildren()).orElseGet(ArrayList::new);
+                    searchResultList.addAll(userList.stream().filter(user -> searchValueList.contains(user.getValue())).collect(Collectors.toList()));
+                    // 而且查询的话，角色下的children就不要了
+                    post.setChildren(null);
+                }
             });
             // searchResultList根据value去重
             return searchResultList.stream().collect(
@@ -1044,6 +1052,63 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
 
         return list;
+    }
+
+    @Override
+    public List<SysUserModel> queryDepartUserTree(String departIdStr) {
+        List<String> departIds = null;
+        if(StrUtil.isNotEmpty(departIdStr)){
+            departIds = StrUtil.split(departIdStr, ',');
+        }
+        List<SysDepart> departList = sysDepartMapper.selectRecursiveChildrenByIds(departIds);
+
+        List<SelectTable> treeList = departList.stream().map(entity -> {
+            SelectTable table = new SelectTable();
+            table.setValue(entity.getId());
+            table.setLabel(entity.getDepartName());
+            table.setTitle(entity.getDepartName());
+            table.setIsOrg(true);
+            table.setKey(entity.getOrgCode());
+            table.setParentValue(StrUtil.isBlank(entity.getParentId()) ? "-9999" : entity.getParentId());
+            return table;
+        }).collect(Collectors.toList());
+
+        Map<String, SelectTable> root = new LinkedHashMap<>();
+        for (SelectTable item : treeList) {
+            SelectTable parent = root.get(item.getParentValue());
+            if (Objects.isNull(parent)) {
+                parent = new SelectTable();
+                root.put(item.getParentValue(), parent);
+            }
+            SelectTable table = root.get(item.getValue());
+            if (Objects.nonNull(table)) {
+                item.setChildren(table.getChildren());
+            }
+            root.put(item.getValue(), item);
+            parent.addChildren(item);
+        }
+
+        List<SelectTable> resultList = new ArrayList<>();
+        List<SelectTable> collect = root.values().stream().filter(entity -> StrUtil.isBlank(entity.getParentValue())).collect(Collectors.toList());
+        for (SelectTable entity : collect) {
+            resultList.addAll(CollectionUtil.isEmpty(entity.getChildren()) ? Collections.emptyList() : entity.getChildren());
+        }
+
+        List<DictModel> sysPost = this.getDictItems("sys_post");
+        Map<String, String> sysPostMap = new HashMap<>(32);
+        if (CollUtil.isNotEmpty(sysPost)) {
+            sysPostMap = sysPost.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
+        }
+        Map<String, String> roleNamesByUserIds = this.getRoleNamesByUserIds(null);
+
+        dealUser(resultList, sysPostMap, roleNamesByUserIds);
+
+        // 遍历所有部门，计算 subUserNum
+        for (SelectTable table : resultList) {
+            table.calculateSubUserNum();
+        }
+
+        return this.convertToSysUserModelList(resultList);
     }
 
     @Override
@@ -1253,13 +1318,49 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         queryWrapper.in("username", userNames);
         List<LoginUser> loginUsers = new ArrayList<>();
         List<SysUser> sysUsers = userMapper.selectList(queryWrapper);
-        for (SysUser user : sysUsers) {
-            LoginUser loginUser = new LoginUser();
-            BeanUtils.copyProperties(user, loginUser);
-            // 封装部门、角色、岗位
-            loginUsers.add(loginUser);
+
+        if (CollUtil.isNotEmpty(sysUsers)) {
+            List<String> userIds = sysUsers.stream().map(SysUser::getId).collect(Collectors.toList());
+            Map<String, String> roleNamesByUserIds = this.getRoleNamesByUserIds(userIds);
+
+            Map<String, String> sysPostMap = getSysPostDictMap();
+
+            for (SysUser user : sysUsers) {
+                LoginUser loginUser = new LoginUser();
+                BeanUtils.copyProperties(user, loginUser);
+                // 封装角色、岗位
+                loginUser.setRoleNames(roleNamesByUserIds.get(user.getId()));
+                loginUser.setPostNames(convertPostCodesToNames(loginUser.getPost(), sysPostMap));
+                loginUsers.add(loginUser);
+            }
         }
+
         return loginUsers;
+    }
+
+    private Map<String, String> getSysPostDictMap() {
+        List<DictModel> sysPostList = this.getDictItems("sys_post");
+        Map<String, String> sysPostMap = new HashMap<>(16);
+        if (CollUtil.isNotEmpty(sysPostList)) {
+            sysPostMap = sysPostList.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
+        }
+        return sysPostMap;
+    }
+    /**
+     * 将岗位编码列表转换为逗号分隔的岗位名称字符串，使用提供的岗位编码和名称映射。
+     *
+     * @param postStr 岗位编号字符串，使用“,”分割。
+     * @param sysPostMap   岗位编码到岗位名称的映射。
+     * @return 逗号分隔的岗位名称字符串。
+     */
+    public String convertPostCodesToNames(String postStr, Map<String, String> sysPostMap) {
+        if (StrUtil.isEmpty(postStr) || MapUtil.isEmpty(sysPostMap)) {
+            return postStr;
+        }
+        List<String> postCodeList = StrUtil.split(postStr, ',');
+        return postCodeList.stream()
+                .map(sysPostMap::get)
+                .collect(Collectors.joining(","));
     }
 
     @Override
@@ -3829,4 +3930,77 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
         return result;
     }
+
+    private void dealUser(List<SelectTable> children, Map<String, String> sysPostMap, Map<String, String> roleNamesByUserIds) {
+        if (CollectionUtil.isEmpty(children)) {
+            return;
+        }
+        for (SelectTable child : children) {
+            List<SelectTable> list = child.getChildren();
+            dealUser(list, sysPostMap, roleNamesByUserIds);
+            if (CollectionUtil.isEmpty(list)) {
+                list = new ArrayList<>();
+            }
+
+            // 部门id
+            String orgId = child.getValue();
+            LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(SysUser::getOrgId, orgId);
+            wrapper.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+            wrapper.eq(SysUser::getStatus, CommonConstant.USER_UNFREEZE);
+
+            List<SysUser> sysUserList = userMapper.selectList(wrapper);
+            List<SelectTable> tableList = sysUserList.stream().map(sysUser -> {
+                SelectTable table = new SelectTable();
+                table.setKey(sysUser.getId());
+                table.setValue(sysUser.getUsername());
+                table.setLabel(sysUser.getRealname());
+                table.setTitle(sysUser.getRealname());
+                table.setAvatar(sysUser.getAvatar());
+                table.setOrgCode(child.getKey());
+                table.setOrgName(child.getLabel());
+                List<String> jobNames = StrUtil.splitTrim(sysUser.getJobName(), ",");
+                if (CollUtil.isNotEmpty(jobNames)) {
+                    String postName = jobNames.stream().map(e -> sysPostMap.get(e)).collect(Collectors.joining(","));
+                    table.setPostName(postName);
+                }
+                table.setRoleName(roleNamesByUserIds.get(sysUser.getId()));
+                return table;
+            }).collect(Collectors.toList());
+            child.setUserNum((long) tableList.size());
+            list.addAll(list.size(), tableList);
+            child.setChildren(list);
+        }
+    }
+
+    private List<SysUserModel> convertToSysUserModelList(List<SelectTable> resultList) {
+        List<SysUserModel> sysUserModels = new ArrayList<>();
+
+        for (SelectTable selectTable : resultList) {
+            SysUserModel sysUserModel = new SysUserModel();
+            sysUserModel.setId(selectTable.getId());
+            sysUserModel.setKey(selectTable.getKey());
+            sysUserModel.setValue(selectTable.getValue());
+            sysUserModel.setLabel(selectTable.getLabel());
+            sysUserModel.setTitle(selectTable.getLabel());
+            sysUserModel.setIsOrg(selectTable.getIsOrg());
+            sysUserModel.setRoleName(selectTable.getRoleName());
+            sysUserModel.setPostName(selectTable.getPostName());
+            sysUserModel.setOrgCode(selectTable.getOrgCode());
+            sysUserModel.setOrgName(selectTable.getOrgName());
+            sysUserModel.setAvatar(selectTable.getAvatar());
+            sysUserModel.setUserNum(selectTable.getUserNum());
+
+            // 递归转换子部门信息
+            if (CollUtil.isNotEmpty(selectTable.getChildren())) {
+                sysUserModel.setChildren(convertToSysUserModelList(selectTable.getChildren()));
+            }
+
+            sysUserModels.add(sysUserModel);
+        }
+
+        return sysUserModels;
+    }
+
+
 }
