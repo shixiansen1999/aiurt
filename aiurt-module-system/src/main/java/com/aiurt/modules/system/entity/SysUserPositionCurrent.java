@@ -92,6 +92,12 @@ public class SysUserPositionCurrent {
     @TableField(updateStrategy = FieldStrategy.IGNORED)
     private String stationCode;
     /**
+     * 用户所在的上一个车站的连接wifi的mac地址，null值也更新
+     */
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
+    @ApiModelProperty(value = "用户所在的上一个车站的连接wifi的mac地址")
+    private String lastBssid;
+    /**
      * 用户所在的上一个车站的连接时间
      */
     @ApiModelProperty(value = "用户所在的上一个车站的连接时间")

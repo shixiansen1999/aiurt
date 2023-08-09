@@ -654,12 +654,10 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
         }
         List<String> actualReferenceNames = bdExamRecordMapper.bdExamPaperName(trainTaskId);
         List<String> referenceNames=bdExamRecordMapper.actualReferenceNames(trainTaskId);
-        if (actualReferenceNames.size()!=0 && referenceNames.size()!=0){
-            referenceNames.removeAll(actualReferenceNames);
-            examDetailsDTO.setAbsentPersonNames(referenceNames);
-        }else {
-            examDetailsDTO.setAbsentPersonNames(new ArrayList<>());
-        }
+
+        // 因为actualReferenceNames和referenceNames是mapper查询的列表，不会有null，直接：缺考的人员=应参加培训的人员-实际考试的人员
+        referenceNames.removeAll(actualReferenceNames);
+        examDetailsDTO.setAbsentPersonNames(referenceNames);
 
         if (examDetailsDTO.getExamTime()!=null){
             Date time1 = new Date();
