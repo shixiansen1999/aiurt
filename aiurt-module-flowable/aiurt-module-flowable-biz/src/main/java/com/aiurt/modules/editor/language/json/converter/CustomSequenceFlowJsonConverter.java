@@ -6,30 +6,24 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
 import com.aiurt.modules.common.enums.FlowConditionEnum;
-import com.aiurt.modules.common.enums.FlowConditionTypeEnum;
-import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.modeler.dto.FlowConditionDTO;
 import com.aiurt.modules.modeler.dto.FlowRelationDTO;
+import com.aiurt.modules.modeler.dto.FlowTransferTypeDTO;
 import com.aiurt.modules.modeler.dto.RelationMaps;
-import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.aiurt.modules.utils.FlowRelationUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.datical.liquibase.ext.util.ObjectSqlFileUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import liquibase.pro.packaged.V;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.model.*;
 import org.flowable.editor.language.json.converter.*;
-import org.flowable.editor.language.json.converter.util.JsonConverterUtil;
 
-import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -41,6 +35,11 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
     private static final String CUSTOM_CONDITION = "customCondition";
     private static final String PROPERTY = "property";
     private static final String SERVICE = "service";
+    /**
+     * 流转条件的第一个编号
+     */
+    private static final String FLOW_CONDITION_FIRST_NUMBER = "[1]";
+
 
     /**
      * 注入自定义CustomUserTaskJsonConverter
@@ -146,10 +145,40 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
             flowNode.set(FlowModelAttConstant.FLOW_CONDITION, arrayNode);
         }
 
+        // 处理流程条件关系
+        handleRelation(flowNode, propertiesNode, extensionElements, relationMaps);
+
+        // 处理flowable:transferType流转条件
+        List<ExtensionElement> flowTransferTypeElementList = extensionElements.getOrDefault(FlowModelAttConstant.TRANSFER_TYPE, new ArrayList<>());
+        if (CollUtil.isNotEmpty(flowTransferTypeElementList)) {
+            ExtensionElement extensionElement = flowTransferTypeElementList.get(0);
+            ObjectNode objectNode = FlowRelationUtil.createObjectNodeFromFields(FlowTransferTypeDTO.class, extensionElement);
+            flowNode.set(FlowModelAttConstant.TRANSFER_TYPE, objectNode);
+        }
+
+        flowNode.set(EDITOR_SHAPE_PROPERTIES, propertiesNode);
+        shapesArrayNode.add(flowNode);
+    }
+
+    /**
+     * 处理流程条件关系
+     * flowNode: 流程节点对象，用于设置属性和关系。
+     * propertiesNode: 流程节点的属性对象，用于存储条件关系表达式。
+     * extensionElements: 流程节点的扩展元素列表，包含条件关系的信息。
+     * relationMaps: 关联Map，用于存储条件关系的占位符和对应的值。
+     */
+    private void handleRelation(ObjectNode flowNode,
+                                ObjectNode propertiesNode,
+                                Map<String, List<ExtensionElement>> extensionElements,
+                                RelationMaps relationMaps) {
+
         // 条件关系
+        List<ExtensionElement> flowRelationElementList = extensionElements.getOrDefault(FlowModelAttConstant.FLOW_RELATION, new ArrayList<>());
+
         String relationValue = null;
         ObjectNode flowRelationObjectNode = null;
-        List<ExtensionElement> flowRelationElementList = extensionElements.getOrDefault(FlowModelAttConstant.FLOW_RELATION, new ArrayList<>());
+
+        // 如果条件关系的ExtensionElement存在，解析并获取关联值
         if (CollUtil.isNotEmpty(flowRelationElementList)) {
             ExtensionElement extensionElement = flowRelationElementList.get(0);
             flowRelationObjectNode = FlowRelationUtil.createObjectNodeFromFields(FlowRelationDTO.class, extensionElement);
@@ -157,24 +186,28 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
             relationValue = ObjectUtil.isNotEmpty(flowRelationDto) ? flowRelationDto.getValue() : null;
         }
 
-        // 处理条件关系表达式,设计 <![CDATA[${var:equals(name,"李四")} && ${var:lt(money, 100)}]]
         if (StrUtil.isEmpty(relationValue)) {
             if (ObjectUtil.isNotEmpty(relationMaps) && MapUtil.isNotEmpty(relationMaps.getNumberRelationMap())) {
-                relationValue = relationMaps.getNumberRelationMap().keySet().stream().findFirst().orElse("[1]");
+                relationValue = relationMaps.getNumberRelationMap().keySet().stream().findFirst().orElse(FLOW_CONDITION_FIRST_NUMBER);
             } else {
-                relationValue = "[1]";
+                relationValue = FLOW_CONDITION_FIRST_NUMBER;
             }
         }
 
-        String replacedExpressionWithStr = FlowRelationUtil.replacePlaceholders(relationValue, relationMaps.getNumberRelationMap());
-        String replacedExpressionWithNameStr = FlowRelationUtil.replacePlaceholders(relationValue, relationMaps.getNumberRelationNameMap());
-        String processedExpressionWithStr = FlowRelationUtil.replaceOperators(replacedExpressionWithStr, "||", "&&");
-        String processedExpressionWithNameStr = FlowRelationUtil.replaceOperators(replacedExpressionWithNameStr, "或者", "并且");
+        // 处理条件关系表达式,设计 <![CDATA[${var:equals(name,"李四")} && ${var:lt(money, 100)}]]
+        String processedExpressionWithStr = null;
+        String processedExpressionWithNameStr = null;
+        // 有流程条件才进行替换操作
+        if (MapUtil.isNotEmpty(relationMaps.getNumberRelationMap())) {
+            String replacedExpressionWithStr = FlowRelationUtil.replacePlaceholders(relationValue, relationMaps.getNumberRelationMap());
+            String replacedExpressionWithNameStr = FlowRelationUtil.replacePlaceholders(relationValue, relationMaps.getNumberRelationNameMap());
+            processedExpressionWithStr = FlowRelationUtil.replaceOperators(replacedExpressionWithStr, "||", "&&");
+            processedExpressionWithNameStr = FlowRelationUtil.replaceOperators(replacedExpressionWithNameStr, "或者", "并且");
+        }
 
         if (StrUtil.isNotEmpty(processedExpressionWithStr)) {
-            propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, String.format("<![CDATA[%s]]>", processedExpressionWithStr));
+            propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, processedExpressionWithStr);
         }
-        flowNode.set(EDITOR_SHAPE_PROPERTIES, propertiesNode);
 
         if (ObjectUtil.isNotEmpty(flowRelationObjectNode)) {
             if (StrUtil.isNotEmpty(processedExpressionWithNameStr)) {
@@ -182,8 +215,6 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
             }
             flowNode.set(FlowModelAttConstant.FLOW_RELATION, flowRelationObjectNode);
         }
-
-        shapesArrayNode.add(flowNode);
     }
 
     /**
@@ -217,12 +248,9 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
 
                 // 流转条件关系
                 addExtansionPropertiesElemt(elementNode, sequenceFlow, FlowModelAttConstant.FLOW_RELATION);
-//                JsonNode relationNode = elementNode.get(FlowModelAttConstant.FLOW_RELATION);
-//                if (ObjectUtil.isNotEmpty(relationNode)) {
-//
-//
-//                }
 
+                // 流转类型
+                addExtansionPropertiesElemt(elementNode, sequenceFlow, FlowModelAttConstant.TRANSFER_TYPE);
             }
         } catch (JsonProcessingException e) {
             log.error("将JSON数据转换为扩展元素时发生错误: {}", e.getMessage());

@@ -7,8 +7,10 @@ import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.modules.material.entity.MaterialBase;
@@ -37,10 +39,8 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserDepartModel;
-import org.jeecg.common.system.vo.DictModel;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.*;
 import org.jeecg.common.util.SpringContextUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +81,8 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
     private String upLoadPath;
     @Autowired
     private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private ISysParamAPI sysParamApi;
     @Autowired
     private IMaterialBaseService materialBaseService;
     @Autowired
@@ -130,11 +132,41 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partInOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partInOrder.getWarehouseCode()));
         if(null!=sparePartStock){
             sparePartStock.setNum(sparePartStock.getNum()+partInOrder.getNum());
+
+            // 更新全新数量
+            if (sparePartStock.getNewNum() != null && partInOrder.getNewNum() != null){
+                sparePartStock.setNewNum(sparePartStock.getNewNum() + partInOrder.getNewNum());
+            }else if (partInOrder.getNewNum() != null){
+                sparePartStock.setNewNum(partInOrder.getNewNum());
+            }
+            // 更新已使用数量
+            if (sparePartStock.getUsedNum() != null && partInOrder.getUsedNum() != null){
+                sparePartStock.setUsedNum(sparePartStock.getUsedNum() + partInOrder.getUsedNum());
+            }else if (partInOrder.getUsedNum() != null){
+                sparePartStock.setUsedNum(partInOrder.getUsedNum());
+            }
+            // 更新待报损数量
+            if (sparePartStock.getScrapNum() != null && partInOrder.getScrapNum() != null){
+                sparePartStock.setScrapNum(sparePartStock.getScrapNum() + partInOrder.getScrapNum());
+            }else if(partInOrder.getScrapNum() != null){
+                sparePartStock.setScrapNum(partInOrder.getScrapNum());
+            }
+            // 更新委外送修数量
+            if (sparePartStock.getOutsourceRepairNum() != null && partInOrder.getOutsourceRepairNum() != null){
+                sparePartStock.setOutsourceRepairNum(sparePartStock.getOutsourceRepairNum() + partInOrder.getOutsourceRepairNum());
+            }else if (partInOrder.getOutsourceRepairNum() != null){
+                sparePartStock.setOutsourceRepairNum(partInOrder.getOutsourceRepairNum());
+            }
+
             sparePartStockMapper.updateById(sparePartStock);
         }else{
             SparePartStock stock = new SparePartStock();
             stock.setMaterialCode(partInOrder.getMaterialCode());
             stock.setNum(partInOrder.getNum());
+            stock.setNewNum(partInOrder.getNewNum());
+            stock.setUsedNum(partInOrder.getUsedNum());
+            stock.setScrapNum(partInOrder.getScrapNum());
+            stock.setOutsourceRepairNum(partInOrder.getOutsourceRepairNum());
             stock.setWarehouseCode(partInOrder.getWarehouseCode());
             //存仓库组织机构的关联班组
             String orgCode = sysBaseApi.getDepartByWarehouseCode(partInOrder.getWarehouseCode());
@@ -180,11 +212,20 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
 
     @Override
     public void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        // 根据配置来获取模板文件的地址
+        String filePath;
+        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.SPARE_PART_EXTRA_NUM);
+        if ("1".equals(sysParamModel.getValue())){
+            filePath = "/templates/sparePartInOrderTemplateSignal.xlsx";
+        }else{
+            filePath = "/templates/sparePartInOrderTemplate.xlsx";
+        }
+
         //获取输入流，原始模板位置
-        Resource resource = new ClassPathResource("/templates/sparePartInOrderTemplate.xlsx");
+        Resource resource = new ClassPathResource(filePath);
         InputStream resourceAsStream = resource.getInputStream();
         //2.获取临时文件
-        File fileTemp = new File("/templates/sparePartInOrderTemplate.xlsx");
+        File fileTemp = new File(filePath);
         try {
             //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
             FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
@@ -379,6 +420,10 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         String materialCode = sparePartInOrderImportExcelDTO.getMaterialCode();
         String name = sparePartInOrderImportExcelDTO.getName();
         String num = sparePartInOrderImportExcelDTO.getNum();
+        String newNum = sparePartInOrderImportExcelDTO.getNewNum();
+        String usedNum = sparePartInOrderImportExcelDTO.getUsedNum();
+        String scrapNum = sparePartInOrderImportExcelDTO.getScrapNum();
+        String outsourceRepairNum = sparePartInOrderImportExcelDTO.getOutsourceRepairNum();
 
         // 专业和子系统是否在系统中存在
         if (ObjectUtil.isNotEmpty(majorName)) {
@@ -486,6 +531,49 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
             errorMessage.append("入库数量必须填写，");
         }
 
+        // 从实施配置中看是否需要验证全新数量、已使用数量、待报废数量、委外送修数量
+        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.SPARE_PART_EXTRA_NUM);
+        if ("1".equals(sysParamModel.getValue())){
+            // 入库数量，用来判断是否全新数量+已使用数量=入库数量
+            boolean numIsNum = StrUtil.isNotEmpty(num) && NumberUtil.isInteger(num);
+            // 全新数量
+            boolean newNumIsNum = StrUtil.isNotEmpty(newNum) && NumberUtil.isInteger(newNum);
+            // 已使用数量
+            boolean usedNumIsNum = StrUtil.isNotEmpty(usedNum) && NumberUtil.isInteger(usedNum);
+            // 待报废数量
+            boolean scrapNumIsNum = StrUtil.isNotEmpty(scrapNum) && NumberUtil.isInteger(scrapNum);
+            // 委外送修数量
+            boolean outsourceRepairNumIsNum = StrUtil.isNotEmpty(outsourceRepairNum) && NumberUtil.isInteger(outsourceRepairNum);
+
+            if (!newNumIsNum){
+                errorMessage.append("全新数量要必填且为数字，");
+            }else {
+                sparePartInOrder.setNewNum(Integer.valueOf(newNum));
+            }
+
+            if (!usedNumIsNum){
+                errorMessage.append("已使用数量要必填且为数字，");
+            }else{
+                sparePartInOrder.setUsedNum(Integer.valueOf(usedNum));
+            }
+
+            if (!scrapNumIsNum){
+                errorMessage.append("待报废数量要必填且为数字，");
+            }else{
+                sparePartInOrder.setScrapNum(Integer.valueOf(scrapNum));
+            }
+
+            if (!outsourceRepairNumIsNum){
+                errorMessage.append("委外送修数量要必填且为数字，");
+            }else {
+                sparePartInOrder.setOutsourceRepairNum(Integer.valueOf(outsourceRepairNum));
+            }
+
+            if (numIsNum && newNumIsNum && usedNumIsNum && (Integer.parseInt(newNum) + Integer.parseInt(usedNum) != Integer.parseInt(num))){
+                errorMessage.append("全新数量+已使用数量应当等于入库数量，");
+            }
+        }
+
     }
 
 
@@ -513,12 +601,21 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
     }
 
     private Result<?> getErrorExcel(int errorLines,int successLines, List<SparePartInOrderImportExcelDTO> list, String url, String type) throws IOException {
+        // 根据配置来获取错误模板文件的地址
+        String errorFilePath;
+        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.SPARE_PART_EXTRA_NUM);
+        if ("1".equals(sysParamModel.getValue())){
+            errorFilePath = "/templates/sparePartInOrderErrorSignal.xlsx";
+        }else{
+            errorFilePath = "/templates/sparePartInOrderError.xlsx";
+        }
+
         //创建导入失败错误报告,进行模板导出
-        org.springframework.core.io.Resource resource = new ClassPathResource("/templates/sparePartInOrderError.xlsx");
+        org.springframework.core.io.Resource resource = new ClassPathResource(errorFilePath);
         InputStream resourceAsStream = resource.getInputStream();
 
         //2.获取临时文件
-        File fileTemp = new File("/templates/sparePartInOrderError.xlsx");
+        File fileTemp = new File(errorFilePath);
         try {
             //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
             FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
@@ -565,6 +662,10 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
             lm.put("materialCode", sparePartInOrderImportExcelDTO.getMaterialCode());
             lm.put("name", sparePartInOrderImportExcelDTO.getName());
             lm.put("num", sparePartInOrderImportExcelDTO.getNum());
+            lm.put("newNum", sparePartInOrderImportExcelDTO.getNewNum());
+            lm.put("usedNum", sparePartInOrderImportExcelDTO.getUsedNum());
+            lm.put("scrapNum", sparePartInOrderImportExcelDTO.getScrapNum());
+            lm.put("outsourceRepairNum", sparePartInOrderImportExcelDTO.getOutsourceRepairNum());
             lm.put("errorReason", sparePartInOrderImportExcelDTO.getErrorReason());
             listMap.add(lm);
         }

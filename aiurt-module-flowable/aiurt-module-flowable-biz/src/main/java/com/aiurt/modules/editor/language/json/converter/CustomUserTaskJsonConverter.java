@@ -6,6 +6,7 @@ import com.aiurt.modules.common.constant.FlowModelAttConstant;
 import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.aiurt.modules.modeler.entity.ActUserTypeEntity;
+import com.aiurt.modules.modeler.entity.AutoSelectEntity;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -48,7 +49,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
     /**
      * 多人审批规则
      */
-    public static final String USER_TYPE = "userType";
+    public static final String MULTI_APPROVAL_RULE = "multiApprovalRule";
 
     /**
      * 候选用户
@@ -114,7 +115,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             }
 
             // 多人审批规则
-            List<ExtensionElement> userTypeElements = extensionElements.get(USER_TYPE);
+            List<ExtensionElement> userTypeElements = extensionElements.get(MULTI_APPROVAL_RULE);
             if (CollUtil.isNotEmpty(userTypeElements)) {
                 ExtensionElement extensionElement = userTypeElements.get(0);
 
@@ -124,7 +125,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                     objectNode.put(field.getName(), extensionElement.getAttributeValue(null, field.getName()));
                 });
 
-                propertiesNode.set(USER_TYPE, objectNode);
+                propertiesNode.set(MULTI_APPROVAL_RULE, objectNode);
             }
 
             // 选人将 flowable:userassignee 属性转换为 JSON 格式
@@ -134,6 +135,20 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             // 抄送人
             List<ExtensionElement> carbonCopyElements = extensionElements.get(FlowModelExtElementConstant.EXT_CARBON_COPY);
             buildJsonElement(propertiesNode, carbonCopyElements, FlowModelExtElementConstant.EXT_CARBON_COPY);
+
+            // 自动选人
+            List<ExtensionElement> autoSelectElements = extensionElements.get(FlowModelExtElementConstant.EXT_AUTO_SELECT);
+            if (CollUtil.isNotEmpty(autoSelectElements)) {
+                ExtensionElement extensionElement = userTypeElements.get(0);
+
+                ObjectNode objectNode = super.objectMapper.createObjectNode();
+                Field[] fields = AutoSelectEntity.class.getDeclaredFields();
+                Arrays.stream(fields).filter(field -> !StrUtil.equalsAnyIgnoreCase(SERIAL_VERSION_UID, field.getName())).forEach(field -> {
+                    objectNode.put(field.getName(), extensionElement.getAttributeValue(null, field.getName()));
+                });
+
+                propertiesNode.set(FlowModelExtElementConstant.EXT_AUTO_SELECT, objectNode);
+            }
         }
     }
 
@@ -178,7 +193,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             // 自定义属性:操作按钮
             addExtensionElementToUserTask(userTask, FORM_OPERATION, JsonConverterUtil.getProperty(FORM_OPERATION, elementNode));
             // 多人审批规则
-            addExtensionElementToUserTask(userTask, USER_TYPE, JsonConverterUtil.getProperty(USER_TYPE, elementNode));
+            addExtensionElementToUserTask(userTask, MULTI_APPROVAL_RULE, JsonConverterUtil.getProperty(MULTI_APPROVAL_RULE, elementNode));
             // 选人
             addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_USER_ASSIGNEE,
                     JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_USER_ASSIGNEE, elementNode));
