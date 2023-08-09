@@ -2060,6 +2060,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         quartzJobService.deleteAndStopJob(quartzJob);
     }
 
+    /**
+     * 通过任务id获取定时任务
+     * @param id
+     * @return
+     */
+    @Override
+    public QuartzJobDTO getQuartzJobById(String id) {
+        QuartzJob quartzJob = quartzJobService.getById(id);
+        QuartzJobDTO quartzJobDTO = new QuartzJobDTO();
+        BeanUtil.copyProperties(quartzJob, quartzJobDTO);
+        return quartzJobDTO;
+    }
+
     @Override
     public SysDepartModel getDepartByOrgCode(String orgCode) {
         SysDepart sysDepart = departMapper.queryDepartByOrgCode(orgCode);

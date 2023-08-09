@@ -17,6 +17,7 @@ import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.dto.FaultCallbackDTO;
 import com.aiurt.common.api.dto.message.MessageDTO;
+import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
@@ -35,7 +36,6 @@ import com.aiurt.modules.fault.enums.FaultStatesEnum;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
-import com.aiurt.modules.fault.quzrtz.job.FaultRemind;
 import com.aiurt.modules.fault.service.*;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
@@ -79,6 +79,9 @@ import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.*;
 import org.jetbrains.annotations.NotNull;
+import org.quartz.SimpleScheduleBuilder;
+import org.quartz.SimpleTrigger;
+import org.quartz.TriggerBuilder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -88,6 +91,9 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -178,10 +184,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     @Autowired
     private FaultRepairRecordMapper recordMapper;
-
-    @Autowired
-    private FaultRemind faultRemind;
-
 
     /**
      * 故障上报
@@ -411,18 +413,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             sendInfo(fault, fault.getFaultDeviceList());
         }
 
-        // 根据配置决定：故障未领取时要给予当班人员提示音（每两分钟提醒20秒）
-        SysParamModel remindParam = iSysParamAPI.selectByCode(SysParamCodeConstant.NO_RECEIVE_FAULT_REMIND);
-        // 审批通过、待指派的故障才安排提醒任务
-        boolean b1 = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && FaultStatusEnum.APPROVAL_PASS.getStatus().equals(fault.getStatus());
-        if (b1) {
-            faultRemind.processFaultAdd(fault.getCode(), fault.getApprovalPassTime());
+        // 故障超时未领取提醒定时任务
+        if (FaultStatusEnum.APPROVAL_PASS.getStatus().equals(fault.getStatus())) {
+            processNoReceiveTimeOutToRemind(fault);
         }
         // 自检跳过到维修中安排超时未更新状态提醒任务
-        boolean b2 = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && FaultStatusEnum.REPAIR.getStatus().equals(fault.getStatus());
-        if (b2) {
-            // 根据配置决定：故障领取后两小时未更新任务状态需给予维修人提示音
-            noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, fault.getCode(), FaultStatusEnum.REPAIR.getStatus());
+        if (FaultStatusEnum.REPAIR.getStatus().equals(fault.getStatus())) {
+            // 故障领取后超时未更新状态定时任务
+            processNoUpdateTimeOutToRemind(fault);
         }
 
         return builder.toString();
@@ -622,13 +620,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     sendMessage(messageDTO,faultMessageDTO);
                 }
 
-                // （开启上报需要审批的情况）根据配置决定：故障未领取时要给予当班人员提示音（每两分钟提醒20秒）
-                SysParamModel remindParam = iSysParamAPI.selectByCode(SysParamCodeConstant.NO_RECEIVE_FAULT_REMIND);
-                // 审批通过、待指派的故障才安排提醒任务
-                boolean b1 = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && FaultStatusEnum.APPROVAL_PASS.getStatus().equals(fault.getStatus());
-                if (b1) {
-                    faultRemind.processFaultAdd(fault.getCode(), fault.getApprovalPassTime());
-                }
+                // （开启上报需要审批的情况）故障超时未领取提醒定时任务
+                processNoReceiveTimeOutToRemind(fault);
             } else {
                 //被驳回发送通知
                 MessageDTO messageDTO = new MessageDTO(user.getUsername(), fault.getReceiveUserName(), "故障上报审核驳回" + DateUtil.today(), null);
@@ -1040,8 +1033,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             todoDTO.setPublishingContent("故障被主动领取，维修人请尽快维修，并维修后填写维修记录");
             sendTodo(faultCode, null, assignDTO.getOperatorUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(), todoDTO, faultMessageDTO);
 
-            // 根据配置决定：故障领取后两小时未更新任务状态需给予维修人提示音
-            noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, faultCode, FaultStatusEnum.RECEIVE.getStatus());
+            // 故障领取后超时未更新状态定时任务
+            processNoUpdateTimeOutToRemind(fault);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1097,8 +1090,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             todoDTO.setPublishingContent("接收到新的故障维修任务，请尽快维修，并维修后填写维修记录");
             sendTodo(code, null, loginUser.getUsername(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(), todoDTO, faultMessageDTO);
 
-            // 根据配置决定：故障接收后两小时未更新任务状态需给予维修人提示音
-            noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, code, FaultStatusEnum.RECEIVE_ASSIGN.getStatus());
+            // 故障领取后超时未更新状态定时任务
+            processNoUpdateTimeOutToRemind(fault);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1213,8 +1206,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             messageDTO.setPublishingContent("开始维修");
 
             sendMessage(messageDTO, faultMessageDTO);
-            // 根据配置决定：故障维修中后两小时未更新任务状态需给予维修人提示音
-            noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, code, FaultStatusEnum.REPAIR.getStatus());
+            // 故障领取后超时未更新状态定时任务
+            processNoUpdateTimeOutToRemind(fault);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1372,22 +1365,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
                 sendMessage(messageDTO,faultMessageDTO);*/
 
-                // 根据配置决定：驳回故障维修中后两小时未更新任务状态需给予维修人提示音
-                noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, faultCode, FaultStatusEnum.REPAIR.getStatus());
+                // 故障领取后超时未更新状态定时任务
+                processNoUpdateTimeOutToRemind(fault);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void processHangUpTimeOutToRemind(Fault fault) {
-        // 根据配置决定：故障挂起超时未处理提醒
-        SysParamModel remindParam = iSysParamAPI.selectByCode(SysParamCodeConstant.HANG_UP_REMIND);
-        boolean b = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && FaultStatusEnum.HANGUP.getStatus().equals(fault.getStatus());
-        if (b) {
-            faultRemind.processFaultHangUpTimeOut(fault);
-        }
-    }
 
     /**
      * 取消挂起
@@ -1438,8 +1423,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             todoDTO.setPublishingContent("挂起申请取消");
             sendTodo(code, null, fault.getAppointUserName(), "故障维修任务", TodoBusinessTypeEnum.FAULT_DEAL.getType(), todoDTO, faultMessageDTO);
 
-            // 根据配置决定：取消挂起故障维修中后两小时未更新任务状态需给予维修人提示音
-            noUpdatetoRemind(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE, code, FaultStatusEnum.REPAIR.getStatus());
+            // 故障领取后超时未更新状态定时任务
+            processNoUpdateTimeOutToRemind(fault);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -4005,17 +3990,110 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     }
 
     /**
-     * 故障领取后/接收后/维修中/审批驳回/取消挂起时两小时没有更新任务状态给予维修人提示
-     * @param paramCode
-     * @param code
-     * @param status
+     * 故障超时未领取提醒定时任务
+     * @param fault
      */
-    private void noUpdatetoRemind(String paramCode, String code, Integer status) {
-        // 根据配置决定：故障领取后两小时未更新任务状态需给予维修人提示音
-        SysParamModel remindParam = iSysParamAPI.selectByCode(paramCode);
-        boolean b = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue());
+    private void processNoReceiveTimeOutToRemind(Fault fault) {
+        // 根据配置决定：故障超时未领取提醒定时任务
+        SysParamModel remindParam = iSysParamAPI.selectByCode(SysParamCodeConstant.NO_RECEIVE_FAULT_REMIND);
+        Fault f = this.getById(fault.getId());
+        // 审批通过、待指派的故障才安排提醒任务
+        boolean b = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && ObjectUtil.isNotEmpty(f) && FaultStatusEnum.APPROVAL_PASS.getStatus().equals(f.getStatus());
         if (b) {
-            faultRemind.processFaultNoUpdate(code, status);
+            // 获取配置
+            SysParamModel delayParam = iSysParamAPI.selectByCode(SysParamCodeConstant.NO_RECEIVE_DELAY);
+            SysParamModel periodParam = iSysParamAPI.selectByCode(SysParamCodeConstant.NO_RECEIVE_PERIOD);
+            long delay = Long.parseLong(delayParam.getValue());
+            int period = Integer.parseInt(periodParam.getValue());
+            // 计算初始执行时间
+            LocalDateTime localDateTime = f.getUpdateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime newDateTime = localDateTime.plus(delay, ChronoUnit.SECONDS);
+            Date startTime = Date.from(newDateTime.atZone(ZoneId.systemDefault()).toInstant());
+            log.info("首次执行时间:" + DateUtil.formatDateTime(startTime) + ",NoReceiveRemindJob,故障编号:" + f.getCode());
+            // 自定义触发器
+            SimpleTrigger trigger = TriggerBuilder.newTrigger()
+                    .startAt(startTime)
+                    .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(period).repeatForever())
+                    .build();
+            // 创建定时任务
+            QuartzJobDTO quartzJobDTO = new QuartzJobDTO();
+            quartzJobDTO.setTrigger(trigger);
+            quartzJobDTO.setParameter(f.getCode());
+            quartzJobDTO.setJobClassName("com.aiurt.modules.fault.quzrtz.job.NoReceiveRemindJob");
+            quartzJobDTO.setDescription("故障超时未领取提醒定时任务");
+            quartzJobDTO.setStatus(0);
+            sysBaseAPI.saveAndScheduleJob(quartzJobDTO);
+        }
+    }
+
+    /**
+     * 故障领取后超时未更新状态定时任务，包括已领取、已接收、维修中
+     * @param fault
+     */
+    private void processNoUpdateTimeOutToRemind(Fault fault) {
+        SysParamModel remindParam = iSysParamAPI.selectByCode(SysParamCodeConstant.RECEIVE_FAULT_NO_UPDATE);
+        Fault f = this.getById(fault.getId());
+        boolean b = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && ObjectUtil.isNotEmpty(f);
+        if (b) {
+            // 获取配置
+            SysParamModel delayParam = iSysParamAPI.selectByCode(SysParamCodeConstant.NO_UPDATE_DELAY);
+            SysParamModel periodParam = iSysParamAPI.selectByCode(SysParamCodeConstant.NO_UPDATE_PERIOD);
+            long delay = Long.parseLong(delayParam.getValue());
+            int period = Integer.parseInt(periodParam.getValue());
+            // 计算初始执行时间
+            LocalDateTime localDateTime = f.getUpdateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime newDateTime = localDateTime.plus(delay, ChronoUnit.SECONDS);
+            Date startTime = Date.from(newDateTime.atZone(ZoneId.systemDefault()).toInstant());
+            log.info("首次执行时间:" + DateUtil.formatDateTime(startTime) + ",NoUpdateRemindJob,故障编号:" + f.getCode());
+            // 自定义触发器
+            SimpleTrigger trigger = TriggerBuilder.newTrigger()
+                    .startAt(startTime)
+                    .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(period).repeatForever())
+                    .build();
+            // 创建定时任务
+            QuartzJobDTO quartzJobDTO = new QuartzJobDTO();
+            quartzJobDTO.setTrigger(trigger);
+            quartzJobDTO.setParameter(f.getCode() + StrUtil.COMMA + f.getStatus() + StrUtil.COMMA + DateUtil.format(f.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
+            quartzJobDTO.setJobClassName("com.aiurt.modules.fault.quzrtz.job.NoUpdateRemindJob");
+            quartzJobDTO.setDescription("故障领取后超时未更新状态定时任务");
+            quartzJobDTO.setStatus(0);
+            sysBaseAPI.saveAndScheduleJob(quartzJobDTO);
+        }
+    }
+
+    /**
+     * 故障挂起超时未处理提醒定时任务
+     * @param fault
+     */
+    private void processHangUpTimeOutToRemind(Fault fault) {
+        // 根据配置决定：故障挂起超时未处理提醒
+        SysParamModel remindParam = iSysParamAPI.selectByCode(SysParamCodeConstant.HANG_UP_REMIND);
+        Fault f = this.getById(fault.getId());
+        boolean b = ObjectUtil.isNotEmpty(remindParam) && FaultConstant.ENABLE.equals(remindParam.getValue()) && ObjectUtil.isNotEmpty(f) && FaultStatusEnum.HANGUP.getStatus().equals(fault.getStatus());
+        if (b) {
+            // 获取配置
+            SysParamModel delayParam = iSysParamAPI.selectByCode(SysParamCodeConstant.HUR_DELAY);
+            SysParamModel periodParam = iSysParamAPI.selectByCode(SysParamCodeConstant.HUR_PERIOD);
+            long delay = Long.parseLong(delayParam.getValue());
+            int period = Integer.parseInt(periodParam.getValue());
+            // 计算初始执行时间
+            LocalDateTime localDateTime = f.getUpdateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime newDateTime = localDateTime.plus(delay, ChronoUnit.SECONDS);
+            Date startTime = Date.from(newDateTime.atZone(ZoneId.systemDefault()).toInstant());
+            log.info("首次执行时间:" + DateUtil.formatDateTime(startTime) + ",HangUpRemindJob,故障编号:" + f.getCode());
+            // 自定义触发器
+            SimpleTrigger trigger = TriggerBuilder.newTrigger()
+                    .startAt(startTime)
+                    .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(period).repeatForever())
+                    .build();
+            // 创建定时任务
+            QuartzJobDTO quartzJobDTO = new QuartzJobDTO();
+            quartzJobDTO.setTrigger(trigger);
+            quartzJobDTO.setParameter(f.getCode() + StrUtil.COMMA + f.getStatus() + StrUtil.COMMA + DateUtil.format(f.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
+            quartzJobDTO.setJobClassName("com.aiurt.modules.fault.quzrtz.job.HangUpRemindJob");
+            quartzJobDTO.setDescription("故障挂起超时未处理提醒任务");
+            quartzJobDTO.setStatus(0);
+            sysBaseAPI.saveAndScheduleJob(quartzJobDTO);
         }
     }
     @Override

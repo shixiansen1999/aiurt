@@ -1,8 +1,9 @@
 package com.aiurt.common.api.dto.quartz;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import com.aiurt.common.aspect.annotation.Dict;
+import org.quartz.Trigger;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -48,4 +49,6 @@ public class QuartzJobDTO implements Serializable {
     @Dict(dicCode = "quartz_status")
     private Integer status;
     private Integer filterStatus;
+    /**触发器*/
+    private Trigger trigger;
 }
