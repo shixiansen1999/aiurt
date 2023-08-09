@@ -371,6 +371,8 @@ order by create_time desc,task_name asc
         from bd_exam_record as er
         <where>
         er.exam_classify =1
+        <!--交卷了才不算缺考，因为到考试时间结束时，会自动在bd_exam_record生成一条记录，不能根据bd_exam_record有无数据来判定是否参加了考试-->
+        and er.is_submit = 1
         <if test="trainTaskId != null and trainTaskId != ''">
             and er.train_task_id =#{trainTaskId}
         </if>
@@ -457,6 +459,8 @@ where tt.id =#{id}
         a.realname as realname,
         a.org_code as orgName,
         b.depart_name as teamName,
+        a.phone,
+	    a.card_code as identityNumber,
         (
         CASE
         WHEN a.status = 2 THEN
