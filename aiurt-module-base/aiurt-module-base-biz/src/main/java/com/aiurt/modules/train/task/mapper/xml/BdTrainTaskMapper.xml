@@ -116,6 +116,7 @@
         <if test="signState!= null ">
         AND ttu.sign_state = #{signState}
         </if>
+         order by  ttu.create_time desc
     </select>
     <select id="feedBackDetails" resultType="com.aiurt.modules.train.task.dto.FeedBackDetailsDTO">
         SELECT

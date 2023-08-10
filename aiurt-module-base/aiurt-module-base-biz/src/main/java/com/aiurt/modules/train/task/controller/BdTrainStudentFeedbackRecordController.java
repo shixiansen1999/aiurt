@@ -151,13 +151,13 @@ public class BdTrainStudentFeedbackRecordController extends BaseController<BdTra
 	 @AutoLog(value = "学生培训任务-反馈查询app")
 	 @ApiOperation(value="学生培训任务-反馈查询app", notes="学生培训任务-反馈查询app")
 	 @GetMapping(value = "/getTrainStudentFeedbackRecordById")
-	 public Result<?> getTrainStudentFeedbackRecordById(@RequestParam(name="taskId",required=true)String taskId,@RequestParam(name="userId",required=false) String userId ) {
+	 public Result<?> getTrainStudentFeedbackRecordById(@RequestParam(name="taskId",required=true)String taskId,@RequestParam(name="userId",required=false) String userId ,@RequestParam(name="isSubmit",required=false) Integer isSubmit) {
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 if (ObjectUtil.isNotNull(userId)) {
-			 BdTrainQuestionFeedback studentFeedbackRecord = bdTrainStudentFeedbackRecordService.getStudentFeedbackRecordById(userId, taskId);
+			 BdTrainQuestionFeedback studentFeedbackRecord = bdTrainStudentFeedbackRecordService.getStudentFeedbackRecordById(userId, taskId,isSubmit);
 			 return Result.OK(studentFeedbackRecord);
 		 } else {
-			 BdTrainQuestionFeedback studentFeedbackRecord = bdTrainStudentFeedbackRecordService.getStudentFeedbackRecordById(sysUser.getId(), taskId);
+			 BdTrainQuestionFeedback studentFeedbackRecord = bdTrainStudentFeedbackRecordService.getStudentFeedbackRecordById(sysUser.getId(), taskId,isSubmit);
 			 return Result.OK(studentFeedbackRecord);
 		 }
 	 }
@@ -188,6 +188,7 @@ public class BdTrainStudentFeedbackRecordController extends BaseController<BdTra
 	 public Result<?> addTrainStudentFeedbackRecord(@RequestBody BdStudentFeedBackDTO bdStudentFeedBackDTO ) {
 		 List<BdTrainStudentFeedbackRecord> bdTrainStudentFeedbackRecords = bdStudentFeedBackDTO.getBdTrainStudentFeedbackRecords();
 		 for (BdTrainStudentFeedbackRecord bdTrainStudentFeedbackRecord:bdTrainStudentFeedbackRecords) {
+			 bdTrainStudentFeedbackRecord.setIsSubmit(0);
 			 if (StringUtils.isEmpty(bdTrainStudentFeedbackRecord.getId())) {
 				 bdTrainStudentFeedbackRecordService.save(bdTrainStudentFeedbackRecord);
 			 }
@@ -208,6 +209,7 @@ public class BdTrainStudentFeedbackRecordController extends BaseController<BdTra
 	 public Result<?> submitTeacherFeedbackRecord(@RequestBody BdStudentFeedBackDTO bdStudentFeedBackDTO) {
 		 List<BdTrainStudentFeedbackRecord> bdTrainStudentFeedbackRecords = bdStudentFeedBackDTO.getBdTrainStudentFeedbackRecords();
 		 for (BdTrainStudentFeedbackRecord bdTrainStudentFeedbackRecord:bdTrainStudentFeedbackRecords) {
+			 bdTrainStudentFeedbackRecord.setIsSubmit(1);
 			 if (StringUtils.isEmpty(bdTrainStudentFeedbackRecord.getId())) {
 				 bdTrainStudentFeedbackRecordService.save(bdTrainStudentFeedbackRecord);
 				 //更新状态为已反馈
