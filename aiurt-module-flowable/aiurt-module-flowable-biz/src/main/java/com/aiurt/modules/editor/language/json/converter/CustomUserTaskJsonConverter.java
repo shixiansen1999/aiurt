@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
 import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
+import com.aiurt.modules.common.constant.FlowVariableConstant;
+import com.aiurt.modules.common.enums.MultiApprovalRuleEnum;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.aiurt.modules.modeler.entity.ActUserTypeEntity;
 import com.aiurt.modules.modeler.entity.AutoSelectEntity;
@@ -16,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import liquibase.pro.packaged.F;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.model.*;
@@ -23,6 +26,7 @@ import org.flowable.editor.language.json.converter.BaseBpmnJsonConverter;
 import org.flowable.editor.language.json.converter.BpmnJsonConverterContext;
 import org.flowable.editor.language.json.converter.UserTaskJsonConverter;
 import org.flowable.editor.language.json.converter.util.JsonConverterUtil;
+import org.intellij.lang.annotations.Flow;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -94,7 +98,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
     protected void convertElementToJson(ObjectNode propertiesNode, BaseElement baseElement, BpmnJsonConverterContext converterContext) {
         super.convertElementToJson(propertiesNode, baseElement, converterContext);
         if (baseElement instanceof UserTask){
-
+            UserTask userTask = (UserTask) baseElement;
             // usetask属性修改
             Map<String, List<ExtensionAttribute>> attributes = baseElement.getAttributes();
             log.info("处理自定义属性:{}",JSON.toJSONString(attributes));
@@ -117,6 +121,8 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             // 多人审批规则
             List<ExtensionElement> userTypeElements = extensionElements.get(MULTI_APPROVAL_RULE);
             if (CollUtil.isNotEmpty(userTypeElements)) {
+
+                // 判断是否第一个节点
                 ExtensionElement extensionElement = userTypeElements.get(0);
 
                 ObjectNode objectNode = super.objectMapper.createObjectNode();
@@ -126,6 +132,43 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 });
 
                 propertiesNode.set(MULTI_APPROVAL_RULE, objectNode);
+
+                // 根据选人构造多实例配置；
+                String multiApprovalRule = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_USER_VALUE);
+
+                // 第一个节点不构造多实例配置；
+                boolean isFirstUserTask = isFirstUserTask(userTask);
+                MultiApprovalRuleEnum approvalRuleEnum = MultiApprovalRuleEnum.getByCode(multiApprovalRule);
+                if (!isFirstUserTask && Objects.nonNull(approvalRuleEnum)) {
+                    propertiesNode.put(PROPERTY_MULTIINSTANCE_COLLECTION, FlowVariableConstant.ASSIGNEE_LIST + baseElement.getId());
+                    propertiesNode.put(PROPERTY_MULTIINSTANCE_VARIABLE, "assignee");
+                    propertiesNode.putNull(PROPERTY_MULTIINSTANCE_VARIABLE_AGGREGATIONS);
+
+                    switch (approvalRuleEnum) {
+                        // 任意会签
+                        case TASK_MULTI_INSTANCE_TYPE_1:
+                            propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Parallel");
+                            propertiesNode.put(PROPERTY_MULTIINSTANCE_CONDITION, "${nrOfCompletedInstances >= 1}");
+                            break;
+                        // 并行
+                        case TASK_MULTI_INSTANCE_TYPE_2:
+                            propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Parallel");
+                            propertiesNode.put(PROPERTY_MULTIINSTANCE_CONDITION, "${nrOfCompletedInstances == nrOfInstances}");
+                            break;
+                        default:
+                            propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Sequential");
+                    }
+                }
+
+                // 流程选人的
+                ObjectNode assignmentNode = objectMapper.createObjectNode();
+                ObjectNode assignmentValuesNode = objectMapper.createObjectNode();
+                assignmentValuesNode.put("type", "static");
+                // $INITIATOR 表示流程发起人
+                assignmentValuesNode.put(PROPERTY_USERTASK_ASSIGNEE,isFirstUserTask ? "$INITIATOR": "${assignee}");
+                assignmentValuesNode.put("initiatorCanCompleteTask", true);
+                assignmentNode.set("assignment", assignmentValuesNode);
+                propertiesNode.set(PROPERTY_USERTASK_ASSIGNMENT, assignmentNode);
             }
 
             // 选人将 flowable:userassignee 属性转换为 JSON 格式
@@ -139,7 +182,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             // 自动选人
             List<ExtensionElement> autoSelectElements = extensionElements.get(FlowModelExtElementConstant.EXT_AUTO_SELECT);
             if (CollUtil.isNotEmpty(autoSelectElements)) {
-                ExtensionElement extensionElement = userTypeElements.get(0);
+                ExtensionElement extensionElement = autoSelectElements.get(0);
 
                 ObjectNode objectNode = super.objectMapper.createObjectNode();
                 Field[] fields = AutoSelectEntity.class.getDeclaredFields();
@@ -150,6 +193,24 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 propertiesNode.set(FlowModelExtElementConstant.EXT_AUTO_SELECT, objectNode);
             }
         }
+    }
+
+    /**
+     *
+     * @param userTask
+     * @return
+     */
+    private boolean isFirstUserTask(UserTask userTask) {
+        List<SequenceFlow> incomingFlows = userTask.getIncomingFlows();
+        for (int i = 0; i < incomingFlows.size(); i++) {
+            SequenceFlow sequenceFlow = incomingFlows.get(i);
+
+            String sourceRef = sequenceFlow.getSourceRef();
+            if (StrUtil.containsIgnoreCase(sourceRef, "Event")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void buildJsonElement(ObjectNode propertiesNode, List<ExtensionElement> extensionElementList, String elementName) {
@@ -230,6 +291,9 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             addCustomAttributeForPrefix(elementNode, userTask,"flowable", "formtaskVariables");
         }
     }
+
+
+
 
     /**
      * 属性

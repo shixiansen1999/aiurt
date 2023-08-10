@@ -300,4 +300,12 @@ public interface FlowApiService {
      * @return
      */
     TaskInfoDTO viewEndProcessTaskInfo(String processInstanceId);
+
+    /**
+     * 获取办理时选人维度列表。
+     * @param processInstanceId 流程引擎的实例Id。
+     * @param taskId            任务Id。
+     * @return
+     */
+    List<ProcessParticipantsInfoDTO> getProcessParticipantsInfo(String processInstanceId, String taskId);
 }

@@ -170,11 +170,7 @@ public class FlowOperationController {
     /**
      * 已办任务
      *
-     * @param processDefinitionName 流程名。
-     * @param beginDate             流程发起开始时间。
-     * @param endDate               流程发起结束时间。
-     * @param pageNo                当前页。
-     * @param pageSize              每页数量。
+     * @param historicTaskReqDTO
      * @return 查询结果应答。
      */
     @PostMapping("/listHistoricTask")
@@ -348,6 +344,25 @@ public class FlowOperationController {
     public Result<TaskInfoDTO> viewEndProcessTaskInfo(@RequestParam(value = "processInstanceId") String processInstanceId){
         TaskInfoDTO taskInfoVo = flowApiService.viewEndProcessTaskInfo(processInstanceId);
         return Result.OK(taskInfoVo);
+    }
+
+    /**
+     * 获取办理时选人维度列表。
+     *
+     * @param processInstanceId 流程引擎的实例Id。
+     * @param taskId            任务Id。
+     * @return
+     */
+    @GetMapping("/getProcessParticipantsInfo")
+    @ApiOperation(value = "获取办理时选人维度列表", notes = "获取办理时选人维度列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "processInstanceId", value = "流程实例id", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "taskId", value = "流程任务id", required = true, paramType = "query")
+    })
+    public Result<List<ProcessParticipantsInfoDTO>> getProcessParticipantsInfo(@RequestParam(value = "processInstanceId") String processInstanceId,
+                                                                               @RequestParam(value = "taskId") String taskId) {
+        List<ProcessParticipantsInfoDTO> result = flowApiService.getProcessParticipantsInfo(processInstanceId,taskId);
+        return Result.OK(result);
     }
 
 

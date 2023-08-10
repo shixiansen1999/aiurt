@@ -35,21 +35,11 @@ public class ActCustomTaskExt implements Serializable {
     @ApiModelProperty(value = "操作列表JSON")
     private String operationListJson;
 
-	/**变量列表JSON*/
-    @ApiModelProperty(value = "变量列表JSON")
-    private String variableListJson;
 
-	/**存储多实例的assigneeList的JSON*/
-    @ApiModelProperty(value = "存储多实例的assigneeList的JSON")
-    private String assigneeListJson;
 
 	/**分组类型*/
     @ApiModelProperty(value = "分组类型")
     private String groupType;
-
-	/**保存岗位相关的数据*/
-    @ApiModelProperty(value = "保存岗位相关的数据")
-    private String deptPostListJson;
 
 	/**保存角色Id数据*/
     @ApiModelProperty(value = "保存角色Id数据")
@@ -63,17 +53,15 @@ public class ActCustomTaskExt implements Serializable {
     @ApiModelProperty(value = "保存候选组用户名数据")
     private String candidateUsernames;
 
-	/**抄送相关的数据*/
-    @ApiModelProperty(value = "抄送相关的数据")
-    private String copyListJson;
+    private String dynamicVariable;
 
     /**表单数据*/
     @ApiModelProperty(value = "表单数据")
     private String formJson;
 
-    @ApiModelProperty(value = "动态选人(流程变量)")
-    private String dynamicVariable;
+    @ApiModelProperty("用户类型")
+    private String userType;
 
-    @ApiModelProperty(value = "条件表单式")
-    private String conditionExpression;
+    @ApiModelProperty("是否")
+    private String isAutoSelect;
 }

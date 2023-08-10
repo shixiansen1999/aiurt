@@ -139,7 +139,6 @@ public class CommonServiceImpl implements ICommonService {
             tableList = result;
         }
         return tableList;
-//        return resultList;
     }
 
     /**

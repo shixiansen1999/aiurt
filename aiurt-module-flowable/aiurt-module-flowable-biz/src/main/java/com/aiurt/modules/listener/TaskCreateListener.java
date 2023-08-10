@@ -63,6 +63,9 @@ public class TaskCreateListener implements FlowableEventListener {
             return;
         }
 
+        // 判断是否新版流程，属性变量
+        //
+
         logger.debug("活动启动监听事件,设置办理人员......");
         TaskEntity taskEntity = (TaskEntity) entity;
         // 流程任务id
