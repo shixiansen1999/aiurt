@@ -1899,13 +1899,13 @@ public class FlowApiServiceImpl implements FlowApiService {
             throw new AiurtBootException("数据验证失败，请核对指定的任务Id，请刷新后重试！");
         }
 
-        Execution execution = runtimeService.createExecutionQuery()
-                .processInstanceId(processInstanceId)
-                .singleResult();
+        List<Execution> runExecutionList =
+                runtimeService.createExecutionQuery().processInstanceId(task.getProcessInstanceId()).list();
         String taskDefinitionKey = task.getTaskDefinitionKey();
+
         String processDefinitionId = task.getProcessDefinitionId();
 
-        List<FlowElement> targetFlowElements = getTargetFlowElements(execution, processDefinitionId, taskDefinitionKey);
+        List<FlowElement> targetFlowElements = getTargetFlowElements(CollUtil.isNotEmpty(runExecutionList)?runExecutionList.get(0):null, processDefinitionId, taskDefinitionKey);
 
         for (FlowElement flowElement : targetFlowElements) {
             if (flowElement instanceof UserTask) {
@@ -1935,8 +1935,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         if (customUserByTaskInfo != null) {
             // 构建用户参与者信息
-            String[] userNames = StrUtil.split(customUserByTaskInfo.getUserName(), ",");
-            buildUserParticipantsInfo(sysBaseAPI.queryUserByNames(userNames), processParticipantsInfoDTO.getOptions());
+            buildUserParticipantsInfo(customUserByTaskInfo.getUserName(), processParticipantsInfoDTO.getOptions());
 
             // 构建部门参与者信息
             buildDepartParticipantsInfo(customUserByTaskInfo.getOrgId(), processParticipantsInfoDTO.getOptions());
@@ -1970,10 +1969,16 @@ public class FlowApiServiceImpl implements FlowApiService {
     /**
      * 构建用户维度的流程参与者信息
      *
-     * @param loginUsers 用户列表
+     * @param userNameStr 用户字符创
      * @param result     结果列表，用于存储构建的参与者信息对象
      */
-    private void buildUserParticipantsInfo(List<LoginUser> loginUsers, List<ProcessParticipantsInfoDTO> result) {
+    private void buildUserParticipantsInfo(String userNameStr, List<ProcessParticipantsInfoDTO> result) {
+        if(StrUtil.isEmpty(userNameStr)){
+            return;
+        }
+
+        String[] userNames = StrUtil.split(userNameStr, ",");
+        List<LoginUser> loginUsers = sysBaseAPI.queryUserByNames(userNames);
         if (CollUtil.isEmpty(loginUsers)) {
             return;
         }
