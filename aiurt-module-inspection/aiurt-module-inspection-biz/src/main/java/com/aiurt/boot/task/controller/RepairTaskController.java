@@ -558,7 +558,23 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
         });
         return Result.ok("归档成功");
     }
+    /**
 
+     *
+     * @param id
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "检修任务表-打印巡视详情")
+    @ApiOperation(value = "检修任务表-打印巡视详情", notes = "检修任务表-打印巡视详情")
+    @GetMapping(value = "/printPatrolTask")
+    public Result<?> printInspectionTask(@RequestParam(name="id",required=true) String id,
+                                         @RequestParam(name="code",required=true) String code,
+                                         @RequestParam(name="deviceId",required=true) String deviceId,
+                                     HttpServletRequest req) {
+        String printTaskDTOS = repairTaskService.printTask(id,code,deviceId);
+        return Result.OK("成功",printTaskDTOS);
+    }
     /**
      * 导出pdf
      *
