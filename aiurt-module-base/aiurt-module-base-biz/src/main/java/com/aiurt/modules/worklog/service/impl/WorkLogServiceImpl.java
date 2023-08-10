@@ -1139,7 +1139,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     }
 
     @Override
-    public Map getTodayJobContent(String nowday) {
+    public Map getTodayJobContent(String nowday,String createTime) {
 
         Date date = DateUtil.date();
         //如果选择的时间是过去，则截取今天的时分秒和过去时间的年月日合并作为时间点
@@ -1167,20 +1167,34 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         DateTime nextDay = DateUtil.offsetDay(date, +1);
         String nextAM = DateUtil.format(nextDay, "yyyy-MM-dd")+ " 08:29:59";
 
-        if (date.after(DateUtil.parse(am)) && date.before(DateUtil.parse(pm))) {
-            //白班
-            startTime = DateUtil.parse(nowday+" 08:30:00");
-            endTime = DateUtil.parse(nowday+" 16:29:59");
-        } else if (date.before(DateUtil.parse(am))){
-            //昨天晚班
-            startTime = DateUtil.parse(lastPM);
-            endTime = DateUtil.parse(nowday + " 08:29:59");
-        } else {
-            //今天晚班
-            startTime = DateUtil.parse(nowday+" 16:30:00");
-            endTime = DateUtil.parse(nextAM);
+        if (createTime != null) {
+            //补录
+            DateTime create = DateUtil.parse(createTime, "yyyy-MM-dd HH:mm:ss");
+            if (create.after(DateUtil.parse(am)) && create.before(DateUtil.parse(pm))) {
+                //白班
+                startTime = DateUtil.parse(nowday+" 08:30:00");
+                endTime = DateUtil.parse(nowday+" 16:29:59");
+            } else {
+                //晚班
+                startTime = DateUtil.parse(nowday+" 16:30:00");
+                endTime = DateUtil.parse(nextAM);
+            }
+        }else {
+            //正常写入日志
+            if (date.after(DateUtil.parse(am)) && date.before(DateUtil.parse(pm))) {
+                //白班
+                startTime = DateUtil.parse(nowday+" 08:30:00");
+                endTime = DateUtil.parse(nowday+" 16:29:59");
+            } else if (date.before(DateUtil.parse(am))){
+                //昨天晚班
+                startTime = DateUtil.parse(lastPM);
+                endTime = DateUtil.parse(nowday + " 08:29:59");
+            } else {
+                //今天晚班
+                startTime = DateUtil.parse(nowday+" 16:30:00");
+                endTime = DateUtil.parse(nextAM);
+            }
         }
-
         HashMap<String, String> map = new HashMap<>(16);
 
         //获取巡检内容

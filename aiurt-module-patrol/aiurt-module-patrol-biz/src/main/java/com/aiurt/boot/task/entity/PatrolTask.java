@@ -370,5 +370,6 @@ public class PatrolTask extends DictEntity implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date wifiConnectTime;
 
+    @TableField(exist = false)
     private java.lang.String macStatusName;
 }

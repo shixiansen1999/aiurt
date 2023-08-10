@@ -58,6 +58,7 @@ public class FailureReport {
     private Double lastMonthNum;
     private Double lastYearNum;
     private Double lastWeekNum;
+    private Double thisWeekNum;
     private Double monthNum;
     private Double yearNum;
     @ApiModelProperty(value = "与上个月数据对比增加")
