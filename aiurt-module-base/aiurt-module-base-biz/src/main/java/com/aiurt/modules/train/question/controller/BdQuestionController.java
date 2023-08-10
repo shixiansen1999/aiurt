@@ -2,13 +2,11 @@ package com.aiurt.modules.train.question.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.train.question.dto.BdQuestionDTO;
 import com.aiurt.modules.train.question.entity.BdQuestion;
 import com.aiurt.modules.train.question.service.IBdQuestionService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -182,5 +180,39 @@ public class BdQuestionController extends BaseController<BdQuestion, IBdQuestion
 		 public Result<?> getLearningMaterials(@RequestParam String paperId) {
 		 List<BdQuestion> learningMaterials = bdQuestionService.getLearningMaterials(paperId);
 		 return Result.OK(learningMaterials);
+	 }
+
+	 /**
+	  * 随机抽取试题
+	  *
+	  * @param categoryIds 习题类别
+	  * @param choiceQuestionNum 选择题数量
+	  * @param shortAnswerQuestionNum 简答题数量
+	  * @return
+	  */
+	 @AutoLog(value = "考卷习题-随机抽取试题")
+	 @ApiOperation(value="考卷习题-随机抽取试题", notes="考卷习题-随机抽取试题")
+	 @GetMapping(value = "/randomSelectionQuestion")
+	 public Result<?> randomSelectionQuestion( @ApiParam(name="categoryIds",value = "习题类别(多选逗号隔开)") @RequestParam(name="categoryIds",required = false)String categoryIds,
+											   @ApiParam(name="choiceQuestionNum",value = "选择题数量") @RequestParam(name="choiceQuestionNum") Integer choiceQuestionNum,
+											   @ApiParam(name="shortAnswerQuestionNum",value = "简答题数量") @RequestParam(name="shortAnswerQuestionNum") Integer shortAnswerQuestionNum) {
+
+		 List<BdQuestion> bdQuestions = bdQuestionService.randomSelectionQuestion(categoryIds, choiceQuestionNum, shortAnswerQuestionNum);
+		 return Result.OK(bdQuestions);
+	 }
+
+	 /**
+	  * 获取题目数量
+	  *
+	  * @param categoryIds 习题类别
+	  * @return
+	  */
+	 @AutoLog(value = "考卷习题-获取题目数量")
+	 @ApiOperation(value="考卷习题-获取题目数量", notes="考卷习题-获取题目数量")
+	 @GetMapping(value = "/getQuestionNum")
+	 public Result<?> getQuestionNum( @ApiParam(name="categoryIds",value = "习题类别(多选逗号隔开)") @RequestParam(name="categoryIds",required = false)String categoryIds) {
+
+		 BdQuestionDTO bdQuestionDTO = bdQuestionService.getQuestionNum(categoryIds);
+		 return Result.OK(bdQuestionDTO);
 	 }
 }

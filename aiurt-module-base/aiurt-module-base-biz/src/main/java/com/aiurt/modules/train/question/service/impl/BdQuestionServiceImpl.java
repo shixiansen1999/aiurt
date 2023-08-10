@@ -2,6 +2,8 @@ package com.aiurt.modules.train.question.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.train.question.dto.BdQuestionDTO;
 import com.aiurt.modules.train.question.entity.BdQuestion;
 import com.aiurt.modules.train.question.entity.BdQuestionOptions;
 import com.aiurt.modules.train.question.entity.BdQuestionOptionsAtt;
@@ -11,6 +13,7 @@ import com.aiurt.modules.train.question.mapper.BdQuestionOptionsMapper;
 import com.aiurt.modules.train.question.service.IBdQuestionService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +38,9 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
 
     @Autowired
     private BdQuestionOptionsMapper bdQuestionOptionsMapper;
+
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
 
     @Override
     public Page<BdQuestion> queryPageList(Page<BdQuestion> pageList,BdQuestion condition) {
@@ -82,6 +88,8 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
     @Override
     public BdQuestion bdQuestion(String id) {
         BdQuestion bdQuestion = bdQuestionMapper.bdQuestion(id);
+        String queTypeName = iSysBaseAPI.translateDict("que_type", String.valueOf(bdQuestion.getQueType()));
+        bdQuestion.setQueTypeName(queTypeName);
         List<BdQuestionOptions> lists = bdQuestionMapper.lists(id);
         List<BdQuestionOptionsAtt> enclosures = bdQuestionMapper.listss(id);
         if (ObjectUtil.isNotNull(bdQuestion)){
@@ -109,6 +117,45 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
             bdQuestion.setMaterialsList(materialsList);
         });
         return options;
+    }
+
+    @Override
+    public List<BdQuestion> randomSelectionQuestion(String categoryIds, Integer choiceQuestionNum, Integer shortAnswerQuestionNum) {
+        List<BdQuestion> questionList = bdQuestionMapper.randomSelectionQuestion(StrUtil.isNotBlank(categoryIds) ? StrUtil.splitTrim(categoryIds, ",") : null, choiceQuestionNum, shortAnswerQuestionNum);
+        questionList.forEach(e -> {
+            String queTypeName = iSysBaseAPI.translateDict("que_type", String.valueOf(e.getQueType()));
+            e.setQueTypeName(queTypeName);
+            List<BdQuestionOptionsAtt> bdQuestionOptionsActs = bdQuestionMapper.listss(e.getId());
+            e.setPic("无");
+            e.setVideo("无");
+            e.setOther("无");
+            if (CollectionUtil.isNotEmpty(bdQuestionOptionsActs)){
+                List<String> collect = bdQuestionOptionsActs.stream().map(BdQuestionOptionsAtt::getType).collect(Collectors.toList());
+                for (String s:collect) {
+                    if ("pic".equals(s)) {
+                        e.setPic("有");
+                    }
+                    if ("video".equals(s)) {
+                        e.setVideo("有");
+                    }
+                    if ("other".equals(s)) {
+                        e.setOther("有");
+                    }
+                }}
+        });
+        return questionList;
+    }
+
+    @Override
+    public BdQuestionDTO getQuestionNum(String categoryIds) {
+
+        Integer choiceQuestionNum = bdQuestionMapper.getQuestionNum(StrUtil.isNotBlank(categoryIds) ? StrUtil.splitTrim(categoryIds, ",") : null, 1);
+        Integer shortAnswerQuestionNum = bdQuestionMapper.getQuestionNum(StrUtil.isNotBlank(categoryIds) ? StrUtil.splitTrim(categoryIds, ",") : null, 2);
+        BdQuestionDTO dto = new BdQuestionDTO();
+        dto.setChoiceQuestionNum(choiceQuestionNum);
+        dto.setShortAnswerQuestionNum(shortAnswerQuestionNum);
+
+        return dto;
     }
 
     private void modifyDelete(BdQuestion bdQuestion) {

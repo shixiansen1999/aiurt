@@ -74,6 +74,10 @@ public class BdQuestion implements Serializable {
     @ApiModelProperty(value = "类别名称")
     @TableField(exist = false)
     private String categoryName;
+    /**题目类型名称*/
+    @ApiModelProperty(value = "题目类型名称")
+    @TableField(exist = false)
+    private String queTypeName;
     /**附件路径*/
     @ApiModelProperty(value = "附件路径")
     @TableField(exist = false)
