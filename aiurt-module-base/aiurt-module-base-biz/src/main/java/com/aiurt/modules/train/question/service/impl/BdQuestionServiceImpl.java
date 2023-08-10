@@ -128,14 +128,14 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
     public List<BdQuestion> randomSelectionQuestion(String categoryIds, Integer choiceQuestionNum, Integer shortAnswerQuestionNum) {
         List<BdQuestion> questionList = bdQuestionMapper.randomSelectionQuestion(StrUtil.isNotBlank(categoryIds) ? StrUtil.splitTrim(categoryIds, ",") : null, choiceQuestionNum, shortAnswerQuestionNum);
         List<DictModel> queType = iSysBaseAPI.queryDictItemsByCode("que_type");
-        Map<String, String> queTypeMap = queType.stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue));
+        Map<String, String> queTypeMap = queType.stream().collect(Collectors.toMap(DictModel::getValue,DictModel::getText));
         //查找试题
         List<String> questionIds = questionList.stream().map(BdQuestion::getId).collect(Collectors.toList());
         LambdaQueryWrapper<BdQuestionOptionsAtt> wrapper = new LambdaQueryWrapper<>();
         wrapper.in(BdQuestionOptionsAtt::getQuestionId, questionIds);
         List<BdQuestionOptionsAtt> bdQuestionOptionsActs = bdQuestionOptionsAttMapper.selectList(wrapper);
         questionList.forEach(e -> {
-            e.setQueTypeName(queTypeMap.get(e.getQueType()));
+            e.setQueTypeName(queTypeMap.get(e.getQueType().toString()));
             e.setPic("无");
             e.setVideo("无");
             e.setOther("无");
