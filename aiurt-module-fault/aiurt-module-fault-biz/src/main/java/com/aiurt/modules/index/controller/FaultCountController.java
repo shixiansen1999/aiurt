@@ -95,6 +95,20 @@ public class FaultCountController {
         return Result.OK(result);
     }
 
+    /**
+     * 这个接口把上面两个接口：/getFaultCountInfos和/getFaultCountInfo统一起来，因为上面两个接口的逻辑是一样的
+     * @param faultCountInfoReq
+     * @return
+     */
+    @AutoLog(value = "首页-故障概况详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "首页-故障概况详情", notes = "首页-故障概况详情")
+    @PermissionData(pageComponent = "dashboard/Analysis")
+    @RequestMapping(value = "/getFaultCount", method = RequestMethod.GET)
+    public Result<IPage<FaultCountRespDTO>> getFaultCount(@Validated FaultCountInfoReq faultCountInfoReq){
+        IPage<FaultCountRespDTO> result = faultCountService.getFaultCount(faultCountInfoReq);
+        return Result.OK(result);
+    }
+
 
     /**
      * 首页-故障超时等级详情接口

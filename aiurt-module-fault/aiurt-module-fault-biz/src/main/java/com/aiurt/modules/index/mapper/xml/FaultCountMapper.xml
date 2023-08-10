@@ -129,7 +129,40 @@
             </where>
     </select>
 
-
+    <select id="getFaultCount" resultType="com.aiurt.modules.fault.dto.FaultCountRespDTO">
+        select * from fault
+        <where>
+            status > 2
+            <if test="faultCountInfoReq.type == 2">
+                AND status = 12
+            </if>
+            <if test="faultCountInfoReq.type == 3">
+                AND status &lt;&gt; 12
+            </if>
+            <if test="faultCountInfoReq.type == 4">
+                AND status = 10
+            </if>
+            <if test="faultCountInfoReq.startDate!=null and faultCountInfoReq.endDate!=null">
+                and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{faultCountInfoReq.startDate},'%Y-%m-%d')
+                and date_format(approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{faultCountInfoReq.endDate},'%Y-%m-%d')
+            </if>
+            <if test="faultCountInfoReq.faultLevel != null">
+                and fault_level  = #{faultCountInfoReq.faultLevel}
+            </if>
+            <if test="faultCountInfoReq.status != null">
+                and status  = #{faultCountInfoReq.status}
+            </if>
+            <if test="userNameByRealName != null and userNameByRealName.size() != 0">
+                and appoint_user_name  in
+                <foreach collection="userNameByRealName" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="faultCountInfoReq.faultModeCode != null">
+                and fault_mode_code  = #{faultCountInfoReq.faultModeCode}
+            </if>
+        </where>
+    </select>
 
     <select id="getFaultData" resultType="com.aiurt.modules.fault.dto.FaultTimeoutLevelDTO">
         select * from fault

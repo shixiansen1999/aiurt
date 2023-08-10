@@ -44,6 +44,14 @@ public interface IFaultCountService{
     IPage<FaultCountInfosDTO> getFaultCountInfos(FaultCountInfoReq faultCountInfoReq);
 
     /**
+     * 首页-故障统计详情
+     * 此方法是为了统一 getFaultCountInfo方法和getFaultCountInfos方法，这两个方法逻辑是一样的
+     * @param faultCountInfoReq
+     * @return
+     */
+    IPage<FaultCountRespDTO> getFaultCount(FaultCountInfoReq faultCountInfoReq);
+
+    /**
      * 故障超时等级详情分页
      * @param faultTimeoutLevelReq
      * @return
