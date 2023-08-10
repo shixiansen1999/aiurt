@@ -64,8 +64,7 @@
         SELECT
         id,
         parent_id,
-        depart_name,
-        org_name
+        depart_name
         FROM
         sys_depart
         WHERE
@@ -77,8 +76,7 @@
         SELECT
         sd.id,
         sd.parent_id,
-        sd.depart_name,
-        org_name
+        sd.depart_name
         FROM
         sys_depart sd
         INNER JOIN
