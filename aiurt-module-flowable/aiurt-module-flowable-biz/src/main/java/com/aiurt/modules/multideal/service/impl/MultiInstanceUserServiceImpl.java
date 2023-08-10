@@ -2,7 +2,9 @@ package com.aiurt.modules.multideal.service.impl;
 
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
+import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.multideal.service.IMultiInstanceUserService;
+import com.alibaba.fastjson.JSONObject;
 import org.flowable.engine.ProcessEngines;
 import org.flowable.task.api.Task;
 import org.springframework.stereotype.Service;
@@ -28,7 +30,18 @@ public class MultiInstanceUserServiceImpl implements IMultiInstanceUserService {
         if (task == null) {
             throw new AiurtBootException(AiurtErrorEnum.TASK_ID_NOT_FOUND.getCode(), String.format(AiurtErrorEnum.TASK_ID_NOT_FOUND.getMessage(), taskId));
         }
-        String variableName = "assigneeList_userTask_"+task.getTaskDefinitionKey();
+        String variableName = FlowVariableConstant.ASSIGNEE_LIST + task.getTaskDefinitionKey();
         return  ProcessEngines.getDefaultProcessEngine().getTaskService().getVariable(taskId, variableName, List.class);
+    }
+
+    /**
+     * @param nodeId
+     * @param businessData
+     * @param user
+     * @return
+     */
+    @Override
+    public List<String> getNextNodeUserList(String nodeId, JSONObject businessData, List<String> user) {
+        return  user;
     }
 }
