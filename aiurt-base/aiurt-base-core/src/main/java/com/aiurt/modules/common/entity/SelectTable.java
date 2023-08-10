@@ -22,6 +22,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SelectTable {
+    public SelectTable(String value, String parentValue) {
+        this.value = value;
+        this.parentValue = parentValue;
+    }
 
     @ApiModelProperty("id")
     private String id;
@@ -129,35 +133,6 @@ public class SelectTable {
             }
         }
         return subUserNum;
-    }
-
-    private List<SysUserModel> convertToSysUserModelList(List<SelectTable> resultList) {
-        List<SysUserModel> sysUserModels = new ArrayList<>();
-
-        for (SelectTable selectTable : resultList) {
-            SysUserModel sysUserModel = new SysUserModel();
-            sysUserModel.setId(selectTable.getId());
-            sysUserModel.setKey(selectTable.getKey());
-            sysUserModel.setValue(selectTable.getValue());
-            sysUserModel.setLabel(selectTable.getLabel());
-            sysUserModel.setTitle(selectTable.getLabel());
-            sysUserModel.setIsOrg(selectTable.getIsOrg());
-            sysUserModel.setRoleName(selectTable.getRoleName());
-            sysUserModel.setPostName(selectTable.getPostName());
-            sysUserModel.setOrgCode(selectTable.getOrgCode());
-            sysUserModel.setOrgName(selectTable.getOrgName());
-            sysUserModel.setAvatar(selectTable.getAvatar());
-            sysUserModel.setUserNum(selectTable.getUserNum());
-
-            // 递归转换子部门信息
-            if (CollUtil.isNotEmpty(selectTable.getChildren())) {
-                sysUserModel.setChildren(convertToSysUserModelList(selectTable.getChildren()));
-            }
-
-            sysUserModels.add(sysUserModel);
-        }
-
-        return sysUserModels;
     }
 
 }

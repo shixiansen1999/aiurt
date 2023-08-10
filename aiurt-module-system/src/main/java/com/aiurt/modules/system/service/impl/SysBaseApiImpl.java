@@ -1056,12 +1056,16 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public List<SysUserModel> queryDepartUserTree(String departIdStr) {
+        // 解析部门ID字符串为部门ID列表
         List<String> departIds = null;
         if(StrUtil.isNotEmpty(departIdStr)){
             departIds = StrUtil.split(departIdStr, ',');
         }
+
+        // 查询部门列表，包括递归子部门
         List<SysDepart> departList = sysDepartMapper.selectRecursiveChildrenByIds(departIds);
 
+        // 构建部门和用户的树节点列表
         List<SelectTable> treeList = departList.stream().map(entity -> {
             SelectTable table = new SelectTable();
             table.setValue(entity.getId());
@@ -1073,42 +1077,91 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             return table;
         }).collect(Collectors.toList());
 
-        Map<String, SelectTable> root = new LinkedHashMap<>();
-        for (SelectTable item : treeList) {
-            SelectTable parent = root.get(item.getParentValue());
-            if (Objects.isNull(parent)) {
-                parent = new SelectTable();
-                root.put(item.getParentValue(), parent);
-            }
-            SelectTable table = root.get(item.getValue());
-            if (Objects.nonNull(table)) {
-                item.setChildren(table.getChildren());
-            }
-            root.put(item.getValue(), item);
-            parent.addChildren(item);
-        }
+        // 构建树结构
+        Map<String, SelectTable> root = buildTree(treeList);
 
-        List<SelectTable> resultList = new ArrayList<>();
-        List<SelectTable> collect = root.values().stream().filter(entity -> StrUtil.isBlank(entity.getParentValue())).collect(Collectors.toList());
-        for (SelectTable entity : collect) {
-            resultList.addAll(CollectionUtil.isEmpty(entity.getChildren()) ? Collections.emptyList() : entity.getChildren());
-        }
+        // 提取根节点下的所有节点，形成结果列表
+        List<SelectTable> resultList = extractResultList(root);
 
-        List<DictModel> sysPost = this.getDictItems("sys_post");
-        Map<String, String> sysPostMap = new HashMap<>(32);
-        if (CollUtil.isNotEmpty(sysPost)) {
-            sysPostMap = sysPost.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
-        }
+        // 获取系统岗位字典项映射
+        Map<String, String> sysPostMap = getSysPostDictMap();
+
+        // 获取用户角色名称映射
         Map<String, String> roleNamesByUserIds = this.getRoleNamesByUserIds(null);
 
-        dealUser(resultList, sysPostMap, roleNamesByUserIds);
+        // 在树形结构中填充用户详情信息和角色信息
+        populateUserDetailsInTree(resultList, sysPostMap, roleNamesByUserIds);
 
         // 遍历所有部门，计算 subUserNum
         for (SelectTable table : resultList) {
             table.calculateSubUserNum();
         }
 
+        // 转换为 SysUserModel 列表并返回
         return this.convertToSysUserModelList(resultList);
+    }
+
+    /**
+     * 从树结构映射中提取根节点下的所有节点，形成结果列表
+     *
+     * @param tree 树结构映射，以根节点为入口
+     * @return 提取出的结果列表
+     */
+    private List<SelectTable> extractResultList(Map<String, SelectTable> tree) {
+        // 创建一个空的结果列表
+        List<SelectTable> resultList = new ArrayList<>();
+
+        // 获取所有根节点
+        List<SelectTable> rootChildren = tree.values().stream()
+                .filter(entity -> StrUtil.isBlank(entity.getParentValue()))
+                .collect(Collectors.toList());
+
+        // 遍历根节点，将其添加到结果列表中
+        for (SelectTable entity : rootChildren) {
+            if (CollectionUtil.isNotEmpty(entity.getChildren())) {
+                resultList.addAll(entity.getChildren());
+            }
+        }
+
+        return resultList;
+    }
+
+    /**
+     * 构建树结构，将节点列表组织成树形结构
+     *
+     * @param nodeList 节点列表
+     * @return 构建好的树结构，以根节点为入口的映射
+     */
+    private Map<String, SelectTable> buildTree(List<SelectTable> nodeList) {
+        // 创建一个空的根节点映射
+        Map<String, SelectTable> root = new LinkedHashMap<>();
+
+        // 遍历节点列表，建立父子关系并构建树结构
+        for (SelectTable item : nodeList) {
+            SelectTable parent = root.get(item.getParentValue());
+
+            // 如果父节点不存在，则创建一个新的父节点
+            if (Objects.isNull(parent)) {
+                parent = new SelectTable();
+                root.put(item.getParentValue(), parent);
+            }
+
+            // 获取当前节点对应的已存在节点
+            SelectTable existingNode = root.get(item.getValue());
+
+            // 如果已存在节点存在，则将当前节点的子节点列表设置为已存在节点的子节点列表
+            if (Objects.nonNull(existingNode)) {
+                item.setChildren(existingNode.getChildren());
+            }
+
+            // 将当前节点放入树结构映射中
+            root.put(item.getValue(), item);
+
+            // 将当前节点添加为父节点的子节点
+            parent.addChildren(item);
+        }
+
+        return root;
     }
 
     @Override
@@ -1338,12 +1391,21 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return loginUsers;
     }
 
+    /**
+     * 获取系统岗位字典项映射
+     *
+     * @return 包含系统岗位字典项的映射，键为岗位值，值为岗位文本
+     */
     private Map<String, String> getSysPostDictMap() {
+        // 获取系统岗位字典项列表
         List<DictModel> sysPostList = this.getDictItems("sys_post");
+
+        // 构建系统岗位字典项映射
         Map<String, String> sysPostMap = new HashMap<>(16);
         if (CollUtil.isNotEmpty(sysPostList)) {
             sysPostMap = sysPostList.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
         }
+
         return sysPostMap;
     }
     /**
@@ -3931,25 +3993,37 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return result;
     }
 
-    private void dealUser(List<SelectTable> children, Map<String, String> sysPostMap, Map<String, String> roleNamesByUserIds) {
-        if (CollectionUtil.isEmpty(children)) {
+    /**
+     * 在树形结构中填充用户详情信息
+     *
+     * @param nodes           树节点列表
+     * @param sysPostMap         系统岗位字典项映射
+     * @param roleNamesByUserIds 用户ID到角色名称的映射
+     */
+    private void populateUserDetailsInTree(List<SelectTable> nodes, Map<String, String> sysPostMap, Map<String, String> roleNamesByUserIds) {
+        if (CollectionUtil.isEmpty(nodes)) {
             return;
         }
-        for (SelectTable child : children) {
-            List<SelectTable> list = child.getChildren();
-            dealUser(list, sysPostMap, roleNamesByUserIds);
-            if (CollectionUtil.isEmpty(list)) {
-                list = new ArrayList<>();
+
+        for (SelectTable node : nodes) {
+            List<SelectTable> children = node.getChildren();
+            populateUserDetailsInTree(children, sysPostMap, roleNamesByUserIds);
+
+            if (CollUtil.isEmpty(children)) {
+                children = new ArrayList<>();
             }
 
             // 部门id
-            String orgId = child.getValue();
+            String orgId = node.getValue();
+
+            // 查询部门下的用户列表
             LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(SysUser::getOrgId, orgId);
             wrapper.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0);
             wrapper.eq(SysUser::getStatus, CommonConstant.USER_UNFREEZE);
-
             List<SysUser> sysUserList = userMapper.selectList(wrapper);
+
+            // 构建用户节点列表
             List<SelectTable> tableList = sysUserList.stream().map(sysUser -> {
                 SelectTable table = new SelectTable();
                 table.setKey(sysUser.getId());
@@ -3957,19 +4031,23 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 table.setLabel(sysUser.getRealname());
                 table.setTitle(sysUser.getRealname());
                 table.setAvatar(sysUser.getAvatar());
-                table.setOrgCode(child.getKey());
-                table.setOrgName(child.getLabel());
+                table.setOrgCode(node.getKey());
+                table.setOrgName(node.getLabel());
+
                 List<String> jobNames = StrUtil.splitTrim(sysUser.getJobName(), ",");
                 if (CollUtil.isNotEmpty(jobNames)) {
                     String postName = jobNames.stream().map(e -> sysPostMap.get(e)).collect(Collectors.joining(","));
                     table.setPostName(postName);
                 }
+
                 table.setRoleName(roleNamesByUserIds.get(sysUser.getId()));
                 return table;
             }).collect(Collectors.toList());
-            child.setUserNum((long) tableList.size());
-            list.addAll(list.size(), tableList);
-            child.setChildren(list);
+
+            // 更新父节点信息
+            node.setUserNum((long) tableList.size());
+            children.addAll(children.size(), tableList);
+            node.setChildren(children);
         }
     }
 

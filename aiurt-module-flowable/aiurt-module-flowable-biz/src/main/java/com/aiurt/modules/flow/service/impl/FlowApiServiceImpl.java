@@ -1905,43 +1905,66 @@ public class FlowApiServiceImpl implements FlowApiService {
         String taskDefinitionKey = task.getTaskDefinitionKey();
         String processDefinitionId = task.getProcessDefinitionId();
 
-        List<FlowElement> targetFlowElement = flowElementUtil.getTargetFlowElement(execution, flowElementUtil.getFlowElement(processDefinitionId, taskDefinitionKey));
+        List<FlowElement> targetFlowElements = getTargetFlowElements(execution, processDefinitionId, taskDefinitionKey);
 
-        if (CollUtil.isEmpty(targetFlowElement)) {
-            return CollUtil.newArrayList();
-        }
-
-        for (FlowElement flowElement : targetFlowElement) {
+        for (FlowElement flowElement : targetFlowElements) {
             if (flowElement instanceof UserTask) {
                 UserTask userTask = (UserTask) flowElement;
-                ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
-                processParticipantsInfoDTO.setTitle(userTask.getName());
-                processParticipantsInfoDTO.setNodeId(userTask.getId());
-                processParticipantsInfoDTO.setOptions(CollUtil.newArrayList());
-
-                // 获取下一个节点ID
-                String nextTaskId = userTask.getId();
-                ActCustomUser customUserByTaskInfo = actCustomUserService.getActCustomUserByTaskInfo(processDefinitionId, nextTaskId, FlowConstant.USER_TYPE_0);
-                if (ObjectUtil.isEmpty(customUserByTaskInfo)) {
-                    result.add(processParticipantsInfoDTO);
-                    continue;
-                }
-
-                // 用户维度
-                String[] userNames = StrUtil.split(customUserByTaskInfo.getUserName(), ",");
-                buildUserParticipantsInfo(sysBaseAPI.queryUserByNames(userNames), processParticipantsInfoDTO.getOptions());
-
-                // 部门维度
-                buildDepartUserTree(customUserByTaskInfo.getOrgId(),processParticipantsInfoDTO.getOptions());
-
-                // 角色维度
-                buildRoleParticipantsInfo(customUserByTaskInfo.getRoleCode(), processParticipantsInfoDTO.getOptions());
-
-                // 岗位维度
-                buildPostParticipantsInfo(customUserByTaskInfo.getPost(), processParticipantsInfoDTO.getOptions());
+                ProcessParticipantsInfoDTO processParticipantsInfoDTO = buildProcessParticipantsInfo(userTask, processDefinitionId);
+                result.add(processParticipantsInfoDTO);
             }
         }
         return result;
+    }
+
+    /**
+     * 构建流程参与者信息 DTO
+     *
+     * @param userTask            用户任务
+     * @param processDefinitionId 流程定义 ID
+     * @return 构建好的流程参与者信息 DTO
+     */
+    private ProcessParticipantsInfoDTO buildProcessParticipantsInfo(UserTask userTask, String processDefinitionId) {
+        ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
+        processParticipantsInfoDTO.setTitle(userTask.getName());
+        processParticipantsInfoDTO.setNodeId(userTask.getId());
+        processParticipantsInfoDTO.setOptions(new ArrayList<>());
+
+        String nextTaskId = userTask.getId();
+        ActCustomUser customUserByTaskInfo = actCustomUserService.getActCustomUserByTaskInfo(processDefinitionId, nextTaskId, FlowConstant.USER_TYPE_0);
+
+        if (customUserByTaskInfo != null) {
+            // 构建用户参与者信息
+            String[] userNames = StrUtil.split(customUserByTaskInfo.getUserName(), ",");
+            buildUserParticipantsInfo(sysBaseAPI.queryUserByNames(userNames), processParticipantsInfoDTO.getOptions());
+
+            // 构建部门参与者信息
+            buildDepartParticipantsInfo(customUserByTaskInfo.getOrgId(), processParticipantsInfoDTO.getOptions());
+
+            // 构建角色参与者信息
+            buildRoleParticipantsInfo(customUserByTaskInfo.getRoleCode(), processParticipantsInfoDTO.getOptions());
+
+            // 构建岗位参与者信息
+            buildPostParticipantsInfo(customUserByTaskInfo.getPost(), processParticipantsInfoDTO.getOptions());
+        }
+
+        return processParticipantsInfoDTO;
+    }
+
+    /**
+     * 获取目标流程元素列表，根据当前执行实例和任务定义键
+     *
+     * @param execution           执行实例
+     * @param processDefinitionId 流程定义 ID
+     * @param taskDefinitionKey   任务定义键
+     * @return 目标流程元素列表
+     */
+    private List<FlowElement> getTargetFlowElements(Execution execution, String processDefinitionId, String taskDefinitionKey) {
+        // 获取源流程元素
+        FlowElement sourceFlowElement = flowElementUtil.getFlowElement(processDefinitionId, taskDefinitionKey);
+
+        // 获取目标流程元素列表
+        return flowElementUtil.getTargetFlowElement(execution, sourceFlowElement);
     }
 
     /**
@@ -1977,7 +2000,7 @@ public class FlowApiServiceImpl implements FlowApiService {
      * @param departIdStr 部门id字符串，多个使用","分割
      * @param result      结果列表，用于存储构建的参与者信息对象
      */
-    private void buildDepartUserTree(String departIdStr, List<ProcessParticipantsInfoDTO> result) {
+    private void buildDepartParticipantsInfo(String departIdStr, List<ProcessParticipantsInfoDTO> result) {
         if (StrUtil.isEmpty(departIdStr)) {
             return;
         }

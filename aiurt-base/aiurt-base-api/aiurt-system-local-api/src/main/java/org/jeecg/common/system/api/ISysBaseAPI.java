@@ -227,10 +227,10 @@ public interface ISysBaseAPI extends CommonAPI {
     public List<SysUserModel> queryPostUserTree(String values,Boolean isTreeReturn);
 
     /**
-     * 组织机构树
+     * 查询部门用户树，包括用户和部门的树形结构
      *
-     * @param departIdStr 可以根据departIdStr查询，多个使用英文逗号分隔。
-     * @return
+     * @param departIdStr 部门ID字符串，用逗号分隔的部门ID列表
+     * @return 部门用户树列表
      */
     List<SysUserModel> queryDepartUserTree(String departIdStr);
 
