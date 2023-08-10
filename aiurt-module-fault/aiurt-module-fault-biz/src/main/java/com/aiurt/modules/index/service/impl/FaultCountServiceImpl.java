@@ -324,10 +324,12 @@ public class FaultCountServiceImpl implements IFaultCountService {
     @Override
     public IPage<FaultCountRespDTO> getFaultCount(FaultCountInfoReq faultCountInfoReq) {
         IPage<FaultCountRespDTO> result = new Page<>();
-        if (ObjectUtil.isEmpty(faultCountInfoReq.getType())
+        // 如果patrolTaskId不为空，说明是从巡视综合管理跳转的，就不用判断开始时间结束时间等是不是空的了
+        if (cn.hutool.core.util.StrUtil.isEmpty(faultCountInfoReq.getPatrolTaskId())
+                && (ObjectUtil.isEmpty(faultCountInfoReq.getType())
                 || ObjectUtil.isEmpty(faultCountInfoReq)
                 || ObjectUtil.isEmpty(faultCountInfoReq.getStartDate())
-                || ObjectUtil.isEmpty(faultCountInfoReq.getEndDate())) {
+                || ObjectUtil.isEmpty(faultCountInfoReq.getEndDate()))) {
             return result;
         }
         // 分页数据
