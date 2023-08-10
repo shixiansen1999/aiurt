@@ -64,6 +64,8 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "适用系统code", width = 15)
     @ApiModelProperty(value = "适用系统code")
     private java.lang.String subsystemCode;
+    @TableField(exist = false)
+    private java.lang.String systemName;
     /**站点*/
     @Excel(name = "站点", width = 15)
     @ApiModelProperty(value = "站点")

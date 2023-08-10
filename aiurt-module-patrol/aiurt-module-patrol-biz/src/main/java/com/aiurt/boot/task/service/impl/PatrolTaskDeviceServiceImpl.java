@@ -188,6 +188,10 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             e.setFaultList(collect);
             PatrolStandard taskStandardName = patrolTaskDeviceMapper.getStandardName(e.getId());
             e.setSubsystemCode(taskStandardName.getSubsystemCode());
+            if (StrUtil.isNotBlank(e.getSubsystemCode())) {
+                String systemName = sysBaseApi.translateDictFromTable("cs_subsystem", "system_name", "system_code", e.getSubsystemCode());
+                e.setSystemName(systemName);
+            }
             e.setProfessionCode(taskStandardName.getProfessionCode());
             e.setTaskStandardName(taskStandardName.getName());
             if(ObjectUtil.isNotEmpty(taskStandardName.getName())){
@@ -482,6 +486,12 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         List<PatrolTaskFault> faultList = patrolTaskFaultMapper.selectList(new LambdaQueryWrapper<PatrolTaskFault>().eq(PatrolTaskFault::getPatrolNumber, patrolNumber));
         List<String> faultCodeList = faultList.stream().map(f -> f.getFaultCode()).collect(Collectors.toList());
         taskDeviceParam.setFaultList(faultCodeList);
+
+        if (taskDeviceParam.getMacStatus() != null) {
+            String statusName = sysBaseApi.translateDict("mac_status", taskDeviceParam.getMacStatus().toString());
+            taskDeviceParam.setMacStatusName(statusName);
+        }
+
         // 时长直接从数据库获取了
         // 计算巡检时长
         // Date startTime = taskDeviceParam.getStartTime();

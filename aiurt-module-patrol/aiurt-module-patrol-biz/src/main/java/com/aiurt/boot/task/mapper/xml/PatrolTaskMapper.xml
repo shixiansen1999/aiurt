@@ -134,6 +134,7 @@
         t1.source,
         t1.period,
         t1.sign_url,
+        t1.spot_check_status,
 <!--        (select realname from sys_user where id = t1.end_user_id) as-->
 <!--        endUserName,-->
         concat(DATE_FORMAT(t1.start_time, '%H:%i'), "-", DATE_FORMAT(t1.end_time, '%H:%i')) as startEndTime
@@ -261,7 +262,8 @@
         pt.spot_check_status,
         pt.duration,
         pt.standard_duration,
-        pt.wifi_connect_time
+        pt.wifi_connect_time,
+        pt.mac_status
         from patrol_task pt
         left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
         left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
@@ -2314,7 +2316,8 @@
         pt.spot_check_status,
         pt.duration,
         pt.standard_duration,
-        pt.wifi_connect_time
+        pt.wifi_connect_time,
+        pt.mac_status
         from patrol_task pt
         left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
         left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
