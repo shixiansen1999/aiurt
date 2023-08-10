@@ -477,11 +477,13 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
             bdExamRecord.setExamPaperId(bdAchievementDTO.getExamPaperId());
             bdExamRecord.setExamClassify(1);
             bdExamRecord.setExamTime(new Date());
-            bdExamRecord.setIsSubmit(1);
             if (ObjectUtil.isNull(bdAchievementDTO.getScore())) {
                 bdExamRecord.setExamState("0");
+                // 因为现在根据is_submit来判断是否缺考，所以线下考试时分数未传当作未提交试卷即为缺考
+                bdExamRecord.setIsSubmit(0);
             } else {
                 bdExamRecord.setExamState("2");
+                bdExamRecord.setIsSubmit(1);
             }
             bdExamRecord.setCorrect(1);
             bdExamRecord.setIsRelease("3");
