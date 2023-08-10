@@ -21,7 +21,7 @@ public interface IBdTrainStudentFeedbackRecordService extends IService<BdTrainSt
      * @param taskId
      * @return
      */
-    BdTrainQuestionFeedback getStudentFeedbackRecordById(String userId, String taskId);
+    BdTrainQuestionFeedback getStudentFeedbackRecordById(String userId, String taskId,Integer isSubmit);
 
     /**
      *获取学员反馈表web
