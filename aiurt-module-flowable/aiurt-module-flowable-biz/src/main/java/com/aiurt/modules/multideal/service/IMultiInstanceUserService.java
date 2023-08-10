@@ -1,5 +1,7 @@
 package com.aiurt.modules.multideal.service;
 
+import com.alibaba.fastjson.JSONObject;
+
 import java.util.List;
 
 /**
@@ -14,4 +16,13 @@ public interface IMultiInstanceUserService {
      * @return
      */
     List<String> getCurrentUserList(String taskId);
+
+    /**
+     *
+     * @param nodeId
+     * @param businessData
+     * @param user
+     * @return
+     */
+    List<String> getNextNodeUserList(String nodeId, JSONObject businessData, List<String> user);
 }

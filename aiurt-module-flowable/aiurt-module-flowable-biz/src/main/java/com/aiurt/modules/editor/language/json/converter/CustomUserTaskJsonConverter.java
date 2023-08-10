@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
 import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
+import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.common.enums.MultiApprovalRuleEnum;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.aiurt.modules.modeler.entity.ActUserTypeEntity;
@@ -137,20 +138,20 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
 
                 // 第一个节点不构造多实例配置；
                 boolean isFirstUserTask = isFirstUserTask(userTask);
-
-                if (!isFirstUserTask) {
-                    propertiesNode.put(PROPERTY_MULTIINSTANCE_COLLECTION, "assigneeList_userTask_"+baseElement.getId());
+                MultiApprovalRuleEnum approvalRuleEnum = MultiApprovalRuleEnum.getByCode(multiApprovalRule);
+                if (!isFirstUserTask && Objects.nonNull(approvalRuleEnum)) {
+                    propertiesNode.put(PROPERTY_MULTIINSTANCE_COLLECTION, FlowVariableConstant.ASSIGNEE_LIST + baseElement.getId());
                     propertiesNode.put(PROPERTY_MULTIINSTANCE_VARIABLE, "assignee");
                     propertiesNode.putNull(PROPERTY_MULTIINSTANCE_VARIABLE_AGGREGATIONS);
 
-                    switch (multiApprovalRule) {
+                    switch (approvalRuleEnum) {
                         // 任意会签
-                        case "taskMultiInstanceType-1":
+                        case TASK_MULTI_INSTANCE_TYPE_1:
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Parallel");
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_CONDITION, "${nrOfCompletedInstances >= 1}");
                             break;
                         // 并行
-                        case "taskMultiInstanceType-2":
+                        case TASK_MULTI_INSTANCE_TYPE_2:
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Parallel");
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_CONDITION, "${nrOfCompletedInstances == nrOfInstances}");
                             break;
