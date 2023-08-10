@@ -3480,8 +3480,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }else {
                     printDataDTO.setData("✕");
                     equipmentList.add(printDataDTO);
+                    if (StrUtil.isNotEmpty(r.getUnNote())){
                     text.append(i).append(".").append(r.getName()).append(":").append(r.getUnNote()).append("\n");
                     i.getAndIncrement();
+                    }
                 }
             }else {
             List<RepairTaskResult> checkPid = resultList.stream().filter(c -> c.getPid().equals(r.getId())).collect(Collectors.toList());
@@ -3493,8 +3495,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }else {
                     printDataDTO.setData("✕");
                     equipmentList.add(printDataDTO);
+                    if (StrUtil.isNotEmpty(check.getUnNote())){
                     text.append(i).append(".").append(r.getName()).append("-").append(check.getName()).append(":").append(check.getUnNote()).append("\n");
                     i.getAndIncrement();
+                    }
                 }
             });}
         });
