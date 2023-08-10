@@ -402,7 +402,11 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         }else if (ObjectUtil.isEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
             stationCode = this.selectStation(null).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }
-        IPage<FailureReport> failureReportIpage = patrolTaskMapper.getFailureReport(page,sysUser.getId(), lineCode, stationCode, startTime, endTime, systemCode);
+         Date date = new Date();
+         DateTime beginDate = DateUtil.beginOfWeek(date);
+         DateTime endDate = DateUtil.endOfWeek(date);
+
+        IPage<FailureReport> failureReportIpage = patrolTaskMapper.getFailureReport(page,sysUser.getId(), lineCode, stationCode, startTime, endTime, systemCode,beginDate,endDate);
         //子系统拿到已解决数（去掉挂起的的数据）
          SysParamModel filterParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_FILTER);
          boolean filterValue = "1".equals(filterParamModel.getValue());
@@ -431,7 +435,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 f.setLastYearStr("-");
             }
              if (f.getLastWeekNum() != 0) {
-                 BigDecimal sub = NumberUtil.sub(f.getFailureNum(), f.getLastWeekNum());
+                 double sub = NumberUtil.sub(f.getThisWeekNum(), f.getLastWeekNum());
                  BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastWeekNum(), 2));
                  f.setLastWeekStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
              } else {
