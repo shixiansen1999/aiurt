@@ -264,4 +264,14 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @return 返回SignUserDTO列表
      */
     List<SignUserDTO> appGetSignUserList(String taskId);
+
+    /**
+     * 打印
+     *
+     * @param ids
+     * @param code
+     * @param deviceId
+     * @return
+     */
+    String printTask(String ids, String code, String deviceId);
 }

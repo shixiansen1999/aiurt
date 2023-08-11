@@ -20,16 +20,19 @@ import java.util.Date;
 public class FaultCountInfoReq {
     @ApiModelProperty(value = "开始时间",required = true)
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @NotNull(message = "开始时间不能为空")
+    // 从巡视综合查询跳转过来的不用时间
+    // @NotNull(message = "开始时间不能为空")
     private Date startDate;
 
     @ApiModelProperty(value = "结束时间",required = true)
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @NotNull(message = "结束时间不能为空")
+    // 从巡视综合查询跳转过来的不用时间
+    // @NotNull(message = "结束时间不能为空")
     private Date endDate;
 
     @ApiModelProperty(value = "详情分类:1.故障总数 2.已解决  3.未解决  4.挂起数")
-    @NotNull(message = "详情分类不能为空")
+    // 从巡视综合查询跳转过来的不用详情分类
+    // @NotNull(message = "详情分类不能为空")
     private Integer type;
 
     @ApiModelProperty(value = "故障状态")
@@ -52,4 +55,8 @@ public class FaultCountInfoReq {
     private Integer pageNo = 1;
     @ApiModelProperty(value = "pageSize")
     private Integer pageSize = 10;
+
+    /**这个字段是为了在巡视综合管理，点击是否关联故障，查询与巡视任务关联的故障而设置的*/
+    @ApiModelProperty(value = "巡视任务id")
+    private String patrolTaskId;
 }

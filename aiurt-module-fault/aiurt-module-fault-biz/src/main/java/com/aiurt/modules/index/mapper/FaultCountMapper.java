@@ -80,8 +80,25 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
     })
     List<FaultCountInfosDTO> getFaultCountInfos(@Param("type") Integer type, @Param("page") Page<FaultCountInfosDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq,/**@Param("ordList") List<String> ordList*/@Param("majorByUserId")List<String> majorByUserId,@Param("stationCodeList")List<String> stationCodeList,@Param("userNameByRealName")List<String> userNameByRealName);
 
-
-
+    /**
+     * 故障概况统计详情分页
+     * 此方法是为了统一上面的getFaultCountInfo方法和getFaultCountInfos方法，这两个方法的逻辑基本一致
+     * @param type
+     * @param page
+     * @param faultCountInfoReq
+     * @param majorByUserId
+     * @param stationCodeList
+     * @param userNameByRealName
+     * @return
+     */
+    @DataPermission({
+            @DataColumn(key = "deptName",value = "sys_org_code"),
+            @DataColumn(key = "lineName",value = "line_code"),
+            @DataColumn(key = "majorName",value = "major_code"),
+            @DataColumn(key = "systemName",value = "system_code"),
+            @DataColumn(key = "stationName",value = "station_code")
+    })
+    List<FaultCountRespDTO> getFaultCount(@Param("type") Integer type, @Param("page") Page<FaultCountRespDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq, @Param("majorByUserId")List<String> majorByUserId,@Param("stationCodeList")List<String> stationCodeList,@Param("userNameByRealName")List<String> userNameByRealName);
 
 
     /**
