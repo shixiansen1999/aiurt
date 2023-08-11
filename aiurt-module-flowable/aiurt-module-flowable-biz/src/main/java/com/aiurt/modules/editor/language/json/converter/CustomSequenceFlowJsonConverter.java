@@ -206,7 +206,7 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
         }
 
         if (StrUtil.isNotEmpty(processedExpressionWithStr)) {
-            propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, processedExpressionWithStr);
+            propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, String.format("<![CDATA[%s]]",processedExpressionWithStr));
         }
 
         if (ObjectUtil.isNotEmpty(flowRelationObjectNode)) {
