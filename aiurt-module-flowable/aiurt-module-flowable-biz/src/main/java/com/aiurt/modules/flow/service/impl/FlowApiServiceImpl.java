@@ -1892,10 +1892,10 @@ public class FlowApiServiceImpl implements FlowApiService {
     }
 
     @Override
-    public List<ProcessParticipantsInfoDTO> getProcessParticipantsInfo(String processInstanceId, String taskId) {
+    public List<ProcessParticipantsInfoDTO> getProcessParticipantsInfo(ProcessParticipantsReqDTO processParticipantsReqDTO) {
         List<ProcessParticipantsInfoDTO> result = CollUtil.newArrayList();
 
-        Task task = this.getProcessInstanceActiveTask(processInstanceId, taskId);
+        Task task = this.getProcessInstanceActiveTask(processParticipantsReqDTO.getProcessInstanceId(), processParticipantsReqDTO.getTaskId());
         if (task == null) {
             throw new AiurtBootException("数据验证失败，请核对指定的任务Id，请刷新后重试！");
         }
