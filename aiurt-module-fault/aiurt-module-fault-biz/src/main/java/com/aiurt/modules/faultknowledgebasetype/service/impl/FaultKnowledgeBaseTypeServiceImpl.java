@@ -234,8 +234,8 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
         }
         LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, "0").orderByDesc(FaultKnowledgeBaseType::getCreateTime);
-        if (CollUtil.isNotEmpty(list)){
-            queryWrapper.in(FaultKnowledgeBaseType::getCode,list);
+        if (CollUtil.isNotEmpty(list) && StrUtil.isNotBlank(classifyCode) && StrUtil.isNotBlank(lineCode)) {
+            queryWrapper.in(FaultKnowledgeBaseType::getCode, list);
         }
         List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(queryWrapper);
 

@@ -1,5 +1,6 @@
 package com.aiurt.modules.train.question.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -11,14 +12,18 @@ import com.aiurt.modules.train.question.mapper.BdQuestionMapper;
 import com.aiurt.modules.train.question.mapper.BdQuestionOptionsAttMapper;
 import com.aiurt.modules.train.question.mapper.BdQuestionOptionsMapper;
 import com.aiurt.modules.train.question.service.IBdQuestionService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -88,6 +93,8 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
     @Override
     public BdQuestion bdQuestion(String id) {
         BdQuestion bdQuestion = bdQuestionMapper.bdQuestion(id);
+        String queTypeName = iSysBaseAPI.translateDict("que_type", String.valueOf(bdQuestion.getQueType()));
+        bdQuestion.setQueTypeName(queTypeName);
         List<BdQuestionOptions> lists = bdQuestionMapper.lists(id);
         List<BdQuestionOptionsAtt> enclosures = bdQuestionMapper.listss(id);
         if (ObjectUtil.isNotNull(bdQuestion)){
@@ -120,15 +127,21 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
     @Override
     public List<BdQuestion> randomSelectionQuestion(String categoryIds, Integer choiceQuestionNum, Integer shortAnswerQuestionNum) {
         List<BdQuestion> questionList = bdQuestionMapper.randomSelectionQuestion(StrUtil.isNotBlank(categoryIds) ? StrUtil.splitTrim(categoryIds, ",") : null, choiceQuestionNum, shortAnswerQuestionNum);
+        List<DictModel> queType = iSysBaseAPI.queryDictItemsByCode("que_type");
+        Map<String, String> queTypeMap = queType.stream().collect(Collectors.toMap(DictModel::getValue,DictModel::getText));
+        //查找试题
+        List<String> questionIds = questionList.stream().map(BdQuestion::getId).collect(Collectors.toList());
+        LambdaQueryWrapper<BdQuestionOptionsAtt> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(BdQuestionOptionsAtt::getQuestionId, questionIds);
+        List<BdQuestionOptionsAtt> bdQuestionOptionsActs = bdQuestionOptionsAttMapper.selectList(wrapper);
         questionList.forEach(e -> {
-            String queTypeName = iSysBaseAPI.translateDict("que_type", String.valueOf(e.getQueType()));
-            e.setQueTypeName(queTypeName);
-            List<BdQuestionOptionsAtt> bdQuestionOptionsActs = bdQuestionMapper.listss(e.getId());
+            e.setQueTypeName(queTypeMap.get(e.getQueType().toString()));
             e.setPic("无");
             e.setVideo("无");
             e.setOther("无");
-            if (CollectionUtil.isNotEmpty(bdQuestionOptionsActs)){
-                List<String> collect = bdQuestionOptionsActs.stream().map(BdQuestionOptionsAtt::getType).collect(Collectors.toList());
+            List<BdQuestionOptionsAtt> optionsAtts = Optional.ofNullable(bdQuestionOptionsActs).orElse(CollUtil.newArrayList()).stream().filter(b -> b.getQuestionId().equals(e.getId())).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(optionsAtts)){
+                List<String> collect = optionsAtts.stream().map(BdQuestionOptionsAtt::getType).collect(Collectors.toList());
                 for (String s:collect) {
                     if ("pic".equals(s)) {
                         e.setPic("有");
