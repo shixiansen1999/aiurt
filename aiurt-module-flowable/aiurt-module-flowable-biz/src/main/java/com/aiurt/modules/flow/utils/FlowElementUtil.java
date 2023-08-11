@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
+import com.aiurt.modules.cmd.ConditionExpressionCmd;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
@@ -18,19 +19,15 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.*;
-import org.flowable.common.engine.api.delegate.Expression;
+import org.flowable.common.engine.impl.interceptor.CommandExecutor;
 import org.flowable.engine.HistoryService;
-import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
-import org.flowable.engine.impl.Condition;
-import org.flowable.engine.impl.el.UelExpressionCondition;
+import org.flowable.engine.impl.context.Context;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
-import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.task.api.history.HistoricTaskInstance;
-import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -390,9 +387,8 @@ public class FlowElementUtil {
                     boolean result = true;
                     if (StrUtil.isNotBlank(sequenceFlow.getConditionExpression())) {
                         //计算连接线上的表达式
-                        Expression expression = CommandContextUtil.getProcessEngineConfiguration().getExpressionManager().createExpression(sequenceFlow.getConditionExpression());
-                        Condition condition = new UelExpressionCondition(expression);
-                        result = condition.evaluate(sequenceFlow.getId(), (ExecutionEntity) execution);
+                        CommandExecutor commandExecutor = Context.getProcessEngineConfiguration().getCommandExecutor();
+                        result = commandExecutor.execute(new ConditionExpressionCmd((ExecutionEntity) execution, sequenceFlow.getConditionExpression(), sequenceFlow.getId()));
                     }
                     if (result) {
                         FlowElement targetFlowElement = sequenceFlow.getTargetFlowElement();
