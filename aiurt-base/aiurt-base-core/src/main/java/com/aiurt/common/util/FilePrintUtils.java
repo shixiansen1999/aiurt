@@ -190,6 +190,7 @@ public class FilePrintUtils {
         cellStyle.setBorderBottom(BorderStyle.THIN);
         cellStyle.setBorderLeft(BorderStyle.THIN);
         cellStyle.setBorderRight(BorderStyle.THIN);
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         if (isSetFont){
             Font font = workbook.createFont();
             // 设置字体为宋体
@@ -199,7 +200,7 @@ public class FilePrintUtils {
             cellStyle.setFont(font);
         }
 
-        cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
+//        cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
 //        cellStyle.setAlignment(HorizontalAlignment.LEFT);
         //设置自动换行
         cellStyle.setWrapText(true);
