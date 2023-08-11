@@ -71,6 +71,7 @@
         left join repair_pool_org_rel rpor on rpor.repair_pool_code = rp.code
         LEFT JOIN repair_pool_station_rel rr ON rr.repair_pool_code = rp.`code`
         LEFT JOIN repair_task AS rt ON rt.repair_pool_id = rp.id
+        LEFT JOIN repair_task_user rtu ON rtu.repair_task_code = rt.code and rtu.del_flag = 0
         <where>
             rp.del_flag = 0
             <if test="beginDate!=null and endDate!=null">
@@ -92,7 +93,15 @@
             <if test="lineCode != null and lineCode != ''">
                 and rr.line_code = #{lineCode}
             </if>
+            <if test="stationCode != null and stationCode != ''">
+                and rr.station_code = #{stationCode}
+            </if>
+            <if test="username != null and username != ''">
+                and rtu.name
+                LIKE CONCAT('%', #{username}, '%')
+            </if>
         </where>
+        group by rp.id
     </select>
     <select id="getInspectionTodayData" resultType="com.aiurt.boot.index.dto.InspectionDTO">
         select  distinct rp.code,rp.weeks,rp.status, ifnull(rt.id,rp.id) as taskId
