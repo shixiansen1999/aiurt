@@ -189,4 +189,7 @@ public class PatrolTaskParam extends PatrolTask {
 
     /**实际巡视时长时间转化，转成1天2时5分9秒这种形式*/
     private String actualDurationString;
+
+    /**是否有关联故障。也就是巡视任务对应的巡视工单是否有上报的故障（故障要上报审核通过才算有关联故障）*/
+    private Boolean isRelateFault;
 }
