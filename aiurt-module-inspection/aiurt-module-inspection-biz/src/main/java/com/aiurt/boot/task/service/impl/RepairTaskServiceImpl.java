@@ -3079,7 +3079,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                             int i = c.get(Calendar.WEEK_OF_YEAR);
                             deviceRel.setWeeks(i);
                         }
-                        if (StrUtil.isNotBlank(deviceRel.getRepairTaskId())) {
+
+                        // 工作日志的检修内容是否需要拼接标准表，从实施配置获取
+                        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_REPAIR_CONCAT_STANDARD);
+                        if ("1".equals(sysParamModel.getValue()) && StrUtil.isNotBlank(deviceRel.getRepairTaskId())) {
                             List<RepairTaskStandardRel> repairTaskStandardRelList = repairTaskStandardRelMapper.selectList(new LambdaQueryWrapper<RepairTaskStandardRel>().eq(RepairTaskStandardRel::getRepairTaskId, deviceRel.getRepairTaskId()));
                             if (CollUtil.isNotEmpty(repairTaskStandardRelList)) {
                                 List<String> collect = repairTaskStandardRelList.stream().map(RepairTaskStandardRel::getTitle).collect(Collectors.toList());
