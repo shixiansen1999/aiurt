@@ -108,5 +108,15 @@ public interface ISysFolderService extends IService<SysFileType> {
      * @param name 文件夹名称
      */
     void renameFolder(Long id, String name);
+
+    /**
+     * 移动文件夹或者文件
+     *
+     * @param fileId 移动文件id
+     * @param fileTypeId  移动文件夹id
+     * @param targetFileTypeId  移入文件夹id
+     * @return 结果
+     */
+    void moveFile(Long fileId, Long fileTypeId, Long targetFileTypeId);
 }
 
