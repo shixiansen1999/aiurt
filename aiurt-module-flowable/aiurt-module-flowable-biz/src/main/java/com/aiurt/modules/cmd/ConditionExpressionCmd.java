@@ -1,15 +1,15 @@
 package com.aiurt.modules.cmd;
 
-import org.flowable.common.engine.api.FlowableException;
 import org.flowable.common.engine.api.delegate.Expression;
 import org.flowable.common.engine.impl.interceptor.Command;
 import org.flowable.common.engine.impl.interceptor.CommandContext;
+import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.impl.Condition;
 import org.flowable.engine.impl.el.UelExpressionCondition;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.impl.util.CommandContextUtil;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -20,7 +20,6 @@ public class ConditionExpressionCmd implements Command<Boolean> {
     private ExecutionEntity execution;
 
     private String conditionExpression;
-
 
     private Map<String,Object> variables;
 
@@ -39,7 +38,7 @@ public class ConditionExpressionCmd implements Command<Boolean> {
         Object result = expression.getValue(execution);
 
         if (result == null) {
-           return false;
+            return false;
         }
         if (!(result instanceof Boolean)) {
             return false;
