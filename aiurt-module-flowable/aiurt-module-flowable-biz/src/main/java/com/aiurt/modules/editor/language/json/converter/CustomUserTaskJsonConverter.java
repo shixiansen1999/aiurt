@@ -9,6 +9,8 @@ import com.aiurt.modules.common.enums.MultiApprovalRuleEnum;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.aiurt.modules.modeler.entity.ActUserTypeEntity;
 import com.aiurt.modules.modeler.entity.AutoSelectEntity;
+import com.aiurt.modules.modeler.entity.NodeActionDTO;
+import com.aiurt.modules.utils.FlowRelationUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -69,6 +71,17 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
      * 表格
      */
     private static final String FORM = "form";
+
+
+    /**
+     * 节点前的附加操作
+     */
+    public static final String PRE_NODE_ACTION = "preNodeAction";
+
+    /**
+     * 节点后的附加操作
+     */
+    public static final String POST_NODE_ACTION = "postNodeAction";
 
     private static final String SERIAL_VERSION_UID = "serialVersionUID";
 
@@ -192,6 +205,18 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
 
                 propertiesNode.set(FlowModelExtElementConstant.EXT_AUTO_SELECT, objectNode);
             }
+
+            // 节点前后附加操作
+            List<ExtensionElement> preNodeActionElements = extensionElements.get(PRE_NODE_ACTION);
+            if (CollUtil.isNotEmpty(preNodeActionElements)) {
+                ObjectNode preNodeActionObjectNode = FlowRelationUtil.createObjectNodeFromFields(NodeActionDTO.class, preNodeActionElements.get(0));
+                propertiesNode.set(PRE_NODE_ACTION, preNodeActionObjectNode);
+            }
+            List<ExtensionElement> postNodeActionElements = extensionElements.get(POST_NODE_ACTION);
+            if (CollUtil.isNotEmpty(postNodeActionElements)) {
+                ObjectNode postNodeActionObjectNode = FlowRelationUtil.createObjectNodeFromFields(NodeActionDTO.class, postNodeActionElements.get(0));
+                propertiesNode.set(POST_NODE_ACTION, postNodeActionObjectNode);
+            }
         }
     }
 
@@ -255,6 +280,9 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             addExtensionElementToUserTask(userTask, FORM_OPERATION, JsonConverterUtil.getProperty(FORM_OPERATION, elementNode));
             // 多人审批规则
             addExtensionElementToUserTask(userTask, MULTI_APPROVAL_RULE, JsonConverterUtil.getProperty(MULTI_APPROVAL_RULE, elementNode));
+            // 节点前后附件操作
+            addExtensionElementToUserTask(userTask, PRE_NODE_ACTION, JsonConverterUtil.getProperty(PRE_NODE_ACTION, elementNode));
+            addExtensionElementToUserTask(userTask, POST_NODE_ACTION, JsonConverterUtil.getProperty(POST_NODE_ACTION, elementNode));
             // 选人
             addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_USER_ASSIGNEE,
                     JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_USER_ASSIGNEE, elementNode));
@@ -286,7 +314,6 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.SERVICE);
             // 流程变量
             addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.FORM_TASK_VARIABLES);
-
 
             addCustomAttributeForPrefix(elementNode, userTask,"flowable", "formtaskVariables");
         }
