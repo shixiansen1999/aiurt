@@ -841,7 +841,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
 //                }
                 for (PatrolCheckResultDTO t :list){
                     PrintDTO printDTO = new PrintDTO();
-                    printDTO.setStandard(t.getQualityStandard());
+                    printDTO.setStandard(ObjectUtil.defaultIfEmpty(t.getQualityStandard(), t.getContent()).replaceAll("[\n ]", ""));
                     printDTO.setEquipment(c.getContent());
                     printDTO.setContent(t.getContent());
                     printDTO.setProcMethods(t.getProcMethods());
