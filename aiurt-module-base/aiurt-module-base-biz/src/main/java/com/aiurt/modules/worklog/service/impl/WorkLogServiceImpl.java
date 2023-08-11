@@ -1148,8 +1148,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
         DateTime startTime;
         DateTime endTime;
-        if (StrUtil.isEmpty(nowday)) {
+        if (StrUtil.isEmpty(nowday)&&StrUtil.isEmpty(createTime)) {
             nowday = DateUtil.today();
+        } else if (StrUtil.isNotBlank(createTime)) {
+            //如果没有指定日期且只有创建时间，则补录日期就是创建日期
+            nowday = createTime.substring(0,10);
         }
         if (!ymd.equals(nowday)) {
             String oldDay = nowday + " " + hms;
