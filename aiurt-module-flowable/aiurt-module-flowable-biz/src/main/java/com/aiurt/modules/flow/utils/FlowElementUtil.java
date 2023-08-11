@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.*;
 import org.flowable.common.engine.impl.interceptor.CommandExecutor;
 import org.flowable.engine.HistoryService;
+import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.impl.context.Context;
@@ -387,8 +388,10 @@ public class FlowElementUtil {
                     boolean result = true;
                     if (StrUtil.isNotBlank(sequenceFlow.getConditionExpression())) {
                         //计算连接线上的表达式
-                        CommandExecutor commandExecutor = Context.getProcessEngineConfiguration().getCommandExecutor();
-                        result = commandExecutor.execute(new ConditionExpressionCmd((ExecutionEntity) execution, sequenceFlow.getConditionExpression(), sequenceFlow.getId()));
+                        CommandExecutor commandExecutor = ProcessEngines.getDefaultProcessEngine().getProcessEngineConfiguration().getCommandExecutor();
+                        Map<String,Object> map = new HashMap<>();
+                        map.put("operationType", "0");
+                        result = commandExecutor.execute(new ConditionExpressionCmd((ExecutionEntity) execution, sequenceFlow.getConditionExpression(), map));
                     }
                     if (result) {
                         FlowElement targetFlowElement = sequenceFlow.getTargetFlowElement();
