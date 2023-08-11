@@ -223,6 +223,10 @@ public class BdTrainTaskPage {
 	@ApiModelProperty(value = "是否为计划内容")
 	@Dict(dicCode = "is_annual_plan")
 	private Integer isAnnualPlan;
+	/**培训-线路*/
+	@ApiModelProperty(value = "培训-线路，0-通用、1-1号线、2-2号线、3-3号线、4-4号线 、8-8号线）")
+	@Dict(dicCode = "train_line")
+	private Integer trainLine;
 	/**培训对象ids*/
 	@Excel(name = "培训对象ids", width = 15)
 	@ApiModelProperty(value = "培训对象ids")

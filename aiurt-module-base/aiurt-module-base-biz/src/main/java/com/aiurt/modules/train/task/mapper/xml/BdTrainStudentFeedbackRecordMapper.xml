@@ -19,6 +19,9 @@
     where
     fr.train_task_id = #{taskId}
             and fr.user_id = #{userId}
+            <if test="isSubmit != null">
+             and fr.is_submit = 1
+            </if>
            order by
             fr.bd_train_question_feedback_options_id desc
     </select>

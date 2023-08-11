@@ -1,5 +1,6 @@
 package com.aiurt.modules.common.entity;
 
+import cn.hutool.core.collection.CollUtil;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -7,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jeecg.common.system.vo.SysUserModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +22,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SelectTable {
+    public SelectTable(String value, String parentValue) {
+        this.value = value;
+        this.parentValue = parentValue;
+    }
 
     @ApiModelProperty("id")
     private String id;
@@ -108,7 +114,10 @@ public class SelectTable {
     @ApiModelProperty(value = "头像")
     private String avatar;
 
-    // 递归计算 subUserNum
+    /**
+     * 递归计算 subUserNum
+     * @return
+     */
     public Long calculateSubUserNum() {
         if (children == null || children.isEmpty()) {
             // 如果没有子部门，subUserNum 等于 userNum
@@ -125,4 +134,5 @@ public class SelectTable {
         }
         return subUserNum;
     }
+
 }

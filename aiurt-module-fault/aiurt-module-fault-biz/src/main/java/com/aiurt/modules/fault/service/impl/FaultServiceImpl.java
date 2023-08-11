@@ -4005,7 +4005,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             long delay = Long.parseLong(delayParam.getValue());
             int period = Integer.parseInt(periodParam.getValue());
             // 计算初始执行时间
-            LocalDateTime localDateTime = f.getUpdateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime localDateTime;
+            if (ObjectUtil.isNotEmpty(f.getUpdateTime())) {
+                localDateTime = f.getUpdateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            } else {
+                localDateTime = f.getCreateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            }
             LocalDateTime newDateTime = localDateTime.plus(delay, ChronoUnit.SECONDS);
             Date startTime = Date.from(newDateTime.atZone(ZoneId.systemDefault()).toInstant());
             log.info("首次执行时间:" + DateUtil.formatDateTime(startTime) + ",NoReceiveRemindJob,故障编号:" + f.getCode());
@@ -4040,7 +4045,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             long delay = Long.parseLong(delayParam.getValue());
             int period = Integer.parseInt(periodParam.getValue());
             // 计算初始执行时间
-            LocalDateTime localDateTime = f.getUpdateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime localDateTime;
+            if (ObjectUtil.isNotEmpty(f.getUpdateTime())) {
+                localDateTime = f.getUpdateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            } else {
+                localDateTime = f.getCreateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            }
             LocalDateTime newDateTime = localDateTime.plus(delay, ChronoUnit.SECONDS);
             Date startTime = Date.from(newDateTime.atZone(ZoneId.systemDefault()).toInstant());
             log.info("首次执行时间:" + DateUtil.formatDateTime(startTime) + ",NoUpdateRemindJob,故障编号:" + f.getCode());
@@ -4049,10 +4059,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     .startAt(startTime)
                     .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(period).repeatForever())
                     .build();
+            String updateTime = ObjectUtil.isNotEmpty(f.getUpdateTime()) ? DateUtil.format(f.getUpdateTime(), "yyyy-MM-dd HH:mm:ss") : "";
             // 创建定时任务
             QuartzJobDTO quartzJobDTO = new QuartzJobDTO();
             quartzJobDTO.setTrigger(trigger);
-            quartzJobDTO.setParameter(f.getCode() + StrUtil.COMMA + f.getStatus() + StrUtil.COMMA + DateUtil.format(f.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
+            quartzJobDTO.setParameter(f.getCode() + StrUtil.COMMA + f.getStatus() + StrUtil.COMMA + updateTime);
             quartzJobDTO.setJobClassName("com.aiurt.modules.fault.quzrtz.job.NoUpdateRemindJob");
             quartzJobDTO.setDescription("故障领取后超时未更新状态定时任务");
             quartzJobDTO.setStatus(0);
@@ -4076,7 +4087,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             long delay = Long.parseLong(delayParam.getValue());
             int period = Integer.parseInt(periodParam.getValue());
             // 计算初始执行时间
-            LocalDateTime localDateTime = f.getUpdateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime localDateTime;
+            if (ObjectUtil.isNotEmpty(f.getUpdateTime())) {
+                localDateTime = f.getUpdateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            } else {
+                localDateTime = f.getCreateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            }
             LocalDateTime newDateTime = localDateTime.plus(delay, ChronoUnit.SECONDS);
             Date startTime = Date.from(newDateTime.atZone(ZoneId.systemDefault()).toInstant());
             log.info("首次执行时间:" + DateUtil.formatDateTime(startTime) + ",HangUpRemindJob,故障编号:" + f.getCode());
@@ -4085,10 +4101,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     .startAt(startTime)
                     .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(period).repeatForever())
                     .build();
+            String updateTime = ObjectUtil.isNotEmpty(f.getUpdateTime()) ? DateUtil.format(f.getUpdateTime(), "yyyy-MM-dd HH:mm:ss") : "";
             // 创建定时任务
             QuartzJobDTO quartzJobDTO = new QuartzJobDTO();
             quartzJobDTO.setTrigger(trigger);
-            quartzJobDTO.setParameter(f.getCode() + StrUtil.COMMA + f.getStatus() + StrUtil.COMMA + DateUtil.format(f.getUpdateTime(), "yyyy-MM-dd HH:mm:ss"));
+            quartzJobDTO.setParameter(f.getCode() + StrUtil.COMMA + f.getStatus() + StrUtil.COMMA + updateTime);
             quartzJobDTO.setJobClassName("com.aiurt.modules.fault.quzrtz.job.HangUpRemindJob");
             quartzJobDTO.setDescription("故障挂起超时未处理提醒任务");
             quartzJobDTO.setStatus(0);

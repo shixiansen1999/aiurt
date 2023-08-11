@@ -6,6 +6,7 @@ import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.task.dto.DeviceDTO;
 import com.aiurt.boot.task.dto.PatrolBillDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
+import com.aiurt.boot.task.dto.SysUserPositionCurrentDTO;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.modules.device.entity.Device;
@@ -254,5 +255,5 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @param username
      * @return
      */
-    List<String> getSysUserPositionCurrent(@Param("username")String username);
+    SysUserPositionCurrentDTO getSysUserPositionCurrent(@Param("username")String username);
 }

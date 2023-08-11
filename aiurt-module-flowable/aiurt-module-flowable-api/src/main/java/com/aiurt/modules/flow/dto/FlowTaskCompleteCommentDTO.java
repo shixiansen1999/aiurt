@@ -6,6 +6,7 @@ import lombok.Data;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author fgw
@@ -29,5 +30,9 @@ public class FlowTaskCompleteCommentDTO implements Serializable {
 
     @ApiModelProperty(value = "委托账号，转办账号")
     private String delegateAssignee;
+
+
+    @ApiModelProperty(value = "下一个节点参与人参数")
+    private List<NextNodeUserDTO> nextNodeUserParam;
 
 }

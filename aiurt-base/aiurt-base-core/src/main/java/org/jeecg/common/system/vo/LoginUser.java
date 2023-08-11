@@ -132,6 +132,10 @@ public class LoginUser {
 	 * 角色名称
 	 */
 	private String roleNames;
+	/**
+	 * 岗位名称
+	 */
+	private String postNames;
 
 	/**
 	 * 角色编号

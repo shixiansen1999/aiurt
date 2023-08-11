@@ -571,6 +571,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             }
             lm.put("regular", deviceAssemblyErrorModel.getRegular());
             lm.put("specialCharacters", deviceAssemblyErrorModel.getSpecialCharacters());
+            lm.put("procMethods", deviceAssemblyErrorModel.getProcMethods());
             lm.put("itemParentMistake", deviceAssemblyErrorModel.getItemParentMistake());
             lm.put("orgName", deviceAssemblyErrorModel.getOrgName());
             lm.put("standardTypeName", deviceAssemblyErrorModel.getStandardTypeName());
@@ -844,13 +845,13 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                             }
 
                             if (items.getInputType() == 1) {
-                                if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular())) {
-                                    stringBuilder.append("检查值类型为无时：关联数据字典、数据检验表达式不用填写");
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular())  || ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                                    stringBuilder.append("检查值类型为无时：关联数据字典、数据检验表达式、检查值不用填写");
                                 }
                             }
                             if (items.getInputType() == 2) {
-                                if (ObjectUtil.isNotEmpty(items.getRegular())) {
-                                    stringBuilder.append("检查值类型为选择项时：数据校验表达式不用填写，");
+                                if (ObjectUtil.isNotEmpty(items.getRegular()) || ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                                    stringBuilder.append("检查值类型为选择项时：数据校验表达式、检查值不用填写，");
                                 } else {
                                     if (ObjectUtil.isNotEmpty(items.getDictCode())) {
                                         String dictCode = patrolStandardMapper.getDictCode(items.getDictCode());
@@ -859,12 +860,14 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                                         } else {
                                             stringBuilder.append("关联数据字典选择不正确，");
                                         }
+                                    } else {
+                                        stringBuilder.append("关联数据字典不能为空，");
                                     }
                                 }
                             }
                             if (items.getInputType() == 3) {
-                                if (ObjectUtil.isNotEmpty(items.getDictCode())) {
-                                    stringBuilder.append("检查值类型为输入项时：关联数据字典不用填写，");
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                                    stringBuilder.append("检查值类型为输入项时：关联数据字典、检查值不用填写，");
                                 } else {
                                     if (ObjectUtil.isNotEmpty(items.getRegular())) {
                                         List<DictModel> regex = sysBaseApi.getDictItems("regex");
@@ -878,12 +881,22 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                                         } else {
                                             stringBuilder.append("数据校验表达式选择不正确，");
                                         }
+                                    } else {
+                                        stringBuilder.append("数据校验表达式不能为空，");
                                     }
+                                }
+                            }
+                            if (items.getInputType() == 4) {
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular())) {
+                                    stringBuilder.append("检查值类型为特殊字符输入时：关联数据字典、数据检验表达式不用填写，");
+                                }
+                                if (ObjectUtil.isEmpty(items.getSpecialCharacters())) {
+                                    stringBuilder.append("检查值不能为空，");
                                 }
                             }
                         } else {
                             if (ObjectUtil.isNotEmpty(items.getRegular()) || ObjectUtil.isNotEmpty(items.getDictCode())) {
-                                stringBuilder.append("关联数据字典、数据校验表达式不用填写，");
+                                stringBuilder.append("关联数据字典、数据校验表达式、检查值不用填写，");
                             }
                         }
                     }
@@ -913,13 +926,13 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                             }
 
                             if (items.getInputType() == 1) {
-                                if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular())) {
-                                    stringBuilder.append("关联数据字典、数据校验表达式不用填写，");
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular())  || ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                                    stringBuilder.append("检查值类型为无时：关联数据字典、数据检验表达式、检查值不用填写");
                                 }
                             }
                             if (items.getInputType() == 2) {
-                                if (ObjectUtil.isNotEmpty(items.getRegular())) {
-                                    stringBuilder.append("数据校验表达式不用填写，");
+                                if (ObjectUtil.isNotEmpty(items.getRegular()) || ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                                    stringBuilder.append("检查值类型为选择项时：数据校验表达式、检查值不用填写，");
                                 } else {
                                     if (ObjectUtil.isNotEmpty(items.getDictCode())) {
                                         String dictCode = patrolStandardMapper.getDictCode(items.getDictCode());
@@ -928,12 +941,14 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                                         } else {
                                             stringBuilder.append("关联数据字典选择不正确，");
                                         }
+                                    } else {
+                                        stringBuilder.append("关联数据字典不能为空，");
                                     }
                                 }
                             }
                             if (items.getInputType() == 3) {
-                                if (ObjectUtil.isNotEmpty(items.getDictCode())) {
-                                    stringBuilder.append("关联数据字典不用填写，");
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                                    stringBuilder.append("检查值类型为输入项时：关联数据字典、检查值不用填写，");
                                 } else {
                                     if (ObjectUtil.isNotEmpty(items.getRegular())) {
                                         List<DictModel> regex = sysBaseApi.getDictItems("regex");
@@ -947,18 +962,22 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                                         } else {
                                             stringBuilder.append("数据校验表达式选择不正确，");
                                         }
-                                       /*String dictCode = patrolStandardMapper.getDictCode(items.getRegular());
-                                        if (ObjectUtil.isNotEmpty(dictCode)) {
-                                            items.setRegular(dictCode);
-                                        } else {
-                                            stringBuilder.append("数据校验表达式选择不正确，");
-                                        }*/
+                                    } else {
+                                        stringBuilder.append("数据校验表达式不能为空，");
                                     }
+                                }
+                            }
+                            if (items.getInputType() == 4) {
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular())) {
+                                    stringBuilder.append("检查值类型为特殊字符输入时：关联数据字典、数据检验表达式不用填写，");
+                                }
+                                if (ObjectUtil.isEmpty(items.getSpecialCharacters())) {
+                                    stringBuilder.append("检查值不能为空，");
                                 }
                             }
                         } else {
                             if (ObjectUtil.isNotEmpty(items.getRegular()) || ObjectUtil.isNotEmpty(items.getDictCode())) {
-                                stringBuilder.append("关联数据字典、数据校验表达式不用填写，");
+                                stringBuilder.append("关联数据字典、数据校验表达式、检查值不用填写，");
                             }
                         }
                     }

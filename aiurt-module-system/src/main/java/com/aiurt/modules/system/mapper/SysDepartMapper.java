@@ -123,4 +123,12 @@ public interface SysDepartMapper extends BaseMapper<SysDepart> {
 	 */
 	List<SysDepartModel> getUserOrgCategory(@Param("orgCode")String orgCode,
 											@Param("workLogOrgCategory") String workLogOrgCategory);
+
+	/**
+	 * 通过指定的一组父级部门 ID，递归查询所有子部门信息。
+	 *
+	 * @param ids 一组父级部门 ID
+	 * @return 包含所有子部门信息的列表
+	 */
+    List<SysDepart> selectRecursiveChildrenByIds(@Param("ids") List<String> ids);
 }

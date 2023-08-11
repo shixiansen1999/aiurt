@@ -35,12 +35,7 @@ public class ActCustomUserServiceImpl extends ServiceImpl<ActCustomUserMapper, A
 
     @Override
     public List<String> getUserNamesByProcessAndTask(String processDefinitionId, String taskId, String type) {
-        LambdaQueryWrapper<ActCustomUser> lam = new LambdaQueryWrapper<>();
-        lam.eq(ActCustomUser::getProcessDefinitionId, processDefinitionId);
-        lam.eq(ActCustomUser::getTaskId, taskId);
-        lam.eq(ActCustomUser::getType, type);
-        lam.eq(ActCustomUser::getDelFlag, CommonConstant.DEL_FLAG_0);
-        ActCustomUser actCustomUser = baseMapper.selectOne(lam);
+        ActCustomUser actCustomUser = getActCustomUserByTaskInfo(processDefinitionId,taskId,type);
 
         if (ObjectUtil.isEmpty(actCustomUser)) {
             return CollUtil.newArrayList();
@@ -66,5 +61,15 @@ public class ActCustomUserServiceImpl extends ServiceImpl<ActCustomUserMapper, A
                 .collect(Collectors.toList());
 
         return mergedUserNames;
+    }
+
+    @Override
+    public ActCustomUser getActCustomUserByTaskInfo(String processDefinitionId, String taskId, String type) {
+        LambdaQueryWrapper<ActCustomUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ActCustomUser::getProcessDefinitionId, processDefinitionId)
+                .eq(ActCustomUser::getTaskId, taskId)
+                .eq(ActCustomUser::getType, type)
+                .eq(ActCustomUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+        return baseMapper.selectOne(queryWrapper);
     }
 }
