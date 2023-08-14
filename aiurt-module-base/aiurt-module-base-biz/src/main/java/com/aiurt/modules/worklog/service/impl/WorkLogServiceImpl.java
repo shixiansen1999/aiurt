@@ -1547,7 +1547,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         } else {
             //判断该日志是晚班还是白班
             boolean a = createTime.after((DateUtil.parse(amEnd1))) && createTime.before((DateUtil.parse(pmEnd1)));
-            boolean b = date.after((DateUtil.parse(amEnd1))) && date.before((DateUtil.parse(pmEnd1)));
+            boolean b = date.after((DateUtil.parse(amEnd1)));
             boolean c = date.after((DateUtil.parse(pmEnd1)));
 
             if (!a && b ) {
