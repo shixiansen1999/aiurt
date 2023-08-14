@@ -44,6 +44,10 @@ public class ActCustomInterface extends BaseEntity implements Serializable {
 	@Excel(name = "接口路径", width = 15)
     @ApiModelProperty(value = "接口路径")
     private String path;
+    /**接口标识*/
+    @Excel(name = "接口标识", width = 15)
+    @ApiModelProperty(value = "接口标识")
+    private String mark;
 	/**接口分类*/
 	@Excel(name = "接口分类", width = 15)
     @ApiModelProperty(value = "接口分类")
