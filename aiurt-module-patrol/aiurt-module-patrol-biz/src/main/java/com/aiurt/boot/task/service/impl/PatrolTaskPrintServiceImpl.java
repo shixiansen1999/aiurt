@@ -1,12 +1,7 @@
 package com.aiurt.boot.task.service.impl;
 
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,6 +29,8 @@ import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.alibaba.excel.write.metadata.fill.FillWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.spire.xls.FileFormat;
+import com.xkcoding.http.support.Http;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -48,6 +45,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @Description: patrol_task print
@@ -159,6 +158,96 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         sysBaseApi.saveSysAttachment(sysAttachment);
 
         return sysAttachment.getId()+"?fileName="+sysAttachment.getFileName();
+    }
+
+    public void printPatrolTaskToPdf(String id, String standardId, HttpServletResponse response) {
+        PatrolTask patrolTask = patrolTaskMapper.selectById(id);
+//        List<PatrolTaskStandard> patrolTaskStandard = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>()
+//                .eq(PatrolTaskStandard::getDelFlag,0).eq(PatrolTaskStandard::getTaskId,patrolTask.getId()));
+//        PatrolStandard patrolStandard = patrolStandardMapper.selectOne(new LambdaQueryWrapper<PatrolStandard>()
+//                .eq(PatrolStandard::getDelFlag,0)
+//                .in(PatrolStandard::getCode,patrolTaskStandard.stream().map(PatrolTaskStandard::getStandardCode).collect(Collectors.toList()))
+//                .orderByDesc(PatrolStandard::getPrintTemplate).last("LIMIT 1"));
+        PatrolStandard patrolStandard = patrolStandardMapper.selectOne(new LambdaQueryWrapper<PatrolStandard>()
+                .eq(PatrolStandard::getDelFlag,0)
+                .in(PatrolStandard::getId,standardId)
+                .orderByDesc(PatrolStandard::getPrintTemplate).last("LIMIT 1"));
+        String excelName = null;
+        DictModel excelDictModel = new DictModel();
+        if (StrUtil.isNotEmpty(patrolStandard.getPrintTemplate())){
+            excelDictModel = sysBaseApi.dictById(patrolStandard.getPrintTemplate());
+            excelName = excelDictModel.getValue();
+        }else {
+            excelName = "telephone_system.xlsx";
+        }
+//        if (excelName.contains("telephone_system")){
+//            return printPatrolTaskByCommonTpl(id,null,standardId);
+//        }else if (excelName.contains("patrol-type8")){
+//            return printPatrolTaskByCommonTpl(id,"patrolType8",standardId);
+//        } else if (excelName.contains("wireless11")) {
+//            return printPatrolTaskByCommonTpl(id,"wireless11",standardId);
+//        }
+        // 模板文件路径
+        String templateFileName = "patrol" +"/" + "template" + "/" + excelName;
+        log.info("templateFileName:"+templateFileName);
+
+        // 填充数据后的文件路径
+        String fileName = patrolTask.getName() + System.currentTimeMillis() + ".xlsx";
+        fileName = fileName.replaceAll("[/*?:\"<>|]", "-");
+        String relatiePath = "/" + "patrol" + "/" + "print" + "/" + fileName;
+        String filePath = path +"/" +  fileName;
+        //获取头部数据
+        PrintPatrolTaskDTO taskDTO = getHeaderData(patrolTask);
+        //填充头部Map
+        Map<String, Object> headerMap = getHeaderMap(patrolTask, taskDTO,patrolStandard.getName());
+        //获取显示图片位置
+        List<String> imageList = null;
+        if (ObjectUtil.isNotEmpty(excelDictModel.getDescription())&&excelDictModel.getDescription().contains(",")){
+            imageList = Arrays.asList(excelDictModel.getDescription().split(","));
+        }
+        //文件打印签名
+        Map<String, Object> imageMap = getSignImageMap(taskDTO,imageList);
+
+        InputStream minioFile2 = MinioUtil.getMinioFile("platform", templateFileName);
+        ExcelWriter excelWriter = null;
+        try {
+            excelWriter = EasyExcel.write(filePath).withTemplate(minioFile2).build();
+            int[] mergeColumnIndex = {0,1,2};
+            CustomCellMergeHandler customCellMergeStrategy = new CustomCellMergeHandler(3,mergeColumnIndex);
+            WriteSheet writeSheet = EasyExcel.writerSheet().registerWriteHandler(customCellMergeStrategy).build();
+            FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.FALSE).build();
+            //填充列表数据
+            excelWriter =  fillData(id, excelName, excelWriter, writeSheet,headerMap,filePath,standardId);
+            //填充表头
+            excelWriter.fill(headerMap, writeSheet);
+            //填充图片
+            excelWriter.fill(imageMap, writeSheet);
+            excelWriter.finish();
+            //对已填充数据的文件进行后处理
+            processFilledFile(filePath);
+
+            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
+            //excel转PDF流输出
+            FileInputStream FileInputStream = new FileInputStream(filePath);
+            Workbook workbook = WorkbookFactory.create(FileInputStream);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            com.spire.xls.Workbook workbook1 = new com.spire.xls.Workbook();
+            workbook1.loadFromStream(inputStream);
+            //pdf 自适应屏幕大小
+            workbook1.getConverterSetting().setSheetFitToWidth(true);
+            workbook1.saveToStream(response.getOutputStream(), FileFormat.PDF);  //通过流的形式输出保存
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        SysAttachment sysAttachment = new SysAttachment();
+        sysAttachment.setFileName(fileName);
+        sysAttachment.setFilePath(relatiePath);
+        sysAttachment.setType("minio");
+        sysBaseApi.saveSysAttachment(sysAttachment);
+
+//        return sysAttachment.getId()+"?fileName="+sysAttachment.getFileName();
     }
 
 
