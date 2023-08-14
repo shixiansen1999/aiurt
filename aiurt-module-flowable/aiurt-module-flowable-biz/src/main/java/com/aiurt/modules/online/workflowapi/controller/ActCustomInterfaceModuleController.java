@@ -99,30 +99,27 @@ public class ActCustomInterfaceModuleController extends BaseController<ActCustom
 		 return result;
 	 }
 
-	 /**
-	  * 【vue3专用】加载一级节点/如果是同步 则所有数据
-	  *
-	  * @param async
-	  * @param pcode
-	  * @return
-	  */
-	 @RequestMapping(value = "/loadTreeRoot", method = RequestMethod.GET)
-	 public Result<List<SelectTreeModel>> loadTreeRoot(@RequestParam(name = "async") Boolean async, @RequestParam(name = "pcode") String pcode) {
-		 Result<List<SelectTreeModel>> result = new Result<>();
-		 try {
-			 List<SelectTreeModel> ls = actCustomInterfaceModuleService.queryListByCode(pcode);
-			 if (!async) {
-				 loadAllChildren(ls);
-			 }
-			 result.setResult(ls);
-			 result.setSuccess(true);
-		 } catch (Exception e) {
-			 e.printStackTrace();
-			 result.setMessage(e.getMessage());
-			 result.setSuccess(false);
-		 }
-		 return result;
-	 }
+	/**
+	 * 加载全部节点的数据
+	 *
+	 * @return
+	 */
+	@ApiOperation(value = "加载全部节点的数据", notes = "加载全部节点的数据")
+	@RequestMapping(value = "/loadTreeRoot", method = RequestMethod.GET)
+	public Result<List<SelectTreeModel>> loadTreeRoot() {
+		Result<List<SelectTreeModel>> result = new Result<>();
+		try {
+			List<SelectTreeModel> ls = actCustomInterfaceModuleService.queryListByCode(null);
+			loadAllChildren(ls);
+			result.setResult(ls);
+			result.setSuccess(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+			result.setMessage(e.getMessage());
+			result.setSuccess(false);
+		}
+		return result;
+	}
 
 	 /**
 	  * 【vue3专用】递归求子节点 同步加载用到
@@ -146,11 +143,15 @@ public class ActCustomInterfaceModuleController extends BaseController<ActCustom
       */
 	@ApiOperation(value="分层加载节点的数据", notes="分层加载节点的数据")
 	@GetMapping(value = "/childList")
-	public Result<List<ActCustomInterfaceModule>> queryChildList(@RequestParam(name = "pid",required = false) String pid) {
+	public Result<List<ActCustomInterfaceModule>> queryChildList(@RequestParam(name = "pid",required = false) String pid,
+																 @RequestParam(name = "name",required = false) String name) {
 
 		LambdaQueryWrapper<ActCustomInterfaceModule> lam = new LambdaQueryWrapper<>();
 
 		lam.eq(ActCustomInterfaceModule::getPid,StrUtil.isNotEmpty(pid)?pid: ROOT_PID_VALUE);
+		if(StrUtil.isNotEmpty(name)){
+			lam.like(ActCustomInterfaceModule::getModuleName,name);
+		}
 
 		List<ActCustomInterfaceModule> list = actCustomInterfaceModuleService.list(lam);
 
