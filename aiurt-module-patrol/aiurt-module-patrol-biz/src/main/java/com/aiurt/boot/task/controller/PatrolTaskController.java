@@ -805,6 +805,16 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         String printPatrolTaskDTOS = patrolTaskPrintService.printPatrolTask(ids,standardId);
         return Result.OK("成功",printPatrolTaskDTOS);
     }
+
+    @AutoLog(value = "巡检任务表-打印巡视详情")
+    @ApiOperation(value = "巡检任务表-打印巡视详情", notes = "巡检任务表-打印巡视详情")
+    @GetMapping(value = "/printPatrolTaskToPdf")
+    public void printPatrolTaskToPdf(@RequestParam(name="ids",required=true) String ids,
+                                     @RequestParam(name="standardId",required=true) String standardId,
+                                     HttpServletRequest req, HttpServletResponse response) {
+        patrolTaskPrintService.printPatrolTaskToPdf(ids,standardId,response);
+    }
+
     /**
      *获取mac地址
      *

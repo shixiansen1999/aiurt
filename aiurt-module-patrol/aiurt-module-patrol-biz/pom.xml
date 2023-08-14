@@ -103,6 +103,13 @@
             <artifactId>poi-ooxml-schemas</artifactId>
             <version>4.1.2</version>
         </dependency>
+        <dependency>
+            <groupId>e-iceblue</groupId>
+            <artifactId>spire.xls.free</artifactId>
+            <version>5.1.0</version>
+            <scope>system</scope>
+            <systemPath>D:/cgkj/projects/aiurt-platform/spire.xls.free-5.1.0.jar</systemPath>
+        </dependency>
 
         <!--通用导入导出依赖-->
         <dependency>
