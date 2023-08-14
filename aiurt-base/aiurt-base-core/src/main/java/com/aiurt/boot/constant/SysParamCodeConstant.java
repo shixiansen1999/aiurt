@@ -460,4 +460,8 @@ public interface SysParamCodeConstant {
      * 获取施工计划登录门户url
      */
     String CONSTRUCTION_URL="construction_url";
+    /**
+     * 培训编码-是否根据线路生成编码
+     */
+    String TRAIN_TASK_CODE="train_task_code";
 }
