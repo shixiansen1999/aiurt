@@ -182,6 +182,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 int actualDuration = (int) DateUtil.between(task.getWifiConnectTime(), task.getSubmitTime(), DateUnit.SECOND);
                 task.setActualDurationString(TimeUtil.translateTime(actualDuration));
             }
+
+            if (task.getMacStatus() != null) {
+                String statusName = sysBaseApi.translateDict("mac_status", task.getMacStatus().toString());
+                task.setMacStatusName(statusName);
+            }
         });
 
         ThreadFactory namedThreadFactory = new ThreadFactoryBuilder().setNameFormat("patrol_task-%d").build();

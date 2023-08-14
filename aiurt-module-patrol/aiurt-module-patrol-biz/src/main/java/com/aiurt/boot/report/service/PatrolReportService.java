@@ -393,16 +393,23 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
     }
      public IPage<FailureReport> getFailureReport(Page<FailureReport>page,String lineCode, List<String> stationCode, String startTime, String endTime,List<String> systemCode) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        SimpleDateFormat mm = new SimpleDateFormat("yyyy-MM");
+        SimpleDateFormat mm = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = new Date();
+        //不传时间默认本周
         if (ObjectUtil.isEmpty(startTime) && ObjectUtil.isEmpty(endTime)) {
-            startTime = mm.format(new Date()) + "-01"; endTime = mm.format(new Date()) + "-31";
+            startTime = mm.format(DateUtil.beginOfWeek(date));
+            endTime = mm.format(DateUtil.endOfWeek(date)) ;
         }
         if (ObjectUtil.isNotEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
             stationCode= this.selectStation(lineCode).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }else if (ObjectUtil.isEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
             stationCode = this.selectStation(null).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }
-        IPage<FailureReport> failureReportIpage = patrolTaskMapper.getFailureReport(page,sysUser.getId(), lineCode, stationCode, startTime, endTime, systemCode);
+
+         DateTime beginDate = DateUtil.beginOfWeek(date);
+         DateTime endDate = DateUtil.endOfWeek(date);
+
+        IPage<FailureReport> failureReportIpage = patrolTaskMapper.getFailureReport(page,sysUser.getId(), lineCode, stationCode, startTime, endTime, systemCode,beginDate,endDate);
         //子系统拿到已解决数（去掉挂起的的数据）
          SysParamModel filterParamModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_FILTER);
          boolean filterValue = "1".equals(filterParamModel.getValue());
@@ -431,7 +438,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 f.setLastYearStr("-");
             }
              if (f.getLastWeekNum() != 0) {
-                 BigDecimal sub = NumberUtil.sub(f.getFailureNum(), f.getLastWeekNum());
+                 double sub = NumberUtil.sub(f.getThisWeekNum(), f.getLastWeekNum());
                  BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastWeekNum(), 2));
                  f.setLastWeekStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
              } else {

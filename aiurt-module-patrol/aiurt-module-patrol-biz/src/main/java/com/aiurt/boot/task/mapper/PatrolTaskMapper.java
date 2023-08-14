@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import cn.hutool.core.date.DateTime;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
 import com.aiurt.boot.report.model.FailureOrgReport;
 import com.aiurt.boot.report.model.FailureReport;
@@ -355,7 +356,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param endTime
      * @return
      */
-    IPage<FailureReport> getFailureReport(Page<FailureReport>page,@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime,@Param("systemCode")List<String> systemCode);
+    IPage<FailureReport> getFailureReport(Page<FailureReport>page, @Param("id")String id, @Param("lineCode") String lineCode, @Param("stationCode") List<String> stationCode, @Param("startTime") String startTime, @Param("endTime")String endTime, @Param("systemCode")List<String> systemCode, @Param("beginDate")DateTime beginDate,@Param("endDate")DateTime endDate);
 
     /**
      * 查询数量
