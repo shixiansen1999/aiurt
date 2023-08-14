@@ -275,6 +275,11 @@ public class WorkLog {
     @ApiModelProperty(value = "站点编码，逗号隔开")
     private String stationCode;
 
+    /**是否补录：0否，1是*/
+    @Excel(name = "是否补录：0否，1是", width = 15)
+    @ApiModelProperty(value = "是否补录：0否，1是")
+    private  Integer  isAdditionalRecording;
+
     private String positionCode;
 
     public static final String ID = "id";

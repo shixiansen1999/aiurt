@@ -563,7 +563,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             //判断是否能编辑
             Boolean flag = editFlag(record.getCreateTime(), record.getConfirmStatus(), record.getCheckStatus());
             record.setEditFlag(flag);
-
+            //判断是否能补录
+            if (record.getStatus() != null && record.getStatus() == 0) {
+                Boolean additionalRecordingFlag = additionalRecordingFlag(record.getCreateTime());
+                record.setAdditionalRecordingFlag(additionalRecordingFlag);
+            }
             if (departMap!=null && stationTeamIdMap!=null){
                 String id = departMap.get(record.getSubmitOrgId());
                 if (StringUtils.isNotBlank(id)){
@@ -999,6 +1003,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setHandoverId(dto.getHandoverId());
         workLog.setStationCode(dto.getStationCode());
         workLog.setPositionCode(dto.getPositionCode());
+        workLog.setIsAdditionalRecording(dto.getIsAdditionalRecording());
         this.updateById(workLog);
         //删除原附件列表
         enclosureMapper.deleteByName(workLog.getId());
@@ -1522,6 +1527,38 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             throw new AiurtBootException("工作日志" + paramName + "没有配置");
         } else if (!TimeUtil.isLegalDate(param.getValue().length(), param.getValue(), "HH:mm:ss")) {
             throw new AiurtBootException("工作日志" + paramName + "格式不正确");
+        }
+    }
+
+    private Boolean additionalRecordingFlag(Date createTime) {
+        SysParamModel amEnd = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_AM_STOPEDIT);
+        SysParamModel pmEnd = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_PM_STOPEDIT);
+        validateTimeParam(amEnd, "早上停止编辑时间");
+        validateTimeParam(pmEnd, "下午停止编辑时间");
+        String today = DateUtil.today();
+        String amEnd1 = today + " " + amEnd.getValue();
+        String pmEnd1 = today + " " + pmEnd.getValue();
+        today = today + " " + "00:00:00";
+        Date date = new Date();
+
+        boolean beforeToday = createTime.before((DateUtil.parse(today)));
+        if (beforeToday) {
+            return true;
+        } else {
+            //判断该日志是晚班还是白班
+            boolean a = createTime.after((DateUtil.parse(amEnd1))) && createTime.before((DateUtil.parse(pmEnd1)));
+            boolean b = date.after((DateUtil.parse(amEnd1)));
+            boolean c = date.after((DateUtil.parse(pmEnd1)));
+
+            if (!a && b ) {
+                //如果是白班且当前时间大于早上停止编辑时间，则补录
+                return true;
+            } else if (a && c) {
+                //如果是晚班且当前时间大于晚上停止编辑时间，则补录
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
