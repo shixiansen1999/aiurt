@@ -11,6 +11,7 @@
 		select
 		  id as "key",
 		  module_name as "title",
+		  id as "value",
 		  (case when has_child = '1' then 0 else 1 end) as isLeaf,
 		  pid as parentId
 		from act_custom_interface_module
