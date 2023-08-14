@@ -1500,6 +1500,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                             .newSparePartSplitCode(sparepart.getNewSparePartSplitCode())
                             .lendOutOrderId(sparepart.getLendOutOrderId())
                             .warehouseCode(sparepart.getWarehouseCode())
+                            .consumablesType(sparepart.getConsumables())
                             .build();
                     return build;
                 }).collect(Collectors.toList());
@@ -1524,6 +1525,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                             .newSparePartSplitCode(sparepart.getNewSparePartSplitCode())
                             .lendOutOrderId(sparepart.getLendOutOrderId())
                             .warehouseCode(sparepart.getWarehouseCode())
+                            .consumablesType(sparepart.getConsumables())
                             .build();
                     return build;
                 }).collect(Collectors.toList());
@@ -1771,6 +1773,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         //是否需要自动提交签名（通信需要、站台门不需要）
         SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_SUBMIT_SIGNATURE);
         boolean value = "1".equals(paramModel.getValue());
+        //备件更换是否更换一次组件，就走一次备件流程
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPARE_PART_EXTRA);
+        String modelValue = sysParamModel.getValue();
         if(value){
             LoginUser user = sysBaseAPI.getUserById(loginUser.getId());
             one.setSignPath(user.getSignatureUrl());
@@ -1812,7 +1817,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }else {
                 fault.setState(FaultStatesEnum.FINISH.getStatus());
                 fault.setStatus(FaultStatusEnum.Close.getStatus());
-                noAudit(faultCode);
+                if("0".equals(modelValue)){
+                    noAudit(faultCode);
+                }
                 // 如果非标准方案这新增一个标准库
                 addFaultKnowledgeBase(faultCode, fault);
                 // 通信试运行八期：故障完成之后，给中心班组提示音

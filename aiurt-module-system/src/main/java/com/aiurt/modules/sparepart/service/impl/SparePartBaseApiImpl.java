@@ -234,6 +234,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 DeviceChangeSparePart deviceChangeSparePart = new DeviceChangeSparePart();
                 String newSpitCode = CollUtil.join(splitCodes, ",");
                 deviceChange.setNewSparePartSplitCode(newSpitCode);
+                deviceChange.setNewSparePartCode(newSpitCode);
                 BeanUtils.copyProperties(deviceChange,deviceChangeSparePart);
                 deviceChangeSpareParts.add(deviceChangeSparePart);
                 // spare_part_replace备件更换记录表
@@ -328,9 +329,20 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
             if (ObjectUtil.isEmpty(stockInfo)) {
                 throw new AiurtBootException(" 该用户所在的班组无备件仓库,无法进行组件或易耗品更换");
             }
+            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPARE_PART_EXTRA);
+            String value = sysParamModel.getValue();
+            //判断是否删除备件更换记录,只看组件
+            if("1".equals(value)){
+                deleteDeviceSpare(dtoList,faultCode);
+            }
             //旧数据进行判断，是否有移除的,有的话找到出来，然后恢复之前的
             if (CollUtil.isNotEmpty(exitFaultSparePartList)) {
-                List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(new LambdaQueryWrapper<DeviceChangeSparePart>().eq(DeviceChangeSparePart::getCode, faultCode));
+                LambdaQueryWrapper<DeviceChangeSparePart> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
+                if("1".equals(value)){
+                    queryWrapper.eq(DeviceChangeSparePart::getConsumables,1);
+                }
+                List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(queryWrapper);
                 List<String> deviceFaultIdList = exitFaultSparePartList.stream().map(SparePartStockDTO::getId).collect(Collectors.toList());
                 deviceChangeSparePartList = deviceChangeSparePartList.stream().filter(d ->!deviceFaultIdList.contains(d.getId())).collect(Collectors.toList());
                 recoverSparePart(deviceChangeSparePartList);
@@ -339,7 +351,12 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
             if (CollUtil.isNotEmpty(unExitFaultSparePartList)) {
                 if (CollUtil.isEmpty(exitFaultSparePartList)){
                 //旧数据进行判断，是否有移除的,有的话找到出来，然后恢复之前的
-                List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(new LambdaQueryWrapper<DeviceChangeSparePart>().eq(DeviceChangeSparePart::getCode, faultCode));
+                    LambdaQueryWrapper<DeviceChangeSparePart> queryWrapper = new LambdaQueryWrapper<>();
+                    queryWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
+                    List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(queryWrapper);
+                    if("1".equals(value)){
+                        queryWrapper.eq(DeviceChangeSparePart::getConsumables,1);
+                    }
                 recoverSparePart(deviceChangeSparePartList);
                 }
                 for (SparePartStockDTO lendStockDTO : unExitFaultSparePartList) {
@@ -579,6 +596,15 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                     }
 //                    sparePart.setNewSparePartCode(lendStockDTO.getNewSparePartCode());
                     sparePartService.getBaseMapper().insert(sparePart);
+                    if("1".equals(value)){
+                        if("0".equals(sparePart.getConsumables())){
+                            List<DeviceChangeSparePartDTO> dataList = new ArrayList<>();
+                            DeviceChangeSparePartDTO sparePartDTO = new DeviceChangeSparePartDTO();
+                            BeanUtils.copyProperties(sparePart,sparePartDTO);
+                            dataList.add(sparePartDTO);
+                            dealChangeSparePart(dataList);
+                        }
+                    }
                 }
             }
         } else {
@@ -586,6 +612,20 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
             recoverSparePart(deviceChangeSparePartList);
         }
 
+    }
+
+    private void deleteDeviceSpare(List<SparePartStockDTO> dtoList,String faultCode) {
+        List<String> deviceFaultIdList = dtoList.stream().filter(d -> "0".equals(d.getConsumablesType()) && ObjectUtil.isNotEmpty(d.getId())).map(SparePartStockDTO::getId).collect(Collectors.toList());
+        LambdaQueryWrapper<DeviceChangeSparePart> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
+        queryWrapper.eq(DeviceChangeSparePart::getConsumables,0);
+        List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(queryWrapper);
+        if(CollUtil.isNotEmpty(deviceFaultIdList)){
+            List<DeviceChangeSparePart> deleteList = deviceChangeSparePartList.stream().filter(d -> !deviceFaultIdList.contains(d.getId())).collect(Collectors.toList());
+            if(CollUtil.isNotEmpty(deleteList)){
+                sparePartService.removeBatchByIds(deleteList);
+            }
+        }
     }
 
     private void sendMeessage(LoginUser user, SparePartLend sparePartLend) {
