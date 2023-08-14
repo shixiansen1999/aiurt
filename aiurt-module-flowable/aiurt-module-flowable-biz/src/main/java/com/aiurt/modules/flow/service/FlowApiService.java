@@ -303,9 +303,8 @@ public interface FlowApiService {
 
     /**
      * 获取办理时选人维度列表。
-     * @param processInstanceId 流程引擎的实例Id。
-     * @param taskId            任务Id。
+     * @param processParticipantsReqDTO 包含流程实例ID和任务id和表单数据的请求信息
      * @return
      */
-    List<ProcessParticipantsInfoDTO> getProcessParticipantsInfo(String processInstanceId, String taskId);
+    List<ProcessParticipantsInfoDTO> getProcessParticipantsInfo(ProcessParticipantsReqDTO processParticipantsReqDTO);
 }

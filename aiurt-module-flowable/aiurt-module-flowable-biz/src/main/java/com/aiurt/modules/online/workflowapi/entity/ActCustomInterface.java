@@ -47,10 +47,12 @@ public class ActCustomInterface extends BaseEntity implements Serializable {
 	/**接口分类*/
 	@Excel(name = "接口分类", width = 15)
     @ApiModelProperty(value = "接口分类")
+    @Dict(dicCode = "interface_type")
     private Integer type;
     /**接口所属模块*/
     @Excel(name = "接口所属模块", width = 15)
     @ApiModelProperty(value = "接口所属模块")
+    @Dict(dicCode = "id",dicText = "module_name",dictTable = "act_custom_interface_module")
     private Integer module;
     /**创建人*/
     @ApiModelProperty(value = "创建人")

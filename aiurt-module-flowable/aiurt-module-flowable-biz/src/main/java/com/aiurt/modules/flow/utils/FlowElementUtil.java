@@ -6,35 +6,36 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.cmd.ConditionExpressionCmd;
+import com.aiurt.modules.common.constant.FlowCustomVariableConstant;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
 import com.aiurt.modules.modeler.dto.OperationList;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
+import com.aiurt.modules.modeler.entity.ActCustomVariable;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
+import com.aiurt.modules.modeler.service.IActCustomVariableService;
+import com.aiurt.modules.modeler.service.impl.ActCustomVariableServiceImpl;
 import com.aiurt.modules.utils.ReflectionService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.*;
-import org.flowable.common.engine.api.delegate.Expression;
 import org.flowable.common.engine.impl.interceptor.CommandExecutor;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
-import org.flowable.engine.impl.Condition;
-import org.flowable.engine.impl.context.Context;
-import org.flowable.engine.impl.el.UelExpressionCondition;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
-import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.Execution;
+import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.history.HistoricTaskInstance;
-import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -69,6 +70,12 @@ public class FlowElementUtil {
 
     @Autowired
     private HistoryService historyService;
+
+    @Autowired
+    private IActCustomVariableService variableService;
+
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
 
     /**
      * 获取第一个用户节点, 最近的一个版本
@@ -362,7 +369,23 @@ public class FlowElementUtil {
      */
     public List<FlowElement> getTargetFlowElement(Execution execution, FlowElement sourceFlowElement) {
         List<FlowElement> flowElementList = new ArrayList<>();
-        getTargetFlowElement(execution, sourceFlowElement, flowElementList);
+        getTargetFlowElement(execution, sourceFlowElement, flowElementList, null);
+        return flowElementList;
+    }
+
+
+
+
+    /**
+     * 获取下一个代办的节点
+     * @param execution
+     * @param sourceFlowElement
+     * @return
+     */
+    public List<FlowElement> getTargetFlowElement(Execution execution, FlowElement sourceFlowElement, Map<String, Object> busData) {
+        List<FlowElement> flowElementList = new ArrayList<>();
+        Map<String, Object> variables = getVariables(busData, execution.getProcessInstanceId());
+        getTargetFlowElement(execution, sourceFlowElement, flowElementList, variables);
         return flowElementList;
     }
 
@@ -373,7 +396,7 @@ public class FlowElementUtil {
      * @param flowElementList
      * @return
      */
-    public void getTargetFlowElement(Execution execution, FlowElement sourceFlowElement, List<FlowElement> flowElementList) {
+    public void getTargetFlowElement(Execution execution, FlowElement sourceFlowElement, List<FlowElement> flowElementList, Map<String, Object> variables) {
         //遇到下一个节点是UserTask就返回
         if (sourceFlowElement instanceof FlowNode) {
             //当前节点必须是FlowNode才做处理，比如UserTask或者GateWay
@@ -385,7 +408,7 @@ public class FlowElementUtil {
                 if (targetFlowElement instanceof UserTask) {
                     flowElementList.add(targetFlowElement);
                 } else {
-                   getTargetFlowElement(execution, targetFlowElement, flowElementList);
+                    getTargetFlowElement(execution, targetFlowElement, flowElementList, variables);
                 }
             } else if (thisFlowNode.getOutgoingFlows().size() > 1) {
                 //如果有多条连接线，遍历连接线，找出一个连接线条件执行为True的，获得它的出口节点
@@ -394,16 +417,15 @@ public class FlowElementUtil {
                     if (StrUtil.isNotBlank(sequenceFlow.getConditionExpression())) {
                         //计算连接线上的表达式
                         CommandExecutor commandExecutor = ProcessEngines.getDefaultProcessEngine().getProcessEngineConfiguration().getCommandExecutor();
-                        Map<String,Object> map = new HashMap<>();
-                        map.put("operationType", "0");
-                        result = commandExecutor.execute(new ConditionExpressionCmd((ExecutionEntity) execution, sequenceFlow.getConditionExpression(), map));
+
+                        result = commandExecutor.execute(new ConditionExpressionCmd((ExecutionEntity) execution, sequenceFlow.getConditionExpression(), variables));
                     }
                     if (result) {
                         FlowElement targetFlowElement = sequenceFlow.getTargetFlowElement();
                         if (targetFlowElement instanceof UserTask) {
                             flowElementList.add(targetFlowElement);
                         } else {
-                            getTargetFlowElement(execution, targetFlowElement, flowElementList);
+                            getTargetFlowElement(execution, targetFlowElement, flowElementList, variables);
                         }
                     }
                 }
@@ -419,5 +441,50 @@ public class FlowElementUtil {
      */
     public void addMultiInstanceExecution(String activityId, String parentExecutionId, List<String> assigneeList) {
         // 设置多实例
+    }
+
+    /**
+     * 构建流程变量，防止页面的数据太多
+     * @param busData
+     * @param processInstanceId
+     * @return
+     */
+    public Map<String, Object> getVariables(Map<String, Object> busData, String processInstanceId) {
+        Map<String, Object> variableData = new HashMap<>(16);
+
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+
+        if (Objects.isNull(processInstance)) {
+            throw new AiurtBootException(AiurtErrorEnum.PROCESS_INSTANCE_NOT_FOUND.getCode(), AiurtErrorEnum.PROCESS_INSTANCE_NOT_FOUND.getMessage());
+        }
+
+        // 流程key
+        String processDefinitionKey = processInstance.getProcessDefinitionKey();
+
+        // 流程模板信息
+        LambdaQueryWrapper<ActCustomModelInfo> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ActCustomModelInfo::getModelKey, processDefinitionKey).last("limit 1");
+        ActCustomModelInfo one = modelInfoService.getOne(queryWrapper);
+
+        // 非系统变量
+        List<ActCustomVariable> list = variableService.list(new LambdaQueryWrapper<ActCustomVariable>().eq(ActCustomVariable::getModelId, one.getModelId())
+                .eq(ActCustomVariable::getVariableType, 1).eq(ActCustomVariable::getType, 0));
+        if (Objects.nonNull(busData) && CollUtil.isNotEmpty(list)) {
+            list.stream().forEach(variable -> {
+                String variableName = variable.getVariableName();
+                variableData.put(variableName, busData.get(variableName));
+            });
+        }
+
+        // 流程发起人
+        String startUserId = processInstance.getStartUserId();
+
+        // 发起人角色， 部门， 岗位
+        LoginUser user = sysBaseApi.getUserByName(startUserId);
+        variableData.put(FlowCustomVariableConstant.ROLE_INITIATOR, user.getRoleCodes());
+        variableData.put(FlowCustomVariableConstant.POSITION_INITIATOR, user.getPost());
+        variableData.put(FlowCustomVariableConstant.ORG_INITIATOR, user.getOrgId());
+
+        return variableData;
     }
 }

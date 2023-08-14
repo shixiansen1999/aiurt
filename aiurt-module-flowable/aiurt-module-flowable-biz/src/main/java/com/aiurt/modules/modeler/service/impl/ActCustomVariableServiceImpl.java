@@ -121,7 +121,7 @@ public class ActCustomVariableServiceImpl extends ServiceImpl<ActCustomVariableM
     private List<ConnectionConditionConfigDTO> getCustomVariableList(String modelId) {
         LambdaQueryWrapper<ActCustomVariable> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ActCustomVariable::getModelId, modelId)
-                .eq(ActCustomVariable::getVariableType, FlowVariableConstant.VARIABLE_TYPE_1);
+                .eq(ActCustomVariable::getVariableType, FlowVariableConstant.VARIABLE_TYPE_1).eq(ActCustomVariable::getType, 0);
         List<ActCustomVariable> actCustomVariables = list(wrapper);
         if (CollUtil.isNotEmpty(actCustomVariables)) {
             List<ConnectionConditionConfigDTO> customVariableList = Optional.of(actCustomVariables).orElse(CollUtil.newArrayList()).stream().map(actCustomVariable -> {

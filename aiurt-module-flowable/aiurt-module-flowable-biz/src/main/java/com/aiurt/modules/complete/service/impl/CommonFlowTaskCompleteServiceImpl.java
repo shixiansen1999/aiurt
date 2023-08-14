@@ -1,11 +1,30 @@
 package com.aiurt.modules.complete.service.impl;
 
 import com.aiurt.modules.complete.dto.CompleteTaskContext;
+import com.aiurt.modules.complete.dto.FlowCompleteReqDTO;
+import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
+import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.TaskService;
+import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.task.api.Task;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * @author fgw
  */
-public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImpl{
+@Service
+public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImpl {
+
+    @Autowired
+    private RuntimeService runtimeService;
+
+    @Autowired
+    private TaskService taskService;
+
+    @Autowired
+    private IActCustomTaskExtService taskExtService;
 
     /**
      * 始前处理
@@ -28,7 +47,26 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
      */
     @Override
     public void buildTaskContext(CompleteTaskContext taskContext) {
+        FlowCompleteReqDTO flowCompleteReqDTO = taskContext.getFlowCompleteReqDTO();
+        String taskId = flowCompleteReqDTO.getTaskId();
+        String processInstanceId = flowCompleteReqDTO.getProcessInstanceId();
 
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+
+        Task task = taskService.createTaskQuery().taskId(taskId).processInstanceId(processInstanceId).singleResult();
+
+        ActCustomTaskExt customTaskExt = taskExtService.getByProcessDefinitionIdAndTaskId(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+        // 自动选人
+        Integer isAutoSelect = customTaskExt.getIsAutoSelect();
+        // 办理规则
+        String userType = customTaskExt.getUserType();
+        // 如果办理规则为空则，就是旧版流程选人，不需要处理
+
+        // 怎么兼容以前的数据
+        taskContext.setCurrentTask(task);
+        taskContext.setProcessInstance(processInstance);
+
+        // 是否多实例， 是否自动选人，自动选人则构造下一步节点以及下一个节点的数据
     }
 
     /**
@@ -52,7 +90,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
      */
     @Override
     public void dealNextNodeBeforeComplete(CompleteTaskContext taskContext) {
-        // 判断是否是自动提交的，如果不是自动提交则需要获取下一个节点的人员信息
+        // 判断是否是自动提交的，如果不是自动提交则需要获取下一个节点的人员信息,
 
     }
 
