@@ -5,6 +5,7 @@ import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * @author fgw
@@ -25,5 +26,12 @@ public class CompleteTaskContext implements Serializable {
      * 当前流程实例
      */
     private ProcessInstance processInstance;
+
+    /**
+     *
+     */
+    private Map<String, Object> variableData;
+
+
 
 }

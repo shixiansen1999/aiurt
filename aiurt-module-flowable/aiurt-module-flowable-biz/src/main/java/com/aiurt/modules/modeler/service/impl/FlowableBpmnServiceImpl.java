@@ -425,7 +425,11 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                 ExtensionElement extensionElement = autoSelectElements.get(0);
                 String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_USER_VALUE);
                 // 需要转换
-                flowTaskExt.setIsAutoSelect(attributeValue);
+                if (StrUtil.equalsIgnoreCase(attributeValue, "true")) {
+                    flowTaskExt.setIsAutoSelect(1);
+                } else {
+                    flowTaskExt.setIsAutoSelect(0);
+                }
             }
 
             // 办理人

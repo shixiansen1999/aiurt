@@ -465,8 +465,6 @@ public class FlowApiServiceImpl implements FlowApiService {
                 String variableName = variable.getVariableName();
                 variableData.put(variableName, busData.get(variableName));
             });
-
-            //todo 新增系统变量
         }
     }
 
@@ -613,6 +611,10 @@ public class FlowApiServiceImpl implements FlowApiService {
             ActCustomBusinessData actCustomBusinessData = businessDataService.queryByProcessInstanceId(processInstanceId, taskId);
             if (Objects.nonNull(actCustomBusinessData)) {
                 taskInfoDTO.setBusData(actCustomBusinessData.getData());
+            }
+
+            if (Objects.nonNull(flowTaskExt.getIsAutoSelect()) && flowTaskExt.getIsAutoSelect() == 0) {
+                taskInfoDTO.setIsAutoSelect(false);
             }
         }
 
@@ -1906,7 +1908,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         String processDefinitionId = task.getProcessDefinitionId();
 
-        List<FlowElement> targetFlowElements = getTargetFlowElements(CollUtil.isNotEmpty(runExecutionList)?runExecutionList.get(0):null, processDefinitionId, taskDefinitionKey);
+        List<FlowElement> targetFlowElements = getTargetFlowElements(CollUtil.isNotEmpty(runExecutionList)?runExecutionList.get(0):null, processDefinitionId, taskDefinitionKey, processParticipantsReqDTO.getBusData());
 
         for (FlowElement flowElement : targetFlowElements) {
             if (flowElement instanceof UserTask) {
@@ -1959,12 +1961,12 @@ public class FlowApiServiceImpl implements FlowApiService {
      * @param taskDefinitionKey   任务定义键
      * @return 目标流程元素列表
      */
-    private List<FlowElement> getTargetFlowElements(Execution execution, String processDefinitionId, String taskDefinitionKey) {
+    private List<FlowElement> getTargetFlowElements(Execution execution, String processDefinitionId, String taskDefinitionKey, Map<String,Object> busData) {
         // 获取源流程元素
         FlowElement sourceFlowElement = flowElementUtil.getFlowElement(processDefinitionId, taskDefinitionKey);
-
+        flowElementUtil.getVariables(busData, execution.getProcessInstanceId());
         // 获取目标流程元素列表
-        return flowElementUtil.getTargetFlowElement(execution, sourceFlowElement);
+        return flowElementUtil.getTargetFlowElement(execution, sourceFlowElement, busData);
     }
 
     /**

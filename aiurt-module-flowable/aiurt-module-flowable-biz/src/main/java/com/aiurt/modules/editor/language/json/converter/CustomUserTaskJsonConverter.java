@@ -283,6 +283,9 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             // 节点前后附件操作
             addExtensionElementToUserTask(userTask, PRE_NODE_ACTION, JsonConverterUtil.getProperty(PRE_NODE_ACTION, elementNode));
             addExtensionElementToUserTask(userTask, POST_NODE_ACTION, JsonConverterUtil.getProperty(POST_NODE_ACTION, elementNode));
+            // 自动选人
+            addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_AUTO_SELECT,
+                    JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_AUTO_SELECT, elementNode));
             // 选人
             addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_USER_ASSIGNEE,
                     JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_USER_ASSIGNEE, elementNode));
