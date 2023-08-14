@@ -100,6 +100,10 @@ public class PatrolTaskThreadService implements Callable<PatrolTaskParam> {
                 patrolTaskParam.setUserInfoName(userInfoName);
             }
 
+            // 该巡视任务是否有关联故障
+            Integer patrolTaskFaultNum = this.patrolTaskMapper.getPatrolTaskFaultNum(patrolTaskParam.getId());
+            patrolTaskParam.setIsRelateFault(patrolTaskFaultNum != null && (patrolTaskFaultNum > 0));
+
             /*//巡视单内容
             if (ObjectUtil.isNotEmpty(patrolTaskParam.getHavePrint()) && patrolTaskParam.getHavePrint()) {
                 List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(patrolTaskParam.getId());
