@@ -1,5 +1,6 @@
 package com.aiurt.modules.online.workflowapi.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.online.workflowapi.entity.ActCustomInterface;
@@ -24,7 +25,7 @@ import java.util.Arrays;
  * @Date:   2023-07-25
  * @Version: V1.0
  */
-@Api(tags="流程接口")
+@Api(tags="自定义接口")
 @RestController
 @RequestMapping("/workflowapi/actCustomInterface")
 @Slf4j
@@ -41,27 +42,30 @@ public class ActCustomInterfaceController extends BaseController<ActCustomInterf
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "act_custom_interface-分页列表查询")
-	@ApiOperation(value="act_custom_interface-分页列表查询", notes="act_custom_interface-分页列表查询")
+	@AutoLog(value = "分页列表自定义接口查询")
+	@ApiOperation(value="分页列表自定义接口查询", notes="分页列表自定义接口查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<ActCustomInterface>> queryPageList(ActCustomInterface actCustomInterface,
 														   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 														   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 														   HttpServletRequest req) {
 		QueryWrapper<ActCustomInterface> queryWrapper = QueryGenerator.initQueryWrapper(actCustomInterface, req.getParameterMap());
+		if(ObjectUtil.isNotEmpty(actCustomInterface.getType())){
+			queryWrapper.eq("type",actCustomInterface.getType());
+		}
 		Page<ActCustomInterface> page = new Page<>(pageNo, pageSize);
 		IPage<ActCustomInterface> pageList = actCustomInterfaceService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}
 
 	/**
-	 *   添加
+	 *   添加自定义接口
 	 *
 	 * @param actCustomInterface
 	 * @return
 	 */
-	@AutoLog(value = "act_custom_interface-添加")
-	@ApiOperation(value="act_custom_interface-添加", notes="act_custom_interface-添加")
+	@AutoLog(value = "添加自定义接口")
+	@ApiOperation(value="添加自定义接口", notes="添加自定义接口")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody ActCustomInterface actCustomInterface) {
 		// 检查数据库中是否已存在具有相同name的记录
@@ -74,13 +78,13 @@ public class ActCustomInterfaceController extends BaseController<ActCustomInterf
 	}
 
 	/**
-	 *  编辑
+	 *  编辑自定义接口
 	 *
 	 * @param actCustomInterface
 	 * @return
 	 */
-	@AutoLog(value = "act_custom_interface-编辑")
-	@ApiOperation(value="act_custom_interface-编辑", notes="act_custom_interface-编辑")
+	@AutoLog(value = "编辑自定义接口")
+	@ApiOperation(value="编辑自定义接口", notes="编辑自定义接口")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody ActCustomInterface actCustomInterface) {
 		// 检查数据库中是否已存在具有相同name的记录
@@ -92,13 +96,13 @@ public class ActCustomInterfaceController extends BaseController<ActCustomInterf
 	}
 
 	/**
-	 *   通过id删除
+	 *   通过id删自定义接口
 	 *
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "act_custom_interface-通过id删除")
-	@ApiOperation(value="act_custom_interface-通过id删除", notes="act_custom_interface-通过id删除")
+	@AutoLog(value = "通过id删自定义接口")
+	@ApiOperation(value="通过id删自定义接口", notes="通过id删自定义接口")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		actCustomInterfaceService.removeById(id);
@@ -106,13 +110,13 @@ public class ActCustomInterfaceController extends BaseController<ActCustomInterf
 	}
 
 	/**
-	 *  批量删除
+	 *  批量删除删自定义接口
 	 *
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "act_custom_interface-批量删除")
-	@ApiOperation(value="act_custom_interface-批量删除", notes="act_custom_interface-批量删除")
+	@AutoLog(value = "批量删除删自定义接口")
+	@ApiOperation(value="批量删除删自定义接口", notes="批量删除删自定义接口")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.actCustomInterfaceService.removeByIds(Arrays.asList(ids.split(",")));
@@ -120,12 +124,12 @@ public class ActCustomInterfaceController extends BaseController<ActCustomInterf
 	}
 
 	/**
-	 * 通过id查询
+	 * 通过id查询自定义接口
 	 *
 	 * @param id
 	 * @return
 	 */
-	@ApiOperation(value="act_custom_interface-通过id查询", notes="act_custom_interface-通过id查询")
+	@ApiOperation(value="通过id查询自定义接口", notes="通过id查询自定义接口")
 	@GetMapping(value = "/queryById")
 	public Result<ActCustomInterface> queryById(@RequestParam(name="id",required=true) String id) {
 		ActCustomInterface actCustomInterface = actCustomInterfaceService.getById(id);
