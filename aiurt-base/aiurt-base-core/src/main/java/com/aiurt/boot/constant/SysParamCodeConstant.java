@@ -486,4 +486,8 @@ public interface SysParamCodeConstant {
      * 工作日志保存检修内容是否需要拼接标准表
      */
     String WORKLOG_REPAIR_CONCAT_STANDARD = "worklog_repair_concat_standard";
+    /**
+     * 培训编码-是否根据线路生成编码
+     */
+    String TRAIN_TASK_CODE="train_task_code";
 }

@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
@@ -36,8 +37,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -95,6 +98,8 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	private ITrainArchiveService archiveService;
 	@Autowired
 	private ITrainRecordService recordService;
+	@Autowired
+	private ISysParamAPI iSysParamAPI;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -111,7 +116,13 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 		}
 	}
 public String taskCode(Integer trainLine){
-	int year = DateUtil.year(new Date());
+	Integer year = DateUtil.year(new Date());
+	Integer month = DateUtil.month(new Date())+1;
+	SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.TRAIN_TASK_CODE);
+	String value = sysParamModel.getValue();
+	if("0".equals(value)){
+		trainLine = month;
+	}
 	String taskCode = "YY-THXH-"+trainLine+"-"+year+"-";
 	String formatTaskCode = "";
 	List<BdTrainTask> bdTrainTasks = bdTrainTaskMapper.selectList(new LambdaQueryWrapper<BdTrainTask>());
