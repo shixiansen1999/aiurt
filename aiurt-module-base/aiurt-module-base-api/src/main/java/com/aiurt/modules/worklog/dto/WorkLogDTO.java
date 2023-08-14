@@ -191,12 +191,19 @@ public class WorkLogDTO extends WorkLogResult {
     private String signature;
 
     private String patrolRepairContent;
-
+    /**是否能编辑*/
     private Boolean editFlag;
+    /**是否能补录*/
+    private Boolean additionalRecordingFlag;
     /**未完成事项*/
     @ApiModelProperty(value = "未完成事项")
     private  String  unfinishedMatters;
     /**工作安排*/
     @ApiModelProperty(value = "工作安排")
     private String schedule;
+
+    /**是否补录：0否，1是*/
+    @Excel(name = "是否补录：0否，1是", width = 15)
+    @ApiModelProperty(value = "是否补录：0否，1是")
+    private  Integer  isAdditionalRecording;
 }
