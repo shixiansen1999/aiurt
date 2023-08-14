@@ -311,8 +311,12 @@ public class WorkLogResult {
     @Excel(name = "所在班组", width = 15)
     @ApiModelProperty(value = "所在班组")
     private  String  orgId;
+    /**是否能编辑*/
     @TableField(exist = false)
     private Boolean editFlag;
+    /**是否能补录*/
+    @TableField(exist = false)
+    private Boolean additionalRecordingFlag;
 
     @ApiModelProperty(value = "站点编码，逗号隔开")
     private String stationCode;

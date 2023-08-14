@@ -521,7 +521,7 @@ public class WorkLogController {
     @AutoLog(value = "今日工作内容")
     @ApiOperation(value = "今日工作内容", notes = "今日工作内容")
     @GetMapping(value = "/getTodayJobContent")
-    public Result getTodayJobContent(@RequestParam(name = "nowday", required = false) String nowday,@RequestParam(name = "creatTime", required = false) String createTime) {
+    public Result getTodayJobContent(@RequestParam(name = "nowday", required = false) String nowday,@RequestParam(name = "createTime", required = false) String createTime) {
         Result<Map> result = new Result<>();
         Map map = workLogDepotService.getTodayJobContent(nowday,createTime);
         //result.setResult(map);
