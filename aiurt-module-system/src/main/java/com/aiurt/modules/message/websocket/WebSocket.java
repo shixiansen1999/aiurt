@@ -1,5 +1,6 @@
 package com.aiurt.modules.message.websocket;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.base.BaseMap;
 import com.aiurt.common.constant.WebsocketConst;
 import com.aiurt.common.modules.redis.client.BaseRedisClient;
@@ -11,8 +12,6 @@ import javax.annotation.Resource;
 import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
-import java.io.EOFException;
-import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -218,4 +217,14 @@ public class WebSocket {
         }
     }
 
+    /**
+     * 移除指定用户的websocket和session
+     * @param userId
+     */
+    public void removeSession(String userId) {
+        if (StrUtil.isNotEmpty(userId)) {
+            webSockets.removeIf(e -> StrUtil.equals(userId, e.userId));
+            sessionPool.remove(userId);
+        }
+    }
 }
