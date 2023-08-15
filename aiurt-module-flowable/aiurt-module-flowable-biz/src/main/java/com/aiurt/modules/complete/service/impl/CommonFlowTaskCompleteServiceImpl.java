@@ -104,12 +104,9 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         String userType = customTaskExt.getUserType();
         taskContext.setMultiApprovalRule(userType);
         // multiInTask当前活动是多少实例，且不是多实例的最后一个活动，不设置下一步多实例办理人
-        if (multiInTask) {
+        // 多实例最后一部，自动选人则构造下一步节点以及下一个节点的数据,
+        if (multiInTask && StrUtil.isNotBlank(userType) && Objects.nonNull(isAutoSelect) && isAutoSelect == 1) {
             log.info("当前活动是多少实例，且不是多实例的最后一个活动，不设置下一步多实例办理人");
-            return;
-        }
-        // 多实例，自动选人则构造下一步节点以及下一个节点的数据,
-        if (StrUtil.isNotBlank(userType) && Objects.nonNull(isAutoSelect) && isAutoSelect == 1) {
             FlowElement flowElement = flowElementUtil.getFlowElement(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
             List<FlowElement> targetFlowElement = flowElementUtil.getTargetFlowElement(execution, flowElement, flowCompleteReqDTO.getBusData());
             List<NextNodeUserDTO> nodeUserDTOList = targetFlowElement.stream().map(element -> {

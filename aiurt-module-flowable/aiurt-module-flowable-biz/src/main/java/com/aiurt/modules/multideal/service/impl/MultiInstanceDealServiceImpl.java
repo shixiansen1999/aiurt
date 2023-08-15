@@ -86,17 +86,18 @@ public class MultiInstanceDealServiceImpl implements IMultiInstanceDealService {
 
         List<String> userList = null;
         boolean isCurrNode = false;
-        // 判断是否为多实例
-        Boolean multiInTask = multiInTaskService.isMultiInTask(nodeId, task.getProcessDefinitionId());
-        if (!multiInTask) {
-            return;
-        }
+
         //判断是否是当前节点
         if (StrUtil.isBlank(nodeId)) {
             log.info("当前节点");
             isCurrNode = true;
             nodeId = task.getTaskDefinitionKey();
             userList = multiInstanceUserService.getCurrentUserList(taskId);
+        }
+        // 判断是否为多实例
+        Boolean multiInTask = multiInTaskService.isMultiInTask(nodeId, task.getProcessDefinitionId());
+        if (!multiInTask) {
+            return;
         }
         String variableName =  FlowVariableConstant.ASSIGNEE_LIST + nodeId;
         log.info("活动（{}）,节点（{}），是多实例", taskId, nodeId);

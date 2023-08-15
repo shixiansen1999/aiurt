@@ -109,9 +109,9 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
         }
 
         switch (approvalRuleEnum) {
-            case TASK_MULTI_INSTANCE_TYPE_2:
-                return areSerialMultiInTask(task);
             case TASK_MULTI_INSTANCE_TYPE_3:
+                return areSerialMultiInTask(task);
+            case TASK_MULTI_INSTANCE_TYPE_2:
                 return areParallelMultiInTask(task);
             default:
                 return false;

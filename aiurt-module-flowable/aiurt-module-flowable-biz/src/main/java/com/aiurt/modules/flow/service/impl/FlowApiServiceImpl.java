@@ -329,6 +329,10 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 设置签收
         String assignee = task.getAssignee();
 
+        if (StrUtil.isNotBlank(assignee) && StrUtil.equalsIgnoreCase(loginUser.getUsername(), assignee)) {
+            throw new AiurtBootException("该任务已被其他人签收！");
+        }
+
         if (StrUtil.isBlank(assignee)) {
             taskService.setAssignee(taskId, loginUser.getUsername());
         }
@@ -1686,21 +1690,24 @@ public class FlowApiServiceImpl implements FlowApiService {
         ActCustomTaskExt customTaskExt = customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinition.getId(), userTask.getId());
         if (Objects.nonNull(customTaskExt)) {
             String formJson = customTaskExt.getFormJson();
-            JSONObject jsonObject = JSONObject.parseObject(formJson);
-            // 表单类型
-            String formType = jsonObject.getString(FlowModelAttConstant.FORM_TYPE);
-            // 表单设计
-            if (StrUtil.equalsIgnoreCase(formType, FlowModelAttConstant.DYNAMIC_FORM_TYPE)) {
-                setPageAttr(taskInfoDTO, jsonObject);
-            } else {
-                // 定制表单
-                taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
-                // 判断是否是表单设计器，
-                taskInfoDTO.setRouterName(jsonObject.getString("formUrl"));
-                if (StrUtil.equalsAnyIgnoreCase(processDefinitionKey, "bd_work_ticket2", "bd_work_titck")) {
-                    taskInfoDTO.setRouterName("@/views/workTicket/modules/BdFirstWorkTicket.vue");
+            if (StrUtil.isNotBlank(formJson)) {
+                JSONObject jsonObject = JSONObject.parseObject(formJson);
+                // 表单类型
+                String formType = jsonObject.getString(FlowModelAttConstant.FORM_TYPE);
+                // 表单设计
+                if (StrUtil.equalsIgnoreCase(formType, FlowModelAttConstant.DYNAMIC_FORM_TYPE)) {
+                    setPageAttr(taskInfoDTO, jsonObject);
+                } else {
+                    // 定制表单
+                    taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
+                    // 判断是否是表单设计器，
+                    taskInfoDTO.setRouterName(jsonObject.getString("formUrl"));
+                    if (StrUtil.equalsAnyIgnoreCase(processDefinitionKey, "bd_work_ticket2", "bd_work_titck")) {
+                        taskInfoDTO.setRouterName("@/views/workTicket/modules/BdFirstWorkTicket.vue");
+                    }
                 }
             }
+
             String json = customTaskExt.getOperationListJson();
             if (StrUtil.isNotBlank(json)) {
                 List<ActOperationEntity> objectList = JSONObject.parseArray(json, ActOperationEntity.class);
