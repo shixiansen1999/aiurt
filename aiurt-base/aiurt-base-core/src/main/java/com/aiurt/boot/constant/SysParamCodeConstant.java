@@ -476,4 +476,8 @@ public interface SysParamCodeConstant {
      * 故障挂起超时未处理提醒的铃声时长，单位为秒
      */
     String HUR_RING_DURATION = "hur_ring_duration";
+    /**
+     * 取消挂起时是否更新维修负责人
+     */
+    String CANCEL_HANGUP_CH_AUN = "cancel_hangup_ch_aun";
 }
