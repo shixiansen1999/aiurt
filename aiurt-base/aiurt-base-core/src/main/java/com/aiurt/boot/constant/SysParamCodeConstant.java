@@ -490,4 +490,8 @@ public interface SysParamCodeConstant {
      * 培训编码-是否根据线路生成编码
      */
     String TRAIN_TASK_CODE="train_task_code";
+    /**
+     * 取消挂起时是否更新维修负责人
+     */
+    String CANCEL_HANGUP_CH_AUN = "cancel_hangup_ch_aun";
 }
