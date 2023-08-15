@@ -113,6 +113,8 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
                 return areSerialMultiInTask(task);
             case TASK_MULTI_INSTANCE_TYPE_2:
                 return areParallelMultiInTask(task);
+            case TASK_MULTI_INSTANCE_TYPE_1:
+                return true;
             default:
                 return false;
         }

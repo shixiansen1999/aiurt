@@ -96,8 +96,19 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         taskContext.setProcessInstance(processInstance);
         taskContext.setExecutionEntity((ExecutionEntity) execution);
 
-        // 判断是否多实例最后一个， 如果不是最后一个不需要提交
+        // 构建流程变量
+        Map<String, Object> variableData = flowCompleteReqDTO.getVariableData();
+        if (Objects.isNull(variableData)) {
+            variableData = new HashMap<>(16);
+        }
+        Map<String, Object> variables = flowElementUtil.getVariables(flowCompleteReqDTO.getBusData(), processInstanceId);
+        variableData.putAll(variables);
+        taskContext.setVariableData(variableData);
+
+        // 判断是否多实例最后一个， 如果不是最后一个不需要提交, 但是不是多实例的时候需要提交，需要设置流程办理人
         Boolean multiInTask = multiInTaskService.areMultiInTask(task);
+        //
+        Boolean flag = multiInTaskService.isMultiInTask(task);
         // 自动选人 1, 0 否
         Integer isAutoSelect = customTaskExt.getIsAutoSelect();
         // 办理规则 如果办理规则为空则，就是旧版流程选人，不需要处理
@@ -105,7 +116,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         taskContext.setMultiApprovalRule(userType);
         // multiInTask当前活动是多少实例，且不是多实例的最后一个活动，不设置下一步多实例办理人
         // 多实例最后一部，自动选人则构造下一步节点以及下一个节点的数据,
-        if (multiInTask && StrUtil.isNotBlank(userType) && Objects.nonNull(isAutoSelect) && isAutoSelect == 1) {
+        if ((multiInTask || !flag) && StrUtil.isNotBlank(userType) && Objects.nonNull(isAutoSelect) && isAutoSelect == 1) {
             log.info("当前活动是多少实例，且不是多实例的最后一个活动，不设置下一步多实例办理人");
             FlowElement flowElement = flowElementUtil.getFlowElement(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
             List<FlowElement> targetFlowElement = flowElementUtil.getTargetFlowElement(execution, flowElement, flowCompleteReqDTO.getBusData());
@@ -119,14 +130,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
             flowCompleteReqDTO.setNextNodeUserParam(nodeUserDTOList);
         }
 
-        // 构建流程变量
-        Map<String, Object> variableData = flowCompleteReqDTO.getVariableData();
-        if (Objects.isNull(variableData)) {
-            variableData = new HashMap<>(16);
-        }
-        Map<String, Object> variables = flowElementUtil.getVariables(flowCompleteReqDTO.getBusData(), processInstanceId);
-        variableData.putAll(variables);
-        taskContext.setVariableData(variableData);
+
     }
 
     /**

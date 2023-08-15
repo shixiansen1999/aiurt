@@ -1942,7 +1942,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
         // 多实例是否最后一步
         Boolean multiInTask = multiInTaskService.areMultiInTask(task);
-        if (multiInTask) {
+        if (!multiInTask) {
             return Collections.emptyList();
         }
 
