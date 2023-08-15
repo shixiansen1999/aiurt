@@ -564,6 +564,8 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
             fileType.setParentId(targetFileTypeId);
             fileType.setGrade(targetFileType.getGrade() + 1);
             fileType.setFolderCodeCc(targetFileType.getFolderCodeCc() + fileType.getFolderCode() + "/");
+            sysFileTypeService.updateById(fileType);
+
             //如果文件夹下还有文件夹或者文件，则递归修改
             LambdaQueryWrapper<SysFile> fileWrapper = new LambdaQueryWrapper<>();
             fileWrapper.eq(SysFile::getTypeId, fileType.getId()).eq(SysFile::getDelFlag, CommonConstant.DEL_FLAG_0);
@@ -581,7 +583,6 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
                     moveFile(null, sysFileType.getId(), fileType.getId());
                 }
             }
-            sysFileTypeService.updateById(fileType);
         }
     }
 }
