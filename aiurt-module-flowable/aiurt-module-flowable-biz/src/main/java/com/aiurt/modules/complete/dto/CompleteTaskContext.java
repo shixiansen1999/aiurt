@@ -38,6 +38,11 @@ public class CompleteTaskContext implements Serializable {
      */
     private ExecutionEntity executionEntity;
 
+    /**
+     * 办理规则
+     */
+    private String multiApprovalRule;
+
 
 
 }

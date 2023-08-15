@@ -1,4 +1,5 @@
 package com.aiurt.modules.flow.service.impl;
+import com.aiurt.modules.multideal.service.IMultiInTaskService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -147,6 +148,9 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     @Autowired
     private CommonFlowTaskCompleteServiceImpl commonFlowTaskCompleteService;
+
+    @Autowired
+    private IMultiInTaskService multiInTaskService;
 
     /**
      * @param startBpmnDTO
@@ -1915,14 +1919,25 @@ public class FlowApiServiceImpl implements FlowApiService {
             throw new AiurtBootException("数据验证失败，请核对指定的任务Id，请刷新后重试！");
         }
 
-        Execution execution =
-                runtimeService.createExecutionQuery().executionId(task.getExecutionId()).singleResult();
+        Execution execution = runtimeService.createExecutionQuery().executionId(task.getExecutionId()).singleResult();
         String taskDefinitionKey = task.getTaskDefinitionKey();
 
         String processDefinitionId = task.getProcessDefinitionId();
 
-        // todo 判断是否需要需要选人
-
+        // 是否自动选人
+        ActCustomTaskExt actCustomTaskExt = customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, taskDefinitionKey);
+        if (Objects.isNull(actCustomTaskExt)) {
+            return Collections.emptyList();
+        }
+        Integer isAutoSelect = Optional.ofNullable(actCustomTaskExt.getIsAutoSelect()).orElse(1);
+        if (isAutoSelect == 1) {
+            return Collections.emptyList();
+        }
+        // 多实例是否最后一步
+        Boolean multiInTask = multiInTaskService.areMultiInTask(task);
+        if (multiInTask) {
+            return Collections.emptyList();
+        }
 
         List<FlowElement> targetFlowElements = getTargetFlowElements(execution, processDefinitionId, taskDefinitionKey, processParticipantsReqDTO.getBusData());
 

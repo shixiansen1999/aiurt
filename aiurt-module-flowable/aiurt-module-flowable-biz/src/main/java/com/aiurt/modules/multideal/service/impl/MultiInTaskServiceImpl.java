@@ -119,6 +119,31 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
     }
 
     /**
+     * 判断是否为多实例任务
+     *
+     * @param nodeId
+     * @param definitionId
+     * @return
+     */
+    @Override
+    public Boolean isMultiInTask(String nodeId, String definitionId) {
+        ActCustomTaskExt actCustomTaskExt = taskExtService.getByProcessDefinitionIdAndTaskId(definitionId, nodeId);
+        if (Objects.isNull(actCustomTaskExt)) {
+            log.info("没有查询节点（{}）流转属性配置", nodeId);
+            return false;
+        }
+        String userType = actCustomTaskExt.getUserType();
+        if (StrUtil.isBlank(userType)) {
+            return false;
+        }
+        MultiApprovalRuleEnum approvalRuleEnum = MultiApprovalRuleEnum.getByCode(userType);
+        if (Objects.isNull(approvalRuleEnum)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * 多实例-并行
      * @param task
      * @return

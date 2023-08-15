@@ -1,6 +1,7 @@
 package com.aiurt.modules.complete.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.common.enums.MultiApprovalRuleEnum;
 import com.aiurt.modules.complete.dto.CompleteTaskContext;
 import com.aiurt.modules.complete.dto.FlowCompleteReqDTO;
 import com.aiurt.modules.flow.dto.NextNodeUserDTO;
@@ -101,6 +102,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         Integer isAutoSelect = customTaskExt.getIsAutoSelect();
         // 办理规则 如果办理规则为空则，就是旧版流程选人，不需要处理
         String userType = customTaskExt.getUserType();
+        taskContext.setMultiApprovalRule(userType);
         // multiInTask当前活动是多少实例，且不是多实例的最后一个活动，不设置下一步多实例办理人
         if (multiInTask) {
             log.info("当前活动是多少实例，且不是多实例的最后一个活动，不设置下一步多实例办理人");
@@ -170,8 +172,22 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
     @Override
     public void dealComplete(CompleteTaskContext taskContext) {
         Task currentTask = taskContext.getCurrentTask();
+        String processInstanceId = currentTask.getProcessInstanceId();
+        String nodeId = currentTask.getTaskDefinitionKey();
         Map<String, Object> variableData = taskContext.getVariableData();
         taskService.complete(currentTask.getId(), variableData);
+
+        // 如果任意会签， 则需要自动提交其他任务
+        String multiApprovalRule = taskContext.getMultiApprovalRule();
+        if (StrUtil.equalsIgnoreCase(multiApprovalRule, MultiApprovalRuleEnum.TASK_MULTI_INSTANCE_TYPE_1.getCode())) {
+            //
+            List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(nodeId).list();
+
+            taskList.stream().forEach(task -> {
+                taskService.complete(task.getId());
+            });
+        }
+
     }
 
     /**
@@ -183,6 +199,8 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
      */
     @Override
     public void afterDeal(CompleteTaskContext taskContext) {
+
+        // 抄送
         super.afterDeal(taskContext);
     }
 }

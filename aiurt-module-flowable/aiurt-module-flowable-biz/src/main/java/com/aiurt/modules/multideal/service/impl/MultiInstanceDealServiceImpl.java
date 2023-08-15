@@ -87,7 +87,7 @@ public class MultiInstanceDealServiceImpl implements IMultiInstanceDealService {
         List<String> userList = null;
         boolean isCurrNode = false;
         // 判断是否为多实例
-        Boolean multiInTask = multiInTaskService.isMultiInTask(task);
+        Boolean multiInTask = multiInTaskService.isMultiInTask(nodeId, task.getProcessDefinitionId());
         if (!multiInTask) {
             return;
         }
@@ -102,22 +102,27 @@ public class MultiInstanceDealServiceImpl implements IMultiInstanceDealService {
         log.info("活动（{}）,节点（{}），是多实例", taskId, nodeId);
         //是否当前活动
         if (isCurrNode){
-            log.info("当前活动（{}）,节点（{}），多实例，设置多实例用户（{}）", taskId, nodeId, userList);
-            if (CollectionUtils.isEmpty(userList)){
-                throw new AiurtBootException(AiurtErrorEnum.MULTI_INSTANCE_USER_NULL.getCode(),
-                        AiurtErrorEnum.MULTI_INSTANCE_USER_NULL.getMessage());
+            if (multiInTaskService.isMultiInTask(task)) {
+                log.info("当前活动（{}）,节点（{}），多实例，设置多实例用户（{}）", taskId, nodeId, userList);
+                if (CollectionUtils.isEmpty(userList)){
+                    throw new AiurtBootException(AiurtErrorEnum.MULTI_INSTANCE_USER_NULL.getCode(),
+                            AiurtErrorEnum.MULTI_INSTANCE_USER_NULL.getMessage());
+                }
+                //设置多实例用户
+                ProcessEngines.getDefaultProcessEngine().getTaskService().setVariable(taskId, variableName, userList);
+                return;
+            }else {
+                return;
             }
-            //设置多实例用户
-            ProcessEngines.getDefaultProcessEngine().getTaskService().setVariable(taskId, variableName, userList);
-            return;
         }
+        // nodeid 为下一个节点的数据
         //下一步节点，获取下一步活动多实例人员列表
         userList = multiInstanceUserService.getNextNodeUserList(nodeId, businessData, user);
-        if (CollectionUtils.isEmpty(userList)){
+        if (CollectionUtils.isEmpty(userList)) {
             throw new AiurtBootException(AiurtErrorEnum.MULTI_INSTANCE_USER_NULL.getCode(),
                     AiurtErrorEnum.MULTI_INSTANCE_USER_NULL.getMessage());
         }
-        //设置下一步节点多实例用户
+        // 设置下一步节点多实例用户
         ProcessEngines.getDefaultProcessEngine().getTaskService().setVariable(taskId, variableName, userList);
     }
 }

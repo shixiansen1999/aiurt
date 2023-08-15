@@ -23,4 +23,13 @@ public interface IMultiInTaskService {
      * @return
      */
     Boolean areMultiInTask(Task task);
+
+
+    /**
+     * 判断是否为多实例任务
+     * @param nodeId
+     * @param definitionId
+     * @return
+     */
+    Boolean isMultiInTask(String nodeId, String definitionId);
 }
