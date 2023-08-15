@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.common.enums.MultiApprovalRuleEnum;
+import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
@@ -11,10 +12,13 @@ import com.aiurt.modules.multideal.service.IMultiInstanceUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.flowable.bpmn.model.UserTask;
+import org.flowable.engine.HistoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.task.api.Task;
+import org.flowable.task.service.impl.persistence.entity.TaskEntityImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +44,9 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
     @Autowired
     private TaskService taskService;
 
+    @Autowired
+    private HistoryService historyService;
+
 
     /**
      * 判断是否为多实例任务
@@ -56,7 +63,15 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
             log.info("没有查询节点（{}）流转属性配置", nodeId);
             return false;
         }
-        String userType = actCustomTaskExt.getUserType();
+        // 统一
+        long count = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(nodeId).count();
+        if (count>1) {
+            return true;
+        }else {
+            return false;
+        }
+
+        /*String userType = actCustomTaskExt.getUserType();
         if (StrUtil.isBlank(userType)) {
             return false;
         }
@@ -64,7 +79,7 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
         if (Objects.isNull(approvalRuleEnum)) {
             return false;
         }
-        return true;
+        return true;*/
     }
 
     /**
@@ -101,6 +116,31 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
             default:
                 return false;
         }
+    }
+
+    /**
+     * 判断是否为多实例任务
+     *
+     * @param nodeId
+     * @param definitionId
+     * @return
+     */
+    @Override
+    public Boolean isMultiInTask(String nodeId, String definitionId) {
+        ActCustomTaskExt actCustomTaskExt = taskExtService.getByProcessDefinitionIdAndTaskId(definitionId, nodeId);
+        if (Objects.isNull(actCustomTaskExt)) {
+            log.info("没有查询节点（{}）流转属性配置", nodeId);
+            return false;
+        }
+        String userType = actCustomTaskExt.getUserType();
+        if (StrUtil.isBlank(userType)) {
+            return false;
+        }
+        MultiApprovalRuleEnum approvalRuleEnum = MultiApprovalRuleEnum.getByCode(userType);
+        if (Objects.isNull(approvalRuleEnum)) {
+            return false;
+        }
+        return true;
     }
 
     /**

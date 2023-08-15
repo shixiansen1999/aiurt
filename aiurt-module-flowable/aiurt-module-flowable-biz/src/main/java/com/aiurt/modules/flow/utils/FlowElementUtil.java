@@ -485,6 +485,8 @@ public class FlowElementUtil {
         variableData.put(FlowCustomVariableConstant.POSITION_INITIATOR, user.getPost());
         variableData.put(FlowCustomVariableConstant.ORG_INITIATOR, user.getOrgId());
 
+
+        // 内置的系统变量
         return variableData;
     }
 }

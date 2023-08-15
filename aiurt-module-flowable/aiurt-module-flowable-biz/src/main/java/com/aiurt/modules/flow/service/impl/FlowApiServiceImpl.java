@@ -1,4 +1,7 @@
 package com.aiurt.modules.flow.service.impl;
+import com.aiurt.modules.multideal.service.IMultiInTaskService;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
@@ -12,6 +15,8 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
+import com.aiurt.modules.complete.dto.FlowCompleteReqDTO;
+import com.aiurt.modules.complete.service.impl.CommonFlowTaskCompleteServiceImpl;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.constants.FlowApprovalType;
 import com.aiurt.modules.flow.dto.*;
@@ -140,6 +145,13 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     @Autowired
     private IActCustomUserService actCustomUserService;
+
+    @Autowired
+    private CommonFlowTaskCompleteServiceImpl commonFlowTaskCompleteService;
+
+    @Autowired
+    private IMultiInTaskService multiInTaskService;
+
     /**
      * @param startBpmnDTO
      * @return
@@ -273,13 +285,8 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
         // 完成流程启动后的第一个任务
         if (Objects.nonNull(flowTaskCompleteDTO) && StrUtil.equalsAnyIgnoreCase(flowTaskCompleteDTO.getApprovalType(), FlowApprovalType.AGREE)) {
-            // 按照规则，调用该方法的用户，就是第一个任务的assignee，因此默认会自动执行complete。
-            ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(flowTaskCompleteDTO, ActCustomTaskComment.class);
-            if (ObjectUtil.isNotEmpty(flowTaskComment)) {
-                flowTaskComment.fillWith(task);
-            }
             // 不需要保存中间业务数据了
-            this.completeTask(task, flowTaskComment, null, variableData);
+            this.completeTask(task, flowTaskCompleteDTO, null, variableData);
         }
     }
 
@@ -319,12 +326,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             throw new AiurtBootException("数据验证失败，请核对指定的任务Id，请刷新后重试！");
         }
 
-        // 封装 ActCustomTaskComment
-        ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(flowTaskCompleteDTO, ActCustomTaskComment.class);
-        if (ObjectUtil.isNotEmpty(flowTaskComment)) {
-            flowTaskComment.fillWith(task);
-        }
-        // 设置签收, todo， 不合理
+        // 设置签收
         String assignee = task.getAssignee();
 
         if (StrUtil.isBlank(assignee)) {
@@ -337,7 +339,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
 
         // 提交任务
-        completeTask(task, flowTaskComment, taskCompleteDTO.getBusData());
+        completeTask(task, flowTaskCompleteDTO, taskCompleteDTO.getBusData());
     }
 
     /**
@@ -349,7 +351,7 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData) {
+    public void completeTask(Task task, FlowTaskCompleteCommentDTO comment, Map<String, Object> busData) {
         completeTask(task, comment, busData, new HashMap<>(16));
     }
 
@@ -363,7 +365,7 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData, Map<String, Object> variableData) {
+    public void completeTask(Task task, FlowTaskCompleteCommentDTO comment, Map<String, Object> busData, Map<String, Object> variableData) {
         // 流程实例id
         String processInstanceId = task.getProcessInstanceId();
         // 流程任务id
@@ -402,8 +404,18 @@ public class FlowApiServiceImpl implements FlowApiService {
             if (Objects.nonNull(busData)) {
                 flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
             }
+
             // 完成任务
-            taskService.complete(taskId, variableData);
+            FlowCompleteReqDTO flowCompleteReqDTO = new FlowCompleteReqDTO();
+            flowCompleteReqDTO.setBusData(busData);
+            flowCompleteReqDTO.setTaskId(taskId);
+            flowCompleteReqDTO.setProcessInstanceId(processInstanceId);
+            flowCompleteReqDTO.setNextNodeUserParam(comment.getNextNodeUserParam());
+            flowCompleteReqDTO.setApprovalType(comment.getApprovalType());
+            flowCompleteReqDTO.setComment(comment.getComment());
+
+
+            commonFlowTaskCompleteService.complete(flowCompleteReqDTO);
         } else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.CANCEL, approvalType)) {
 
             // 作废
@@ -432,10 +444,11 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         // 判断当前完成执行的任务，是否存在抄送设置
         // 增加流程批注数据
-        if (comment != null) {
-            comment.fillWith(processInstanceActiveTask);
-            comment.setCreateRealname(checkLogin().getRealname());
-            customTaskCommentService.getBaseMapper().insert(comment);
+        ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(comment, ActCustomTaskComment.class);
+        if (flowTaskComment != null) {
+            flowTaskComment.fillWith(processInstanceActiveTask);
+            flowTaskComment.setCreateRealname(checkLogin().getRealname());
+            customTaskCommentService.getBaseMapper().insert(flowTaskComment);
         }
 
         if (Objects.nonNull(busData)) {
@@ -1703,6 +1716,10 @@ public class FlowApiServiceImpl implements FlowApiService {
                 objectList = objectList.stream().sorted(Comparator.comparing(ActOperationEntity::getShowOrder)).collect(Collectors.toList());
 
                 taskInfoDTO.setOperationList(objectList);
+
+                if (Objects.nonNull(customTaskExt.getIsAutoSelect()) && customTaskExt.getIsAutoSelect() == 0) {
+                    taskInfoDTO.setIsAutoSelect(false);
+                }
             }
         }
         taskInfoDTO.setProcessName(processDefinition.getName());
@@ -1902,13 +1919,27 @@ public class FlowApiServiceImpl implements FlowApiService {
             throw new AiurtBootException("数据验证失败，请核对指定的任务Id，请刷新后重试！");
         }
 
-        List<Execution> runExecutionList =
-                runtimeService.createExecutionQuery().processInstanceId(task.getProcessInstanceId()).list();
+        Execution execution = runtimeService.createExecutionQuery().executionId(task.getExecutionId()).singleResult();
         String taskDefinitionKey = task.getTaskDefinitionKey();
 
         String processDefinitionId = task.getProcessDefinitionId();
 
-        List<FlowElement> targetFlowElements = getTargetFlowElements(CollUtil.isNotEmpty(runExecutionList)?runExecutionList.get(0):null, processDefinitionId, taskDefinitionKey, processParticipantsReqDTO.getBusData());
+        // 是否自动选人
+        ActCustomTaskExt actCustomTaskExt = customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, taskDefinitionKey);
+        if (Objects.isNull(actCustomTaskExt)) {
+            return Collections.emptyList();
+        }
+        Integer isAutoSelect = Optional.ofNullable(actCustomTaskExt.getIsAutoSelect()).orElse(1);
+        if (isAutoSelect == 1) {
+            return Collections.emptyList();
+        }
+        // 多实例是否最后一步
+        Boolean multiInTask = multiInTaskService.areMultiInTask(task);
+        if (multiInTask) {
+            return Collections.emptyList();
+        }
+
+        List<FlowElement> targetFlowElements = getTargetFlowElements(execution, processDefinitionId, taskDefinitionKey, processParticipantsReqDTO.getBusData());
 
         for (FlowElement flowElement : targetFlowElements) {
             if (flowElement instanceof UserTask) {
@@ -1964,7 +1995,7 @@ public class FlowApiServiceImpl implements FlowApiService {
     private List<FlowElement> getTargetFlowElements(Execution execution, String processDefinitionId, String taskDefinitionKey, Map<String,Object> busData) {
         // 获取源流程元素
         FlowElement sourceFlowElement = flowElementUtil.getFlowElement(processDefinitionId, taskDefinitionKey);
-        flowElementUtil.getVariables(busData, execution.getProcessInstanceId());
+
         // 获取目标流程元素列表
         return flowElementUtil.getTargetFlowElement(execution, sourceFlowElement, busData);
     }

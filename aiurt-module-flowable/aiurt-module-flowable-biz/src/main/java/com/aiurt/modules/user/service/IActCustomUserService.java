@@ -33,4 +33,13 @@ public interface IActCustomUserService extends IService<ActCustomUser> {
      * @return 符合条件的 ActCustomUser 对象，如果不存在则返回 null
      */
     ActCustomUser getActCustomUserByTaskInfo(String processDefinitionId, String taskId, String type);
+
+    /**
+     * 查询人员
+     * @param processDefinitionId
+     * @param nodeId
+     * @param type
+     * @return
+     */
+    List<String> getUserByTaskInfo(String processDefinitionId, String nodeId, String type);
 }

@@ -18,4 +18,6 @@ public class FlowUserModel implements Serializable {
     List<FlowUserAttributeModel> role;
 
     List<FlowUserAttributeModel> user;
+
+    List<FlowUserRelationAttributeModel> relation;
 }

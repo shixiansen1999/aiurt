@@ -12,6 +12,7 @@ import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
 import com.aiurt.modules.modeler.dto.FlowUserAttributeModel;
 import com.aiurt.modules.modeler.dto.FlowUserModel;
+import com.aiurt.modules.modeler.dto.FlowUserRelationAttributeModel;
 import com.aiurt.modules.modeler.dto.ModelInfoVo;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
@@ -24,7 +25,6 @@ import com.aiurt.modules.modeler.service.IFlowableModelService;
 import com.aiurt.modules.user.entity.ActCustomUser;
 import com.aiurt.modules.user.service.IActCustomUserService;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -477,6 +477,9 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
                                 List<FlowUserAttributeModel> post = model.getPost();
                                 Optional.ofNullable(post).ifPresent(posts -> customUser.setPost(posts.stream().map(FlowUserAttributeModel::getValue).collect(Collectors.joining(","))));
+                                // 关系
+                                List<FlowUserRelationAttributeModel> relation = model.getRelation();
+                                Optional.ofNullable(relation).ifPresent(relations -> customUser.setRelation(relations));
 
                                 userList.add(customUser);
                             });

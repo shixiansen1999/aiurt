@@ -52,7 +52,7 @@ public interface FlowApiService {
      * @param comment 审批对象。
      * @param busData 流程任务的变量数据。
      */
-    void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData);
+    void completeTask(Task task, FlowTaskCompleteCommentDTO comment, Map<String, Object> busData);
 
     /**
      * 完成任务
@@ -61,7 +61,7 @@ public interface FlowApiService {
      * @param busData
      * @param variableData
      */
-    void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData, Map<String, Object> variableData);
+    void completeTask(Task task, FlowTaskCompleteCommentDTO comment, Map<String, Object> busData, Map<String, Object> variableData);
 
     /**
      * 判断当前登录用户是否为流程实例中的用户任务的指派人。或是候选人之一。

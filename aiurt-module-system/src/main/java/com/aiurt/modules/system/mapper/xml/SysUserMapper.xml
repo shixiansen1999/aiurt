@@ -402,23 +402,27 @@
 			</foreach>
 		</if>
 		<if test="orgIds!=null and orgIds.size()>0">
-			union all
+			<if test="posts!=null and posts.size()>0">
+				union
+			</if>
 			select distinct
-			username
+			su.username username
 			from
 			sys_user su
-			left join sys_user_depart sud on sud.user_id = su.id
 			where
 			su.STATUS = 1
 			and su.del_flag = 0
-			and sud.dep_id in
-			<foreach collection="orgIds" separator="," open="(" close=")" item="orgIds">
+			and su.org_id in
+			<foreach collection="orgIds" separator="," open="(" close=")" item="orgId">
 				#{orgId}
 			</foreach>
 		</if>
 		<if test="roleCodes!=null and roleCodes.size()>0">
+			<if test="orgIds!=null and orgIds.size()>0">
+				union
+			</if>
 			select distinct
-			username
+			su.username username
 			from
 			sys_user su
 			left join sys_user_role sur on sur.user_id = su.id

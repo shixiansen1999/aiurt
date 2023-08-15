@@ -1,9 +1,10 @@
 package com.aiurt.modules.user.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.aiurt.modules.modeler.dto.FlowUserRelationAttributeModel;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -15,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: 流程办理人与抄送人
@@ -23,7 +25,7 @@ import java.util.Date;
  * @Version: V1.0
  */
 @Data
-@TableName("act_custom_user")
+@TableName(value = "act_custom_user", autoResultMap = true)
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="act_custom_user对象", description="流程办理人与抄送人")
@@ -86,4 +88,8 @@ public class ActCustomUser implements Serializable {
 	@Excel(name = "类型，0：办理人，1：抄送人", width = 15)
     @ApiModelProperty(value = "类型，0：办理人，1：抄送人")
     private String type;
+
+	@ApiModelProperty(value = "关系")
+    @TableField(typeHandler = JacksonTypeHandler.class)
+	private List<FlowUserRelationAttributeModel> relation;
 }

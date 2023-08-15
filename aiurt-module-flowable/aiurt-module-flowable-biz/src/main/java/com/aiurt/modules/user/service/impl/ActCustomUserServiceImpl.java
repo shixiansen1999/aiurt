@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
+import com.aiurt.modules.modeler.dto.FlowUserRelationAttributeModel;
 import com.aiurt.modules.user.entity.ActCustomUser;
 import com.aiurt.modules.user.mapper.ActCustomUserMapper;
 import com.aiurt.modules.user.service.IActCustomUserService;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -71,5 +73,37 @@ public class ActCustomUserServiceImpl extends ServiceImpl<ActCustomUserMapper, A
                 .eq(ActCustomUser::getType, type)
                 .eq(ActCustomUser::getDelFlag, CommonConstant.DEL_FLAG_0);
         return baseMapper.selectOne(queryWrapper);
+    }
+
+    /**
+     * 查询人员
+     *
+     * @param processDefinitionId
+     * @param nodeId
+     * @param type
+     * @return
+     */
+    @Override
+    public List<String> getUserByTaskInfo(String processDefinitionId, String nodeId, String type) {
+        LambdaQueryWrapper<ActCustomUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ActCustomUser::getProcessDefinitionId, processDefinitionId)
+                .eq(ActCustomUser::getTaskId, nodeId)
+                .eq(ActCustomUser::getType, type)
+                .eq(ActCustomUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+        ActCustomUser customUser = baseMapper.selectOne(queryWrapper);
+
+        String userName = customUser.getUserName();
+        String post = customUser.getPost();
+        String orgId = customUser.getOrgId();
+        String roleCode = customUser.getRoleCode();
+        List<FlowUserRelationAttributeModel> relation = customUser.getRelation();
+
+        List<String> resultList = new ArrayList<>();
+        List<String> list = StrUtil.split(userName, ',');
+        List<String>  userNameList = sysBaseApi.getUserNameByParams(StrUtil.split(roleCode, ','), StrUtil.split(orgId, ','), StrUtil.split(post, ','));
+        resultList.addAll(list);
+        resultList.addAll(userNameList);
+        resultList = resultList.stream().distinct().collect(Collectors.toList());
+        return resultList;
     }
 }
