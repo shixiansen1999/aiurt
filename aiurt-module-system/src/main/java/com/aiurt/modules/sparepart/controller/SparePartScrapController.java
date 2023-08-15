@@ -204,8 +204,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<?> edit(@RequestBody SparePartScrap sparePartScrap) {
 		if (ObjectUtil.isNotEmpty(sparePartScrap.getHandleWay()) && ObjectUtil.isNotEmpty(sparePartScrap.getId()) && CommonConstant.SPARE_PART_SCRAP_STATUS_1.equals(sparePartScrap.getStatus())) {
-			sparePartScrapService.edit(sparePartScrap);
-			return sparePartScrapService.update(sparePartScrap);
+			return sparePartScrapService.edit(sparePartScrap);
 		}else {
 			return Result.error("操作失败");
 		}

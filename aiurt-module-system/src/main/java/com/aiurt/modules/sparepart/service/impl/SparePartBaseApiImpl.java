@@ -377,23 +377,25 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                     sparePart.setConsumables(lendStockDTO.getConsumablesType());
                     sparePart.setWarehouseCode(lendStockDTO.getWarehouseCode());
                     if ("0".equals(lendStockDTO.getConsumablesType())) {
-                        //先获取该备件的数量记录,更新全新数量
-                        LambdaQueryWrapper<SparePartStockNum> numLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                        numLambdaQueryWrapper.eq(SparePartStockNum::getMaterialCode, lendStockDTO.getMaterialCode())
-                                .eq(SparePartStockNum::getWarehouseCode, lendStockDTO.getWarehouseCode())
-                                .eq(SparePartStockNum::getDelFlag, CommonConstant.DEL_FLAG_0);
-                        SparePartStockNum stockNum = sparePartStockNumMapper.selectOne(numLambdaQueryWrapper);
-                        if (stockNum != null) {
-                            Integer newNum = stockNum.getNewNum();
-                            //如果全新数量小于新组件数量，则从已使用数量中扣除
-                            if (newNum < lendStockDTO.getNewSparePartNum()) {
-                                stockNum.setNewNum(0);
-                                stockNum.setUsedNum(stockNum.getUsedNum() - (lendStockDTO.getNewSparePartNum() - newNum));
-                            } else {
-                                stockNum.setNewNum(lendStockDTO.getNewSparePartNum() - newNum);
+                        if("1".equals(value)){
+                            //先获取该备件的数量记录,更新全新数量
+                            LambdaQueryWrapper<SparePartStockNum> numLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                            numLambdaQueryWrapper.eq(SparePartStockNum::getMaterialCode, lendStockDTO.getMaterialCode())
+                                    .eq(SparePartStockNum::getWarehouseCode, lendStockDTO.getWarehouseCode())
+                                    .eq(SparePartStockNum::getDelFlag, CommonConstant.DEL_FLAG_0);
+                            SparePartStockNum stockNum = sparePartStockNumMapper.selectOne(numLambdaQueryWrapper);
+                            if (stockNum != null) {
+                                Integer newNum = stockNum.getNewNum();
+                                //如果全新数量小于新组件数量，则从已使用数量中扣除
+                                if (newNum < lendStockDTO.getNewSparePartNum()) {
+                                    stockNum.setNewNum(0);
+                                    stockNum.setUsedNum(stockNum.getUsedNum() - (lendStockDTO.getNewSparePartNum() - newNum));
+                                } else {
+                                    stockNum.setNewNum(newNum - lendStockDTO.getNewSparePartNum());
+                                }
                             }
+                            sparePartStockNumMapper.updateById(stockNum);
                         }
-                        sparePartStockNumMapper.updateById(stockNum);
                         SparePartScrap scrap = new SparePartScrap();
                         scrap.setStatus(1);
                         scrap.setSysOrgCode(user.getOrgCode());

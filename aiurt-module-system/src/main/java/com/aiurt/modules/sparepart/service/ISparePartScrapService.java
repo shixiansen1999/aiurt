@@ -56,5 +56,5 @@ public interface ISparePartScrapService extends IService<SparePartScrap> {
      * @param sparePartScrap
      * @return
      */
-    void edit(SparePartScrap sparePartScrap);
+    Result<?> edit(SparePartScrap sparePartScrap);
 }

@@ -63,8 +63,8 @@ public class SparePartStock implements Serializable {
     /**委外送修数量*/
     @Excel(name = "委外送修数量", width = 15)
     @ApiModelProperty(value = "委外送修数量")
-    private Integer outsourceRepairNum;
     @TableField(exist = false)
+    private Integer outsourceRepairNum;
 	/**仓库编号*/
 	@Excel(name = "仓库编号", width = 15)
     @ApiModelProperty(value = "仓库编号")
