@@ -812,10 +812,11 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "巡检任务表-打印巡视详情")
     @ApiOperation(value = "巡检任务表-打印巡视详情", notes = "巡检任务表-打印巡视详情")
     @GetMapping(value = "/printPatrolTaskToPdf")
-    public void printPatrolTaskToPdf(@RequestParam(name="ids",required=true) String ids,
+    public Result<?> printPatrolTaskToPdf(@RequestParam(name="ids",required=true) String ids,
                                      @RequestParam(name="standardId",required=true) String standardId,
                                      HttpServletRequest req, HttpServletResponse response) {
         patrolTaskToPrintService.printPatrolTaskToPdf(ids,standardId,response);
+        return Result.OK("成功");
     }
 
     /**
