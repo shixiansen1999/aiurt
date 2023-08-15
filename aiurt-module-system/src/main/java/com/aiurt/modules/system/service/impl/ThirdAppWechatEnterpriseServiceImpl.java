@@ -60,9 +60,9 @@ import java.util.stream.Collectors;
 @Service
 public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
 
-    private static final String WX_HOST = "qyapi.weixin.qq.com";
+    public static final String WX_HOST = "qyapi.weixin.qq.com";
 
-    private static final String WX_HOST_CONFIG_VALUE = "wx_host";
+    public static final String WX_HOST_CONFIG_VALUE = "wx_host";
 
     @Autowired
     ThirdAppConfig thirdAppConfig;
