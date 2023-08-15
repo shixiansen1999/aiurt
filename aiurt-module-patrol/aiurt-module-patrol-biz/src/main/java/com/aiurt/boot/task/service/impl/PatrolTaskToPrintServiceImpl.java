@@ -1,12 +1,6 @@
 package com.aiurt.boot.task.service.impl;
 
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -15,9 +9,12 @@ import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
-import com.aiurt.boot.task.mapper.*;
+import com.aiurt.boot.task.mapper.PatrolCheckResultMapper;
+import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
+import com.aiurt.boot.task.mapper.PatrolTaskMapper;
+import com.aiurt.boot.task.mapper.PatrolTaskStationMapper;
 import com.aiurt.boot.task.param.CustomCellMergeHandler;
-import com.aiurt.boot.task.service.*;
+import com.aiurt.boot.task.service.IPatrolTaskPrintService;
 import com.aiurt.common.util.FilePrintUtils;
 import com.aiurt.common.util.MinioUtil;
 import com.aiurt.modules.basic.entity.SysAttachment;
@@ -28,9 +25,9 @@ import com.alibaba.excel.util.MapUtils;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.alibaba.excel.write.metadata.fill.FillWrapper;
+import com.aspose.cells.PdfSaveOptions;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.spire.xls.FileFormat;
-import com.xkcoding.http.support.Http;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -40,13 +37,17 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jetbrains.annotations.NotNull;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @Description: patrol_task print
@@ -56,7 +57,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Slf4j
 @Service
-public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
+public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
 
     @Value("${jeecg.path.upload:/opt/upFiles}")
     private String path;
@@ -73,22 +74,10 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
     private PatrolStandardMapper patrolStandardMapper;
     @Autowired
     private ISysBaseAPI sysBaseApi;
-    @Autowired
-    private PatrolAccompanyMapper patrolAccompanyMapper;
 
-    /**
-     * 处理文件打印数据，并返回打印文件路径
-     * @param id
-     * @return打印文件路径
-     */
-    public String printPatrolTask(String id,String standardId) {
+    public void printPatrolTaskToPdf(String id, String standardId, HttpServletResponse response) {
         PatrolTask patrolTask = patrolTaskMapper.selectById(id);
-//        List<PatrolTaskStandard> patrolTaskStandard = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>()
-//                .eq(PatrolTaskStandard::getDelFlag,0).eq(PatrolTaskStandard::getTaskId,patrolTask.getId()));
-//        PatrolStandard patrolStandard = patrolStandardMapper.selectOne(new LambdaQueryWrapper<PatrolStandard>()
-//                .eq(PatrolStandard::getDelFlag,0)
-//                .in(PatrolStandard::getCode,patrolTaskStandard.stream().map(PatrolTaskStandard::getStandardCode).collect(Collectors.toList()))
-//                .orderByDesc(PatrolStandard::getPrintTemplate).last("LIMIT 1"));
+
         PatrolStandard patrolStandard = patrolStandardMapper.selectOne(new LambdaQueryWrapper<PatrolStandard>()
                 .eq(PatrolStandard::getDelFlag,0)
                 .in(PatrolStandard::getId,standardId)
@@ -102,11 +91,14 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             excelName = "telephone_system.xlsx";
         }
         if (excelName.contains("telephone_system")){
-           return printPatrolTaskByCommonTpl(id,null,standardId);
+             printPatrolTaskByCommonTpl(id,null,standardId,response);
+             return;
         }else if (excelName.contains("patrol-type8")){
-           return printPatrolTaskByCommonTpl(id,"patrolType8",standardId);
+             printPatrolTaskByCommonTpl(id,"patrolType8",standardId,response);
+            return;
         } else if (excelName.contains("wireless11")) {
-           return printPatrolTaskByCommonTpl(id,"wireless11",standardId);
+             printPatrolTaskByCommonTpl(id,"wireless11",standardId,response);
+            return;
         }
         // 模板文件路径
         String templateFileName = "patrol" +"/" + "template" + "/" + excelName;
@@ -147,7 +139,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             //对已填充数据的文件进行后处理
             processFilledFile(filePath);
 
-            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
+//            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -157,8 +149,23 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         sysAttachment.setType("minio");
         sysBaseApi.saveSysAttachment(sysAttachment);
 
-        return sysAttachment.getId()+"?fileName="+sysAttachment.getFileName();
+        //excel转PDF流输出
+        try{
+            FileInputStream FileInputStream = new FileInputStream(filePath);
+            Workbook workbook = WorkbookFactory.create(FileInputStream);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            com.spire.xls.Workbook workbook1 = new com.spire.xls.Workbook();
+            workbook1.loadFromStream(inputStream);
+            //pdf 自适应屏幕大小
+            workbook1.getConverterSetting().setSheetFitToWidth(true);
+            workbook1.saveToStream(response.getOutputStream(), FileFormat.PDF);  //通过流的形式输出保存
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
     }
+
 
     /**
      * 通用模板数据封装
@@ -168,7 +175,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
      * @param standardId
      * @return 打印文件的minio路径
      */
-    public String printPatrolTaskByCommonTpl(String id, String type, String standardId) {
+    public void printPatrolTaskByCommonTpl(String id, String type, String standardId,HttpServletResponse response) {
         PatrolTask patrolTask = patrolTaskMapper.selectById(id);
         PatrolStandard patrolStandard = patrolStandardMapper.selectOne(new LambdaQueryWrapper<PatrolStandard>()
                 .eq(PatrolStandard::getDelFlag,0)
@@ -250,7 +257,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                 processFilledFile(type, firstColumn, lastColumn, cellByText, filePath, startRow, endRow, workbook, sheet);
             }
 
-            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
+//            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -259,7 +266,22 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         sysAttachment.setFilePath(relatiePath);
         sysAttachment.setType("minio");
         sysBaseApi.saveSysAttachment(sysAttachment);
-        return sysAttachment.getId()+"?fileName="+sysAttachment.getFileName();
+
+        //excel转PDF流输出
+        try{
+            FileInputStream FileInputStream = new FileInputStream(filePath);
+            Workbook workbook = WorkbookFactory.create(FileInputStream);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            com.spire.xls.Workbook workbook1 = new com.spire.xls.Workbook();
+            workbook1.loadFromStream(inputStream);
+            //pdf 自适应屏幕大小
+            workbook1.getConverterSetting().setSheetFitToWidth(true);
+            workbook1.saveToStream(response.getOutputStream(), FileFormat.PDF);  //通过流的形式输出保存
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -336,179 +358,9 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
        }else if("network_manage.xlsx".equals(excelName)){
            patrolData = printPatrolTaskByNetworkManage(taskId,standardId,headerMap);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
-       } else if ("equipmentInspection.xlsx".equals(excelName)) {
-           patrolData = getEquipmentInspection(taskId,standardId,headerMap);
-           excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
        }
 
        return excelWriter;
-    }
-
-    private List<PrintDTO> getEquipmentInspection(String taskId, String standardId, Map<String, Object> headerMap) {
-        List<PrintDTO> getEquipmentInspection = new ArrayList<>();
-        List<PatrolStationDTO> billGangedInfo = getBillGangedInfo(taskId,standardId);
-        for (PatrolStationDTO dto : billGangedInfo) {
-            //获取检修项
-            List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
-            List<PatrolCheckResultDTO> checkResultAll = patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
-            //查询同行人
-            List<String> userNames = patrolAccompanyMapper.getUserNames(collect);
-            headerMap.put("userNames",userNames.stream().collect(Collectors.joining(",")));
-            //父级
-            List<PatrolCheckResultDTO> parentDTOList = checkResultAll.stream()
-                    .filter(c -> Objects.nonNull(c)
-                            &&Objects.nonNull(c.getCheck())&& c.getCheck() == 0)
-                    .collect(Collectors.toList());
-
-            StringBuilder remark = new StringBuilder(); AtomicInteger i = new AtomicInteger(1);
-            parentDTOList.forEach(p-> {
-
-                if(p.getContent().contains("温湿度")){
-                    PrintDTO printDTO = new PrintDTO();
-                    List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())).collect(Collectors.toList());
-                    checkDTOs.forEach(c->{
-                        if (c.getCheckResult() == 1){
-                            printDTO.setResult("☑正常 ☐异常");
-                        }else {
-                            printDTO.setResult("☐正常 ☑异常");
-                            remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(ObjectUtil.defaultIfEmpty(c.getRemark(), "异常")).append("         ");
-                            i.getAndIncrement();
-                        }
-                        getEquipmentInspection.add(printDTO);
-                    });
-
-                }else if(p.getContent().contains("驱动电源柜")){
-                    PrintDTO printDTO = new PrintDTO();
-                    List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())).collect(Collectors.toList());
-                    for (int j = 0; j< checkDTOs.size()  ; j++) {
-                        if (j<2){
-                            if (checkDTOs.get(j).getCheckResult() == 1){
-                                printDTO.setResult("☑正常 ☐异常");
-                            }else {
-                                printDTO.setResult("☐正常 ☑异常");
-                                remark.append(i).append(".").append(p.getContent()).append("-").append(checkDTOs.get(j).getContent()).append(":").append(ObjectUtil.defaultIfEmpty(checkDTOs.get(j).getRemark(), "异常")).append("         ");
-                                i.getAndIncrement();
-                            }
-                            getEquipmentInspection.add(printDTO);
-                        }else if(j==3||j==5){
-                            List<PatrolCheckResultDTO> list =new ArrayList<>();
-                            list.add(checkDTOs.get(j-1));list.add(checkDTOs.get(j));
-                            List<PatrolCheckResultDTO> listTure = list.stream().filter(c ->c.getCheckResult() == 0).collect(Collectors.toList());
-                            if (CollUtil.isNotEmpty(listTure)){
-                                printDTO.setResult("☐正常 ☑异常");
-                                listTure.forEach(c->{
-                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(ObjectUtil.defaultIfEmpty(c.getRemark(), "异常")).append("         ");
-                                    i.getAndIncrement();
-                                });
-                            }else {
-                                printDTO.setResult("☑正常 ☐异常");
-                            }
-                            getEquipmentInspection.add(printDTO);
-                        }
-                    }
-                }else if(p.getContent().contains("控制电源柜")){
-                    PrintDTO printDTO = new PrintDTO();
-                    List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())).collect(Collectors.toList());
-                    for (int j = 0; j< checkDTOs.size()  ; j++) {
-                        if (j<3){
-                            if (checkDTOs.get(j).getCheckResult() == 1){
-                                printDTO.setResult("☑正常 ☐异常");
-                            }else {
-                                printDTO.setResult("☐正常 ☑异常");
-                                remark.append(i).append(".").append(p.getContent()).append("-").append(checkDTOs.get(j).getContent()).append(":").append(ObjectUtil.defaultIfEmpty(checkDTOs.get(j).getRemark(), "异常")).append("         ");
-                                i.getAndIncrement();
-                            }
-                            getEquipmentInspection.add(printDTO);
-                        }else if(j==4||j==6){
-                            List<PatrolCheckResultDTO> list =new ArrayList<>();
-                            list.add(checkDTOs.get(j-1));list.add(checkDTOs.get(j));
-                            List<PatrolCheckResultDTO> listTure = list.stream().filter(c ->c.getCheckResult() == 0).collect(Collectors.toList());
-                            if (CollUtil.isNotEmpty(listTure)){
-                                printDTO.setResult("☐正常 ☑异常");
-                                listTure.forEach(c->{
-                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(ObjectUtil.defaultIfEmpty(c.getRemark(), "异常")).append("         ");
-                                    i.getAndIncrement();
-                                });
-                            }else {
-                                printDTO.setResult("☑正常 ☐异常");
-                            }
-                            getEquipmentInspection.add(printDTO);
-                        }
-                    }
-                } else if(p.getContent().contains("安全门监视器显示")){
-                    PrintDTO printDTO = new PrintDTO();
-                    List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())).collect(Collectors.toList());
-                    for (int j = 0; j< checkDTOs.size()  ; j++) {
-                        if(j==2||j==5){
-                            List<PatrolCheckResultDTO> list =new ArrayList<>();
-                            list.add(checkDTOs.get(j-2));list.add(checkDTOs.get(j-1));list.add(checkDTOs.get(j));
-                            List<PatrolCheckResultDTO> listTure = list.stream().filter(c ->c.getCheckResult() == 0).collect(Collectors.toList());
-                            if (CollUtil.isNotEmpty(listTure)){
-                                printDTO.setResult("☐正常 ☑异常");
-                                listTure.forEach(c->{
-                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(ObjectUtil.defaultIfEmpty(c.getRemark(), "异常")).append("         ");
-                                    i.getAndIncrement();
-                                });
-                            }else {
-                                printDTO.setResult("☑正常 ☐异常");
-                            }
-                            getEquipmentInspection.add(printDTO);
-                        }
-                    }
-                }else if(p.getContent().contains("PSL控制柜")){
-                    PrintDTO printDTO = new PrintDTO();
-                    List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())).collect(Collectors.toList());
-                    for (int j = 0; j< checkDTOs.size()  ; j++) {
-                        if (j==1){
-                            List<PatrolCheckResultDTO> list =new ArrayList<>();
-                            list.add(checkDTOs.get(j-1));list.add(checkDTOs.get(j));
-                            List<PatrolCheckResultDTO> listTure = list.stream().filter(c ->c.getCheckResult() == 0).collect(Collectors.toList());
-                            if (CollUtil.isNotEmpty(listTure)){
-                                printDTO.setResult("☐正常 ☑异常");
-                                listTure.forEach(c->{
-                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(ObjectUtil.defaultIfEmpty(c.getRemark(), "异常")).append("         ");
-                                    i.getAndIncrement();
-                                });
-                            }else {
-                                printDTO.setResult("☑正常 ☐异常");
-                            }
-                            getEquipmentInspection.add(printDTO);
-                        }else if(j==4){
-                            List<PatrolCheckResultDTO> list =new ArrayList<>();
-                            list.add(checkDTOs.get(j-2));list.add(checkDTOs.get(j-1));list.add(checkDTOs.get(j));
-                            List<PatrolCheckResultDTO> listTure = list.stream().filter(c ->c.getCheckResult() == 0).collect(Collectors.toList());
-                            if (CollUtil.isNotEmpty(listTure)){
-                                printDTO.setResult("☐正常 ☑异常");
-                                listTure.forEach(c->{
-                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(ObjectUtil.defaultIfEmpty(c.getRemark(), "异常")).append("         ");
-                                    i.getAndIncrement();
-                                });
-                            }else {
-                                printDTO.setResult("☑正常 ☐异常");
-                            }
-                            getEquipmentInspection.add(printDTO);
-                        }
-                    }
-                } else {
-                    PrintDTO printDTO = new PrintDTO();
-                    List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())&& c.getCheckResult() == 0).collect(Collectors.toList());
-                    if (CollUtil.isNotEmpty(checkDTOs)){
-                        printDTO.setResult("☐正常 ☑异常");
-                        checkDTOs.forEach(c->{
-                            remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(ObjectUtil.defaultIfEmpty(c.getRemark(), "异常")).append("         ");
-                            i.getAndIncrement();
-                        });
-                    }else {
-                        printDTO.setResult("☑正常 ☐异常");
-                    }
-                    getEquipmentInspection.add(printDTO);
-                }
-
-
-            });
-            headerMap.put("remark",remark.toString());
-        }
-        return getEquipmentInspection;
     }
 
     private List<PrintDTO> getCctvSystem(String taskId, Map<String, Object> headerMap, String standardId) {

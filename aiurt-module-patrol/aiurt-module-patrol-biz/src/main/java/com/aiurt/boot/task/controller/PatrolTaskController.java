@@ -17,6 +17,7 @@ import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.boot.task.service.IPatrolTaskUserService;
 import com.aiurt.boot.task.service.impl.PatrolTaskPrintServiceImpl;
+import com.aiurt.boot.task.service.impl.PatrolTaskToPrintServiceImpl;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
@@ -76,6 +77,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     private ISysParamAPI sysParamApi;
     @Autowired
     private PatrolTaskPrintServiceImpl patrolTaskPrintService;
+    @Autowired
+    private PatrolTaskToPrintServiceImpl patrolTaskToPrintService;
     /**
      * PC巡检任务列表-巡视任务池
      *
@@ -812,7 +815,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     public void printPatrolTaskToPdf(@RequestParam(name="ids",required=true) String ids,
                                      @RequestParam(name="standardId",required=true) String standardId,
                                      HttpServletRequest req, HttpServletResponse response) {
-        patrolTaskPrintService.printPatrolTaskToPdf(ids,standardId,response);
+        patrolTaskToPrintService.printPatrolTaskToPdf(ids,standardId,response);
     }
 
     /**
