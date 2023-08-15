@@ -529,6 +529,10 @@ public interface CommonConstant {
   */
  public static final Integer SPARE_PART_SCRAP_HANDLE_WAY_1 = 1;
  /**
+  * 备件处置方式 重新入库-2
+  */
+ public static final Integer SPARE_PART_SCRAP_HANDLE_WAY_2= 2;
+ /**
   * 备件处置状态 待处理-1
   */
  public static final Integer SPARE_PART_SCRAP_STATUS_1 = 1;
@@ -540,6 +544,10 @@ public interface CommonConstant {
   * 备件处置状态 已报损-3
   */
  public static final Integer SPARE_PART_SCRAP_STATUS_3 = 3;
+ /**
+  * 备件处置状态 重新入库-4
+  */
+ public static final Integer SPARE_PART_SCRAP_STATUS_4 = 4;
  /**
   * 备件送修状态 待返修-1
   */

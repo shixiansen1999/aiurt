@@ -21,9 +21,14 @@
         d3.item_text unit,
         t2.price,
         t2.consumables_type,
-        spare_part_stock.minimum_stock
+        spare_part_stock.minimum_stock,
+        spsn.new_num,
+        spsn.used_num,
+        spsn.scrap_num,
+        spsn.outsource_repair_num
         FROM
         spare_part_stock spare_part_stock
+        Left Join spare_part_stock_num spsn on (spsn.material_code = spare_part_stock.material_code and spsn.warehouse_code = spare_part_stock.warehouse_code and  spsn.del_flag = 0)
         LEFT JOIN spare_part_stock_info t1 ON ( spare_part_stock.warehouse_code = t1.warehouse_code AND t1.del_flag = 0  )
         LEFT JOIN material_base t2 ON ( spare_part_stock.material_code = t2.CODE AND t2.del_flag = 0 )
         LEFT JOIN cs_major cs_major ON ( t2.major_code = cs_major.major_code AND cs_major.del_flag = 0 )

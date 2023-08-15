@@ -481,6 +481,10 @@ public interface SysParamCodeConstant {
      * 备件管理是否启用全新数量、已使用数量、待报废数量、委外送修数量
      */
     String SPARE_PART_EXTRA_NUM = "spare_part_extra_num";
+    /**
+     * 故障备件更换是否更换一次，走一次备件流程
+     */
+    String SPARE_PART_EXTRA = "spare_part_extra";
 
     /**
      * 工作日志保存检修内容是否需要拼接标准表

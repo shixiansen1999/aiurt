@@ -13,16 +13,15 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.common.api.CommonAPI;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
-import com.aiurt.modules.sparepart.entity.SparePartApplyMaterial;
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
-import com.aiurt.modules.sparepart.entity.SparePartStock;
-import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
+import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.entity.dto.SparePartInOrderImportExcelDTO;
 import com.aiurt.modules.sparepart.mapper.SparePartApplyMaterialMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartInOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
+import com.aiurt.modules.sparepart.mapper.SparePartStockNumMapper;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
 import com.alibaba.fastjson.JSONObject;
@@ -87,6 +86,8 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
     private IMaterialBaseService materialBaseService;
     @Autowired
     private ISparePartStockInfoService sparePartStockInfoService;
+    @Autowired
+    private SparePartStockNumMapper sparePartStockNumMapper;
     /**
      * 查询列表
      * @param page
@@ -132,32 +133,6 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partInOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partInOrder.getWarehouseCode()));
         if(null!=sparePartStock){
             sparePartStock.setNum(sparePartStock.getNum()+partInOrder.getNum());
-
-            // 更新全新数量
-            if (sparePartStock.getNewNum() != null && partInOrder.getNewNum() != null){
-                sparePartStock.setNewNum(sparePartStock.getNewNum() + partInOrder.getNewNum());
-            }else if (partInOrder.getNewNum() != null){
-                sparePartStock.setNewNum(partInOrder.getNewNum());
-            }
-            // 更新已使用数量
-            if (sparePartStock.getUsedNum() != null && partInOrder.getUsedNum() != null){
-                sparePartStock.setUsedNum(sparePartStock.getUsedNum() + partInOrder.getUsedNum());
-            }else if (partInOrder.getUsedNum() != null){
-                sparePartStock.setUsedNum(partInOrder.getUsedNum());
-            }
-            // 更新待报损数量
-            if (sparePartStock.getScrapNum() != null && partInOrder.getScrapNum() != null){
-                sparePartStock.setScrapNum(sparePartStock.getScrapNum() + partInOrder.getScrapNum());
-            }else if(partInOrder.getScrapNum() != null){
-                sparePartStock.setScrapNum(partInOrder.getScrapNum());
-            }
-            // 更新委外送修数量
-            if (sparePartStock.getOutsourceRepairNum() != null && partInOrder.getOutsourceRepairNum() != null){
-                sparePartStock.setOutsourceRepairNum(sparePartStock.getOutsourceRepairNum() + partInOrder.getOutsourceRepairNum());
-            }else if (partInOrder.getOutsourceRepairNum() != null){
-                sparePartStock.setOutsourceRepairNum(partInOrder.getOutsourceRepairNum());
-            }
-
             sparePartStockMapper.updateById(sparePartStock);
         }else{
             SparePartStock stock = new SparePartStock();
@@ -174,6 +149,37 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
             stock.setOrgId(departByOrgCode.getId());
             stock.setSysOrgCode(departByOrgCode.getOrgCode());
             sparePartStockMapper.insert(stock);
+        }
+
+        LambdaQueryWrapper<SparePartStockNum> numLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        numLambdaQueryWrapper.eq(SparePartStockNum::getMaterialCode, partInOrder.getMaterialCode())
+                .eq(SparePartStockNum::getWarehouseCode, partInOrder.getWarehouseCode())
+                .eq(SparePartStockNum::getDelFlag, CommonConstant.DEL_FLAG_0);
+        SparePartStockNum stockNum = sparePartStockNumMapper.selectOne(numLambdaQueryWrapper);
+        if (ObjectUtil.isNull(stockNum)) {
+            SparePartStockNum partStockNum = new SparePartStockNum();
+            partStockNum.setMaterialCode(partInOrder.getMaterialCode());
+            partStockNum.setWarehouseCode(partInOrder.getWarehouseCode());
+            // 新增全新数量
+            partStockNum.setNewNum(partInOrder.getNewNum());
+            // 新增已使用数量
+            partStockNum.setUsedNum(partInOrder.getUsedNum());
+            // 新增待报损数量
+            partStockNum.setScrapNum(partInOrder.getScrapNum());
+            // 新增委外送修数量
+            Integer reoutsourceRepairNum =  partInOrder.getReoutsourceRepairNum() != null ? partInOrder.getReoutsourceRepairNum() : 0;
+            partStockNum.setOutsourceRepairNum(partInOrder.getOutsourceRepairNum() - reoutsourceRepairNum);
+            sparePartStockNumMapper.insert(partStockNum);
+        }else{
+            // 更新全新数量
+            stockNum.setNewNum(stockNum.getNewNum() + partInOrder.getNewNum());
+            // 更新已使用数量
+            stockNum.setUsedNum(stockNum.getUsedNum() + partInOrder.getUsedNum());
+            // 更新待报损数量
+            stockNum.setScrapNum(stockNum.getScrapNum() + partInOrder.getScrapNum());
+            // 更新委外送修数量
+            stockNum.setOutsourceRepairNum(stockNum.getOutsourceRepairNum() + partInOrder.getOutsourceRepairNum() - partInOrder.getReoutsourceRepairNum());
+            sparePartStockNumMapper.updateById(stockNum);
         }
     }
     /**
