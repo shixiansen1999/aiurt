@@ -1401,6 +1401,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         int i = faultRepairRecord.getHangUpTime() != null ? faultRepairRecord.getHangUpTime() : 0;
         faultRepairRecord.setHangUpTime((int) between + i);
         saveLog(loginUser, "取消挂起", code, FaultStatusEnum.REPAIR.getStatus(), null, (int) between);
+        // 根据配置，取消挂起时变更维修负责人,还是本人时不用变更
+        cancelHangUpChAun(fault, faultRepairRecord, loginUser);
         repairRecordService.updateById(faultRepairRecord);
 
         // 挂起时间
@@ -1442,6 +1444,43 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .hangUpTime(between == 0 ? 1 : between)
                 .build();
         operationProcessService.save(operationProcess);
+    }
+
+    /**
+     * 根据配置，取消挂起时变更维修负责人,还是本人时不用变更
+     */
+    private void cancelHangUpChAun(Fault fault, FaultRepairRecord faultRepairRecord, LoginUser loginUser) {
+        // 根据配置，取消挂起时变更维修负责人,还是本人时不用变更
+        SysParamModel chAunParam = iSysParamAPI.selectByCode(SysParamCodeConstant.CANCEL_HANGUP_CH_AUN);
+        boolean b = ObjectUtil.isNotEmpty(chAunParam) && FaultConstant.ENABLE.equals(chAunParam.getValue()) && !StrUtil.equals(loginUser.getUsername(), fault.getAppointUserName());
+        if (b) {
+            // 逻辑删除原来的维修记录
+            faultRepairRecord.setDelFlag(CommonConstant.DEL_FLAG_1);
+            // 更新
+            fault.setAppointUserName(loginUser.getUsername());
+            // 维修记录
+            FaultRepairRecord record = FaultRepairRecord.builder()
+                    // 做类型
+                    .workType(faultRepairRecord.getWorkType())
+                    .planOrderCode(faultRepairRecord.getPlanOrderCode())
+                    .faultCode(fault.getCode())
+                    .planOrderImg(faultRepairRecord.getPlanOrderImg())
+                    // 负责人
+                    .appointUserName(loginUser.getUsername())
+                    // 故障想象
+                    .faultPhenomenon(fault.getFaultPhenomenon())
+                    .delFlag(CommonConstant.DEL_FLAG_0)
+                    // 领取时间
+                    .receviceTime(new Date())
+                    .symptoms(fault.getSymptoms())
+                    // 附件
+                    .knowledgeId(fault.getKnowledgeId())
+                    .faultLevel(fault.getFaultLevel())
+                    // 开始维修时间
+                    .startTime(new Date())
+                    .build();
+            repairRecordService.save(record);
+        }
     }
 
     /**
