@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
@@ -76,6 +77,13 @@ public class TaskCreateListener implements FlowableEventListener {
         String processInstanceId = taskEntity.getProcessInstanceId();
         // 流程节点定义id
         String taskDefinitionKey = taskEntity.getTaskDefinitionKey();
+
+
+        List<String> list = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
+                .getVariable(processInstanceId, FlowVariableConstant.ASSIGNEE_LIST + taskDefinitionKey, List.class);
+        if (CollectionUtil.isNotEmpty(list)) {
+            return;
+        }
         // 查询流程实例
         ProcessInstance instance = ProcessEngines.getDefaultProcessEngine().getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 

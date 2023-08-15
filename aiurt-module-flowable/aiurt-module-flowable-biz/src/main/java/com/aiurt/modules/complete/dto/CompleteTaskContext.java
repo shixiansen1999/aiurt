@@ -1,6 +1,7 @@
 package com.aiurt.modules.complete.dto;
 
 import lombok.Data;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 
@@ -28,9 +29,14 @@ public class CompleteTaskContext implements Serializable {
     private ProcessInstance processInstance;
 
     /**
-     *
+     * 流程变量
      */
     private Map<String, Object> variableData;
+
+    /**
+     * 执行行实例
+     */
+    private ExecutionEntity executionEntity;
 
 
 

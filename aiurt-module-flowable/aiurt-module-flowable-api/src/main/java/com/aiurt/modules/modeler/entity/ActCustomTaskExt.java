@@ -62,6 +62,6 @@ public class ActCustomTaskExt implements Serializable {
     @ApiModelProperty("用户类型")
     private String userType;
 
-    @ApiModelProperty("是否自动选人，ture是，否：false")
+    @ApiModelProperty("是否自动选人，ture是，1，0：false")
     private Integer isAutoSelect;
 }

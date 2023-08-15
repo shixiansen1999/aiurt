@@ -4,12 +4,12 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.multideal.service.IMultiInstanceUserService;
-import com.alibaba.fastjson.JSONObject;
 import org.flowable.engine.ProcessEngines;
 import org.flowable.task.api.Task;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author fgw
@@ -41,7 +41,7 @@ public class MultiInstanceUserServiceImpl implements IMultiInstanceUserService {
      * @return
      */
     @Override
-    public List<String> getNextNodeUserList(String nodeId, JSONObject businessData, List<String> user) {
+    public List<String> getNextNodeUserList(String nodeId, Map<String, Object> businessData, List<String> user) {
         return  user;
     }
 }

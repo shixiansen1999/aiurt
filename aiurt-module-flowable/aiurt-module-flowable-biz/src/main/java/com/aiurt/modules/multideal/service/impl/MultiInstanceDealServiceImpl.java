@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 import static com.aiurt.common.enums.SentinelErrorInfoEnum.FlowException;
 
@@ -48,7 +49,7 @@ public class MultiInstanceDealServiceImpl implements IMultiInstanceDealService {
                     String.format(AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getMessage(),taskId));
         }
         // todo 处理当前活动是否多实例（针对串行情况，需要拿出串行人员列表），设置人员列表变量
-        this.dealOneNodeMulti(taskId, null, null, null);
+        // this.dealOneNodeMulti(taskId, null, null, null);
         if (multiInTaskService.areMultiInTask(task)){
             log.info("当前活动是多少实例，且不是多实例的最后一个活动，不设置下一步多实例办理人:{}",taskId);
             return;
@@ -75,7 +76,7 @@ public class MultiInstanceDealServiceImpl implements IMultiInstanceDealService {
      * @param businessData 业务数据 当前活动不能传此参数
      * @param user 用户选择用户 当前活动不能传此参数
      */
-    void dealOneNodeMulti(String taskId, String nodeId, JSONObject businessData, List<String> user) {
+    void dealOneNodeMulti(String taskId, String nodeId, Map<String, Object> businessData, List<String> user) {
         Task task = ProcessEngines.getDefaultProcessEngine().getTaskService().createTaskQuery().
                 taskId(taskId).singleResult();
         if (task == null){
@@ -85,17 +86,17 @@ public class MultiInstanceDealServiceImpl implements IMultiInstanceDealService {
 
         List<String> userList = null;
         boolean isCurrNode = false;
+        // 判断是否为多实例
+        Boolean multiInTask = multiInTaskService.isMultiInTask(task);
+        if (!multiInTask) {
+            return;
+        }
         //判断是否是当前节点
         if (StrUtil.isBlank(nodeId)) {
             log.info("当前节点");
             isCurrNode = true;
             nodeId = task.getTaskDefinitionKey();
             userList = multiInstanceUserService.getCurrentUserList(taskId);
-        }
-        // 判断是否为多实例
-        Boolean multiInTask = multiInTaskService.isMultiInTask(task);
-        if (!multiInTask) {
-            return;
         }
         String variableName =  FlowVariableConstant.ASSIGNEE_LIST + nodeId;
         log.info("活动（{}）,节点（{}），是多实例", taskId, nodeId);

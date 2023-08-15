@@ -45,4 +45,9 @@ public class FlowCompleteReqDTO implements Serializable {
      */
     @ApiModelProperty(value = "流程任务的批注内容")
     private String comment;
+
+    /**
+     * 流程变量
+     */
+    private Map<String, Object> variableData;
 }
