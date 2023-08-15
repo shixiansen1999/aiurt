@@ -323,4 +323,10 @@ public class WorkLogResult {
 
     @ApiModelProperty(value = "位置编码，逗号隔开")
     private String positionCode;
+
+    /**是否补录：0否，1是*/
+    @Excel(name = "是否补录：0否，1是", width = 15)
+    @ApiModelProperty(value = "是否补录：0否，1是")
+    @Dict(dicCode = "work_log_isAdditionalRecording")
+    private  Integer  isAdditionalRecording;
 }
