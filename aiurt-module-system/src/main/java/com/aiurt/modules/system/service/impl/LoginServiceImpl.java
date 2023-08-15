@@ -35,16 +35,16 @@ import static cn.hutool.crypto.SecureUtil.sha1;
 @Service
 public class LoginServiceImpl implements ILoginService {
 
-    private static final String WX_HOST = "qyapi.weixin.qq.com";
+    public static final String WX_HOST = "qyapi.weixin.qq.com";
 
-    private static final String WX_HOST_CONFIG_VALUE = "wx_host";
+    public static final String WX_HOST_CONFIG_VALUE = "wx_host";
 
-    private static final String WX_PRIVATE_CLOUD = "wx_private_cloud";
+    public static final String WX_PRIVATE_CLOUD = "wx_private_cloud";
 
     /***
      * 非私有
      */
-    private static final String WX_PRIVATE_CLOUD_VALUE = "0";
+    public static final String WX_PRIVATE_CLOUD_VALUE = "0";
 
     @Autowired
     private ISysParamAPI sysParamApi;
