@@ -9,7 +9,8 @@
             sur.realname AS submitName,
             sur.org_name AS submitOrgName,
             sur.avatar AS avatar,
-            sd.depart_name AS OrgName
+            sd.depart_name AS OrgName,
+            wl.is_additional_recording as isAdditionalRecording
         FROM
             t_work_log wl
         LEFT JOIN sys_user su ON wl.succeed_id = su.id
