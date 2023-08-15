@@ -120,6 +120,10 @@ public class SparePartInOrder implements Serializable {
 	@Excel(name = "入库的委外送修数量", width = 15)
 	@ApiModelProperty(value = "入库的委外送修数量")
 	private Integer outsourceRepairNum;
+	/**重新入库的委外送修数量*/
+	@Excel(name = "重新入库的委外送修数量", width = 15)
+	@ApiModelProperty(value = "重新入库的委外送修数量")
+	private Integer reoutsourceRepairNum;
 	/**组织机构id*/
 	@ApiModelProperty(value = "组织机构id")
 	private String orgId;

@@ -50,4 +50,11 @@ public interface ISparePartScrapService extends IService<SparePartScrap> {
      * @param sparePartScrap
      */
     void scrapRepairAcceptance(SparePartScrap sparePartScrap);
+    /**
+     *  编辑
+     *
+     * @param sparePartScrap
+     * @return
+     */
+    void edit(SparePartScrap sparePartScrap);
 }

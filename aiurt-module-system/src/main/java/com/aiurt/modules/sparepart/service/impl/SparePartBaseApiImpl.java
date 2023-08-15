@@ -26,10 +26,7 @@ import com.aiurt.modules.material.mapper.MaterialBaseMapper;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.sparepart.entity.*;
-import com.aiurt.modules.sparepart.mapper.SparePartInOrderMapper;
-import com.aiurt.modules.sparepart.mapper.SparePartLendMapper;
-import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
-import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
+import com.aiurt.modules.sparepart.mapper.*;
 import com.aiurt.modules.sparepart.service.*;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.entity.SysUser;
@@ -111,6 +108,8 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
     private ISysParamAPI iSysParamAPI;
     @Autowired
     private SparePartLendMapper sparePartLendMapper;
+    @Autowired
+    private SparePartStockNumMapper sparePartStockNumMapper;
     @Autowired
     private ISysUserService userService;
 
@@ -353,11 +352,11 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 //旧数据进行判断，是否有移除的,有的话找到出来，然后恢复之前的
                     LambdaQueryWrapper<DeviceChangeSparePart> queryWrapper = new LambdaQueryWrapper<>();
                     queryWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
-                    List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(queryWrapper);
                     if("1".equals(value)){
                         queryWrapper.eq(DeviceChangeSparePart::getConsumables,1);
                     }
-                recoverSparePart(deviceChangeSparePartList);
+                    List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(queryWrapper);
+                    recoverSparePart(deviceChangeSparePartList);
                 }
                 for (SparePartStockDTO lendStockDTO : unExitFaultSparePartList) {
                     //判断新组件的数量是否大于备件库存
@@ -378,6 +377,23 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                     sparePart.setConsumables(lendStockDTO.getConsumablesType());
                     sparePart.setWarehouseCode(lendStockDTO.getWarehouseCode());
                     if ("0".equals(lendStockDTO.getConsumablesType())) {
+                        //先获取该备件的数量记录,更新全新数量
+                        LambdaQueryWrapper<SparePartStockNum> numLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                        numLambdaQueryWrapper.eq(SparePartStockNum::getMaterialCode, lendStockDTO.getMaterialCode())
+                                .eq(SparePartStockNum::getWarehouseCode, lendStockDTO.getWarehouseCode())
+                                .eq(SparePartStockNum::getDelFlag, CommonConstant.DEL_FLAG_0);
+                        SparePartStockNum stockNum = sparePartStockNumMapper.selectOne(numLambdaQueryWrapper);
+                        if (stockNum != null) {
+                            Integer newNum = stockNum.getNewNum();
+                            //如果全新数量小于新组件数量，则从已使用数量中扣除
+                            if (newNum < lendStockDTO.getNewSparePartNum()) {
+                                stockNum.setNewNum(0);
+                                stockNum.setUsedNum(stockNum.getUsedNum() - (lendStockDTO.getNewSparePartNum() - newNum));
+                            } else {
+                                stockNum.setNewNum(lendStockDTO.getNewSparePartNum() - newNum);
+                            }
+                        }
+                        sparePartStockNumMapper.updateById(stockNum);
                         SparePartScrap scrap = new SparePartScrap();
                         scrap.setStatus(1);
                         scrap.setSysOrgCode(user.getOrgCode());
