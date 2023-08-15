@@ -24,7 +24,11 @@
             t6.realname confirmName ,
             spare_part_in_order.create_time,
             spare_part_in_order.out_order_code outOrderCode,
-            t8.realname outOrderName
+            t8.realname outOrderName,
+            spare_part_in_order.new_num,
+            spare_part_in_order.used_num,
+            spare_part_in_order.scrap_num,
+            spare_part_in_order.outsource_repair_num
         FROM
             spare_part_in_order spare_part_in_order
             LEFT JOIN material_base t1 ON (spare_part_in_order.material_code = t1.CODE AND t1.del_flag = 0)
