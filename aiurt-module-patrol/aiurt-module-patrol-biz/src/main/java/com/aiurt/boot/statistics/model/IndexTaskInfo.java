@@ -51,6 +51,18 @@ public class IndexTaskInfo implements Serializable {
      */
     @ApiModelProperty(value = "任务编号")
     private java.lang.String code;
+
+    /**
+     * 标准id
+     */
+    @ApiModelProperty(value = "标准id")
+    private java.lang.String standardId;
+
+    /**
+     * 巡视任务id
+     */
+    @ApiModelProperty(value = "巡视任务id")
+    private java.lang.String taskId;
     /**
      * 任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成
      * 工单状态：0未开始、1进行中、2已提交
