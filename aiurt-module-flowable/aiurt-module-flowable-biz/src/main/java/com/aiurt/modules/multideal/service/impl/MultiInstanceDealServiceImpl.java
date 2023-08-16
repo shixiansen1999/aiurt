@@ -50,7 +50,10 @@ public class MultiInstanceDealServiceImpl implements IMultiInstanceDealService {
         }
         // todo 处理当前活动是否多实例（针对串行情况，需要拿出串行人员列表），设置人员列表变量
         // this.dealOneNodeMulti(taskId, null, null, null);
-        if (!(multiInTaskService.areMultiInTask(task) || !multiInTaskService.isMultiInTask(task))){
+        // 判断是否时多实例流程最后一步，或者单实例
+        Boolean completeTask = multiInTaskService.isCompleteTask(task);
+
+        if (!completeTask){
             log.info("当前活动是多实例，且不是多实例的最后一个活动，不设置下一步多实例办理人:{}",taskId);
             return;
         }

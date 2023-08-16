@@ -9,7 +9,7 @@ import org.flowable.task.api.Task;
 public interface IMultiInTaskService {
 
     /**
-     * 判断是否为多实例任务
+     * 判断是否为多实例任务，根据流程多实例的流程变量判断
      * @param task
      * @return
      */
@@ -26,10 +26,18 @@ public interface IMultiInTaskService {
 
 
     /**
-     * 判断是否为多实例任务
+     * 判断是否为多实例任务， 根据流程的定义配置判断
      * @param nodeId
      * @param definitionId
      * @return
      */
     Boolean isMultiInTask(String nodeId, String definitionId);
+
+
+    /**
+     * 判断当前任务是否需要提交了
+     * @param task
+     * @return
+     */
+    Boolean isCompleteTask(Task task);
 }
