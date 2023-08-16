@@ -1002,7 +1002,7 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
                  */
                 String weChatUserName = null;
                 SysParamModel sysParamModel = sysParamAPI.selectByCode(WX_HOST_CONFIG_VALUE);
-                String wechatHost = Objects.isNull(sysParamModel) ? WX_HOST : sysParamModel.getValue();
+                String wechatHost = Objects.isNull(sysParamModel) ? WX_HOST : StrUtil.isBlank(sysParamModel.getValue()) ? WX_HOST : sysParamModel.getValue();
 
                 String URL = "https://"+wechatHost+"/cgi-bin/user/getuserid?access_token="+accessToken;
                 HttpRequest httpRequest = HttpUtil.createGet(URL);
