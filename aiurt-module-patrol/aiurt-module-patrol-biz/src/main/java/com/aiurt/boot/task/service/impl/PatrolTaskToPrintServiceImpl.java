@@ -160,7 +160,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
             workbook1.loadFromStream(inputStream);
             //pdf 自适应屏幕大小
             workbook1.getConverterSetting().setSheetFitToWidth(true);
-            workbook1.saveToStream(response.getOutputStream(), FileFormat.PDF);  //通过流的形式输出保存
+            workbook1.saveToStream(response.getOutputStream(), FileFormat.PDF);
         }catch (Exception e){
             throw new RuntimeException(e);
         }
@@ -278,7 +278,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
             workbook1.loadFromStream(inputStream);
             //pdf 自适应屏幕大小
             workbook1.getConverterSetting().setSheetFitToWidth(true);
-            workbook1.saveToStream(response.getOutputStream(), FileFormat.PDF);  //通过流的形式输出保存
+            workbook1.saveToStream(response.getOutputStream(), FileFormat.PDF);
         }catch (Exception e){
             throw new RuntimeException(e);
         }
