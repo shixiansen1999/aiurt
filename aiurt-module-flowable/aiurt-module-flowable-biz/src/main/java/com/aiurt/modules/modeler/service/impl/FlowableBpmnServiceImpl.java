@@ -437,6 +437,10 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
             // 抄送人
             addUser(userTask, extensionMap, userList, FlowModelExtElementConstant.EXT_CARBON_COPY, "1");
+
+            // 节点前、后附加操作
+            flowTaskExt.setPreNodeAction(createJsonObjectFromExtensionMap(extensionMap, FlowModelExtElementConstant.EXT_PRE_NODE_ACTION));
+            flowTaskExt.setPostNodeAction(createJsonObjectFromExtensionMap(extensionMap, FlowModelExtElementConstant.EXT_POST_NODE_ACTION));
         }
 
         taskExtList.add(flowTaskExt);
@@ -546,5 +550,37 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
             throw new AiurtBootException("系统中不存在该流程模型，请刷新尝试！");
         }
         return modelInfoVo;
+    }
+
+    /**
+     * 根据指定的扩展类型从扩展映射中创建一个 JSON 对象。
+     *
+     * @param extensionMap 一个包含按类型分组的扩展元素的映射。
+     * @param extensionType 要检索和处理的扩展类型（例如 "preNode" 或 "postNode"）。
+     * @return 一个 JSONObject，其中包含从扩展元素中提取的属性，按属性名称进行键控。
+     *         如果未找到匹配的扩展元素或未存在属性，则返回一个空的 JSONObject。
+     */
+    public static JSONObject createJsonObjectFromExtensionMap(Map<String, List<ExtensionElement>> extensionMap, String extensionType) {
+        JSONObject jsonObject = new JSONObject();
+
+        Optional.ofNullable(extensionMap.get(extensionType))
+                .ifPresent(extensionElementList -> {
+                    ExtensionElement firstExtensionElement = extensionElementList.get(0);
+                    Optional.ofNullable(firstExtensionElement).ifPresent(extensionElement -> {
+                        Map<String, List<ExtensionAttribute>> elementAttributeMap = extensionElement.getAttributes();
+                        elementAttributeMap.entrySet().stream()
+                                .forEach(entry -> {
+                                    List<ExtensionAttribute> attributeList = entry.getValue();
+                                    String attributeValue = null;
+                                    if (CollUtil.isNotEmpty(attributeList)) {
+                                        ExtensionAttribute extensionAttribute = attributeList.get(0);
+                                        attributeValue = extensionAttribute.getValue();
+                                    }
+                                    jsonObject.put(entry.getKey(), attributeValue);
+                                });
+                    });
+                });
+
+        return jsonObject;
     }
 }
