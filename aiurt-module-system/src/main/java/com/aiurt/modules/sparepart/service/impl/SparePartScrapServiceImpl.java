@@ -10,14 +10,8 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
-import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
-import com.aiurt.modules.sparepart.entity.SparePartScrap;
-import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
-import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
-import com.aiurt.modules.sparepart.mapper.SparePartScrapMapper;
-import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
-import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
+import com.aiurt.modules.sparepart.entity.*;
+import com.aiurt.modules.sparepart.mapper.*;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartScrapService;
@@ -67,6 +61,8 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
     private ISparePartInOrderService sparePartInOrderService;
     @Autowired
     private SparePartStockMapper sparePartStockMapper;
+    @Autowired
+    private SparePartStockNumMapper sparePartStockNumMapper;
     @Autowired
     private SparePartStockInfoMapper sparePartStockInfoMapper;
     /**
@@ -120,6 +116,7 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
     @Transactional(rollbackFor = Exception.class)
     public Result<?> update(SparePartScrap sparePartScrap) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        sparePartScrap.setSysOrgCode(user.getOrgCode());
         SparePartScrap scrap = getById(sparePartScrap.getId());
         if(sparePartScrap.getStatus().equals(CommonConstant.SPARE_PART_SCRAP_STATUS_3) || sparePartScrap.getStatus().equals(CommonConstant.SPARE_PART_SCRAP_STATUS_2)){
             sparePartScrap.setConfirmId(user.getUsername());
@@ -130,8 +127,9 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
                     .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
                     .eq(SparePartOutOrder::getMaterialCode,sparePartScrap.getMaterialCode())
                     .eq(SparePartOutOrder::getWarehouseCode,sparePartScrap.getWarehouseCode()));
-            if(!orderList.isEmpty()){
-                for(int i =0;i<orderList.size();i++){
+            //如果是故障过来的出库记录不需要更新
+            if (!orderList.isEmpty() && StrUtil.isBlank(scrap.getFaultCode())) {
+                for (int i = 0; i < orderList.size(); i++) {
                     SparePartOutOrder order = orderList.get(i);
                     if (Integer.parseInt(order.getUnused()) >= scrap.getNum()) {
                         Integer number = Integer.parseInt(order.getUnused()) - scrap.getNum();
@@ -232,6 +230,49 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
         sparePartInOrder.setOrgId(user.getOrgId());
         sparePartInOrder.setSysOrgCode(user.getOrgCode());
         sparePartInOrder.setOutOrderCode(sparePartScrap.getOutOrderId());
+        sparePartInOrder.setReoutsourceRepairNum(sparePartScrap.getNum());
+        sparePartInOrder.setUsedNum(sparePartScrap.getNum());
         sparePartInOrderService.save(sparePartInOrder);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<?> edit(SparePartScrap sparePartScrap) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        SparePartScrap scrap = getById(sparePartScrap.getId());
+        //先获取该备件的数量记录,更新全新数量
+        LambdaQueryWrapper<SparePartStockNum> numLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        numLambdaQueryWrapper.eq(SparePartStockNum::getMaterialCode, scrap.getMaterialCode())
+                .eq(SparePartStockNum::getWarehouseCode, scrap.getWarehouseCode())
+                .eq(SparePartStockNum::getDelFlag, CommonConstant.DEL_FLAG_0);
+        SparePartStockNum stockNum = sparePartStockNumMapper.selectOne(numLambdaQueryWrapper);
+        if (CommonConstant.SPARE_PART_SCRAP_HANDLE_WAY_0.equals(sparePartScrap.getHandleWay())) {
+            scrap.setStatus(CommonConstant.SPARE_PART_SCRAP_STATUS_3);
+            //报损则委外送修数量增加
+            stockNum.setOutsourceRepairNum(stockNum.getOutsourceRepairNum() + scrap.getNum());
+        }
+        if (CommonConstant.SPARE_PART_SCRAP_HANDLE_WAY_1.equals(sparePartScrap.getHandleWay())) {
+            scrap.setStatus(CommonConstant.SPARE_PART_SCRAP_STATUS_2);
+            //报废则待报废数量增加
+            stockNum.setScrapNum(stockNum.getScrapNum() + scrap.getNum());
+        }
+        if (CommonConstant.SPARE_PART_SCRAP_HANDLE_WAY_2.equals(sparePartScrap.getHandleWay())) {
+            scrap.setStatus(CommonConstant.SPARE_PART_SCRAP_STATUS_4);
+            //生成重新入库记录
+            // 插入备件入库管理表
+            SparePartInOrder sparePartInOrder = new SparePartInOrder();
+            sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_0);
+            sparePartInOrder.setMaterialCode(scrap.getMaterialCode());
+            sparePartInOrder.setWarehouseCode(scrap.getWarehouseCode());
+            sparePartInOrder.setNum(scrap.getNum());
+            sparePartInOrder.setOrgId(user.getOrgId());
+            sparePartInOrder.setSysOrgCode(user.getOrgCode());
+            sparePartInOrder.setOutOrderCode(scrap.getOutOrderId());
+            sparePartInOrder.setUsedNum(scrap.getNum());
+            sparePartInOrderService.save(sparePartInOrder);
+        }
+        sparePartStockNumMapper.updateById(stockNum);
+
+        return this.update(scrap);
     }
 }

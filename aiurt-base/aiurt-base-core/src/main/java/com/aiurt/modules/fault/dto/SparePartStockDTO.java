@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -210,10 +209,6 @@ public class SparePartStockDTO implements Serializable {
     /**新组件所在班组*/
     private String newOrgCode;
 
-    /**是否易耗品(1是,0否)*/
-    @ApiModelProperty(value = "是否易耗品(1是,0否)")
-    private String consumables;
-
     @ApiModelProperty(value = "出库记录表ID")
     private String outOrderId;
     @ApiModelProperty(value = "借入的出库记录表ID")
@@ -232,7 +227,7 @@ public class SparePartStockDTO implements Serializable {
     private String lendInventoryOrderId;
     @ApiModelProperty(value = "新组件拼接后的编码")
     private String newSparePartSplitCode;
-    /**新组件编号*/
-    @ApiModelProperty(value = "新组件编号", required = true)
+    /**是否易耗品(1是,0否)**/
+    @ApiModelProperty(value = "是否易耗品(1是,0否)", required = true)
     private String consumablesType;
 }
