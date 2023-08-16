@@ -2329,6 +2329,11 @@
         GROUP BY pt.id
         order by pt.create_time desc
     </select>
+    <select id="getTaskDurationBySumDevice" resultType="java.lang.Integer">
+        SELECT SUM(IFNULL(duration,0))
+        FROM patrol_task_device
+        WHERE task_id = #{patrolTaskId}
+    </select>
 
     <sql id="taskCountONMonth">
         SELECT

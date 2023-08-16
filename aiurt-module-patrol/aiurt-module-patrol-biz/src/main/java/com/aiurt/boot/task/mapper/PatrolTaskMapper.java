@@ -616,4 +616,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return 返回PatrolTaskExportExcelDTO对象的列表
      */
     List<PatrolTaskExportExcelDTO> queryPatrolTaskExportExcelDTOByIds(@Param("patrolTaskIdList") List<String> patrolTaskIdList);
+
+    /**
+     * 根据巡视任务id，获取巡视任务时长，巡视任务时长获取方法是该巡视任务对应的巡视工单的时长之和
+     * @param patrolTaskId 巡视任务id
+     * @return 返回巡视任务时长
+     */
+    Integer getTaskDurationBySumDevice(String patrolTaskId);
 }

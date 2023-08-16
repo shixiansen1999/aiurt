@@ -476,4 +476,9 @@ public interface SysParamCodeConstant {
      * 故障挂起超时未处理提醒的铃声时长，单位为秒
      */
     String HUR_RING_DURATION = "hur_ring_duration";
+
+    /**
+     * 巡视工时是否使用mac计算，如果不使用就是各工单时长之和
+     */
+    String PATROL_DURATION_USE_MAC = "patrol_duration_use_mac";
 }
