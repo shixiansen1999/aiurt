@@ -617,4 +617,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return 返回PatrolTaskExportExcelDTO对象的列表
      */
     List<PatrolTaskExportExcelDTO> queryPatrolTaskExportExcelDTOByIds(@Param("patrolTaskIdList") List<String> patrolTaskIdList);
+
+    /**
+     * 根据巡视任务id，获取该巡视任务关联的故障的数量（巡视时，上报的故障），上报的故障要上报审核通过才算，也就是status>2
+     * @param patrolTaskId 巡视任务id
+     * @return 返回该巡视任务关联的故障(故障要上报审核通过才算，也就是status>2)的数量
+     */
+    Integer getPatrolTaskFaultNum(@Param("patrolTaskId") String patrolTaskId);
 }

@@ -316,6 +316,85 @@ public class FaultCountServiceImpl implements IFaultCountService {
     }
 
     /**
+     * 首页-故障统计详情
+     * 此方法是为了统一 getFaultCountInfo方法和getFaultCountInfos方法，这两个方法逻辑是一样的
+     * @param faultCountInfoReq
+     * @return
+     */
+    @Override
+    public IPage<FaultCountRespDTO> getFaultCount(FaultCountInfoReq faultCountInfoReq) {
+        IPage<FaultCountRespDTO> result = new Page<>();
+        // 如果patrolTaskId不为空，说明是从巡视综合管理跳转的，就不用判断开始时间结束时间等是不是空的了
+        if (cn.hutool.core.util.StrUtil.isEmpty(faultCountInfoReq.getPatrolTaskId())
+                && (ObjectUtil.isEmpty(faultCountInfoReq.getType())
+                || ObjectUtil.isEmpty(faultCountInfoReq)
+                || ObjectUtil.isEmpty(faultCountInfoReq.getStartDate())
+                || ObjectUtil.isEmpty(faultCountInfoReq.getEndDate()))) {
+            return result;
+        }
+        // 分页数据
+        Page<FaultCountRespDTO> page = new Page<>(faultCountInfoReq.getPageNo(), faultCountInfoReq.getPageSize());
+        //权限控制
+        boolean b = GlobalThreadLocal.setDataFilter(false);
+        //通过真实姓名模糊查询username
+        List<String> userNameByRealName = sysBaseApi.getUserNameByRealName(faultCountInfoReq.getAppointUserName());
+        // 如果有通过appointUserName进行查询，但是appointUserName对应的userName是空的，直接返回
+        if (cn.hutool.core.util.StrUtil.isNotEmpty(faultCountInfoReq.getAppointUserName()) && CollUtil.isEmpty(userNameByRealName)){
+            return page;
+        }
+        GlobalThreadLocal.setDataFilter(b);
+        List<FaultCountRespDTO> faultData = faultCountMapper.getFaultCount(faultCountInfoReq.getType(), page, faultCountInfoReq, null, null,userNameByRealName);
+
+        if (CollUtil.isNotEmpty(faultData)) {
+
+            Set<String> faultCodeSet = faultData.stream().map(FaultCountRespDTO::getCode).collect(Collectors.toSet());
+            Map<String, Fault> faultMap = new HashMap<>(16);
+            Map<String, List<FaultDevice>> faultDeviceMap = new HashMap<>(16);
+            if (CollUtil.isNotEmpty(faultCodeSet)) {
+                List<Fault> faultList = faultService.list(new LambdaQueryWrapper<Fault>().in(Fault::getCode, faultCodeSet));
+
+                faultMap = faultList.stream().collect(Collectors.toMap(Fault::getCode, Function.identity()));
+
+                List<FaultDevice> faultDeviceList = faultDeviceService.queryListByFaultCodeList(new ArrayList<>(faultCodeSet));
+                faultDeviceMap = faultDeviceList.stream().collect(Collectors.groupingBy(FaultDevice::getFaultCode));
+            }
+
+            for (FaultCountRespDTO faultDatum : faultData) {
+                //查找设备编码
+                List<FaultDevice> faultDeviceList = faultDeviceMap.get(faultDatum.getCode());
+
+                if (CollUtil.isNotEmpty(faultDeviceList)) {
+                    faultDatum.setDeviceCode(faultDeviceList.stream().map(FaultDevice::getDeviceCode).collect(Collectors.joining(",")));
+                    faultDatum.setDeviceName(faultDeviceList.stream().map(FaultDevice::getDeviceName).collect(Collectors.joining(",")));
+                }
+                //班组名称和班组负责人
+                if (StrUtil.isNotBlank(faultDatum.getSysOrgCode())) {
+                    String name = sysBaseApi.getDepartNameByOrgCode(faultDatum.getSysOrgCode());
+                    faultDatum.setTeamName(name);
+                }
+
+                //获取填报人组织机构
+                Fault one = faultMap.getOrDefault(faultDatum.getCode(), new Fault());
+
+                //stream 流 过滤 填报人的组织机构 string
+                 /*List<String> list = faultCountMapper.getShiftLeader(one.getFaultApplicant(), RoleConstant.FOREMAN);
+                String teamUser = list.stream().map(String::valueOf).collect(Collectors.joining(","));
+                faultDatum.setTeamUser(teamUser);*/
+                //根据站点找工区再找到班组获取工班长
+                boolean a = GlobalThreadLocal.setDataFilter(false);
+                List<String> list = getForemanByWorkArea(one.getStationCode());
+                GlobalThreadLocal.setDataFilter(a);
+                String teamUser = CollUtil.isNotEmpty(list) ? list.stream().map(String::valueOf).collect(Collectors.joining(",")) : "";
+                faultDatum.setTeamUser(teamUser);
+
+            }
+
+        }
+        page.setRecords(faultData);
+        return page;
+    }
+
+    /**
      *分页查询故障超时等级
      * @param faultTimeoutLevelReq 查询条件
      * @return
