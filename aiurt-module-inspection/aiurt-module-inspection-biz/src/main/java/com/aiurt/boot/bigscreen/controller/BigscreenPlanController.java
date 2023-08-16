@@ -67,10 +67,12 @@ public class BigscreenPlanController {
                                                               @ApiParam(name = "item", value = "1计划数，2完成数，3漏检数，4今日检修数,5今日检修已完成,6未完成数") @RequestParam(value = "item", required = false) Integer item,
                                                               @ApiParam(name = "startDate", value = "开始日期") String startDate,
                                                               @ApiParam(name = "endDate", value = "结束日期") String endDate,
+                                                              @ApiParam(name = "stationCode", value = "站点") String stationCode,
+                                                              @ApiParam(name = "username", value = "检修人名称") String username,
                                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
         Page<InspectionDTO> page = new Page<>(pageNo, pageSize);
-        IPage<InspectionDTO> result = bigscreenPlanService.getInspectionDataPage(lineCode,startDate,endDate, item, page);
+        IPage<InspectionDTO> result = bigscreenPlanService.getInspectionDataPage(lineCode,startDate,endDate,stationCode, username, item, page);
         return Result.OK(result);
     }
 

@@ -22,7 +22,6 @@ import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.aiurt.boot.task.mapper.RepairTaskUserMapper;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
-import com.aiurt.modules.schedule.dto.ScheduleBigScreenDTO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
@@ -140,7 +139,7 @@ public class BigscreenPlanService {
      * @param page     分页参数
      * @return
      */
-    public IPage<InspectionDTO> getInspectionDataPage(String lineCode,String startDate,String endDate, Integer item, Page<InspectionDTO> page) {
+    public IPage<InspectionDTO> getInspectionDataPage(String lineCode,String startDate,String endDate,String stationCode,String username, Integer item, Page<InspectionDTO> page) {
         List<InspectionDTO> result = new ArrayList<>();
 
         // 默认查询的是计划总数
@@ -159,18 +158,18 @@ public class BigscreenPlanService {
 
         // 查询计划数、完成数、未完成数
         if (InspectionConstant.PLAN_TOTAL_1.equals(item) || InspectionConstant.PLAN_FINISH_2.equals(item)|| InspectionConstant.PLAN_UNFINISH_6.equals(item)) {
-            result = repairPoolMapper.getInspectionData(page, orgCodes, item, startTime, endTime, lineCode);
+            result = repairPoolMapper.getInspectionData(page, orgCodes, item, startTime, endTime, lineCode,stationCode, username);
         }
 
         // TODO 漏检
         // 查询今日检修
         if (InspectionConstant.PLAN_TODAY_4.equals(item)) {
-            result = repairPoolMapper.getInspectionTodayData(page, new Date(), orgCodes,lineCode,null);
+            result = repairPoolMapper.getInspectionTodayData(page, new Date(), orgCodes,lineCode,null,stationCode, username);
         }
 
         // 查询今日检修已完成
         if (InspectionConstant.PLAN_TODAY_5.equals(item)) {
-            result = repairPoolMapper.getInspectionTodayData(page, new Date(), orgCodes,lineCode,InspectionConstant.COMPLETED);
+            result = repairPoolMapper.getInspectionTodayData(page, new Date(), orgCodes,lineCode,InspectionConstant.COMPLETED,stationCode, username);
         }
 
         // 统一处理结果
