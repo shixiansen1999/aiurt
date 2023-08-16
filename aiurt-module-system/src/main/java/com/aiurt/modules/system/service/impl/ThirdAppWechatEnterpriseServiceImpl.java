@@ -49,6 +49,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -58,6 +59,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
+
+    public static final String WX_HOST = "qyapi.weixin.qq.com";
+
+    public static final String WX_HOST_CONFIG_VALUE = "wx_host";
 
     @Autowired
     ThirdAppConfig thirdAppConfig;
@@ -996,8 +1001,10 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
                  * 请确保手机号的正确性，若出错的次数超出企业规模人数的20%，会导致1天不可调用。
                  */
                 String weChatUserName = null;
+                SysParamModel sysParamModel = sysParamAPI.selectByCode(WX_HOST_CONFIG_VALUE);
+                String wechatHost = Objects.isNull(sysParamModel) ? WX_HOST : StrUtil.isBlank(sysParamModel.getValue()) ? WX_HOST : sysParamModel.getValue();
 
-                String URL = "https://home.ccqgqywx.com:10443/cgi-bin/user/getuserid?access_token="+accessToken;
+                String URL = "https://"+wechatHost+"/cgi-bin/user/getuserid?access_token="+accessToken;
                 HttpRequest httpRequest = HttpUtil.createGet(URL);
                 String body = "{\"mobile\":"+user.getPhone()+"}";
                 httpRequest.body(body);
