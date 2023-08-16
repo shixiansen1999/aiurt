@@ -4042,6 +4042,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public List<String> getUserNameByParams(List<String> roleCodes, List<String> orgIds, List<String> posts) {
+        if (CollUtil.isEmpty(roleCodes) && CollUtil.isEmpty(orgIds) && CollUtil.isEmpty(posts)) {
+            return Collections.emptyList();
+        }
         return userMapper.getUserNameByParams(roleCodes,orgIds,posts);
     }
 
