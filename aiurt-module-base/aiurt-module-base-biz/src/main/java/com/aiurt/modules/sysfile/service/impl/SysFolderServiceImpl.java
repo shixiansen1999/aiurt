@@ -16,6 +16,7 @@ import com.aiurt.modules.sysfile.mapper.SysFolderMapper;
 import com.aiurt.modules.sysfile.param.SysFolderFilePermissionParam;
 import com.aiurt.modules.sysfile.param.SysFolderParam;
 import com.aiurt.modules.sysfile.service.ISysFileService;
+import com.aiurt.modules.sysfile.service.ISysFileTypeService;
 import com.aiurt.modules.sysfile.service.ISysFolderFilePermissionService;
 import com.aiurt.modules.sysfile.service.ISysFolderService;
 import com.aiurt.modules.sysfile.vo.*;
@@ -55,6 +56,8 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
     private ISysFolderFilePermissionService sysFolderFilePermissionService;
     @Resource
     private ISysBaseAPI sysBaseApi;
+    @Resource
+    private ISysFileTypeService sysFileTypeService;
 
     private final Lock lock = new ReentrantLock();
 
@@ -545,4 +548,41 @@ public class SysFolderServiceImpl extends ServiceImpl<SysFolderMapper, SysFileTy
                 && (CollUtil.isNotEmpty(param.getUserIds()) || CollUtil.isNotEmpty(param.getOrgCodes()));
     }
 
+
+    @Override
+    public void moveFile(Long fileId, Long fileTypeId, Long targetFileTypeId) {
+
+        SysFileType targetFileType = sysFileTypeService.getById(targetFileTypeId);
+
+        if (fileId != null) {
+            SysFile file = sysFileService.getById(fileId);
+            file.setTypeId(targetFileTypeId);
+            file.setCodeCc(targetFileType.getFolderCodeCc());
+            sysFileService.updateById(file);
+        } else {
+            SysFileType fileType = sysFileTypeService.getById(fileTypeId);
+            fileType.setParentId(targetFileTypeId);
+            fileType.setGrade(targetFileType.getGrade() + 1);
+            fileType.setFolderCodeCc(targetFileType.getFolderCodeCc() + fileType.getFolderCode() + "/");
+            sysFileTypeService.updateById(fileType);
+
+            //如果文件夹下还有文件夹或者文件，则递归修改
+            LambdaQueryWrapper<SysFile> fileWrapper = new LambdaQueryWrapper<>();
+            fileWrapper.eq(SysFile::getTypeId, fileType.getId()).eq(SysFile::getDelFlag, CommonConstant.DEL_FLAG_0);
+            List<SysFile> sysFiles = sysFileService.getBaseMapper().selectList(fileWrapper);
+            if (CollUtil.isNotEmpty(sysFiles)) {
+                for (SysFile sysFile : sysFiles) {
+                    moveFile(sysFile.getId(), null, fileType.getId());
+                }
+            }
+            LambdaQueryWrapper<SysFileType> fileTypeWrapper = new LambdaQueryWrapper<>();
+            fileTypeWrapper.eq(SysFileType::getParentId, fileType.getId()).eq(SysFileType::getDelFlag, CommonConstant.DEL_FLAG_0);
+            List<SysFileType> sysFileTypes = sysFileTypeService.getBaseMapper().selectList(fileTypeWrapper);
+            if (CollUtil.isNotEmpty(sysFileTypes)) {
+                for (SysFileType sysFileType : sysFileTypes) {
+                    moveFile(null, sysFileType.getId(), fileType.getId());
+                }
+            }
+        }
+    }
 }

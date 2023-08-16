@@ -9,7 +9,8 @@
             sur.realname AS submitName,
             sur.org_name AS submitOrgName,
             sur.avatar AS avatar,
-            sd.depart_name AS OrgName
+            sd.depart_name AS OrgName,
+            wl.is_additional_recording as isAdditionalRecording
         FROM
             t_work_log wl
         LEFT JOIN sys_user su ON wl.succeed_id = su.id
@@ -61,6 +62,9 @@
         <!--首页工作日志需要的根据是否提交的查询-->
         <if test="param.status != null">
             AND wl.status = #{param.status}
+        </if>
+        <if test="param.isAdditionalRecording != null">
+            AND wl.is_additional_recording = #{param.isAdditionalRecording}
         </if>
         ORDER BY
             wl.create_time DESC,id DESC

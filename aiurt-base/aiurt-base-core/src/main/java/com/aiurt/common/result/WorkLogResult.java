@@ -311,12 +311,22 @@ public class WorkLogResult {
     @Excel(name = "所在班组", width = 15)
     @ApiModelProperty(value = "所在班组")
     private  String  orgId;
+    /**是否能编辑*/
     @TableField(exist = false)
     private Boolean editFlag;
+    /**是否能补录*/
+    @TableField(exist = false)
+    private Boolean additionalRecordingFlag;
 
     @ApiModelProperty(value = "站点编码，逗号隔开")
     private String stationCode;
 
     @ApiModelProperty(value = "位置编码，逗号隔开")
     private String positionCode;
+
+    /**是否补录：0否，1是*/
+    @Excel(name = "是否补录：0否，1是", width = 15)
+    @ApiModelProperty(value = "是否补录：0否，1是")
+    @Dict(dicCode = "work_log_isAdditionalRecording")
+    private  Integer  isAdditionalRecording;
 }

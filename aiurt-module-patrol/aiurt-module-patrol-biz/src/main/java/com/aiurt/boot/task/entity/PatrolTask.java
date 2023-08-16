@@ -242,6 +242,7 @@ public class PatrolTask extends DictEntity implements Serializable {
      */
     @Excel(name = "mac匹配；0异常；1正常", width = 15)
     @ApiModelProperty(value = "mac匹配；0异常；1正常")
+    @Dict(dicCode = "mac_status")
     private java.lang.Integer macStatus;
     /**
      * 漏检说明
@@ -368,4 +369,7 @@ public class PatrolTask extends DictEntity implements Serializable {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date wifiConnectTime;
+
+    @TableField(exist = false)
+    private java.lang.String macStatusName;
 }
