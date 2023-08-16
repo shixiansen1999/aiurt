@@ -1,6 +1,9 @@
 package com.aiurt.modules.modeler.entity;
 
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -16,7 +19,7 @@ import java.io.Serializable;
  * @Version: V1.0
  */
 @Data
-@TableName("act_custom_task_ext")
+@TableName(value = "act_custom_task_ext",autoResultMap = true)
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="act_custom_task_ext对象", description="流程定义节点属性")
@@ -64,4 +67,14 @@ public class ActCustomTaskExt implements Serializable {
 
     @ApiModelProperty("是否自动选人，ture是，1，0：false")
     private Integer isAutoSelect;
+
+    @ApiModelProperty("节点前附加操作信息")
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private JSONObject preNodeAction;
+
+    @ApiModelProperty("节后后附加操作信息")
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private JSONObject postNodeAction;
+
+
 }

@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +14,7 @@ import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 
+import cn.hutool.core.map.MapUtil;
 import com.aiurt.common.util.oConvertUtils;
 import lombok.extern.slf4j.Slf4j;
 import com.aiurt.common.constant.SymbolConstant;
@@ -183,5 +186,85 @@ public class HttpUtils {
             result.put(s.substring(0, index), s.substring(index + 1));
         }
         return result;
+    }
+
+    /**
+     * 发送HTTP GET请求并获取响应内容。
+     *
+     * @param url     请求的URL地址
+     * @param headers 请求头参数，可为null
+     * @param params  请求参数，可为null
+     * @return 从服务器返回的响应内容
+     */
+    public static String sendGetRequest(String url, Map<String, String> headers, Map<String, String> params) {
+        StringBuilder response = new StringBuilder();
+
+        try {
+            // 构建参数字符串
+            if (MapUtil.isNotEmpty(params)) {
+                log.info("request params: {}",params);
+                url = String.format("%s?%s", url, buildQueryString(params));
+            }
+
+            URL requestUrl = new URL(url);
+            HttpURLConnection connection = (HttpURLConnection) requestUrl.openConnection();
+
+            // 设置请求方法
+            connection.setRequestMethod("GET");
+
+            // 设置请求头
+            if (MapUtil.isNotEmpty(headers)) {
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    connection.setRequestProperty(entry.getKey(), entry.getValue());
+                }
+            }
+
+            // 获取响应内容
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+            reader.close();
+            connection.disconnect();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return response.toString();
+    }
+
+    /**
+     * 构建HTTP请求参数字符串。
+     *
+     * @param params 请求参数，以键值对的形式传入
+     * @return 构建的参数字符串，形如 "key1=value1&key2=value2"
+     * @throws UnsupportedEncodingException 如果URL编码时出现不支持的字符集异常
+     */
+    private static String buildQueryString(Map<String, String> params) {
+        StringBuilder queryString = new StringBuilder();
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            if (queryString.length() > 0) {
+                queryString.append("&");
+            }
+            queryString.append(entry.getKey()).append("=").append(entry.getValue());
+        }
+        return queryString.toString();
+    }
+
+    public static void main(String[] args) {
+        String url = "https://api.example.com/some/api/endpoint";
+
+        // 设置请求头
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer YourAccessToken");
+
+        // 设置请求参数
+        Map<String, String> params = new HashMap<>();
+        params.put("param1", "value1");
+        params.put("param2", "value2");
+
+        String response = sendGetRequest(url, headers, params);
+        System.out.println("API Response:\n" + response);
     }
 }

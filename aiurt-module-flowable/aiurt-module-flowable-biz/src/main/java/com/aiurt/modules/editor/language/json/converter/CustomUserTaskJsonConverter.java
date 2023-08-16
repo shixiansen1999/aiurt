@@ -72,17 +72,6 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
      */
     private static final String FORM = "form";
 
-
-    /**
-     * 节点前的附加操作
-     */
-    public static final String PRE_NODE_ACTION = "preNodeAction";
-
-    /**
-     * 节点后的附加操作
-     */
-    public static final String POST_NODE_ACTION = "postNodeAction";
-
     private static final String SERIAL_VERSION_UID = "serialVersionUID";
 
     /**
@@ -207,15 +196,15 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             }
 
             // 节点前后附加操作
-            List<ExtensionElement> preNodeActionElements = extensionElements.get(PRE_NODE_ACTION);
+            List<ExtensionElement> preNodeActionElements = extensionElements.get(FlowModelExtElementConstant.EXT_PRE_NODE_ACTION);
             if (CollUtil.isNotEmpty(preNodeActionElements)) {
                 ObjectNode preNodeActionObjectNode = FlowRelationUtil.createObjectNodeFromFields(NodeActionDTO.class, preNodeActionElements.get(0));
-                propertiesNode.set(PRE_NODE_ACTION, preNodeActionObjectNode);
+                propertiesNode.set(FlowModelExtElementConstant.EXT_PRE_NODE_ACTION, preNodeActionObjectNode);
             }
-            List<ExtensionElement> postNodeActionElements = extensionElements.get(POST_NODE_ACTION);
+            List<ExtensionElement> postNodeActionElements = extensionElements.get(FlowModelExtElementConstant.EXT_POST_NODE_ACTION);
             if (CollUtil.isNotEmpty(postNodeActionElements)) {
                 ObjectNode postNodeActionObjectNode = FlowRelationUtil.createObjectNodeFromFields(NodeActionDTO.class, postNodeActionElements.get(0));
-                propertiesNode.set(POST_NODE_ACTION, postNodeActionObjectNode);
+                propertiesNode.set(FlowModelExtElementConstant.EXT_POST_NODE_ACTION, postNodeActionObjectNode);
             }
         }
     }
@@ -281,8 +270,8 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             // 多人审批规则
             addExtensionElementToUserTask(userTask, MULTI_APPROVAL_RULE, JsonConverterUtil.getProperty(MULTI_APPROVAL_RULE, elementNode));
             // 节点前后附件操作
-            addExtensionElementToUserTask(userTask, PRE_NODE_ACTION, JsonConverterUtil.getProperty(PRE_NODE_ACTION, elementNode));
-            addExtensionElementToUserTask(userTask, POST_NODE_ACTION, JsonConverterUtil.getProperty(POST_NODE_ACTION, elementNode));
+            addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_PRE_NODE_ACTION, JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_PRE_NODE_ACTION, elementNode));
+            addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_POST_NODE_ACTION, JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_POST_NODE_ACTION, elementNode));
             // 自动选人
             addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_AUTO_SELECT,
                     JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_AUTO_SELECT, elementNode));
