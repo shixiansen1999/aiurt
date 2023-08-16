@@ -2,6 +2,7 @@ package com.aiurt.modules.online.workflowapi.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.online.workflowapi.entity.ActCustomInterface;
 import com.aiurt.modules.online.workflowapi.service.IActCustomInterfaceService;
@@ -53,6 +54,7 @@ public class ActCustomInterfaceController extends BaseController<ActCustomInterf
 		if(ObjectUtil.isNotEmpty(actCustomInterface.getType())){
 			queryWrapper.eq("type",actCustomInterface.getType());
 		}
+		queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
 		Page<ActCustomInterface> page = new Page<>(pageNo, pageSize);
 		IPage<ActCustomInterface> pageList = actCustomInterfaceService.page(page, queryWrapper);
 		return Result.OK(pageList);

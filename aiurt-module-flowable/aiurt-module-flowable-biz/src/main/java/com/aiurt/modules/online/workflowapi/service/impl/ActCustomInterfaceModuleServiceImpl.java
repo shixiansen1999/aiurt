@@ -39,6 +39,8 @@ public class ActCustomInterfaceModuleServiceImpl extends ServiceImpl<ActCustomIn
 				baseMapper.updateById(parent);
 			}
 		}
+
+        actCustomInterfaceModule.setModuleCode(String.format("%s%s","m",System.currentTimeMillis()));
 		baseMapper.insert(actCustomInterfaceModule);
 	}
 
