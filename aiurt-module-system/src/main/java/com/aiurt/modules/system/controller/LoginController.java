@@ -102,6 +102,10 @@ public class LoginController {
 
 	@Autowired
 	private ISysThirdAccountService sysThirdAccountService;
+
+	@Autowired
+	private ILoginService loginService;
+
 	@ApiOperation("登录接口")
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public Result<JSONObject> login(@RequestBody SysLoginModel sysLoginModel){
@@ -723,137 +727,13 @@ public class LoginController {
 	@RequestMapping(value = "/webAuthorizationLogin", method = RequestMethod.GET)
 	private Result<JSONObject> webAuthorizationLogin(HttpServletRequest req,
 													 @RequestParam(name = "code") String code){
-		Result<JSONObject> result = new Result<JSONObject>();
-		ThirdAppWechatEnterpriseServiceImpl enterpriseService = SpringContextUtils.getBean(ThirdAppWechatEnterpriseServiceImpl.class);
-		String accessToken = enterpriseService.getAccessToken();
-		log.info("请求参数：code->{}, accessToken->{}", code, accessToken);
-		// 该接口用于根据code获取成员信息，适用于自建应用与代开发应用
-		String url = "https://home.ccqgqywx.com:10443/cgi-bin/user/getuserinfo?access_token="+accessToken+"&code="+code;
-		Map userinfoResult  =  RestUtil.get(url);
-		// 请请求结果{"errcode": 0,"errmsg": "ok","userid":"USERID","user_ticket": "USER_TICKET"}
-
-		log.info("请求url->{},请求结果：{}", url, JSONObject.toJSONString(userinfoResult));
-		if (Objects.isNull(userinfoResult)) {
-			throw new  AiurtBootException("获取企业微信用户信息失败！请检查应用的配置信息是否正确！");
-		}
-
-		String userId = (String)userinfoResult.getOrDefault("UserId", "");
-		// 用户票据
-		String userTicket = (String)userinfoResult.getOrDefault("user_ticket", "");
-
-		if (StrUtil.isBlank(userTicket)) {
-			throw new  AiurtBootException("获取企业微信用户票据失败！请检查应用的配置信息是否正确！");
-		}
-
-		// 获取访问用户敏感信息接口
-	    String userDetailUrl ="https://home.ccqgqywx.com:10443/cgi-bin/auth/getuserdetail?access_token="+accessToken+"&userid="+userId;
-		// 请求参数
-		JSONObject params = new JSONObject();
-		params.put("user_ticket", userTicket);
-		Map userDetailResult = RestUtil.post(userDetailUrl, params);
-		// 获取用户手机号
-		String phone = (String)userDetailResult.getOrDefault("mobile", "");
-		if (StrUtil.isBlank(phone)) {
-			throw new  AiurtBootException("获取企业微信用户手机号失败！请检查应用的配置信息是否正确！");
-		}
-		log.info("请求url->{},请求结果：{}", userDetailUrl, JSONObject.toJSONString(userDetailResult));
-		ISysUserService bean = SpringContextUtils.getBean(ISysUserService.class);
-		SysUser sysUser = bean.getUserByPhone(phone);
-		if (ObjectUtil.isEmpty(sysUser)){
-			return result.error500("该用户手机号:"+phone+"没注册, 请联系管理员添加账号！");
-		}
-		//第一次登录生成第三方登录信息数据
-		/*
-		 * 判断是否同步过的逻辑：
-		 * 1. 查询 sys_third_account（第三方账号表）是否有数据，如果有代表已同步
-		 */
-		String wechat = ThirdAppConfig.WECHAT_ENTERPRISE.toLowerCase();
-		ISysThirdAccountService sysThirdAccountService = SpringContextUtils.getBean(ISysThirdAccountService.class);
-		SysThirdAccount sysThirdAccount = sysThirdAccountService.getOneByThirdUserId(userId, wechat);
-
-		if (sysThirdAccount == null) {
-			sysThirdAccount = new SysThirdAccount();
-			sysThirdAccount.setSysUserId(sysUser.getId());
-			sysThirdAccount.setStatus(1);
-			sysThirdAccount.setDelFlag(0);
-			sysThirdAccount.setThirdType(wechat);
-			sysThirdAccount.setThirdUserId(userId);
-			sysThirdAccountService.saveOrUpdate(sysThirdAccount);
-		}
-		String username = sysUser.getUsername();
-		String password = sysUser.getPassword();
-		// 生成token
-		String token = JwtUtil.sign(username, password);
-		// 设置token缓存有效时间
-		putReids(sysUser, token, JwtUtil.EXPIRE_TIME * 2 / 1000);
-		// 获取用户部门信息
-		JSONObject obj = new JSONObject();
-		List<String> roleList = new ArrayList<String>();
-		ISysUserRoleService sysUserRoleService =SpringContextUtils.getBean(ISysUserRoleService.class);
-		List<SysUserRole> userRole = sysUserRoleService.list(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, sysUser.getId()));
-		if (userRole == null || userRole.size() <= 0) {
-			result.error500("未找到用户相关角色信息");
-		} else {
-			for (SysUserRole sysUserRole : userRole) {
-				ISysRoleService sysRoleService =SpringContextUtils.getBean(ISysRoleService.class);
-				final SysRole role = sysRoleService.getById(sysUserRole.getRoleId());
-				roleList.add(role.getRoleCode());
-			}
-			obj.put("roleList", roleList);
-		}
-		obj.put("token", token);
-		obj.put("userInfo", sysUser);
-		result.setResult(obj);
-		result.success("登录成功");
-		result.getResult().put("role", "1");
-		ISysBaseAPI sysBaseApi =SpringContextUtils.getBean(ISysBaseAPI.class);
-		req.getSession().setAttribute("username", req.getParameter("username"));
-		return result;
+		return loginService.webAuthorizationLogin(req, code);
 	}
+
 	@ApiOperation("生成签名")
 	@GetMapping(value = "/autograph")
 	public Result<JSONObject> autograph(@RequestParam(name = "url") String url) {
-		RedisUtil redisUtil =SpringContextUtils.getBean(RedisUtil.class);
-		ThirdAppWechatEnterpriseServiceImpl enterpriseService = SpringContextUtils.getBean(ThirdAppWechatEnterpriseServiceImpl.class);
-		String accessToken = enterpriseService.getAccessToken();
-		String ticket =(String)redisUtil.get("ticket");
-		if (ObjectUtil.isEmpty(ticket)){
-			Map response1 = RestUtil.get("https://home.ccqgqywx.com:10443/cgi-bin/get_jsapi_ticket?access_token="+accessToken);
-			log.info("请求结果:->{}", JSONObject.toJSONString(response1));
-			String ticket1 = (String)response1.get("ticket");
-			Integer expiresIn = (Integer) response1.get("expires_in");
-			Long time = (System.currentTimeMillis() / 1000);
-			String noncestr = "akltasdaWWWWW";
-			String string1 ="jsapi_ticket="+ticket1+"&noncestr="+noncestr+"&timestamp="+time+"&url="+url;
-			log.info("st->{}", string1);
-			String signature = sha1(string1);
-			JSONObject obj = new JSONObject();
-			obj.put("appId", thirdAppConfig.getWechatEnterprise().getClientId());
-			obj.put("timestamp",time);
-			obj.put("nonceStr",noncestr);
-			obj.put("signature",signature);
-			redisUtil.set("ticket",ticket1);
-			redisUtil.expire("ticket",expiresIn);
-			Result<JSONObject> result = new Result<JSONObject>();
-			result.setResult(obj);
-			result.success("操作成功");
-			return result;
-		}else {
-			Long time = (System.currentTimeMillis() / 1000);
-			String noncestr = "akltasdaWWWWW";
-			String string1 ="jsapi_ticket="+ticket+"&noncestr="+noncestr+"&timestamp="+time+"&url="+url;
-			System.out.println(string1);
-			String signature = sha1(string1);
-			JSONObject obj = new JSONObject();
-			obj.put("appId",thirdAppConfig.getWechatEnterprise().getClientId());
-			obj.put("timestamp",time);
-			obj.put("nonceStr",noncestr);
-			obj.put("signature",signature);
-			Result<JSONObject> result = new Result<JSONObject>();
-			result.setResult(obj);
-			result.success("操作成功");
-			return result;
-		}
+		return loginService.autograph(url);
 	}
 	/**
 	 *根据token查询用户信息
@@ -896,21 +776,6 @@ public class LoginController {
 
 	}
 
-
-	public static void main(String[] args) {
-		//获取当前系统RSA加密的公钥
-		RSA rsa = new RSA();
-		String publicKey = rsa.getPublicKeyBase64();
-		String privateKey = rsa.getPrivateKeyBase64();
-
-
-		RSA rsa1 = new RSA(null,"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtp6TEWlM6HZQk3wcAODWcsQdIXKL+JBwaUKeu7JR3+PPhAmwvKMXgB3pj+UpK50ycyPISgj5WMRCMquOXa8KjQmNSmm3hG99sSIVnyTXpx/opGlzDQih4utg0MYE08a575Hi3wvrbbGHHgHNFUPL8WqyqSJlj95QVwp1aqFP9FEWg5Sh4Ps1zX58i5XFH/TLFYiI4OeAALKSpbfcBaAsNN7noKsL4iS4gVVnd6tqlt3ubUuzYQ7Q0uQBfNa5GtA2PbirA56ue12Lqh1y5HhnLp+aH9+/ga7HWuhWFtSyXtrK2SD3WGXhUIrXFlpgqj0cPBik4HT8S0yJ7wdy/Oa7EQIDAQAB");
-		//对秘钥进行加密传输，防止篡改数据
-		String encryptSecret = rsa1.encryptBase64("cadfb4a6-404b-4a8b-9552-55bc56141875", CharsetUtil.CHARSET_UTF_8, KeyType.PublicKey);
-
-		String encryptUserid = rsa1.encryptBase64("1",CharsetUtil.CHARSET_UTF_8,KeyType.PublicKey);
-		System.out.println(encryptUserid);
-	}
 
 	@GetMapping("/getWeaverToken")
 	@ApiOperation("获取泛微token信息")
