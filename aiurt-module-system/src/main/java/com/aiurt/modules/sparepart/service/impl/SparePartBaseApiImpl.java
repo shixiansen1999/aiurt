@@ -384,7 +384,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                                     .eq(SparePartStockNum::getWarehouseCode, lendStockDTO.getWarehouseCode())
                                     .eq(SparePartStockNum::getDelFlag, CommonConstant.DEL_FLAG_0);
                             SparePartStockNum stockNum = sparePartStockNumMapper.selectOne(numLambdaQueryWrapper);
-                            if (stockNum != null) {
+                            if (ObjectUtil.isNotNull(stockNum)) {
                                 Integer newNum = stockNum.getNewNum();
                                 //如果全新数量小于新组件数量，则从已使用数量中扣除
                                 if (newNum < lendStockDTO.getNewSparePartNum()) {
@@ -393,8 +393,8 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                                 } else {
                                     stockNum.setNewNum(newNum - lendStockDTO.getNewSparePartNum());
                                 }
+                                sparePartStockNumMapper.updateById(stockNum);
                             }
-                            sparePartStockNumMapper.updateById(stockNum);
                         }
                         SparePartScrap scrap = new SparePartScrap();
                         scrap.setStatus(1);
