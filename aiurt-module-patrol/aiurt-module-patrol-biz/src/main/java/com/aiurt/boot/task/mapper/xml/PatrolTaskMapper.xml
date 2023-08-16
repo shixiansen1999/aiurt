@@ -118,6 +118,7 @@
         t1.stationSort ASC;
     </select>
     <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
+        SELECT a.* from (
         select DISTINCT t1.id,
         t1.code,
         t1.name,
@@ -139,7 +140,6 @@
 <!--        endUserName,-->
         concat(DATE_FORMAT(t1.start_time, '%H:%i'), "-", DATE_FORMAT(t1.end_time, '%H:%i')) as startEndTime
         from patrol_task t1
-        LEFT JOIN patrol_task_organization pto ON t1.`code` = pto.task_code AND pto.del_flag = 0
         where t1.status in (6, 7)
         and t1.del_flag = 0
         and t1.omit_status = 0
@@ -197,7 +197,9 @@
                 #{item}
             </foreach>
         </if>
-        ORDER BY t1.`status` asc, t1.create_time desc
+        ORDER BY t1.`status` asc, t1.create_time desc) a
+        LEFT JOIN patrol_task_organization pto ON a.`code` = pto.task_code AND pto.del_flag = 0
+        group by a.id
     </select>
     <select id="getOrganizationName" resultType="java.lang.String">
         SELECT t2.depart_name
