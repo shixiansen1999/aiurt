@@ -288,8 +288,8 @@
     <select id="getSubmitNum" resultType="java.lang.Integer">
         select count(*) from t_work_log
         where status = 1 AND del_flag = 0
-        AND DATE_FORMAT(submit_time, "%Y-%m-%d") >= DATE_FORMAT(#{startDate}, "%Y-%m-%d")
-        AND DATE_FORMAT(submit_time, "%Y-%m-%d") &lt;= DATE_FORMAT(#{endDate}, "%Y-%m-%d")
+        AND DATE_FORMAT(log_time, "%Y-%m-%d") >= DATE_FORMAT(#{startDate}, "%Y-%m-%d")
+        AND DATE_FORMAT(log_time, "%Y-%m-%d") &lt;= DATE_FORMAT(#{endDate}, "%Y-%m-%d")
         <if test="orgIdList != null and orgIdList.size() != 0">
             AND org_id IN
             <foreach collection="orgIdList" item="item" open="(" separator="," close=")">

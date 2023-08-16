@@ -1604,8 +1604,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         queryWrapper.eq(WorkLog::getStatus, 1);
         // 权限部门id过滤
         queryWrapper.in((!isAdmin && CollUtil.isNotEmpty(orgIdList)), WorkLog::getOrgId, orgIdList);
-        queryWrapper.ge(WorkLog::getSubmitTime, DateUtil.beginOfDay(startDate));
-        queryWrapper.le(WorkLog::getSubmitTime, DateUtil.endOfDay(endDate));
+        queryWrapper.ge(WorkLog::getLogTime, DateUtil.beginOfDay(startDate));
+        queryWrapper.le(WorkLog::getLogTime, DateUtil.endOfDay(endDate));
         queryWrapper.orderByDesc(WorkLog::getSubmitTime);
         queryWrapper.last("limit 7");
         // 查询已确认、待确认的字段值
