@@ -67,7 +67,7 @@ public class LoginServiceImpl implements ILoginService {
 
         // 获取企业微信域名
         SysParamModel sysParamModel = sysParamApi.selectByCode(WX_HOST_CONFIG_VALUE);
-        String wechatHost = Objects.isNull(sysParamModel) ? WX_HOST : sysParamModel.getValue();
+        String wechatHost = Objects.isNull(sysParamModel) ? WX_HOST : StrUtil.isBlank(sysParamModel.getValue()) ? WX_HOST : sysParamModel.getValue();
         // 该接口用于根据code获取成员信息，适用于自建应用与代开发应用
         String url = "https://"+wechatHost+"/cgi-bin/user/getuserinfo?access_token="+accessToken+"&code="+code;
         JSONObject userinfoResult  =  RestUtil.get(url);
@@ -81,7 +81,7 @@ public class LoginServiceImpl implements ILoginService {
 
         // 公有云部署需要user_ticket 获取用户信息
         SysParamModel wxPrivateCloudConfig = sysParamApi.selectByCode(WX_PRIVATE_CLOUD);
-        String privateCloudValue = Objects.isNull(wxPrivateCloudConfig) ? WX_PRIVATE_CLOUD_VALUE : wxPrivateCloudConfig.getValue();
+        String privateCloudValue = Objects.isNull(wxPrivateCloudConfig)?WX_PRIVATE_CLOUD_VALUE:StrUtil.isBlank(wxPrivateCloudConfig.getValue())?WX_PRIVATE_CLOUD_VALUE:wxPrivateCloudConfig.getValue();
 
         String phone = "";
 
@@ -199,7 +199,7 @@ public class LoginServiceImpl implements ILoginService {
         String ticket =(String)redisUtil.get("ticket");
         if (ObjectUtil.isEmpty(ticket)){
             SysParamModel sysParamModel = sysParamApi.selectByCode(WX_HOST_CONFIG_VALUE);
-            String wechatHost = Objects.isNull(sysParamModel) ? WX_HOST : sysParamModel.getValue();
+            String wechatHost = Objects.isNull(sysParamModel) ? WX_HOST : StrUtil.isBlank(sysParamModel.getValue()) ? WX_HOST : sysParamModel.getValue();
             JSONObject resultJson = RestUtil.get("https://"+wechatHost+"/cgi-bin/get_jsapi_ticket?access_token="+accessToken);
             log.info("请求结果:->{}", JSONObject.toJSONString(resultJson));
             String ticket1 = resultJson.getString("ticket");
