@@ -492,4 +492,8 @@ public interface SysParamCodeConstant {
      * 故障备件更换是否更换一次，走一次备件流程
      */
     String SPARE_PART_EXTRA = "spare_part_extra";
+    /**
+     * 培训编码-是否根据线路生成编码
+     */
+    String TRAIN_TASK_CODE="train_task_code";
 }
