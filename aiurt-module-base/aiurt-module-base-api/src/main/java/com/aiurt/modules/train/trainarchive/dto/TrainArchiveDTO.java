@@ -2,7 +2,9 @@ package com.aiurt.modules.train.trainarchive.dto;
 
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.common.aspect.annotation.UserFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.aiurt.modules.train.traindegreerecord.entity.TrainDegreeRecord;
 import com.aiurt.modules.train.trainjobchangerecord.entity.TrainJobChangeRecord;
@@ -44,6 +46,7 @@ public class TrainArchiveDTO extends DictEntity implements Serializable {
 
 	/**用户id*/
     @ApiModelProperty(value = "用户id")
+    @UserFilterColumn
     private String userId;
 
 	/**名字*/
@@ -121,6 +124,7 @@ public class TrainArchiveDTO extends DictEntity implements Serializable {
     private String workNo;
 
     @ApiModelProperty(value = "部门code")
+    @DeptFilterColumn
     private String orgCode;
 
 	/**delFlag*/
