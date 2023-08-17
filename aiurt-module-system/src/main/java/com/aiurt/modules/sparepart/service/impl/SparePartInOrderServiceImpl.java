@@ -575,9 +575,10 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
                 sparePartInOrder.setOutsourceRepairNum(Integer.valueOf(outsourceRepairNum));
             }
 
-            if (numIsNum && newNumIsNum && usedNumIsNum && (Integer.parseInt(newNum) + Integer.parseInt(usedNum) != Integer.parseInt(num))){
-                errorMessage.append("全新数量+已使用数量应当等于入库数量，");
-            }
+            // 不加全新数量+已使用数量应当等于入库数量的限制
+            // if (numIsNum && newNumIsNum && usedNumIsNum && (Integer.parseInt(newNum) + Integer.parseInt(usedNum) != Integer.parseInt(num))){
+            //     errorMessage.append("全新数量+已使用数量应当等于入库数量，");
+            // }
         }
 
     }
