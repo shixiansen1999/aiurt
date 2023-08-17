@@ -138,10 +138,6 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
             SparePartStock stock = new SparePartStock();
             stock.setMaterialCode(partInOrder.getMaterialCode());
             stock.setNum(partInOrder.getNum());
-            stock.setNewNum(partInOrder.getNewNum());
-            stock.setUsedNum(partInOrder.getUsedNum());
-            stock.setScrapNum(partInOrder.getScrapNum());
-            stock.setOutsourceRepairNum(partInOrder.getOutsourceRepairNum());
             stock.setWarehouseCode(partInOrder.getWarehouseCode());
             //存仓库组织机构的关联班组
             String orgCode = sysBaseApi.getDepartByWarehouseCode(partInOrder.getWarehouseCode());

@@ -10,6 +10,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
@@ -26,7 +27,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -59,6 +62,8 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
     private ISparePartStockInfoService sparePartStockInfoService;
     @Autowired
     private CommonAPI commonApi;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
     /**
      * 查询列表
      * @param page
@@ -67,6 +72,10 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
      */
     @Override
     public List<SparePartStock> selectList(Page page, SparePartStock sparePartStock){
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPARE_PART_ZERO);
+        if (ObjectUtil.isNotNull(sysParamModel)) {
+            sparePartStock.setSparePartZero(sysParamModel.getValue());
+        }
         return sparePartStockMapper.readAll(page,sparePartStock);
     }
     /**
