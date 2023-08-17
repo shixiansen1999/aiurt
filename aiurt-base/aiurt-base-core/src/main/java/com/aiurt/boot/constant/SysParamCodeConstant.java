@@ -485,6 +485,10 @@ public interface SysParamCodeConstant {
      * 故障备件更换是否更换一次，走一次备件流程
      */
     String SPARE_PART_EXTRA = "spare_part_extra";
+    /**
+     * 备件库存信息是否查库存为零的数据
+     */
+    String SPARE_PART_ZERO = "spare_part_zero";
 
     /**
      * 工作日志保存检修内容是否需要拼接标准表
