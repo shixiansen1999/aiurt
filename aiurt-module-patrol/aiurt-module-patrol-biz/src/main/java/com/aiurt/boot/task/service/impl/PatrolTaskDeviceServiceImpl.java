@@ -249,9 +249,13 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 taskDevice.setCheckResult(PatrolConstant.RESULT_NORMAL);
             }
             patrolTaskDeviceMapper.updateById(taskDevice);
+
+            // 巡视工单将提交时间和计算时长都用nowDate，防止程序运行时有时间差导致提交时间-开始时间不等于时长
+            Date nowDate = new Date();
+
             LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.set(PatrolTaskDevice::getUserId, sysUser.getId())
-                    .set(PatrolTaskDevice::getCheckTime, LocalDateTime.now())
+                    .set(PatrolTaskDevice::getCheckTime, nowDate)
                     .set(PatrolTaskDevice::getStatus, PatrolConstant.BILL_COMPLETE)
                     .set(PatrolTaskDevice::getMac, patrolTaskDevice.getMac())
                     .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
@@ -272,7 +276,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             Date startTime = taskDevice.getStartTime();
             int duration = 0;
             if (ObjectUtil.isNotNull(startTime)) {
-                duration = (int) DateUtil.between(startTime, new Date(), DateUnit.SECOND);
+                duration = (int) DateUtil.between(startTime, nowDate, DateUnit.SECOND);
             }
             updateWrapper.set(PatrolTaskDevice::getDuration, duration);
 
