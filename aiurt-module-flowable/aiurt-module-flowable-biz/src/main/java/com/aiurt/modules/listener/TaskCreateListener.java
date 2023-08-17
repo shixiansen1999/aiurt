@@ -87,7 +87,8 @@ public class TaskCreateListener implements FlowableEventListener {
         String processInstanceId = taskEntity.getProcessInstanceId();
         // 流程节点定义id
         String taskDefinitionKey = taskEntity.getTaskDefinitionKey();
-
+        // 任务节点前附加操作
+        FlowableNodeActionUtils.processTaskData(processDefinitionId,taskDefinitionKey,processInstanceId,FlowModelExtElementConstant.EXT_PRE_NODE_ACTION);
 
         List<String> list = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
                 .getVariable(processInstanceId, FlowVariableConstant.ASSIGNEE_LIST + taskDefinitionKey, List.class);
@@ -198,8 +199,6 @@ public class TaskCreateListener implements FlowableEventListener {
             }
         }
 
-        // 任务节点前附加操作
-        FlowableNodeActionUtils.processTaskData(processDefinitionId,taskDefinitionKey,processInstanceId,FlowModelExtElementConstant.EXT_PRE_NODE_ACTION);
         // 创建任务
         buildToDoList(taskEntity, instance, taskExt, userNameList);
 

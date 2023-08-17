@@ -203,7 +203,7 @@ public class HttpUtils {
             // 构建参数字符串
             if (MapUtil.isNotEmpty(params)) {
                 log.info("request params: {}",params);
-                url = String.format("%s?%s", url, buildQueryString(params));
+                url = String.format("%s%s%s", url, url.contains("?") ? "&" : "?", buildQueryString(params));
             }
 
             URL requestUrl = new URL(url);

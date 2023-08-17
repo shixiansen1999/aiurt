@@ -160,6 +160,11 @@ public class FlowableNodeActionUtils {
         if (ObjectUtil.isNotEmpty(actCustomState)) {
             actCustomState.setState(stateValue);
             actCustomStateService.updateById(actCustomState);
+        } else {
+            ActCustomState addActCustomState = new ActCustomState();
+            addActCustomState.setProcessInstanceId(processInstanceId);
+            addActCustomState.setState(stateValue);
+            actCustomStateService.save(addActCustomState);
         }
     }
 
