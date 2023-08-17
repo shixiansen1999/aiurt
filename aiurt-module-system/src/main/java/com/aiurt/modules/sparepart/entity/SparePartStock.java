@@ -183,4 +183,10 @@ public class SparePartStock implements Serializable {
     @ApiModelProperty(value = "是否是易耗品：1是，0不是")
     @TableField(exist = false)
     private Integer consumablesType;
+    /**
+     * 备件库存信息是否查库存为零的数据
+     */
+    @ApiModelProperty(value = "备件库存信息是否查库存为零的数据：1是，0不是")
+    @TableField(exist = false)
+    private String sparePartZero;
 }

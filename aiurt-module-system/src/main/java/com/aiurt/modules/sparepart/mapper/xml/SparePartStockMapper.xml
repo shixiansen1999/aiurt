@@ -44,7 +44,9 @@
         AND dict3.id = d3.dict_id)
         WHERE
         spare_part_stock.del_flag =0
-        and spare_part_stock.num>0
+        <if test="stock.sparePartZero!=null and stock.sparePartZero!='' and stock.sparePartZero == 0 ">
+            and spare_part_stock.num>0
+        </if>
         <if test="stock.materialCode!=null and stock.materialCode!=''">
             and spare_part_stock.material_code like concat('%',  #{stock.materialCode}, '%')
         </if>

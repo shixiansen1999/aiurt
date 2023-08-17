@@ -496,4 +496,8 @@ public interface SysParamCodeConstant {
      * 培训编码-是否根据线路生成编码
      */
     String TRAIN_TASK_CODE="train_task_code";
+    /**
+     * 备件库存信息是否查库存为零的数据
+     */
+    String SPARE_PART_ZERO = "spare_part_zero";
 }

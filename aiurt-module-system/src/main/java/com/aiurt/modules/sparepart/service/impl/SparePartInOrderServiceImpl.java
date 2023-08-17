@@ -138,10 +138,6 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
             SparePartStock stock = new SparePartStock();
             stock.setMaterialCode(partInOrder.getMaterialCode());
             stock.setNum(partInOrder.getNum());
-            stock.setNewNum(partInOrder.getNewNum());
-            stock.setUsedNum(partInOrder.getUsedNum());
-            stock.setScrapNum(partInOrder.getScrapNum());
-            stock.setOutsourceRepairNum(partInOrder.getOutsourceRepairNum());
             stock.setWarehouseCode(partInOrder.getWarehouseCode());
             //存仓库组织机构的关联班组
             String orgCode = sysBaseApi.getDepartByWarehouseCode(partInOrder.getWarehouseCode());
@@ -575,9 +571,10 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
                 sparePartInOrder.setOutsourceRepairNum(Integer.valueOf(outsourceRepairNum));
             }
 
-            if (numIsNum && newNumIsNum && usedNumIsNum && (Integer.parseInt(newNum) + Integer.parseInt(usedNum) != Integer.parseInt(num))){
-                errorMessage.append("全新数量+已使用数量应当等于入库数量，");
-            }
+            // 不加全新数量+已使用数量应当等于入库数量的限制
+            // if (numIsNum && newNumIsNum && usedNumIsNum && (Integer.parseInt(newNum) + Integer.parseInt(usedNum) != Integer.parseInt(num))){
+            //     errorMessage.append("全新数量+已使用数量应当等于入库数量，");
+            // }
         }
 
     }
