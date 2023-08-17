@@ -4,21 +4,17 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.common.enums.MultiApprovalRuleEnum;
-import com.aiurt.modules.flow.utils.FlowElementUtil;
-import com.aiurt.modules.multideal.service.IMultiInTaskService;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
+import com.aiurt.modules.multideal.service.IMultiInTaskService;
 import com.aiurt.modules.multideal.service.IMultiInstanceUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.flowable.bpmn.model.UserTask;
-import org.flowable.engine.HistoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.task.api.Task;
-import org.flowable.task.service.impl.persistence.entity.TaskEntityImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,9 +40,6 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
     @Autowired
     private TaskService taskService;
 
-    @Autowired
-    private HistoryService historyService;
-
 
     /**
      * 判断是否为多实例任务
@@ -63,23 +56,15 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
             log.info("没有查询节点（{}）流转属性配置", nodeId);
             return false;
         }
-        // 统一
-        long count = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(nodeId).count();
-        if (count>1) {
-            return true;
-        }else {
-            return false;
-        }
 
-        /*String userType = actCustomTaskExt.getUserType();
-        if (StrUtil.isBlank(userType)) {
+        // 获取节点的用户
+        List<String> currentUserList = multiInstanceUserService.getCurrentUserList(task.getId());
+
+        if (CollUtil.isEmpty(currentUserList)) {
+            log.info("当前任务不是多实例，taskId：{}", task.getId());
             return false;
         }
-        MultiApprovalRuleEnum approvalRuleEnum = MultiApprovalRuleEnum.getByCode(userType);
-        if (Objects.isNull(approvalRuleEnum)) {
-            return false;
-        }
-        return true;*/
+        return true;
     }
 
     /**
@@ -114,7 +99,7 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
             case TASK_MULTI_INSTANCE_TYPE_2:
                 return areParallelMultiInTask(task);
             case TASK_MULTI_INSTANCE_TYPE_1:
-                return true;
+                return false;
             default:
                 return false;
         }
@@ -143,6 +128,27 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 判断当前任务是否需要提交了
+     *
+     * @param task
+     * @return
+     */
+    @Override
+    public Boolean isCompleteTask(Task task) {
+        // 判断是否多实例的最后一步， 如果不是最后一个不需要提交, 但是不是多实例的时候需要提交，需要设置流程办理人
+        Boolean areMultiInTask = this.areMultiInTask(task);
+        // 判断当前任务是否为多实例任务
+        Boolean isMultiInTask = this.isMultiInTask(task);
+        //  不是多是任务提交,
+        Boolean flag = !isMultiInTask ;
+        // 多实例, 多实例最后一步需要为ture，执行自从选人
+        if (isMultiInTask) {
+            flag = !areMultiInTask;
+        }
+        return flag;
     }
 
     /**

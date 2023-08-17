@@ -1944,9 +1944,9 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (isAutoSelect == 1) {
             return Collections.emptyList();
         }
-        // 多实例是否最后一步
-        Boolean multiInTask = multiInTaskService.areMultiInTask(task);
-        if (!multiInTask) {
+        // 多实例是否最后一步，ture
+        Boolean completeTask = multiInTaskService.isCompleteTask(task);
+        if (!completeTask) {
             return Collections.emptyList();
         }
 

@@ -18,4 +18,7 @@ public class ProcessParticipantsReqDTO {
     private String taskId;
     @ApiModelProperty("表单数据")
     private Map<String,Object> busData;
+
+    @ApiModelProperty("流程标识")
+    private String modelKey;
 }
