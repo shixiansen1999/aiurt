@@ -3,6 +3,7 @@ package com.aiurt.modules.train.trainarchive.controller;
 import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.train.trainarchive.dto.TrainArchiveDTO;
 import com.aiurt.modules.train.trainarchive.entity.TrainArchive;
@@ -55,6 +56,7 @@ public class TrainArchiveController extends BaseController<TrainArchive, ITrainA
     @AutoLog(value = "培训档案-分页列表查询")
     @ApiOperation(value = "培训档案-分页列表查询", notes = "培训档案-分页列表查询")
     @GetMapping(value = "/list")
+    @PermissionData(pageComponent = "training/File")
     public Result<IPage<TrainArchiveDTO>> queryPageList(TrainArchiveDTO trainArchiveDTO,
                                                         @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {

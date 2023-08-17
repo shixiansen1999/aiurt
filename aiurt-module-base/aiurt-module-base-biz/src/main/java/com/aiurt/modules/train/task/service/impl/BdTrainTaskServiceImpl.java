@@ -35,6 +35,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
@@ -569,6 +570,8 @@ public String taskCode(Integer trainLine){
 	}
 	@Override
 	public Page<BdTrainTask> queryPageList(Page<BdTrainTask> pageList, BdTrainTask bdTrainTask) {
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		bdTrainTask.setTaskTeamCode(sysUser.getOrgCode());
 		List<BdTrainTask> trainTasks = bdTrainTaskMapper.queryPageList(pageList, bdTrainTask);
 		trainTasks.forEach(b->{
 			List<BdTrainTaskUser> userListById = bdTrainTaskUserMapper.getUserListById(b.getId());
