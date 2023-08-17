@@ -20,10 +20,7 @@ import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
-import com.aiurt.boot.task.mapper.PatrolCheckResultMapper;
-import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
-import com.aiurt.boot.task.mapper.PatrolTaskMapper;
-import com.aiurt.boot.task.mapper.PatrolTaskStationMapper;
+import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.CustomCellMergeHandler;
 import com.aiurt.boot.task.service.*;
 import com.aiurt.common.util.FilePrintUtils;
@@ -77,6 +74,8 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
     private PatrolStandardMapper patrolStandardMapper;
     @Autowired
     private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private PatrolAccompanyMapper patrolAccompanyMapper;
 
     /**
      * 处理文件打印数据，并返回打印文件路径
@@ -339,9 +338,48 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
        }else if("network_manage.xlsx".equals(excelName)){
            patrolData = printPatrolTaskByNetworkManage(taskId,standardId,headerMap);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
+       } else if ("equipmentInspection.xlsx".equals(excelName)) {
+           patrolData = getEquipmentInspection(taskId,standardId,headerMap);
+           excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
        }
 
        return excelWriter;
+    }
+
+    private List<PrintDTO> getEquipmentInspection(String taskId, String standardId, Map<String, Object> headerMap) {
+        List<PrintDTO> getEquipmentInspection = new ArrayList<>();
+        List<PatrolStationDTO> billGangedInfo = getBillGangedInfo(taskId,standardId);
+        for (PatrolStationDTO dto : billGangedInfo) {
+            //获取检修项
+            List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
+            List<PatrolCheckResultDTO> checkResultAll = patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
+            //查询同行人
+            List<String> userNames = patrolAccompanyMapper.getUserNames(collect);
+            headerMap.put("userNames",userNames.stream().collect(Collectors.joining(",")));
+            //父级
+            List<PatrolCheckResultDTO> parentDTOList = checkResultAll.stream()
+                    .filter(c -> Objects.nonNull(c)
+                            &&Objects.nonNull(c.getCheck())&& c.getCheck() == 0)
+                    .collect(Collectors.toList());
+
+            StringBuilder remark = new StringBuilder(); AtomicInteger i = new AtomicInteger(1);
+            parentDTOList.forEach(p-> {
+                PrintDTO printDTO = new PrintDTO();
+                List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())&& c.getCheckResult() == 0).collect(Collectors.toList());
+                if (CollUtil.isNotEmpty(checkDTOs)){
+                    printDTO.setResult("☐正常 ☑异常");
+                    checkDTOs.forEach(c->{
+                        remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
+                        i.getAndIncrement();
+                    });
+                }else {
+                    printDTO.setResult("☑正常 ☐异常");
+                }
+                getEquipmentInspection.add(printDTO);
+            });
+            headerMap.put("remark",remark.toString());
+        }
+        return getEquipmentInspection;
     }
 
     private List<PrintDTO> getCctvSystem(String taskId, Map<String, Object> headerMap, String standardId) {
