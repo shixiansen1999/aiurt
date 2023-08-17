@@ -307,4 +307,11 @@ public interface FlowApiService {
      * @return
      */
     List<ProcessParticipantsInfoDTO> getProcessParticipantsInfo(ProcessParticipantsReqDTO processParticipantsReqDTO);
+
+    /**
+     *
+     * @param processParticipantsReqDTO
+     * @return
+     */
+    List<ProcessParticipantsInfoDTO> getProcessParticipantsInfoWithOutStart(ProcessParticipantsReqDTO processParticipantsReqDTO);
 }

@@ -333,7 +333,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 设置签收
         String assignee = task.getAssignee();
 
-        if (StrUtil.isNotBlank(assignee) && StrUtil.equalsIgnoreCase(loginUser.getUsername(), assignee)) {
+        if (StrUtil.isNotBlank(assignee) && !StrUtil.equalsIgnoreCase(loginUser.getUsername(), assignee)) {
             throw new AiurtBootException("该任务已被其他人签收！");
         }
 
@@ -2544,4 +2544,12 @@ public class FlowApiServiceImpl implements FlowApiService {
         return sequenceFlows;
     }
 
+    /**
+     * @param processParticipantsReqDTO
+     * @return
+     */
+    @Override
+    public List<ProcessParticipantsInfoDTO> getProcessParticipantsInfoWithOutStart(ProcessParticipantsReqDTO processParticipantsReqDTO) {
+        return null;
+    }
 }
