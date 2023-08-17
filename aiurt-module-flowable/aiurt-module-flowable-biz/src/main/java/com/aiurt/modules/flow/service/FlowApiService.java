@@ -307,4 +307,11 @@ public interface FlowApiService {
      * @return
      */
     List<ProcessParticipantsInfoDTO> getProcessParticipantsInfo(ProcessParticipantsReqDTO processParticipantsReqDTO);
+
+    /**
+     * 获取首个任务的选人数据
+     * @param processParticipantsReqDTO
+     * @return
+     */
+    List<ProcessParticipantsInfoDTO> getProcessParticipantsInfoWithOutStart(ProcessParticipantsReqDTO processParticipantsReqDTO);
 }

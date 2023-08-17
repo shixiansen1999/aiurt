@@ -183,6 +183,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(nodeId).list();
 
             taskList.stream().forEach(task -> {
+                task.setDescription("");
                 taskService.complete(task.getId());
             });
         }

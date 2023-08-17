@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.cmd.ConditionExpressionCmd;
+import com.aiurt.modules.cmd.ConditionExpressionV2Cmd;
 import com.aiurt.modules.common.constant.FlowCustomVariableConstant;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.manage.entity.ActCustomVersion;
@@ -17,17 +18,14 @@ import com.aiurt.modules.modeler.entity.ActCustomVariable;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.modeler.service.IActCustomVariableService;
-import com.aiurt.modules.modeler.service.impl.ActCustomVariableServiceImpl;
 import com.aiurt.modules.utils.ReflectionService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.model.*;
 import org.flowable.common.engine.impl.interceptor.CommandExecutor;
-import org.flowable.engine.HistoryService;
-import org.flowable.engine.ProcessEngines;
-import org.flowable.engine.RepositoryService;
-import org.flowable.engine.RuntimeService;
+import org.flowable.engine.*;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.Execution;
@@ -76,6 +74,9 @@ public class FlowElementUtil {
 
     @Autowired
     private ISysBaseAPI sysBaseApi;
+
+    @Autowired
+    private ManagementService managementService;
 
     /**
      * 获取第一个用户节点, 最近的一个版本
@@ -378,8 +379,8 @@ public class FlowElementUtil {
 
     /**
      * 获取下一个代办的节点
-     * @param execution
-     * @param sourceFlowElement
+     * @param execution 执行实例
+     * @param sourceFlowElement 源节点
      * @return
      */
     public List<FlowElement> getTargetFlowElement(Execution execution, FlowElement sourceFlowElement, Map<String, Object> busData) {
@@ -390,10 +391,26 @@ public class FlowElementUtil {
     }
 
     /**
+     * 根据流程标识获取下一个代办的节点
+     * @param modelKey 流程标识
+     * @param sourceFlowElement 源节点
+     * @return
+     */
+    public List<FlowElement> getTargetFlowElement(String modelKey, FlowElement sourceFlowElement, Map<String, Object> busData) {
+        List<FlowElement> flowElementList = new ArrayList<>();
+        Map<String, Object> variables = getVariablesByModelKey(busData, modelKey);
+        getTargetFlowElement(sourceFlowElement, flowElementList, variables);
+        return flowElementList;
+    }
+
+
+
+
+    /**
      * 获取下一个代办的节点
-     * @param execution
-     * @param sourceFlowElement
-     * @param flowElementList
+     * @param execution 执行实例
+     * @param sourceFlowElement  源节点
+     * @param flowElementList 结果集
      * @return
      */
     public void getTargetFlowElement(Execution execution, FlowElement sourceFlowElement, List<FlowElement> flowElementList, Map<String, Object> variables) {
@@ -434,6 +451,48 @@ public class FlowElementUtil {
     }
 
     /**
+     * 获取下一个代办的节点, 没有流程实例
+     * @param sourceFlowElement 源节点
+     * @param flowElementList  结果集
+     * @return
+     */
+    public void getTargetFlowElement(FlowElement sourceFlowElement, List<FlowElement> flowElementList, Map<String, Object> variables) {
+        //遇到下一个节点是UserTask就返回
+        if (sourceFlowElement instanceof FlowNode) {
+            //当前节点必须是FlowNode才做处理，比如UserTask或者GateWay
+            FlowNode thisFlowNode = (FlowNode) sourceFlowElement;
+            if (thisFlowNode.getOutgoingFlows().size() == 1) {
+                //如果只有一条连接线，直接找这条连接线的出口节点，然后继续递归获得接下来的节点
+                SequenceFlow sequenceFlow = thisFlowNode.getOutgoingFlows().get(0);
+                FlowElement targetFlowElement = sequenceFlow.getTargetFlowElement();
+                if (targetFlowElement instanceof UserTask) {
+                    flowElementList.add(targetFlowElement);
+                } else {
+                    getTargetFlowElement(targetFlowElement, flowElementList, variables);
+                }
+            } else if (thisFlowNode.getOutgoingFlows().size() > 1) {
+                //如果有多条连接线，遍历连接线，找出一个连接线条件执行为True的，获得它的出口节点
+                for (SequenceFlow sequenceFlow : thisFlowNode.getOutgoingFlows()) {
+                    boolean result = true;
+                    if (StrUtil.isNotBlank(sequenceFlow.getConditionExpression())) {
+                        variables.put("day", 3);
+                        //计算连接线上的表达式
+                        result = managementService.executeCommand(new ConditionExpressionV2Cmd(sequenceFlow.getConditionExpression(), variables));
+                    }
+                    if (result) {
+                        FlowElement targetFlowElement = sequenceFlow.getTargetFlowElement();
+                        if (targetFlowElement instanceof UserTask) {
+                            flowElementList.add(targetFlowElement);
+                        } else {
+                            getTargetFlowElement(targetFlowElement, flowElementList, variables);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      *
      * @param activityId  id of the multi-instance activity (id attribute in the BPMN XML)
      * @param  parentExecutionId  can be the process instance id
@@ -462,19 +521,7 @@ public class FlowElementUtil {
         String processDefinitionKey = processInstance.getProcessDefinitionKey();
 
         // 流程模板信息
-        LambdaQueryWrapper<ActCustomModelInfo> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(ActCustomModelInfo::getModelKey, processDefinitionKey).last("limit 1");
-        ActCustomModelInfo one = modelInfoService.getOne(queryWrapper);
-
-        // 非系统变量
-        List<ActCustomVariable> list = variableService.list(new LambdaQueryWrapper<ActCustomVariable>().eq(ActCustomVariable::getModelId, one.getModelId())
-                .eq(ActCustomVariable::getVariableType, 1).eq(ActCustomVariable::getType, 0));
-        if (Objects.nonNull(busData) && CollUtil.isNotEmpty(list)) {
-            list.stream().forEach(variable -> {
-                String variableName = variable.getVariableName();
-                variableData.put(variableName, busData.get(variableName));
-            });
-        }
+        setVariableData(busData, variableData, processDefinitionKey);
 
         // 流程发起人
         String startUserId = processInstance.getStartUserId();
@@ -488,5 +535,58 @@ public class FlowElementUtil {
 
         // 内置的系统变量
         return variableData;
+    }
+
+
+    /**
+     * 根据流程标识获取流程变量
+     * @param busData
+     * @param modelKey
+     * @return
+     */
+    public Map<String, Object> getVariablesByModelKey(Map<String, Object> busData, String modelKey) {
+        Map<String, Object> variableData = new HashMap<>(16);
+
+
+        // 流程key
+        String processDefinitionKey = modelKey;
+        setVariableData(busData, variableData, processDefinitionKey);
+
+        // 流程发起人
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String startUserId = loginUser.getUsername();
+
+        // 发起人角色， 部门， 岗位
+        LoginUser user = sysBaseApi.getUserByName(startUserId);
+        variableData.put(FlowCustomVariableConstant.ROLE_INITIATOR, user.getRoleCodes());
+        variableData.put(FlowCustomVariableConstant.POSITION_INITIATOR, user.getPost());
+        variableData.put(FlowCustomVariableConstant.ORG_INITIATOR, user.getOrgId());
+
+
+        // 内置的系统变量
+        return variableData;
+    }
+
+    /**
+     * 构建流程变量
+     * @param busData
+     * @param variableData
+     * @param processDefinitionKey
+     */
+    private void setVariableData(Map<String, Object> busData, Map<String, Object> variableData, String processDefinitionKey) {
+        // 流程模板信息
+        LambdaQueryWrapper<ActCustomModelInfo> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ActCustomModelInfo::getModelKey, processDefinitionKey).last("limit 1");
+        ActCustomModelInfo one = modelInfoService.getOne(queryWrapper);
+
+        // 非系统变量
+        List<ActCustomVariable> list = variableService.list(new LambdaQueryWrapper<ActCustomVariable>().eq(ActCustomVariable::getModelId, one.getModelId())
+                .eq(ActCustomVariable::getVariableType, 1).eq(ActCustomVariable::getType, 0));
+        if (Objects.nonNull(busData) && CollUtil.isNotEmpty(list)) {
+            list.stream().forEach(variable -> {
+                String variableName = variable.getVariableName();
+                variableData.put(variableName, busData.get(variableName));
+            });
+        }
     }
 }
