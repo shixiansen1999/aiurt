@@ -74,7 +74,7 @@ public class ActCustomInterfaceController extends BaseController<ActCustomInterf
 		if (actCustomInterfaceService.isNameExists(actCustomInterface.getName(),null)) {
 			return Result.error("名称已存在，请使用其他名称！");
 		}
-
+		actCustomInterface.setMark(String.format("%s%s","interface",System.currentTimeMillis()));
 		actCustomInterfaceService.save(actCustomInterface);
 		return Result.OK("添加成功！");
 	}
