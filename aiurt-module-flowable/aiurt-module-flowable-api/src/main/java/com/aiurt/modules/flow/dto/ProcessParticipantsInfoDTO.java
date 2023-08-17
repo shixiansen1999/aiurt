@@ -22,6 +22,9 @@ public class ProcessParticipantsInfoDTO implements Serializable {
     @ApiModelProperty("流程节点id")
     private String nodeId;
 
+    @ApiModelProperty("是否可选，false：不可选")
+    private Boolean selectable = Boolean.FALSE;
+
     private List<ProcessParticipantsInfoDTO> options;
 
     private List<SysUserModel> data;
