@@ -2359,6 +2359,11 @@
         INNER JOIN fault f ON f.`code`=ptf.fault_code AND f.`status`>2
         WHERE ptd.task_id=#{patrolTaskId}
     </select>
+    <select id="getTaskDurationBySumDevice" resultType="java.lang.Integer">
+        SELECT SUM(IFNULL(duration,0))
+        FROM patrol_task_device
+        WHERE task_id = #{patrolTaskId}
+    </select>
 
     <sql id="taskCountONMonth">
         SELECT

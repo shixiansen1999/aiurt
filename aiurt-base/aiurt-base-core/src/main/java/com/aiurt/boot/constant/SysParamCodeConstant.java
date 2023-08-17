@@ -498,4 +498,9 @@ public interface SysParamCodeConstant {
      * 取消挂起时是否更新维修负责人
      */
     String CANCEL_HANGUP_CH_AUN = "cancel_hangup_ch_aun";
+
+    /**
+     * 巡视工时是否使用mac计算，如果不使用就是各工单时长之和
+     */
+    String PATROL_DURATION_USE_MAC = "patrol_duration_use_mac";
 }

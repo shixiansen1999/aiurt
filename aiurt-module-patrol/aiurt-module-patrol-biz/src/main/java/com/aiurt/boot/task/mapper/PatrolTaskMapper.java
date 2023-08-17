@@ -624,4 +624,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return 返回该巡视任务关联的故障(故障要上报审核通过才算，也就是status>2)的数量
      */
     Integer getPatrolTaskFaultNum(@Param("patrolTaskId") String patrolTaskId);
+
+    /**
+     * 根据巡视任务id，获取巡视任务时长，巡视任务时长获取方法是该巡视任务对应的巡视工单的时长之和
+     * @param patrolTaskId 巡视任务id
+     * @return 返回巡视任务时长
+     */
+    Integer getTaskDurationBySumDevice(String patrolTaskId);
 }
