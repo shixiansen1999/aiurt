@@ -21,6 +21,7 @@ import com.aiurt.common.system.util.JwtUtil;
 import com.aiurt.common.util.*;
 import com.aiurt.common.util.encryption.EncryptedString;
 import com.aiurt.config.thirdapp.ThirdAppConfig;
+import com.aiurt.modules.message.websocket.WebSocket;
 import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.mapper.CsUserStaionMapper;
 import com.aiurt.modules.system.model.SysLoginModel;
@@ -105,6 +106,10 @@ public class LoginController {
 
 	@Autowired
 	private ILoginService loginService;
+
+
+	@Autowired
+	private WebSocket webSocket;
 
 	@ApiOperation("登录接口")
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
@@ -268,6 +273,8 @@ public class LoginController {
 			redisUtil.del(String.format("%s::%s", CacheConstant.SYS_USERS_CACHE, sysUser.getUsername()));
 			//调用shiro的logout
 			SecurityUtils.getSubject().logout();
+			//移除当前登录人的WebSocket信息
+			webSocket.removeSession(sysUser.getId());
 	    	return Result.ok("退出登录成功！");
 	    }else {
 	    	return Result.error("Token无效!");
