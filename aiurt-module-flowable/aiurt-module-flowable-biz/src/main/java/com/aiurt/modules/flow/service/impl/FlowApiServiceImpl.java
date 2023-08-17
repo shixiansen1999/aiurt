@@ -1,7 +1,5 @@
 package com.aiurt.modules.flow.service.impl;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
@@ -46,8 +44,6 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.model.Process;
@@ -61,7 +57,6 @@ import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
-import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ActivityInstance;
 import org.flowable.engine.runtime.ChangeActivityStateBuilder;
@@ -86,9 +81,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -2544,12 +2537,44 @@ public class FlowApiServiceImpl implements FlowApiService {
         return sequenceFlows;
     }
 
+
+
+
     /**
      * @param processParticipantsReqDTO
      * @return
      */
     @Override
     public List<ProcessParticipantsInfoDTO> getProcessParticipantsInfoWithOutStart(ProcessParticipantsReqDTO processParticipantsReqDTO) {
-        return null;
+        List<ProcessParticipantsInfoDTO> result = new ArrayList<>();
+        String modelKey = processParticipantsReqDTO.getModelKey();
+        // 获取流程定义信息
+        ProcessDefinition processDefinition = flowElementUtil.getProcessDefinition(modelKey);
+        // 获取第一个用户节点信息
+        UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(modelKey);
+        String processDefinitionId = processDefinition.getId();
+        String nodeId = userTask.getId();
+
+        // 是否自动选人
+        ActCustomTaskExt actCustomTaskExt = customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, nodeId);
+        if (Objects.isNull(actCustomTaskExt)) {
+            return Collections.emptyList();
+        }
+
+        Integer isAutoSelect = Optional.ofNullable(actCustomTaskExt.getIsAutoSelect()).orElse(1);
+        if (isAutoSelect == 1) {
+            return Collections.emptyList();
+        }
+
+        List<FlowElement> flowElementList = flowElementUtil.getTargetFlowElement(modelKey, userTask, processParticipantsReqDTO.getBusData());
+
+        for (FlowElement flowElement : flowElementList) {
+            if (flowElement instanceof UserTask) {
+                UserTask task = (UserTask) flowElement;
+                ProcessParticipantsInfoDTO processParticipantsInfoDTO = buildProcessParticipantsInfo(task, processDefinitionId);
+                result.add(processParticipantsInfoDTO);
+            }
+        }
+        return result;
     }
 }
