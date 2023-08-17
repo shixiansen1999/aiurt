@@ -135,4 +135,22 @@ public class SysFolderController {
         sysFolderService.renameFolder(id, name);
         return Result.OK("重命名文件成功");
     }
+
+    /**
+     * 移动文件夹或者文件
+     *
+     * @param fileId 移动文件id
+     * @param fileTypeId  移动文件夹id
+     * @param targetFileTypeId  移入文件夹id
+     * @return 结果
+     */
+    @AutoLog(value = "移动文件夹或者文件")
+    @ApiOperation(value = "移动文件夹或者文件", notes = "移动文件夹或者文件")
+    @GetMapping(value = "/moveFile")
+    public Result<?> moveFile(@RequestParam(value = "fileId",required = false) Long fileId,
+                              @RequestParam(value = "fileTypeId",required = false) Long fileTypeId,
+                              @RequestParam(value = "targetFileTypeId") @NotNull(message = "移入文件夹id不能为空") Long targetFileTypeId) {
+        sysFolderService.moveFile(fileId,fileTypeId,targetFileTypeId);
+        return Result.OK("移动成功!");
+    }
 }

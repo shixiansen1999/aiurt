@@ -159,4 +159,6 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
     @Excel(name = "异常项", width = 15)
     @ApiModelProperty(value = "异常项")
     private Long exceptionItem;
+
+    private java.lang.String macStatusName;
 }

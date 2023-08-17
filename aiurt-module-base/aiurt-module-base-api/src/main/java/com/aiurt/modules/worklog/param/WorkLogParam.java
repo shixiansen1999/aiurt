@@ -72,6 +72,8 @@ public class WorkLogParam {
      */
     private  String  departCode;
 
+    private  Integer  isAdditionalRecording;
+
     @ApiModelProperty(value = "权限班组集合(后台处理)")
     private List<String> departList;
 

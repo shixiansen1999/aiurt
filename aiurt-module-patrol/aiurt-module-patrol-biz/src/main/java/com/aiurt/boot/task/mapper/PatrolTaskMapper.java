@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import cn.hutool.core.date.DateTime;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
 import com.aiurt.boot.report.model.FailureOrgReport;
 import com.aiurt.boot.report.model.FailureReport;
@@ -355,7 +356,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param endTime
      * @return
      */
-    IPage<FailureReport> getFailureReport(Page<FailureReport>page,@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime,@Param("systemCode")List<String> systemCode);
+    IPage<FailureReport> getFailureReport(Page<FailureReport>page, @Param("id")String id, @Param("lineCode") String lineCode, @Param("stationCode") List<String> stationCode, @Param("startTime") String startTime, @Param("endTime")String endTime, @Param("systemCode")List<String> systemCode, @Param("beginDate")DateTime beginDate,@Param("endDate")DateTime endDate);
 
     /**
      * 查询数量
@@ -616,4 +617,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return 返回PatrolTaskExportExcelDTO对象的列表
      */
     List<PatrolTaskExportExcelDTO> queryPatrolTaskExportExcelDTOByIds(@Param("patrolTaskIdList") List<String> patrolTaskIdList);
+
+    /**
+     * 根据巡视任务id，获取该巡视任务关联的故障的数量（巡视时，上报的故障），上报的故障要上报审核通过才算，也就是status>2
+     * @param patrolTaskId 巡视任务id
+     * @return 返回该巡视任务关联的故障(故障要上报审核通过才算，也就是status>2)的数量
+     */
+    Integer getPatrolTaskFaultNum(@Param("patrolTaskId") String patrolTaskId);
 }

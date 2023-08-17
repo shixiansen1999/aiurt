@@ -476,4 +476,9 @@ public interface SysParamCodeConstant {
      * 故障挂起超时未处理提醒的铃声时长，单位为秒
      */
     String HUR_RING_DURATION = "hur_ring_duration";
+
+    /**
+     * 工作日志保存检修内容是否需要拼接标准表
+     */
+    String WORKLOG_REPAIR_CONCAT_STANDARD = "worklog_repair_concat_standard";
 }

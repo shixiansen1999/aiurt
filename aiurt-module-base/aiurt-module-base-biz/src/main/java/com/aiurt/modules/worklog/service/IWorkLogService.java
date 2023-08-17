@@ -141,7 +141,7 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @param nowday
      * @return
      */
-    Map getTodayJobContent(String nowday);
+    Map getTodayJobContent(String nowday,String createTime);
 
     void archWorkLog(WorkLogResult workLogResult, String token, String archiveUserId, String refileFolderId, String realname, String sectId);
 

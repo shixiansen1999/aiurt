@@ -563,7 +563,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             //判断是否能编辑
             Boolean flag = editFlag(record.getCreateTime(), record.getConfirmStatus(), record.getCheckStatus());
             record.setEditFlag(flag);
-
+            //判断是否能补录
+            if (record.getStatus() != null && record.getStatus() == 0) {
+                Boolean additionalRecordingFlag = additionalRecordingFlag(record.getCreateTime());
+                record.setAdditionalRecordingFlag(additionalRecordingFlag);
+            }
             if (departMap!=null && stationTeamIdMap!=null){
                 String id = departMap.get(record.getSubmitOrgId());
                 if (StringUtils.isNotBlank(id)){
@@ -999,6 +1003,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setHandoverId(dto.getHandoverId());
         workLog.setStationCode(dto.getStationCode());
         workLog.setPositionCode(dto.getPositionCode());
+        workLog.setIsAdditionalRecording(dto.getIsAdditionalRecording());
         this.updateById(workLog);
         //删除原附件列表
         enclosureMapper.deleteByName(workLog.getId());
@@ -1139,7 +1144,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     }
 
     @Override
-    public Map getTodayJobContent(String nowday) {
+    public Map getTodayJobContent(String nowday,String createTime) {
 
         Date date = DateUtil.date();
         //如果选择的时间是过去，则截取今天的时分秒和过去时间的年月日合并作为时间点
@@ -1148,8 +1153,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
         DateTime startTime;
         DateTime endTime;
-        if (StrUtil.isEmpty(nowday)) {
+        if (StrUtil.isEmpty(nowday)&&StrUtil.isEmpty(createTime)) {
             nowday = DateUtil.today();
+        } else if (StrUtil.isNotBlank(createTime)) {
+            //如果没有指定日期且只有创建时间，则补录日期就是创建日期
+            nowday = createTime.substring(0,10);
         }
         if (!ymd.equals(nowday)) {
             String oldDay = nowday + " " + hms;
@@ -1167,20 +1175,34 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         DateTime nextDay = DateUtil.offsetDay(date, +1);
         String nextAM = DateUtil.format(nextDay, "yyyy-MM-dd")+ " 08:29:59";
 
-        if (date.after(DateUtil.parse(am)) && date.before(DateUtil.parse(pm))) {
-            //白班
-            startTime = DateUtil.parse(nowday+" 08:30:00");
-            endTime = DateUtil.parse(nowday+" 16:29:59");
-        } else if (date.before(DateUtil.parse(am))){
-            //昨天晚班
-            startTime = DateUtil.parse(lastPM);
-            endTime = DateUtil.parse(nowday + " 08:29:59");
-        } else {
-            //今天晚班
-            startTime = DateUtil.parse(nowday+" 16:30:00");
-            endTime = DateUtil.parse(nextAM);
+        if (createTime != null) {
+            //补录
+            DateTime create = DateUtil.parse(createTime, "yyyy-MM-dd HH:mm:ss");
+            if (create.after(DateUtil.parse(am)) && create.before(DateUtil.parse(pm))) {
+                //白班
+                startTime = DateUtil.parse(nowday+" 08:30:00");
+                endTime = DateUtil.parse(nowday+" 16:29:59");
+            } else {
+                //晚班
+                startTime = DateUtil.parse(nowday+" 16:30:00");
+                endTime = DateUtil.parse(nextAM);
+            }
+        }else {
+            //正常写入日志
+            if (date.after(DateUtil.parse(am)) && date.before(DateUtil.parse(pm))) {
+                //白班
+                startTime = DateUtil.parse(nowday+" 08:30:00");
+                endTime = DateUtil.parse(nowday+" 16:29:59");
+            } else if (date.before(DateUtil.parse(am))){
+                //昨天晚班
+                startTime = DateUtil.parse(lastPM);
+                endTime = DateUtil.parse(nowday + " 08:29:59");
+            } else {
+                //今天晚班
+                startTime = DateUtil.parse(nowday+" 16:30:00");
+                endTime = DateUtil.parse(nextAM);
+            }
         }
-
         HashMap<String, String> map = new HashMap<>(16);
 
         //获取巡检内容
@@ -1508,6 +1530,38 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
     }
 
+    private Boolean additionalRecordingFlag(Date createTime) {
+        SysParamModel amEnd = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_AM_STOPEDIT);
+        SysParamModel pmEnd = iSysParamAPI.selectByCode(SysParamCodeConstant.WORKLOG_PM_STOPEDIT);
+        validateTimeParam(amEnd, "早上停止编辑时间");
+        validateTimeParam(pmEnd, "下午停止编辑时间");
+        String today = DateUtil.today();
+        String amEnd1 = today + " " + amEnd.getValue();
+        String pmEnd1 = today + " " + pmEnd.getValue();
+        today = today + " " + "00:00:00";
+        Date date = new Date();
+
+        boolean beforeToday = createTime.before((DateUtil.parse(today)));
+        if (beforeToday) {
+            return true;
+        } else {
+            //判断该日志是晚班还是白班
+            boolean a = createTime.after((DateUtil.parse(amEnd1))) && createTime.before((DateUtil.parse(pmEnd1)));
+            boolean b = date.after((DateUtil.parse(amEnd1)));
+            boolean c = date.after((DateUtil.parse(pmEnd1)));
+
+            if (!a && b ) {
+                //如果是白班且当前时间大于早上停止编辑时间，则补录
+                return true;
+            } else if (a && c) {
+                //如果是晚班且当前时间大于晚上停止编辑时间，则补录
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     @Override
     public WorkLogIndexDTO getOverviewInfo(Date startDate, Date endDate, HttpServletRequest request) {
         WorkLogIndexDTO workLogIndexDTO = new WorkLogIndexDTO();
@@ -1550,8 +1604,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         queryWrapper.eq(WorkLog::getStatus, 1);
         // 权限部门id过滤
         queryWrapper.in((!isAdmin && CollUtil.isNotEmpty(orgIdList)), WorkLog::getOrgId, orgIdList);
-        queryWrapper.ge(WorkLog::getSubmitTime, DateUtil.beginOfDay(startDate));
-        queryWrapper.le(WorkLog::getSubmitTime, DateUtil.endOfDay(endDate));
+        queryWrapper.ge(WorkLog::getLogTime, DateUtil.beginOfDay(startDate));
+        queryWrapper.le(WorkLog::getLogTime, DateUtil.endOfDay(endDate));
         queryWrapper.orderByDesc(WorkLog::getSubmitTime);
         queryWrapper.last("limit 7");
         // 查询已确认、待确认的字段值

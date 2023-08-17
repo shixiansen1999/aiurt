@@ -118,6 +118,7 @@
         t1.stationSort ASC;
     </select>
     <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
+        SELECT a.* from (
         select DISTINCT t1.id,
         t1.code,
         t1.name,
@@ -134,11 +135,11 @@
         t1.source,
         t1.period,
         t1.sign_url,
+        t1.spot_check_status,
 <!--        (select realname from sys_user where id = t1.end_user_id) as-->
 <!--        endUserName,-->
         concat(DATE_FORMAT(t1.start_time, '%H:%i'), "-", DATE_FORMAT(t1.end_time, '%H:%i')) as startEndTime
         from patrol_task t1
-        LEFT JOIN patrol_task_organization pto ON t1.`code` = pto.task_code AND pto.del_flag = 0
         where t1.status in (6, 7)
         and t1.del_flag = 0
         and t1.omit_status = 0
@@ -196,7 +197,9 @@
                 #{item}
             </foreach>
         </if>
-        ORDER BY t1.`status` asc, t1.create_time desc
+        ORDER BY t1.`status` asc, t1.create_time desc) a
+        LEFT JOIN patrol_task_organization pto ON a.`code` = pto.task_code AND pto.del_flag = 0
+        group by a.id
     </select>
     <select id="getOrganizationName" resultType="java.lang.String">
         SELECT t2.depart_name
@@ -261,7 +264,8 @@
         pt.spot_check_status,
         pt.duration,
         pt.standard_duration,
-        pt.wifi_connect_time
+        pt.wifi_connect_time,
+        pt.mac_status
         from patrol_task pt
         left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
         left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
@@ -999,7 +1003,7 @@
         (SELECT COUNT(id)
         FROM fault WHERE a.system_code = sub_system_code
         and `status` > 2
-        AND DATE_FORMAT(approval_pass_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(date_sub(#{startTime}, interval 1 week), '%Y-%m-%d') AND DATE_FORMAT(date_sub(#{endTime}, interval 1 week), '%Y-%m-%d')
+        AND DATE_FORMAT(approval_pass_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(date_sub(#{beginDate}, interval 1 week), '%Y-%m-%d') AND DATE_FORMAT(date_sub(#{endDate}, interval 1 week), '%Y-%m-%d')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
@@ -1009,7 +1013,21 @@
                 #{item}
             </foreach>
         </if>
-        ) as lastWeekNum
+        ) as lastWeekNum,
+        (SELECT COUNT(id)
+        FROM fault WHERE a.system_code = sub_system_code
+        and `status` > 2
+        AND DATE_FORMAT(approval_pass_time, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{beginDate}, '%Y-%m-%d') AND DATE_FORMAT(#{endDate}, '%Y-%m-%d')
+        <if test="lineCode != null">
+            AND line_code = #{lineCode}
+        </if>
+        <if test="stationCode != null and stationCode.size > 0">
+            AND station_code IN
+            <foreach collection="stationCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ) as thisWeekNum
         FROM cs_subsystem a
         LEFT JOIN fault c ON a.system_code = c.sub_system_code and c.`status` > 2
         <if test="startTime != null and endTime != null">
@@ -2314,7 +2332,8 @@
         pt.spot_check_status,
         pt.duration,
         pt.standard_duration,
-        pt.wifi_connect_time
+        pt.wifi_connect_time,
+        pt.mac_status
         from patrol_task pt
         left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
         left join patrol_task_station pts on pt.code = pts.task_code and pts.del_flag = 0
@@ -2328,6 +2347,13 @@
         </if>
         GROUP BY pt.id
         order by pt.create_time desc
+    </select>
+    <select id="getPatrolTaskFaultNum" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM patrol_task_device ptd
+        INNER JOIN patrol_task_fault ptf ON ptf.patrol_number=ptd.patrol_number
+        INNER JOIN fault f ON f.`code`=ptf.fault_code AND f.`status`>2
+        WHERE ptd.task_id=#{patrolTaskId}
     </select>
 
     <sql id="taskCountONMonth">
