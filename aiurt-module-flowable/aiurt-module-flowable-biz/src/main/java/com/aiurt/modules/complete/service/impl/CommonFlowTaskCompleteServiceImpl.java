@@ -199,6 +199,9 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
      */
     @Override
     public void afterDeal(CompleteTaskContext taskContext) {
+        Task currentTask = taskContext.getCurrentTask();
+        String definitionId = currentTask.getProcessDefinitionId();
+        //customUserService.getUserByTaskInfo(, )
 
         // 抄送
         super.afterDeal(taskContext);
