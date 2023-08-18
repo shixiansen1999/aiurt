@@ -447,5 +447,6 @@ public class RepairTask extends BaseEntity {
     private java.lang.String inspectionStrCode;
 
     @ApiModelProperty(value = "是否是手工下发任务，0否1是")
+    @TableField(exist = false)
     private Integer isManual;
 }
