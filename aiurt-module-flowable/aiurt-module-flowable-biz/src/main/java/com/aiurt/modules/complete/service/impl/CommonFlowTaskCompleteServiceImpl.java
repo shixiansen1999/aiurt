@@ -1,9 +1,13 @@
 package com.aiurt.modules.complete.service.impl;
+import java.util.*;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.enums.MultiApprovalRuleEnum;
 import com.aiurt.modules.complete.dto.CompleteTaskContext;
 import com.aiurt.modules.complete.dto.FlowCompleteReqDTO;
+import com.aiurt.modules.copy.entity.ActCustomProcessCopy;
+import com.aiurt.modules.copy.service.IActCustomProcessCopyService;
 import com.aiurt.modules.flow.dto.NextNodeUserDTO;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
@@ -23,10 +27,6 @@ import org.flowable.task.api.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImpl {
+
+    private final String APPROVAL_TYPE = "__APPROVAL_TYPE";
 
     @Autowired
     private RuntimeService runtimeService;
@@ -57,7 +59,8 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
     @Autowired
     private IMultiInstanceDealService multiInstanceDealService;
 
-
+    @Autowired
+    private IActCustomProcessCopyService processCopyService;
 
     /**
      * 始前处理
@@ -81,6 +84,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
     @Override
     public void buildTaskContext(CompleteTaskContext taskContext) {
         FlowCompleteReqDTO flowCompleteReqDTO = taskContext.getFlowCompleteReqDTO();
+        String approvalType = flowCompleteReqDTO.getApprovalType();
         String taskId = flowCompleteReqDTO.getTaskId();
         String processInstanceId = flowCompleteReqDTO.getProcessInstanceId();
 
@@ -102,7 +106,10 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         if (Objects.isNull(variableData)) {
             variableData = new HashMap<>(16);
         }
-        Map<String, Object> variables = flowElementUtil.getVariables(flowCompleteReqDTO.getBusData(), processInstanceId);
+        Map<String, Object> busData = Optional.ofNullable(flowCompleteReqDTO.getBusData()).orElse(new HashMap<>());
+       // busData.put(APPROVAL_TYPE, approvalType);
+
+        Map<String, Object> variables = flowElementUtil.getVariables(busData, processInstanceId);
         variableData.putAll(variables);
         taskContext.setVariableData(variableData);
 
@@ -117,7 +124,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
             // 如果单实例，或者识多实例最后一部办理人时需要自动选人
             log.info("当前活动是多少实例，且是多实例的最后一个活动，或者时单例任务，设置下一步办理人");
             FlowElement flowElement = flowElementUtil.getFlowElement(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
-            List<FlowElement> targetFlowElement = flowElementUtil.getTargetFlowElement(execution, flowElement, flowCompleteReqDTO.getBusData());
+            List<FlowElement> targetFlowElement = flowElementUtil.getTargetFlowElement(execution, flowElement, busData);
             List<NextNodeUserDTO> nodeUserDTOList = targetFlowElement.stream().map(element -> {
                 NextNodeUserDTO nextNodeUserDTO = new NextNodeUserDTO();
                 nextNodeUserDTO.setNodeId(element.getId());
@@ -128,7 +135,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
             flowCompleteReqDTO.setNextNodeUserParam(nodeUserDTOList);
         }
 
-
+        //
     }
 
     /**
@@ -200,10 +207,23 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
     @Override
     public void afterDeal(CompleteTaskContext taskContext) {
         Task currentTask = taskContext.getCurrentTask();
+        String nodeId = currentTask.getTaskDefinitionKey();
         String definitionId = currentTask.getProcessDefinitionId();
-        //customUserService.getUserByTaskInfo(, )
+        List<String> userList = customUserService.getUserByTaskInfo(definitionId, nodeId, "0");
 
-        // 抄送
-        super.afterDeal(taskContext);
+        String processInstanceId = currentTask.getProcessInstanceId();
+        String taskId = currentTask.getId();
+
+        List<ActCustomProcessCopy> copyList = userList.stream().map(userName -> {
+            ActCustomProcessCopy copy = new ActCustomProcessCopy();
+            copy.setProcessInstanceId(processInstanceId);
+            copy.setTaskId(taskId);
+            copy.setDelFlag(0);
+            copy.setUserName(userName);
+            return copy;
+        }).collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(copyList)) {
+            processCopyService.saveBatch(copyList);
+        }
     }
 }

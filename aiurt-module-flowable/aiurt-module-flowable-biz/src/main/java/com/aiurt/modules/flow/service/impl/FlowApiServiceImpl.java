@@ -387,7 +387,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         variableData.put("comment", commentStr);
 
         // 构建中间变量
-        buildVariable(busData, variableData, processInstance);
+        //buildVariable(busData, variableData, processInstance);
 
         // 判断使保存还是提交
         if (StrUtil.equalsIgnoreCase(FlowApprovalType.SAVE, approvalType)) {
@@ -414,6 +414,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             flowCompleteReqDTO.setNextNodeUserParam(comment.getNextNodeUserParam());
             flowCompleteReqDTO.setApprovalType(comment.getApprovalType());
             flowCompleteReqDTO.setComment(comment.getComment());
+            flowCompleteReqDTO.setVariableData(variableData);
 
 
             commonFlowTaskCompleteService.complete(flowCompleteReqDTO);
@@ -1942,8 +1943,9 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (!completeTask) {
             return Collections.emptyList();
         }
-
-        List<FlowElement> targetFlowElements = getTargetFlowElements(execution, processDefinitionId, taskDefinitionKey, processParticipantsReqDTO.getBusData());
+        Map<String, Object> busData = Optional.ofNullable(processParticipantsReqDTO.getBusData()).orElse(new HashMap<>());
+        busData.put("__APPROVAL_TYPE", processParticipantsReqDTO.getApprovalType());
+        List<FlowElement> targetFlowElements = getTargetFlowElements(execution, processDefinitionId, taskDefinitionKey, busData);
 
         for (FlowElement flowElement : targetFlowElements) {
             if (flowElement instanceof UserTask) {
@@ -2565,8 +2567,9 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (isAutoSelect == 1) {
             return Collections.emptyList();
         }
-
-        List<FlowElement> flowElementList = flowElementUtil.getTargetFlowElement(modelKey, userTask, processParticipantsReqDTO.getBusData());
+        Map<String, Object> busData = Optional.ofNullable(processParticipantsReqDTO.getBusData()).orElse(new HashMap<>());;
+        busData.put("__APPROVAL_TYPE", processParticipantsReqDTO.getApprovalType());
+        List<FlowElement> flowElementList = flowElementUtil.getTargetFlowElement(modelKey, userTask, busData);
 
         for (FlowElement flowElement : flowElementList) {
             if (flowElement instanceof UserTask) {

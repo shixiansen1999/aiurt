@@ -62,7 +62,7 @@ public class TaskCreateListener implements FlowableEventListener {
      */
     @Override
     public void onEvent(FlowableEvent event) {
-        logger.info("start task create listener");
+        logger.info("任务节点出创建事件");
         if (!(event instanceof FlowableEntityEventImpl)) {
             return;
         }
@@ -87,22 +87,27 @@ public class TaskCreateListener implements FlowableEventListener {
         String processInstanceId = taskEntity.getProcessInstanceId();
         // 流程节点定义id
         String taskDefinitionKey = taskEntity.getTaskDefinitionKey();
-        // 任务节点前附加操作
-        FlowableNodeActionUtils.processTaskData(processDefinitionId,taskDefinitionKey,processInstanceId,FlowModelExtElementConstant.EXT_PRE_NODE_ACTION);
 
-        List<String> list = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
-                .getVariable(processInstanceId, FlowVariableConstant.ASSIGNEE_LIST + taskDefinitionKey, List.class);
-        if (CollectionUtil.isNotEmpty(list)) {
-            return;
-        }
         // 查询流程实例
         ProcessInstance instance = ProcessEngines.getDefaultProcessEngine().getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-
-        FlowElementUtil flowElementUtil = SpringContextUtils.getBean(FlowElementUtil.class);
 
         // 查询配置项
         IActCustomTaskExtService taskExtService = SpringContextUtils.getBean(IActCustomTaskExtService.class);
         ActCustomTaskExt taskExt = taskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, taskDefinitionKey);
+
+        // 任务节点前附加操作
+        FlowableNodeActionUtils.processTaskData(processDefinitionId,taskDefinitionKey,processInstanceId,FlowModelExtElementConstant.EXT_PRE_NODE_ACTION);
+
+        // 判断是否为流程多实例
+        List<String> list = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
+                .getVariable(processInstanceId, FlowVariableConstant.ASSIGNEE_LIST + taskDefinitionKey, List.class);
+        if (CollectionUtil.isNotEmpty(list)) {
+            // 发送待办
+            buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(taskEntity.getAssignee()));
+            return;
+        }
+
+        FlowElementUtil flowElementUtil = SpringContextUtils.getBean(FlowElementUtil.class);
 
         // 判断首个节点是否为驳回
         UserTask userTask = flowElementUtil.getFirstUserTaskByDefinitionId(processDefinitionId);
@@ -266,23 +271,6 @@ public class TaskCreateListener implements FlowableEventListener {
             bpmnTodoDTO.setTitle(bpmnTodoDTO.getProcessName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd"));
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
             todoBaseApi.createBbmnTodoTask(bpmnTodoDTO);
-
-            //发送通知
-            /*ISysBaseAPI iSysBaseApi = SpringContextUtils.getBean(ISysBaseAPI.class);
-
-            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, instance.getBusinessKey());
-            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.BPM.getType());
-            messageDTO.setData(map);
-            messageDTO.setTitle(bpmnTodoDTO.getProcessName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss"));
-            messageDTO.setToUser(StrUtil.join(",", userNameList));
-            messageDTO.setToAll(false);
-
-            messageDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE);
-            ISysParamAPI sysParamAPI = SpringContextUtils.getBean(ISysParamAPI.class);
-            SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.BPM_MESSAGE);
-            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-            messageDTO.setMsgAbstract("有流程到达");
-            iSysBaseApi.sendTemplateMessage(messageDTO);*/
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);

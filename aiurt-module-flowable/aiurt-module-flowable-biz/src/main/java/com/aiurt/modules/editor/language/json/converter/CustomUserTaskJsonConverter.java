@@ -307,7 +307,6 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             // 流程变量
             addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.FORM_TASK_VARIABLES);
 
-            addCustomAttributeForPrefix(elementNode, userTask,"flowable", "formtaskVariables");
         }
     }
 
