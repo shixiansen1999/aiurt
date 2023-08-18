@@ -533,6 +533,7 @@ public class FlowElementUtil {
         variableData.put(FlowCustomVariableConstant.ORG_INITIATOR, user.getOrgId());
 
 
+
         // 内置的系统变量
         return variableData;
     }
@@ -546,7 +547,6 @@ public class FlowElementUtil {
      */
     public Map<String, Object> getVariablesByModelKey(Map<String, Object> busData, String modelKey) {
         Map<String, Object> variableData = new HashMap<>(16);
-
 
         // 流程key
         String processDefinitionKey = modelKey;
@@ -583,6 +583,10 @@ public class FlowElementUtil {
         List<ActCustomVariable> list = variableService.list(new LambdaQueryWrapper<ActCustomVariable>().eq(ActCustomVariable::getModelId, one.getModelId())
                 .eq(ActCustomVariable::getVariableType, 1).eq(ActCustomVariable::getType, 0));
         if (Objects.nonNull(busData) && CollUtil.isNotEmpty(list)) {
+            Object approvalType = busData.get("__APPROVAL_TYPE");
+            if (Objects.nonNull(approvalType)) {
+                variableData.put("operationType", approvalType);
+            }
             list.stream().forEach(variable -> {
                 String variableName = variable.getVariableName();
                 variableData.put(variableName, busData.get(variableName));

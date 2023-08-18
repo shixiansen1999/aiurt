@@ -1,6 +1,8 @@
 package com.aiurt.modules.user.getuser;
 
 
+import com.aiurt.modules.user.entity.ActCustomUser;
+
 import java.util.List;
 
 /**
@@ -11,10 +13,8 @@ public interface GetTaskUser {
 
     /**
      * 获取用户下
-     * @param processDefinitionId 定义id
-     * @param nodeId 节点id
-     * @param type 类型抄送，还是其他
+     * @param customUser
      * @return
      */
-    List<String> getUser(String processDefinitionId, String nodeId, String type);
+    List<String> getUser(ActCustomUser customUser);
 }

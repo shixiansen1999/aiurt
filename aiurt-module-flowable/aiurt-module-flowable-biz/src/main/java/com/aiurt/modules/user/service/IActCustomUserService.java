@@ -36,9 +36,9 @@ public interface IActCustomUserService extends IService<ActCustomUser> {
 
     /**
      * 查询人员
-     * @param processDefinitionId
-     * @param nodeId
-     * @param type
+     * @param processDefinitionId 流程定义id
+     * @param nodeId 节点id
+     * @param type 0： 办理人， 1：抄送人
      * @return
      */
     List<String> getUserByTaskInfo(String processDefinitionId, String nodeId, String type);

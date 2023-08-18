@@ -359,11 +359,16 @@ public class FlowOperationController {
         return Result.OK(result);
     }
 
+    /**
+     * 获取首个任务的选人数据
+     * @param processParticipantsReqDTO
+     * @return
+     */
     @ApiOperation(value = "获取首个任务的选人数据", notes = "获取办理时选人维度列表")
     @PostMapping("/getProcessParticipantsInfoWithOutStart")
     public Result<List<ProcessParticipantsInfoDTO>> getProcessParticipantsInfoWithOutStart(@RequestBody ProcessParticipantsReqDTO processParticipantsReqDTO) {
         List<ProcessParticipantsInfoDTO> result = flowApiService.getProcessParticipantsInfoWithOutStart(processParticipantsReqDTO);
-        return Result.OK();
+        return Result.OK(result);
     }
 
 
