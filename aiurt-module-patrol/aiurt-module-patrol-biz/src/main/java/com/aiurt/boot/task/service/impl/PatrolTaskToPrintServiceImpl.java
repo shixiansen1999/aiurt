@@ -25,7 +25,7 @@ import com.alibaba.excel.util.MapUtils;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.alibaba.excel.write.metadata.fill.FillWrapper;
-import com.aspose.cells.PdfSaveOptions;
+import com.aspose.cells.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.spire.xls.FileFormat;
 import lombok.extern.slf4j.Slf4j;
@@ -150,20 +150,35 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
         sysBaseApi.saveSysAttachment(sysAttachment);
 
         //excel转PDF流输出
-        try{
-            FileInputStream FileInputStream = new FileInputStream(filePath);
-            Workbook workbook = WorkbookFactory.create(FileInputStream);
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            workbook.write(outputStream);
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-            com.spire.xls.Workbook workbook1 = new com.spire.xls.Workbook();
-            workbook1.loadFromStream(inputStream);
-            //pdf 自适应屏幕大小
-            workbook1.getConverterSetting().setSheetFitToWidth(true);
-            workbook1.saveToStream(response.getOutputStream(), FileFormat.PDF);
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
+        try(
+                FileInputStream in = new FileInputStream(filePath)) {
+            PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
+
+            com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
+            final int sheetNum = w.getWorksheets().getCount();
+            for (int i = 0; i < sheetNum; i++) {
+                Worksheet worksheet = w.getWorksheets().get(i);
+                // Set print options to fit to 1 page wide
+                PageSetup pageSetup = worksheet.getPageSetup();
+                // pdf格式为A4
+//                pageSetup.setPaperSize(PaperSizeType.PAPER_A_4);
+                // 设置页面的方向为纵向
+//                pageSetup.setOrientation(PageOrientationType.PORTRAIT);
+                // pdf在宽度方向为一页
+                pageSetup.setFitToPagesWide(1);
+                // 允许pdf在高度方向分页
+                pageSetup.setFitToPagesTall(0);
+                // 设置水平居中
+                pageSetup.setCenterHorizontally(true);
+                // 设置垂直居中
+                //pageSetup.setCenterVertically(true);
+                // 设置左右边距
+                pageSetup.setLeftMargin(1);
+                pageSetup.setRightMargin(1);
+            }
+
+            w.save(response.getOutputStream(), pdfSaveOptions);
+        }catch (Exception e){}
     }
 
 
@@ -267,21 +282,51 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
         sysAttachment.setType("minio");
         sysBaseApi.saveSysAttachment(sysAttachment);
 
+        try(
+            FileInputStream in = new FileInputStream(filePath)) {
+            PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
+
+            com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
+            final int sheetNum = w.getWorksheets().getCount();
+            for (int i = 0; i < sheetNum; i++) {
+                Worksheet worksheet = w.getWorksheets().get(i);
+                // Set print options to fit to 1 page wide
+                PageSetup pageSetup = worksheet.getPageSetup();
+                // pdf格式为A4
+//                pageSetup.setPaperSize(PaperSizeType.PAPER_A_4);
+                // 设置页面的方向为纵向
+//                pageSetup.setOrientation(PageOrientationType.PORTRAIT);
+                // pdf在宽度方向为一页
+                pageSetup.setFitToPagesWide(1);
+                // 允许pdf在高度方向分页
+                pageSetup.setFitToPagesTall(0);
+                // 设置水平居中
+                pageSetup.setCenterHorizontally(true);
+                // 设置垂直居中
+                //pageSetup.setCenterVertically(true);
+                // 设置左右边距
+                pageSetup.setLeftMargin(1);
+                pageSetup.setRightMargin(1);
+            }
+
+            w.save(response.getOutputStream(), pdfSaveOptions);
+        }catch (Exception e){}
+
         //excel转PDF流输出
-        try{
-            FileInputStream FileInputStream = new FileInputStream(filePath);
-            Workbook workbook = WorkbookFactory.create(FileInputStream);
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            workbook.write(outputStream);
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-            com.spire.xls.Workbook workbook1 = new com.spire.xls.Workbook();
-            workbook1.loadFromStream(inputStream);
-            //pdf 自适应屏幕大小
-            workbook1.getConverterSetting().setSheetFitToWidth(true);
-            workbook1.saveToStream(response.getOutputStream(), FileFormat.PDF);
-        }catch (Exception e){
-            throw new RuntimeException(e);
-        }
+//        try{
+//            FileInputStream FileInputStream = new FileInputStream(filePath);
+//            Workbook workbook = WorkbookFactory.create(FileInputStream);
+//            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+//            workbook.write(outputStream);
+//            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+//            com.spire.xls.Workbook workbook1 = new com.spire.xls.Workbook();
+//            workbook1.loadFromStream(inputStream);
+//            //pdf 自适应屏幕大小
+//            workbook1.getConverterSetting().setSheetFitToWidth(true);
+//            workbook1.saveToStream(response.getOutputStream(), FileFormat.PDF);
+//        }catch (Exception e){
+//            throw new RuntimeException(e);
+//        }
     }
 
 
@@ -918,7 +963,16 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
 
             }
         }
-        return getPrint;
+        Map<String, List<PrintDTO>> collect = getPrint.stream().collect(Collectors.groupingBy(PrintDTO::getSubSystem));
+        List<PrintDTO> resultList = new ArrayList<>();
+
+        // 遍历分组Map的每个分组
+        for (Map.Entry<String, List<PrintDTO>> entry : collect.entrySet()) {
+            List<PrintDTO> groupList = entry.getValue(); // 获取分组中的元素列表
+            resultList.addAll(groupList); // 将分组中的元素添加到结果列表
+        }
+
+        return resultList;
     }
 
     private List<PrintDTO> getPrint(String id,String standardId) {
