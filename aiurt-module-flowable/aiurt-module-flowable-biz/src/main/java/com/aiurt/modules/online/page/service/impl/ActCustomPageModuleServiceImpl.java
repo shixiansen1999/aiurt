@@ -39,7 +39,8 @@ public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageMod
 				baseMapper.updateById(parent);
 			}
 		}
-		baseMapper.insert(actCustomPageModule);
+        actCustomPageModule.setModuleCode(String.format("%s%s","m",System.currentTimeMillis()));
+        baseMapper.insert(actCustomPageModule);
 	}
 
 	@Override

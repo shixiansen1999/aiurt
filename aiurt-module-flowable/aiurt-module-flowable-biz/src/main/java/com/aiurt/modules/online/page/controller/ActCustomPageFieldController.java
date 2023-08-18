@@ -25,7 +25,7 @@ import java.util.Arrays;
  * @Date:   2023-08-18
  * @Version: V1.0
  */
-@Api(tags="act_custom_page_field")
+@Api(tags="静态表单字段")
 @RestController
 @RequestMapping("/pagefield/actCustomPageField")
 @Slf4j
@@ -42,7 +42,6 @@ public class ActCustomPageFieldController extends BaseController<ActCustomPageFi
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "act_custom_page_field-分页列表查询")
 	@ApiOperation(value="act_custom_page_field-分页列表查询", notes="act_custom_page_field-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<ActCustomPageField>> queryPageList(ActCustomPageField actCustomPageField,
@@ -56,14 +55,13 @@ public class ActCustomPageFieldController extends BaseController<ActCustomPageFi
 	}
 
 	/**
-	 *   添加
+	 *   添加静态表单字段
 	 *
 	 * @param actCustomPageField
 	 * @return
 	 */
-	@AutoLog(value = "act_custom_page_field-添加")
-	@ApiOperation(value="act_custom_page_field-添加", notes="act_custom_page_field-添加")
-	@RequiresPermissions("pagefield:act_custom_page_field:add")
+	@AutoLog(value = "添加静态表单字段")
+	@ApiOperation(value="添加静态表单字段", notes="添加静态表单字段")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody ActCustomPageField actCustomPageField) {
 		actCustomPageFieldService.save(actCustomPageField);
@@ -71,14 +69,13 @@ public class ActCustomPageFieldController extends BaseController<ActCustomPageFi
 	}
 
 	/**
-	 *  编辑
+	 *  编辑静态表单字段
 	 *
 	 * @param actCustomPageField
 	 * @return
 	 */
-	@AutoLog(value = "act_custom_page_field-编辑")
-	@ApiOperation(value="act_custom_page_field-编辑", notes="act_custom_page_field-编辑")
-	@RequiresPermissions("pagefield:act_custom_page_field:edit")
+	@AutoLog(value = "编辑静态表单字段")
+	@ApiOperation(value="编辑静态表单字段", notes="编辑静态表单字段")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody ActCustomPageField actCustomPageField) {
 		actCustomPageFieldService.updateById(actCustomPageField);
@@ -86,14 +83,13 @@ public class ActCustomPageFieldController extends BaseController<ActCustomPageFi
 	}
 
 	/**
-	 *   通过id删除
+	 *   通过id删除静态表单字段
 	 *
 	 * @param id
 	 * @return
 	 */
 	@AutoLog(value = "act_custom_page_field-通过id删除")
-	@ApiOperation(value="act_custom_page_field-通过id删除", notes="act_custom_page_field-通过id删除")
-	@RequiresPermissions("pagefield:act_custom_page_field:delete")
+	@ApiOperation(value="通过id删除静态表单字段", notes="通过id删除静态表单字段")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		actCustomPageFieldService.removeById(id);
@@ -101,14 +97,13 @@ public class ActCustomPageFieldController extends BaseController<ActCustomPageFi
 	}
 
 	/**
-	 *  批量删除
+	 *  批量删除静态表单字段
 	 *
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "act_custom_page_field-批量删除")
-	@ApiOperation(value="act_custom_page_field-批量删除", notes="act_custom_page_field-批量删除")
-	@RequiresPermissions("pagefield:act_custom_page_field:deleteBatch")
+	@AutoLog(value = "批量删除静态表单字段")
+	@ApiOperation(value="批量删除静态表单字段", notes="批量删除静态表单字段")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.actCustomPageFieldService.removeByIds(Arrays.asList(ids.split(",")));
@@ -116,13 +111,13 @@ public class ActCustomPageFieldController extends BaseController<ActCustomPageFi
 	}
 
 	/**
-	 * 通过id查询
+	 * 通过id查询静态表单字段
 	 *
 	 * @param id
 	 * @return
 	 */
 	//@AutoLog(value = "act_custom_page_field-通过id查询")
-	@ApiOperation(value="act_custom_page_field-通过id查询", notes="act_custom_page_field-通过id查询")
+	@ApiOperation(value="通过id查询静态表单字段", notes="通过id查询静态表单字段")
 	@GetMapping(value = "/queryById")
 	public Result<ActCustomPageField> queryById(@RequestParam(name="id",required=true) String id) {
 		ActCustomPageField actCustomPageField = actCustomPageFieldService.getById(id);

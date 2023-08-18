@@ -28,7 +28,7 @@ import java.util.List;
  * @Date:   2023-08-18
  * @Version: V1.0
  */
-@Api(tags="act_custom_page_module")
+@Api(tags="静态表单所属模块")
 @RestController
 @RequestMapping("/pagemodule/actCustomPageModule")
 @Slf4j
@@ -36,77 +36,19 @@ public class ActCustomPageModuleController extends BaseController<ActCustomPageM
 	@Autowired
 	private IActCustomPageModuleService actCustomPageModuleService;
 
-	/**
-	 * 分页列表查询
-	 *
-	 * @param actCustomPageModule
-	 * @param pageNo
-	 * @param pageSize
-	 * @param req
-	 * @return
-	 */
-	//@AutoLog(value = "act_custom_page_module-分页列表查询")
-	@ApiOperation(value="act_custom_page_module-分页列表查询", notes="act_custom_page_module-分页列表查询")
-	@GetMapping(value = "/rootList")
-	public Result<IPage<ActCustomPageModule>> queryPageList(ActCustomPageModule actCustomPageModule,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		String hasQuery = req.getParameter("hasQuery");
-        if(hasQuery != null && "true".equals(hasQuery)){
-            QueryWrapper<ActCustomPageModule> queryWrapper =  QueryGenerator.initQueryWrapper(actCustomPageModule, req.getParameterMap());
-            List<ActCustomPageModule> list = actCustomPageModuleService.queryTreeListNoPage(queryWrapper);
-            IPage<ActCustomPageModule> pageList = new Page<>(1, 10, list.size());
-            pageList.setRecords(list);
-            return Result.OK(pageList);
-        }else{
-            String parentId = actCustomPageModule.getPid();
-            if (oConvertUtils.isEmpty(parentId)) {
-                parentId = "0";
-            }
-            actCustomPageModule.setPid(null);
-            QueryWrapper<ActCustomPageModule> queryWrapper = QueryGenerator.initQueryWrapper(actCustomPageModule, req.getParameterMap());
-            // 使用 eq 防止模糊查询
-            queryWrapper.eq("pid", parentId);
-            Page<ActCustomPageModule> page = new Page<ActCustomPageModule>(pageNo, pageSize);
-            IPage<ActCustomPageModule> pageList = actCustomPageModuleService.page(page, queryWrapper);
-            return Result.OK(pageList);
-        }
-	}
-
 	 /**
-	  * 【vue3专用】加载节点的子数据
-	  *
-	  * @param pid
-	  * @return
-	  */
-	 @RequestMapping(value = "/loadTreeChildren", method = RequestMethod.GET)
-	 public Result<List<SelectTreeModel>> loadTreeChildren(@RequestParam(name = "pid") String pid) {
-		 Result<List<SelectTreeModel>> result = new Result<>();
-		 try {
-			 List<SelectTreeModel> ls = actCustomPageModuleService.queryListByPid(pid);
-			 result.setResult(ls);
-			 result.setSuccess(true);
-		 } catch (Exception e) {
-			 e.printStackTrace();
-			 result.setMessage(e.getMessage());
-			 result.setSuccess(false);
-		 }
-		 return result;
-	 }
-
-	 /**
-	  * 【vue3专用】加载一级节点/如果是同步 则所有数据
+	  * 加载所有数据
 	  *
 	  * @param async
 	  * @param pcode
 	  * @return
 	  */
+	 @ApiOperation(value = "加载全部节点的数据", notes = "加载全部节点的数据")
 	 @RequestMapping(value = "/loadTreeRoot", method = RequestMethod.GET)
 	 public Result<List<SelectTreeModel>> loadTreeRoot(@RequestParam(name = "async") Boolean async, @RequestParam(name = "pcode") String pcode) {
 		 Result<List<SelectTreeModel>> result = new Result<>();
 		 try {
-			 List<SelectTreeModel> ls = actCustomPageModuleService.queryListByCode(pcode);
+			 List<SelectTreeModel> ls = actCustomPageModuleService.queryListByCode(null);
 			 if (!async) {
 				 loadAllChildren(ls);
 			 }
