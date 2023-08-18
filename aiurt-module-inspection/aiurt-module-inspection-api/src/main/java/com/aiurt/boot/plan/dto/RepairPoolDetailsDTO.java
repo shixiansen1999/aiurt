@@ -60,6 +60,9 @@ public class RepairPoolDetailsDTO {
 //    @ApiModelProperty(value = "是否委外")
 //    private String isManual;
 
+    @ApiModelProperty(value = "是否是手工下发任务，0否1是")
+    private Integer isManual;
+
     @ApiModelProperty(value = "是否委外")
     private String isOutsource;
 

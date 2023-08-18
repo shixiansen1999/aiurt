@@ -9,6 +9,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.XlsUtil;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.train.trainarchive.dto.ArchiveExcelDTO;
 import com.aiurt.modules.train.trainarchive.dto.RecordData;
 import com.aiurt.modules.train.trainarchive.dto.RecordExcelListener;
@@ -171,7 +172,9 @@ public class TrainArchiveServiceImpl extends ServiceImpl<TrainArchiveMapper, Tra
     @Override
     public IPage<TrainArchiveDTO> pageList(Page<TrainArchiveDTO> page, TrainArchiveDTO trainArchiveDTO) {
         if (ObjectUtil.isNotEmpty(trainArchiveDTO.getOrgCode())) {
+            boolean b = GlobalThreadLocal.setDataFilter(true);
             List<String> sysDepartList = iSysBaseApi.getSysDepartList(trainArchiveDTO.getOrgCode());
+            GlobalThreadLocal.setDataFilter(b);
             trainArchiveDTO.setOrgCodeList(sysDepartList);
         }
         List<TrainArchiveDTO> list = archiveMapper.pageList(page, trainArchiveDTO);

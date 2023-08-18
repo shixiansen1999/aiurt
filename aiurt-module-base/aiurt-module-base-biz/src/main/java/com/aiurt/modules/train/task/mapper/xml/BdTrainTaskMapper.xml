@@ -398,6 +398,9 @@ order by create_time desc,task_name asc
     <if test="bdTrainTask.taskState!= null">
         AND task_state = #{bdTrainTask.taskState}
     </if>
+    <if test="bdTrainTask.taskTeamCode != null and bdTrainTask.taskTeamCode != ''">
+        AND task_team_code = #{bdTrainTask.taskTeamCode}
+    </if>
     ORDER BY id DESC
     </select>
     <select id="querySignPeople" resultType="com.aiurt.modules.train.task.dto.SignPeopleDTO">
