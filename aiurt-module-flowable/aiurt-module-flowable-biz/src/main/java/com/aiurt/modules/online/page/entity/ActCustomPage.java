@@ -60,6 +60,10 @@ public class ActCustomPage implements Serializable {
 	@Excel(name = "表单名称", width = 15)
     @ApiModelProperty(value = "表单名称")
     private String pageName;
+    /**表单所属模块*/
+	@Excel(name = "表单所属模块", width = 15)
+    @ApiModelProperty(value = "表单所属模块")
+    private String pageModule;
 	/**表单全局属性*/
 	@Excel(name = "表单全局属性", width = 15)
     @ApiModelProperty(value = "表单全局属性")

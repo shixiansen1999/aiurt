@@ -51,6 +51,8 @@ public class SysUserUsageServiceImpl extends ServiceImpl<SysUserUsageMapper, Sys
         }
         List<SysUserUsageRespDTO> list = baseMapper.globalSearch(name);
 
+        list.removeAll(Collections.singletonList(null));
+
         return list;
     }
 
