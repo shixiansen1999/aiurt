@@ -29,4 +29,4 @@ public interface SysUserUsageMapper extends BaseMapper<SysUserUsage> {
      * @return
      */
     List<SysUserUsageRespDTO> globalSearch(@Param("name") String name);
-;}
+}
