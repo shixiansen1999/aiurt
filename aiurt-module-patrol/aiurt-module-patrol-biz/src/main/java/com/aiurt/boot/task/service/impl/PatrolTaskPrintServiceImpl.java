@@ -98,7 +98,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         DictModel excelDictModel = new DictModel();
         if (StrUtil.isNotEmpty(patrolStandard.getPrintTemplate())){
             excelDictModel = sysBaseApi.dictById(patrolStandard.getPrintTemplate());
-            excelName = "equipmentInspection.xlsx";
+            excelName = excelDictModel.getValue();
         }else {
             excelName = "telephone_system.xlsx";
         }
