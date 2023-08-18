@@ -369,7 +369,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     PrintDTO printDTO = new PrintDTO();
                     List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())).collect(Collectors.toList());
                     checkDTOs.forEach(c->{
-                        if (c.getCheckResult() == 0){
+                        if (c.getCheckResult() == 1){
                             printDTO.setResult("☑正常 ☐异常");
                         }else {
                             printDTO.setResult("☐正常 ☑异常");
@@ -384,7 +384,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())).collect(Collectors.toList());
                     for (int j = 0; j< checkDTOs.size()  ; j++) {
                         if (j<2){
-                            if (checkDTOs.get(j).getCheckResult() == 0){
+                            if (checkDTOs.get(j).getCheckResult() == 1){
                                 printDTO.setResult("☑正常 ☐异常");
                             }else {
                                 printDTO.setResult("☐正常 ☑异常");
@@ -413,7 +413,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())).collect(Collectors.toList());
                     for (int j = 0; j< checkDTOs.size()  ; j++) {
                         if (j<3){
-                            if (checkDTOs.get(j).getCheckResult() == 0){
+                            if (checkDTOs.get(j).getCheckResult() == 1){
                                 printDTO.setResult("☑正常 ☐异常");
                             }else {
                                 printDTO.setResult("☐正常 ☑异常");
