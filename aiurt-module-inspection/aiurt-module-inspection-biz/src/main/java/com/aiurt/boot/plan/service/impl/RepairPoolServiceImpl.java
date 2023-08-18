@@ -371,6 +371,10 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         RepairPool repairPool = baseMapper.selectById(id);
         RepairPoolDetailsDTO re = new RepairPoolDetailsDTO();
         if (ObjectUtil.isNotEmpty(repairPool)) {
+
+            // 是否是手工下发任务
+            re.setIsManual(repairPool.getIsManual());
+
             String code = repairPool.getCode();
 
             // 根据检修计划单号查询对应的检修标准
