@@ -2,7 +2,6 @@ package com.aiurt.modules.system.service;
 
 import com.alibaba.fastjson.JSONObject;
 import org.jeecg.common.api.vo.Result;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 
