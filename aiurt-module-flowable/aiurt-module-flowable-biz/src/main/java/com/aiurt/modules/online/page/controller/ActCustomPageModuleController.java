@@ -78,13 +78,13 @@ public class ActCustomPageModuleController extends BaseController<ActCustomPageM
 	 }
 
 	 /**
-      * 获取子数据
-      * @param actCustomPageModule
-      * @param req
-      * @return
-      */
-	//@AutoLog(value = "act_custom_page_module-获取子数据")
-	@ApiOperation(value="act_custom_page_module-获取子数据", notes="act_custom_page_module-获取子数据")
+	  * 获取子数据
+	  *
+	  * @param actCustomPageModule
+	  * @param req
+	  * @return
+	  */
+	@ApiOperation(value = "act_custom_page_module-获取子数据", notes = "act_custom_page_module-获取子数据")
 	@GetMapping(value = "/childList")
 	public Result<IPage<ActCustomPageModule>> queryPageList(ActCustomPageModule actCustomPageModule,HttpServletRequest req) {
 		QueryWrapper<ActCustomPageModule> queryWrapper = QueryGenerator.initQueryWrapper(actCustomPageModule, req.getParameterMap());
