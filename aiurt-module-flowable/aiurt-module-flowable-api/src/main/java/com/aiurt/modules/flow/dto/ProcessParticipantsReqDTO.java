@@ -22,6 +22,7 @@ public class ProcessParticipantsReqDTO {
     @ApiModelProperty("流程标识")
     private String modelKey;
 
+    @ApiModelProperty("按钮类型")
     private String approvalType;
 
 }
