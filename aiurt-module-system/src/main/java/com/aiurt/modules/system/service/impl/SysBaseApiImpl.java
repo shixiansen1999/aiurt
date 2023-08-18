@@ -1422,6 +1422,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<String> postCodeList = StrUtil.split(postStr, ',');
         return postCodeList.stream()
                 .map(sysPostMap::get)
+                .filter(Objects::nonNull) // 排除 null 值
                 .collect(Collectors.joining(","));
     }
 
