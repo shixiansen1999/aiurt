@@ -734,13 +734,15 @@ public class LoginController {
 	@RequestMapping(value = "/webAuthorizationLogin", method = RequestMethod.GET)
 	private Result<JSONObject> webAuthorizationLogin(HttpServletRequest req,
 													 @RequestParam(name = "code") String code){
-		return loginService.webAuthorizationLogin(req, code);
+		ILoginService bean = SpringContextUtils.getBean(ILoginService.class);
+		return bean.webAuthorizationLogin(req, code);
 	}
 
 	@ApiOperation("生成签名")
 	@GetMapping(value = "/autograph")
 	public Result<JSONObject> autograph(@RequestParam(name = "url") String url) {
-		return loginService.autograph(url);
+		ILoginService bean = SpringContextUtils.getBean(ILoginService.class);
+		return bean.autograph(url);
 	}
 	/**
 	 *根据token查询用户信息
