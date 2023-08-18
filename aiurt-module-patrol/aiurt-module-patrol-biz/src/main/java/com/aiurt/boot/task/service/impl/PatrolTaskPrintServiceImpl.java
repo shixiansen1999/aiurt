@@ -98,7 +98,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         DictModel excelDictModel = new DictModel();
         if (StrUtil.isNotEmpty(patrolStandard.getPrintTemplate())){
             excelDictModel = sysBaseApi.dictById(patrolStandard.getPrintTemplate());
-            excelName = excelDictModel.getValue();
+            excelName = "equipmentInspection.xlsx";
         }else {
             excelName = "telephone_system.xlsx";
         }
@@ -364,18 +364,149 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
 
             StringBuilder remark = new StringBuilder(); AtomicInteger i = new AtomicInteger(1);
             parentDTOList.forEach(p-> {
-                PrintDTO printDTO = new PrintDTO();
-                List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())&& c.getCheckResult() == 0).collect(Collectors.toList());
-                if (CollUtil.isNotEmpty(checkDTOs)){
-                    printDTO.setResult("☐正常 ☑异常");
+
+                if(p.getContent().contains("温湿度")){
+                    PrintDTO printDTO = new PrintDTO();
+                    List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())).collect(Collectors.toList());
                     checkDTOs.forEach(c->{
-                        remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
-                        i.getAndIncrement();
+                        if (c.getCheckResult() == 0){
+                            printDTO.setResult("☑正常 ☐异常");
+                        }else {
+                            printDTO.setResult("☐正常 ☑异常");
+                            remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
+                            i.getAndIncrement();
+                        }
+                        getEquipmentInspection.add(printDTO);
                     });
-                }else {
-                    printDTO.setResult("☑正常 ☐异常");
+
+                }else if(p.getContent().contains("驱动电源柜")){
+                    PrintDTO printDTO = new PrintDTO();
+                    List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())).collect(Collectors.toList());
+                    for (int j = 0; j< checkDTOs.size()  ; j++) {
+                        if (j<2){
+                            if (checkDTOs.get(j).getCheckResult() == 0){
+                                printDTO.setResult("☑正常 ☐异常");
+                            }else {
+                                printDTO.setResult("☐正常 ☑异常");
+                                remark.append(i).append(".").append(p.getContent()).append("-").append(checkDTOs.get(j).getContent()).append(":").append(checkDTOs.get(j).getRemark()).append("         ");
+                                i.getAndIncrement();
+                            }
+                            getEquipmentInspection.add(printDTO);
+                        }else if(j==3||j==5){
+                            List<PatrolCheckResultDTO> list =new ArrayList<>();
+                            list.add(checkDTOs.get(j-1));list.add(checkDTOs.get(j));
+                            List<PatrolCheckResultDTO> listTure = list.stream().filter(c ->c.getCheckResult() == 0).collect(Collectors.toList());
+                            if (CollUtil.isNotEmpty(listTure)){
+                                printDTO.setResult("☐正常 ☑异常");
+                                listTure.forEach(c->{
+                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
+                                    i.getAndIncrement();
+                                });
+                            }else {
+                                printDTO.setResult("☑正常 ☐异常");
+                            }
+                            getEquipmentInspection.add(printDTO);
+                        }
+                    }
+                }else if(p.getContent().contains("控制电源柜")){
+                    PrintDTO printDTO = new PrintDTO();
+                    List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())).collect(Collectors.toList());
+                    for (int j = 0; j< checkDTOs.size()  ; j++) {
+                        if (j<3){
+                            if (checkDTOs.get(j).getCheckResult() == 0){
+                                printDTO.setResult("☑正常 ☐异常");
+                            }else {
+                                printDTO.setResult("☐正常 ☑异常");
+                                remark.append(i).append(".").append(p.getContent()).append("-").append(checkDTOs.get(j).getContent()).append(":").append(checkDTOs.get(j).getRemark()).append("         ");
+                                i.getAndIncrement();
+                            }
+                            getEquipmentInspection.add(printDTO);
+                        }else if(j==4||j==6){
+                            List<PatrolCheckResultDTO> list =new ArrayList<>();
+                            list.add(checkDTOs.get(j-1));list.add(checkDTOs.get(j));
+                            List<PatrolCheckResultDTO> listTure = list.stream().filter(c ->c.getCheckResult() == 0).collect(Collectors.toList());
+                            if (CollUtil.isNotEmpty(listTure)){
+                                printDTO.setResult("☐正常 ☑异常");
+                                listTure.forEach(c->{
+                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
+                                    i.getAndIncrement();
+                                });
+                            }else {
+                                printDTO.setResult("☑正常 ☐异常");
+                            }
+                            getEquipmentInspection.add(printDTO);
+                        }
+                    }
+                } else if(p.getContent().contains("安全门监视器显示")){
+                    PrintDTO printDTO = new PrintDTO();
+                    List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())).collect(Collectors.toList());
+                    for (int j = 0; j< checkDTOs.size()  ; j++) {
+                        if(j==2||j==5){
+                            List<PatrolCheckResultDTO> list =new ArrayList<>();
+                            list.add(checkDTOs.get(j-2));list.add(checkDTOs.get(j-1));list.add(checkDTOs.get(j));
+                            List<PatrolCheckResultDTO> listTure = list.stream().filter(c ->c.getCheckResult() == 0).collect(Collectors.toList());
+                            if (CollUtil.isNotEmpty(listTure)){
+                                printDTO.setResult("☐正常 ☑异常");
+                                listTure.forEach(c->{
+                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
+                                    i.getAndIncrement();
+                                });
+                            }else {
+                                printDTO.setResult("☑正常 ☐异常");
+                            }
+                            getEquipmentInspection.add(printDTO);
+                        }
+                    }
+                }else if(p.getContent().contains("PSL控制柜")){
+                    PrintDTO printDTO = new PrintDTO();
+                    List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())).collect(Collectors.toList());
+                    for (int j = 0; j< checkDTOs.size()  ; j++) {
+                        if (j==1){
+                            List<PatrolCheckResultDTO> list =new ArrayList<>();
+                            list.add(checkDTOs.get(j-1));list.add(checkDTOs.get(j));
+                            List<PatrolCheckResultDTO> listTure = list.stream().filter(c ->c.getCheckResult() == 0).collect(Collectors.toList());
+                            if (CollUtil.isNotEmpty(listTure)){
+                                printDTO.setResult("☐正常 ☑异常");
+                                listTure.forEach(c->{
+                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
+                                    i.getAndIncrement();
+                                });
+                            }else {
+                                printDTO.setResult("☑正常 ☐异常");
+                            }
+                            getEquipmentInspection.add(printDTO);
+                        }else if(j==4){
+                            List<PatrolCheckResultDTO> list =new ArrayList<>();
+                            list.add(checkDTOs.get(j-2));list.add(checkDTOs.get(j-1));list.add(checkDTOs.get(j));
+                            List<PatrolCheckResultDTO> listTure = list.stream().filter(c ->c.getCheckResult() == 0).collect(Collectors.toList());
+                            if (CollUtil.isNotEmpty(listTure)){
+                                printDTO.setResult("☐正常 ☑异常");
+                                listTure.forEach(c->{
+                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
+                                    i.getAndIncrement();
+                                });
+                            }else {
+                                printDTO.setResult("☑正常 ☐异常");
+                            }
+                            getEquipmentInspection.add(printDTO);
+                        }
+                    }
+                } else {
+                    PrintDTO printDTO = new PrintDTO();
+                    List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getParentId().equals(p.getOldId())&& c.getCheckResult() == 0).collect(Collectors.toList());
+                    if (CollUtil.isNotEmpty(checkDTOs)){
+                        printDTO.setResult("☐正常 ☑异常");
+                        checkDTOs.forEach(c->{
+                            remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
+                            i.getAndIncrement();
+                        });
+                    }else {
+                        printDTO.setResult("☑正常 ☐异常");
+                    }
+                    getEquipmentInspection.add(printDTO);
                 }
-                getEquipmentInspection.add(printDTO);
+
+
             });
             headerMap.put("remark",remark.toString());
         }
