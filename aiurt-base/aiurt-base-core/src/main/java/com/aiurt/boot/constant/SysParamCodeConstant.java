@@ -499,4 +499,9 @@ public interface SysParamCodeConstant {
      * 备件库存信息是否查库存为零的数据
      */
     String SPARE_PART_ZERO = "spare_part_zero";
+
+    /**
+     * 巡视工时是否使用mac计算，如果不使用就是各工单时长之和
+     */
+    String PATROL_DURATION_USE_MAC = "patrol_duration_use_mac";
 }
