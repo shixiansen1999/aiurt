@@ -2,6 +2,7 @@ package com.aiurt.modules.modeler.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
@@ -25,6 +26,7 @@ import com.aiurt.modules.modeler.service.IFlowableModelService;
 import com.aiurt.modules.user.entity.ActCustomUser;
 import com.aiurt.modules.user.service.IActCustomUserService;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -441,6 +443,11 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
             // 节点前、后附加操作
             flowTaskExt.setPreNodeAction(createJsonObjectFromExtensionMap(extensionMap, FlowModelExtElementConstant.EXT_PRE_NODE_ACTION));
             flowTaskExt.setPostNodeAction(createJsonObjectFromExtensionMap(extensionMap, FlowModelExtElementConstant.EXT_POST_NODE_ACTION));
+
+            // 表单字段在节点上的配置
+            List<ExtensionElement> extensionElements = extensionMap.get(FlowModelExtElementConstant.FORM_FIELD_CONFIG);
+            flowTaskExt.setFormFieldConfig(extractFormFields(extensionElements));
+
         }
 
         taskExtList.add(flowTaskExt);
@@ -580,6 +587,42 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                                 });
                     });
                 });
+
+        return ObjectUtil.isNotEmpty(jsonObject) ? jsonObject : null;
+    }
+
+    /**
+     * 将ExtensionElement列表转换为JSON数组，提取其中的属性信息。
+     *
+     * @param extensionElements ExtensionElement列表
+     * @return JSON数组，包含属性信息
+     */
+    public JSONArray extractFormFields(List<ExtensionElement> extensionElements) {
+        if (CollUtil.isNotEmpty(extensionElements)) {
+            return extensionElements.stream()
+                    .map(this::mapExtensionElementToJson)
+                    .collect(Collectors.toCollection(JSONArray::new));
+        }
+        return null;
+    }
+
+    /**
+     * 将ExtensionElement转换为JSON对象，提取其中的属性信息。
+     *
+     * @param extensionElement ExtensionElement对象
+     * @return JSON对象，包含属性信息
+     */
+    private JSONObject mapExtensionElementToJson(ExtensionElement extensionElement) {
+        Map<String, List<ExtensionAttribute>> elementAttributeMap = extensionElement.getAttributes();
+        JSONObject jsonObject = new JSONObject();
+
+        elementAttributeMap.forEach((key, attributeList) -> {
+            String attributeValue = attributeList.stream()
+                    .map(ExtensionAttribute::getValue)
+                    .findFirst()
+                    .orElse(null);
+            jsonObject.put(key, attributeValue);
+        });
 
         return jsonObject;
     }
