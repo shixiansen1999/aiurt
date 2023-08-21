@@ -154,7 +154,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
         try (
                 FileInputStream in = new FileInputStream(filePath)) {
             PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
-            pdfSaveOptions.setDefaultFont("Arial");
+            pdfSaveOptions.setDefaultFont("SimSun");
             com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
             pdfSaveOptions.setOnePagePerSheet(true);
             response.setCharacterEncoding("UTF-8");
@@ -272,7 +272,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
 
                 FileInputStream in = new FileInputStream(filePath)) {
             PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
-            pdfSaveOptions.setDefaultFont("DejaVu Sans");
+            pdfSaveOptions.setDefaultFont("SimSun");
             com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
             pdfSaveOptions.setOnePagePerSheet(true);
             response.setCharacterEncoding("UTF-8");
