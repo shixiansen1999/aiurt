@@ -232,20 +232,9 @@ public class FlowApiServiceImpl implements FlowApiService {
         Map<String, Object> busData = startBpmnDTO.getBusData();
         Map<String, Object> variableData = new HashMap<>(16);
         this.initAndGetProcessInstanceVariables(variableData);
-        if (Objects.nonNull(busData)) {
-            // 流程key
-            // 流程模板信息
-            LambdaQueryWrapper<ActCustomModelInfo> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(ActCustomModelInfo::getModelKey, startBpmnDTO.getModelKey()).last("limit 1");
-            ActCustomModelInfo one = modelInfoService.getOne(queryWrapper);
 
-            List<ActCustomVariable> list = variableService.list(new LambdaQueryWrapper<ActCustomVariable>().eq(ActCustomVariable::getModelId, one.getModelId())
-                    .eq(ActCustomVariable::getVariableType, 1).eq(ActCustomVariable::getType, 0));
-            list.stream().forEach(variable -> {
-                String variableName = variable.getVariableName();
-                variableData.put(variableName, busData.get(variableName));
-            });
-        }
+        Map<String, Object> variables = flowElementUtil.getVariablesByModelKey(busData, startBpmnDTO.getModelKey());
+        variableData.putAll(variables);
 
         // 根据key查询第一个用户任务
         UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(startBpmnDTO.getModelKey());
@@ -260,8 +249,6 @@ public class FlowApiServiceImpl implements FlowApiService {
             log.info("仅保存数据不发起流程！！！");
             return;
         }
-
-
 
         Authentication.setAuthenticatedUserId(loginName);
         // 启动流程
@@ -1414,7 +1401,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 .changeState();
 
         ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment(task);
-        actCustomTaskComment.setApprovalType(FlowApprovalType.REJECT_TO_STAR);
+        actCustomTaskComment.setApprovalType(FlowApprovalType.REJECT_FIRST_USER_TASK);
         actCustomTaskComment.setCreateRealname(loginUser.getUsername());
         customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
     }
