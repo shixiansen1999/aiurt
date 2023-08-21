@@ -262,6 +262,7 @@
         rp.inspection_str_code,
         rp.start_time,
         rp.end_time,
+        rp.is_manual,
         GROUP_CONCAT(DISTINCT(rtu.`name`) SEPARATOR ';') AS repairUserNameString
         FROM
             repair_pool rp

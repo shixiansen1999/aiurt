@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.base.BaseEntity;
 import com.aiurt.common.result.SpareResult;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -434,4 +435,18 @@ public class RepairTask extends BaseEntity {
     @ApiModelProperty(value = "查询的任务id列表")
     @TableField(exist = false)
     List<String> selections;
+
+    /**
+     * 检修策略编码，关联inspection_strategy的code
+     * 字典值作为检修任务名称(就是检修策略，换个马甲)
+     */
+    @Excel(name = "检修策略编码，关联inspection_strategy的code", width = 15)
+    @ApiModelProperty(value = "检修策略编码，关联inspection_strategy的code",required = false)
+    @TableField(exist = false)
+    @Dict(dictTable = "inspection_strategy",dicCode = "code",dicText = "name")
+    private java.lang.String inspectionStrCode;
+
+    @ApiModelProperty(value = "是否是手工下发任务，0否1是")
+    @TableField(exist = false)
+    private Integer isManual;
 }
