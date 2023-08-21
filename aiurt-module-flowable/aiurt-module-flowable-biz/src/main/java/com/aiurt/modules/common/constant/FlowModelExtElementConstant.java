@@ -65,4 +65,8 @@ public interface FlowModelExtElementConstant {
      * 从流程实例的变量中获取自定义 SQL 语句
      */
     String CUSTOM_SQL = "customSql";
+    /**
+     * 表单字段在节点上的配置
+     */
+    String FORM_FIELD_CONFIG = "formFieldConfig";
 }

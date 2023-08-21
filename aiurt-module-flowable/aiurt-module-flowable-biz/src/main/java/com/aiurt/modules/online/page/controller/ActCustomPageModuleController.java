@@ -37,7 +37,7 @@ public class ActCustomPageModuleController extends BaseController<ActCustomPageM
 	private IActCustomPageModuleService actCustomPageModuleService;
 
 	 /**
-	  * 加载所有数据
+	  * 加载所有静态表单所属模块
 	  *
 	  * @param async
 	  * @param pcode
@@ -78,13 +78,13 @@ public class ActCustomPageModuleController extends BaseController<ActCustomPageM
 	 }
 
 	 /**
-	  * 获取子数据
+	  * 获取静态表单所属模块的子数据
 	  *
 	  * @param actCustomPageModule
 	  * @param req
 	  * @return
 	  */
-	@ApiOperation(value = "act_custom_page_module-获取子数据", notes = "act_custom_page_module-获取子数据")
+	@ApiOperation(value = "获取静态表单所属模块的子数据", notes = "获取静态表单所属模块的子数据")
 	@GetMapping(value = "/childList")
 	public Result<IPage<ActCustomPageModule>> queryPageList(ActCustomPageModule actCustomPageModule,HttpServletRequest req) {
 		QueryWrapper<ActCustomPageModule> queryWrapper = QueryGenerator.initQueryWrapper(actCustomPageModule, req.getParameterMap());
@@ -101,8 +101,8 @@ public class ActCustomPageModuleController extends BaseController<ActCustomPageM
       * @param parentIds
       * @return
       */
-	//@AutoLog(value = "act_custom_page_module-批量获取子数据")
-    @ApiOperation(value="act_custom_page_module-批量获取子数据", notes="act_custom_page_module-批量获取子数据")
+	@AutoLog(value = "批量查询子节点")
+    @ApiOperation(value="批量查询子节点", notes="批量查询子节点")
     @GetMapping("/getChildListBatch")
     public Result getChildListBatch(@RequestParam("parentIds") String parentIds) {
         try {
@@ -120,14 +120,13 @@ public class ActCustomPageModuleController extends BaseController<ActCustomPageM
     }
 
 	/**
-	 *   添加
+	 *   添加静态表单所属模块
 	 *
 	 * @param actCustomPageModule
 	 * @return
 	 */
-	@AutoLog(value = "act_custom_page_module-添加")
-	@ApiOperation(value="act_custom_page_module-添加", notes="act_custom_page_module-添加")
-    @RequiresPermissions("pagemodule:act_custom_page_module:add")
+	@AutoLog(value = "添加静态表单所属模块")
+	@ApiOperation(value="添加静态表单所属模块", notes="添加静态表单所属模块")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody ActCustomPageModule actCustomPageModule) {
 		actCustomPageModuleService.addActCustomPageModule(actCustomPageModule);
@@ -135,14 +134,13 @@ public class ActCustomPageModuleController extends BaseController<ActCustomPageM
 	}
 
 	/**
-	 *  编辑
+	 *  编辑静态表单所属模块
 	 *
 	 * @param actCustomPageModule
 	 * @return
 	 */
-	@AutoLog(value = "act_custom_page_module-编辑")
-	@ApiOperation(value="act_custom_page_module-编辑", notes="act_custom_page_module-编辑")
-    @RequiresPermissions("pagemodule:act_custom_page_module:edit")
+	@AutoLog(value = "编辑静态表单所属模块")
+	@ApiOperation(value="编辑静态表单所属模块", notes="编辑静态表单所属模块")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody ActCustomPageModule actCustomPageModule) {
 		actCustomPageModuleService.updateActCustomPageModule(actCustomPageModule);
@@ -150,14 +148,13 @@ public class ActCustomPageModuleController extends BaseController<ActCustomPageM
 	}
 
 	/**
-	 *   通过id删除
+	 *   通过id删除静态表单所属模块
 	 *
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "act_custom_page_module-通过id删除")
-	@ApiOperation(value="act_custom_page_module-通过id删除", notes="act_custom_page_module-通过id删除")
-    @RequiresPermissions("pagemodule:act_custom_page_module:delete")
+	@AutoLog(value = "通过id删除静态表单所属模块")
+	@ApiOperation(value="通过id删除静态表单所属模块", notes="通过id删除静态表单所属模块")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		actCustomPageModuleService.deleteActCustomPageModule(id);
@@ -165,14 +162,13 @@ public class ActCustomPageModuleController extends BaseController<ActCustomPageM
 	}
 
 	/**
-	 *  批量删除
+	 *  批量删除静态表单所属模块
 	 *
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "act_custom_page_module-批量删除")
-	@ApiOperation(value="act_custom_page_module-批量删除", notes="act_custom_page_module-批量删除")
-    @RequiresPermissions("pagemodule:act_custom_page_module:deleteBatch")
+	@AutoLog(value = "批量删除静态表单所属模块")
+	@ApiOperation(value="批量删除静态表单所属模块", notes="批量删除静态表单所属模块")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.actCustomPageModuleService.removeByIds(Arrays.asList(ids.split(",")));
@@ -180,13 +176,13 @@ public class ActCustomPageModuleController extends BaseController<ActCustomPageM
 	}
 
 	/**
-	 * 通过id查询
+	 * 通过id查询静态表单所属模块
 	 *
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "act_custom_page_module-通过id查询")
-	@ApiOperation(value="act_custom_page_module-通过id查询", notes="act_custom_page_module-通过id查询")
+	@AutoLog(value = "通过id查询静态表单所属模块")
+	@ApiOperation(value="通过id查询静态表单所属模块", notes="通过id查询静态表单所属模块")
 	@GetMapping(value = "/queryById")
 	public Result<ActCustomPageModule> queryById(@RequestParam(name="id",required=true) String id) {
 		ActCustomPageModule actCustomPageModule = actCustomPageModuleService.getById(id);

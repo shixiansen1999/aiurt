@@ -10,6 +10,7 @@ import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.aiurt.modules.modeler.entity.ActUserTypeEntity;
 import com.aiurt.modules.modeler.entity.AutoSelectEntity;
 import com.aiurt.modules.modeler.entity.NodeActionDTO;
+import com.aiurt.modules.online.page.dto.FormFiledJsonDTO;
 import com.aiurt.modules.utils.FlowRelationUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -71,6 +72,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
      * 表格
      */
     private static final String FORM = "form";
+
 
     private static final String SERIAL_VERSION_UID = "serialVersionUID";
 
@@ -206,6 +208,14 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 ObjectNode postNodeActionObjectNode = FlowRelationUtil.createObjectNodeFromFields(NodeActionDTO.class, postNodeActionElements.get(0));
                 propertiesNode.set(FlowModelExtElementConstant.EXT_POST_NODE_ACTION, postNodeActionObjectNode);
             }
+
+            // 表单字段在节点上的配置
+            List<ExtensionElement> formFieldConfigElements = extensionElements.get(FlowModelExtElementConstant.FORM_FIELD_CONFIG);
+            if(CollUtil.isNotEmpty(formFieldConfigElements)){
+                ArrayNode arrayNode = convertExtensionElementsToJson(formFieldConfigElements, FormFiledJsonDTO.class);
+                propertiesNode.set(FlowModelExtElementConstant.FORM_FIELD_CONFIG, arrayNode);
+            }
+
         }
     }
 
@@ -306,7 +316,8 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.SERVICE);
             // 流程变量
             addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.FORM_TASK_VARIABLES);
-
+            // 表单字段在节点上的配置
+            addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.FORM_FIELD_CONFIG, JsonConverterUtil.getProperty(FlowModelExtElementConstant.FORM_FIELD_CONFIG, elementNode));
         }
     }
 
