@@ -140,7 +140,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
             //对已填充数据的文件进行后处理
             processFilledFile(filePath);
 
-//            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
+            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -255,7 +255,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
                 processFilledFile(type, firstColumn, lastColumn, cellByText, filePath, startRow, endRow, workbook, sheet);
             }
 
-//            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
+            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -272,7 +272,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
 
                 FileInputStream in = new FileInputStream(filePath)) {
             PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
-            pdfSaveOptions.setDefaultFont("Arial");
+            pdfSaveOptions.setDefaultFont("DejaVu Sans");
             com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
             pdfSaveOptions.setOnePagePerSheet(true);
             response.setCharacterEncoding("UTF-8");
