@@ -89,6 +89,10 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody ActCustomPage actCustomPage) {
 		actCustomPage.setPageVersion(1);
+		actCustomPage.setPageModule(String.format("%s%s","p",System.currentTimeMillis()));
+		if(ObjectUtil.isEmpty(actCustomPage.getPageType())){
+
+		}
 		actCustomPageService.save(actCustomPage);
 		return Result.OK("添加成功！");
 	}

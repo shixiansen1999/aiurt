@@ -445,4 +445,8 @@ public class RepairTask extends BaseEntity {
     @TableField(exist = false)
     @Dict(dictTable = "inspection_strategy",dicCode = "code",dicText = "name")
     private java.lang.String inspectionStrCode;
+
+    @ApiModelProperty(value = "是否是手工下发任务，0否1是")
+    @TableField(exist = false)
+    private Integer isManual;
 }
