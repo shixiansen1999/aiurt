@@ -99,4 +99,7 @@ public class BdTrainStudentFeedbackRecord implements Serializable {
     @ApiModelProperty(value = "选项名称")
     @TableField(exist = false)
     private String trainQuestionFeedBackOptionsName;
+    /**是否提交，0是，1是*/
+    @ApiModelProperty(value = "是否提交，0是，1是")
+    private Integer isSubmit;
 }

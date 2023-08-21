@@ -504,4 +504,8 @@ public interface SysParamCodeConstant {
      * 巡视工时是否使用mac计算，如果不使用就是各工单时长之和
      */
     String PATROL_DURATION_USE_MAC = "patrol_duration_use_mac";
+    /**
+     * 培训编码-是否根据线路生成编码
+     */
+    String TRAIN_TASK_CODE="train_task_code";
 }

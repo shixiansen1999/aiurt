@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
@@ -34,10 +35,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -95,31 +99,13 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	private ITrainArchiveService archiveService;
 	@Autowired
 	private ITrainRecordService recordService;
+	@Autowired
+	private ISysParamAPI iSysParamAPI;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void saveMain(BdTrainTask bdTrainTask, List<BdTrainTaskSign> bdTrainTaskSignList) {
-		int year = DateUtil.year(new Date());
-		int month = DateUtil.month(new Date())+1;
-		String taskCode = "YY-THXH-"+month+"-"+year+"-";
-		String formatTaskCode = "";
-		List<BdTrainTask> bdTrainTasks = bdTrainTaskMapper.selectList(new LambdaQueryWrapper<BdTrainTask>());
-		if(CollUtil.isNotEmpty(bdTrainTasks)){
-			List<String> taskCodes = bdTrainTasks.stream().filter(e->ObjectUtil.isNotEmpty(e.getTaskCode())).map(BdTrainTask::getTaskCode).collect(Collectors.toList());
-			if(CollUtil.isNotEmpty(taskCodes)){
-				Integer number = 1;
-				do{
-					String format = String.format("%02d",number );
-					formatTaskCode = taskCode+format;
-					number++;
-				}
-				while (taskCodes.contains(formatTaskCode));
-			}else {
-				formatTaskCode = taskCode+"01";
-			}
-		} else {
-			formatTaskCode = taskCode+"01";
-		}
+		String formatTaskCode = taskCode(bdTrainTask.getTrainLine());
 		bdTrainTask.setTaskCode(formatTaskCode);
 		bdTrainTaskMapper.insert(bdTrainTask);
 		if(bdTrainTaskSignList!=null && bdTrainTaskSignList.size()>0) {
@@ -130,7 +116,35 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 			}
 		}
 	}
-
+public String taskCode(Integer trainLine){
+	Integer year = DateUtil.year(new Date());
+	Integer month = DateUtil.month(new Date())+1;
+	SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.TRAIN_TASK_CODE);
+	String value = sysParamModel.getValue();
+	if("0".equals(value)){
+		trainLine = month;
+	}
+	String taskCode = "YY-THXH-"+trainLine+"-"+year+"-";
+	String formatTaskCode = "";
+	List<BdTrainTask> bdTrainTasks = bdTrainTaskMapper.selectList(new LambdaQueryWrapper<BdTrainTask>());
+	if(CollUtil.isNotEmpty(bdTrainTasks)){
+		List<String> taskCodes = bdTrainTasks.stream().filter(e->ObjectUtil.isNotEmpty(e.getTaskCode())).map(BdTrainTask::getTaskCode).collect(Collectors.toList());
+		if(CollUtil.isNotEmpty(taskCodes)){
+			Integer number = 1;
+			do{
+				String format = String.format("%02d",number );
+				formatTaskCode = taskCode+format;
+				number++;
+			}
+			while (taskCodes.contains(formatTaskCode));
+		}else {
+			formatTaskCode = taskCode+"01";
+		}
+	} else {
+		formatTaskCode = taskCode+"01";
+	}
+	return  formatTaskCode;
+}
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateMain(BdTrainTask bdTrainTask,List<BdTrainTaskSign> bdTrainTaskSignList) {
@@ -171,6 +185,8 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 				bdTrainTask.setMakeUpState(0);
 				bdTrainTask.setStudyResourceState(0);
 			}
+			String formatTaskCode = taskCode(bdTrainTask.getTrainLine());
+			bdTrainTask.setTaskCode(formatTaskCode);
 		}
 		//发布
 		if (bdTrainTask.getTaskState() == 1) {
@@ -554,6 +570,8 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	}
 	@Override
 	public Page<BdTrainTask> queryPageList(Page<BdTrainTask> pageList, BdTrainTask bdTrainTask) {
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		bdTrainTask.setTaskTeamCode(sysUser.getOrgCode());
 		List<BdTrainTask> trainTasks = bdTrainTaskMapper.queryPageList(pageList, bdTrainTask);
 		trainTasks.forEach(b->{
 			List<BdTrainTaskUser> userListById = bdTrainTaskUserMapper.getUserListById(b.getId());

@@ -1,12 +1,11 @@
 package com.aiurt.modules.train.task.mapper;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
 import com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedback;
 import com.aiurt.modules.train.task.entity.BdTrainStudentFeedbackRecord;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.aiurt.modules.train.task.entity.BdTrainTeacherFeedbackRecord;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @Description: 学员反馈记录
@@ -22,7 +21,7 @@ public interface BdTrainStudentFeedbackRecordMapper extends BaseMapper<BdTrainSt
      * @param taskId
      * @return
      */
-    List<BdTrainStudentFeedbackRecord> getStudentFeedbackRecordById(@Param("userId") String userId, @Param("taskId") String taskId);
+    List<BdTrainStudentFeedbackRecord> getStudentFeedbackRecordById(@Param("userId") String userId, @Param("taskId") String taskId,@Param("isSubmit") Integer isSubmit);
 
     /**
      * 获取所有学员反馈表

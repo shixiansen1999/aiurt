@@ -39,7 +39,7 @@ public class FeedBackDetailsDTO {
     /**培训部门*/
     @Excel(name = "培训部门", width = 15)
     @ApiModelProperty(value = "培训部门")
-    private Integer taskTeamId;
+    private String taskTeamId;
     /**培训部门名称*/
     @Excel(name = "培训部门名称", width = 15)
     @ApiModelProperty(value = "培训部门名称")
