@@ -42,6 +42,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.*;
@@ -265,15 +266,29 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
         sysBaseApi.saveSysAttachment(sysAttachment);
 
 
-        try(
-            FileInputStream in = new FileInputStream(filePath)) {
+        try (
+                // 创建一个PDF输出流
+                ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream();
+
+                FileInputStream in = new FileInputStream(filePath)) {
             PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
             pdfSaveOptions.setDefaultFont("Arial");
             com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
             pdfSaveOptions.setOnePagePerSheet(true);
             response.setCharacterEncoding("UTF-8");
             w.save(response.getOutputStream(), pdfSaveOptions);
-        }catch (Exception e){
+
+            // 设置输出文件路径
+            String fileName1 = patrolTask.getName() + System.currentTimeMillis() + ".pdf";
+            fileName1 = fileName1.replaceAll("[/*?:\"<>|]", "-");
+            String relatiePath1 = "/" + "patrol" + "/" + "print" + "/" + fileName1;
+
+            // 将PDF输出流保存成PDF文件
+            w.save(pdfOutputStream, pdfSaveOptions);
+            byte[] bytes = pdfOutputStream.toByteArray();
+
+            MinioUtil.upload(new ByteArrayInputStream(bytes), relatiePath1);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
