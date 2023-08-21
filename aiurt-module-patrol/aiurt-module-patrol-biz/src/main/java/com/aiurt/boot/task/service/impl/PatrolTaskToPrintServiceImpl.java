@@ -150,16 +150,30 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
         sysBaseApi.saveSysAttachment(sysAttachment);
 
         //excel转PDF流输出
-        try(
-                FileInputStream in = new FileInputStream(filePath)) {
-            PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
-            com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
-            pdfSaveOptions.setOnePagePerSheet(true);
-            response.setCharacterEncoding("UTF-8");
-            w.save(response.getOutputStream(), pdfSaveOptions);
+        try{
+            FileInputStream FileInputStream = new FileInputStream(filePath);
+            Workbook workbook = WorkbookFactory.create(FileInputStream);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            com.spire.xls.Workbook workbook1 = new com.spire.xls.Workbook();
+            workbook1.loadFromStream(inputStream);
+            //pdf 自适应屏幕大小
+            workbook1.getConverterSetting().setSheetFitToWidth(true);
+            workbook1.saveToStream(response.getOutputStream(), FileFormat.PDF);
         }catch (Exception e){
             throw new RuntimeException(e);
         }
+//        try(
+//                FileInputStream in = new FileInputStream(filePath)) {
+//            PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
+//            com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
+//            pdfSaveOptions.setOnePagePerSheet(true);
+//            response.setCharacterEncoding("UTF-8");
+//            w.save(response.getOutputStream(), pdfSaveOptions);
+//        }catch (Exception e){
+//            throw new RuntimeException(e);
+//        }
     }
 
 
@@ -248,7 +262,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
                  Workbook workbook = WorkbookFactory.create(inputStream)) {
                 Sheet sheet = workbook.getSheetAt(0);
                 // 打印设置
-                FilePrintUtils.printSet(sheet);
+//                FilePrintUtils.printSet(sheet);
                 // 对已填充数据的文件进行后处理
                 processFilledFile(type, firstColumn, lastColumn, cellByText, filePath, startRow, endRow, workbook, sheet);
             }
@@ -263,16 +277,33 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
         sysAttachment.setType("minio");
         sysBaseApi.saveSysAttachment(sysAttachment);
 
-        try(
-            FileInputStream in = new FileInputStream(filePath)) {
-            PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
-            com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
-            pdfSaveOptions.setOnePagePerSheet(true);
-            response.setCharacterEncoding("UTF-8");
-            w.save(response.getOutputStream(), pdfSaveOptions);
+
+        try{
+            FileInputStream fileInputStream = new FileInputStream(filePath);
+            Workbook workbook = WorkbookFactory.create(fileInputStream);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            com.spire.xls.Workbook workbook1 = new com.spire.xls.Workbook();
+            workbook1.loadFromStream(inputStream);
+            //pdf 自适应屏幕大小
+//            workbook1.getConverterSetting().setSheetFitToWidth(true);
+            workbook1.saveToStream(response.getOutputStream(), FileFormat.PDF);
+            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
         }catch (Exception e){
             throw new RuntimeException(e);
         }
+
+//        try(
+//            FileInputStream in = new FileInputStream(filePath)) {
+//            PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
+//            com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
+//            pdfSaveOptions.setOnePagePerSheet(true);
+//            response.setCharacterEncoding("UTF-8");
+//            w.save(response.getOutputStream(), pdfSaveOptions);
+//        }catch (Exception e){
+//            throw new RuntimeException(e);
+//        }
     }
 
 
@@ -632,7 +663,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
              Workbook workbook = WorkbookFactory.create(inputStream)) {
             Sheet sheet  = workbook.getSheetAt(0);
             //打印设置
-            FilePrintUtils.printSet(sheet);
+//            FilePrintUtils.printSet(sheet);
 
             // 保存修改后的Excel文件
             OutputStream outputStream = null;
