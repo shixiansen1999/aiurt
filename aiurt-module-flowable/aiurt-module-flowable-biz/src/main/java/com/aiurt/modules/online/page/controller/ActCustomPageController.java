@@ -1,5 +1,6 @@
 package com.aiurt.modules.online.page.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
@@ -88,6 +89,10 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody ActCustomPage actCustomPage) {
 		actCustomPage.setPageVersion(1);
+		actCustomPage.setPageModule(String.format("%s%s","p",System.currentTimeMillis()));
+		if(ObjectUtil.isEmpty(actCustomPage.getPageType())){
+
+		}
 		actCustomPageService.save(actCustomPage);
 		return Result.OK("添加成功！");
 	}
@@ -151,13 +156,21 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 
 	@GetMapping(value = "/queryList")
 	@ApiOperation("查询表单list")
-	public Result<List<ActCustomPage>> queryList(@RequestParam(value = "pageName",required = false) String pageName) {
+	public Result<List<ActCustomPage>> queryList(@RequestParam(value = "pageName",required = false) String pageName,
+												 @RequestParam(value = "pageType",required = false) Integer pageType) {
 		LambdaQueryWrapper<ActCustomPage> wrapper = new LambdaQueryWrapper<>();
-
 		wrapper.eq(ActCustomPage::getDelFlag, CommonConstant.DEL_FLAG_0);
+		if(StrUtil.isNotEmpty(pageName)){
+			wrapper.like(ActCustomPage::getPageName, pageName);
+		}
+		if(ObjectUtil.isNotEmpty(pageType)){
+			wrapper.eq(ActCustomPage::getPageType, pageType);
+		}
 
 		List<ActCustomPage> actCustomPageList = actCustomPageService.getBaseMapper().selectList(wrapper);
 
 		return Result.OK(actCustomPageList);
 	}
+
+
 }

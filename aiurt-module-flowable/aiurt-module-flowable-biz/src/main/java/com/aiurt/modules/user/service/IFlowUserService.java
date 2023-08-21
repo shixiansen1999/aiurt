@@ -1,5 +1,7 @@
 package com.aiurt.modules.user.service;
 
+import com.aiurt.modules.user.dto.FlowUserRelationRespDTO;
+
 import java.util.List;
 
 /**
@@ -34,4 +36,10 @@ public interface IFlowUserService {
      * @return
      */
     List<String> getUserName(String name);
+
+    /**
+     * 流程办理人关系下拉树
+     * @return
+     */
+    List<FlowUserRelationRespDTO> queryRelationList();
 }

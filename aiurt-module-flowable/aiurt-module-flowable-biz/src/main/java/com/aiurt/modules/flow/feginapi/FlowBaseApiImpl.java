@@ -1,14 +1,11 @@
 package com.aiurt.modules.flow.feginapi;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.api.FlowBaseApi;
 import com.aiurt.modules.flow.constants.FlowApprovalType;
 import com.aiurt.modules.flow.dto.*;
-import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
@@ -28,7 +25,6 @@ import org.flowable.engine.HistoryService;
 import org.flowable.engine.IdentityService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
-import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
@@ -238,13 +234,8 @@ public class FlowBaseApiImpl implements FlowBaseApi {
         // 完成流程启动后的第一个任务
         FlowTaskCompleteCommentDTO flowTaskCompleteDTO = startBpmnImportDTO.getFlowTaskCompleteDTO();
         if (Objects.nonNull(flowTaskCompleteDTO) && StrUtil.equalsAnyIgnoreCase(flowTaskCompleteDTO.getApprovalType(), FlowApprovalType.AGREE)) {
-            // 按照规则，调用该方法的用户，就是第一个任务的assignee，因此默认会自动执行complete。
-            ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(flowTaskCompleteDTO, ActCustomTaskComment.class);
-            if (ObjectUtil.isNotEmpty(flowTaskComment)) {
-                flowTaskComment.fillWith(task);
-            }
             // 不需要保存中间业务数据了
-            flowApiService.completeTask(task, flowTaskComment, null, variableData);
+            flowApiService.completeTask(task, flowTaskCompleteDTO, null, variableData);
         }
     }
 

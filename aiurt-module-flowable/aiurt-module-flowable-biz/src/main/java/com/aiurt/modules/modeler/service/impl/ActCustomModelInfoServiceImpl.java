@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
+import org.flowable.engine.RepositoryService;
 import org.flowable.ui.modeler.domain.Model;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.system.vo.LoginUser;
@@ -55,6 +56,9 @@ public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInf
 
     @Autowired
     private IActCustomVariableService customVariableService;
+
+    @Autowired
+    private RepositoryService repositoryService;
 
     /**
      * 添加模板
@@ -105,9 +109,13 @@ public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInf
         if (CollectionUtils.isNotEmpty(idList)) {
             String id = idList.get(0);
             ActCustomModelInfo modelInfo = this.getById(id);
+            String modelKey = modelInfo.getModelKey();
+
+            // 同时删除流程定义信息
             if (modelInfo.getStatus().equals(ModelFormStatusEnum.CG.getStatus())) {
                 this.removeById(id);
                 String modelId = modelInfo.getModelId();
+               // repositoryService.getBpmnModel(modelId);
                 modelService.deleteModel(modelId);
             } else {
                 throw new AiurtBootException("模型不是草稿状态，请勿删除！");

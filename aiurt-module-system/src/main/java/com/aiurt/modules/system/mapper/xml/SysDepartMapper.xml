@@ -59,4 +59,29 @@
         INNER JOIN sys_param sp ON find_in_set(sd.org_category, sp.`value`) AND sp.`code`=#{workLogOrgCategory}
         WHERE sd.org_code_cc LIKE CONCAT ('%',#{orgCode},'%' )
     </select>
+    <select id="selectRecursiveChildrenByIds" resultType="com.aiurt.modules.system.entity.SysDepart">
+        WITH RECURSIVE RecursiveCTE AS (
+        SELECT
+        id,
+        parent_id,
+        depart_name
+        FROM
+        sys_depart
+        WHERE
+        id IN
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+        UNION ALL
+        SELECT
+        sd.id,
+        sd.parent_id,
+        sd.depart_name
+        FROM
+        sys_depart sd
+        INNER JOIN
+        RecursiveCTE rc ON sd.parent_id = rc.id
+        )
+        SELECT * FROM RecursiveCTE;
+    </select>
 </mapper>

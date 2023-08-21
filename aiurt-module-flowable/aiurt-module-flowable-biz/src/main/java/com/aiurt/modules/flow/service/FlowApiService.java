@@ -52,7 +52,7 @@ public interface FlowApiService {
      * @param comment 审批对象。
      * @param busData 流程任务的变量数据。
      */
-    void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData);
+    void completeTask(Task task, FlowTaskCompleteCommentDTO comment, Map<String, Object> busData);
 
     /**
      * 完成任务
@@ -61,7 +61,7 @@ public interface FlowApiService {
      * @param busData
      * @param variableData
      */
-    void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData, Map<String, Object> variableData);
+    void completeTask(Task task, FlowTaskCompleteCommentDTO comment, Map<String, Object> busData, Map<String, Object> variableData);
 
     /**
      * 判断当前登录用户是否为流程实例中的用户任务的指派人。或是候选人之一。
@@ -300,4 +300,18 @@ public interface FlowApiService {
      * @return
      */
     TaskInfoDTO viewEndProcessTaskInfo(String processInstanceId);
+
+    /**
+     * 获取办理时选人维度列表。
+     * @param processParticipantsReqDTO 包含流程实例ID和任务id和表单数据的请求信息
+     * @return
+     */
+    List<ProcessParticipantsInfoDTO> getProcessParticipantsInfo(ProcessParticipantsReqDTO processParticipantsReqDTO);
+
+    /**
+     * 获取首个任务的选人数据
+     * @param processParticipantsReqDTO
+     * @return
+     */
+    List<ProcessParticipantsInfoDTO> getProcessParticipantsInfoWithOutStart(ProcessParticipantsReqDTO processParticipantsReqDTO);
 }

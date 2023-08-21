@@ -97,4 +97,6 @@ public class TaskInfoDTO {
 
     @ApiModelProperty(value = "流程名称")
     private String processName;
+
+    private Boolean isAutoSelect = true;
 }

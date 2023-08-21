@@ -1,5 +1,6 @@
 package com.aiurt.modules.listener;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -7,6 +8,10 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.HttpContextUtils;
+import com.aiurt.config.sign.util.HttpUtils;
+import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
+import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
@@ -15,6 +20,7 @@ import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.todo.dto.BpmnTodoDTO;
 import com.aiurt.modules.user.service.IFlowUserService;
+import com.aiurt.modules.utils.FlowableNodeActionUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.shiro.SecurityUtils;
@@ -23,7 +29,9 @@ import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.common.engine.impl.event.FlowableEntityEventImpl;
 import org.flowable.engine.HistoryService;
+import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngines;
+import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
@@ -33,9 +41,11 @@ import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecg.common.util.SpringContextUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
@@ -52,7 +62,7 @@ public class TaskCreateListener implements FlowableEventListener {
      */
     @Override
     public void onEvent(FlowableEvent event) {
-        logger.info("start task create listener");
+        logger.info("任务节点出创建事件");
         if (!(event instanceof FlowableEntityEventImpl)) {
             return;
         }
@@ -63,8 +73,12 @@ public class TaskCreateListener implements FlowableEventListener {
             return;
         }
 
+        // 判断是否新版流程，属性变量
+        //
+
         logger.debug("活动启动监听事件,设置办理人员......");
         TaskEntity taskEntity = (TaskEntity) entity;
+
         // 流程任务id
         String taskId = taskEntity.getId();
         // 流程定义id
@@ -73,14 +87,27 @@ public class TaskCreateListener implements FlowableEventListener {
         String processInstanceId = taskEntity.getProcessInstanceId();
         // 流程节点定义id
         String taskDefinitionKey = taskEntity.getTaskDefinitionKey();
+
         // 查询流程实例
         ProcessInstance instance = ProcessEngines.getDefaultProcessEngine().getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-
-        FlowElementUtil flowElementUtil = SpringContextUtils.getBean(FlowElementUtil.class);
 
         // 查询配置项
         IActCustomTaskExtService taskExtService = SpringContextUtils.getBean(IActCustomTaskExtService.class);
         ActCustomTaskExt taskExt = taskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, taskDefinitionKey);
+
+        // 任务节点前附加操作
+        FlowableNodeActionUtils.processTaskData(processDefinitionId,taskDefinitionKey,processInstanceId,FlowModelExtElementConstant.EXT_PRE_NODE_ACTION);
+
+        // 判断是否为流程多实例
+        List<String> list = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
+                .getVariable(processInstanceId, FlowVariableConstant.ASSIGNEE_LIST + taskDefinitionKey, List.class);
+        if (CollectionUtil.isNotEmpty(list)) {
+            // 发送待办
+            buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(taskEntity.getAssignee()));
+            return;
+        }
+
+        FlowElementUtil flowElementUtil = SpringContextUtils.getBean(FlowElementUtil.class);
 
         // 判断首个节点是否为驳回
         UserTask userTask = flowElementUtil.getFirstUserTaskByDefinitionId(processDefinitionId);
@@ -245,27 +272,11 @@ public class TaskCreateListener implements FlowableEventListener {
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
             todoBaseApi.createBbmnTodoTask(bpmnTodoDTO);
 
-            //发送通知
-            /*ISysBaseAPI iSysBaseApi = SpringContextUtils.getBean(ISysBaseAPI.class);
-
-            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, instance.getBusinessKey());
-            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.BPM.getType());
-            messageDTO.setData(map);
-            messageDTO.setTitle(bpmnTodoDTO.getProcessName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss"));
-            messageDTO.setToUser(StrUtil.join(",", userNameList));
-            messageDTO.setToAll(false);
-
-            messageDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE);
-            ISysParamAPI sysParamAPI = SpringContextUtils.getBean(ISysParamAPI.class);
-            SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.BPM_MESSAGE);
-            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-            messageDTO.setMsgAbstract("有流程到达");
-            iSysBaseApi.sendTemplateMessage(messageDTO);*/
-
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
     }
+
 
     /**
      * @return whether or not the current operation should fail when this listeners execution throws an exception.

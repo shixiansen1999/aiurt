@@ -209,19 +209,30 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 角色树
-     * @param values 可以根据values查询，多个使用英文逗号分隔。有values时就不返回树结构了，而是列表
+     *
+     * @param values       可以根据values查询，多个使用英文逗号分隔。
+     * @param isTreeReturn 有values时,true返回树结构,false返回列表
      * @return
      */
-    public List<SysUserModel> queryRoleUserTree(String values);
+    public List<SysUserModel> queryRoleUserTree(String values,Boolean isTreeReturn);
 
 
     /**
      * 岗位树
-     * @param values 可以根据values查询，多个使用英文逗号分隔。有values时就不返回树结构了，而是列表
-     * @param
+     *
+     * @param values       可以根据values查询，多个使用英文逗号分隔。有values时就不返回树结构了，而是列表
+     * @param isTreeReturn 有values时,true返回树结构,false返回列表
      * @return
      */
-    public List<SysUserModel> queryPostUserTree(String values);
+    public List<SysUserModel> queryPostUserTree(String values,Boolean isTreeReturn);
+
+    /**
+     * 查询部门用户树，包括用户和部门的树形结构
+     *
+     * @param departIdStr 部门ID字符串，用逗号分隔的部门ID列表
+     * @return 部门用户树列表
+     */
+    List<SysUserModel> queryDepartUserTree(String departIdStr);
 
     /**
      * 22通过用户账号查询角色Id集合
@@ -1329,5 +1340,22 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return 用户信息
      */
     JSONObject queryByWorkNoUser(String workNo);
+
+    /**
+     * 根据给定的参数获取符合条件的用户名称列表。
+     *
+     * @param roleCodes 角色代码列表，用于筛选符合条件的用户
+     * @param orgIds    组织ID列表，用于筛选符合条件的用户
+     * @param posts     岗位列表，用于筛选符合条件的用户
+     * @return 符合条件的用户账号并去重的列表
+     */
+    List<String> getUserNameByParams(List<String> roleCodes, List<String> orgIds, List<String> posts);
+
+    /**
+     * 获取角色信息
+     * @param roleCode
+     * @return
+     */
+    List<SysUserRoleModel> getRole(List<String> roleCode);
 }
 

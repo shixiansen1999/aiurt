@@ -60,6 +60,10 @@ public class ActCustomPage implements Serializable {
 	@Excel(name = "表单名称", width = 15)
     @ApiModelProperty(value = "表单名称")
     private String pageName;
+    /**表单所属模块*/
+	@Excel(name = "表单所属模块", width = 15)
+    @ApiModelProperty(value = "表单所属模块")
+    private String pageModule;
 	/**表单全局属性*/
 	@Excel(name = "表单全局属性", width = 15)
     @ApiModelProperty(value = "表单全局属性")
@@ -74,11 +78,24 @@ public class ActCustomPage implements Serializable {
 	@Excel(name = "版本号", width = 15)
     @ApiModelProperty(value = "版本号")
     private Integer pageVersion;
+    /**后台接口路径*/
+	@Excel(name = "后台接口路径", width = 15)
+    @ApiModelProperty(value = "后台接口路径")
+    private String pageInterfacePath;
+    /**前端页面路径*/
+	@Excel(name = "前端页面路径", width = 15)
+    @ApiModelProperty(value = "前端页面路径")
+    private String pagePath;
+    /**表单类型：0-静态表单，1-动态表单*/
+	@Excel(name = "表单类型：0-静态表单，1-动态表单", width = 15)
+    @ApiModelProperty(value = "表单类型：0-静态表单，1-动态表单")
+    private Integer pageType;
 
     /**
      * 删除状态 0-未删除 1-已删除
      */
     @ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
     @TableLogic
-    private  Integer  delFlag;
+    private Integer delFlag;
+
 }

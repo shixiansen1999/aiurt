@@ -9,6 +9,6 @@ ${AnsiColor.BRIGHT_BLUE}
                           |_|
 
 ${AnsiColor.BRIGHT_GREEN}
-地体运维平台: 1.0.0
+运维平台: 1.0.0
 Spring Boot Version: ${spring-boot.version}${spring-boot.formatted-version}
 ${AnsiColor.BLACK}
