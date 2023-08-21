@@ -486,4 +486,17 @@ public interface SysParamCodeConstant {
      * 取消挂起时是否更新维修负责人
      */
     String CANCEL_HANGUP_CH_AUN = "cancel_hangup_ch_aun";
+
+    /**
+     * 备件管理是否启用全新数量、已使用数量、待报废数量、委外送修数量
+     */
+    String SPARE_PART_EXTRA_NUM = "spare_part_extra_num";
+    /**
+     * 故障备件更换是否更换一次，走一次备件流程
+     */
+    String SPARE_PART_EXTRA = "spare_part_extra";
+    /**
+     * 备件库存信息是否查库存为零的数据
+     */
+    String SPARE_PART_ZERO = "spare_part_zero";
 }
