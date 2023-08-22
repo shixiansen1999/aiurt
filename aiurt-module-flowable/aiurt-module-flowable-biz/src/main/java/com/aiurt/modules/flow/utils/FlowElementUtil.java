@@ -91,7 +91,7 @@ public class FlowElementUtil {
 
         // 判断
         if (Objects.isNull(flowElement)) {
-            throw new AiurtBootException("");
+            throw new AiurtBootException("流程模型不存在");
         }
 
         // 获取用户节点
@@ -298,7 +298,7 @@ public class FlowElementUtil {
                 List<String> className = StrUtil.split(service, '.');
                 try {
                     if (CollUtil.isNotEmpty(className)) {
-                        return reflectionService.invokeService(className.get(0), className.get(1), data);
+                        return reflectionService.proxy(service, data);
                     }
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);

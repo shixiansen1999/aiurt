@@ -205,7 +205,6 @@ public class ActCustomInterfaceModuleController extends BaseController<ActCustom
 	 */
 	@AutoLog(value = "编辑自定义接口模块")
 	@ApiOperation(value="编辑自定义接口模块", notes="编辑自定义接口模块")
-    @RequiresPermissions("workflowapi:act_custom_interface_module:edit")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody ActCustomInterfaceModule actCustomInterfaceModule) {
 		actCustomInterfaceModuleService.updateActCustomInterfaceModule(actCustomInterfaceModule);

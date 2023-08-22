@@ -1,5 +1,6 @@
 package com.aiurt.modules.modeler.entity;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -75,6 +76,10 @@ public class ActCustomTaskExt implements Serializable {
     @ApiModelProperty("节后后附加操作信息")
     @TableField(typeHandler = JacksonTypeHandler.class)
     private JSONObject postNodeAction;
+
+    @ApiModelProperty("表单字段配置")
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private JSONArray formFieldConfig;
 
 
 }

@@ -35,6 +35,8 @@ import com.aiurt.modules.online.businessdata.service.IActCustomBusinessDataServi
 import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.aiurt.modules.online.page.service.IActCustomPageService;
 import com.aiurt.modules.user.entity.ActCustomUser;
+import com.aiurt.modules.user.getuser.impl.DefaultSelectUser;
+import com.aiurt.modules.user.getuser.impl.RelationSelectUser;
 import com.aiurt.modules.user.service.IActCustomUserService;
 import com.aiurt.modules.user.service.IFlowUserService;
 import com.alibaba.fastjson.JSON;
@@ -43,6 +45,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
@@ -57,6 +60,7 @@ import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ActivityInstance;
 import org.flowable.engine.runtime.ChangeActivityStateBuilder;
@@ -148,6 +152,10 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     @Autowired
     private IMultiInTaskService multiInTaskService;
+
+    @Autowired
+    private RelationSelectUser relationSelectUser;
+
 
     /**
      * @param startBpmnDTO
@@ -1666,6 +1674,8 @@ public class FlowApiServiceImpl implements FlowApiService {
     public TaskInfoDTO viewInitialTaskInfo(String processDefinitionKey) {
 
         UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(processDefinitionKey);
+
+        // 下
         if (Objects.isNull(userTask)) {
             throw new AiurtBootException(AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getCode(), AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getMessage());
         }
@@ -1911,6 +1921,8 @@ public class FlowApiServiceImpl implements FlowApiService {
             throw new AiurtBootException("数据验证失败，请核对指定的任务Id，请刷新后重试！");
         }
 
+        ProcessInstance processInstance = this.getProcessInstance(task.getProcessInstanceId());
+
         Execution execution = runtimeService.createExecutionQuery().executionId(task.getExecutionId()).singleResult();
         String taskDefinitionKey = task.getTaskDefinitionKey();
 
@@ -1933,16 +1945,62 @@ public class FlowApiServiceImpl implements FlowApiService {
         Map<String, Object> busData = Optional.ofNullable(processParticipantsReqDTO.getBusData()).orElse(new HashMap<>());
         busData.put("__APPROVAL_TYPE", processParticipantsReqDTO.getApprovalType());
         List<FlowElement> targetFlowElements = getTargetFlowElements(execution, processDefinitionId, taskDefinitionKey, busData);
-
+        Map<String, Object> variables = flowElementUtil.getVariables(busData, task.getProcessInstanceId());
         for (FlowElement flowElement : targetFlowElements) {
             if (flowElement instanceof UserTask) {
                 UserTask userTask = (UserTask) flowElement;
-                ProcessParticipantsInfoDTO processParticipantsInfoDTO = buildProcessParticipantsInfo(userTask, processDefinitionId);
+                ProcessParticipantsInfoDTO processParticipantsInfoDTO =  buildProcessParticipantsInfo(userTask, processInstance, variables);
                 result.add(processParticipantsInfoDTO);
             }
         }
         return result;
     }
+
+    private ProcessParticipantsInfoDTO buildProcessParticipantsInfo(UserTask userTask, ProcessInstance processInstance, Map<String, Object> variables) {
+
+
+        ProcessParticipantsInfoDTO processParticipantsInfoDTO = buildProcessParticipantsInfo(userTask, processInstance.getProcessDefinitionId());
+
+        // Extract user values from options
+        List<String> userList = processParticipantsInfoDTO.getOptions().stream()
+                .filter(p -> StrUtil.equalsIgnoreCase(p.getTitle(), "用户"))
+                .findFirst()
+                .map(ProcessParticipantsInfoDTO::getData)
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(SysUserModel::getValue)
+                .collect(Collectors.toList());
+
+        ActCustomUser customUserByTaskInfo = actCustomUserService.getActCustomUserByTaskInfo(processInstance.getProcessDefinitionId(), userTask.getId(), FlowConstant.USER_TYPE_0);
+        List<String> resultList = relationSelectUser.selectList(customUserByTaskInfo, processInstance, variables);
+        // Filter out existing users from the result list
+        resultList.removeAll(userList);
+        if (CollUtil.isNotEmpty(resultList)) {
+            String[] array = resultList.stream().toArray(String[]::new);
+            List<SysUserModel> data = Optional.ofNullable(sysBaseAPI.queryUserByNames(array)).orElse(Collections.emptyList()).stream()
+                    .filter(Objects::nonNull).map(this::buildSysUserModel).collect(Collectors.toList());
+
+
+            List<ProcessParticipantsInfoDTO> options = processParticipantsInfoDTO.getOptions();
+            ProcessParticipantsInfoDTO userOption = options.stream()
+                    .filter(p -> StrUtil.equalsIgnoreCase(p.getTitle(), "用户"))
+                    .findFirst()
+                    .orElse(null);
+
+            if (CollUtil.isNotEmpty(data)) {
+                if (userOption != null) {
+                    userOption.getData().addAll(data);
+                } else {
+                    ProcessParticipantsInfoDTO newUserOption = new ProcessParticipantsInfoDTO();
+                    newUserOption.setTitle("用户");
+                    newUserOption.setData(data);
+                    options.add(newUserOption);
+                }
+            }
+        }
+        return processParticipantsInfoDTO;
+    }
+
 
     /**
      * 构建流程参与者信息 DTO
@@ -2535,6 +2593,7 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     public List<ProcessParticipantsInfoDTO> getProcessParticipantsInfoWithOutStart(ProcessParticipantsReqDTO processParticipantsReqDTO) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<ProcessParticipantsInfoDTO> result = new ArrayList<>();
         String modelKey = processParticipantsReqDTO.getModelKey();
         // 获取流程定义信息
@@ -2557,11 +2616,14 @@ public class FlowApiServiceImpl implements FlowApiService {
         Map<String, Object> busData = Optional.ofNullable(processParticipantsReqDTO.getBusData()).orElse(new HashMap<>());;
         busData.put("__APPROVAL_TYPE", processParticipantsReqDTO.getApprovalType());
         List<FlowElement> flowElementList = flowElementUtil.getTargetFlowElement(modelKey, userTask, busData);
-
+        ExecutionEntityImpl processInstance = new ExecutionEntityImpl();
+        processInstance.setStartUserId(loginUser.getUsername());
+        processInstance.setProcessDefinitionId(processDefinitionId);
+        Map<String, Object> variables = flowElementUtil.getVariablesByModelKey(busData, modelKey);
         for (FlowElement flowElement : flowElementList) {
             if (flowElement instanceof UserTask) {
                 UserTask task = (UserTask) flowElement;
-                ProcessParticipantsInfoDTO processParticipantsInfoDTO = buildProcessParticipantsInfo(task, processDefinitionId);
+                ProcessParticipantsInfoDTO processParticipantsInfoDTO = buildProcessParticipantsInfo(task, processInstance, variables);
                 result.add(processParticipantsInfoDTO);
             }
         }
