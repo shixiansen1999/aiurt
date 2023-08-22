@@ -161,4 +161,7 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
     private Long exceptionItem;
 
     private java.lang.String macStatusName;
+
+    @ApiModelProperty(value = "抽检人")
+    private String samplePersonName;
 }
