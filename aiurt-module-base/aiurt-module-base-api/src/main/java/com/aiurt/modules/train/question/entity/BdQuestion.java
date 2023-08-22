@@ -37,6 +37,10 @@ public class BdQuestion implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "题目编号")
     private String id;
+	/**该习题的所属班组*/
+    @Excel(name = "所属班组", width = 15)
+    @ApiModelProperty(value = "所属班组")
+	private String orgCode;
 	/**题目内容*/
 	@Excel(name = "题目内容", width = 15)
     @ApiModelProperty(value = "题目内容")
