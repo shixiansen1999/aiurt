@@ -262,6 +262,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     .set(PatrolTaskDevice::getCheckTime, nowDate)
                     .set(PatrolTaskDevice::getStatus, PatrolConstant.BILL_COMPLETE)
                     .set(PatrolTaskDevice::getMac, patrolTaskDevice.getMac())
+                    .set(StrUtil.isNotEmpty(patrolTaskDevice.getSampleSignUrl()), PatrolTaskDevice::getSampleSignUrl, patrolTaskDevice.getSampleSignUrl())
                     .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
             //mac地址匹配,获取用户当前位置,并存好
             SysUserPositionCurrentDTO sysUserPositionCurrent = patrolTaskDeviceMapper.getSysUserPositionCurrent(sysUser.getUsername());
@@ -580,6 +581,10 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             List<PatrolAccessory> accessoryList = patrolAccessoryMapper.selectList(wrapper);
             l.setAccessoryInfo(accessoryList);
         });
+        // 设置抽检人信息
+        List<PatrolSamplePerson> samplePersonList = patrolSamplePersonMapper.getSamplePersonList(patrolNumber);
+        String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining(";"));
+        taskDeviceParam.setSamplePersonName(samplePersonName);
         // 构建巡检项目树
         List<PatrolCheckResultDTO> tree = getTree(checkResultList, "0");
         Map<String, Object> map = new HashMap<>(16);
