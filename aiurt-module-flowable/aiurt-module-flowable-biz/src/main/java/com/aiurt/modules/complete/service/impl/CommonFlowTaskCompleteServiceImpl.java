@@ -15,6 +15,8 @@ import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.multideal.dto.MultiDealDTO;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
 import com.aiurt.modules.multideal.service.IMultiInstanceDealService;
+import com.aiurt.modules.user.entity.ActCustomUser;
+import com.aiurt.modules.user.getuser.impl.DefaultSelectUser;
 import com.aiurt.modules.user.service.IActCustomUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.FlowElement;
@@ -62,6 +64,9 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
     @Autowired
     private IActCustomProcessCopyService processCopyService;
 
+    @Autowired
+    private DefaultSelectUser defaultSelectUser;
+
     /**
      * 始前处理
      *
@@ -84,7 +89,6 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
     @Override
     public void buildTaskContext(CompleteTaskContext taskContext) {
         FlowCompleteReqDTO flowCompleteReqDTO = taskContext.getFlowCompleteReqDTO();
-        String approvalType = flowCompleteReqDTO.getApprovalType();
         String taskId = flowCompleteReqDTO.getTaskId();
         String processInstanceId = flowCompleteReqDTO.getProcessInstanceId();
 
@@ -125,10 +129,12 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
             log.info("当前活动是多少实例，且是多实例的最后一个活动，或者时单例任务，设置下一步办理人");
             FlowElement flowElement = flowElementUtil.getFlowElement(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
             List<FlowElement> targetFlowElement = flowElementUtil.getTargetFlowElement(execution, flowElement, busData);
+            Map<String, Object> finalVariableData = variableData;
             List<NextNodeUserDTO> nodeUserDTOList = targetFlowElement.stream().map(element -> {
                 NextNodeUserDTO nextNodeUserDTO = new NextNodeUserDTO();
                 nextNodeUserDTO.setNodeId(element.getId());
-                List<String> userList = customUserService.getUserByTaskInfo(task.getProcessDefinitionId(), element.getId(), "0");
+                ActCustomUser actCustomUser = customUserService.getActCustomUserByTaskInfo(task.getProcessDefinitionId(), element.getId(), "0");
+                List<String> userList = defaultSelectUser.selectAllList(actCustomUser, processInstance, finalVariableData);
                 nextNodeUserDTO.setApprover(userList);
                 return nextNodeUserDTO;
             }).collect(Collectors.toList());
@@ -225,5 +231,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         if (CollUtil.isNotEmpty(copyList)) {
             processCopyService.saveBatch(copyList);
         }
+
+        // 发送消息
     }
 }

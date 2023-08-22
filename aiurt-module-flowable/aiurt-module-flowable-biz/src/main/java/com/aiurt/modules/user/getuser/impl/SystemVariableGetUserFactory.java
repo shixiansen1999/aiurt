@@ -1,7 +1,7 @@
 package com.aiurt.modules.user.getuser.impl;
 
 import com.aiurt.modules.user.enums.FlowUserRelationEnum;
-import com.aiurt.modules.user.getuser.SystemVariableGetTaskUserStrategy;
+import com.aiurt.modules.user.getuser.SystemVariableSelectUserStrategy;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -13,14 +13,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class SystemVariableGetUserFactory {
 
-    private Map<FlowUserRelationEnum, SystemVariableGetTaskUserStrategy> beanMap = new ConcurrentHashMap<>(16);
+    private Map<FlowUserRelationEnum, SystemVariableSelectUserStrategy> beanMap = new ConcurrentHashMap<>(16);
 
 
-    public void registerBean(FlowUserRelationEnum relationEnum, SystemVariableGetTaskUserStrategy getTaskUserStrategy) {
+    public void registerBean(FlowUserRelationEnum relationEnum, SystemVariableSelectUserStrategy getTaskUserStrategy) {
         beanMap.put(relationEnum, getTaskUserStrategy);
     }
 
-    public SystemVariableGetTaskUserStrategy getBean(FlowUserRelationEnum relationEnum) {
+    public SystemVariableSelectUserStrategy getBean(FlowUserRelationEnum relationEnum) {
         return beanMap.get(relationEnum);
     }
 }

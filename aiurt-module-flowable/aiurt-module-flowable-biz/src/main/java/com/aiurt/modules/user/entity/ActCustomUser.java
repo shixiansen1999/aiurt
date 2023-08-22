@@ -91,5 +91,5 @@ public class ActCustomUser implements Serializable {
 
 	@ApiModelProperty(value = "关系")
     @TableField(typeHandler = JacksonTypeHandler.class)
-	private List<FlowUserRelationAttributeModel> relation;
+	private JSONArray relation;
 }
