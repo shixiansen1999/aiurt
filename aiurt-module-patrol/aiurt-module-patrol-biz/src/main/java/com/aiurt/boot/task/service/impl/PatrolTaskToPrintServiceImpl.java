@@ -25,9 +25,10 @@ import com.alibaba.excel.util.MapUtils;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.alibaba.excel.write.metadata.fill.FillWrapper;
-import com.aspose.cells.*;
+import com.aspose.cells.IndividualFontConfigs;
+import com.aspose.cells.LoadOptions;
+import com.aspose.cells.PdfSaveOptions;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.spire.xls.FileFormat;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -42,7 +43,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.*;
@@ -154,10 +154,8 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
         try (
                 FileInputStream in = new FileInputStream(filePath)) {
             PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
-            pdfSaveOptions.setDefaultFont("SimSun");
             com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
             pdfSaveOptions.setOnePagePerSheet(true);
-            response.setCharacterEncoding("UTF-8");
             w.save(response.getOutputStream(), pdfSaveOptions);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -272,7 +270,6 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
 
                 FileInputStream in = new FileInputStream(filePath)) {
             PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
-            pdfSaveOptions.setDefaultFont("SimSun");
             com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
             pdfSaveOptions.setOnePagePerSheet(true);
             response.setCharacterEncoding("UTF-8");
