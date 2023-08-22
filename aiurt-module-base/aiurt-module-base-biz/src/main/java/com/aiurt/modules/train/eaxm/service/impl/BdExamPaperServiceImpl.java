@@ -20,6 +20,8 @@ import com.aiurt.modules.train.question.entity.BdQuestionOptionsAtt;
 import com.aiurt.modules.train.question.mapper.BdQuestionMapper;
 import com.aiurt.modules.train.question.mapper.BdQuestionOptionsAttMapper;
 import com.aiurt.modules.train.question.mapper.BdQuestionOptionsMapper;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -148,6 +150,10 @@ public class BdExamPaperServiceImpl extends ServiceImpl<BdExamPaperMapper, BdExa
 
     @Override
     public BdExamPaper addDetail(BdExamPaper bdExamPaper) {
+        // 将习题的所属班组设置为当前登录人所在的班组
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        bdExamPaper.setOrgCode(loginUser.getOrgCode());
+
         List<String> questionIds = bdExamPaper.getQuestionId();
         Integer scqNumber = 0;
         Integer daNumber = 0;

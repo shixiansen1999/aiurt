@@ -15,8 +15,10 @@ import com.aiurt.modules.train.question.service.IBdQuestionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -74,6 +76,10 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
 
     @Override
     public void addBdQuestion(BdQuestion bdQuestion) {
+        // 将习题的所属班组设置为当前登录人所在的班组
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        bdQuestion.setOrgCode(loginUser.getOrgCode());
+
         bdQuestionMapper.insert(bdQuestion);
         modifyDelete(bdQuestion);
     }
