@@ -96,7 +96,6 @@ public class ActCustomUserServiceImpl extends ServiceImpl<ActCustomUserMapper, A
         String post = customUser.getPost();
         String orgId = customUser.getOrgId();
         String roleCode = customUser.getRoleCode();
-        List<FlowUserRelationAttributeModel> relation = customUser.getRelation();
 
         List<String> resultList = new ArrayList<>();
         List<String> list = StrUtil.split(userName, ',');

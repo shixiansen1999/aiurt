@@ -490,7 +490,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                                 Optional.ofNullable(post).ifPresent(posts -> customUser.setPost(posts.stream().map(FlowUserAttributeModel::getValue).collect(Collectors.joining(","))));
                                 // 关系
                                 List<FlowUserRelationAttributeModel> relation = model.getRelation();
-                                Optional.ofNullable(relation).ifPresent(relations -> customUser.setRelation(relations));
+                                Optional.ofNullable(relation).ifPresent(relations -> customUser.setRelation(JSONObject.parseArray(JSON.toJSONString(relation))));
 
                                 userList.add(customUser);
                             });

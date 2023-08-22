@@ -201,7 +201,7 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
         if (MapUtil.isNotEmpty(relationMaps.getNumberRelationMap())) {
             String replacedExpressionWithStr = FlowRelationUtil.replaceOperators(relationValue, "||", "&&");
 //            String replacedExpressionWithStr = FlowRelationUtil.replacePlaceholders(relationValue, relationMaps.getNumberRelationMap());
-//            String replacedExpressionWithNameStr = FlowRelationUtil.replacePlaceholders(relationValue, relationMaps.getNumberRelationNameMap());
+//            String replacedEx·pressionWithNameStr = FlowRelationUtil.replacePlaceholders(relationValue, relationMaps.getNumberRelationNameMap());
             processedExpressionWithStr = FlowRelationUtil.replacePlaceholders(replacedExpressionWithStr, relationMaps.getNumberRelationMap());
 //            processedExpressionWithNameStr = FlowRelationUtil.replaceOperators(replacedExpressionWithNameStr, "或者", "并且");
         }

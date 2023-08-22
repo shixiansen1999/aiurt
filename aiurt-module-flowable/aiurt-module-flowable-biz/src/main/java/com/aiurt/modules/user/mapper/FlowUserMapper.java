@@ -1,5 +1,6 @@
 package com.aiurt.modules.user.mapper;
 
+import liquibase.pro.packaged.P;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -39,4 +40,47 @@ public interface FlowUserMapper {
      * @return
      */
     List<String> getUserName(@Param("name") String name);
+
+
+    /**
+     * 查询部门领导人
+     * @param orgId
+     * @return
+     */
+    List<String> getManageUserName(@Param("orgId") String orgId);
+
+    /**
+     *  查询上级部门领导人
+     * @param orgId
+     * @return
+     */
+    List<String> getParentManageUserName(@Param("orgId") String orgId);
+
+    /**
+     *
+     * @param userIdList
+     * @return
+     */
+    List<String> getUserNameByUserIdOrUserName(@Param("userIdList") List<String> userIdList);
+
+    /**
+     *
+     * @param roleIdList
+     * @return
+     */
+    List<String> getUserNameByRoleIdOrRoleCode(@Param("roleIdList") List<String> roleIdList);
+
+    /**
+     *
+     * @param orgIdList
+     * @return
+     */
+    List<String> getUserNameByOrgIdOrOrgCode(@Param("orgIdList") List<String> orgIdList);
+
+    /**
+     *
+     * @param postList
+     * @return
+     */
+    List<String> getUserNameByPost(@Param("postList") List<String> postList);
 }
