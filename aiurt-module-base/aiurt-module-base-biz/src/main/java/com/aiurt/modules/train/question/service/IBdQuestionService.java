@@ -6,6 +6,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.apache.ibatis.annotations.Param;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -70,4 +73,13 @@ public interface IBdQuestionService extends IService<BdQuestion> {
      * @return
      */
     BdQuestionDTO getQuestionNum(String categoryIds);
+
+    /**
+     * 下载导入模板
+     *
+     * @param request
+     * @param response
+     * @throws IOException
+     */
+    void downloadTemplateExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

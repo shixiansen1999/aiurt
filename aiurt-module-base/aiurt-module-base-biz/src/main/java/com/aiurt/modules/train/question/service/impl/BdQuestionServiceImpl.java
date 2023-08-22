@@ -4,10 +4,14 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.api.vo.TreeNode;
+import com.aiurt.common.util.ExcelUtils;
+import com.aiurt.common.util.MinioUtil;
 import com.aiurt.modules.train.question.dto.BdQuestionDTO;
 import com.aiurt.modules.train.question.entity.BdQuestion;
 import com.aiurt.modules.train.question.entity.BdQuestionOptions;
 import com.aiurt.modules.train.question.entity.BdQuestionOptionsAtt;
+import com.aiurt.modules.train.question.mapper.BdQuestionCategoryMapper;
 import com.aiurt.modules.train.question.mapper.BdQuestionMapper;
 import com.aiurt.modules.train.question.mapper.BdQuestionOptionsAttMapper;
 import com.aiurt.modules.train.question.mapper.BdQuestionOptionsMapper;
@@ -15,17 +19,23 @@ import com.aiurt.modules.train.question.service.IBdQuestionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -47,7 +57,13 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
     private BdQuestionOptionsMapper bdQuestionOptionsMapper;
 
     @Autowired
+    private BdQuestionCategoryMapper bdQuestionCategoryMapper;
+
+    @Autowired
     private ISysBaseAPI iSysBaseAPI;
+
+    @Value("${jeecg.minio.bucketName}")
+    private String bucketName;
 
     @Override
     public Page<BdQuestion> queryPageList(Page<BdQuestion> pageList,BdQuestion condition) {
@@ -161,6 +177,36 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
                 }}
         });
         return questionList;
+    }
+
+    @Override
+    public void downloadTemplateExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // 从minio获取模板文件
+        InputStream inputStream = MinioUtil.getMinioFile(bucketName, "excel/template/考卷习题导入模板.xlsx");
+        // 根据模板文件，创建一个Workbook对象
+        Workbook workbook = WorkbookFactory.create(inputStream);
+        // 添加下拉列表
+        // 题目类别，类别名称全表唯一的
+        List<TreeNode> treeNodes = bdQuestionCategoryMapper.queryPageList();
+        List<String> categoryNameList = treeNodes.stream().map(TreeNode::getName).collect(Collectors.toList());
+        ExcelUtils.selectList(workbook, 0, 4, 1, 1, categoryNameList);
+        // 答案类型，从数据字典获取
+        List<DictModel> typeDictList = iSysBaseAPI.queryDictItemsByCode("que_type");
+        List<String> typeList = typeDictList.stream().map(DictModel::getText).collect(Collectors.toList());
+        ExcelUtils.selectList(workbook, 0, 4, 3, 3, typeList);
+        // 是否是答案下拉列表
+        ExcelUtils.selectList(workbook, 0, 4, 6, 6, Arrays.asList("是", "否"));
+
+        // 将数据写入响应
+        String fileName = new String("考卷习题导入模板.xlsx".getBytes(), StandardCharsets.ISO_8859_1);
+        try (BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream())) {
+            response.setHeader("Content-Disposition", "attachment;filename=" + fileName);
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
