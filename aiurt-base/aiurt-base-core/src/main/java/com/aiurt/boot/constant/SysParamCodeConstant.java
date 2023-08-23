@@ -291,6 +291,14 @@ public interface SysParamCodeConstant {
      */
     String FAULT_EXTERNAL_SYSTEM_ID = "fault_external_system_id";
     /**
+     * 是否区分信号故障
+     */
+    String IS_DISTINGUISH_SIGNAL_FAULT = "is_distinguish_signal_fault";
+    /**
+     * 调度故障是否开启专用配置
+     */
+    String IS_EXTERNAL_SPECIAL_USE = "is_external_special_use";
+    /**
      * 根据配置决定故障上报是否开启控制中心班组自检故障指派功能及权限
      */
     String FAULT_CENTER_ADD = "fault_center_add";

@@ -3409,6 +3409,12 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             messageDTO.setMsgAbstract("有新的故障信息");
             messageDTO.setPublishingContent("有新的故障信息，请查看");
             messageDTO.setIsRingBell(true);
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
+            if ("1".equals(paramModel.getValue())) {
+                //信号调度下发响
+                messageDTO.setRingType(2);
+                messageDTO.setRingDuration(20);
+            }
             sendMessage(messageDTO);
         }
     }

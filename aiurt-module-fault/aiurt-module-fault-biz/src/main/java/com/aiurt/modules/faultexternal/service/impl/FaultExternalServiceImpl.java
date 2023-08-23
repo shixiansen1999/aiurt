@@ -7,6 +7,7 @@ import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.enums.RepairWayEnum;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.dto.RepairRecordDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
@@ -225,6 +226,12 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
             data.put("smfcode", faultExternal.getSmfcode());
             data.put("sexecode", faultExternal.getSexecode());
             data.put("iresult", 1);
+            SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.IS_DISTINGUISH_SIGNAL_FAULT);
+            if ("1".equals(paramModel.getValue()) && FaultConstant.IS_SIGNAL_FAULT_1.equals(dto.getIsSignalFault())) {
+                //如果是非信号故障，则给生产调度系统返回处理结果=3（:非本故障）
+                data.put("iresult", 3);
+                log.info(String.valueOf(data));
+            }
             data.put("smethod", dto.getMaintenanceMeasures());
             data.put("icharger", null);
             data.put("sworkno", user.getUsername());
