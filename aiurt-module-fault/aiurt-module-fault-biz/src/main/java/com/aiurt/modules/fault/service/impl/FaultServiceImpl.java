@@ -1844,8 +1844,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     todoDTO.setTitle("维修待审核");
                     todoDTO.setMsgAbstract("维修待审核");
                     todoDTO.setPublishingContent("故障维修完成待审核");
-                    SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
-                    if ("1".equals(sysParamModel.getValue()) && "1".equals(fault.getFaultModeCode())) {
+                    SysParamModel isExternalSpecialUse = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
+                    if ("1".equals(isExternalSpecialUse.getValue()) && "1".equals(fault.getFaultModeCode())) {
                         todoDTO.setIsRingBell(true);
                     }
                     sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障维修结果待审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
