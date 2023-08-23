@@ -5,6 +5,7 @@ import com.aiurt.modules.train.question.entity.BdQuestion;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.apache.ibatis.annotations.Param;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -82,4 +83,13 @@ public interface IBdQuestionService extends IService<BdQuestion> {
      * @throws IOException
      */
     void downloadTemplateExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
+
+    /**
+     * 通过excel导入数据
+     *
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
 }

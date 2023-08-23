@@ -162,9 +162,9 @@ public class BdQuestionController extends BaseController<BdQuestion, IBdQuestion
     * @param response
     * @return
     */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    @PostMapping(value = "/importExcel")
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, BdQuestion.class);
+        return bdQuestionService.importExcel(request, response);
     }
 
 	 /**
