@@ -65,4 +65,13 @@ public interface RoleConstant {
      * 材料员
      */
     String MATERIAL_CLERK = "cailiaoyuan";
+    /**
+     * 中心工班长
+     */
+    String ZXBANZHANG = "zxbanzhang";
+    /**
+     * 中心工班长
+     */
+    String ZXCHENGYUAN = "zxchengyuan";
+
 }

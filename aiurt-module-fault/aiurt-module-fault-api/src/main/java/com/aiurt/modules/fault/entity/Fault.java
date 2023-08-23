@@ -473,5 +473,19 @@ public class Fault extends DictEntity implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "处理方式")
     private String processingName;
+
+    /**是否是信号故障（0信号故障；1非信号故障）*/
+    @ApiModelProperty(value = "是否是信号故障（0信号故障；1非信号故障）")
+    @Dict(dicCode = "is_signal_fault")
+    private Integer isSignalFault;
+
+    /**控制中心审核状态（0待审核，1已通过，2已驳回）*/
+    @ApiModelProperty(value = "控制中心审核状态（0待审核，1已通过，2已驳回）")
+    private Integer controlCenterReviewStatus;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "能否审核")
+    private Boolean reviewFlag;
+
 }
 

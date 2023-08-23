@@ -105,7 +105,7 @@ public class MessageDTO implements Serializable {
      */
     protected Integer ringDuration;
     /**
-     * 铃声类型：1是故障完成给中心班组的提示音
+     * 铃声类型：1是故障完成给中心班组的提示音,2是调度下发故障提示音
      */
     protected Integer ringType;
     /**
