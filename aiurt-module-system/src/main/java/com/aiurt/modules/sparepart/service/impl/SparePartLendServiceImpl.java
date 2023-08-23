@@ -15,6 +15,7 @@ import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.mapper.SparePartLendMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
+import com.aiurt.modules.sparepart.mapper.SparePartStockNumMapper;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartLendService;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
@@ -74,6 +75,8 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
     private ISysBaseAPI sysBaseApi;
     @Autowired
     private ISTodoBaseAPI isTodoBaseAPI;
+    @Autowired
+    private SparePartStockNumMapper sparePartStockNumMapper;
     /**
      * 查询列表
      * @param page
@@ -204,6 +207,24 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         SparePartStock lendStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partLend.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partLend.getLendWarehouseCode()));
         lendStock.setNum(lendStock.getNum()-sparePartLend.getLendNum());
         sparePartStockMapper.updateById(lendStock);
+        //先获取该备件的数量记录,更新全新数量
+        LambdaQueryWrapper<SparePartStockNum> numLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        numLambdaQueryWrapper.eq(SparePartStockNum::getMaterialCode, partLend.getMaterialCode())
+                .eq(SparePartStockNum::getWarehouseCode, partLend.getLendWarehouseCode())
+                .eq(SparePartStockNum::getDelFlag, CommonConstant.DEL_FLAG_0);
+        SparePartStockNum stockNum = sparePartStockNumMapper.selectOne(numLambdaQueryWrapper);
+        if (ObjectUtil.isNotNull(stockNum)) {
+            Integer newNum = stockNum.getNewNum();
+            //如果全新数量小于借出数量，则从已使用数量中扣除
+            if (newNum < sparePartLend.getLendNum()) {
+                stockNum.setNewNum(0);
+                stockNum.setUsedNum(stockNum.getUsedNum() - (sparePartLend.getLendNum() - newNum));
+            } else {
+                stockNum.setNewNum(newNum - sparePartLend.getLendNum());
+            }
+            sparePartStockNumMapper.updateById(stockNum);
+        }
+
         //3.添加出库记录
         SparePartOutOrder sparePartOutOrder = new SparePartOutOrder();
         sparePartOutOrder.setMaterialCode(partLend.getMaterialCode());
@@ -218,6 +239,13 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartOutOrderService.save(sparePartOutOrder);
         //4.借入仓库库存数做加法
         SparePartStock backStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partLend.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partLend.getBackWarehouseCode()));
+        //先获取该备件的数量记录,更新全新数量
+        LambdaQueryWrapper<SparePartStockNum> numLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+        numLambdaQueryWrapper2.eq(SparePartStockNum::getMaterialCode, partLend.getMaterialCode())
+                .eq(SparePartStockNum::getWarehouseCode, partLend.getBackWarehouseCode())
+                .eq(SparePartStockNum::getDelFlag, CommonConstant.DEL_FLAG_0);
+        SparePartStockNum stockNum2 = sparePartStockNumMapper.selectOne(numLambdaQueryWrapper2);
+
         if(null!=backStock){
             backStock.setNum(backStock.getNum()+sparePartLend.getLendNum());
             sparePartStockMapper.updateById(backStock);
@@ -231,6 +259,17 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
             stock.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getLendPerson())).getOrgCode());
             sparePartStockMapper.insert(stock);
         }
+        if (null!=stockNum2) {
+            stockNum2.setNewNum(stockNum2.getNewNum() + sparePartLend.getLendNum());
+            sparePartStockNumMapper.updateById(stockNum2);
+        }else {
+            SparePartStockNum partStockNum = new SparePartStockNum();
+            partStockNum.setMaterialCode(partLend.getMaterialCode());
+            partStockNum.setWarehouseCode(partLend.getBackWarehouseCode());
+            // 新增已使用数量
+            partStockNum.setNewNum(sparePartLend.getLendNum());
+            sparePartStockNumMapper.insert(partStockNum);
+        }
         //5.添加入库记录
         SparePartInOrder sparePartInOrder = new SparePartInOrder();
         sparePartInOrder.setMaterialCode(partLend.getMaterialCode());
@@ -241,6 +280,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartInOrder.setConfirmId(user.getUsername());
         sparePartInOrder.setConfirmTime(date);
         sparePartInOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getLendPerson())).getOrgCode());
+        sparePartInOrder.setNewNum(sparePartLend.getLendNum());
         sparePartInOrderService.save(sparePartInOrder);
 
         try {
@@ -294,6 +334,16 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         SparePartStock lendStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partLend.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partLend.getLendWarehouseCode()));
         lendStock.setNum(lendStock.getNum()+sparePartLend.getBackNum());
         sparePartStockMapper.updateById(lendStock);
+
+        //先获取该备件的数量记录,更新全新数量
+        LambdaQueryWrapper<SparePartStockNum> numLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        numLambdaQueryWrapper.eq(SparePartStockNum::getMaterialCode, partLend.getMaterialCode())
+                .eq(SparePartStockNum::getWarehouseCode, partLend.getLendWarehouseCode())
+                .eq(SparePartStockNum::getDelFlag, CommonConstant.DEL_FLAG_0);
+        SparePartStockNum stockNum = sparePartStockNumMapper.selectOne(numLambdaQueryWrapper);
+
+        stockNum.setNewNum(stockNum.getNewNum() + sparePartLend.getBackNum());
+        sparePartStockNumMapper.updateById(stockNum);
         //3.添加入库记录
         SparePartInOrder sparePartInOrder = new SparePartInOrder();
         sparePartInOrder.setMaterialCode(partLend.getMaterialCode());
@@ -304,11 +354,31 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartInOrder.setConfirmId(user.getUsername());
         sparePartInOrder.setConfirmTime(date);
         sparePartInOrder.setSysOrgCode(user.getOrgCode());
+        sparePartInOrder.setNewNum(sparePartLend.getBackNum());
         sparePartInOrderService.save(sparePartInOrder);
         //3.借入仓库库存数做减法
         SparePartStock backStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partLend.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partLend.getBackWarehouseCode()));
         backStock.setNum(backStock.getNum()-sparePartLend.getBackNum());
         sparePartStockMapper.updateById(backStock);
+        //先获取该备件的数量记录,更新全新数量
+        LambdaQueryWrapper<SparePartStockNum> numLambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+        numLambdaQueryWrapper2.eq(SparePartStockNum::getMaterialCode, partLend.getMaterialCode())
+                .eq(SparePartStockNum::getWarehouseCode, partLend.getBackWarehouseCode())
+                .eq(SparePartStockNum::getDelFlag, CommonConstant.DEL_FLAG_0);
+        SparePartStockNum stockNumBack = sparePartStockNumMapper.selectOne(numLambdaQueryWrapper2);
+
+        if (ObjectUtil.isNotNull(stockNumBack)) {
+            Integer newNum = stockNumBack.getNewNum();
+            //如果全新数量小于归还数量，则从已使用数量中扣除
+            if (newNum < sparePartLend.getBackNum()) {
+                stockNumBack.setNewNum(0);
+                stockNumBack.setUsedNum(stockNumBack.getUsedNum() - (sparePartLend.getBackNum() - newNum));
+            } else {
+                stockNumBack.setNewNum(newNum - sparePartLend.getBackNum());
+            }
+            sparePartStockNumMapper.updateById(stockNumBack);
+        }
+
         //4.添加出库记录
         SparePartOutOrder sparePartOutOrder = new SparePartOutOrder();
         sparePartOutOrder.setMaterialCode(partLend.getMaterialCode());
