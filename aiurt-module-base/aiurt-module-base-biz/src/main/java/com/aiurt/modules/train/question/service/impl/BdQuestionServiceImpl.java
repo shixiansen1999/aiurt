@@ -260,7 +260,7 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
         list.forEach(dto->{
             List<BdQuestionOptionImportExcelDTO> optionList = dto.getBdQuestionOptionImportExcelDTOList();
             optionList.forEach(option->{
-                Map<String, Object> map = new HashMap<>(7);
+                Map<String, Object> map = new HashMap<>(8);
                 map.put("orgCode", dto.getOrgCode());
                 map.put("categoryName", dto.getCategoryName());
                 map.put("content", dto.getContent());

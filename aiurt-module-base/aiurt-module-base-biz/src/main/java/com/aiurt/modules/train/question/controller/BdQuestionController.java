@@ -162,7 +162,8 @@ public class BdQuestionController extends BaseController<BdQuestion, IBdQuestion
     * @param response
     * @return
     */
-    @PostMapping(value = "/importExcel")
+	@ApiOperation(value = "培训管理-培训基础数据-考卷习题管理-导入", notes = "培训管理-培训基础数据-考卷习题管理-导入")
+	@PostMapping(value = "/importExcel")
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return bdQuestionService.importExcel(request, response);
     }
