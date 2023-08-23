@@ -419,9 +419,9 @@
         <if test="taskId != null and taskId != ''">
             AND ptd.task_id = #{taskId}
         </if>
-<!--        <if test="standardId != null and standardId != ''">-->
-<!--            AND ps.id = #{standardId}-->
-<!--        </if>-->
+        <if test="standardId != null and standardId != ''">
+            AND ps.id = #{standardId}
+        </if>
     </select>
 
     <select id="getSysUserPositionCurrent" resultType="com.aiurt.boot.task.dto.SysUserPositionCurrentDTO">
