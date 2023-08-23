@@ -1,14 +1,13 @@
 package com.aiurt.modules.sparepart.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
-import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
-import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
-import com.aiurt.modules.sparepart.entity.SparePartStock;
+import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartReturnOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
+import com.aiurt.modules.sparepart.mapper.SparePartStockNumMapper;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
@@ -49,6 +48,8 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
     private ISparePartOutOrderService sparePartOutOrderService;
     @Autowired
     private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private SparePartStockNumMapper sparePartStockNumMapper;
     /**
      * 查询列表
      * @param page
@@ -127,6 +128,17 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         if(null!=sparePartStock){
             sparePartStock.setNum(sparePartStock.getNum()+returnOrder.getNum());
             sparePartStockMapper.updateById(sparePartStock);
+
+            //先获取该备件的数量记录,更新已使用数量
+            LambdaQueryWrapper<SparePartStockNum> numLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            numLambdaQueryWrapper.eq(SparePartStockNum::getMaterialCode, returnOrder.getMaterialCode())
+                    .eq(SparePartStockNum::getWarehouseCode, returnOrder.getWarehouseCode())
+                    .eq(SparePartStockNum::getDelFlag, CommonConstant.DEL_FLAG_0);
+            SparePartStockNum stockNum = sparePartStockNumMapper.selectOne(numLambdaQueryWrapper);
+            if (ObjectUtil.isNotNull(stockNum)) {
+                stockNum.setUsedNum(stockNum.getUsedNum() + returnOrder.getNum());
+                sparePartStockNumMapper.updateById(stockNum);
+            }
         }
         //3.插入备件入库记录
         SparePartInOrder sparePartInOrder = new SparePartInOrder();
@@ -137,6 +149,7 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_1);
         sparePartInOrder.setConfirmId(user.getUsername());
         sparePartInOrder.setConfirmTime(date);
+        sparePartInOrder.setUsedNum(returnOrder.getNum());
         sparePartInOrderService.save(sparePartInOrder);
 
         return Result.OK("操作成功！");

@@ -80,21 +80,7 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 
 		// 已发布的
 		pageList.getRecords().stream().forEach(modeInfo->{
-
-			try {
-				if (StrUtil.equalsIgnoreCase("3", String.valueOf(modeInfo.getStatus()))) {
-					TaskInfoDTO taskInfoDTO = flowApiService.viewInitialTaskInfo(modeInfo.getModelKey());
-					modeInfo.setRouterName(modeInfo.getBusinessUrl());
-					if (Objects.nonNull(taskInfoDTO)) {
-						String routerName = taskInfoDTO.getRouterName();
-						if (StrUtil.isNotBlank(routerName)) {
-							modeInfo.setRouterName(routerName);
-						}
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			modeInfo.setRouterName(modeInfo.getBusinessUrl());
 		});
 		return Result.OK(pageList);
 	}

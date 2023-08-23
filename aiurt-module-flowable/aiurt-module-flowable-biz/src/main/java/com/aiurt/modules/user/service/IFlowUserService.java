@@ -42,4 +42,47 @@ public interface IFlowUserService {
      * @return
      */
     List<FlowUserRelationRespDTO> queryRelationList();
+
+    /**
+     * 查询部门领导人
+     * @param orgId
+     * @return
+     */
+    List<String> getManageUserName(String orgId);
+
+    /**
+     * 查询上级部门领导人
+     * @param orgId
+     * @return
+     */
+    List<String> getParentManageUserName(String orgId);
+
+
+    /**
+     * 用户id 查询 username
+     * @param userIdList 用户id
+     * @return
+     */
+    List<String> getUserNameByUserIdOrUserName(List<String> userIdList);
+
+    /**
+     * roleid 查询username
+     * @param roleIdList roleid
+     * @return
+     */
+    List<String> getUserNameByRoleIdOrRoleCode(List<String> roleIdList);
+
+    /**
+     * orgId 查询username
+     * @param orgIdList orgId
+     * @return
+     */
+    List<String> getUserNameByOrgIdOrOrgCode(List<String> orgIdList);
+
+    /**
+     * 岗位
+     * @param postList
+     * @return
+     */
+    List<String> getUserNameByPost(List<String> postList);
 }

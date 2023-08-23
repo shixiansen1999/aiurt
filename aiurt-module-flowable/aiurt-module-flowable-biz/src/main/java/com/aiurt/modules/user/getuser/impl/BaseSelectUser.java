@@ -2,8 +2,8 @@ package com.aiurt.modules.user.getuser.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.user.entity.ActCustomUser;
-import com.aiurt.modules.user.getuser.GetTaskUser;
-import org.flowable.engine.runtime.ProcessInstance;
+import com.aiurt.modules.user.getuser.SelectUser;
+import com.aiurt.modules.user.getuser.dto.SelectionParameters;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,19 +16,30 @@ import java.util.stream.Collectors;
  * @author fgw
  */
 @Service
-public class DefaultGetTaskUser implements GetTaskUser {
+public class BaseSelectUser implements SelectUser {
 
     @Autowired
     private ISysBaseAPI sysBaseApi;
 
+
     /**
-     * 获取用户下
+     * 获取用户列表
+     *
+     * @param parameters
+     * @return 用户列表
+     */
+    @Override
+    public List<String> getUserList(SelectionParameters parameters) {
+        return getUserList(parameters.getCustomUser());
+    }
+
+    /**
+     * 根据配置文件
      *
      * @param customUser
      * @return
      */
-    @Override
-    public List<String> getUser(ActCustomUser customUser) {
+    public List<String> getUserList(ActCustomUser customUser) {
         String userName = customUser.getUserName();
         String post = customUser.getPost();
         String orgId = customUser.getOrgId();
@@ -43,4 +54,8 @@ public class DefaultGetTaskUser implements GetTaskUser {
         resultList = resultList.stream().distinct().collect(Collectors.toList());
         return resultList;
     }
+
+
+
+
 }
