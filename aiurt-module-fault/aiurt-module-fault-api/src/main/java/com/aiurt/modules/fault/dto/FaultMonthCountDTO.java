@@ -29,6 +29,9 @@ public class FaultMonthCountDTO implements Serializable {
     @ApiModelProperty(value = "月份")
     private String month;
 
+    @ApiModelProperty(value = "故障报修时长")
+    private String duration;
+
     @ApiModelProperty(value = "子系统月份故障次数")
     private List<FaultSystemMonthCountDTO> faultSystemMonthCountDTOList;
 }
