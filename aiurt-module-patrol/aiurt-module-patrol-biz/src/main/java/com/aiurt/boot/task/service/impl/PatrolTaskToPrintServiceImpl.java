@@ -157,7 +157,10 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
                 FileInputStream in = new FileInputStream(filePath)) {
             PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
             com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
+            //自动调整行高
+            w.getWorksheets().get(0).autoFitRows();
             pdfSaveOptions.setOnePagePerSheet(true);
+            pdfSaveOptions.setAllColumnsInOnePagePerSheet(true);
             w.save(response.getOutputStream(), pdfSaveOptions);
         } catch (Exception e) {
             throw new RuntimeException(e);
