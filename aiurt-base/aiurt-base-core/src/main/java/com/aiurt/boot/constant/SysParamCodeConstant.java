@@ -291,6 +291,14 @@ public interface SysParamCodeConstant {
      */
     String FAULT_EXTERNAL_SYSTEM_ID = "fault_external_system_id";
     /**
+     * 是否区分信号故障
+     */
+    String IS_DISTINGUISH_SIGNAL_FAULT = "is_distinguish_signal_fault";
+    /**
+     * 调度故障是否开启专用配置
+     */
+    String IS_EXTERNAL_SPECIAL_USE = "is_external_special_use";
+    /**
      * 根据配置决定故障上报是否开启控制中心班组自检故障指派功能及权限
      */
     String FAULT_CENTER_ADD = "fault_center_add";
@@ -505,4 +513,9 @@ public interface SysParamCodeConstant {
      * 巡视工时是否使用mac计算，如果不使用就是各工单时长之和
      */
     String PATROL_DURATION_USE_MAC = "patrol_duration_use_mac";
+
+    /**
+     * 取消挂起时是否更新维修负责人
+     */
+    String CANCEL_HANGUP_CH_AUN = "cancel_hangup_ch_aun";
 }

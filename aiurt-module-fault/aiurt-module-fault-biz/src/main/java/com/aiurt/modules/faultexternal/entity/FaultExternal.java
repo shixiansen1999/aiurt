@@ -214,6 +214,7 @@ public class FaultExternal extends DictEntity implements Serializable  {
     private String lineCode;
 
     @TableField(exist = false)
+    @Dict(dictTable = "cs_station", dicCode = "station_code" , dicText = "station_name")
     private String stationCode;
 
     @TableField(exist = false)
@@ -231,4 +232,7 @@ public class FaultExternal extends DictEntity implements Serializable  {
     @ApiModelProperty(value = "非实体属性-查询传参-结束时间")
     private String endTime;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "故障现象或者编码")
+    private String faultPhenomenonOrCode;
 }

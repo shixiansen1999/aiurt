@@ -179,5 +179,9 @@ public class RepairRecordDTO extends DictEntity implements Serializable  {
 
     private String deviceTypeCode;
 
-
+    /**是否是信号故障（0信号故障；1非信号故障）*/
+    @ApiModelProperty(value = "是否是信号故障（0信号故障；1非信号故障）")
+    @TableField(exist = false)
+    @Dict(dicCode = "is_signal_fault")
+    private Integer isSignalFault;
 }

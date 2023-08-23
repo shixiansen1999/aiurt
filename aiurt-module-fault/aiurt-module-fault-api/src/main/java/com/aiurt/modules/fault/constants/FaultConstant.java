@@ -87,5 +87,24 @@ public class FaultConstant {
      * 表示当前人员没有位置信息
      */
     public static final String UNKNOWN_LOCATION = "暂无位置信息";
-
+    /**
+     * 是否是信号故障（0信号故障；1非信号故障)
+     */
+    public static final Integer IS_SIGNAL_FAULT_0 = 0;
+    /**
+     * 是否是信号故障（0信号故障；1非信号故障)
+     */
+    public static final Integer IS_SIGNAL_FAULT_1 = 1;
+    /**
+     * 控制中心审核状态（0待审核，1已通过，2已驳回）
+     */
+    public static final Integer CONTROL_CENTER_REVIEW_STATUS_0 = 0;
+    /**
+     * 控制中心审核状态（0待审核，1已通过，2已驳回）
+     */
+    public static final Integer CONTROL_CENTER_REVIEW_STATUS_1 = 1;
+    /**
+     * 控制中心审核状态（0待审核，1已通过，2已驳回）
+     */
+    public static final Integer CONTROL_CENTER_REVIEW_STATUS_2 = 2;
 }
