@@ -1,5 +1,15 @@
 package com.aiurt.config.sign.util;
 
+import cn.hutool.core.map.MapUtil;
+import com.aiurt.common.constant.SymbolConstant;
+import com.aiurt.common.util.oConvertUtils;
+import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,16 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import javax.servlet.http.HttpServletRequest;
-
-import cn.hutool.core.map.MapUtil;
-import com.aiurt.common.util.oConvertUtils;
-import lombok.extern.slf4j.Slf4j;
-import com.aiurt.common.constant.SymbolConstant;
-import org.springframework.http.HttpMethod;
-
-import com.alibaba.fastjson.JSONObject;
 
 /**
  * http 工具类 获取请求中的参数
@@ -189,6 +189,37 @@ public class HttpUtils {
     }
 
     /**
+     * 预先检测 HTTP 请求是否可行
+     * @param url
+     * @return
+     */
+    public static Boolean checkUrl(String url) {
+        // 检测url是否可达
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            // Perform a HEAD request to check feasibility
+            ResponseEntity<Void> exchange = restTemplate.exchange(
+                    url,
+                    HttpMethod.HEAD,
+                    null,
+                    Void.class
+            );
+            // Check if the response code indicates a successful connection
+            if (exchange.getStatusCode().is2xxSuccessful()) {
+               log.info("HTTP request is feasible. Proceed with the full request.");
+                // Now you can proceed with the actual HTTP request using restTemplate.getForObject(), restTemplate.exchange(), etc.
+                return true;
+            } else {
+                log.info("HTTP request is not feasible (Response code: " + exchange.getStatusCode() + ")");
+            }
+        }catch (Exception e) {
+            log.error("Error occurred during precheck: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
      * 发送HTTP GET请求并获取响应内容。
      *
      * @param url     请求的URL地址
@@ -198,7 +229,9 @@ public class HttpUtils {
      */
     public static String sendGetRequest(String url, Map<String, String> headers, Map<String, String> params) {
         StringBuilder response = new StringBuilder();
-
+        if (!checkUrl(url)) {
+            return "";
+        }
         try {
             // 构建参数字符串
             if (MapUtil.isNotEmpty(params)) {
