@@ -260,29 +260,14 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
         sysAttachment.setFilePath(relatiePath);
         sysAttachment.setType("minio");
         sysBaseApi.saveSysAttachment(sysAttachment);
-
-
+        //excel转换成pdf输出流
         try (
-                // 创建一个PDF输出流
-                ByteArrayOutputStream pdfOutputStream = new ByteArrayOutputStream();
-
                 FileInputStream in = new FileInputStream(filePath)) {
             PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
             com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
             pdfSaveOptions.setOnePagePerSheet(true);
             response.setCharacterEncoding("UTF-8");
             w.save(response.getOutputStream(), pdfSaveOptions);
-
-            // 设置输出文件路径
-            String fileName1 = patrolTask.getName() + System.currentTimeMillis() + ".pdf";
-            fileName1 = fileName1.replaceAll("[/*?:\"<>|]", "-");
-            String relatiePath1 = "/" + "patrol" + "/" + "print" + "/" + fileName1;
-
-            // 将PDF输出流保存成PDF文件
-            w.save(pdfOutputStream, pdfSaveOptions);
-            byte[] bytes = pdfOutputStream.toByteArray();
-
-            MinioUtil.upload(new ByteArrayInputStream(bytes), relatiePath1);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -922,16 +907,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
 
             }
         }
-        Map<String, List<PrintDTO>> collect = getPrint.stream().collect(Collectors.groupingBy(PrintDTO::getSubSystem));
-        List<PrintDTO> resultList = new ArrayList<>();
-
-        // 遍历分组Map的每个分组
-        for (Map.Entry<String, List<PrintDTO>> entry : collect.entrySet()) {
-            List<PrintDTO> groupList = entry.getValue(); // 获取分组中的元素列表
-            resultList.addAll(groupList); // 将分组中的元素添加到结果列表
-        }
-
-        return resultList;
+        return getPrint;
     }
 
     private List<PrintDTO> getPrint(String id,String standardId) {
