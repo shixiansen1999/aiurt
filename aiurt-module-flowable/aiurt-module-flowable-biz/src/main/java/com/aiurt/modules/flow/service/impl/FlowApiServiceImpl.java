@@ -302,7 +302,6 @@ public class FlowApiServiceImpl implements FlowApiService {
      * @param taskCompleteDTO
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void completeTask(TaskCompleteDTO taskCompleteDTO) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         // 任务id
@@ -345,7 +344,6 @@ public class FlowApiServiceImpl implements FlowApiService {
      * @param comment 审批对象。
      * @param busData 流程任务的变量数据。
      */
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public void completeTask(Task task, FlowTaskCompleteCommentDTO comment, Map<String, Object> busData) {
         completeTask(task, comment, busData, new HashMap<>(16));

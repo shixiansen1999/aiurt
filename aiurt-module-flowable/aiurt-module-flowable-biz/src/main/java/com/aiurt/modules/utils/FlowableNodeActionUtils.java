@@ -11,13 +11,16 @@ import com.aiurt.config.sign.util.HttpUtils;
 import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
+import com.aiurt.modules.multideal.service.IMultiInTaskService;
 import com.aiurt.modules.state.entity.ActCustomState;
 import com.aiurt.modules.state.service.IActCustomStateService;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.engine.ProcessEngines;
+import org.flowable.engine.TaskService;
 import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.SpringContextUtils;
 
@@ -65,6 +68,34 @@ public class FlowableNodeActionUtils {
      * 评论
      */
     private static final String VARIABLE_COMMENT = "comment";
+
+
+    public static void processTaskData(TaskEntity taskEntity, String processDefinitionId, String taskDefinitionKey, String processInstanceId, String nodeAction) {
+        String taskId = taskEntity.getId();
+        TaskService taskService = SpringContextUtils.getBean(TaskService.class);
+
+
+        // 如果是节点后操作， 只在最后一个任务提交执行
+        if (StrUtil.equalsIgnoreCase(nodeAction, FlowModelExtElementConstant.EXT_POST_NODE_ACTION)) {
+            IMultiInTaskService multiInTaskService = SpringContextUtils.getBean(IMultiInTaskService.class);
+            Boolean completeTask = multiInTaskService.isCompleteTask(taskEntity);
+            if (completeTask) {
+                processTaskData(processDefinitionId, taskDefinitionKey, processInstanceId, nodeAction);
+
+                // 提交则需要删除变量， 否则回退时不执行
+                taskService.removeVariable(taskId, FlowModelExtElementConstant.EXT_PRE_NODE_ACTION+ "_" + taskDefinitionKey);
+            }
+        }else {
+            // 判断是否已经执行
+            Boolean variableLocal =  taskService.getVariable(taskId, nodeAction + "_" + taskDefinitionKey, Boolean.class);
+            if (Objects.nonNull(variableLocal) && variableLocal) {
+                return;
+            }
+            processTaskData(processDefinitionId, taskDefinitionKey, processInstanceId, nodeAction);
+            // 变量， 标识已经执行
+            taskService.setVariable(taskId, nodeAction + "_" + taskDefinitionKey, Boolean.TRUE);
+        }
+    }
 
     /**
      * 处理流程任务数据，包括更新流程状态、执行自定义接口、执行自定义SQL等操作。
