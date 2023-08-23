@@ -25,8 +25,12 @@ import com.alibaba.excel.util.MapUtils;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.alibaba.excel.write.metadata.fill.FillWrapper;
+import com.aspose.cells.PageSetup;
 import com.aspose.cells.PdfSaveOptions;
+import com.aspose.cells.Style;
+import com.aspose.cells.Worksheet;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.spire.xls.PaperSizeType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -261,12 +265,15 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
         sysAttachment.setType("minio");
         sysBaseApi.saveSysAttachment(sysAttachment);
         //excel转换成pdf输出流
+        response.setCharacterEncoding("UTF-8");
         try (
                 FileInputStream in = new FileInputStream(filePath)) {
             PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
             com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
+            //自动调整行高
+            w.getWorksheets().get(0).autoFitRows();
             pdfSaveOptions.setOnePagePerSheet(true);
-            response.setCharacterEncoding("UTF-8");
+            pdfSaveOptions.setAllColumnsInOnePagePerSheet(true);
             w.save(response.getOutputStream(), pdfSaveOptions);
         } catch (Exception e) {
             throw new RuntimeException(e);
