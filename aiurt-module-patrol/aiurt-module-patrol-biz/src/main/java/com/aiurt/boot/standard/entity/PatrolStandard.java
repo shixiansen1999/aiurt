@@ -137,6 +137,12 @@ public class PatrolStandard extends DictEntity implements Serializable {
     @TableField(exist = false)
     private List<OrgVO> orgCodeList;
     /**
+     * 设备类型多选
+     */
+    @ApiModelProperty(value = "设备类型多选")
+    @TableField(exist = false)
+    private List<String> deviceTypeCodeList;
+    /**
      * 导出传参
      */
     @ApiModelProperty(value = "组织机构名称")

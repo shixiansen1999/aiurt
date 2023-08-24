@@ -4,7 +4,9 @@ import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.standard.dto.OrgVO;
 import com.aiurt.boot.standard.dto.PatrolStandardDto;
 import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.boot.standard.entity.PatrolStandardDeviceType;
 import com.aiurt.boot.standard.entity.PatrolStandardOrg;
+import com.aiurt.boot.standard.mapper.PatrolStandardDeviceTypeMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardOrgService;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.boot.utils.PatrolCodeUtil;
@@ -43,6 +45,9 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	private IPatrolStandardService patrolStandardService;
 	 @Autowired
 	 private IPatrolStandardOrgService patrolStandardOrgService;
+	 @Autowired
+	 private PatrolStandardDeviceTypeMapper patrolStandardDeviceTypeMapper;
+
 	/**
 	 * 分页列表查询
 	 *
@@ -103,6 +108,15 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 			patrolStandardOrg.setStandardCode(patrolStandard.getCode());
 			patrolStandardOrgService.save(patrolStandardOrg);
 		}
+		List<String> deviceTypeCodeList = patrolStandard.getDeviceTypeCodeList();
+		if (CollUtil.isNotEmpty(deviceTypeCodeList)) {
+			for (String deviceTypeCode : deviceTypeCodeList) {
+				PatrolStandardDeviceType patrolStandardDeviceType = new PatrolStandardDeviceType();
+				patrolStandardDeviceType.setStandardCode(patrolStandard.getCode());
+				patrolStandardDeviceType.setDeviceTypeCode(deviceTypeCode);
+				patrolStandardDeviceTypeMapper.insert(patrolStandardDeviceType);
+			}
+		}
 		patrolStandardService.save(patrolStandard);
 		return Result.OK("添加成功！");
 	}
@@ -153,6 +167,20 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 			patrolStandardOrg.setStandardCode(patrolStandard.getCode());
 			patrolStandardOrgService.save(patrolStandardOrg);
 		}
+		List<PatrolStandardDeviceType> patrolStandardDeviceTypes = patrolStandardDeviceTypeMapper.selectList(new LambdaQueryWrapper<PatrolStandardDeviceType>().eq(PatrolStandardDeviceType::getStandardCode, patrolStandard.getCode()));
+		if(CollUtil.isNotEmpty(patrolStandardDeviceTypes)){
+			patrolStandardDeviceTypeMapper.deleteBatchIds(patrolStandardDeviceTypes);
+		}
+		List<String> deviceTypeCodeList = patrolStandard.getDeviceTypeCodeList();
+		if (CollUtil.isNotEmpty(deviceTypeCodeList)) {
+			for (String deviceTypeCode : deviceTypeCodeList) {
+				PatrolStandardDeviceType patrolStandardDeviceType = new PatrolStandardDeviceType();
+				patrolStandardDeviceType.setStandardCode(patrolStandard.getCode());
+				patrolStandardDeviceType.setDeviceTypeCode(deviceTypeCode);
+				patrolStandardDeviceTypeMapper.insert(patrolStandardDeviceType);
+			}
+		}
+
 		patrolStandardService.updateById(patrolStandard);
 		return Result.OK("编辑成功!");
 	}

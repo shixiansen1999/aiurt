@@ -512,6 +512,11 @@ public interface SysParamCodeConstant {
     String CANCEL_HANGUP_CH_AUN = "cancel_hangup_ch_aun";
 
     /**
+     * 	巡视、检修标准是否关联多个设备分类
+     */
+    String MULTIPLE_DEVICE_TYPES = "multiple_device_types";
+
+    /**
      * 巡视工时是否使用mac计算，如果不使用就是各工单时长之和
      */
     String PATROL_DURATION_USE_MAC = "patrol_duration_use_mac";
