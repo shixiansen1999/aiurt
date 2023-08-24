@@ -271,7 +271,8 @@
         rtsr.subsystem_code as systemCode,
         rtsr.device_type_code as deviceTypeCode,
         rtdr.submit_time as submitTime,
-        rtr.status as statusCode
+        rtr.status as statusCode,
+        rtdr.sampling_sign_url
         FROM
             repair_task_device_rel rtdr
                 LEFT JOIN repair_task rt ON rt.id = rtdr.repair_task_id

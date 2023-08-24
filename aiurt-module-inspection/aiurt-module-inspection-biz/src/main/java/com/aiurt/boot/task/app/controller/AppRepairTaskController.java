@@ -298,8 +298,9 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     @AutoLog(value = "检修管理-检修任务管理-提交检修工单", operateType = 3, operateTypeAlias = "提交检修工单", module = ModuleType.INSPECTION)
     @ApiOperation(value = "提交检修工单", notes = "提交检修工单")
     @PostMapping(value = "/submitMonad")
-    public Result<?> submitMonad(@RequestParam @ApiParam(value = "检修单id", name = "id", required = true) String id) {
-        repairTaskService.submitMonad(id);
+    public Result<?> submitMonad(@RequestParam @ApiParam(value = "检修单id", name = "id", required = true) String id,
+                                 @RequestParam(required = false) @ApiParam(value = "抽检人签名", name = "samplingSignUrl") String samplingSignUrl) {
+        repairTaskService.submitMonad(id, samplingSignUrl);
         return Result.OK("提交成功");
     }
 
