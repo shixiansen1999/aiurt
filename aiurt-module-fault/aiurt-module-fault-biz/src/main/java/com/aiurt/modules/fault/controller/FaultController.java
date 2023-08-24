@@ -600,6 +600,20 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         List<DeviceAssemblyDTO> list = faultService.queryDeviceAssemblyByDeviceCode(deviceCode, faultCauseSolutionIdList);
         return Result.OK(list);
     }
+    /**
 
+     *
+     * @param code
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "故障列表-打印详情")
+    @ApiOperation(value = "故障列表-打印详情", notes = "故障列表-打印详情")
+    @GetMapping(value = "/printFault")
+    public Result<?> printFault(@RequestParam(name="code",required=true) String code,
+                                         HttpServletRequest req) {
+        String printFault = faultService.printFault(code);
+        return Result.OK("成功",printFault);
+    }
 
 }
