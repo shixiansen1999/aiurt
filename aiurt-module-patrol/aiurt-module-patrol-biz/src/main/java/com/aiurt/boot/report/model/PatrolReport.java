@@ -72,7 +72,7 @@ public class PatrolReport {
      * 未巡视数
      */
     @ApiModelProperty("未巡视数")
-    @Excel(name = "未巡视数", width = 15)
+    /*@Excel(name = "未巡视数", width = 15)*/
     private Integer notInspectedNumber;
     /**
      * 漏巡视数
@@ -84,13 +84,13 @@ public class PatrolReport {
      * 平均每周漏巡视数
      */
     @ApiModelProperty("平均每周漏巡视数")
-    @Excel(name = "平均每周漏巡视数", width = 15)
+    /*@Excel(name = "平均每周漏巡视数", width = 15)*/
     private BigDecimal awmPatrolNumber;
     /**
      * 平均每月漏巡视数
      */
     @ApiModelProperty("平均每月漏巡视数")
-    @Excel(name = "平均每月漏巡视数", width = 15)
+    /*@Excel(name = "平均每月漏巡视数", width = 15)*/
     private BigDecimal ammPatrolNumber;
     /**
      * 完成率
