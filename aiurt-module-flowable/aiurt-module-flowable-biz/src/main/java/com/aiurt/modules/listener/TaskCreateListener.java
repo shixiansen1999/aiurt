@@ -109,7 +109,7 @@ public class TaskCreateListener implements FlowableEventListener {
                 .getVariable(processInstanceId, FlowVariableConstant.ASSIGNEE_LIST + taskDefinitionKey, List.class);
         if (CollectionUtil.isNotEmpty(list)) {
             // 发送待办
-           // buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(taskEntity.getAssignee()));
+            buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(taskEntity.getAssignee()));
             return;
         }
 
@@ -276,18 +276,8 @@ public class TaskCreateListener implements FlowableEventListener {
 
             bpmnTodoDTO.setTitle(bpmnTodoDTO.getProcessName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd"));
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
-            ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
-            threadPoolExecutor.execute(()->{
-                todoBaseApi.createBbmnTodoTask(bpmnTodoDTO);
-            });
-            threadPoolExecutor.shutdown();
-            try {
-                // 等待线程池中的任务全部完成
-                threadPoolExecutor.awaitTermination(100, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                // 处理中断异常
+            todoBaseApi.createBbmnTodoTask(bpmnTodoDTO);
 
-            }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }

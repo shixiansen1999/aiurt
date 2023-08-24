@@ -199,6 +199,7 @@ public class HttpUtils {
 
         try {
             // Perform a HEAD request to check feasibility
+
             ResponseEntity<Void> exchange = restTemplate.exchange(
                     url,
                     HttpMethod.HEAD,
