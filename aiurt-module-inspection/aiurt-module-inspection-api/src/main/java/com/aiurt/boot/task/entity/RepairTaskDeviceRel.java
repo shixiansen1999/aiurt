@@ -126,4 +126,6 @@ public class RepairTaskDeviceRel implements Serializable {
     @ApiModelProperty(value = "检修任务周数")
     @TableField(exist = false)
     private Integer weeks;
+    @ApiModelProperty(value = "抽检人签名")
+    private String samplingSignUrl;
 }
