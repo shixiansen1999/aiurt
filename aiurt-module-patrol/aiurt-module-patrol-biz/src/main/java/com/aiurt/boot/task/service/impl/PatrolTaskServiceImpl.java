@@ -18,6 +18,8 @@ import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.boot.standard.entity.PatrolStandardDeviceType;
+import com.aiurt.boot.standard.mapper.PatrolStandardDeviceTypeMapper;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.statistics.dto.IndexStationDTO;
 import com.aiurt.boot.task.dto.*;
@@ -40,6 +42,7 @@ import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.excel.EasyExcel;
@@ -152,7 +155,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private PatrolSamplePersonMapper patrolSamplePersonMapper;
     @Autowired
     private ISysParamAPI iSysParamAPI;
-
+    @Autowired
+    private PatrolStandardDeviceTypeMapper patrolStandardDeviceTypeMapper;
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
@@ -1610,6 +1614,16 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
             });
             e.setDeviceList(dtoList);
+
+            List<PatrolStandardDeviceType> patrolStandardDeviceTypes = patrolStandardDeviceTypeMapper.selectList(new LambdaQueryWrapper<PatrolStandardDeviceType>().eq(PatrolStandardDeviceType::getStandardCode, e.getCode()).select(PatrolStandardDeviceType::getDeviceTypeCode));
+            if (CollUtil.isNotEmpty(patrolStandardDeviceTypes)) {
+                Set<String> deviceTypeCodes = patrolStandardDeviceTypes.stream().map(PatrolStandardDeviceType::getDeviceTypeCode).collect(Collectors.toSet());
+                e.setDeviceTypeCodeList(new ArrayList<>(deviceTypeCodes));
+                List<DeviceType> typeList = sysBaseApi.selectDeviceTypeByCodes(deviceTypeCodes);
+                String deviceTypeNames = typeList.stream().map(DeviceType::getName).collect(Collectors.joining(";"));
+                e.setDeviceTypeName(deviceTypeNames);
+            }
+
         });
         return pageList.setRecords(standardList);
     }
