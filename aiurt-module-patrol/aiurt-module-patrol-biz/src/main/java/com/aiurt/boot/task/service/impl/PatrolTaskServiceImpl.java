@@ -2042,12 +2042,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         if (CollUtil.isNotEmpty(accompanyList)) {
             accompanyList = accompanyList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolAccompany::getUserId))), ArrayList::new));
-            String peerPeople = accompanyList.stream().map(PatrolAccompany::getUsername).collect(Collectors.joining(";"));
+            String peerPeople = accompanyList.stream().map(PatrolAccompany::getUsername).collect(Collectors.joining(","));
             e.setPeerPeople(peerPeople);
         }
         if (CollUtil.isNotEmpty(samplePersonList)) {
             samplePersonList = samplePersonList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolSamplePerson::getUserId))), ArrayList::new));
-            String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining(";"));
+            String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining(","));
             e.setSamplePersonName(samplePersonName);
         }
         return e;
