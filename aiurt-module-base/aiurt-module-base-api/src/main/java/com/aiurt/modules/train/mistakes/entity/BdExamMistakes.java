@@ -55,8 +55,8 @@ public class BdExamMistakes extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "答错题集总用时，单位秒")
     private Integer useTime;
 
-    /**错题集状态，1未开答，2答题中，3审核中，4已驳回，5已通过，默认1*/
-    @ApiModelProperty(value = "错题集状态，1未开答，2答题中，3审核中，4已驳回，5已通过，默认1")
+    /**错题集状态，1未开答，2待审核，3已驳回，4已通过，默认1*/
+    @ApiModelProperty(value = "错题集状态，1未开答，2待审核，3已驳回，4已通过，默认1")
     private Integer state;
 
     /**伪删除 0未删除 1已删除*/

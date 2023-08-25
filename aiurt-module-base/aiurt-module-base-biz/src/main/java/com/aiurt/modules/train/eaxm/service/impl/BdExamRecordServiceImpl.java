@@ -15,6 +15,7 @@ import com.aiurt.modules.train.exam.dto.ExamDetailsDTO;
 import com.aiurt.modules.train.exam.entity.BdExamPaper;
 import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.exam.entity.BdExamRecordDetail;
+import com.aiurt.modules.train.mistakes.service.IBdExamMistakesService;
 import com.aiurt.modules.train.task.dto.TranscriptDTO;
 import com.aiurt.modules.train.task.entity.BdTrainMakeupExamRecord;
 import com.aiurt.modules.train.task.entity.BdTrainTask;
@@ -77,6 +78,9 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
     private ITrainArchiveService archiveService;
     @Autowired
     private ITrainRecordService recordService;
+
+    @Autowired
+    private IBdExamMistakesService examMistakesService;
 
     @Override
     public Page<BdExamRecord> queryPageList(Page<BdExamRecord> pageList,BdExamRecord condition) {
@@ -221,69 +225,72 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
                 }
             }
         }
-            // 将状态修改成以考试
+        // 将状态修改成以考试
+        bdExamRecord.setExamState("2");
+        //判断是否有简单题从而产生补考记录
+        List<Integer> collect = bdQuestionList.stream().map(BdExamRecordDTO::getTopicCategory).distinct().collect(Collectors.toList());
+        int i = count*integer;
+        bdExamRecord.setScore(i);
+        bdExamRecord.setIsSubmit(1);
+        Integer integer1 = bdExamPaper.getPassscore();
+        //是否及格
+        if (i>=integer1){
+            bdExamRecord.setIsPass(1);
+        }
+        if (i<integer1){
+            bdExamRecord.setIsPass(0);
+        }
+        boolean flag = false;
+        for (int j = 0; j < collect.size(); j++) {
+            Integer topicCategory = collect.get(j);
+            if (topicCategory == 3) {
+                flag = true;
+                break;
+            }
+        }
+        if (!flag){
+            bdExamRecord.setIsRelease("3");
+            bdExamRecord.setCorrect(1);
+            //无简答，提交更新档案
+            TrainArchive archive = archiveService.getOne(new LambdaQueryWrapper<TrainArchive>()
+                    .eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .eq(TrainArchive::getUserId, bdExamRecord.getUserId()));
+            updateTrainRecord(archive.getId(),bdExamRecord);
+        }else {
+            bdExamRecord.setIsRelease("2");
+            bdExamRecord.setCorrect(0);
+        }
+        if (i<integer1 && !flag ){
+            bdExamRecord.setIsPass(0);
+            BdTrainTask bdTrainTask = bdTrainTaskMapper.selectById(bdExamRecord.getTrainTaskId());
+            if (bdTrainTask.getMakeUpState() == 1) {
+                BdTrainMakeupExamRecord bdTrainMakeupExamRecord = new BdTrainMakeupExamRecord();
+                if (ObjectUtil.isNotNull(bdTrainTask)){
+                    bdTrainMakeupExamRecord.setSysOrgCode(bdTrainTask.getTaskTeamName());
+                }
+                bdTrainMakeupExamRecord.setCreateTime(new Date());
+                bdTrainMakeupExamRecord.setTrainTaskId(bdExamRecord.getTrainTaskId());
+                bdTrainMakeupExamRecord.setExamPaperId(bdExamRecord.getExamPaperId());
+                bdTrainMakeupExamRecord.setUserId(sysUser.getId());
+                bdTrainMakeupExamRecord.setExamId(bdExamRecord.getId());
+                bdTrainMakeupExamRecord.setExamClassify(bdExamRecord.getExamClassify());
+                bdTrainMakeupExamRecordMapper.insert(bdTrainMakeupExamRecord);
+            }
+        }
+        //如果是考试中改为已考试
+        if ("1".equals(bdExamRecord.getExamState())) {
             bdExamRecord.setExamState("2");
-            //判断是否有简单题从而产生补考记录
-            List<Integer> collect = bdQuestionList.stream().map(BdExamRecordDTO::getTopicCategory).distinct().collect(Collectors.toList());
-            int i = count*integer;
-            bdExamRecord.setScore(i);
-            bdExamRecord.setIsSubmit(1);
-            Integer integer1 = bdExamPaper.getPassscore();
-            //是否及格
-            if (i>=integer1){
-                bdExamRecord.setIsPass(1);
-            }
-            if (i<integer1){
-                bdExamRecord.setIsPass(0);
-            }
-            boolean flag = false;
-            for (int j = 0; j < collect.size(); j++) {
-                Integer topicCategory = collect.get(j);
-                if (topicCategory == 3) {
-                    flag = true;
-                    break;
-                }
-            }
-            if (!flag){
-                bdExamRecord.setIsRelease("3");
-                bdExamRecord.setCorrect(1);
-                //无简答，提交更新档案
-                TrainArchive archive = archiveService.getOne(new LambdaQueryWrapper<TrainArchive>()
-                        .eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0)
-                        .eq(TrainArchive::getUserId, bdExamRecord.getUserId()));
-                updateTrainRecord(archive.getId(),bdExamRecord);
-            }else {
-                bdExamRecord.setIsRelease("2");
-                bdExamRecord.setCorrect(0);
-            }
-            if (i<integer1 && !flag ){
-                bdExamRecord.setIsPass(0);
-                BdTrainTask bdTrainTask = bdTrainTaskMapper.selectById(bdExamRecord.getTrainTaskId());
-                if (bdTrainTask.getMakeUpState() == 1) {
-                    BdTrainMakeupExamRecord bdTrainMakeupExamRecord = new BdTrainMakeupExamRecord();
-                    if (ObjectUtil.isNotNull(bdTrainTask)){
-                        bdTrainMakeupExamRecord.setSysOrgCode(bdTrainTask.getTaskTeamName());
-                    }
-                    bdTrainMakeupExamRecord.setCreateTime(new Date());
-                    bdTrainMakeupExamRecord.setTrainTaskId(bdExamRecord.getTrainTaskId());
-                    bdTrainMakeupExamRecord.setExamPaperId(bdExamRecord.getExamPaperId());
-                    bdTrainMakeupExamRecord.setUserId(sysUser.getId());
-                    bdTrainMakeupExamRecord.setExamId(bdExamRecord.getId());
-                    bdTrainMakeupExamRecord.setExamClassify(bdExamRecord.getExamClassify());
-                    bdTrainMakeupExamRecordMapper.insert(bdTrainMakeupExamRecord);
-                }
-            }
-            //如果是考试中改为已考试
-            if ("1".equals(bdExamRecord.getExamState())) {
-                bdExamRecord.setExamState("2");
-            }
-            if (ObjectUtil.isNotNull(bdTrainTaskUser)){
-                bdExamRecordMapper.updateById(bdExamRecord);
-            }
-            //正式考试，考试未结束，如果所有人考完，提前结束考试，且关闭结束考试定时任务
-            if (bdExamRecord.getExamClassify() == 1) {
-                earlyClosure(flag,bdExamRecord);
-            }
+        }
+        if (ObjectUtil.isNotNull(bdTrainTaskUser)){
+            bdExamRecordMapper.updateById(bdExamRecord);
+        }
+        //正式考试，考试未结束，如果所有人考完，提前结束考试，且关闭结束考试定时任务
+        if (bdExamRecord.getExamClassify() == 1) {
+            earlyClosure(flag,bdExamRecord);
+        }
+
+        // 生成错题集
+        examMistakesService.generateMistakesByExamRecodeId(bdExamRecord.getId());
     }
     public  void updateTrainRecord(String archiveId,BdExamRecord bdExamRecord){
         if(ObjectUtil.isNotEmpty(archiveId)){
