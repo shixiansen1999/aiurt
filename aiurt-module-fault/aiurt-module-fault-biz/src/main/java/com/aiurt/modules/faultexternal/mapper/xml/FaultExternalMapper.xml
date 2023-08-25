@@ -18,6 +18,10 @@
             <if test="faultExternal.status !=null">
                 and f.status = #{faultExternal.status}
             </if>
+            <if test="faultExternal.faultPhenomenonOrCode !=null and faultExternal.faultPhenomenonOrCode != '' ">
+                and (f.sproandway like concat('%', #{faultExternal.faultPhenomenonOrCode}, '%')
+                or f.sexecode like concat('%', #{faultExternal.faultPhenomenonOrCode}, '%'))
+            </if>
         </where>
         ORDER BY f.create_time DESC
     </select>

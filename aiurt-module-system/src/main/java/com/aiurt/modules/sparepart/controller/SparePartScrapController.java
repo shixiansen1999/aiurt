@@ -203,18 +203,8 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	@ApiOperation(value="spare_part_scrap-处置", notes="spare_part_scrap-处置")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<?> edit(@RequestBody SparePartScrap sparePartScrap) {
-		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		sparePartScrap.setSysOrgCode(user.getOrgCode());
-		if (ObjectUtil.isNotEmpty(sparePartScrap.getHandleWay()) && ObjectUtil.isNotEmpty(sparePartScrap.getId())
-				&& CommonConstant.SPARE_PART_SCRAP_STATUS_1.equals(sparePartScrap.getStatus())) {
-			if (CommonConstant.SPARE_PART_SCRAP_HANDLE_WAY_0.equals(sparePartScrap.getHandleWay())) {
-				sparePartScrap.setStatus(CommonConstant.SPARE_PART_SCRAP_STATUS_3);
-			}
-			if (CommonConstant.SPARE_PART_SCRAP_HANDLE_WAY_1.equals(sparePartScrap.getHandleWay())) {
-				sparePartScrap.setStatus(CommonConstant.SPARE_PART_SCRAP_STATUS_2);
-			}
-			return sparePartScrapService.update(sparePartScrap);
-
+		if (ObjectUtil.isNotEmpty(sparePartScrap.getHandleWay()) && ObjectUtil.isNotEmpty(sparePartScrap.getId()) && CommonConstant.SPARE_PART_SCRAP_STATUS_1.equals(sparePartScrap.getStatus())) {
+			return sparePartScrapService.edit(sparePartScrap);
 		}else {
 			return Result.error("操作失败");
 		}

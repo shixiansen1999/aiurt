@@ -95,7 +95,7 @@ public class SparePartScrap extends DictEntity implements Serializable {
 	/**备件处置单状态：1待处理、2已报废、3已报损*/
     @ApiModelProperty(value = "备件处置单状态：1待处理、2已报废、3已报损")
     private Integer status;
-    @ApiModelProperty(value = "备件处置方式：0报损、1报废")
+    @ApiModelProperty(value = "备件处置方式：0报损、1报废、2重新入库")
     @Dict(dicCode = "spare_handle_way")
     private Integer handleWay;
 	/**线路编号*/

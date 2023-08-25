@@ -66,6 +66,23 @@ public class SparePartInOrderImportExcelDTO implements Serializable {
     @ApiModelProperty(value = "入库数量")
     private String num;
 
+    /**入库的全新数量——从excel导入的读取时使用字符串读取excel单元格*/
+    @Excel(name = "全新数量", width = 15)
+    @ApiModelProperty(value = "入库的全新数量")
+    private String newNum;
+    /**入库的已使用数量——从excel导入的读取时使用字符串读取excel单元格*/
+    @Excel(name = "已使用数量", width = 15)
+    @ApiModelProperty(value = "入库的已使用数量")
+    private String usedNum;
+    /**入库的待报废数量——从excel导入的读取时使用字符串读取excel单元格*/
+    @Excel(name = "待报废数量", width = 15)
+    @ApiModelProperty(value = "入库的待报废数量")
+    private String scrapNum;
+    /**入库的委外送修数量——从excel导入的读取时使用字符串读取excel单元格*/
+    @Excel(name = "委外送修数量", width = 15)
+    @ApiModelProperty(value = "入库的委外送修数量")
+    private String outsourceRepairNum;
+
     /**
      * 备件入库错误原因
      */

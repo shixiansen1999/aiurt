@@ -21,6 +21,7 @@ WHERE
         SELECT
         btps.*,
         btp.plan_year,
+        REPLACE(plan_time,'月', '')as m,
         btp.dept_id
         FROM
         bd_train_plan_sub btps
@@ -43,5 +44,6 @@ WHERE
         <if test="bdTrainPlanSub.planTime!=null and bdTrainPlanSub.planTime!=''">
             and btps.plan_time = #{bdTrainPlanSub.planTime}
         </if>
+        ORDER BY m+0
     </select>
 </mapper>

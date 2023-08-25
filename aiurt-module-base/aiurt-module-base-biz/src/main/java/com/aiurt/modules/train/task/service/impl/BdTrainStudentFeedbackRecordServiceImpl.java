@@ -44,7 +44,7 @@ public class BdTrainStudentFeedbackRecordServiceImpl extends ServiceImpl<BdTrain
     @Autowired
     private BdTrainQuestionFeedbackRecordMapper bdTrainQuestionFeedbackRecordMapper;
     @Override
-    public BdTrainQuestionFeedback getStudentFeedbackRecordById(String userId, String taskId) {
+    public BdTrainQuestionFeedback getStudentFeedbackRecordById(String userId, String taskId,Integer isSubmit) {
         List<List<BdTrainQuestionFeedbackQuesRecord>> stuDto = new ArrayList<>();
         BdTrainQuestionFeedbackRecord bdTrainQuestionFeedbackRecord = bdTrainQuestionFeedbackRecordMapper.getStudentFeedBack(taskId);
         List<BdTrainQuestionFeedbackOptionsRecord> bdTrainQuestionFeedbackOptions = bdTrainQuestionFeedbackOptionsRecordMapper.selectByMainId(bdTrainQuestionFeedbackRecord.getId());
@@ -58,7 +58,7 @@ public class BdTrainStudentFeedbackRecordServiceImpl extends ServiceImpl<BdTrain
             bdTrainQuestionFeedbackQuesRecord.setOptions(bdTrainQuestionFeedbackOptions);
         }
         bdTrainQuestionFeedbackRecord.setQueList(stuDto);
-        List<BdTrainStudentFeedbackRecord> studentFeedbackRecord = bdTrainStudentFeedbackRecordMapper.getStudentFeedbackRecordById(userId, taskId);
+        List<BdTrainStudentFeedbackRecord> studentFeedbackRecord = bdTrainStudentFeedbackRecordMapper.getStudentFeedbackRecordById(userId, taskId,isSubmit);
         if (ObjectUtil.isNotNull(studentFeedbackRecord) && studentFeedbackRecord.size() > 0) {
 
             bdTrainQuestionFeedbackRecord.setBdTrainStudentFeedbackRecords(studentFeedbackRecord);

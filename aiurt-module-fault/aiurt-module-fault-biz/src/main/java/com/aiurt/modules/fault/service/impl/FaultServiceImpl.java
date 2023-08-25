@@ -1511,6 +1511,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         repairRecordDTO.setLineCode(fault.getLineCode());
         repairRecordDTO.setStationCode(fault.getStationCode());
         repairRecordDTO.setStationPositionCode(fault.getStationPositionCode());
+        repairRecordDTO.setIsSignalFault(fault.getIsSignalFault());
+
         // 查询参与人
         List<FaultRepairParticipants> participantsList = repairParticipantsService.queryParticipantsByRecordId(repairRecord.getId());
         repairRecordDTO.setParticipantsList(participantsList);
@@ -1535,6 +1537,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                             .newSparePartSplitCode(sparepart.getNewSparePartSplitCode())
                             .lendOutOrderId(sparepart.getLendOutOrderId())
                             .warehouseCode(sparepart.getWarehouseCode())
+                            .consumablesType(sparepart.getConsumables())
                             .build();
                     return build;
                 }).collect(Collectors.toList());
@@ -1559,6 +1562,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                             .newSparePartSplitCode(sparepart.getNewSparePartSplitCode())
                             .lendOutOrderId(sparepart.getLendOutOrderId())
                             .warehouseCode(sparepart.getWarehouseCode())
+                            .consumablesType(sparepart.getConsumables())
                             .build();
                     return build;
                 }).collect(Collectors.toList());
@@ -1651,6 +1655,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }).collect(Collectors.toList());
             repairParticipantsService.saveBatch(participantsList);
         }
+        //是否是信号故障
+        fault.setIsSignalFault(repairRecordDTO.getIsSignalFault());
         // 故障现象
         fault.setSymptoms(repairRecordDTO.getSymptoms());
         // 设备
@@ -1806,6 +1812,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         //是否需要自动提交签名（通信需要、站台门不需要）
         SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_SUBMIT_SIGNATURE);
         boolean value = "1".equals(paramModel.getValue());
+        //备件更换是否更换一次组件，就走一次备件流程
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPARE_PART_EXTRA);
+        String modelValue = sysParamModel.getValue();
         if(value){
             LoginUser user = sysBaseAPI.getUserById(loginUser.getId());
             one.setSignPath(user.getSignatureUrl());
@@ -1840,6 +1849,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     todoDTO.setTitle("维修待审核");
                     todoDTO.setMsgAbstract("维修待审核");
                     todoDTO.setPublishingContent("故障维修完成待审核");
+                    SysParamModel isExternalSpecialUse = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
+                    if ("1".equals(isExternalSpecialUse.getValue()) && "1".equals(fault.getFaultModeCode())) {
+                        todoDTO.setIsRingBell(true);
+                    }
                     sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障维修结果待审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
@@ -1847,7 +1860,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }else {
                 fault.setState(FaultStatesEnum.FINISH.getStatus());
                 fault.setStatus(FaultStatusEnum.Close.getStatus());
-                noAudit(faultCode);
+                if("0".equals(modelValue)){
+                    noAudit(faultCode);
+                }
                 // 如果非标准方案这新增一个标准库
                 addFaultKnowledgeBase(faultCode, fault);
                 // 通信试运行八期：故障完成之后，给中心班组提示音
@@ -1916,8 +1931,39 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         Integer approvalStatus = resultDTO.getApprovalStatus();
 
         Integer flag = 1;
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
 
         if (flag.equals(approvalStatus)) {
+            if ("1".equals(paramModel.getValue()) && "1".equals(fault.getFaultModeCode())) {
+                //工班长审核之后到控制中心班组审核
+                if (fault.getControlCenterReviewStatus() == null || fault.getControlCenterReviewStatus().equals(FaultConstant.CONTROL_CENTER_REVIEW_STATUS_2)) {
+                    // 审核
+                    try {
+                        TodoDTO todoDTO = new TodoDTO();
+                        todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                        todoDTO.setTitle("维修待审核");
+                        todoDTO.setMsgAbstract("维修待审核");
+                        todoDTO.setPublishingContent("故障维修完成待审核");
+                        todoDTO.setIsRingBell(true);
+                        FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+                        BeanUtil.copyProperties(fault, faultMessageDTO);
+                        sendTodo(faultCode, RoleConstant.ZXBANZHANG, null, "故障维修结果待审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
+                        sendTodo(faultCode, RoleConstant.ZXCHENGYUAN, null, "故障维修结果待审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
+                    //控制中心待审核
+                    fault.setControlCenterReviewStatus(0);
+                    updateById(fault);
+
+                    todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_RESULT.getType(), faultCode, loginUser.getUsername(), "1");
+                    saveLog(loginUser, "维修结果审核通过", faultCode, FaultStatusEnum.Close.getStatus(), resultDTO.getApprovalRejection());
+                    return;
+                }else{
+                    fault.setControlCenterReviewStatus(1);
+                }
+            }
+
             fault.setState(FaultStatesEnum.FINISH.getStatus());
             fault.setStatus(FaultStatusEnum.Close.getStatus());
             // 修改备件, 更改状态
@@ -1988,9 +2034,39 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
             //
         } else {
+            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+            BeanUtil.copyProperties(fault, faultMessageDTO);
+
+            if ("1".equals(paramModel.getValue()) && "1".equals(fault.getFaultModeCode())) {
+                if (FaultConstant.CONTROL_CENTER_REVIEW_STATUS_0.equals(fault.getControlCenterReviewStatus())) {
+                    //控制中心驳回给工班长
+                    // 审核
+                    try {
+                        HashMap<String, Object> map = new HashMap<>();
+                        map.put("approvalRejection", resultDTO.getApprovalRejection());
+
+                        TodoDTO todoDTO = new TodoDTO();
+                        todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
+                        todoDTO.setTitle("维修确认驳回");
+                        todoDTO.setMsgAbstract("维修确认被驳回");
+                        todoDTO.setPublishingContent("故障维修确认被退回，请重新处理");
+                        todoDTO.setData(map);
+                        todoDTO.setIsRingBell(true);
+                        sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障维修结果待审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
+                        fault.setControlCenterReviewStatus(2);
+                        updateById(fault);
+                        todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_RESULT.getType(), faultCode, loginUser.getUsername(), "1");
+                        saveLog(loginUser, "维修结果驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), resultDTO.getApprovalRejection());
+                        return;
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+
+            }
+
             try {
-                FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-                BeanUtil.copyProperties(fault, faultMessageDTO);
+
                 HashMap<String, Object> map = new HashMap<>();
                 map.put("approvalRejection", resultDTO.getApprovalRejection());
 
@@ -2008,16 +2084,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 // 审核
                 sendTodo(faultCode, null, fault.getAppointUserName(), "故障维修处理", TodoBusinessTypeEnum.FAULT_DEAL.getType(), todoDTO, faultMessageDTO);
 
-                /*MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAppointUserName(), "维修确认驳回" + DateUtil.today(), null);
 
-                messageDTO.setData(map);
-                //业务类型，消息类型，消息模板编码，摘要，发布内容
-                faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-                messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
-                messageDTO.setMsgAbstract("维修确认被驳回");
-                messageDTO.setPublishingContent("故障维修确认被退回，请重新处理");
-
-                sendMessage(messageDTO,faultMessageDTO);*/
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -2447,6 +2514,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         } else {
             if (StrUtil.isNotBlank(faultPhenomenon)) {
                 queryWrapper.like("symptoms", faultPhenomenon);
+                queryWrapper.or().like("code", faultPhenomenon);
             }
         }
         queryWrapper.apply(StrUtil.isNotBlank(stationCode), "(line_code = {0} or station_code = {0} or station_position_code = {0})", stationCode);
@@ -3449,6 +3517,26 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         boolean faultCenterWrite = "1".equals(iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_WRITE).getValue());
 
         records.parallelStream().forEach(fault1 -> {
+            //信号二期调度中心下发的故障审核，判断决定是工班长审核还是控制中心审核
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
+            if ("1".equals(paramModel.getValue()) && "1".equals(fault1.getFaultModeCode())) {
+                fault1.setReviewFlag(false);
+                boolean a = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.ZXBANZHANG))||user.getRoleCodes().contains(RoleConstant.ZXCHENGYUAN));
+                boolean b = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.FOREMAN)));
+
+                if ( a && FaultConstant.CONTROL_CENTER_REVIEW_STATUS_0.equals(fault1.getControlCenterReviewStatus())) {
+                    fault1.setReviewFlag(true);
+                }
+                if ( b && (fault1.getControlCenterReviewStatus() == null || FaultConstant.CONTROL_CENTER_REVIEW_STATUS_2.equals(fault1.getControlCenterReviewStatus()))) {
+                    fault1.setReviewFlag(true);
+                }
+                boolean c = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.ADMIN)));
+                if (c) {
+                    fault1.setReviewFlag(true);
+                }
+            }
+
+
             //通信八期获取维修记录中的处理情况和处理方式，并且把各时长转换为天时分秒
             LambdaQueryWrapper<FaultRepairRecord> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(FaultRepairRecord::getFaultCode, fault1.getCode()).eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0).select(FaultRepairRecord::getMaintenanceMeasures,FaultRepairRecord::getProcessing);

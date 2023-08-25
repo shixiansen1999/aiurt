@@ -16,8 +16,10 @@ import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
+import com.aiurt.modules.sparepart.entity.SparePartStockNum;
 import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
+import com.aiurt.modules.sparepart.mapper.SparePartStockNumMapper;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
 import com.aiurt.modules.system.entity.SysDepart;
@@ -69,6 +71,8 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     private ISysBaseAPI sysBaseApi;
     @Autowired
     private ISTodoBaseAPI isTodoBaseAPI;
+    @Autowired
+    private SparePartStockNumMapper sparePartStockNumMapper;
     /**
      * 查询列表
      * @param page
@@ -126,6 +130,23 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         if(null!=sparePartStock && sparePartStock.getNum()>=outOrder.getNum()){
             sparePartStock.setNum(sparePartStock.getNum()-outOrder.getNum());
             sparePartStockMapper.updateById(sparePartStock);
+            //先获取该备件的数量记录,更新全新数量
+            LambdaQueryWrapper<SparePartStockNum> numLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            numLambdaQueryWrapper.eq(SparePartStockNum::getMaterialCode, outOrder.getMaterialCode())
+                    .eq(SparePartStockNum::getWarehouseCode, outOrder.getWarehouseCode())
+                    .eq(SparePartStockNum::getDelFlag, CommonConstant.DEL_FLAG_0);
+            SparePartStockNum stockNum = sparePartStockNumMapper.selectOne(numLambdaQueryWrapper);
+            if (ObjectUtil.isNotNull(stockNum)) {
+                Integer newNum = stockNum.getNewNum();
+                //如果全新数量小于出库数量，则从已使用数量中扣除
+                if (newNum < outOrder.getNum()) {
+                    stockNum.setNewNum(0);
+                    stockNum.setUsedNum(stockNum.getUsedNum() - (outOrder.getNum() - newNum));
+                } else {
+                    stockNum.setNewNum(newNum - outOrder.getNum());
+                }
+                sparePartStockNumMapper.updateById(stockNum);
+            }
             //查询出库表同一仓库、同一备件是否有出库记录，没有则更新剩余数量为出库数量；
             List<SparePartOutOrder> orderList = list(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SparePartOutOrder::getMaterialCode,outOrder.getMaterialCode()).eq(SparePartOutOrder::getWarehouseCode,outOrder.getWarehouseCode()));
 
