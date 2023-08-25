@@ -1,6 +1,8 @@
 package com.aiurt.modules.train.mistakes.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordDetailMapper;
@@ -9,21 +11,33 @@ import com.aiurt.modules.train.exam.entity.BdExamPaper;
 import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.exam.entity.BdExamRecordDetail;
 import com.aiurt.modules.train.mistakes.constant.BdExamMistakesConstant;
+import com.aiurt.modules.train.mistakes.dto.other.QuestionDetailDTO;
 import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesReqDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesRespDTO;
 import com.aiurt.modules.train.mistakes.entity.BdExamMistakes;
+import com.aiurt.modules.train.mistakes.entity.BdExamMistakesAnswer;
 import com.aiurt.modules.train.mistakes.entity.BdExamMistakesQuestion;
 import com.aiurt.modules.train.mistakes.mapper.BdExamMistakesMapper;
+import com.aiurt.modules.train.mistakes.service.IBdExamMistakesAnswerService;
 import com.aiurt.modules.train.mistakes.service.IBdExamMistakesQuestionService;
 import com.aiurt.modules.train.mistakes.service.IBdExamMistakesService;
+import com.aiurt.modules.train.question.dto.BdQuestionOptionsDTO;
+import com.aiurt.modules.train.question.entity.BdQuestion;
+import com.aiurt.modules.train.question.entity.BdQuestionOptions;
+import com.aiurt.modules.train.question.entity.BdQuestionOptionsAtt;
+import com.aiurt.modules.train.question.mapper.BdQuestionMapper;
+import com.aiurt.modules.train.question.mapper.BdQuestionOptionsMapper;
+import com.aiurt.modules.train.task.mapper.BdTrainPlanMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,7 +58,15 @@ public class BdExamMistakesServiceImpl extends ServiceImpl<BdExamMistakesMapper,
     @Autowired
     private BdExamPaperMapper examPaperMapper;
     @Autowired
+    private BdQuestionMapper questionMapper;
+    @Autowired
+    private BdQuestionOptionsMapper questionOptionsMapper;
+    @Autowired
+    private BdTrainPlanMapper trainPlanMapper;
+    @Autowired
     private IBdExamMistakesQuestionService examMistakesQuestionService;
+    @Autowired
+    private IBdExamMistakesAnswerService examMistakesAnswerService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -109,5 +131,56 @@ public class BdExamMistakesServiceImpl extends ServiceImpl<BdExamMistakesMapper,
         Integer pageSize = Optional.ofNullable(bdExamMistakesReqDTO.getPageSize()).orElseGet(() -> 10);
         Page<BdExamMistakesRespDTO> page = new Page<>(pageNo, pageSize);
         return this.baseMapper.pageList(page, bdExamMistakesReqDTO);
+    }
+
+    @Override
+    public List<QuestionDetailDTO> getReviewById(String id) {
+        List<QuestionDetailDTO> list = new ArrayList<>();
+        // 错题集id为空直接返回
+        if (StrUtil.isEmpty(id)) {
+            return list;
+        }
+
+        // 根据错题集id，获取考生的答题情况
+        LambdaQueryWrapper<BdExamMistakesAnswer> examMistakesAnswerQueryWrapper = new LambdaQueryWrapper<>();
+        examMistakesAnswerQueryWrapper.eq(BdExamMistakesAnswer::getDelFlag, CommonConstant.DEL_FLAG_0);
+        examMistakesAnswerQueryWrapper.eq(BdExamMistakesAnswer::getMistakesId, id);
+        List<BdExamMistakesAnswer> examMistakesAnswerList = examMistakesAnswerService.list(examMistakesAnswerQueryWrapper);
+        // 考生的答题情况为空的话，直接返回
+        if (CollUtil.isEmpty(examMistakesAnswerList)){
+            return list;
+        }
+        // 对考生的答题情况进行循环，组装成QuestionDetailDTO对象
+        examMistakesAnswerList.forEach(mistakesAnswer->{
+            String questionId = mistakesAnswer.getQuestionId();
+            // 获取习题及其选项
+            BdQuestion bdQuestion = questionMapper.selectById(questionId);
+            List<BdQuestionOptions> bdQuestionOptions = questionOptionsMapper.optionList(questionId);
+            // 获取多媒体
+            List<BdQuestionOptionsAtt> mideas = trainPlanMapper.getMidea(questionId);
+
+            // 将实体类的选项对象转化成要返回的选项DTO对象
+            List<BdQuestionOptionsDTO> bdQuestionOptionsDTOList = bdQuestionOptions.stream().map(options -> {
+                BdQuestionOptionsDTO bdQuestionOptionsDTO = new BdQuestionOptionsDTO();
+                BeanUtils.copyProperties(options, bdQuestionOptionsDTO);
+                return bdQuestionOptionsDTO;
+            }).collect(Collectors.toList());
+
+            // 获取标准答案, 多个使用中文逗号隔开
+            String answer = bdQuestionOptionsDTOList.stream()
+                    .filter(optionsDTO -> Integer.valueOf(1).equals(optionsDTO.getIsRight()))
+                    .map(BdQuestionOptionsDTO::getContent)
+                    .collect(Collectors.joining("，"));
+
+            QuestionDetailDTO questionDetailDTO = new QuestionDetailDTO();
+            questionDetailDTO.setContent(bdQuestion.getContent());
+            questionDetailDTO.setQueType(bdQuestion.getQueType());
+            questionDetailDTO.setBdQuestionOptionsDTOList(bdQuestionOptionsDTOList);
+            questionDetailDTO.setAnswer(answer);
+            questionDetailDTO.setStuAnswer(mistakesAnswer.getStuAnswer());
+            questionDetailDTO.setMideas(mideas);
+            list.add(questionDetailDTO);
+        });
+        return list;
     }
 }

@@ -42,7 +42,7 @@ public class BdExamMistakesAnswer extends BaseEntity implements Serializable {
 
     /**考生答案*/
     @ApiModelProperty(value = "考生答案")
-    private String answer;
+    private String stuAnswer;
 
     /**伪删除 0未删除 1已删除*/
     @ApiModelProperty(value = "伪删除 0未删除 1已删除")

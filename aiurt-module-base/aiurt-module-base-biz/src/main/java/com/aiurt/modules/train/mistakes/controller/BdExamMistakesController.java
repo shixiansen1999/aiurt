@@ -1,6 +1,7 @@
 package com.aiurt.modules.train.mistakes.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.modules.train.mistakes.dto.other.QuestionDetailDTO;
 import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesReqDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesRespDTO;
 import com.aiurt.modules.train.mistakes.service.IBdExamMistakesService;
@@ -10,7 +11,10 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * 错题集接口
@@ -38,6 +42,15 @@ public class BdExamMistakesController {
         return Result.ok(pageList);
     }
 
-
+    /**
+     * 错题集，根据错题集id获取要审核的内容，主要是工班长进行审核
+     * @param id 错题集id
+     * @return
+     */
+    @GetMapping("/getReviewById")
+    public Result<List<QuestionDetailDTO>> getReviewById(@RequestParam(value = "id") String id){
+        List<QuestionDetailDTO> list = examMistakesService.getReviewById(id);
+        return Result.ok(list);
+    }
 
 }

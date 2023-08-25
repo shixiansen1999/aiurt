@@ -1,11 +1,14 @@
 package com.aiurt.modules.train.mistakes.service;
 
+import com.aiurt.modules.train.mistakes.dto.other.QuestionDetailDTO;
 import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesReqDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesRespDTO;
 import com.aiurt.modules.train.mistakes.entity.BdExamMistakes;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * 错题集的service
@@ -29,4 +32,12 @@ public interface IBdExamMistakesService extends IService<BdExamMistakes> {
      * @return
      */
     IPage<BdExamMistakesRespDTO> pageList(BdExamMistakesReqDTO bdExamMistakesReqDTO);
+
+    /**
+     * 错题集，根据错题集id获取要审核的内容，主要是工班长进行审核
+     *
+     * @param id 错题集id
+     * @return
+     */
+    List<QuestionDetailDTO> getReviewById(String id);
 }
