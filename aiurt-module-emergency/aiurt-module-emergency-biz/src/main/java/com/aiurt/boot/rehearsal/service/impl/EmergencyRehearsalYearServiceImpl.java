@@ -1,13 +1,17 @@
 package com.aiurt.boot.rehearsal.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.plan.entity.EmergencyPlan;
+import com.aiurt.boot.plan.mapper.EmergencyPlanMapper;
 import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
-import com.aiurt.boot.rehearsal.dto.EmergencyPlanStatusDTO;
-import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearAddDTO;
-import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
+import com.aiurt.boot.rehearsal.dto.*;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
 import com.aiurt.boot.rehearsal.mapper.EmergencyRehearsalMonthMapper;
@@ -16,37 +20,50 @@ import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalMonthService;
 import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalYearService;
 import com.aiurt.boot.rehearsal.service.strategy.AuditContext;
 import com.aiurt.boot.rehearsal.service.strategy.NodeFactory;
+import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.ExcelSelectListUtil;
+import com.aiurt.common.util.XlsUtil;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.util.SpringContextUtils;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -59,7 +76,8 @@ import java.util.zip.ZipOutputStream;
 @Service
 @Slf4j
 public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehearsalYearMapper, EmergencyRehearsalYear> implements IEmergencyRehearsalYearService, IFlowableBaseUpdateStatusService {
-
+    @Value("${jeecg.path.errorExcelUpload}")
+    private String errorExcelUpload;
     @Autowired
     private ISysBaseAPI iSysBaseApi;
     @Autowired
@@ -68,6 +86,8 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
     private EmergencyRehearsalMonthMapper emergencyRehearsalMonthMapper;
     @Autowired
     private EmergencyRehearsalYearMapper emergencyRehearsalYearMapper;
+    @Autowired
+    private EmergencyPlanMapper emergencyPlanMapper;
 
     @Override
     public IPage<EmergencyRehearsalYear> queryPageList(Page<EmergencyRehearsalYear> page, EmergencyRehearsalYearDTO emergencyRehearsalYearDTO) {
@@ -364,6 +384,265 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
         EmergencyRehearsalYear emergencyRehearsalYear = context.doAudit(rehearsalYear);
         this.updateById(emergencyRehearsalYear);
 
+    }
+
+
+    @Override
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            ImportParams params = new ImportParams();
+            params.setTitleRows(2);
+            params.setHeadRows(2);
+            params.setNeedSave(true);
+
+            List<String> errorMessage = new ArrayList<>();
+            int successLines = 0;
+            // 错误信息
+            int  errorLines = 0;
+
+            try {
+                String type = FilenameUtils.getExtension(file.getOriginalFilename());
+                if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
+                    return XlsUtil.importReturnRes(errorLines, successLines, errorMessage, false, null);
+                }
+
+                List<EmergencyRehearsalYearImport> emergencyRehearsalYears = ExcelImportUtil.importExcel(file.getInputStream(), EmergencyRehearsalYearImport.class, params);
+                Iterator<EmergencyRehearsalYearImport> iterator = emergencyRehearsalYears.iterator();
+                while (iterator.hasNext()) {
+                    EmergencyRehearsalYearImport model = iterator.next();
+                    boolean b = XlsUtil.checkObjAllFieldsIsNull(model);
+                    if (b) {
+                        iterator.remove();
+                    }
+                }
+                if (CollUtil.isEmpty(emergencyRehearsalYears)) {
+                    return Result.error("文件导入失败:文件内容不能为空！");
+                }
+
+                for (EmergencyRehearsalYearImport emergencyRehearsalYear : emergencyRehearsalYears) {
+                    //必填数据校验
+                    checkRequired(emergencyRehearsalYear,errorLines);
+                }
+                if (errorLines > 0) {
+                    //存在错误，导出错误清单
+                    return getErrorExcel(errorLines, errorMessage, emergencyRehearsalYears, successLines, null, type);
+                }
+
+                //校验通过，添加数据
+                LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                for (EmergencyRehearsalYearImport emergencyRehearsalYear : emergencyRehearsalYears) {
+                    List<EmergencyRehearsalMonthImport> monthList = emergencyRehearsalYear.getMonthList();
+                    List<EmergencyRehearsalMonth> months = new ArrayList<>();
+                    for (EmergencyRehearsalMonthImport emergencyRehearsalMonthImport : monthList) {
+                        EmergencyRehearsalMonth month = new EmergencyRehearsalMonth();
+                        BeanUtils.copyProperties(emergencyRehearsalMonthImport, month);
+                        months.add(month);
+                    }
+                    EmergencyRehearsalYearAddDTO emergencyRehearsalYearAddDTO = new EmergencyRehearsalYearAddDTO();
+                    BeanUtils.copyProperties(emergencyRehearsalYear, emergencyRehearsalYearAddDTO);
+                    emergencyRehearsalYearAddDTO.setMonthList(months);
+                    emergencyRehearsalYearAddDTO.setUserId(loginUser.getId());
+                    emergencyRehearsalYearAddDTO.setOrgCode(loginUser.getOrgCode());
+                    emergencyRehearsalYearAddDTO.setCompileDate(DateUtil.parse(DateUtil.today(),"yyyy-MM-dd"));
+                    this.startProcess(emergencyRehearsalYearAddDTO);
+                }
+                return Result.ok("文件导入成功！");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return Result.ok("文件导入失败！");
+    }
+
+
+    private int checkRequired(EmergencyRehearsalYearImport emergencyRehearsalYear,int errorLines) {
+        StringBuilder stringBuilder = new StringBuilder();
+        List<EmergencyRehearsalMonthImport> monthList = emergencyRehearsalYear.getMonthList();
+
+        List<DictModel> emergencyRehearsalType = iSysBaseApi.queryDictItemsByCode("emergency_rehearsal_type");
+        List<DictModel> emergencyRehearsalModality = iSysBaseApi.queryDictItemsByCode("emergency_rehearsal_modality");
+        Map<String, String> emergencyRehearsalTypeMap = emergencyRehearsalType.stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue, (key1, key2) -> key2));
+        Map<String, String> emergencyRehearsalModalityMap = emergencyRehearsalModality.stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue, (key1, key2) -> key2));
+
+        if (CollUtil.isNotEmpty(monthList)) {
+            for (EmergencyRehearsalMonthImport emergencyRehearsalMonth : monthList) {
+                StringBuilder stringBuilderMonth = new StringBuilder();
+
+                String typeName = emergencyRehearsalMonth.getTypeName();
+                String subject = emergencyRehearsalMonth.getSubject();
+                String schemeName = emergencyRehearsalMonth.getSchemeName();
+                String schemeVersion = emergencyRehearsalMonth.getSchemeVersion();
+                String modalityName = emergencyRehearsalMonth.getModalityName();
+                String orgName = emergencyRehearsalMonth.getOrgName();
+                String rehearsalTime = emergencyRehearsalMonth.getRehearsalTime();
+                String step = emergencyRehearsalMonth.getStep();
+
+                if (StrUtil.isNotBlank(typeName)) {
+                    String type = emergencyRehearsalTypeMap.get(typeName);
+                    if (StrUtil.isNotBlank(type)) {
+                        emergencyRehearsalMonth.setType(Integer.valueOf(type));
+                    } else {
+                        stringBuilderMonth.append("系统不存在该演练类型，");
+                    }
+                }else {
+                    stringBuilderMonth.append("演练类型不能为空，");
+                }
+
+                if (StrUtil.isBlank(subject)) {
+                    stringBuilderMonth.append("演练科目不能为空，");
+                }
+
+                if (StrUtil.isNotBlank(schemeName) && StrUtil.isNotBlank(schemeVersion)) {
+                    LambdaQueryWrapper<EmergencyPlan> queryWrapper = new LambdaQueryWrapper<>();
+                    queryWrapper.eq(EmergencyPlan::getEmergencyPlanName, schemeName)
+                            .eq(EmergencyPlan::getEmergencyPlanVersion, schemeVersion)
+                            .eq(EmergencyPlan::getDelFlag, CommonConstant.DEL_FLAG_0);
+                    EmergencyPlan emergencyPlan = emergencyPlanMapper.selectOne(queryWrapper);
+                    if (ObjectUtil.isNotNull(emergencyPlan)) {
+                        emergencyRehearsalMonth.setSchemeId(emergencyPlan.getId());
+                    } else {
+                        stringBuilderMonth.append("系统不存在该对应版本的预案，");
+                    }
+
+                }else {
+                    stringBuilderMonth.append("依托预案名称和预案版本不能为空，");
+                }
+
+                if (StrUtil.isNotBlank(modalityName)) {
+                    String modality = emergencyRehearsalModalityMap.get(modalityName);
+                    if (StrUtil.isNotBlank(modality)) {
+                        emergencyRehearsalMonth.setModality(Integer.valueOf(modality));
+                    } else {
+                        stringBuilderMonth.append("系统不存在该演练形式，");
+                    }
+                }else {
+                    stringBuilderMonth.append("演练形式不能为空，");
+                }
+
+                if (StrUtil.isNotBlank(orgName)) {
+                    List<String> list = StrUtil.splitTrim(orgName, "/");
+                    String id = null;
+                    for (int i = 0; i < list.size(); i++) {
+                        String s = list.get(i);
+                        //根据部门名称和父id找部门
+                        JSONObject depart = iSysBaseApi.getDepartByNameAndParentId(s, id);
+                        if (ObjectUtil.isNotNull(depart)) {
+                            id = depart.getString("id");
+                            emergencyRehearsalMonth.setOrgCode(depart.getString("orgCode"));
+                        }else {
+                            stringBuilder.append("系统不存在该组织部门，");
+                            break;
+                        }
+                    }
+                }else {
+                    stringBuilderMonth.append("组织部门不能为空，");
+                }
+
+                if (StrUtil.isBlank(rehearsalTime)) {
+                    stringBuilderMonth.append("演练时间不能为空，");
+                }
+
+                if (StrUtil.isBlank(step)) {
+                    stringBuilderMonth.append("必须体现环节不能为空，");
+                }
+
+                if (stringBuilderMonth.length() > 0) {
+                    // 截取字符
+                    stringBuilderMonth.deleteCharAt(stringBuilder.length() - 1);
+                    emergencyRehearsalMonth.setMistake(stringBuilderMonth.toString());
+                    errorLines++;
+                }
+
+            }
+        }else {
+            stringBuilder.append("演练计划不能为空，");
+        }
+
+        if (stringBuilder.length() > 0) {
+            // 截取字符
+            stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            emergencyRehearsalYear.setMistake(stringBuilder.toString());
+            errorLines++;
+        }
+        return errorLines;
+    }
+
+    private Result<?> getErrorExcel(int errorLines, List<String> errorMessage, List<EmergencyRehearsalYearImport> emergencyRehearsalYears, int successLines, String url, String type) {
+        try {
+            TemplateExportParams exportParams = XlsUtil.getExcelModel("");
+            Map<String, Object> errorMap = new HashMap<String, Object>();
+            List<Map<String, Object>> mapList = new ArrayList<>();
+
+            for (EmergencyRehearsalYearImport emergencyRehearsalYearImport : emergencyRehearsalYears) {
+                List<EmergencyRehearsalMonthImport> monthList = emergencyRehearsalYearImport.getMonthList();
+                for (EmergencyRehearsalMonthImport emergencyRehearsalMonthImport : monthList) {
+                    Map<String, Object> map = new HashMap<>();
+
+                    mapList.add(map);
+                }
+            }
+            errorMap.put("maplist", mapList);
+
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            sheetsMap.put(0, errorMap);
+            Workbook workbook =  cn.afterturn.easypoi.excel.ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+            String fileName = "年度演练计划错误清单"+"_" + System.currentTimeMillis()+"."+type;
+            FileOutputStream out = new FileOutputStream(errorExcelUpload+ File.separator+fileName);
+            url = File.separator+"errorExcelFiles"+ File.separator+fileName;
+            workbook.write(out);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return XlsUtil.importReturnRes(errorLines, successLines, errorMessage, true, url);
+
+    }
+
+
+
+    @Override
+    public void exportTemplateXl(HttpServletResponse response) throws IOException {
+        //获取输入流，原始模板位置
+        Resource resource = new ClassPathResource("");
+        InputStream resourceAsStream = resource.getInputStream();
+        //2.获取临时文件
+        File fileTemp = new File("");
+        try {
+            //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+            FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        String path = fileTemp.getAbsolutePath();
+        TemplateExportParams exportParams = new TemplateExportParams(path);
+        Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(16);
+        Workbook workbook = cn.afterturn.easypoi.excel.ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+        CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+
+        List<DictModel> emergencyRehearsalType = bean.queryDictItemsByCode("emergency_rehearsal_type");
+        List<DictModel> emergencyRehearsalModality = bean.queryDictItemsByCode("emergency_rehearsal_modality");
+
+        ExcelSelectListUtil.selectList(workbook, "演练类型", 2, 4, emergencyRehearsalType);
+        ExcelSelectListUtil.selectList(workbook, "演练形式", 6, 4, emergencyRehearsalModality);
+
+        String fileName = "年度演练计划导入模板.xlsx";
+        try {
+            response.setHeader("Content-Disposition",
+                    "attachment;filename=" + new String(fileName.getBytes("UTF-8"), "iso8859-1"));
+            response.setHeader("Content-Disposition", "attachment;filename=" + "年度演练计划导入模板.xlsx");
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+            workbook.write(bufferedOutPut);
+            bufferedOutPut.flush();
+            bufferedOutPut.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
