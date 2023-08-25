@@ -40,4 +40,12 @@ public interface IBdExamMistakesService extends IService<BdExamMistakes> {
      * @return
      */
     List<QuestionDetailDTO> getReviewById(String id);
+
+    /**
+     * 工班长审核错题集
+     *
+     * @param id 错题集id
+     * @param isPass 是否通过，1通过 0驳回(其他也是驳回，不等于1就驳回)
+     */
+    void auditById(String id, Integer isPass);
 }

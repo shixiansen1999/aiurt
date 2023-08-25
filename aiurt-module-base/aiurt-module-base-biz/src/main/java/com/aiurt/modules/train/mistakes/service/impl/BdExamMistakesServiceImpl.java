@@ -3,6 +3,7 @@ package com.aiurt.modules.train.mistakes.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordDetailMapper;
@@ -29,6 +30,7 @@ import com.aiurt.modules.train.question.mapper.BdQuestionMapper;
 import com.aiurt.modules.train.question.mapper.BdQuestionOptionsMapper;
 import com.aiurt.modules.train.task.mapper.BdTrainPlanMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -39,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -141,18 +144,27 @@ public class BdExamMistakesServiceImpl extends ServiceImpl<BdExamMistakesMapper,
             return list;
         }
 
-        // 根据错题集id，获取考生的答题情况
+        // 根据错题集id，获取考生的错题，这里要获取考生的错题而不是直接用答题情况是因为当考生没有答错题集时，错题也是存在的
+        LambdaQueryWrapper<BdExamMistakesQuestion> examMistakesQuestionQueryWrapper = new LambdaQueryWrapper<>();
+        examMistakesQuestionQueryWrapper.eq(BdExamMistakesQuestion::getDelFlag, CommonConstant.DEL_FLAG_0);
+        examMistakesQuestionQueryWrapper.eq(BdExamMistakesQuestion::getMistakesId, id);
+        List<BdExamMistakesQuestion> examMistakesQuestionList = examMistakesQuestionService.list(examMistakesQuestionQueryWrapper);
+        // 考生的错题情况为空的话，直接返回
+        if (CollUtil.isEmpty(examMistakesQuestionList)){
+            return list;
+        }
+
+        // 根据错题集id，获取考生的答题情况，并整合成一个Map，key是习题id，value是考生答案
         LambdaQueryWrapper<BdExamMistakesAnswer> examMistakesAnswerQueryWrapper = new LambdaQueryWrapper<>();
         examMistakesAnswerQueryWrapper.eq(BdExamMistakesAnswer::getDelFlag, CommonConstant.DEL_FLAG_0);
         examMistakesAnswerQueryWrapper.eq(BdExamMistakesAnswer::getMistakesId, id);
         List<BdExamMistakesAnswer> examMistakesAnswerList = examMistakesAnswerService.list(examMistakesAnswerQueryWrapper);
-        // 考生的答题情况为空的话，直接返回
-        if (CollUtil.isEmpty(examMistakesAnswerList)){
-            return list;
-        }
+        Map<String, String> answerMap = examMistakesAnswerList.stream().collect(Collectors.toMap(BdExamMistakesAnswer::getQuestionId, BdExamMistakesAnswer::getStuAnswer));
+
         // 对考生的答题情况进行循环，组装成QuestionDetailDTO对象
-        examMistakesAnswerList.forEach(mistakesAnswer->{
-            String questionId = mistakesAnswer.getQuestionId();
+        // TODO: 在循环里查询的，后续优化
+        examMistakesQuestionList.forEach(mistakesQuestion->{
+            String questionId = mistakesQuestion.getQuestionId();
             // 获取习题及其选项
             BdQuestion bdQuestion = questionMapper.selectById(questionId);
             List<BdQuestionOptions> bdQuestionOptions = questionOptionsMapper.optionList(questionId);
@@ -177,10 +189,29 @@ public class BdExamMistakesServiceImpl extends ServiceImpl<BdExamMistakesMapper,
             questionDetailDTO.setQueType(bdQuestion.getQueType());
             questionDetailDTO.setBdQuestionOptionsDTOList(bdQuestionOptionsDTOList);
             questionDetailDTO.setAnswer(answer);
-            questionDetailDTO.setStuAnswer(mistakesAnswer.getStuAnswer());
+            questionDetailDTO.setStuAnswer(answerMap.get(questionId));
             questionDetailDTO.setMideas(mideas);
             list.add(questionDetailDTO);
         });
         return list;
+    }
+
+    @Override
+    public void auditById(String id, Integer isPass) {
+        if (StrUtil.isEmpty(id)){
+            throw new AiurtBootException("错题集id参数不能为空");
+        }
+        BdExamMistakes examMistakes = this.getById(id);
+        if (examMistakes == null) {
+            throw new AiurtBootException("错题集查询为空");
+        }
+        if (!BdExamMistakesConstant.EXAM_MISTAKES_STATE_PENDING_REVIEW.equals(examMistakes.getState())){
+            throw new AiurtBootException("只有待审核状态才能审核");
+        }
+        Integer newState = Integer.valueOf(1).equals(isPass) ? BdExamMistakesConstant.EXAM_MISTAKES_STATE_PASSED : BdExamMistakesConstant.EXAM_MISTAKES_STATE_REJECTED;
+        LambdaUpdateWrapper<BdExamMistakes> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(BdExamMistakes::getId, id);
+        updateWrapper.set(BdExamMistakes::getState, newState);
+        this.update(updateWrapper);
     }
 }

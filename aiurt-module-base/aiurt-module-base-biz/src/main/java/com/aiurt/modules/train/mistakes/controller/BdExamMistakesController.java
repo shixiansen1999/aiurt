@@ -6,13 +6,12 @@ import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesReqDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesRespDTO;
 import com.aiurt.modules.train.mistakes.service.IBdExamMistakesService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,6 +21,7 @@ import java.util.List;
  * @author 华宜威
  * @date 2023-08-25 09:08:37
  */
+@Api("培训管理-错题集")
 @RestController
 @RequestMapping("/bdExamMistakes")
 public class BdExamMistakesController {
@@ -47,10 +47,21 @@ public class BdExamMistakesController {
      * @param id 错题集id
      * @return
      */
+    @AutoLog(value = "培训管理-错题集-根据错题集id获取要审核的内容")
+    @ApiOperation(value="培训管理-错题集-根据错题集id获取要审核的内容", notes="培训管理-错题集-根据错题集id获取要审核的内容")
     @GetMapping("/getReviewById")
     public Result<List<QuestionDetailDTO>> getReviewById(@RequestParam(value = "id") String id){
         List<QuestionDetailDTO> list = examMistakesService.getReviewById(id);
         return Result.ok(list);
+    }
+
+    @AutoLog(value = "培训管理-错题集-根据错题集id获取要审核的内容")
+    @ApiOperation(value="培训管理-错题集-根据错题集id获取要审核的内容", notes="培训管理-错题集-根据错题集id获取要审核的内容")
+    @PostMapping("/auditById")
+    public Result<String> auditById(@RequestParam(value = "id") String id,
+                                    @RequestParam(value = "isPass") @ApiParam("是否通过，1通过，0驳回") Integer isPass){
+        examMistakesService.auditById(id, isPass);
+        return Result.ok(isPass == 1 ? "审核通过": "已驳回");
     }
 
 }
