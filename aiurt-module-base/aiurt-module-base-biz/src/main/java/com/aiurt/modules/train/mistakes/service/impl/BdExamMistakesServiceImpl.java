@@ -161,13 +161,23 @@ public class BdExamMistakesServiceImpl extends ServiceImpl<BdExamMistakesMapper,
         List<BdExamMistakesAnswer> examMistakesAnswerList = examMistakesAnswerService.list(examMistakesAnswerQueryWrapper);
         Map<String, String> answerMap = examMistakesAnswerList.stream().collect(Collectors.toMap(BdExamMistakesAnswer::getQuestionId, BdExamMistakesAnswer::getStuAnswer));
 
+        // 将习题根据id查询合成一个map
+        List<String> questionIdList = examMistakesQuestionList.stream().map(BdExamMistakesQuestion::getQuestionId).collect(Collectors.toList());
+        List<BdQuestion> bdQuestionList = questionMapper.selectBatchIds(questionIdList);
+        Map<String, BdQuestion> questionMap = bdQuestionList.stream().collect(Collectors.toMap(BdQuestion::getId, question -> question));
+
+        // 将选项根据习题id合成一个map
+        LambdaQueryWrapper<BdQuestionOptions> optionsQueryWrapper = new LambdaQueryWrapper<>();
+        optionsQueryWrapper.in(BdQuestionOptions::getQuestionId, questionIdList);
+        List<BdQuestionOptions> bdQuestionOptionsList = questionOptionsMapper.selectList(optionsQueryWrapper);
+        Map<String, List<BdQuestionOptions>> optionsMap = bdQuestionOptionsList.stream().collect(Collectors.groupingBy(BdQuestionOptions::getQuestionId));
+
         // 对考生的答题情况进行循环，组装成QuestionDetailDTO对象
-        // TODO: 在循环里查询的，后续优化
         examMistakesQuestionList.forEach(mistakesQuestion->{
             String questionId = mistakesQuestion.getQuestionId();
             // 获取习题及其选项
-            BdQuestion bdQuestion = questionMapper.selectById(questionId);
-            List<BdQuestionOptions> bdQuestionOptions = questionOptionsMapper.optionList(questionId);
+            BdQuestion bdQuestion = questionMap.get(questionId);
+            List<BdQuestionOptions> bdQuestionOptions = optionsMap.get(questionId);
             // 获取多媒体
             List<BdQuestionOptionsAtt> mideas = trainPlanMapper.getMidea(questionId);
 
