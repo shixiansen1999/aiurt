@@ -18,6 +18,9 @@
         <if test="condition.id != null and condition.id != ''">
             ep.id =#{condition.id}
         </if>
+        <if test="condition.orgCode != null and condition.orgCode != ''">
+            and ep.org_code = #{condition.orgCode}
+        </if>
         <if test="condition.name != null and condition.name != ''">
             and ep.name like concat ('%',#{condition.name},'%')
         </if>
