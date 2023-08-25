@@ -1,5 +1,6 @@
 package com.aiurt.modules.config;
 
+import com.aiurt.modules.editor.service.MyModelServiceImpl;
 import org.flowable.ui.common.properties.FlowableCommonAppProperties;
 import org.flowable.ui.common.security.CustomPersistentRememberMeServices;
 import org.flowable.ui.common.security.PersistentTokenService;
@@ -25,7 +26,7 @@ public class ModelerBeanConfig {
 
     @Bean
     public ModelService createModelService() {
-        return new ModelServiceImpl();
+        return new MyModelServiceImpl();
     }
 
     @Bean
