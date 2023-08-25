@@ -3,6 +3,7 @@ package com.aiurt.boot.rehearsal.service;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearAddDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
+import com.aiurt.modules.common.entity.UpdateStateEntity;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -55,4 +56,10 @@ public interface IEmergencyRehearsalYearService extends IService<EmergencyRehear
      * @return
      */
     void exportXls(HttpServletRequest request, HttpServletResponse response, String ids,String orgCode);
+
+    /**
+     *
+     * @param updateStateEntity
+     */
+    void updateStates(UpdateStateEntity updateStateEntity);
 }

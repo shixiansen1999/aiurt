@@ -36,8 +36,12 @@ import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.Assert;
 
 import javax.servlet.http.HttpServletRequest;
@@ -68,6 +72,9 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
     private EmergencyRehearsalMonthMapper emergencyRehearsalMonthMapper;
     @Autowired
     private EmergencyRehearsalYearMapper emergencyRehearsalYearMapper;
+
+    @Autowired
+    private DataSourceTransactionManager transactionManager;
 
     @Override
     public IPage<EmergencyRehearsalYear> queryPageList(Page<EmergencyRehearsalYear> page, EmergencyRehearsalYearDTO emergencyRehearsalYearDTO) {
@@ -268,6 +275,11 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
      * @return
      */
     public String startProcess(EmergencyRehearsalYearAddDTO emergencyRehearsalYearAddDTO) {
+        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+        def.setName("SomeTxName");
+        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        TransactionStatus status = transactionManager.getTransaction(def);
+
         String id = emergencyRehearsalYearAddDTO.getId();
         if (StrUtil.isEmpty(id)) {
             EmergencyRehearsalYear rehearsalYear = new EmergencyRehearsalYear();
@@ -303,6 +315,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
                     emergencyRehearsalMonthService.save(month);
                 }
             }
+            transactionManager.commit(status);
             return planId;
         } else {
             EmergencyRehearsalYear rehearsalYear = this.getById(id);
@@ -328,6 +341,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
                     emergencyRehearsalMonthService.save(month);
                 }
             }
+            transactionManager.commit(status);
             return id;
         }
     }
@@ -366,4 +380,11 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
 
     }
 
+    /**
+     * @param updateStateEntity
+     */
+    @Override
+    public void updateStates(UpdateStateEntity updateStateEntity) {
+        updateState(updateStateEntity);
+    }
 }

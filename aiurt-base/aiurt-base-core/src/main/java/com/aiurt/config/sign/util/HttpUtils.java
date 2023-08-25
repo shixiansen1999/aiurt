@@ -3,8 +3,12 @@ package com.aiurt.config.sign.util;
 import cn.hutool.core.map.MapUtil;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.util.oConvertUtils;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -14,8 +18,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
@@ -229,41 +231,37 @@ public class HttpUtils {
      */
     public static String sendGetRequest(String url, Map<String, String> headers, Map<String, String> params) {
         StringBuilder response = new StringBuilder();
-        if (!checkUrl(url)) {
+       /* if (!checkUrl(url)) {
             return "";
-        }
+        }*/
         try {
             // 构建参数字符串
             if (MapUtil.isNotEmpty(params)) {
                 log.info("request params: {}",params);
                 url = String.format("%s%s%s", url, url.contains("?") ? "&" : "?", buildQueryString(params));
             }
-
-            URL requestUrl = new URL(url);
-            HttpURLConnection connection = (HttpURLConnection) requestUrl.openConnection();
-
-            // 设置请求方法
-            connection.setRequestMethod("GET");
-
             // 设置请求头
+            HttpHeaders requestHeaders = new HttpHeaders();
             if (MapUtil.isNotEmpty(headers)) {
                 for (Map.Entry<String, String> entry : headers.entrySet()) {
-                    connection.setRequestProperty(entry.getKey(), entry.getValue());
+                    requestHeaders.set(entry.getKey(), entry.getValue());
                 }
             }
+            HttpEntity requestEntity = new HttpEntity(requestHeaders);
 
-            // 获取响应内容
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            reader.close();
-            connection.disconnect();
-        } catch (IOException e) {
+
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<Result> exchange = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    requestEntity,
+                    Result.class
+            );
+            Result result = exchange.getBody();
+            log.info("请求接口接口：{}", JSON.toJSONString(result));
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
         return response.toString();
     }
 
