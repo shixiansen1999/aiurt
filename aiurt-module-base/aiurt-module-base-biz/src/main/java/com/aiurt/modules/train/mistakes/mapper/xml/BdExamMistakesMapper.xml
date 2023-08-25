@@ -4,6 +4,7 @@
 
     <select id="pageList" resultType="com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesRespDTO">
         SELECT
+            bem.id AS id,
             bem.user_id AS userId,
             su.realname AS realName,
             bem.train_task_id AS trainTaskId,
@@ -22,8 +23,5 @@
                 bem.train_task_id=#{bdExamMistakesReqDTO.trainTaskId}
             </if>
         </where>
-
-
-
     </select>
 </mapper>

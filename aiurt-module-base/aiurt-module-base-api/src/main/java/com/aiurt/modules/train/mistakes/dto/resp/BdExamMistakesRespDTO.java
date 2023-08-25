@@ -16,6 +16,10 @@ import java.io.Serializable;
 public class BdExamMistakesRespDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    /**错题集id*/
+    @ApiModelProperty(value = "错题集id")
+    private String id;
+
     /**考试人员id，关联sys_user.id*/
     @ApiModelProperty(value = "考试人员id，关联sys_user.id")
     private String userId;
