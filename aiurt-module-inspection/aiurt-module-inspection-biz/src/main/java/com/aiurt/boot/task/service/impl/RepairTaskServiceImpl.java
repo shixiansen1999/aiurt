@@ -59,7 +59,6 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
-import liquibase.pro.packaged.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -608,7 +607,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 e.setDeviceTypeName(q.getDeviceTypeName());
             });
             //检修单名称：检修标准title+设备名称
-            if (e.getIsAppointDevice() == 1) {
+            //通信十一期修改关联设备类型之后，没用检修单没用设备
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+            if (e.getIsAppointDevice() == 1 && "0".equals(paramModel.getValue())) {
                 e.setResultName(e.getOverhaulStandardName() + "(" + e.getEquipmentName() + ")");
             } else {
                 e.setResultName(e.getOverhaulStandardName());
@@ -951,7 +952,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
     @Override
     public Page<RepairTaskDTO> repairSelectTaskletForDevice(Page<RepairTaskDTO> pageList, RepairTaskDTO condition) {
-        List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskletForDevice(pageList, condition);
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+        List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskletForDevice(pageList, condition,paramModel.getValue());
         repairTasks.forEach(e -> {
             //查询同行人
             List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
@@ -2978,6 +2980,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (StrUtil.isEmpty(taskId) || StrUtil.isEmpty(deviceCode)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
+
+        //todo 该接口没用起来，如果要用，需要增加条件，因为通信十一期的改动之后检修单不一定有设备，只有设备分类了
         List<RepairTaskDeviceRel> repairTaskDeviceRels = repairTaskDeviceRelMapper.selectList(
                 new LambdaQueryWrapper<RepairTaskDeviceRel>()
                         .eq(RepairTaskDeviceRel::getRepairTaskId, taskId)
@@ -3066,9 +3070,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         //如果工单中不存在线路站点，则从设备中拿
                         if (StrUtil.isEmpty(stationName) && StrUtil.isEmpty(lineName)) {
                             String deviceCode = deviceRel.getDeviceCode();
-                            JSONObject deviceByCode = iSysBaseAPI.getDeviceByCode(deviceCode);
-                            stationName = iSysBaseAPI.getPosition(deviceByCode.getString("lineCode"));
-                            lineName = iSysBaseAPI.getPosition(deviceByCode.getString("stationCode"));
+                            if (StrUtil.isEmpty(deviceCode)) {
+                                JSONObject deviceByCode = iSysBaseAPI.getDeviceByCode(deviceCode);
+                                stationName = iSysBaseAPI.getPosition(deviceByCode.getString("lineCode"));
+                                lineName = iSysBaseAPI.getPosition(deviceByCode.getString("stationCode"));
+                            }
                         }
                         LoginUser userById = iSysBaseAPI.getUserById(deviceRel.getStaffId());
                         if (deviceRel.getWeeks() == null) {

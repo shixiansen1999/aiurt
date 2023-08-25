@@ -76,7 +76,7 @@
         <if test="taskDevice.taskId != null and taskDevice.taskId != ''">
             and ptd.task_id = #{taskDevice.taskId}
         </if>
-        <if test="multipleDeviceTypes eq '0'.toString() and taskDevice.deviceCode != null and taskDevice.deviceCode != ''">
+        <if test="taskDevice.deviceCode != null and taskDevice.deviceCode != ''">
             and ptd.device_code = #{taskDevice.deviceCode}
         </if>
         <if test="taskDevice.deviceName != null and taskDevice.deviceName != ''">

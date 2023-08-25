@@ -19,7 +19,9 @@ import com.aiurt.boot.plan.req.*;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.entity.InspectionCodeContent;
+import com.aiurt.boot.standard.entity.InspectionCodeDeviceType;
 import com.aiurt.boot.standard.mapper.InspectionCodeContentMapper;
+import com.aiurt.boot.standard.mapper.InspectionCodeDeviceTypeMapper;
 import com.aiurt.boot.standard.mapper.InspectionCodeMapper;
 import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
@@ -34,6 +36,7 @@ import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.UpdateHelperUtils;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.common.api.IBaseApi;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -51,6 +54,7 @@ import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -111,6 +115,10 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     private InspectionCodeMapper inspectionCodeMapper;
     @Resource
     private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private InspectionCodeDeviceTypeMapper inspectionCodeDeviceTypeMapper;
+    @Autowired
+    private RepairPoolCodeDeviceTypeMapper repairPoolCodeDeviceTypeMapper;
 
     /**
      * 查询检修计划池中的检修任务列表。
@@ -279,7 +287,18 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 result.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairPoolCode.getType())));
                 result.setMajorName(manager.translateMajor(Arrays.asList(repairPoolCode.getMajorCode()), InspectionConstant.MAJOR));
                 result.setSubsystemName(manager.translateMajor(Arrays.asList(repairPoolCode.getSubsystemCode()), InspectionConstant.SUBSYSTEM));
-                result.setDeviceTypeName(manager.queryNameByCode(repairPoolCode.getDeviceTypeCode()));
+                SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+                if ("1".equals(paramModel.getValue())) {
+                    List<RepairPoolCodeDeviceType> repairPoolCodeDeviceTypes = repairPoolCodeDeviceTypeMapper.selectList(new LambdaQueryWrapper<RepairPoolCodeDeviceType>().eq(RepairPoolCodeDeviceType::getRepairPoolCode, result.getCode()).select(RepairPoolCodeDeviceType::getDeviceTypeCode));
+                    if (CollUtil.isNotEmpty(repairPoolCodeDeviceTypes)) {
+                        Set<String> deviceTypeCodes = repairPoolCodeDeviceTypes.stream().map(RepairPoolCodeDeviceType::getDeviceTypeCode).collect(Collectors.toSet());
+                        List<DeviceType> typeList = sysBaseApi.selectDeviceTypeByCodes(deviceTypeCodes);
+                        String deviceTypeNames = typeList.stream().map(DeviceType::getName).collect(Collectors.joining(";"));
+                        result.setDeviceTypeName(deviceTypeNames);
+                    }
+                }else {
+                    result.setDeviceTypeName(manager.queryNameByCode(repairPoolCode.getDeviceTypeCode()));
+                }
                 result.setIsAppointDevice(CollUtil.isNotEmpty(repairDeviceDTOList) ? "是" : "否");
                 result.setIsAppointDeviceType(sysBaseApi.translateDict(DictConstant.IS_APPOINT_DEVICE, String.valueOf(repairPoolCode.getIsAppointDevice())));
 
@@ -767,9 +786,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      */
     private void generateInventory(String oldStaId, String newStaId, String taskId, String taskCode, Integer
             isAppointDevice) {
-
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
         // 与设备不相关
-        if (InspectionConstant.NO_ISAPPOINT_DEVICE.equals(isAppointDevice)) {
+        if (InspectionConstant.NO_ISAPPOINT_DEVICE.equals(isAppointDevice) || "1".equals(paramModel.getValue())) {
             List<RepairTaskStationRel> repairTaskStationRels = repairTaskStationRelMapper.selectList(
                     new LambdaQueryWrapper<RepairTaskStationRel>()
                             .eq(RepairTaskStationRel::getRepairTaskCode, taskCode)
@@ -1196,7 +1215,19 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     repairPoolCode.setId(null);
                     repairPoolCodeMapper.insert(repairPoolCode);
                     String staId = repairPoolCode.getId();
+                    //保存检修标准设备类型关联
+                    List<InspectionCodeDeviceType> patrolStandardDeviceTypes = inspectionCodeDeviceTypeMapper.selectList(new LambdaQueryWrapper<InspectionCodeDeviceType>()
+                            .eq(InspectionCodeDeviceType::getInspectionCode, inspectionCode.getCode())
+                            .eq(InspectionCodeDeviceType::getDelFlag, CommonConstant.DEL_FLAG_0));
 
+                    if (CollUtil.isNotEmpty(patrolStandardDeviceTypes)) {
+                        for (InspectionCodeDeviceType deviceTypeCode : patrolStandardDeviceTypes) {
+                            RepairPoolCodeDeviceType repairPoolCodeDeviceType = new RepairPoolCodeDeviceType();
+                            repairPoolCodeDeviceType.setRepairPoolCode(repairPoolCode.getCode());
+                            repairPoolCodeDeviceType.setDeviceTypeCode(deviceTypeCode.getDeviceTypeCode());
+                            repairPoolCodeDeviceTypeMapper.insert(repairPoolCodeDeviceType);
+                        }
+                    }
                     // 查询旧的检修标准对应的检修项目
                     List<InspectionCodeContent> inspectionCodeContentList = inspectionCodeContentMapper.selectList(
                             new LambdaQueryWrapper<InspectionCodeContent>()
