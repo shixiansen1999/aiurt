@@ -102,6 +102,7 @@ public class BdExamMistakesServiceImpl extends ServiceImpl<BdExamMistakesMapper,
         BdExamMistakes mistakes = new BdExamMistakes();
         mistakes.setUserId(bdExamRecord.getUserId());
         mistakes.setTrainTaskId(bdExamRecord.getTrainTaskId());
+        mistakes.setExamPaperId(bdExamPaper.getId());
         mistakes.setName(bdExamPaper.getName());
         // 错题集的初始状态：1未开答
         mistakes.setState(BdExamMistakesConstant.EXAM_MISTAKES_STATE_NOT_ANSWER);

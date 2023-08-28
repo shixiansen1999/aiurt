@@ -35,6 +35,10 @@ public class BdExamMistakes extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "考培训任务id，关联bd_train_task.id")
     private String trainTaskId;
 
+    /**考卷id,关联bd_exam_paper_id*/
+    @ApiModelProperty(value = "考卷id,关联bd_exam_paper_id")
+    private String examPaperId;
+
     /**考错题集名称，就是原考卷名称*/
     @ApiModelProperty(value = "错题集名称，就是原考卷名称")
     private String name;
