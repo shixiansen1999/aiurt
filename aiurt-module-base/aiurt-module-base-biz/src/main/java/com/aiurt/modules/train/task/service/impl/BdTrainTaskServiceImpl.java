@@ -8,6 +8,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
@@ -734,5 +735,33 @@ private void queryBdTrainTask(List<BdTrainTaskUser> userTasks,String uid){
 	public  Page<UserDTO> getTrainTeacher(Page<UserDTO> pageList, UserDTO userDTO) {
 		List<UserDTO> trainTeacher = bdTrainTaskMapper.getTrainTeacher(pageList, userDTO);
 		return pageList.setRecords(trainTeacher);
+	}
+
+	@Override
+	public void add(BdTrainTaskPage bdTrainTaskPage) {
+		BdTrainTask bdTrainTask = new BdTrainTask();
+		BeanUtils.copyProperties(bdTrainTaskPage, bdTrainTask);
+		bdTrainTask.setNumber(0);
+		bdTrainTask.setTaskState(0);
+		if (bdTrainTask.getExamStatus()==0) {
+			bdTrainTask.setMakeUpState(0);
+			bdTrainTask.setStudyResourceState(0);
+		}
+		SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(bdTrainTask.getTaskTeamId());
+		bdTrainTask.setTaskTeamCode(sysDepartModel.getOrgCode());
+		this.saveMain(bdTrainTask, bdTrainTaskPage.getBdTrainTaskSignList());
+		List<String> userIds = bdTrainTask.getUserIds();
+		// 看是不是所有人员都要培训档案，如果有人没有培训档案的，直接抛出错误
+		LambdaQueryWrapper<TrainArchive> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.select(TrainArchive::getUserId);
+		queryWrapper.eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0);
+		queryWrapper.in(TrainArchive::getUserId, userIds);
+		List<TrainArchive> list = archiveService.list(queryWrapper);
+		List<String> trainArchiveIdList = list.stream().map(TrainArchive::getUserId).collect(Collectors.toList());
+		if (!trainArchiveIdList.containsAll(userIds)) {
+			throw new AiurtBootException("培训档案中没有相关培训人员记录！");
+		}
+
+		this.addTrainTaskUser(bdTrainTask.getId(),bdTrainTask.getTaskTeamId(),userIds);
 	}
 }
