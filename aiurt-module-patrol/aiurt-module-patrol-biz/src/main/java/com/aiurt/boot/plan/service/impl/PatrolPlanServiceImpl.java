@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.plan.dto.DeviceListDTO;
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
@@ -30,10 +31,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -64,7 +68,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     private PatrolPlanMapper patrolPlanMapper;
     @Autowired
     private PatrolManager patrolManager;
-
+    @Resource
+    private ISysParamAPI iSysParamAPI;
     @Override
     public IPage<PatrolPlanDto> pageList(Page<PatrolPlanDto> page, PatrolPlanDto patrolPlan) {
         if (Objects.nonNull(patrolPlan.getSiteCode())) {
@@ -290,10 +295,12 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         if (CollUtil.isNotEmpty(patrolPlanDto.getPatrolStandards())) {
             List<PatrolStandardDto> patrolStandardDto = patrolPlanDto.getPatrolStandards();
             List<Device> devices = patrolPlanDto.getDevices();
+            //通信十一期通过配置不需要去掉需要指定设备的限制
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
             patrolStandardDto.forEach(p -> {
                 if (p.getDeviceType().equals(1)) {
                     boolean i = devices.stream().anyMatch(d -> p.getCode().equals(d.getPlanStandardCode()));
-                    if (!i) {
+                    if (!i  && "0".equals(paramModel.getValue())) {
                         throw new AiurtBootException("标准表名为：" + p.getName() + "暂未指定设备,请指定设备!");
                     }
                 }
@@ -489,6 +496,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 throw new AiurtBootException("计划暂未挑选巡检标准表，不允许启用！");
             }
 
+            //通信十一期通过配置不需要去掉需要指定设备的限制
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
             // 判断标准表中如果与设备类型相关是否选定了设备
             Optional.ofNullable(patrolPlanStandard).orElseGet(Collections::emptyList).stream().forEach(l -> {
                 LambdaQueryWrapper<PatrolStandard> standardWrapper = new LambdaQueryWrapper<>();
@@ -499,7 +508,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                     deviceWrapper.eq(PatrolPlanDevice::getPlanId, planId);
                     deviceWrapper.eq(PatrolPlanDevice::getPlanStandardId, l.getId());
                     List<PatrolPlanDevice> deviceList = patrolPlanDeviceMapper.selectList(deviceWrapper);
-                    if (CollectionUtil.isEmpty(deviceList)) {
+                    if (CollectionUtil.isEmpty(deviceList)  && "0".equals(paramModel.getValue())) {
                         throw new AiurtBootException("标准表名为:【" + standard.getName() + "】暂未指定设备，不允许启用！");
                     }
                 }

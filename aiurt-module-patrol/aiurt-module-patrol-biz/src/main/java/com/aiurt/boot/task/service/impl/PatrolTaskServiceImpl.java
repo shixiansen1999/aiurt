@@ -1505,6 +1505,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //保存巡检任务标准表的信息
         String taskId = patrolTask.getId();
         List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();
+        //通信十一期通过配置不需要去掉需要指定设备的限制
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
         patrolStandardList.stream().forEach(ns -> {
             PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
             patrolTaskStandard.setTaskId(taskId);
@@ -1521,9 +1523,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
             if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()) {
                 List<DeviceDTO> deviceList = ns.getDeviceList();
-                if (CollUtil.isEmpty(deviceList)) {
+                if (CollUtil.isEmpty(deviceList) && "0".equals(paramModel.getValue())) {
                     throw new AiurtBootException("要指定设备才可以保存");
-                } else {
+                } else if (CollUtil.isNotEmpty(deviceList)){
                     //遍历设备单号
                     deviceList.stream().forEach(dv -> {
                         PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
@@ -1937,6 +1939,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //保存巡检任务标准表的信息
         String taskId = patrolTaskManualDTO.getId();
         List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();
+        //通信十一期通过配置不需要去掉需要指定设备的限制
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
         patrolStandardList.stream().forEach(ns -> {
             PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
             patrolTaskStandard.setTaskId(taskId);
@@ -1953,25 +1957,26 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
             if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()) {
                 List<DeviceDTO> deviceList = ns.getDeviceList();
-                if(CollUtil.isEmpty(deviceList)){
+                if(CollUtil.isEmpty(deviceList)  && "0".equals(paramModel.getValue()) ){
                      throw new AiurtBootException("要指定设备才可以保存");
+                }else if (CollUtil.isNotEmpty(deviceList)){
+                    //遍历设备单号
+                    deviceList.stream().forEach(dv -> {
+                        PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
+                        patrolTaskDevice.setTaskId(taskId);//巡检任务id
+                        patrolTaskDevice.setDelFlag(0);
+                        patrolTaskDevice.setStatus(0);//单号状态
+                        patrolTaskDevice.setPatrolNumber(PatrolCodeUtil.getBillCode());
+                        patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
+                        patrolTaskDevice.setDeviceCode(dv.getCode());//设备code
+                        Device device = patrolTaskDeviceMapper.getDevice(dv.getCode());
+                        patrolTaskDevice.setLineCode(device.getLineCode());//线路code
+                        patrolTaskDevice.setStationCode(device.getStationCode());//站点code
+                        patrolTaskDevice.setPositionCode(device.getPositionCode());//位置code
+                        patrolTaskDeviceMapper.insert(patrolTaskDevice);
+                        patrolTaskDeviceService.copyItems(patrolTaskDevice);
+                    });
                 }
-                //遍历设备单号
-                deviceList.stream().forEach(dv -> {
-                    PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
-                    patrolTaskDevice.setTaskId(taskId);//巡检任务id
-                    patrolTaskDevice.setDelFlag(0);
-                    patrolTaskDevice.setStatus(0);//单号状态
-                    patrolTaskDevice.setPatrolNumber(PatrolCodeUtil.getBillCode());
-                    patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
-                    patrolTaskDevice.setDeviceCode(dv.getCode());//设备code
-                    Device device = patrolTaskDeviceMapper.getDevice(dv.getCode());
-                    patrolTaskDevice.setLineCode(device.getLineCode());//线路code
-                    patrolTaskDevice.setStationCode(device.getStationCode());//站点code
-                    patrolTaskDevice.setPositionCode(device.getPositionCode());//位置code
-                    patrolTaskDeviceMapper.insert(patrolTaskDevice);
-                    patrolTaskDeviceService.copyItems(patrolTaskDevice);
-                });
             } else {
                 List<String> stationCodeList1 = patrolTaskManualDTO.getStationCodeList();
                 stationCodeList1.stream().forEach(sc -> {
