@@ -9,6 +9,7 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -28,8 +29,10 @@ public class BdExamMistakesAppController {
     @AutoLog(value = "培训管理-错题集-app获取详情")
     @ApiOperation(value="培训管理-错题集-app获取详情", notes="培训管理-错题集-app获取详情")
     @GetMapping("/getAppMistakesDetail")
-    public Result<BdExamMistakesAppDetailRespDTO> getAppMistakesDetail(String id, String examRecordId){
-        BdExamMistakesAppDetailRespDTO bdExamMistakesAppDetailRespDTO = examMistakesService.getAppMistakesDetail(id, examRecordId);
+    public Result<BdExamMistakesAppDetailRespDTO> getAppMistakesDetail(@RequestParam(value = "id", required = true) String id,
+                                                                       @RequestParam(value = "examRecordId", required = false) String examRecordId,
+                                                                       @RequestParam(value = "isGetError", required = false) Integer isGetError){
+        BdExamMistakesAppDetailRespDTO bdExamMistakesAppDetailRespDTO = examMistakesService.getAppMistakesDetail(id, examRecordId, isGetError);
         return Result.ok(bdExamMistakesAppDetailRespDTO);
     }
 }

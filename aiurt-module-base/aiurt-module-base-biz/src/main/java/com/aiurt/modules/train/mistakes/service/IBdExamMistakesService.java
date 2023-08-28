@@ -55,7 +55,8 @@ public interface IBdExamMistakesService extends IService<BdExamMistakes> {
      *
      * @param id 错题集id
      * @param examRecordId 考生答题记录id
+     * @param isGetError 是否只获取错题，1是0否
      * @return
      */
-    BdExamMistakesAppDetailRespDTO getAppMistakesDetail(String id, String examRecordId);
+    BdExamMistakesAppDetailRespDTO getAppMistakesDetail(String id, String examRecordId, Integer isGetError);
 }

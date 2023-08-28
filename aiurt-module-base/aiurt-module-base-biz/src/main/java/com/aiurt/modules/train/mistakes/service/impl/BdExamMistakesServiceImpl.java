@@ -150,7 +150,7 @@ public class BdExamMistakesServiceImpl extends ServiceImpl<BdExamMistakesMapper,
     }
 
     @Override
-    public BdExamMistakesAppDetailRespDTO getAppMistakesDetail(String id, String examRecordId) {
+    public BdExamMistakesAppDetailRespDTO getAppMistakesDetail(String id, String examRecordId, Integer isGetError) {
         // 根据id获取错题集
         BdExamMistakes examMistakes = this.getById(id);
         // 获取考卷，需要总题目数和总分数
@@ -161,7 +161,13 @@ public class BdExamMistakesServiceImpl extends ServiceImpl<BdExamMistakesMapper,
         // 考生答案的Map,问题id做key，考生答案做value
         Map<String, String> stuAnswerMap;
         // 如果错题集状态是未作答的，获取的详情就是整张考卷的题目
-        if (BdExamMistakesConstant.EXAM_MISTAKES_STATE_NOT_ANSWER.equals(examMistakes.getState())) {
+        boolean isGetAllQuestion = BdExamMistakesConstant.EXAM_MISTAKES_STATE_NOT_ANSWER.equals(examMistakes.getState());
+        // 如果examRecordId传的是空值，获取的是错题
+        if (Integer.valueOf(1).equals(isGetError)) {
+            isGetAllQuestion = false;
+        }
+
+        if (isGetAllQuestion) {
             //根据试卷id获取试卷的问题
             bdQuestionList = bdQuestionMapper.contentList(examMistakes.getExamPaperId());
             List<String> questionIdList = bdQuestionList.stream().map(BdQuestion::getId).collect(Collectors.toList());
@@ -201,7 +207,6 @@ public class BdExamMistakesServiceImpl extends ServiceImpl<BdExamMistakesMapper,
             // 获取考生答案
             question.setAppAnswer(stuAnswerMap.get(question.getId()));
         });
-
 
         // 组装返回对象
         BdExamMistakesAppDetailRespDTO respDTO = new BdExamMistakesAppDetailRespDTO();
