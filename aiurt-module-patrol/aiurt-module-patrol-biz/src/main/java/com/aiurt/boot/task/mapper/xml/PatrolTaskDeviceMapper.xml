@@ -129,6 +129,41 @@
             and ptd.patrol_number = #{patrolNumber}
         </if>
     </select>
+    <select id="selectBillInfoByNumberToPrint" resultType="com.aiurt.boot.task.param.PatrolTaskDeviceParam">
+        SELECT pts.device_type_code,
+        dt.`name`   deviceTypeName,
+        d.`name`    deviceName,
+        su.realname username,
+        cl.line_name,
+        cs.station_name,
+        pts.subsystem_code,
+        css.system_name as subsystemName,
+        psp.user_id as samplePersonId,
+        psp.username as samplePersonName,
+        ptd.*
+        FROM patrol_task_device ptd
+        JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
+        AND pts.del_flag = 0
+        LEFT JOIN cs_line cl ON ptd.line_code = cl.line_code
+        AND cl.del_flag = 0
+        LEFT JOIN cs_station cs ON ptd.station_code = cs.station_code
+        AND cs.del_flag = 0
+        LEFT JOIN device_type dt ON pts.device_type_code = dt.`code`
+        AND dt.del_flag = 0
+        LEFT JOIN sys_user su ON ptd.user_id = su.id
+        AND su.del_flag = 0
+        LEFT JOIN device d ON ptd.device_code = d.`code`
+        AND d.del_flag = 0
+        LEFT JOIN cs_subsystem css ON css.system_code = pts.subsystem_code
+        AND css.del_flag = 0
+        LEFT JOIN  patrol_sample_person psp on psp.task_device_code =ptd.patrol_number
+        AND psp.del_flag = 0
+        WHERE
+        ptd.del_flag = 0
+        <if test="patrolNumber != null and patrolNumber != ''">
+            and ptd.patrol_number = #{patrolNumber}
+        </if>
+    </select>
     <select id="getPatrolTaskDeviceList" resultType="com.aiurt.boot.task.dto.PatrolTaskDeviceDTO">
         SELECT dv.`name` as deviceName,
                ptd.*
@@ -225,6 +260,34 @@
         <if test="taskId != null and taskId != ''">
             AND ptd.task_id = #{taskId}
         </if>
+    </select>
+    <select id="getBillGangedInfoToPrint" resultType="com.aiurt.boot.task.dto.PrintStandardDetailDTO">
+        SELECT ps.id,
+        ptd.id                                                                      billId,
+        ptd.patrol_number                                                           billCode,
+        CONCAT(ps.`name`, IF(d.`name` IS NOT NULL, CONCAT('(', d.`name`, ')'), '')) tableName,
+        IF(ptd.device_code IS NOT NULL, d.station_code, ptd.station_code)           stationCode,
+        psi.proc_methods                                                            procMethods,
+        ptd.sample_sign_url                                                         sampleSignUrl,
+        cs.station_name
+        FROM patrol_task_device ptd
+        LEFT JOIN device d ON ptd.device_code = d.`code`
+        AND d.del_flag = 0
+        LEFT JOIN cs_station cs ON
+        IF(ptd.device_code IS NOT NULL, d.station_code, ptd.station_code) = cs.station_code
+        AND cs.del_flag = 0
+        JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
+        AND pts.del_flag = 0
+        JOIN patrol_standard ps ON pts.standard_id = ps.id
+        AND ps.del_flag = 0
+        JOIN patrol_standard_items psi ON psi.standard_id = ps.id
+        AND psi.del_flag = 0
+        WHERE
+        ptd.del_flag = 0
+        <if test="taskId != null and taskId != ''">
+            AND ptd.task_id = #{taskId}
+        </if>
+        Group By billCode
     </select>
     <select id="getStationName" resultType="java.lang.String">
         SELECT station_name
