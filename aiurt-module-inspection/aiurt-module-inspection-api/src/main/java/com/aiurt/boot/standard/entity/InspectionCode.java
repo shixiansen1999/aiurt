@@ -174,4 +174,10 @@ public class InspectionCode extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String repairTypeValue;
 
+    /**
+     * 设备类型多选
+     */
+    @ApiModelProperty(value = "设备类型多选")
+    @TableField(exist = false)
+    private List<String> deviceTypeCodeList;
 }

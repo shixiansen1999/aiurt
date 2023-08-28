@@ -1,6 +1,7 @@
 package com.aiurt.modules.train.question.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.train.question.dto.BdQuestionDTO;
 import com.aiurt.modules.train.question.entity.BdQuestion;
@@ -41,6 +42,7 @@ public class BdQuestionController extends BaseController<BdQuestion, IBdQuestion
 	@AutoLog(value = "考卷习题-分页列表查询")
 	@ApiOperation(value="考卷习题-分页列表查询", notes="考卷习题-分页列表查询")
 	//@PostMapping(value = "/questionList")
+	@PermissionData(pageComponent = "trainAss/question-manage/list")
 	@GetMapping(value = "/questionList")
 	public Result<?> queryPageList(BdQuestion condition) {
 		if (condition.getPageNo()==null||condition.getPageSize()==null){

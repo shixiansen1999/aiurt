@@ -59,7 +59,6 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
-import liquibase.pro.packaged.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -608,7 +607,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 e.setDeviceTypeName(q.getDeviceTypeName());
             });
             //检修单名称：检修标准title+设备名称
-            if (e.getIsAppointDevice() == 1) {
+            //通信十一期修改关联设备类型之后，没用检修单没用设备
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+            if (e.getIsAppointDevice() == 1 && "0".equals(paramModel.getValue())) {
                 e.setResultName(e.getOverhaulStandardName() + "(" + e.getEquipmentName() + ")");
             } else {
                 e.setResultName(e.getOverhaulStandardName());
@@ -753,6 +754,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         colleaguesDTO.setRealName(p.getRealName());
                         samplingList.add(colleaguesDTO);
                     });
+                    String sampling = repairTaskSampling.stream().map(RepairTaskSampling::getRealName).collect(Collectors.joining(","));
+                    checkListDTO.setSampling(sampling);
                     checkListDTO.setSamplingList(samplingList);
                 }
 
@@ -951,7 +954,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
     @Override
     public Page<RepairTaskDTO> repairSelectTaskletForDevice(Page<RepairTaskDTO> pageList, RepairTaskDTO condition) {
-        List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskletForDevice(pageList, condition);
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+        List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskletForDevice(pageList, condition,paramModel.getValue());
         repairTasks.forEach(e -> {
             //查询同行人
             List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
@@ -2600,7 +2604,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
      * @return
      */
     @Override
-    public void submitMonad(String id) {
+    public void submitMonad(String id, String samplingSignUrl) {
         // 查询检修工单
         RepairTaskDeviceRel repairTaskDeviceRel = repairTaskDeviceRelMapper.selectById(id);
         if (ObjectUtil.isEmpty(repairTaskDeviceRel)) {
@@ -2657,6 +2661,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTaskDeviceRel.setSubmitTime(submitTime);
         repairTaskDeviceRel.setStaffId(manager.checkLogin().getId());
         repairTaskDeviceRel.setIsSubmit(InspectionConstant.SUBMITTED);
+        repairTaskDeviceRel.setSamplingSignUrl(samplingSignUrl);
         repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
         //是否需要自动提交工单，并写入签名
         //未驳回，检查是否是最后工单提交
@@ -2978,6 +2983,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (StrUtil.isEmpty(taskId) || StrUtil.isEmpty(deviceCode)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
+
+        //todo 该接口没用起来，如果要用，需要增加条件，因为通信十一期的改动之后检修单不一定有设备，只有设备分类了
         List<RepairTaskDeviceRel> repairTaskDeviceRels = repairTaskDeviceRelMapper.selectList(
                 new LambdaQueryWrapper<RepairTaskDeviceRel>()
                         .eq(RepairTaskDeviceRel::getRepairTaskId, taskId)
@@ -3066,9 +3073,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         //如果工单中不存在线路站点，则从设备中拿
                         if (StrUtil.isEmpty(stationName) && StrUtil.isEmpty(lineName)) {
                             String deviceCode = deviceRel.getDeviceCode();
-                            JSONObject deviceByCode = iSysBaseAPI.getDeviceByCode(deviceCode);
-                            stationName = iSysBaseAPI.getPosition(deviceByCode.getString("lineCode"));
-                            lineName = iSysBaseAPI.getPosition(deviceByCode.getString("stationCode"));
+                            if (StrUtil.isEmpty(deviceCode)) {
+                                JSONObject deviceByCode = iSysBaseAPI.getDeviceByCode(deviceCode);
+                                stationName = iSysBaseAPI.getPosition(deviceByCode.getString("lineCode"));
+                                lineName = iSysBaseAPI.getPosition(deviceByCode.getString("stationCode"));
+                            }
                         }
                         LoginUser userById = iSysBaseAPI.getUserById(deviceRel.getStaffId());
                         if (deviceRel.getWeeks() == null) {
@@ -3423,7 +3432,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             imageList = Arrays.asList(excelDictModel.getDescription().split(","));
         }
         //文件打印签名
-        Map<String, Object> imageMap = getSignImageMap(patrolTask,imageList);
+        Map<String, Object> imageMap = getSignImageMap(repairTask,imageList);
 
         InputStream minioFile2 = MinioUtil.getMinioFile("platform", templateFileName);
         ExcelWriter excelWriter = null;
@@ -3463,8 +3472,38 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             patrolData = getEquipment(headerMap,deviceId);
             //填充列表数据
             excelWriter.fill(new FillWrapper("list",patrolData),fillConfig,writeSheet);
+        }else if ("threeViolations.xlsx".equals(excelName)){
+            patrolData = getThreeViolations(deviceId);
+            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
         }
         return excelWriter;
+    }
+
+    private List<PrintDataDTO> getThreeViolations(String deviceId) {
+        List<PrintDataDTO> getThreeViolations = new ArrayList<>();
+        List<RepairTaskResult> resultList = repairTaskMapper.selectSingle(deviceId, null);
+        //过滤为部署检查项的
+        List<RepairTaskResult> checks = resultList.stream().filter(c -> c.getType()==0).collect(Collectors.toList());
+        for (int i = 0; i < checks.size(); i++) {
+            RepairTaskResult patrolCheckResultDTO = checks.get(i);
+            List<RepairTaskResult> list = resultList.stream().filter(c-> c.getPid().equals(patrolCheckResultDTO.getId())).collect(Collectors.toList());
+            list.forEach(l->{
+                PrintDataDTO printDTO = new PrintDataDTO();
+                printDTO.setRemark(l.getUnNote());
+                if (l.getStatus()==1){
+                    printDTO.setResult("无");
+                }else {
+                    printDTO.setResult("异常");
+                }
+                getThreeViolations.add(printDTO);
+            });
+            if (i != checks.size() - 1) {
+                // 不是最后一个元素，执行特殊操作
+                PrintDataDTO printDTO = new PrintDataDTO();
+                getThreeViolations.add(printDTO);
+            }
+        }
+            return getThreeViolations;
     }
 
     private List<PrintDataDTO> getEquipment(Map<String, Object> headerMap, String deviceId) {
@@ -3552,6 +3591,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         map.put("startOverhaulTime", DateUtil.format(repairTask.getStartOverhaulTime(),"yyyy-MM-dd HH:mm"));
         map.put("peerName", repairTask.getPeerName());
         map.put("overhaulName", repairTask.getOverhaulName());
+        map.put("orgName",sysBaseApi.getUserById(repairTask.getOverhaulId()).getOrgName());
         return map;
     }
     /**

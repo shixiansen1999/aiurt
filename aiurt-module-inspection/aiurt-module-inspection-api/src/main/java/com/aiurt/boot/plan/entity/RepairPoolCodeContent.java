@@ -128,4 +128,10 @@ public class RepairPoolCodeContent implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "检查值是否必填名称")
     private java.lang.String inspectionTypeName;
+
+
+    /**设备类型code*/
+    @cn.afterturn.easypoi.excel.annotation.Excel(name = "设备类型code", width = 15)
+    @ApiModelProperty(value = "设备类型code")
+    private String deviceTypeCode;
 }

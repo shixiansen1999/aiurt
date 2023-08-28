@@ -19,9 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import liquibase.pro.packaged.F;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.model.*;
@@ -29,7 +27,6 @@ import org.flowable.editor.language.json.converter.BaseBpmnJsonConverter;
 import org.flowable.editor.language.json.converter.BpmnJsonConverterContext;
 import org.flowable.editor.language.json.converter.UserTaskJsonConverter;
 import org.flowable.editor.language.json.converter.util.JsonConverterUtil;
-import org.intellij.lang.annotations.Flow;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -153,6 +150,8 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                         case TASK_MULTI_INSTANCE_TYPE_1:
                             if (Objects.nonNull(loopCharacteristics)) {
                                 loopCharacteristics.setSequential(false);
+                                // 修提交条件，否则二次编辑提交条件无法修改，原因先执行customUserTaskJsonConverter ，再执行BaseBpmnJsonConverter
+                                loopCharacteristics.setCompletionCondition("${nrOfCompletedInstances >= 1}");
                             }
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Parallel");
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_CONDITION, "${nrOfCompletedInstances >= 1}");
@@ -161,6 +160,8 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                         case TASK_MULTI_INSTANCE_TYPE_2:
                             if (Objects.nonNull(loopCharacteristics)) {
                                 loopCharacteristics.setSequential(false);
+                                // 修提交条件，否则二次编辑提交条件无法修改，原因先执行customUserTaskJsonConverter ，再执行BaseBpmnJsonConverter
+                                loopCharacteristics.setCompletionCondition("${nrOfCompletedInstances == nrOfInstances}");
                             }
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Parallel");
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_CONDITION, "${nrOfCompletedInstances == nrOfInstances}");
@@ -168,6 +169,8 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                         default:
                             if (Objects.nonNull(loopCharacteristics)) {
                                 loopCharacteristics.setSequential(true);
+                                // 修提交条件，否则二次编辑提交条件无法修改，原因先执行customUserTaskJsonConverter ，再执行BaseBpmnJsonConverter
+                                loopCharacteristics.setCompletionCondition(null);
                             }
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Sequential");
                     }

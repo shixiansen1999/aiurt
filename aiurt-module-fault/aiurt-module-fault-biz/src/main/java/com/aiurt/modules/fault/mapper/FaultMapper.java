@@ -385,5 +385,13 @@ public interface FaultMapper extends BaseMapper<Fault> {
      * @return
      */
     SparePartReplaceDTO queryWarehouseCodeAndNum(@Param("warehouseCode")String warehouseCode, @Param("materialCode")String materialCode);
+
+    /**
+     * 站点名称
+     *
+     * @param stationPositionCode
+     * @return
+     */
+    String getPositionByCode(@Param("stationPositionCode") String stationPositionCode);
 }
 

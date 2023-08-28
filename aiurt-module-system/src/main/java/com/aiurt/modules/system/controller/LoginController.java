@@ -105,6 +105,10 @@ public class LoginController {
 	private ISysThirdAccountService sysThirdAccountService;
 
 	@Autowired
+	private ILoginService loginService;
+
+
+	@Autowired
 	private WebSocket webSocket;
 
 	@ApiOperation("登录接口")

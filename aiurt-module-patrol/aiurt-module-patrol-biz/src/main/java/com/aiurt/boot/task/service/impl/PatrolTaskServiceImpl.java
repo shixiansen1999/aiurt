@@ -18,6 +18,8 @@ import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.boot.standard.entity.PatrolStandardDeviceType;
+import com.aiurt.boot.standard.mapper.PatrolStandardDeviceTypeMapper;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.statistics.dto.IndexStationDTO;
 import com.aiurt.boot.task.dto.*;
@@ -40,6 +42,7 @@ import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.excel.EasyExcel;
@@ -152,7 +155,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private PatrolSamplePersonMapper patrolSamplePersonMapper;
     @Autowired
     private ISysParamAPI iSysParamAPI;
-
+    @Autowired
+    private PatrolStandardDeviceTypeMapper patrolStandardDeviceTypeMapper;
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
@@ -1501,6 +1505,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //保存巡检任务标准表的信息
         String taskId = patrolTask.getId();
         List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();
+        //通信十一期通过配置不需要去掉需要指定设备的限制
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
         patrolStandardList.stream().forEach(ns -> {
             PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
             patrolTaskStandard.setTaskId(taskId);
@@ -1515,7 +1521,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
-            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()) {
+            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()  && "0".equals(paramModel.getValue()) ) {
                 List<DeviceDTO> deviceList = ns.getDeviceList();
                 if (CollUtil.isEmpty(deviceList)) {
                     throw new AiurtBootException("要指定设备才可以保存");
@@ -1619,6 +1625,16 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
             });
             e.setDeviceList(dtoList);
+
+            List<PatrolStandardDeviceType> patrolStandardDeviceTypes = patrolStandardDeviceTypeMapper.selectList(new LambdaQueryWrapper<PatrolStandardDeviceType>().eq(PatrolStandardDeviceType::getStandardCode, e.getCode()).select(PatrolStandardDeviceType::getDeviceTypeCode));
+            if (CollUtil.isNotEmpty(patrolStandardDeviceTypes)) {
+                Set<String> deviceTypeCodes = patrolStandardDeviceTypes.stream().map(PatrolStandardDeviceType::getDeviceTypeCode).collect(Collectors.toSet());
+                e.setDeviceTypeCodeList(new ArrayList<>(deviceTypeCodes));
+                List<DeviceType> typeList = sysBaseApi.selectDeviceTypeByCodes(deviceTypeCodes);
+                String deviceTypeNames = typeList.stream().map(DeviceType::getName).collect(Collectors.joining(";"));
+                e.setDeviceTypeName(deviceTypeNames);
+            }
+
         });
         return pageList.setRecords(standardList);
     }
@@ -1923,6 +1939,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //保存巡检任务标准表的信息
         String taskId = patrolTaskManualDTO.getId();
         List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();
+        //通信十一期通过配置不需要去掉需要指定设备的限制
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
         patrolStandardList.stream().forEach(ns -> {
             PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
             patrolTaskStandard.setTaskId(taskId);
@@ -1937,27 +1955,28 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
-            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()) {
+            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()  && "0".equals(paramModel.getValue())  ) {
                 List<DeviceDTO> deviceList = ns.getDeviceList();
                 if(CollUtil.isEmpty(deviceList)){
                      throw new AiurtBootException("要指定设备才可以保存");
+                }else{
+                    //遍历设备单号
+                    deviceList.stream().forEach(dv -> {
+                        PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
+                        patrolTaskDevice.setTaskId(taskId);//巡检任务id
+                        patrolTaskDevice.setDelFlag(0);
+                        patrolTaskDevice.setStatus(0);//单号状态
+                        patrolTaskDevice.setPatrolNumber(PatrolCodeUtil.getBillCode());
+                        patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
+                        patrolTaskDevice.setDeviceCode(dv.getCode());//设备code
+                        Device device = patrolTaskDeviceMapper.getDevice(dv.getCode());
+                        patrolTaskDevice.setLineCode(device.getLineCode());//线路code
+                        patrolTaskDevice.setStationCode(device.getStationCode());//站点code
+                        patrolTaskDevice.setPositionCode(device.getPositionCode());//位置code
+                        patrolTaskDeviceMapper.insert(patrolTaskDevice);
+                        patrolTaskDeviceService.copyItems(patrolTaskDevice);
+                    });
                 }
-                //遍历设备单号
-                deviceList.stream().forEach(dv -> {
-                    PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
-                    patrolTaskDevice.setTaskId(taskId);//巡检任务id
-                    patrolTaskDevice.setDelFlag(0);
-                    patrolTaskDevice.setStatus(0);//单号状态
-                    patrolTaskDevice.setPatrolNumber(PatrolCodeUtil.getBillCode());
-                    patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
-                    patrolTaskDevice.setDeviceCode(dv.getCode());//设备code
-                    Device device = patrolTaskDeviceMapper.getDevice(dv.getCode());
-                    patrolTaskDevice.setLineCode(device.getLineCode());//线路code
-                    patrolTaskDevice.setStationCode(device.getStationCode());//站点code
-                    patrolTaskDevice.setPositionCode(device.getPositionCode());//位置code
-                    patrolTaskDeviceMapper.insert(patrolTaskDevice);
-                    patrolTaskDeviceService.copyItems(patrolTaskDevice);
-                });
             } else {
                 List<String> stationCodeList1 = patrolTaskManualDTO.getStationCodeList();
                 stationCodeList1.stream().forEach(sc -> {
@@ -2051,12 +2070,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         if (CollUtil.isNotEmpty(accompanyList)) {
             accompanyList = accompanyList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolAccompany::getUserId))), ArrayList::new));
-            String peerPeople = accompanyList.stream().map(PatrolAccompany::getUsername).collect(Collectors.joining(";"));
+            String peerPeople = accompanyList.stream().map(PatrolAccompany::getUsername).collect(Collectors.joining(","));
             e.setPeerPeople(peerPeople);
         }
         if (CollUtil.isNotEmpty(samplePersonList)) {
             samplePersonList = samplePersonList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolSamplePerson::getUserId))), ArrayList::new));
-            String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining(";"));
+            String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining(","));
             e.setSamplePersonName(samplePersonName);
         }
         return e;

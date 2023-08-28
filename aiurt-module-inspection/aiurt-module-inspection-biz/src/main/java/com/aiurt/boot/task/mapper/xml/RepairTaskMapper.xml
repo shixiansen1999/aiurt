@@ -271,7 +271,8 @@
         rtsr.subsystem_code as systemCode,
         rtsr.device_type_code as deviceTypeCode,
         rtdr.submit_time as submitTime,
-        rtr.status as statusCode
+        rtr.status as statusCode,
+        rtdr.sampling_sign_url
         FROM
             repair_task_device_rel rtdr
                 LEFT JOIN repair_task rt ON rt.id = rtdr.repair_task_id
@@ -318,6 +319,7 @@
         repair_task t1
         LEFT JOIN repair_task_device_rel t2 ON t1.id = t2.repair_task_id
         LEFT JOIN repair_task_standard_rel t3 ON t2.task_standard_rel_id = t3.id
+        LEFT JOIN inspection_code_device_type t4 ON t3.code = t4.inspection_code
         left join sys_user su on su.id = t2.staff_id
         <where>
             t1.del_flag = 0
@@ -346,6 +348,9 @@
             <if test="condition.startTimeBegin!=null and condition.startTimeEnd!=null ">
                 and DATE_FORMAT(t2.start_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTimeBegin}, '%Y-%m-%d')
                 and DATE_FORMAT(t2.end_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startTimeEnd}, '%Y-%m-%d')
+            </if>
+            <if test="multipleDeviceTypes eq '1'.toString() ">
+                and t4.device_type_code = #{condition.deviceTypeCode}
             </if>
         </where>
         order by t1.start_time desc

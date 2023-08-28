@@ -1,5 +1,8 @@
 package com.aiurt.modules.train.question.mapper;
 
+import com.aiurt.common.aspect.annotation.DataColumn;
+import com.aiurt.common.aspect.annotation.DataPermission;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -15,6 +18,7 @@ import java.util.List;
  * @Date:   2022-04-18
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface BdQuestionMapper extends BaseMapper<BdQuestion> {
 /*    *//**
      * 查询题目
@@ -29,6 +33,9 @@ public interface BdQuestionMapper extends BaseMapper<BdQuestion> {
      * @param pageList
      * @return
      */
+    @DataPermission({
+            @DataColumn(key = "deptName", value = "t1.org_code")
+    })
     List<BdQuestion> list(@Param("pageList") Page<BdQuestion> pageList ,@Param("condition") BdQuestion condition);
 
 

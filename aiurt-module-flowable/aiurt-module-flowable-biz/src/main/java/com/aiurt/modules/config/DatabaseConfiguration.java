@@ -49,14 +49,23 @@ public class DatabaseConfiguration {
 
     protected static final String LIQUIBASE_CHANGELOG_PREFIX = "ACT_DE_";
 
+    /**
+     * Liquibase 是一个用于数据库版本控制和迁移的开源工具。它允许开发团队对数据库模式进行版本管理，使得数据库的结构和数据可以随着应用程序的演变而同步变化。
+     * @param dataSource
+     * @return
+     */
     @Bean
     public Liquibase liquibase(DataSource dataSource) {
         LOGGER.info("Configuring Liquibase");
 
         Liquibase liquibase = null;
         try {
+            // 创建连接
             DatabaseConnection connection = new JdbcConnection(dataSource.getConnection());
+            // database它是 Liquibase 的核心对象，用于管理数据库变更，获取 Liquibase 的数据库工厂实例，
+            // 然后 findCorrectDatabaseImplementation(connection) 用于识别数据库的实际实现。这可以根据数据库连接自动检测要使用的数据库类型
             Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(connection);
+            // 修改了 Liquibase 数据库变更日志表的表名。它将表名更改为一个新的表名，该表名由 LIQUIBASE_CHANGELOG_PREFIX 和原始表名组成
             database.setDatabaseChangeLogTableName(LIQUIBASE_CHANGELOG_PREFIX + database.getDatabaseChangeLogTableName());
             database.setDatabaseChangeLogLockTableName(LIQUIBASE_CHANGELOG_PREFIX + database.getDatabaseChangeLogLockTableName());
 

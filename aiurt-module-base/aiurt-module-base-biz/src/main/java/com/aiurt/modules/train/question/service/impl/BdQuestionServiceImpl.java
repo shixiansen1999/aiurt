@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.train.question.dto.BdQuestionDTO;
 import com.aiurt.modules.train.question.entity.BdQuestion;
 import com.aiurt.modules.train.question.entity.BdQuestionOptions;
@@ -15,8 +16,12 @@ import com.aiurt.modules.train.question.service.IBdQuestionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import jdk.nashorn.internal.objects.Global;
+import org.apache.shiro.SecurityUtils;
+import org.elasticsearch.common.Glob;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +55,7 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
     @Override
     public Page<BdQuestion> queryPageList(Page<BdQuestion> pageList,BdQuestion condition) {
         List<BdQuestion> questionList = bdQuestionMapper.list(pageList,condition);
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         questionList.forEach(e -> {
             List<BdQuestionOptionsAtt> bdQuestionOptionsActs = bdQuestionMapper.listss(e.getId());
                 e.setPic("无");
@@ -69,11 +75,16 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
                 }
             }}
         });
+        GlobalThreadLocal.setDataFilter(b);
         return pageList.setRecords(questionList);
     }
 
     @Override
     public void addBdQuestion(BdQuestion bdQuestion) {
+        // 将习题的所属班组设置为当前登录人所在的班组
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        bdQuestion.setOrgCode(loginUser.getOrgCode());
+
         bdQuestionMapper.insert(bdQuestion);
         modifyDelete(bdQuestion);
     }
