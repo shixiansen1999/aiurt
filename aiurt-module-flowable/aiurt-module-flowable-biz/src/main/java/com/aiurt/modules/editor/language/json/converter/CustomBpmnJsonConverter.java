@@ -9,7 +9,7 @@ import org.flowable.editor.language.json.converter.BpmnJsonConverter;
 import org.flowable.editor.language.json.converter.BpmnJsonConverterContext;
 
 /**
- * 自定义jsonconver 将 BPMN 图转换为 BPMN JSON 格式
+ * <p>自定义jsonconver 将 BPMN 图转换为 BPMN JSON 格式</p>
  * @author fgw
  */
 public class CustomBpmnJsonConverter extends BpmnJsonConverter {
