@@ -123,6 +123,7 @@ public class BdExamMistakesServiceImpl extends ServiceImpl<BdExamMistakesMapper,
         mistakes.setTrainTaskId(bdExamRecord.getTrainTaskId());
         mistakes.setExamPaperId(bdExamPaper.getId());
         mistakes.setName(bdExamPaper.getName());
+        mistakes.setScore(bdExamPaper.getScore());
         // 错题集的初始状态：1未开答
         mistakes.setState(BdExamMistakesConstant.EXAM_MISTAKES_STATE_NOT_ANSWER);
         this.save(mistakes);

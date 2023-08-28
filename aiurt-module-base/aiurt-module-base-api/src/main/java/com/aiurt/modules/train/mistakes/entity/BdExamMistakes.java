@@ -43,6 +43,10 @@ public class BdExamMistakes extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "错题集名称，就是原考卷名称")
     private String name;
 
+    /**原考卷总分*/
+    @ApiModelProperty(value = "原考卷总分")
+    private Integer score;
+
     /**开始答错题集的时间*/
     @ApiModelProperty(value = "开始答错题集的时间")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
