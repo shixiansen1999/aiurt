@@ -21,7 +21,7 @@ import java.util.List;
  * @author 华宜威
  * @date 2023-08-25 09:08:37
  */
-@Api("培训管理-错题集")
+@Api(tags = "培训管理-错题集")
 @RestController
 @RequestMapping("/bdExamMistakes")
 public class BdExamMistakesController {
