@@ -1512,11 +1512,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
-            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()) {
+            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()  && "0".equals(paramModel.getValue()) ) {
                 List<DeviceDTO> deviceList = ns.getDeviceList();
-                if (CollUtil.isEmpty(deviceList) && "0".equals(paramModel.getValue())) {
+                if (CollUtil.isEmpty(deviceList)) {
                     throw new AiurtBootException("要指定设备才可以保存");
-                } else if (CollUtil.isNotEmpty(deviceList)){
+                } else {
                     //遍历设备单号
                     deviceList.stream().forEach(dv -> {
                         PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
@@ -1946,11 +1946,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
-            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()) {
+            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()  && "0".equals(paramModel.getValue())  ) {
                 List<DeviceDTO> deviceList = ns.getDeviceList();
-                if(CollUtil.isEmpty(deviceList)  && "0".equals(paramModel.getValue()) ){
+                if(CollUtil.isEmpty(deviceList)){
                      throw new AiurtBootException("要指定设备才可以保存");
-                }else if (CollUtil.isNotEmpty(deviceList)){
+                }else{
                     //遍历设备单号
                     deviceList.stream().forEach(dv -> {
                         PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
