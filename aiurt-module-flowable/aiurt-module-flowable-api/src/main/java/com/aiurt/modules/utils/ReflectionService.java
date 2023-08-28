@@ -78,7 +78,9 @@ public class ReflectionService {
                 return this.invokeService(className.get(0), className.get(1), paramMap);
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
-                throw new AiurtBootException("调用本地服务异常!");
+                Throwable cause = e.getCause();
+                String message = Objects.nonNull(cause) ? cause.getMessage() : "调用本地服务异常";
+                throw new AiurtBootException(message);
             }
         }
     }
