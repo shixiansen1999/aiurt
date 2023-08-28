@@ -1,9 +1,9 @@
 package com.aiurt.modules.train.mistakes.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesAppSubmitReqDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesAppDetailRespDTO;
+import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesAppReviewDetailRespDTO;
 import com.aiurt.modules.train.mistakes.service.IBdExamMistakesService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -55,4 +55,19 @@ public class BdExamMistakesAppController {
         examMistakesService.submit(bdExamMistakesAppSubmitReqDTO);
         return  Result.OK("提交成功!");
     }
+
+    /**
+     * 培训管理-错题集-查看审核详情
+     *
+     * @param id 错题集id
+     * @return
+     */
+    @AutoLog(value = "培训管理-错题集-查看审核详情")
+    @ApiOperation(value="培训管理-错题集-查看审核详情", notes="培训管理-错题集-查看审核详情")
+    @GetMapping("/getReviewDetail")
+    public Result<BdExamMistakesAppReviewDetailRespDTO> getReviewDetail(@RequestParam(value = "id") String id){
+        BdExamMistakesAppReviewDetailRespDTO respDTO = examMistakesService.getReviewDetail(id);
+        return Result.ok(respDTO);
+    }
+
 }

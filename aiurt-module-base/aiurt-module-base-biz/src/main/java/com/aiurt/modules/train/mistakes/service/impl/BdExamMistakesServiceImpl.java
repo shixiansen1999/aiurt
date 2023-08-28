@@ -23,6 +23,7 @@ import com.aiurt.modules.train.mistakes.dto.other.QuestionDetailDTO;
 import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesAppSubmitReqDTO;
 import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesReqDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesAppDetailRespDTO;
+import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesAppReviewDetailRespDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesRespDTO;
 import com.aiurt.modules.train.mistakes.entity.BdExamMistakes;
 import com.aiurt.modules.train.mistakes.entity.BdExamMistakesAnswer;
@@ -155,6 +156,14 @@ public class BdExamMistakesServiceImpl extends ServiceImpl<BdExamMistakesMapper,
         Integer pageSize = Optional.ofNullable(bdExamMistakesReqDTO.getPageSize()).orElseGet(() -> 10);
         Page<BdExamMistakesRespDTO> page = new Page<>(pageNo, pageSize);
         return this.baseMapper.pageList(page, bdExamMistakesReqDTO);
+    }
+
+    @Override
+    public BdExamMistakesAppReviewDetailRespDTO getReviewDetail(String id) {
+        BdExamMistakes mistakes = this.getById(id);
+        BdExamMistakesAppReviewDetailRespDTO respDTO = new BdExamMistakesAppReviewDetailRespDTO();
+        BeanUtils.copyProperties(mistakes, respDTO);
+        return respDTO;
     }
 
     @Transactional(rollbackFor = Exception.class)

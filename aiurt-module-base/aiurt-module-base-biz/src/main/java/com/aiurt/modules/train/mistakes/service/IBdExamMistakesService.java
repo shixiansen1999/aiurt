@@ -4,6 +4,7 @@ import com.aiurt.modules.train.mistakes.dto.other.QuestionDetailDTO;
 import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesAppSubmitReqDTO;
 import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesReqDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesAppDetailRespDTO;
+import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesAppReviewDetailRespDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesRespDTO;
 import com.aiurt.modules.train.mistakes.entity.BdExamMistakes;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -67,4 +68,12 @@ public interface IBdExamMistakesService extends IService<BdExamMistakes> {
      * @param bdExamMistakesAppSubmitReqDTO 错题集-app端填写错题后提交的请求DTO
      */
     void submit(BdExamMistakesAppSubmitReqDTO bdExamMistakesAppSubmitReqDTO);
+
+    /**
+     * 训管理-错题集-查看审核详情
+     *
+     * @param id 错题集id
+     * @return
+     */
+    BdExamMistakesAppReviewDetailRespDTO getReviewDetail(String id);
 }
