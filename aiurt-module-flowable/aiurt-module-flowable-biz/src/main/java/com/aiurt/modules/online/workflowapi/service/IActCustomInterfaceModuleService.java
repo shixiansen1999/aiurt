@@ -58,19 +58,12 @@ public interface IActCustomInterfaceModuleService extends IService<ActCustomInte
     List<ActCustomInterfaceModule> queryTreeListNoPage(QueryWrapper<ActCustomInterfaceModule> queryWrapper);
 
 	/**
-	 * 【vue3专用】根据父级编码加载分类字典的数据
+	 * 获取树形结构的模块数据
 	 *
-	 * @param parentCode
-	 * @return
+	 * @param name 模块名称
+	 * @return 树形结构的模块数据列表
 	 */
-	List<SelectTreeModel> queryListByCode(String parentCode);
+	List<SelectTreeModel> getModuleTree(String name);
 
-	/**
-	 * 【vue3专用】根据pid查询子节点集合
-	 *
-	 * @param pid
-	 * @return
-	 */
-	List<SelectTreeModel> queryListByPid(String pid);
 
 }

@@ -29,41 +29,41 @@ import static com.aiurt.modules.online.workflowapi.service.IActCustomInterfaceMo
 /**
  * @Description: act_custom_interface_module
  * @Author: wgp
- * @Date:   2023-08-14
+ * @Date: 2023-08-14
  * @Version: V1.0
  */
-@Api(tags="自定义接口所属模块")
+@Api(tags = "自定义接口所属模块")
 @RestController
 @RequestMapping("/workflowapi/actCustomInterfaceModule")
 @Slf4j
 public class ActCustomInterfaceModuleController extends BaseController<ActCustomInterfaceModule, IActCustomInterfaceModuleService> {
-	@Autowired
-	private IActCustomInterfaceModuleService actCustomInterfaceModuleService;
+    @Autowired
+    private IActCustomInterfaceModuleService actCustomInterfaceModuleService;
 
-	/**
-	 * 分页列表查询
-	 *
-	 * @param actCustomInterfaceModule
-	 * @param pageNo
-	 * @param pageSize
-	 * @param req
-	 * @return
-	 */
-	//@AutoLog(value = "act_custom_interface_module-分页列表查询")
-	@ApiOperation(value="act_custom_interface_module-分页列表查询", notes="act_custom_interface_module-分页列表查询")
-	@GetMapping(value = "/rootList")
-	public Result<IPage<ActCustomInterfaceModule>> queryPageList(ActCustomInterfaceModule actCustomInterfaceModule,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		String hasQuery = req.getParameter("hasQuery");
-        if(hasQuery != null && "true".equals(hasQuery)){
-            QueryWrapper<ActCustomInterfaceModule> queryWrapper =  QueryGenerator.initQueryWrapper(actCustomInterfaceModule, req.getParameterMap());
+    /**
+     * 分页列表查询
+     *
+     * @param actCustomInterfaceModule
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    //@AutoLog(value = "act_custom_interface_module-分页列表查询")
+    @ApiOperation(value = "act_custom_interface_module-分页列表查询", notes = "act_custom_interface_module-分页列表查询")
+    @GetMapping(value = "/rootList")
+    public Result<IPage<ActCustomInterfaceModule>> queryPageList(ActCustomInterfaceModule actCustomInterfaceModule,
+                                                                 @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                                 HttpServletRequest req) {
+        String hasQuery = req.getParameter("hasQuery");
+        if (hasQuery != null && "true".equals(hasQuery)) {
+            QueryWrapper<ActCustomInterfaceModule> queryWrapper = QueryGenerator.initQueryWrapper(actCustomInterfaceModule, req.getParameterMap());
             List<ActCustomInterfaceModule> list = actCustomInterfaceModuleService.queryTreeListNoPage(queryWrapper);
             IPage<ActCustomInterfaceModule> pageList = new Page<>(1, 10, list.size());
             pageList.setRecords(list);
             return Result.OK(pageList);
-        }else{
+        } else {
             String parentId = actCustomInterfaceModule.getPid();
             if (oConvertUtils.isEmpty(parentId)) {
                 parentId = "0";
@@ -76,97 +76,63 @@ public class ActCustomInterfaceModuleController extends BaseController<ActCustom
             IPage<ActCustomInterfaceModule> pageList = actCustomInterfaceModuleService.page(page, queryWrapper);
             return Result.OK(pageList);
         }
-	}
-
-	 /**
-	  * 分层加载节点的子数据,vue3专用
-	  *
-	  * @param pid
-	  * @return
-	  */
-	 @RequestMapping(value = "/loadTreeChildren", method = RequestMethod.GET)
-	 public Result<List<SelectTreeModel>> loadTreeChildren(@RequestParam(name = "pid") String pid) {
-		 Result<List<SelectTreeModel>> result = new Result<>();
-		 try {
-			 List<SelectTreeModel> ls = actCustomInterfaceModuleService.queryListByPid(pid);
-			 result.setResult(ls);
-			 result.setSuccess(true);
-		 } catch (Exception e) {
-			 e.printStackTrace();
-			 result.setMessage(e.getMessage());
-			 result.setSuccess(false);
-		 }
-		 return result;
-	 }
-
-	/**
-	 * 加载全部节点的数据
-	 *
-	 * @return
-	 */
-	@ApiOperation(value = "加载全部节点的数据", notes = "加载全部节点的数据")
-	@RequestMapping(value = "/loadTreeRoot", method = RequestMethod.GET)
-	public Result<List<SelectTreeModel>> loadTreeRoot() {
-		Result<List<SelectTreeModel>> result = new Result<>();
-		try {
-			List<SelectTreeModel> ls = actCustomInterfaceModuleService.queryListByCode(null);
-			loadAllChildren(ls);
-			result.setResult(ls);
-			result.setSuccess(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-			result.setMessage(e.getMessage());
-			result.setSuccess(false);
-		}
-		return result;
-	}
-
-	 /**
-	  * 【vue3专用】递归求子节点 同步加载用到
-	  *
-	  * @param ls
-	  */
-	 private void loadAllChildren(List<SelectTreeModel> ls) {
-		 for (SelectTreeModel tsm : ls) {
-			 List<SelectTreeModel> temp = actCustomInterfaceModuleService.queryListByPid(tsm.getKey());
-			 if (temp != null && temp.size() > 0) {
-				 tsm.setChildren(temp);
-				 loadAllChildren(temp);
-			 }
-		 }
-	 }
-
-	 /**
-      * 分层加载节点的数据
-      * @param pid 父节点iD
-      * @return
-      */
-	@ApiOperation(value="分层加载节点的数据", notes="分层加载节点的数据")
-	@GetMapping(value = "/childList")
-	public Result<List<ActCustomInterfaceModule>> queryChildList(@RequestParam(name = "pid",required = false) String pid,
-																 @RequestParam(name = "name",required = false) String name) {
-
-		LambdaQueryWrapper<ActCustomInterfaceModule> lam = new LambdaQueryWrapper<>();
-
-		lam.eq(ActCustomInterfaceModule::getPid,StrUtil.isNotEmpty(pid)?pid: ROOT_PID_VALUE);
-		if(StrUtil.isNotEmpty(name)){
-			lam.like(ActCustomInterfaceModule::getModuleName,name);
-		}
-
-		List<ActCustomInterfaceModule> list = actCustomInterfaceModuleService.list(lam);
-
-		return Result.OK(list);
-	}
+    }
 
     /**
-      * 批量查询子节点
-      * @param parentIds 父ID（多个采用半角逗号分割）
-      * @return 返回 IPage
-      * @param parentIds
-      * @return
-      */
-	//@AutoLog(value = "act_custom_interface_module-批量获取子数据")
-    @ApiOperation(value="act_custom_interface_module-批量获取子数据", notes="act_custom_interface_module-批量获取子数据")
+     * 加载全部节点的数据
+     *
+     * @return
+     */
+    @ApiOperation(value = "加载全部节点的数据", notes = "加载全部节点的数据")
+    @RequestMapping(value = "/loadTreeRoot", method = RequestMethod.GET)
+    public Result<List<SelectTreeModel>> loadTreeRoot(@RequestParam(name = "name", required = false) String name) {
+        Result<List<SelectTreeModel>> result = new Result<>();
+        try {
+            List<SelectTreeModel> ls = actCustomInterfaceModuleService.getModuleTree(name);
+            result.setResult(ls);
+            result.setSuccess(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.setMessage(e.getMessage());
+            result.setSuccess(false);
+        }
+        return result;
+    }
+
+
+    /**
+     * 分层加载节点的数据
+     *
+     * @param pid 父节点iD
+     * @return
+     */
+    @ApiOperation(value = "分层加载节点的数据", notes = "分层加载节点的数据")
+    @GetMapping(value = "/childList")
+    public Result<List<ActCustomInterfaceModule>> queryChildList(@RequestParam(name = "pid", required = false) String pid,
+                                                                 @RequestParam(name = "name", required = false) String name) {
+
+        LambdaQueryWrapper<ActCustomInterfaceModule> lam = new LambdaQueryWrapper<>();
+
+        lam.eq(ActCustomInterfaceModule::getPid, StrUtil.isNotEmpty(pid) ? pid : ROOT_PID_VALUE);
+        if (StrUtil.isNotEmpty(name)) {
+            lam.like(ActCustomInterfaceModule::getModuleName, name);
+        }
+
+        List<ActCustomInterfaceModule> list = actCustomInterfaceModuleService.list(lam);
+
+        return Result.OK(list);
+    }
+
+    /**
+     * 批量查询子节点
+     *
+     * @param parentIds 父ID（多个采用半角逗号分割）
+     * @param parentIds
+     * @return 返回 IPage
+     * @return
+     */
+    //@AutoLog(value = "act_custom_interface_module-批量获取子数据")
+    @ApiOperation(value = "act_custom_interface_module-批量获取子数据", notes = "act_custom_interface_module-批量获取子数据")
     @GetMapping("/getChildListBatch")
     public Result getChildListBatch(@RequestParam("parentIds") String parentIds) {
         try {
@@ -183,63 +149,63 @@ public class ActCustomInterfaceModuleController extends BaseController<ActCustom
         }
     }
 
-	/**
-	 *   添加自定义接口模块
-	 *
-	 * @param actCustomInterfaceModule
-	 * @return
-	 */
-	@AutoLog(value = "添加自定义接口模块")
-	@ApiOperation(value="添加自定义接口模块", notes="添加自定义接口模块")
-	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody ActCustomInterfaceModule actCustomInterfaceModule) {
-		actCustomInterfaceModuleService.addActCustomInterfaceModule(actCustomInterfaceModule);
-		return Result.OK("添加成功！");
-	}
+    /**
+     * 添加自定义接口模块
+     *
+     * @param actCustomInterfaceModule
+     * @return
+     */
+    @AutoLog(value = "添加自定义接口模块")
+    @ApiOperation(value = "添加自定义接口模块", notes = "添加自定义接口模块")
+    @PostMapping(value = "/add")
+    public Result<String> add(@RequestBody ActCustomInterfaceModule actCustomInterfaceModule) {
+        actCustomInterfaceModuleService.addActCustomInterfaceModule(actCustomInterfaceModule);
+        return Result.OK("添加成功！");
+    }
 
-	/**
-	 *  编辑自定义接口模块
-	 *
-	 * @param actCustomInterfaceModule
-	 * @return
-	 */
-	@AutoLog(value = "编辑自定义接口模块")
-	@ApiOperation(value="编辑自定义接口模块", notes="编辑自定义接口模块")
-	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody ActCustomInterfaceModule actCustomInterfaceModule) {
-		actCustomInterfaceModuleService.updateActCustomInterfaceModule(actCustomInterfaceModule);
-		return Result.OK("编辑成功!");
-	}
+    /**
+     * 编辑自定义接口模块
+     *
+     * @param actCustomInterfaceModule
+     * @return
+     */
+    @AutoLog(value = "编辑自定义接口模块")
+    @ApiOperation(value = "编辑自定义接口模块", notes = "编辑自定义接口模块")
+    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
+    public Result<String> edit(@RequestBody ActCustomInterfaceModule actCustomInterfaceModule) {
+        actCustomInterfaceModuleService.updateActCustomInterfaceModule(actCustomInterfaceModule);
+        return Result.OK("编辑成功!");
+    }
 
-	/**
-	 *   通过id删除自定义接口模块
-	 *
-	 * @param id
-	 * @return
-	 */
-	@AutoLog(value = "通过id删除自定义接口模块")
-	@ApiOperation(value="通过id删除自定义接口模块", notes="通过id删除自定义接口模块")
-	@DeleteMapping(value = "/delete")
-	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		actCustomInterfaceModuleService.deleteActCustomInterfaceModule(id);
-		return Result.OK("删除成功!");
-	}
+    /**
+     * 通过id删除自定义接口模块
+     *
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "通过id删除自定义接口模块")
+    @ApiOperation(value = "通过id删除自定义接口模块", notes = "通过id删除自定义接口模块")
+    @DeleteMapping(value = "/delete")
+    public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
+        actCustomInterfaceModuleService.deleteActCustomInterfaceModule(id);
+        return Result.OK("删除成功!");
+    }
 
 
-	/**
-	 * 通过id查询自定义接口模块
-	 *
-	 * @param id
-	 * @return
-	 */
-	@ApiOperation(value="通过id查询自定义接口模块", notes="通过id查询自定义接口模块")
-	@GetMapping(value = "/queryById")
-	public Result<ActCustomInterfaceModule> queryById(@RequestParam(name="id",required=true) String id) {
-		ActCustomInterfaceModule actCustomInterfaceModule = actCustomInterfaceModuleService.getById(id);
-		if(actCustomInterfaceModule==null) {
-			return Result.error("未找到对应数据");
-		}
-		return Result.OK(actCustomInterfaceModule);
-	}
+    /**
+     * 通过id查询自定义接口模块
+     *
+     * @param id
+     * @return
+     */
+    @ApiOperation(value = "通过id查询自定义接口模块", notes = "通过id查询自定义接口模块")
+    @GetMapping(value = "/queryById")
+    public Result<ActCustomInterfaceModule> queryById(@RequestParam(name = "id", required = true) String id) {
+        ActCustomInterfaceModule actCustomInterfaceModule = actCustomInterfaceModuleService.getById(id);
+        if (actCustomInterfaceModule == null) {
+            return Result.error("未找到对应数据");
+        }
+        return Result.OK(actCustomInterfaceModule);
+    }
 
 }
