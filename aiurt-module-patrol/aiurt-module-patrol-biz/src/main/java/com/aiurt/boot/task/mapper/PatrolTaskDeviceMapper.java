@@ -256,4 +256,10 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     SysUserPositionCurrentDTO getSysUserPositionCurrent(@Param("username")String username);
+    /**
+     * 获取当前用户未完成的巡视任务
+     * @param orgCode
+     * @return
+     */
+    List<PatrolTaskDevice> getUnFinishPatrolTask(@Param("orgCode")String orgCode);
 }
