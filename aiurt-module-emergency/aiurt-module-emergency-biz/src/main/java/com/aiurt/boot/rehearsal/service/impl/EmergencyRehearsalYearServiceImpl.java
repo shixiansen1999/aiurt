@@ -3,6 +3,7 @@ package com.aiurt.boot.rehearsal.service.impl;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.afterturn.easypoi.util.PoiMergeCellUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
@@ -10,6 +11,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.plan.entity.EmergencyPlan;
 import com.aiurt.boot.plan.mapper.EmergencyPlanMapper;
+import com.aiurt.boot.plan.service.impl.EmergencyPlanServiceImpl;
 import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
 import com.aiurt.boot.rehearsal.dto.*;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
@@ -37,7 +39,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -66,6 +72,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -446,7 +456,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
 
                 for (EmergencyRehearsalYearImport emergencyRehearsalYear : emergencyRehearsalYears) {
                     //必填数据校验
-                    checkRequired(emergencyRehearsalYear,errorLines);
+                    errorLines = checkRequired(emergencyRehearsalYear,errorLines);
                 }
                 if (errorLines > 0) {
                     //存在错误，导出错误清单
@@ -482,6 +492,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
 
     private int checkRequired(EmergencyRehearsalYearImport emergencyRehearsalYear,int errorLines) {
         StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder stringBuilderMonth = new StringBuilder();
         List<EmergencyRehearsalMonthImport> monthList = emergencyRehearsalYear.getMonthList();
 
         List<DictModel> emergencyRehearsalType = iSysBaseApi.queryDictItemsByCode("emergency_rehearsal_type");
@@ -489,9 +500,21 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
         Map<String, String> emergencyRehearsalTypeMap = emergencyRehearsalType.stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue, (key1, key2) -> key2));
         Map<String, String> emergencyRehearsalModalityMap = emergencyRehearsalModality.stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue, (key1, key2) -> key2));
 
+        if (StrUtil.isBlank(emergencyRehearsalYear.getName())) {
+            stringBuilder.append("计划名称不能为空，");
+        }
+        if (StrUtil.isBlank(emergencyRehearsalYear.getYear())) {
+            stringBuilder.append("所属年份不能为空，");
+        } else {
+            try {
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy");
+                dtf.parse(emergencyRehearsalYear.getYear());
+            } catch (DateTimeParseException e) {
+                stringBuilder.append("所属年份填写不规范，");
+            }
+        }
         if (CollUtil.isNotEmpty(monthList)) {
             for (EmergencyRehearsalMonthImport emergencyRehearsalMonth : monthList) {
-                StringBuilder stringBuilderMonth = new StringBuilder();
 
                 String typeName = emergencyRehearsalMonth.getTypeName();
                 String subject = emergencyRehearsalMonth.getSubject();
@@ -555,7 +578,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
                             id = depart.getString("id");
                             emergencyRehearsalMonth.setOrgCode(depart.getString("orgCode"));
                         }else {
-                            stringBuilder.append("系统不存在该组织部门，");
+                            stringBuilderMonth.append("系统不存在该组织部门，");
                             break;
                         }
                     }
@@ -573,9 +596,8 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
 
                 if (stringBuilderMonth.length() > 0) {
                     // 截取字符
-                    stringBuilderMonth.deleteCharAt(stringBuilder.length() - 1);
+                    stringBuilderMonth.deleteCharAt(stringBuilderMonth.length() - 1);
                     emergencyRehearsalMonth.setMistake(stringBuilderMonth.toString());
-                    errorLines++;
                 }
 
             }
@@ -587,6 +609,9 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
             // 截取字符
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
             emergencyRehearsalYear.setMistake(stringBuilder.toString());
+        }
+        // 错误数据条数
+        if (stringBuilder.length() > 0 || stringBuilderMonth.length() > 0) {
             errorLines++;
         }
         return errorLines;
@@ -594,23 +619,45 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
 
     private Result<?> getErrorExcel(int errorLines, List<String> errorMessage, List<EmergencyRehearsalYearImport> emergencyRehearsalYears, int successLines, String url, String type) {
         try {
-            TemplateExportParams exportParams = XlsUtil.getExcelModel("");
-            Map<String, Object> errorMap = new HashMap<String, Object>();
+            TemplateExportParams exportParams = XlsUtil.getExcelModel("/templates/emergencyRehearsalYearError.xlsx");
+            Map<String, Object> errorMap = new HashMap<String, Object>(16);
             List<Map<String, Object>> mapList = new ArrayList<>();
 
             for (EmergencyRehearsalYearImport emergencyRehearsalYearImport : emergencyRehearsalYears) {
                 List<EmergencyRehearsalMonthImport> monthList = emergencyRehearsalYearImport.getMonthList();
                 for (EmergencyRehearsalMonthImport emergencyRehearsalMonthImport : monthList) {
-                    Map<String, Object> map = new HashMap<>();
-
+                    Map<String, Object> map = new HashMap<>(12);
+                    // 获取年计划错误信息
+                    map.put("name", emergencyRehearsalYearImport.getName());
+                    map.put("year", emergencyRehearsalYearImport.getYear());
+                    map.put("yearMistake", emergencyRehearsalYearImport.getMistake());
+                    // 获取子表错误信息
+                    map.put("typeName", emergencyRehearsalMonthImport.getTypeName());
+                    map.put("subject", emergencyRehearsalMonthImport.getSubject());
+                    map.put("schemeName", emergencyRehearsalMonthImport.getSchemeName());
+                    map.put("schemeVersion", emergencyRehearsalMonthImport.getSchemeVersion());
+                    map.put("modalityName", emergencyRehearsalMonthImport.getModalityName());
+                    map.put("orgName", emergencyRehearsalMonthImport.getOrgName());
+                    map.put("rehearsalTime", emergencyRehearsalMonthImport.getRehearsalTime());
+                    map.put("step", emergencyRehearsalMonthImport.getStep());
+                    map.put("mouthMistake", emergencyRehearsalMonthImport.getMistake());
                     mapList.add(map);
                 }
             }
             errorMap.put("maplist", mapList);
 
-            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>();
+            Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(1);
             sheetsMap.put(0, errorMap);
             Workbook workbook =  cn.afterturn.easypoi.excel.ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+            int size = 4;
+            int length = 2;
+            for (EmergencyRehearsalYearImport yearImport : emergencyRehearsalYears) {
+                for (int i = 0; i <= length; i++) {
+                    //合并单元格
+                    PoiMergeCellUtil.addMergedRegion(workbook.getSheetAt(0), size, size + yearImport.getMonthList().size() - 1, i, i);
+                }
+                size = size + yearImport.getMonthList().size();
+            }
             String fileName = "年度演练计划错误清单"+"_" + System.currentTimeMillis()+"."+type;
             FileOutputStream out = new FileOutputStream(errorExcelUpload+ File.separator+fileName);
             url = File.separator+"errorExcelFiles"+ File.separator+fileName;
@@ -629,10 +676,10 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
     @Override
     public void exportTemplateXl(HttpServletResponse response) throws IOException {
         //获取输入流，原始模板位置
-        Resource resource = new ClassPathResource("");
+        Resource resource = new ClassPathResource("/templates/emergencyRehearsalYear.xlsx");
         InputStream resourceAsStream = resource.getInputStream();
         //2.获取临时文件
-        File fileTemp = new File("");
+        File fileTemp = new File("/templates/emergencyRehearsalYear.xlsx");
         try {
             //将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
             FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
@@ -648,8 +695,8 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
         List<DictModel> emergencyRehearsalType = bean.queryDictItemsByCode("emergency_rehearsal_type");
         List<DictModel> emergencyRehearsalModality = bean.queryDictItemsByCode("emergency_rehearsal_modality");
 
-        ExcelSelectListUtil.selectList(workbook, "演练类型", 2, 4, emergencyRehearsalType);
-        ExcelSelectListUtil.selectList(workbook, "演练形式", 6, 4, emergencyRehearsalModality);
+        ExcelSelectListUtil.selectList(workbook, "演练类型", 4, 2, 2, emergencyRehearsalType);
+        ExcelSelectListUtil.selectList(workbook, "演练形式", 4, 6, 6, emergencyRehearsalModality);
 
         String fileName = "年度演练计划导入模板.xlsx";
         try {
