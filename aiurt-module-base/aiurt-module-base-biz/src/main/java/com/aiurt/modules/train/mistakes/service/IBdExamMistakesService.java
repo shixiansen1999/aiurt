@@ -1,6 +1,7 @@
 package com.aiurt.modules.train.mistakes.service;
 
 import com.aiurt.modules.train.mistakes.dto.other.QuestionDetailDTO;
+import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesAppSubmitReqDTO;
 import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesReqDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesAppDetailRespDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesRespDTO;
@@ -59,4 +60,11 @@ public interface IBdExamMistakesService extends IService<BdExamMistakes> {
      * @return
      */
     BdExamMistakesAppDetailRespDTO getAppMistakesDetail(String id, String examRecordId, Integer isGetError);
+
+    /**
+     * app提交错题
+     *
+     * @param bdExamMistakesAppSubmitReqDTO 错题集-app端填写错题后提交的请求DTO
+     */
+    void submit(BdExamMistakesAppSubmitReqDTO bdExamMistakesAppSubmitReqDTO);
 }

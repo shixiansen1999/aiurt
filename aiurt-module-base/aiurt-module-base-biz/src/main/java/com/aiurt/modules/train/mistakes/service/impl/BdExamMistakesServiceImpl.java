@@ -1,20 +1,26 @@
 package com.aiurt.modules.train.mistakes.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.TimeUtil;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperRelMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordDetailMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
+import com.aiurt.modules.train.exam.dto.BdExamRecordDTO;
 import com.aiurt.modules.train.exam.entity.BdExamPaper;
 import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.exam.entity.BdExamRecordDetail;
 import com.aiurt.modules.train.mistakes.constant.BdExamMistakesConstant;
 import com.aiurt.modules.train.mistakes.dto.other.QuestionDetailDTO;
+import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesAppSubmitReqDTO;
 import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesReqDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesAppDetailRespDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesRespDTO;
@@ -38,15 +44,16 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import javax.security.auth.Subject;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -147,6 +154,40 @@ public class BdExamMistakesServiceImpl extends ServiceImpl<BdExamMistakesMapper,
         Integer pageSize = Optional.ofNullable(bdExamMistakesReqDTO.getPageSize()).orElseGet(() -> 10);
         Page<BdExamMistakesRespDTO> page = new Page<>(pageNo, pageSize);
         return this.baseMapper.pageList(page, bdExamMistakesReqDTO);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void submit(BdExamMistakesAppSubmitReqDTO bdExamMistakesAppSubmitReqDTO) {
+        // 1、更新错题集
+        BdExamMistakes mistakes = new BdExamMistakes();
+        BeanUtils.copyProperties(bdExamMistakesAppSubmitReqDTO, mistakes);
+        // 答题总用时
+        int useTime = (int) DateUtil.between(mistakes.getStartTime(), mistakes.getSubmitTime(), DateUnit.SECOND);
+        mistakes.setUseTime(useTime);
+        // 更新错题集状态为待审核
+        mistakes.setState(BdExamMistakesConstant.EXAM_MISTAKES_STATE_PENDING_REVIEW);
+        this.updateById(mistakes);
+
+        // 2、先删除原先已经答过的答案，直接物理删除吧
+        LambdaQueryWrapper<BdExamMistakesAnswer> answerQueryWrapper = new LambdaQueryWrapper<>();
+        answerQueryWrapper.eq(BdExamMistakesAnswer::getMistakesId, mistakes.getId());
+        examMistakesAnswerService.remove(answerQueryWrapper);
+
+        // 3、获取考生答案，因为错题集只展示，所以就不判断考生答案是否正确了，直接保存考生的答案就行
+        List<BdExamMistakesAnswer> answerList = new ArrayList<>();
+        List<BdExamRecordDTO> bdExamRecordDTOList = bdExamMistakesAppSubmitReqDTO.getBdExamRecordDTOList();
+        for (BdExamRecordDTO bdExamRecordDTO : bdExamRecordDTOList){
+
+            BdExamMistakesAnswer bdExamMistakesAnswer = new BdExamMistakesAnswer();
+            bdExamMistakesAnswer.setMistakesId(mistakes.getId());
+            bdExamMistakesAnswer.setQuestionId(bdExamRecordDTO.getExercisesId());
+            bdExamMistakesAnswer.setStuAnswer(bdExamRecordDTO.getContent());
+            answerList.add(bdExamMistakesAnswer);
+        }
+        // 批量保存
+        examMistakesAnswerService.saveBatch(answerList);
+
     }
 
     @Override

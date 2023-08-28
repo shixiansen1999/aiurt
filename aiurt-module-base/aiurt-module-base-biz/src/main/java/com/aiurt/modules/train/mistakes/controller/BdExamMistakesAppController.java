@@ -1,16 +1,15 @@
 package com.aiurt.modules.train.mistakes.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.modules.train.exam.entity.BdExamRecord;
+import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesAppSubmitReqDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesAppDetailRespDTO;
 import com.aiurt.modules.train.mistakes.service.IBdExamMistakesService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 错题集 app接口
@@ -26,6 +25,14 @@ public class BdExamMistakesAppController {
     @Autowired
     private IBdExamMistakesService examMistakesService;
 
+    /**
+     * 培训管理-错题集-app获取详情
+     *
+     * @param id
+     * @param examRecordId
+     * @param isGetError 是否只获取错题，1是0否
+     * @return
+     */
     @AutoLog(value = "培训管理-错题集-app获取详情")
     @ApiOperation(value="培训管理-错题集-app获取详情", notes="培训管理-错题集-app获取详情")
     @GetMapping("/getAppMistakesDetail")
@@ -34,5 +41,18 @@ public class BdExamMistakesAppController {
                                                                        @RequestParam(value = "isGetError", required = false) Integer isGetError){
         BdExamMistakesAppDetailRespDTO bdExamMistakesAppDetailRespDTO = examMistakesService.getAppMistakesDetail(id, examRecordId, isGetError);
         return Result.ok(bdExamMistakesAppDetailRespDTO);
+    }
+
+    /**
+     * app提交错题
+     * @param bdExamMistakesAppSubmitReqDTO 错题集-app端填写错题后提交的请求DTO
+     * @return
+     */
+    @AutoLog(value = "培训管理-错题集-app提交错题")
+    @ApiOperation(value="培训管理-错题集-app提交错题", notes="培训管理-错题集-app提交错题")
+    @PostMapping(value = "/submit")
+    public Result<String> submit (@RequestBody BdExamMistakesAppSubmitReqDTO bdExamMistakesAppSubmitReqDTO){
+        examMistakesService.submit(bdExamMistakesAppSubmitReqDTO);
+        return  Result.OK("提交成功!");
     }
 }
