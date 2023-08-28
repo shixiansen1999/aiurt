@@ -214,6 +214,14 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
     List<PrintPatrolTaskDTO> printPatrolTaskById(String ids);
 
     /**
+     * 打印巡视详情（统一）
+     * @param ids
+     * @param standardId
+     * @return
+     */
+    List<PrintPatrolTaskStandardDTO> printPatrolTaskAndStandardById(String ids,String standardId);
+
+    /**
      * pc手工下发任务-删除
      * @param id
      */

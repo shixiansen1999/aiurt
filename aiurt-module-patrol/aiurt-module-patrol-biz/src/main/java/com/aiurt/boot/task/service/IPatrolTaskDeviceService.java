@@ -3,6 +3,7 @@ package com.aiurt.boot.task.service;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolStationDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
+import com.aiurt.boot.task.dto.PrintTaskStationDTO;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.modules.device.entity.Device;
@@ -97,6 +98,13 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * @return
      */
     List<PatrolStationDTO> getBillGangedInfo(String taskId);
+    /**
+     * 根据任务ID获取工单站点和巡检表联动信息
+     *
+     * @param taskId
+     * @return
+     */
+    List<PrintTaskStationDTO> getBillGangedInfoToPrint(String taskId);
     /**
      * 根据工单ID获取工单站点和巡检表联动信息
      *
