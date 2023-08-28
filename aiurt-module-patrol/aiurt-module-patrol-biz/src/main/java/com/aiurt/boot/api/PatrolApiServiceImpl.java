@@ -166,20 +166,6 @@ public class PatrolApiServiceImpl implements PatrolApi {
         if (ObjectUtil.isNotEmpty(devices)) {
             taskDeviceList.addAll(devices);
         }
-        //2023-3-27 需求确认，同行人也是本班组的人，去掉同行人，防止重复
-//            //获取当前部门人员作为同行人参与的单号
-//            List<LoginUser> sysUsers = iSysBaseAPI.getUserPersonnel(sysUser.getOrgId());
-//            List<String> userIds = Optional.ofNullable(sysUsers).orElse(Collections.emptyList()).stream().map(LoginUser::getId).collect(Collectors.toList());
-//            List<PatrolAccompany> accompanyList = patrolAccompanyMapper.selectList(new LambdaQueryWrapper<PatrolAccompany>().in(PatrolAccompany::getUserId, userIds).select(PatrolAccompany::getTaskDeviceCode));
-//            //获取当前部门人员的单号，已提交
-//            List<String> taskDeviceCodes = Optional.ofNullable(accompanyList).orElse(Collections.emptyList()).stream().map(PatrolAccompany::getTaskDeviceCode).distinct().collect(Collectors.toList());
-//            for (String accompanyCode : taskDeviceCodes) {
-//                List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getTodaySubmit(startTime,endTime, null, accompanyCode);
-//                if (ObjectUtil.isNotEmpty(devices)) {
-//                    taskDeviceList.addAll(devices);
-//                }
-//            }
-
         StringBuilder content = new StringBuilder();
         StringBuilder code = new StringBuilder();
         String string = null;
@@ -759,5 +745,52 @@ public class PatrolApiServiceImpl implements PatrolApi {
 
         Map<String, UserTeamPatrolDTO> groupBy = userBaseList.stream().collect(Collectors.toMap(UserTeamPatrolDTO::getUserId, v -> v, (a, b) -> a));
         return groupBy;
+    }
+
+    @Override
+    public HashMap<String, String> getUnFinishPatrolTask() {
+        Integer sort = 1;
+        HashMap<String, String> map = new HashMap<>();
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<PatrolTaskDevice> taskDeviceList = new ArrayList<>();
+        //获取当前用户的任务中，未提交的所有的工单
+        List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getUnFinishPatrolTask(sysUser.getOrgCode());
+        if (ObjectUtil.isNotEmpty(devices)) {
+            taskDeviceList.addAll(devices);
+        }
+        StringBuilder content = new StringBuilder();
+        StringBuilder code = new StringBuilder();
+        String string = null;
+        //获取这个任务下的工单所对应的站点
+        if (CollUtil.isNotEmpty(taskDeviceList)) {
+            List<PatrolTaskDevice> collect = taskDeviceList.stream().distinct().collect(Collectors.toList());
+            for (PatrolTaskDevice patrolTaskDevice : collect) {
+                String stationName = iSysBaseAPI.getPosition(patrolTaskDevice.getStationCode());
+                LoginUser userById = iSysBaseAPI.getUserById(patrolTaskDevice.getUserId());
+                if (StrUtil.isNotBlank(patrolTaskDevice.getTaskId())){
+                    PatrolTask patrolTask = patrolTaskMapper.selectOne(new LambdaQueryWrapper<PatrolTask>().eq(PatrolTask::getDelFlag,CommonConstant.DEL_FLAG_0).eq(PatrolTask::getId, patrolTaskDevice.getTaskId()));
+                    if (ObjectUtil.isNotNull(patrolTask)){
+                        string = patrolTask.getName();
+                    }
+                }
+                content.append(sort).append(".");
+                sort++;
+                content.append(string).append("---").append(stationName).append(" ").append(" 巡视人:").append(ObjectUtil.isNotNull(userById) ? userById.getRealname() : "").append("。").append('\n');
+                code.append(patrolTaskDevice.getTaskCode()).append(",");
+            }
+        }
+
+        if (content.length() > 1) {
+            // 截取字符
+            content = content.deleteCharAt(content.length() - 1);
+            map.put("content", content.toString());
+        }
+        if (code.length() > 1) {
+            // 截取字符
+            code = code.deleteCharAt(code.length() - 1);
+            map.put("code", code.toString());
+        }
+
+        return map;
     }
 }

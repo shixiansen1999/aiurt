@@ -25,12 +25,11 @@ public interface ActCustomInterfaceModuleMapper extends BaseMapper<ActCustomInte
 	void updateTreeNodeStatus(@Param("id") String id,@Param("status") String status);
 
 	/**
-	 * 【vue3专用】根据父级ID查询树节点数据
+	 * 获取树形结构的模块数据
 	 *
-	 * @param pid
-	 * @param query
+	 * @param name
 	 * @return
 	 */
-	List<SelectTreeModel> queryListByPid(@Param("pid") String pid, @Param("query") Map<String, String> query);
+	List<SelectTreeModel> getModuleTree(@Param("name") String name);
 
 }
