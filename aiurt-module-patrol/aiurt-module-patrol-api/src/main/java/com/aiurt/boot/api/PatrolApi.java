@@ -72,4 +72,9 @@ public interface PatrolApi {
      * @return
      */
     Map<String, UserTeamPatrolDTO> getUserParameterDevice(UserTeamParameter userTeamParameter);
+    /**
+     * 获取当前用户未完成的巡视任务
+     * @return
+     */
+    HashMap<String, String> getUnFinishPatrolTask();
 }

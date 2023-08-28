@@ -65,6 +65,16 @@ public class WorkLog {
     @ApiModelProperty(value = "故障内容")
     private  String  faultContent;
 
+    /**未完成任务code*/
+    @Excel(name = "未完成任务code", width = 15)
+    @ApiModelProperty(value = "未完成任务code")
+    private  String  unfinisnCode;
+
+    /**未完成任务内容*/
+    @Excel(name = "未完成任务内容", width = 15)
+    @ApiModelProperty(value = "未完成任务内容")
+    private  String  unfinisnContent;
+
     /**提交状态:0-未提交 1-已提交*/
     @Excel(name = "提交状态:0-未提交 1-已提交", width = 15)
     @ApiModelProperty(value = "提交状态:0-未提交 1-已提交")
