@@ -2,6 +2,7 @@ package com.aiurt.modules.train.mistakes.service;
 
 import com.aiurt.modules.train.mistakes.dto.other.QuestionDetailDTO;
 import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesReqDTO;
+import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesAppDetailRespDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesRespDTO;
 import com.aiurt.modules.train.mistakes.entity.BdExamMistakes;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -48,4 +49,13 @@ public interface IBdExamMistakesService extends IService<BdExamMistakes> {
      * @param isPass 是否通过，1通过 0驳回(其他也是驳回，不等于1就驳回)
      */
     void auditById(String id, Integer isPass);
+
+    /**
+     * app端，查看错题集详情
+     *
+     * @param id 错题集id
+     * @param examRecordId 考生答题记录id
+     * @return
+     */
+    BdExamMistakesAppDetailRespDTO getAppMistakesDetail(String id, String examRecordId);
 }

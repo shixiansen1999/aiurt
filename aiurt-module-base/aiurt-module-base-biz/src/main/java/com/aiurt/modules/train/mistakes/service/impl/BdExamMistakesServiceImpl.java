@@ -1,11 +1,13 @@
 package com.aiurt.modules.train.mistakes.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
+import com.aiurt.modules.train.eaxm.mapper.BdExamPaperRelMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordDetailMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
 import com.aiurt.modules.train.exam.entity.BdExamPaper;
@@ -14,6 +16,7 @@ import com.aiurt.modules.train.exam.entity.BdExamRecordDetail;
 import com.aiurt.modules.train.mistakes.constant.BdExamMistakesConstant;
 import com.aiurt.modules.train.mistakes.dto.other.QuestionDetailDTO;
 import com.aiurt.modules.train.mistakes.dto.req.BdExamMistakesReqDTO;
+import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesAppDetailRespDTO;
 import com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesRespDTO;
 import com.aiurt.modules.train.mistakes.entity.BdExamMistakes;
 import com.aiurt.modules.train.mistakes.entity.BdExamMistakesAnswer;
@@ -27,6 +30,7 @@ import com.aiurt.modules.train.question.entity.BdQuestion;
 import com.aiurt.modules.train.question.entity.BdQuestionOptions;
 import com.aiurt.modules.train.question.entity.BdQuestionOptionsAtt;
 import com.aiurt.modules.train.question.mapper.BdQuestionMapper;
+import com.aiurt.modules.train.question.mapper.BdQuestionOptionsAttMapper;
 import com.aiurt.modules.train.question.mapper.BdQuestionOptionsMapper;
 import com.aiurt.modules.train.task.mapper.BdTrainPlanMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -61,7 +65,15 @@ public class BdExamMistakesServiceImpl extends ServiceImpl<BdExamMistakesMapper,
     @Autowired
     private BdExamPaperMapper examPaperMapper;
     @Autowired
+    private BdQuestionMapper bdQuestionMapper;
+    @Autowired
     private BdQuestionMapper questionMapper;
+    @Autowired
+    private BdExamPaperMapper bdExamPaperMapper;
+
+    @Autowired
+    private BdQuestionOptionsAttMapper bdQuestionOptionsAttMapper;
+
     @Autowired
     private BdQuestionOptionsMapper questionOptionsMapper;
     @Autowired
@@ -135,6 +147,79 @@ public class BdExamMistakesServiceImpl extends ServiceImpl<BdExamMistakesMapper,
         Integer pageSize = Optional.ofNullable(bdExamMistakesReqDTO.getPageSize()).orElseGet(() -> 10);
         Page<BdExamMistakesRespDTO> page = new Page<>(pageNo, pageSize);
         return this.baseMapper.pageList(page, bdExamMistakesReqDTO);
+    }
+
+    @Override
+    public BdExamMistakesAppDetailRespDTO getAppMistakesDetail(String id, String examRecordId) {
+        // 根据id获取错题集
+        BdExamMistakes examMistakes = this.getById(id);
+        // 获取考卷，需要总题目数和总分数
+        BdExamPaper examPaper = examPaperMapper.selectById(examMistakes.getExamPaperId());
+
+        // 问题集合
+        List<BdQuestion> bdQuestionList;
+        // 考生答案的Map,问题id做key，考生答案做value
+        Map<String, String> stuAnswerMap;
+        // 如果错题集状态是未作答的，获取的详情就是整张考卷的题目
+        if (BdExamMistakesConstant.EXAM_MISTAKES_STATE_NOT_ANSWER.equals(examMistakes.getState())) {
+            //根据试卷id获取试卷的问题
+            bdQuestionList = bdQuestionMapper.contentList(examMistakes.getExamPaperId());
+            List<String> questionIdList = bdQuestionList.stream().map(BdQuestion::getId).collect(Collectors.toList());
+            // 获取考生答案，做成一个map，使用问题id做可key，考生答案做value
+            LambdaQueryWrapper<BdExamRecordDetail> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(BdExamRecordDetail::getExamRecordId, examRecordId);
+            queryWrapper.in(BdExamRecordDetail::getQueId, questionIdList);
+            queryWrapper.orderByDesc(BdExamRecordDetail::getCreateTime);
+            List<BdExamRecordDetail> bdExamRecordDetailList = examRecordDetailMapper.selectList(queryWrapper);
+            stuAnswerMap = bdExamRecordDetailList.stream().collect(Collectors.toMap(BdExamRecordDetail::getQueId, BdExamRecordDetail::getAnswer, (a, b) -> a));
+        }else{
+            bdQuestionList = examMistakesQuestionService.getQuestionByMistakesId(examMistakes.getId());
+            List<String> questionIdList = bdQuestionList.stream().map(BdQuestion::getId).collect(Collectors.toList());
+            LambdaQueryWrapper<BdExamMistakesAnswer> answerQueryWrapper = new LambdaQueryWrapper<>();
+            answerQueryWrapper.eq(BdExamMistakesAnswer::getDelFlag, CommonConstant.DEL_FLAG_0);
+            answerQueryWrapper.eq(BdExamMistakesAnswer::getMistakesId, examMistakes.getId());
+            answerQueryWrapper.in(BdExamMistakesAnswer::getQuestionId, questionIdList);
+            answerQueryWrapper.orderByDesc(BdExamMistakesAnswer::getCreateTime);
+            List<BdExamMistakesAnswer> answerList = examMistakesAnswerService.list(answerQueryWrapper);
+            stuAnswerMap = answerList.stream().collect(Collectors.toMap(BdExamMistakesAnswer::getQuestionId, BdExamMistakesAnswer::getStuAnswer, (a, b) -> a));
+        }
+
+        //根据问题id获取附件内容、选项内容及答案
+        bdQuestionList.forEach(question->{
+            //根据问题id获取附件内容
+            LambdaQueryWrapper<BdQuestionOptionsAtt> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(BdQuestionOptionsAtt::getQuestionId, question.getId()).eq(BdQuestionOptionsAtt::getType,"pic");
+            List<BdQuestionOptionsAtt> list = bdQuestionOptionsAttMapper.selectList(queryWrapper);
+            question.setImageList(list);
+            //设置所有选项
+            List<BdQuestionOptions> examAllQuestionOptionList = questionOptionsMapper.optionList(question.getId());
+            question.setExamAllQuestionOptionList(examAllQuestionOptionList);
+            // 设置标准答案
+            List<String> answerList = new ArrayList<>();
+            examAllQuestionOptionList.stream().filter(es->es.getIsRight().equals(1)).forEach(es->answerList.add(es.getContent()));
+            question.setAnswerList(answerList);
+            // 获取考生答案
+            question.setAppAnswer(stuAnswerMap.get(question.getId()));
+        });
+
+
+        // 组装返回对象
+        BdExamMistakesAppDetailRespDTO respDTO = new BdExamMistakesAppDetailRespDTO();
+
+        //根据题目类型id,放入到该对应的集合里
+        List<BdQuestion> singleChoiceList = bdQuestionList.stream().filter(sc -> sc.getQueType().equals(1)).collect(Collectors.toList());
+        List<BdQuestion>  multipleChoiceList =bdQuestionList.stream().filter(sc->sc.getQueType().equals(2)).collect(Collectors.toList());
+        List<BdQuestion> answerQuestionList =bdQuestionList.stream().filter(sc->sc.getQueType().equals(3)).collect(Collectors.toList());
+        respDTO.setSingleChoiceList(singleChoiceList);
+        respDTO.setMultipleChoiceList( multipleChoiceList);
+        respDTO.setAnswerQuestionList(answerQuestionList);
+        //赋值原考卷总题目数量，总分数
+        respDTO.setName(examPaper.getName());
+        respDTO.setNumber(examPaper.getNumber());
+        respDTO.setScore(examPaper.getScore());
+        // 错题集状态
+        respDTO.setState(examMistakes.getState());
+        return respDTO;
     }
 
     @Override

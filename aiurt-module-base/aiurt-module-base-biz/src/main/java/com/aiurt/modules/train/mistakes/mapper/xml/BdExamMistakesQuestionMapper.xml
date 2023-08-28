@@ -2,4 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.train.mistakes.mapper.BdExamMistakesQuestionMapper">
 
+
+    <select id="getQuestionByMistakesId" resultType="com.aiurt.modules.train.question.entity.BdQuestion">
+        SELECT bq.id,bq.content,bq.que_type,bq.category_id
+        FROM bd_question bq
+        INNER JOIN bd_exam_mistakes_question bemq ON bemq.question_id =bq.id
+        where bemq.mistakes_id =#{mistakesId}
+    </select>
 </mapper>
