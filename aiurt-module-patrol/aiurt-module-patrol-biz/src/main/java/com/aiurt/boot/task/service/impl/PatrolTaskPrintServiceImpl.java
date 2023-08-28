@@ -332,10 +332,10 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
        }else if ("pis_system.xlsx".equals(excelName) || "pis_system1.xlsx".equals(excelName)){
            patrolData = getRemark(taskId,headerMap,excelName,standardId);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
-       } else if("cctv_system.xlsx".equals(excelName)){
+       } else if ("cctv_system.xlsx".equals(excelName)){
            patrolData = getCctvSystem(taskId,headerMap,standardId);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
-       }else if("network_manage.xlsx".equals(excelName)){
+       }else if ("network_manage.xlsx".equals(excelName)){
            patrolData = printPatrolTaskByNetworkManage(taskId,standardId,headerMap);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
        } else if ("equipmentInspection.xlsx".equals(excelName)) {
@@ -373,7 +373,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                             printDTO.setResult("☑正常 ☐异常");
                         }else {
                             printDTO.setResult("☐正常 ☑异常");
-                            remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
+                            remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(ObjectUtil.defaultIfEmpty(c.getRemark(), "异常")).append("         ");
                             i.getAndIncrement();
                         }
                         getEquipmentInspection.add(printDTO);
@@ -388,7 +388,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                                 printDTO.setResult("☑正常 ☐异常");
                             }else {
                                 printDTO.setResult("☐正常 ☑异常");
-                                remark.append(i).append(".").append(p.getContent()).append("-").append(checkDTOs.get(j).getContent()).append(":").append(checkDTOs.get(j).getRemark()).append("         ");
+                                remark.append(i).append(".").append(p.getContent()).append("-").append(checkDTOs.get(j).getContent()).append(":").append(ObjectUtil.defaultIfEmpty(checkDTOs.get(j).getRemark(), "异常")).append("         ");
                                 i.getAndIncrement();
                             }
                             getEquipmentInspection.add(printDTO);
@@ -399,7 +399,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                             if (CollUtil.isNotEmpty(listTure)){
                                 printDTO.setResult("☐正常 ☑异常");
                                 listTure.forEach(c->{
-                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
+                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(ObjectUtil.defaultIfEmpty(c.getRemark(), "异常")).append("         ");
                                     i.getAndIncrement();
                                 });
                             }else {
@@ -417,7 +417,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                                 printDTO.setResult("☑正常 ☐异常");
                             }else {
                                 printDTO.setResult("☐正常 ☑异常");
-                                remark.append(i).append(".").append(p.getContent()).append("-").append(checkDTOs.get(j).getContent()).append(":").append(checkDTOs.get(j).getRemark()).append("         ");
+                                remark.append(i).append(".").append(p.getContent()).append("-").append(checkDTOs.get(j).getContent()).append(":").append(ObjectUtil.defaultIfEmpty(checkDTOs.get(j).getRemark(), "异常")).append("         ");
                                 i.getAndIncrement();
                             }
                             getEquipmentInspection.add(printDTO);
@@ -428,7 +428,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                             if (CollUtil.isNotEmpty(listTure)){
                                 printDTO.setResult("☐正常 ☑异常");
                                 listTure.forEach(c->{
-                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
+                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(ObjectUtil.defaultIfEmpty(c.getRemark(), "异常")).append("         ");
                                     i.getAndIncrement();
                                 });
                             }else {
@@ -448,7 +448,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                             if (CollUtil.isNotEmpty(listTure)){
                                 printDTO.setResult("☐正常 ☑异常");
                                 listTure.forEach(c->{
-                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
+                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(ObjectUtil.defaultIfEmpty(c.getRemark(), "异常")).append("         ");
                                     i.getAndIncrement();
                                 });
                             }else {
@@ -468,7 +468,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                             if (CollUtil.isNotEmpty(listTure)){
                                 printDTO.setResult("☐正常 ☑异常");
                                 listTure.forEach(c->{
-                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
+                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(ObjectUtil.defaultIfEmpty(c.getRemark(), "异常")).append("         ");
                                     i.getAndIncrement();
                                 });
                             }else {
@@ -482,7 +482,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                             if (CollUtil.isNotEmpty(listTure)){
                                 printDTO.setResult("☐正常 ☑异常");
                                 listTure.forEach(c->{
-                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
+                                    remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(ObjectUtil.defaultIfEmpty(c.getRemark(), "异常")).append("         ");
                                     i.getAndIncrement();
                                 });
                             }else {
@@ -497,7 +497,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     if (CollUtil.isNotEmpty(checkDTOs)){
                         printDTO.setResult("☐正常 ☑异常");
                         checkDTOs.forEach(c->{
-                            remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(c.getRemark()).append("         ");
+                            remark.append(i).append(".").append(p.getContent()).append("-").append(c.getContent()).append(":").append(ObjectUtil.defaultIfEmpty(c.getRemark(), "异常")).append("         ");
                             i.getAndIncrement();
                         });
                     }else {

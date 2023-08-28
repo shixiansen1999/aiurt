@@ -127,4 +127,5 @@ public class RepairRecordDetailDTO implements Serializable {
     /**维修响应时长*/
     @ApiModelProperty(value = "维修响应时长(秒)")
     private Integer duration;
+    private String orgName;
 }
