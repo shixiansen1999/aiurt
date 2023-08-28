@@ -4406,7 +4406,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         map.put("endTime", DateUtil.format(faultByCode.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
         map.put("deviceName",faultByCode.getDeviceNames());
         map.put("orgName",repairRecordDetailDTO.getOrgName());
-        map.put("symptoms",lineAndStationOrPositon +"\n"+repairRecordDetailDTO.getSymptoms());
+        map.put("symptoms",lineAndStationOrPositon +"\n"+faultByCode.getPhenomenonTypeName());
         map.put("maintenanceMeasures",repairRecordDetailDTO.getMaintenanceMeasures());
         map.put("solveStatusName",repairRecordDetailDTO.getSolveStatusName());
         map.put("realName",repairRecordDetailDTO.getAppointRealName());
