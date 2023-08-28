@@ -19,13 +19,13 @@ import java.util.stream.Collectors;
  */
 public class ExcelSelectListUtil {
     /**
-     * firstRow 開始行號 根据此项目，默认为3(下标0开始)
+     * firstRow 開始行號(下标0开始)
      * lastRow  根据此项目，默认为最大65535
      * firstCol 区域中第一个单元格的列号 (下标0开始)
      * lastCol 区域中最后一个单元格的列号
      * strings 下拉内容
      */
-    public static void selectList(Workbook workbook, String name, int firstCol, int lastCol, List<DictModel> modelList) {
+    public static void selectList(Workbook workbook, String name, int firstRow, int firstCol, int lastCol, List<DictModel> modelList) {
         if (CollectionUtil.isNotEmpty(modelList)) {
             Sheet sheet = workbook.getSheetAt(0);
             //将新建的sheet页隐藏掉, 下拉值太多，需要创建隐藏页面
@@ -45,7 +45,7 @@ public class ExcelSelectListUtil {
             }
 
             // 下拉数据
-            CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(3, 65535, firstCol, lastCol);
+            CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(firstRow, 65535, firstCol, lastCol);
             //  生成下拉框内容名称
             String strFormula = hiddenSheetName + "!$A$1:$A$65535";
             // 根据隐藏页面创建下拉列表
