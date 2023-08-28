@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.system.base.entity.BaseEntity;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordDetailMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
@@ -15,6 +16,7 @@ import com.aiurt.modules.train.exam.dto.ExamDetailsDTO;
 import com.aiurt.modules.train.exam.entity.BdExamPaper;
 import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.exam.entity.BdExamRecordDetail;
+import com.aiurt.modules.train.mistakes.entity.BdExamMistakes;
 import com.aiurt.modules.train.mistakes.service.IBdExamMistakesService;
 import com.aiurt.modules.train.task.dto.TranscriptDTO;
 import com.aiurt.modules.train.task.entity.BdTrainMakeupExamRecord;
@@ -353,6 +355,20 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
         condition.setUserId(sysUser.getId());
         List<BdExamRecord> lists = bdExamRecordMapper.lists(pageList,condition);
         timeList(lists);
+
+        // 增加一个查询错题集id, 因为是分页查询，所以in的数据不会太多
+        List<String> trainTaskIdList = lists.stream().map(BdExamRecord::getTrainTaskId).collect(Collectors.toList());
+        LambdaQueryWrapper<BdExamMistakes> examMistakesQueryWrapper = new LambdaQueryWrapper<>();
+        // 只查询id和taskTaskId
+        examMistakesQueryWrapper.select(BdExamMistakes::getId, BdExamMistakes::getTrainTaskId);
+        examMistakesQueryWrapper.eq(BdExamMistakes::getDelFlag, CommonConstant.DEL_FLAG_0);
+        examMistakesQueryWrapper.eq(BdExamMistakes::getUserId, sysUser.getId());
+        examMistakesQueryWrapper.in(BdExamMistakes::getTrainTaskId, trainTaskIdList);
+        List<BdExamMistakes> examMistakesList = examMistakesService.list(examMistakesQueryWrapper);
+        // 将examMistakesList的taskTaskId和userId做key，id为value聚和成一个map,下面用
+        Map<String, String> examMistakesIdMap = examMistakesList.stream()
+                .collect(Collectors.toMap((mistakes) -> mistakes.getTrainTaskId() + ":" + sysUser.getId(), BdExamMistakes::getId));
+
         lists.forEach(e -> {
             this.name(e);
             if (e.getAnswerTime()!=null && e.getSubmitTime()!=null){
@@ -361,6 +377,9 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
                 String string2 = simpleDateFormat.format(e.getSubmitTime());
                 e.setTime(string1+ "-" +string2);
             }
+            // 添加一个错题集id
+            String key = e.getTrainTaskId() + ":" + sysUser.getId();
+            e.setExamMistakesId(examMistakesIdMap.get(key));
         });
         return pageList.setRecords(lists);
     }
