@@ -3432,7 +3432,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             imageList = Arrays.asList(excelDictModel.getDescription().split(","));
         }
         //文件打印签名
-        Map<String, Object> imageMap = getSignImageMap(patrolTask,imageList);
+        Map<String, Object> imageMap = getSignImageMap(repairTask,imageList);
 
         InputStream minioFile2 = MinioUtil.getMinioFile("platform", templateFileName);
         ExcelWriter excelWriter = null;
@@ -3472,8 +3472,38 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             patrolData = getEquipment(headerMap,deviceId);
             //填充列表数据
             excelWriter.fill(new FillWrapper("list",patrolData),fillConfig,writeSheet);
+        }else if ("threeViolations.xlsx".equals(excelName)){
+            patrolData = getThreeViolations(deviceId);
+            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
         }
         return excelWriter;
+    }
+
+    private List<PrintDataDTO> getThreeViolations(String deviceId) {
+        List<PrintDataDTO> getThreeViolations = new ArrayList<>();
+        List<RepairTaskResult> resultList = repairTaskMapper.selectSingle(deviceId, null);
+        //过滤为部署检查项的
+        List<RepairTaskResult> checks = resultList.stream().filter(c -> c.getType()==0).collect(Collectors.toList());
+        for (int i = 0; i < checks.size(); i++) {
+            RepairTaskResult patrolCheckResultDTO = checks.get(i);
+            List<RepairTaskResult> list = resultList.stream().filter(c-> c.getPid().equals(patrolCheckResultDTO.getId())).collect(Collectors.toList());
+            list.forEach(l->{
+                PrintDataDTO printDTO = new PrintDataDTO();
+                printDTO.setRemark(l.getUnNote());
+                if (l.getStatus()==1){
+                    printDTO.setResult("无");
+                }else {
+                    printDTO.setResult("异常");
+                }
+                getThreeViolations.add(printDTO);
+            });
+            if (i != checks.size() - 1) {
+                // 不是最后一个元素，执行特殊操作
+                PrintDataDTO printDTO = new PrintDataDTO();
+                getThreeViolations.add(printDTO);
+            }
+        }
+            return getThreeViolations;
     }
 
     private List<PrintDataDTO> getEquipment(Map<String, Object> headerMap, String deviceId) {
@@ -3561,6 +3591,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         map.put("startOverhaulTime", DateUtil.format(repairTask.getStartOverhaulTime(),"yyyy-MM-dd HH:mm"));
         map.put("peerName", repairTask.getPeerName());
         map.put("overhaulName", repairTask.getOverhaulName());
+        map.put("orgName",sysBaseApi.getUserById(repairTask.getOverhaulId()).getOrgName());
         return map;
     }
     /**

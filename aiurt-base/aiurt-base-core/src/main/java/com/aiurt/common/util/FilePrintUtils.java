@@ -57,9 +57,9 @@ public class FilePrintUtils {
         // 图片类型
         //imageData.setImageType(ImageData.ImageType.PICTURE_TYPE_PNG);
         // 上 右 下 左 需要留空设置，类似于 css 的 margin
-        imageData.setTop(5);
+        imageData.setTop(1);
 //        imageData.setRight(1);
-        imageData.setBottom(5);
+         imageData.setBottom(1);
         Integer i = 0;
         Integer j = 2;
         if (CollUtil.isNotEmpty(columnRangeList) && columnRangeList.size()==2){
