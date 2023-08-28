@@ -5,6 +5,7 @@ import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.online.workflowapi.entity.ActCustomInterfaceModule;
 import com.aiurt.modules.online.workflowapi.mapper.ActCustomInterfaceModuleMapper;
 import com.aiurt.modules.online.workflowapi.service.IActCustomInterfaceModuleService;
+import com.aiurt.modules.tree.TreeBuilder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.system.vo.SelectTreeModel;
 import org.springframework.stereotype.Service;
@@ -124,30 +125,11 @@ public class ActCustomInterfaceModuleServiceImpl extends ServiceImpl<ActCustomIn
     }
 
     @Override
-    public List<SelectTreeModel> queryListByCode(String parentCode) {
-        String pid = ROOT_PID_VALUE;
-        if (oConvertUtils.isNotEmpty(parentCode)) {
-            LambdaQueryWrapper<ActCustomInterfaceModule> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(ActCustomInterfaceModule::getPid, parentCode);
-            List<ActCustomInterfaceModule> list = baseMapper.selectList(queryWrapper);
-            if (list == null || list.size() == 0) {
-                throw new AiurtBootException("该编码【" + parentCode + "】不存在，请核实!");
-            }
-            if (list.size() > 1) {
-                throw new AiurtBootException("该编码【" + parentCode + "】存在多个，请核实!");
-            }
-            pid = list.get(0).getId();
-        }
-        return baseMapper.queryListByPid(pid, null);
+    public List<SelectTreeModel> getModuleTree(String name) {
+        List<SelectTreeModel> moduleTree = baseMapper.getModuleTree(name);
+        return TreeBuilder.buildTree(moduleTree);
     }
 
-    @Override
-    public List<SelectTreeModel> queryListByPid(String pid) {
-        if (oConvertUtils.isEmpty(pid)) {
-            pid = ROOT_PID_VALUE;
-        }
-        return baseMapper.queryListByPid(pid, null);
-    }
 
 	/**
 	 * 根据所传pid查询旧的父级节点的子节点并修改相应状态值
