@@ -754,7 +754,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<PatrolTaskDevice> taskDeviceList = new ArrayList<>();
         //获取当前用户的任务中，未提交的所有的工单
-        List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getUnFinishPatrolTask(sysUser.getOrgCode());
+
+        List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getUnFinishPatrolTask(DateUtil.now(),sysUser.getOrgCode());
         if (ObjectUtil.isNotEmpty(devices)) {
             taskDeviceList.addAll(devices);
         }
