@@ -281,4 +281,7 @@ public class CheckListDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "检修结果名称")
     private String statusName;
+
+    @ApiModelProperty(value = "抽检人签名")
+    private String samplingSignUrl;
 }

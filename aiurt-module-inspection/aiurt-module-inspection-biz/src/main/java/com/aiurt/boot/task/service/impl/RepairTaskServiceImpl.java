@@ -754,6 +754,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         colleaguesDTO.setRealName(p.getRealName());
                         samplingList.add(colleaguesDTO);
                     });
+                    String sampling = repairTaskSampling.stream().map(RepairTaskSampling::getRealName).collect(Collectors.joining(","));
+                    checkListDTO.setSampling(sampling);
                     checkListDTO.setSamplingList(samplingList);
                 }
 
@@ -2602,7 +2604,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
      * @return
      */
     @Override
-    public void submitMonad(String id) {
+    public void submitMonad(String id, String samplingSignUrl) {
         // 查询检修工单
         RepairTaskDeviceRel repairTaskDeviceRel = repairTaskDeviceRelMapper.selectById(id);
         if (ObjectUtil.isEmpty(repairTaskDeviceRel)) {
@@ -2659,6 +2661,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTaskDeviceRel.setSubmitTime(submitTime);
         repairTaskDeviceRel.setStaffId(manager.checkLogin().getId());
         repairTaskDeviceRel.setIsSubmit(InspectionConstant.SUBMITTED);
+        repairTaskDeviceRel.setSamplingSignUrl(samplingSignUrl);
         repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
         //是否需要自动提交工单，并写入签名
         //未驳回，检查是否是最后工单提交
