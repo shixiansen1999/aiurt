@@ -3,6 +3,7 @@ package org.jeecg.common.system.vo;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,6 +28,14 @@ public class SelectTreeModel implements Serializable {
     /**
      * 子节点
      */
-    private List<SelectTreeModel> children;
+    private List<SelectTreeModel> children = new ArrayList<>();
+
+    /**
+     *  添加子节点
+     * @param child
+     */
+    public void addChild(SelectTreeModel child) {
+        children.add(child);
+    }
 
 }

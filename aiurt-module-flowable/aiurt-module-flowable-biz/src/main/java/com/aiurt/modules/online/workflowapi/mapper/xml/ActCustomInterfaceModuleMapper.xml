@@ -6,21 +6,19 @@
 		update act_custom_interface_module set has_child = #{status} where id = #{id}
 	</update>
 
-  	<!-- 【vue3专用】 -->
-	<select id="queryListByPid" parameterType="java.lang.Object" resultType="org.jeecg.common.system.vo.SelectTreeModel">
-		select
-		  id as "key",
-		  module_name as "title",
-		  id as "value",
-		  (case when has_child = '1' then 0 else 1 end) as isLeaf,
-		  pid as parentId
-		from act_custom_interface_module
-		where pid = #{pid}
-		<if test="query != null">
-			<foreach collection="query.entrySet()" item="value" index="key">
-				and ${key} = #{value}
-			</foreach>
-		</if>
+	<select id="getModuleTree" parameterType="java.lang.Object" resultType="org.jeecg.common.system.vo.SelectTreeModel">
+		SELECT
+		id AS `key`,
+		module_name AS title,
+		id AS `value`,
+		IFNULL( pid, 0 ) AS parentId
+		FROM
+		act_custom_interface_module
+		<where>
+			<if test="name != null and name != ''">
+				and module_name LIKE CONCAT('%', #{name}, '%')
+			</if>
+		</where>
 	</select>
 
 </mapper>

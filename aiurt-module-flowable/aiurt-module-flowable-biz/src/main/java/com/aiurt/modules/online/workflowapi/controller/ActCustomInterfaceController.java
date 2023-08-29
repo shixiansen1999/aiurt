@@ -54,6 +54,9 @@ public class ActCustomInterfaceController extends BaseController<ActCustomInterf
 		if(ObjectUtil.isNotEmpty(actCustomInterface.getType())){
 			queryWrapper.eq("type",actCustomInterface.getType());
 		}
+		if(ObjectUtil.isNotEmpty(actCustomInterface.getModule())){
+			queryWrapper.eq("module",actCustomInterface.getModule());
+		}
 		queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
 		Page<ActCustomInterface> page = new Page<>(pageNo, pageSize);
 		IPage<ActCustomInterface> pageList = actCustomInterfaceService.page(page, queryWrapper);
