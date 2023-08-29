@@ -10,12 +10,12 @@ import org.flowable.editor.language.json.converter.BpmnJsonConverterContext;
 
 /**
  * <p>自定义jsonconver 将 BPMN 图转换为 BPMN JSON 格式</p>
+ *
  * @author fgw
  */
 public class CustomBpmnJsonConverter extends BpmnJsonConverter {
 
     protected ObjectMapper objectMapper = new ObjectMapper();
-
 
 
     /**
@@ -45,7 +45,7 @@ public class CustomBpmnJsonConverter extends BpmnJsonConverter {
         BpmnModel bpmnModel = super.convertToBpmnModel(modelNode, converterContext);
         Process mainProcess = bpmnModel.getMainProcess();
         // 自定义属性
-       // BpmnJsonConverterUtil.c
+        // BpmnJsonConverterUtil.c
 
         // mainProcess.setExtensionElements();
         return bpmnModel;

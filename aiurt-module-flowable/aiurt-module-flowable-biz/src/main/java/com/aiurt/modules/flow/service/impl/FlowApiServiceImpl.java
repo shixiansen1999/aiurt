@@ -1767,6 +1767,7 @@ public class FlowApiServiceImpl implements FlowApiService {
     @NotNull
     private List<HistoricTaskInfo> buildHistoricTaskInfo(HistoricProcessInstance processInstance) {
         List<HistoricTaskInstance> instanceList = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstance.getId()).orderByHistoricTaskInstanceStartTime().desc().list();
+        // 需要重构， 已办理的，未办理的， 已办理的需要
         List<HistoricTaskInfo> historicTaskInfoList = new ArrayList<>();
         HistoricTaskInstance historicTaskInstance = instanceList.get(0);
         String firstTaskKey = null;
@@ -1775,41 +1776,53 @@ public class FlowApiServiceImpl implements FlowApiService {
             UserTask userTask = flowElementUtil.getFirstUserTaskByDefinitionId(processDefinitionId);
             firstTaskKey = userTask.getId();
         }
+        // 已完成的，
+        List<HistoricTaskInstance> finishList = instanceList.stream().filter(taskInstance -> Objects.nonNull(taskInstance.getEndTime()))
+                .filter(taskInstance -> Objects.nonNull(taskInstance.getClaimTime())).collect(Collectors.toList());
+
+        // 未完成的
+        List<HistoricTaskInstance> unFinishList = instanceList.stream().filter(taskInstance -> Objects.isNull(taskInstance.getEndTime())).collect(Collectors.toList());
+
+        //
+        String[] userNameList = finishList.stream().map(HistoricTaskInstance::getAssignee).toArray(String[]::new);
+
+        List<LoginUser> loginUserList = sysBaseAPI.queryUserByNames(userNameList);
+        Map<String, LoginUser> userMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, t -> t, (t1, t2) -> t1));
+
+        Map<String, List<HistoricTaskInstance>> unFinishMap = unFinishList.stream().collect(Collectors.groupingBy(HistoricTaskInstance::getTaskDefinitionKey));
         String finalFirstTaskKey = firstTaskKey;
-        instanceList.stream().forEach(entity -> {
-            HistoricTaskInfo historicTaskInfo = HistoricTaskInfo.builder()
-                    .id(entity.getId())
-                    .createTime(DateUtil.format(entity.getCreateTime(), "yyyy-MM-dd HH:mm:ss"))
-                    .endTime(DateUtil.format(entity.getEndTime(), "yyyy-MM-dd HH:mm:ss"))
-                    .taskName(entity.getName())
-                    .state(Objects.isNull(entity.getEndTime()) ? "未完成" : "已完成")
-                    .taskId(entity.getId())
-                    .build();
-            if (Objects.nonNull(entity.getEndTime())) {
-                historicTaskInfo.setCostTime(DateUtil.formatBetween(entity.getCreateTime(), entity.getEndTime(), BetweenFormater.Level.SECOND));
+
+
+        unFinishMap.forEach((key,list)->{
+            List<HistoricTaskInstance> taskInstanceList = unFinishMap.get(key);
+            HistoricTaskInstance entity = taskInstanceList.get(0);
+            HistoricTaskInfo historicTaskInfo = bulidHistorcTaskInfo(entity);
+            if (taskInstanceList.size() == 0) {
+                String assignee = entity.getAssignee();
+                if (StrUtil.isBlank(assignee)) {
+                    List<IdentityLink> links = taskService.getIdentityLinksForTask(entity.getId());
+                    List<String> nameList = links.stream().map(IdentityLink::getUserId).collect(Collectors.toList());
+                    setAssign(historicTaskInfo, nameList);
+                }else {
+                    setAssign(historicTaskInfo, Collections.singletonList(assignee));
+                }
+            }else {
+                List<String> nameList = taskInstanceList.stream().map(HistoricTaskInstance::getAssignee).collect(Collectors.toList());
+                setAssign(historicTaskInfo, nameList);
             }
+            historicTaskInfoList.add(historicTaskInfo);
+        });
+        finishList.stream().forEach(entity -> {
+            HistoricTaskInfo historicTaskInfo = bulidHistorcTaskInfo(entity);
 
             LoginUser userByName = null;
             if (StrUtil.isNotBlank(entity.getAssignee())) {
-                userByName = sysBaseAPI.getUserByName(entity.getAssignee());
+                userByName = userMap.get(entity.getAssignee());
             }
 
             if (Objects.nonNull(userByName)) {
-                SysDepartModel depart = sysBaseAPI.getDepartByOrgCode(userByName.getOrgCode());
-                historicTaskInfo.setAssigne(userByName.getRealname() + "(所属部门-" + depart.getDepartName() + ")");
+                historicTaskInfo.setAssigne(userByName.getRealname() + "(所属部门-" + userByName.getOrgName() + ")");
                 historicTaskInfo.setAssignName(userByName.getUsername());
-            } else {
-                if (StrUtil.isBlank(entity.getAssignee()) && Objects.isNull(entity.getEndTime())) {
-                    List<IdentityLink> links = taskService.getIdentityLinksForTask(entity.getId());
-                    List<String> userNameList = links.stream().map(IdentityLink::getUserId).collect(Collectors.toList());
-                    List<LoginUser> userListByName = sysBaseAPI.getLoginUserList(userNameList);
-                    ;
-                    if (CollectionUtil.isNotEmpty(userListByName)) {
-                        historicTaskInfo.setAssignName(StrUtil.join(",", userNameList));
-                        List<String> collect = userListByName.stream().map(LoginUser::getRealname).collect(Collectors.toList());
-                        historicTaskInfo.setAssigne(StrUtil.join(",", collect));
-                    }
-                }
             }
             // // 查询审批意见 且判断第一个节点
             if (!StrUtil.equalsIgnoreCase(entity.getTaskDefinitionKey(), finalFirstTaskKey)) {
@@ -1821,7 +1834,43 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
             historicTaskInfoList.add(historicTaskInfo);
         });
+
         return historicTaskInfoList;
+    }
+
+    /**
+     * 设置用户名
+     * @param historicTaskInfo
+     * @param nameList
+     */
+    private void setAssign(HistoricTaskInfo historicTaskInfo, List<String> nameList) {
+        List<LoginUser> userListByName = sysBaseAPI.getLoginUserList(nameList);
+
+        if (CollectionUtil.isNotEmpty(userListByName)) {
+            historicTaskInfo.setAssignName(StrUtil.join(",", nameList));
+            List<String> collect = userListByName.stream().map(user -> user.getRealname() + "(所属部门-" + user.getOrgName() + ")").collect(Collectors.toList());
+            historicTaskInfo.setAssigne(StrUtil.join(",", collect));
+        }
+    }
+
+    /**
+     * 构建HistorcTaskInfo
+     * @param entity
+     * @return
+     */
+    private HistoricTaskInfo bulidHistorcTaskInfo(HistoricTaskInstance entity) {
+        HistoricTaskInfo historicTaskInfo = HistoricTaskInfo.builder()
+                .id(entity.getId())
+                .createTime(DateUtil.format(entity.getCreateTime(), "yyyy-MM-dd HH:mm:ss"))
+                .endTime(DateUtil.format(entity.getEndTime(), "yyyy-MM-dd HH:mm:ss"))
+                .taskName(entity.getName())
+                .state(Objects.isNull(entity.getEndTime()) ? "未完成" : "已完成")
+                .taskId(entity.getId())
+                .build();
+        if (Objects.nonNull(entity.getEndTime())) {
+            historicTaskInfo.setCostTime(DateUtil.formatBetween(entity.getCreateTime(), entity.getEndTime(), BetweenFormater.Level.SECOND));
+        }
+        return historicTaskInfo;
     }
 
     /**
