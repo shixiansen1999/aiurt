@@ -330,11 +330,11 @@ public class BdExamMistakesServiceImpl extends ServiceImpl<BdExamMistakesMapper,
                 return bdQuestionOptionsDTO;
             }).collect(Collectors.toList());
 
-            // 获取标准答案, 多个使用中文逗号隔开
+            // 获取标准答案, 多个使用英文逗号隔开，和考生提交时，前端传的答案用的是英文逗号隔开保持一致
             String answer = bdQuestionOptionsDTOList.stream()
                     .filter(optionsDTO -> Integer.valueOf(1).equals(optionsDTO.getIsRight()))
                     .map(BdQuestionOptionsDTO::getContent)
-                    .collect(Collectors.joining("，"));
+                    .collect(Collectors.joining(","));
 
             QuestionDetailDTO questionDetailDTO = new QuestionDetailDTO();
             questionDetailDTO.setContent(bdQuestion.getContent());
