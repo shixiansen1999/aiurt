@@ -210,12 +210,12 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             }
             e.setOrgList(patrolTaskMapper.getOrgCode(patrolTask.getCode()));
             List<PatrolAccompanyDTO> accompanyDTOList = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
-            String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining(";"));
+            String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining(","));
             e.setUserName(userName);
             e.setAccompanyName(accompanyDTOList);
             // 设置抽检人信息
             List<PatrolSamplePerson> samplePersonList = patrolSamplePersonMapper.getSamplePersonList(e.getPatrolNumber());
-            String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining(";"));
+            String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining(","));
             e.setSamplePersonName(samplePersonName);
             e.setSamplePersonList(samplePersonList);
             List<PatrolCheckResult> list = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, e.getId()));
@@ -254,6 +254,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     .set(PatrolTaskDevice::getCheckTime, nowDate)
                     .set(PatrolTaskDevice::getStatus, PatrolConstant.BILL_COMPLETE)
                     .set(PatrolTaskDevice::getMac, patrolTaskDevice.getMac())
+                    .set(StrUtil.isNotEmpty(patrolTaskDevice.getSampleSignUrl()), PatrolTaskDevice::getSampleSignUrl, patrolTaskDevice.getSampleSignUrl())
                     .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
             //mac地址匹配,获取用户当前位置,并存好
             SysUserPositionCurrentDTO sysUserPositionCurrent = patrolTaskDeviceMapper.getSysUserPositionCurrent(sysUser.getUsername());
@@ -572,6 +573,10 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             List<PatrolAccessory> accessoryList = patrolAccessoryMapper.selectList(wrapper);
             l.setAccessoryInfo(accessoryList);
         });
+        // 设置抽检人信息
+        List<PatrolSamplePerson> samplePersonList = patrolSamplePersonMapper.getSamplePersonList(patrolNumber);
+        String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining(","));
+        taskDeviceParam.setSamplePersonName(samplePersonName);
         // 构建巡检项目树
         List<PatrolCheckResultDTO> tree = getTree(checkResultList, "0");
         Map<String, Object> map = new HashMap<>(16);
@@ -848,12 +853,12 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             }
             e.setOrgList(patrolTaskMapper.getOrgCode(patrolTask.getCode()));
             List<PatrolAccompanyDTO> accompanyDTOList = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
-            String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining("；"));
+            String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining(","));
             e.setUserName(userName);
             e.setAccompanyName(accompanyDTOList);
             // 设置抽检人信息
             List<PatrolSamplePerson> samplePersonList = patrolSamplePersonMapper.getSamplePersonList(e.getPatrolNumber());
-            String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining(";"));
+            String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining(","));
             e.setSamplePersonName(samplePersonName);
             e.setSamplePersonList(samplePersonList);
             List<PatrolCheckResult> list = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, e.getId()));
