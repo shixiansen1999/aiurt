@@ -1367,6 +1367,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public List<LoginUser> queryUserByNames(String[] userNames) {
+        if (ObjectUtil.isEmpty(userNames)) {
+            return Collections.emptyList();
+        }
         QueryWrapper<SysUser> queryWrapper = new QueryWrapper<SysUser>().eq("status", 1).eq("del_flag", 0);
         queryWrapper.in("username", userNames);
         List<LoginUser> loginUsers = new ArrayList<>();
