@@ -1,5 +1,6 @@
 package com.aiurt.modules.train.question.entity;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -40,6 +41,7 @@ public class BdQuestion implements Serializable {
 	/**该习题的所属班组*/
     @Excel(name = "所属班组", width = 15)
     @ApiModelProperty(value = "所属班组")
+    @DeptFilterColumn
 	private String orgCode;
 	/**题目内容*/
 	@Excel(name = "题目内容", width = 15)

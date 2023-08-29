@@ -9,6 +9,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.common.api.vo.TreeNode;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.ExcelUtils;
@@ -27,6 +28,9 @@ import com.aiurt.modules.train.question.service.IBdQuestionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import jdk.nashorn.internal.objects.Global;
+import org.apache.shiro.SecurityUtils;
+import org.elasticsearch.common.Glob;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -35,6 +39,7 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.BeanUtils;
@@ -85,6 +90,7 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
     @Override
     public Page<BdQuestion> queryPageList(Page<BdQuestion> pageList,BdQuestion condition) {
         List<BdQuestion> questionList = bdQuestionMapper.list(pageList,condition);
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         questionList.forEach(e -> {
             List<BdQuestionOptionsAtt> bdQuestionOptionsActs = bdQuestionMapper.listss(e.getId());
                 e.setPic("无");
@@ -104,6 +110,7 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
                 }
             }}
         });
+        GlobalThreadLocal.setDataFilter(b);
         return pageList.setRecords(questionList);
     }
 
