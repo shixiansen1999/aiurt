@@ -951,8 +951,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setRepairContent(dto.getRepairContent());
         workLog.setPatrolIds(dto.getPatrolIds());
         workLog.setPatrolContent(dto.getPatrolContent());
-        workLog.setUnfinisnCode(dto.getUnfinisnCode());
-        workLog.setUnfinisnContent(dto.getUnfinisnContent());
+        workLog.setUnfinishCode(dto.getUnfinishCode());
+        workLog.setUnfinishContent(dto.getUnfinishContent());
         workLog.setSchedule(dto.getSchedule());
         if (dto.getStatus() != null) {
             workLog.setStatus(1);
@@ -1196,8 +1196,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             HashMap<String, String> unFinishPatrolTask = patrolApi.getUnFinishPatrolTask();
             String content = (unFinishFaultTask.get("content") != null ? unFinishFaultTask.get("content") : "") + (unFinishPatrolTask.get("content") != null ? unFinishPatrolTask.get("content") : "");
             String code = (unFinishFaultTask.get("code") != null ? unFinishFaultTask.get("code") : "") + (unFinishPatrolTask.get("code") != null ? unFinishPatrolTask.get("code") : "");
-            map.put("unFinishContent", content);
-            map.put("unFinishCode", code);
+            map.put("unfinishContent", content);
+            map.put("unfinishCode", code);
         }
 
         map.put("patrolContent", userTask.get("content"));

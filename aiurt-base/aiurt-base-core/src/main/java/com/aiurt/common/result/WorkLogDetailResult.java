@@ -63,7 +63,7 @@ public class WorkLogDetailResult {
     /**未完成任务内容*/
     @Excel(name = "未完成任务内容", width = 15)
     @ApiModelProperty(value = "未完成任务内容")
-    private  String  unfinisnContent;
+    private  String  unfinishContent;
 
     /**交接班内容*/
     @Excel(name = "交接班内容", width = 35)

@@ -68,12 +68,12 @@ public class WorkLog {
     /**未完成任务code*/
     @Excel(name = "未完成任务code", width = 15)
     @ApiModelProperty(value = "未完成任务code")
-    private  String  unfinisnCode;
+    private  String  unfinishCode;
 
     /**未完成任务内容*/
     @Excel(name = "未完成任务内容", width = 15)
     @ApiModelProperty(value = "未完成任务内容")
-    private  String  unfinisnContent;
+    private  String  unfinishContent;
 
     /**提交状态:0-未提交 1-已提交*/
     @Excel(name = "提交状态:0-未提交 1-已提交", width = 15)
