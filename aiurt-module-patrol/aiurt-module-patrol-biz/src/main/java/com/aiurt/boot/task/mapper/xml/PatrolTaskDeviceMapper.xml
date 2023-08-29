@@ -142,8 +142,7 @@
         cs.station_name,
         pts.subsystem_code,
         css.system_name as subsystemName,
-        psp.user_id as samplePersonId,
-        psp.username as samplePersonName,
+        GROUP_CONCAT(psp.username) as samplePersonName,
         ptd.*
         FROM patrol_task_device ptd
         JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
@@ -167,6 +166,7 @@
         <if test="patrolNumber != null and patrolNumber != ''">
             and ptd.patrol_number = #{patrolNumber}
         </if>
+        group by ptd.patrol_number
     </select>
     <select id="getPatrolTaskDeviceList" resultType="com.aiurt.boot.task.dto.PatrolTaskDeviceDTO">
         SELECT dv.`name` as deviceName,

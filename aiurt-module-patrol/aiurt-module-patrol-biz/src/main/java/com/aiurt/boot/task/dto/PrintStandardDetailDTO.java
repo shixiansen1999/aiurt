@@ -64,8 +64,7 @@ public class PrintStandardDetailDTO {
     private String deviceLocation;
 
     @ApiModelProperty(value = "巡检频次")
-    @Dict(dicCode = "patrol_plan_period")
-    private java.lang.Integer period;
+    private String period;
 
     @ApiModelProperty(value = "任务提交的用户签名图片")
     private String signUrl;
