@@ -94,4 +94,14 @@ public class ActCustomVersion implements Serializable {
     @ApiModelProperty(value = "激活状态")
     @Dict(dicCode = "act_version_status")
 	private Integer status;
+
+    @Dict(dicCode = "bpm_process_type")
+    @TableField(exist = false)
+    private String classifyCode;
+
+    @TableField(exist = false)
+    private String modelKey;
+
+    @TableField(exist = false)
+    private String name;
 }

@@ -1,6 +1,8 @@
 package com.aiurt.modules.manage.service;
 
 import com.aiurt.modules.manage.entity.ActCustomVersion;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -28,4 +30,12 @@ public interface IActCustomVersionService extends IService<ActCustomVersion> {
      * @param actCustomVersion
      */
     void updateMainVersion(ActCustomVersion actCustomVersion);
+
+    /**
+     * 分页查询
+     * @param page
+     * @param modelId
+     * @return
+     */
+    IPage<ActCustomVersion> queryPageList(Page<ActCustomVersion> page, String modelId);
 }
