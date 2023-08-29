@@ -84,11 +84,9 @@ public class EmergencyRehearsalMonth extends DictEntity implements Serializable 
     private java.lang.String orgCode;
 	/**演练时间，格式yyyy-MM-dd*/
 	@Excel(name = "演练时间", width = 15, orderNum = "4", format = "MM月")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "演练时间，格式yyyy-MM-dd")
+    @ApiModelProperty(value = "演练时间，格式yyyy-MM")
     @NotNull(message = "演练时间不能为空！", groups = {EmergencyRehearsalYear.Save.class, EmergencyRehearsalYear.Update.class})
-    private java.util.Date rehearsalTime;
+    private java.lang.String rehearsalTime;
 	/**必须体现环节*/
 	@Excel(name = "必须体现环节", orderNum = "6", width = 15)
     @ApiModelProperty(value = "必须体现环节")

@@ -302,6 +302,8 @@ public class FlowElementUtil {
                     }
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
+                    Throwable cause = e.getCause();
+                    throw new AiurtBootException(cause.getMessage());
                 }
             }
         }
