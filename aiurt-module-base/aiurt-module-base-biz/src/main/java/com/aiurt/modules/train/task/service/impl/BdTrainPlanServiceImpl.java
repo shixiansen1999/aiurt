@@ -19,6 +19,7 @@ import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
 import com.aiurt.modules.train.exam.entity.BdExamPaper;
 import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.exam.entity.BdExamRecordDetail;
+import com.aiurt.modules.train.mistakes.service.IBdExamMistakesService;
 import com.aiurt.modules.train.question.entity.BdQuestionOptionsAtt;
 import com.aiurt.modules.train.task.constans.TainPlanConstans;
 import com.aiurt.modules.train.task.dto.BdTrainPlanMessageDTO;
@@ -112,6 +113,9 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
     private ITrainArchiveService archiveService;
     @Autowired
     private ITrainRecordService recordService;
+
+    @Autowired
+    private IBdExamMistakesService examMistakesService;
     /**
      * 发布
      *
@@ -614,6 +618,9 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
                     bdTrainTaskMapper.updateById(bdTrainTask);
                 }
             }
+
+            // 生成错题集
+            examMistakesService.generateMistakesByExamRecodeId(bdExamRecord.getId());
         }
     }
     /**
