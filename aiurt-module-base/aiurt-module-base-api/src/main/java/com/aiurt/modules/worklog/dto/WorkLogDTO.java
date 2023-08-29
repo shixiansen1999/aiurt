@@ -156,12 +156,12 @@ public class WorkLogDTO extends WorkLogResult {
     /**未完成任务code*/
     @Excel(name = "未完成任务code", width = 15)
     @ApiModelProperty(value = "未完成任务code")
-    private  String  unfinisnCode;
+    private  String  unfinishCode;
 
     /**未完成任务内容*/
     @Excel(name = "未完成任务内容", width = 15)
     @ApiModelProperty(value = "未完成任务内容")
-    private  String  unfinisnContent;
+    private  String  unfinishContent;
 
 
     /**配合施工单位*/
