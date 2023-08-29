@@ -2,4 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.manage.mapper.ActCustomVersionMapper">
 
+    <select id="queryPageList" resultType="com.aiurt.modules.manage.entity.ActCustomVersion">
+        select t1.*,t3.classify_code,t3.model_key,t3.name from act_custom_version t1
+        LEFT JOIN act_custom_model_info t3 ON t1.model_id = t3.model_id
+        where t1.model_id = #{modelId}
+    </select>
 </mapper>

@@ -10,12 +10,15 @@ import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -136,5 +139,20 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
         }
 
         return customVersion;
+    }
+
+    /**
+     * 分页查询
+     *
+     * @param page
+     * @param modelId
+     * @return
+     */
+    @Override
+    public IPage<ActCustomVersion> queryPageList(Page<ActCustomVersion> page, String modelId) {
+        List<ActCustomVersion> actCustomVersions = baseMapper.queryPageList(page, modelId);
+
+        page.setRecords(actCustomVersions);
+        return page;
     }
 }

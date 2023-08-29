@@ -56,10 +56,9 @@ public class ActCustomVersionController extends BaseController<ActCustomVersion,
 	public Result<IPage<ActCustomVersion>> queryPageList(@RequestParam(name = "modelId") String modelId,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
-		LambdaQueryWrapper<ActCustomVersion> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(ActCustomVersion::getModelId, modelId).orderByDesc(ActCustomVersion::getDeployTime);
+
 		Page<ActCustomVersion> page = new Page<>(pageNo, pageSize);
-		IPage<ActCustomVersion> pageList = actCustomVersionService.page(page, wrapper);
+		IPage<ActCustomVersion> pageList = actCustomVersionService.queryPageList(page, modelId);
 		return Result.OK(pageList);
 	}
 
