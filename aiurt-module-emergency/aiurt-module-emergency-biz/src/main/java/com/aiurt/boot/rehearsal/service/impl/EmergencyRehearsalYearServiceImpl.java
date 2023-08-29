@@ -483,7 +483,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
                     emergencyRehearsalYearAddDTO.setStatus(EmergencyConstant.YEAR_STATUS_3);
                     this.startProcess(emergencyRehearsalYearAddDTO);
                 }
-                return Result.ok("文件导入成功！");
+                return XlsUtil.importReturnRes(errorLines, emergencyRehearsalYears.size(), errorMessage, true, null);
             } catch (Exception e) {
                 e.printStackTrace();
             }
