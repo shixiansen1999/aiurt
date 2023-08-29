@@ -26,6 +26,7 @@ import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.ExcelSelectListUtil;
+import com.aiurt.common.util.TimeUtil;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
@@ -479,6 +480,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
                     emergencyRehearsalYearAddDTO.setUserId(loginUser.getId());
                     emergencyRehearsalYearAddDTO.setOrgCode(loginUser.getOrgCode());
                     emergencyRehearsalYearAddDTO.setCompileDate(DateUtil.parse(DateUtil.today(),"yyyy-MM-dd"));
+                    emergencyRehearsalYearAddDTO.setStatus(EmergencyConstant.YEAR_STATUS_3);
                     this.startProcess(emergencyRehearsalYearAddDTO);
                 }
                 return Result.ok("文件导入成功！");
@@ -492,7 +494,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
 
     private int checkRequired(EmergencyRehearsalYearImport emergencyRehearsalYear,int errorLines) {
         StringBuilder stringBuilder = new StringBuilder();
-        StringBuilder stringBuilderMonth = new StringBuilder();
+        Boolean haveMonthError = false;
         List<EmergencyRehearsalMonthImport> monthList = emergencyRehearsalYear.getMonthList();
 
         List<DictModel> emergencyRehearsalType = iSysBaseApi.queryDictItemsByCode("emergency_rehearsal_type");
@@ -506,16 +508,14 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
         if (StrUtil.isBlank(emergencyRehearsalYear.getYear())) {
             stringBuilder.append("所属年份不能为空，");
         } else {
-            try {
-                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy");
-                dtf.parse(emergencyRehearsalYear.getYear());
-            } catch (DateTimeParseException e) {
-                stringBuilder.append("所属年份填写不规范，");
+            boolean legalYear = TimeUtil.isLegalDate(4, emergencyRehearsalYear.getYear(), "yyyy");
+            if (!legalYear) {
+                stringBuilder.append("所属年份格式填写不对，");
             }
         }
         if (CollUtil.isNotEmpty(monthList)) {
             for (EmergencyRehearsalMonthImport emergencyRehearsalMonth : monthList) {
-
+                StringBuilder stringBuilderMonth = new StringBuilder();
                 String typeName = emergencyRehearsalMonth.getTypeName();
                 String subject = emergencyRehearsalMonth.getSubject();
                 String schemeName = emergencyRehearsalMonth.getSchemeName();
@@ -588,6 +588,11 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
 
                 if (StrUtil.isBlank(rehearsalTime)) {
                     stringBuilderMonth.append("演练时间不能为空，");
+                } else {
+                    boolean legalYear = TimeUtil.isLegalDate(7, rehearsalTime, "yyyy-MM");
+                    if (!legalYear) {
+                        stringBuilderMonth.append("演练时间格式填写不对，");
+                    }
                 }
 
                 if (StrUtil.isBlank(step)) {
@@ -598,6 +603,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
                     // 截取字符
                     stringBuilderMonth.deleteCharAt(stringBuilderMonth.length() - 1);
                     emergencyRehearsalMonth.setMistake(stringBuilderMonth.toString());
+                    haveMonthError = true;
                 }
 
             }
@@ -611,7 +617,7 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
             emergencyRehearsalYear.setMistake(stringBuilder.toString());
         }
         // 错误数据条数
-        if (stringBuilder.length() > 0 || stringBuilderMonth.length() > 0) {
+        if (stringBuilder.length() > 0 || haveMonthError) {
             errorLines++;
         }
         return errorLines;
