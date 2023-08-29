@@ -24,6 +24,7 @@ public enum AiurtErrorEnum {
     TASK_ID_NOT_FOUND(61004, "活动(%s)不存在或已结束"),
     MULTI_INSTANCE_USER_NULL(61005, "执行多实例任务时，选择的人员不能为空！"),
     PROCESS_INSTANCE_NOT_FOUND(61006, "流程实例不存在！"),
+    PROCESS_INSTANCE_IS_DELETE(61007, "该流程实例已者不存在或被删除"),
     /**
      * 7 开头
      */
