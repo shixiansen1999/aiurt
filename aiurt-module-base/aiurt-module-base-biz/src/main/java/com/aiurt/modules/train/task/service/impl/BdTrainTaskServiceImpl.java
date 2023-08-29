@@ -17,6 +17,8 @@ import com.aiurt.modules.train.exam.entity.BdExamPaper;
 import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.feedback.entity.*;
 import com.aiurt.modules.train.feedback.mapper.*;
+import com.aiurt.modules.train.mistakes.entity.BdExamMistakes;
+import com.aiurt.modules.train.mistakes.service.IBdExamMistakesService;
 import com.aiurt.modules.train.quzrtz.QuartzServiceImpl;
 import com.aiurt.modules.train.quzrtz.job.CronUtlit;
 import com.aiurt.modules.train.task.dto.*;
@@ -91,6 +93,9 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	private BdTrainQuestionFeedbackQuesMapper bdTrainQuestionFeedbackQuesMapper;
 	@Autowired
 	private BdTrainStudentFeedbackRecordMapper bdTrainStudentFeedbackRecordMapper;
+
+	@Autowired
+	private IBdExamMistakesService examMistakesService;
 
 	@Autowired
 	private QuartzServiceImpl quartzService;
@@ -574,11 +579,29 @@ public String taskCode(Integer trainLine){
 		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		bdTrainTask.setTaskTeamCode(sysUser.getOrgCode());
 		List<BdTrainTask> trainTasks = bdTrainTaskMapper.queryPageList(pageList, bdTrainTask);
+		List<String> trainTaskIdList = new ArrayList<>();
 		trainTasks.forEach(b->{
 			List<BdTrainTaskUser> userListById = bdTrainTaskUserMapper.getUserListById(b.getId());
 			List<String> userIds = userListById.stream().map(BdTrainTaskUser::getUserId).collect(Collectors.toList());
 			b.setUserIds(userIds);
+			trainTaskIdList.add(b.getId());
 		});
+
+		if (CollUtil.isEmpty(trainTaskIdList)){
+			return pageList.setRecords(trainTasks);
+		}
+		// 添加是否有错题的判断字段
+		// 查询培训任务对应的错题集
+		LambdaQueryWrapper<BdExamMistakes> queryWrapper = new LambdaQueryWrapper<>();
+		// 只查询trainTaskId
+		queryWrapper.select(BdExamMistakes::getTrainTaskId);
+		queryWrapper.eq(BdExamMistakes::getDelFlag, CommonConstant.DEL_FLAG_0);
+		queryWrapper.in(BdExamMistakes::getTrainTaskId, trainTaskIdList);
+		List<BdExamMistakes> list = examMistakesService.list(queryWrapper);
+		// 错题集中查询出来的培训任务
+		List<String> existTrainTaskIdList = list.stream().map(BdExamMistakes::getTrainTaskId).collect(Collectors.toList());
+		trainTasks.forEach(t->t.setHasMistakes(existTrainTaskIdList.contains(t.getId())));
+
 		return pageList.setRecords(trainTasks);
 	}
 
