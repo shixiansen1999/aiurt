@@ -2,8 +2,6 @@ package com.aiurt.modules.train.task.vo;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Administrator
@@ -16,6 +14,8 @@ public class ReportReqVO {
     private String year;
     @ApiModelProperty("季度")
     private Integer season;
+    @ApiModelProperty("月份")
+    private Integer month;
     @ApiModelProperty("部门")
     private String sysOrgCode;
     @ApiModelProperty("分页参数")

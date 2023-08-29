@@ -4,6 +4,7 @@ package com.aiurt.modules.train.task.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -18,6 +19,7 @@ import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
 import com.aiurt.modules.train.exam.entity.BdExamPaper;
 import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.exam.entity.BdExamRecordDetail;
+import com.aiurt.modules.train.mistakes.service.IBdExamMistakesService;
 import com.aiurt.modules.train.question.entity.BdQuestionOptionsAtt;
 import com.aiurt.modules.train.task.constans.TainPlanConstans;
 import com.aiurt.modules.train.task.dto.BdTrainPlanMessageDTO;
@@ -111,6 +113,9 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
     private ITrainArchiveService archiveService;
     @Autowired
     private ITrainRecordService recordService;
+
+    @Autowired
+    private IBdExamMistakesService examMistakesService;
     /**
      * 发布
      *
@@ -203,6 +208,14 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
                     reportReqVO.setTrainEnd(split[1]);
                 }
             }
+        }
+        if (reportReqVO.getYear() != null && reportReqVO.getMonth() != null) {
+            //月转换时间区间处理
+            DateTime parse = DateUtil.parse(reportReqVO.getYear() + "-" + reportReqVO.getMonth(), "yyyy-MM");
+            DateTime startTime = DateUtil.beginOfMonth(parse);
+            DateTime endTime =  DateUtil.endOfMonth(parse);
+            reportReqVO.setTrainStart(DateUtil.format(startTime,"yyyy-MM-dd"));
+            reportReqVO.setTrainEnd(DateUtil.format(endTime,"yyyy-MM-dd"));
         }
         List<ReportVO> list = baseMapper.report(page, reportReqVO);
         for (ReportVO reportVO : list) {
@@ -605,6 +618,9 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
                     bdTrainTaskMapper.updateById(bdTrainTask);
                 }
             }
+
+            // 生成错题集
+            examMistakesService.generateMistakesByExamRecodeId(bdExamRecord.getId());
         }
     }
     /**

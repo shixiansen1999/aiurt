@@ -332,6 +332,11 @@ public class BdTrainTask implements Serializable ,Cloneable{
     @ApiModelProperty(value = "pageSize")
     @TableField(exist = false)
     private Integer pageSize;
+
+    /**该培训任务是否有错题集*/
+    @ApiModelProperty(value = "该培训任务是否有错题集")
+    @TableField(exist = false)
+    private Boolean hasMistakes;
     /**
      * 克隆方法
      * @return

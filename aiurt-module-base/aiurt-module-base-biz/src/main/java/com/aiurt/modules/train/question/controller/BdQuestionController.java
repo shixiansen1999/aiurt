@@ -15,6 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -161,10 +162,23 @@ public class BdQuestionController extends BaseController<BdQuestion, IBdQuestion
     * @param response
     * @return
     */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+	@ApiOperation(value = "培训管理-培训基础数据-考卷习题管理-导入", notes = "培训管理-培训基础数据-考卷习题管理-导入")
+	@PostMapping(value = "/importExcel")
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, BdQuestion.class);
+        return bdQuestionService.importExcel(request, response);
     }
+
+	 /**
+	  * 下载导入模板
+	  * @param request
+	  * @param response
+	  * @throws IOException
+	  */
+	 @ApiOperation(value = "培训管理-培训基础数据-考卷习题管理-下载导入模板", notes = "培训管理-培训基础数据-考卷习题管理-下载导入模板")
+	 @GetMapping("/downloadTemplateExcel")
+	 public void downloadTemplateExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		 bdQuestionService.downloadTemplateExcel(request, response);
+	 }
 
 	 /**
 	  * 查看学习资料

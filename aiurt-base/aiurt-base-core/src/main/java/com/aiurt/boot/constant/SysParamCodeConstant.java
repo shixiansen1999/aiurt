@@ -487,6 +487,7 @@ public interface SysParamCodeConstant {
      * 工作日志保存检修内容是否需要拼接标准表
      */
     String WORKLOG_REPAIR_CONCAT_STANDARD = "worklog_repair_concat_standard";
+
     /**
      * 取消挂起时是否更新维修负责人
      */
@@ -515,9 +516,10 @@ public interface SysParamCodeConstant {
     String PATROL_DURATION_USE_MAC = "patrol_duration_use_mac";
 
 
-
     /**
      * 	巡视、检修标准是否关联多个设备分类
+     *
      */
     String MULTIPLE_DEVICE_TYPES = "multiple_device_types";
+
 }
