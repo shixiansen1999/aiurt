@@ -36,7 +36,10 @@ public class CheckListDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "检修任务标准id")
     private String standardId;
-
+    /**检修任务标准code*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修任务标准code")
+    private String standardCode;
     /**提交人id*/
     @TableField(exist = false)
     @ApiModelProperty(value = "提交人id")

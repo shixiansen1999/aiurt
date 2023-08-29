@@ -2,6 +2,7 @@ package com.aiurt.boot.task.dto;
 
 import com.aiurt.boot.task.entity.RepairTaskResult;
 import com.aiurt.common.result.SpareResult;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -15,7 +16,8 @@ import java.util.List;
 @Data
 
 public class PrintRepairTaskDTO {
-
+    @ApiModelProperty(value = "翻译字段")
+    private String typeName;
     @ApiModelProperty(value = "标题")
     private String title;
     @ApiModelProperty(value = "检修班组")
@@ -66,6 +68,8 @@ public class PrintRepairTaskDTO {
     private String siteName;
     @ApiModelProperty(value = "检修单附件")
     private List<String> enclosureUrl;
+    @ApiModelProperty(value = "检修人签名")
+    private String signUrl;
     @ApiModelProperty(value = "备件更换")
     private List<SpareResult> spareChange;
     @ApiModelProperty(value = "检修单（树形）")
