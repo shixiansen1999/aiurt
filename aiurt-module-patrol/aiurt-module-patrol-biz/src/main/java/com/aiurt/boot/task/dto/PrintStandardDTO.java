@@ -13,6 +13,7 @@ public class PrintStandardDTO {
 
     @ApiModelProperty(value = "巡视工单名称")
     private String standardName;
-    @ApiModelProperty(value = "巡视内容")
-    private List<PrintTaskStationDTO> patrolStationDTOS;
+
+    @ApiModelProperty(value = "巡视工单")
+    private List<PrintStandardDetailDTO> billInfo;
 }

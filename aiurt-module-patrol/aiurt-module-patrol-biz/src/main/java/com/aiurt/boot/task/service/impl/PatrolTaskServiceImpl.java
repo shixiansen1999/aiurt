@@ -2184,24 +2184,16 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             PrintPatrolTaskStandardDTO printPatrolTaskStandardDTO = new PrintPatrolTaskStandardDTO();
             PatrolTask patrolTask = patrolTaskMapper.selectById(id);
             Assert.notNull(patrolTask, "未找到对应记录！");
-            printPatrolTaskStandardDTO.setId(patrolTask.getId());
-            printPatrolTaskStandardDTO.setTitle(patrolTask.getName());
-            // 站点信息
-            List<PatrolTaskStationDTO> stationInfo = patrolTaskStationMapper.selectStationByTaskCode(patrolTask.getCode());
-            printPatrolTaskStandardDTO.setStationNames(stationInfo.stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.joining()));
-            if (StrUtil.isNotEmpty(patrolTask.getEndUserId())) {
-                printPatrolTaskStandardDTO.setUserName(patrolTaskMapper.getUsername(patrolTask.getEndUserId()));
+            String patrolPlanPeriod = null;
+            if(patrolTask.getPeriod() != null){
+                 patrolPlanPeriod = sysBaseApi.translateDict("patrol_plan_period", Convert.toStr(patrolTask.getPeriod()));
             }
-            printPatrolTaskStandardDTO.setSubmitTime(DateUtil.format(patrolTask.getSubmitTime(),"yyyy-MM-dd HH:mm:ss"));
-            printPatrolTaskStandardDTO.setSignUrl(patrolTask.getSignUrl());
+
+            printPatrolTaskStandardDTO.setId(patrolTask.getId());
             // 组织机构信息
             List<PatrolTaskOrganizationDTO> organizationInfo = patrolTaskOrganizationMapper.selectOrgByTaskCode(patrolTask.getCode());
             //巡视单内容
             List<PrintTaskStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfoToPrint(id);
-            //巡视任务单
-            List<PrintStandardDTO> standardDTOS = new ArrayList<>();
-            PrintStandardDTO printStandardDTO = new PrintStandardDTO();
-            List<PrintTaskStationDTO> printTaskStationDTOS = new ArrayList<>();
             for (PrintTaskStationDTO dto : billGangedInfo) {
                 //获取检修项
                 List<PrintStandardDetailDTO> billInfo = dto.getBillInfo();
@@ -2213,14 +2205,22 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                         PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumberToPrint(billCode))
                                 .orElseGet(PatrolTaskDeviceParam::new);
                         List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
+                        // 字典翻译检查值
+                        Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
+                                .stream().filter(l->StrUtil.isNotEmpty(l.getText()))
+                                .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+                        checkResultList.stream().forEach(c -> {
+                            c.setCheckDictName(requiredItems.get(String.valueOf(c.getRequired())));
+                        });
                         List<PatrolCheckResultDTO> tree = getTree(checkResultList, "0");
-                        //设备位置翻译
+                        //获取设备位置
                         StationDTO stationDTO = new StationDTO();
                         stationDTO.setLineCode(taskDeviceParam.getLineCode());
                         stationDTO.setStationCode(taskDeviceParam.getStationCode());
                         stationDTO.setPositionCode(taskDeviceParam.getPositionCode());
                         List<StationDTO> stationDTOList = new ArrayList<>();
                         stationDTOList.add(stationDTO);
+                        //设备位置翻译
                         String s = manager.translateStation(stationDTOList);
                         //设备的位置
                         if (ObjectUtil.isNotEmpty(taskDeviceParam.getDeviceCode())) {
@@ -2233,7 +2233,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                         printStandardDetailDTO.setUserName(patrolTaskMapper.getUsername(patrolTask.getEndUserId()));
                         printStandardDetailDTO.setSubmitTime(DateUtil.format(patrolTask.getSubmitTime(),"yyyy-MM-dd HH:mm:ss"));
                         printStandardDetailDTO.setSignUrl(patrolTask.getSignUrl());
-                        printStandardDetailDTO.setPeriod(patrolTask.getPeriod());
+                        printStandardDetailDTO.setPeriod(patrolPlanPeriod);
                         printStandardDetailDTO.setSpotCheckTime(taskDeviceParam.getCheckTime());
                         printStandardDetailDTO.setChildren(tree);
                         printStandardDetailDTO.setSpotCheckUserName(taskDeviceParam.getSamplePersonName());
@@ -2243,16 +2243,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                         printStandardDetailDTOS.add(printStandardDetailDTO);
                     }
                 }
-                dto.setBillInfo(printStandardDetailDTOS);
-                printTaskStationDTOS.add(dto);
+                printPatrolTaskStandardDTO.setBillInfo(printStandardDetailDTOS);
+                arrayList.add(printPatrolTaskStandardDTO);
             }
-            printStandardDTO.setPatrolStationDTOS(printTaskStationDTOS);
-            standardDTOS.add(printStandardDTO);
-
-            printPatrolTaskStandardDTO.setPrintStandardDTOList(standardDTOS);
-            List<String> collect = stationInfo.stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.toList());
-            printPatrolTaskStandardDTO.setTitle(CollUtil.join(collect, ",") + patrolTask.getName() + "巡视表");
-            arrayList.add(printPatrolTaskStandardDTO);
         }
         return arrayList;
     }
