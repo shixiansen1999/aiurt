@@ -90,4 +90,11 @@ public interface IEmergencyImplementationRecordService extends IService<Emergenc
      * @param response
      */
     void exportLedger(EmergencyRecordDTO emergencyRecordDTO, Integer pageNo, Integer pageSize, HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 批量打印
+     * @param ids
+     * @return
+     */
+    List<EmergencyRecordReadOneVO> printEmergency(String ids);
 }

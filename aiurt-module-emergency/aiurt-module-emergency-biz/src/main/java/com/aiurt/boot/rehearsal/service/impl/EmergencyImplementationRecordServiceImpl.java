@@ -309,6 +309,19 @@ public class EmergencyImplementationRecordServiceImpl extends ServiceImpl<Emerge
         }
     }
 
+    @Override
+    public List<EmergencyRecordReadOneVO> printEmergency(String ids) {
+        List<EmergencyRecordReadOneVO> printEmergency = new ArrayList<>();
+        List<String> idList = StrUtil.splitTrim(ids, ",");
+        idList.forEach(id->{
+            EmergencyRecordReadOneVO emergencyRecordReadOneVO = queryById(id);
+            LoginUser userById = iSysBaseApi.getUserById(emergencyRecordReadOneVO.getRecorderId());
+            emergencyRecordReadOneVO.setUserName(userById.getRealname());
+            printEmergency.add(emergencyRecordReadOneVO);
+        });
+        return printEmergency;
+    }
+
     /**
      * 关联的问题列表的字典，组织机构名称转换
      *
