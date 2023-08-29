@@ -23,7 +23,9 @@ import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
 import com.aiurt.boot.standard.dto.InspectionCodeImportDTO;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.entity.InspectionCodeContent;
+import com.aiurt.boot.standard.entity.InspectionCodeDeviceType;
 import com.aiurt.boot.standard.mapper.InspectionCodeContentMapper;
+import com.aiurt.boot.standard.mapper.InspectionCodeDeviceTypeMapper;
 import com.aiurt.boot.standard.mapper.InspectionCodeMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
 import com.aiurt.boot.strategy.entity.InspectionCoOrgRel;
@@ -107,7 +109,8 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
 
     @Autowired
     private IInspectionCoOrgRelService orgRelService;
-
+    @Autowired
+    private InspectionCodeDeviceTypeMapper inspectionCodeDeviceTypeMapper;
     @Override
     public IPage<InspectionCodeDTO> pageList(Page<InspectionCodeDTO> page, InspectionCodeDTO inspectionCodeDTO) {
         List<InspectionCodeDTO> inspectionCodeDTOS = baseMapper.pageList(page,inspectionCodeDTO);
@@ -125,6 +128,14 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                 i.setOrgCodeList(orgCodeList);
                 String orgNames = orgCodeList.stream().map(OrgVO::getLabel).collect(Collectors.joining(";"));
                 i.setOrgName(orgNames);
+            }
+            List<InspectionCodeDeviceType> patrolStandardDeviceTypes = inspectionCodeDeviceTypeMapper.selectList(new LambdaQueryWrapper<InspectionCodeDeviceType>().eq(InspectionCodeDeviceType::getInspectionCode, i.getCode()).select(InspectionCodeDeviceType::getDeviceTypeCode));
+            if (CollUtil.isNotEmpty(patrolStandardDeviceTypes)) {
+                Set<String> deviceTypeCodes = patrolStandardDeviceTypes.stream().map(InspectionCodeDeviceType::getDeviceTypeCode).collect(Collectors.toSet());
+                i.setDeviceTypeCodeList(new ArrayList<>(deviceTypeCodes));
+                List<DeviceType> typeList = sysBaseApi.selectDeviceTypeByCodes(deviceTypeCodes);
+                String deviceTypeNames = typeList.stream().map(DeviceType::getName).collect(Collectors.joining(";"));
+                i.setDeviceTypeName(deviceTypeNames);
             }
         });
         if (ObjectUtils.isNotEmpty(inspectionCodeDTO.getInspectionStrCode())) {

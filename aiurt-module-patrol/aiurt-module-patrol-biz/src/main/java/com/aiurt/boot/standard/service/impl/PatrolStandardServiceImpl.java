@@ -14,8 +14,10 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.standard.dto.*;
 import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.boot.standard.entity.PatrolStandardDeviceType;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.entity.PatrolStandardOrg;
+import com.aiurt.boot.standard.mapper.PatrolStandardDeviceTypeMapper;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.standard.mapper.PatrolStandardOrgMapper;
@@ -85,7 +87,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
     private String upLoadPath;
     @Autowired
     private PatrolStandardOrgMapper standardOrgMapper;
-
+    @Autowired
+    private PatrolStandardDeviceTypeMapper patrolStandardDeviceTypeMapper;
     @Autowired
     private IPatrolStandardOrgService patrolStandardOrgService;
     @Override
@@ -111,6 +114,15 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 String orgNames = orgCodeList.stream().map(OrgVO::getLabel).collect(Collectors.joining(";"));
                 a.setOrgName(orgNames);
             }
+            List<PatrolStandardDeviceType> patrolStandardDeviceTypes = patrolStandardDeviceTypeMapper.selectList(new LambdaQueryWrapper<PatrolStandardDeviceType>().eq(PatrolStandardDeviceType::getStandardCode, a.getCode()).select(PatrolStandardDeviceType::getDeviceTypeCode));
+            if (CollUtil.isNotEmpty(patrolStandardDeviceTypes)) {
+                Set<String> deviceTypeCodes = patrolStandardDeviceTypes.stream().map(PatrolStandardDeviceType::getDeviceTypeCode).collect(Collectors.toSet());
+                a.setDeviceTypeCodeList(new ArrayList<>(deviceTypeCodes));
+                List<DeviceType> typeList = sysBaseApi.selectDeviceTypeByCodes(deviceTypeCodes);
+                String deviceTypeNames = typeList.stream().map(DeviceType::getName).collect(Collectors.joining(";"));
+                a.setDeviceTypeName(deviceTypeNames);
+            }
+
             String username = baseMapper.selectUserName(a.getCreateBy());
             a.setCreateByName(null == username ? a.getCreateBy() : username);
             a.setNumber(baseMapper.number(a.getCode()));

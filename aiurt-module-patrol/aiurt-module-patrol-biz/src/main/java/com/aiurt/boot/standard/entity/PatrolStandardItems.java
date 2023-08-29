@@ -115,6 +115,10 @@ public class PatrolStandardItems implements Serializable {
     @Excel(name = "程序及方法", width = 15)
     @ApiModelProperty(value = "程序及方法")
     private String procMethods;
+    /**设备类型code*/
+    @Excel(name = "设备类型code", width = 15)
+    @ApiModelProperty(value = "设备类型code")
+    private String deviceTypeCode;
 	/**删除状态： 0未删除 1已删除*/
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")
     private java.lang.Integer delFlag;

@@ -40,7 +40,7 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @param patrolTaskDeviceParam
      * @return
      */
-    IPage<PatrolTaskDeviceParam> selectBillInfoForDevice(@Param("page") Page<PatrolTaskDeviceParam> page, @Param("taskDevice") PatrolTaskDeviceParam patrolTaskDeviceParam);
+    IPage<PatrolTaskDeviceParam> selectBillInfoForDevice(@Param("page") Page<PatrolTaskDeviceParam> page, @Param("taskDevice") PatrolTaskDeviceParam patrolTaskDeviceParam,@Param("multipleDeviceTypes") String multipleDeviceTypes);
 
     /**
      * PC巡检任务池详情-巡检工单详情

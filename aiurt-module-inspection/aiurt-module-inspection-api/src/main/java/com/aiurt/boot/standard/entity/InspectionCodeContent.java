@@ -189,4 +189,9 @@ public class InspectionCodeContent implements Serializable {
     @ApiModelProperty(value = "数据是否为null")
     @TableField(exist = false)
     private  Boolean  isNUll;
+
+    /**设备类型code*/
+    @Excel(name = "设备类型code", width = 15)
+    @ApiModelProperty(value = "设备类型code")
+    private String deviceTypeCode;
 }

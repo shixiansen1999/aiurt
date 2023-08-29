@@ -518,4 +518,9 @@ public interface SysParamCodeConstant {
      * 取消挂起时是否更新维修负责人
      */
     String CANCEL_HANGUP_CH_AUN = "cancel_hangup_ch_aun";
+
+    /**
+     * 	巡视、检修标准是否关联多个设备分类
+     */
+    String MULTIPLE_DEVICE_TYPES = "multiple_device_types";
 }
