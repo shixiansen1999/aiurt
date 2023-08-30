@@ -7,12 +7,15 @@ import com.aiurt.boot.manager.dto.InspectionCodeDTO;
 import com.aiurt.boot.manager.dto.OrgVO;
 import com.aiurt.boot.standard.dto.InspectionCodeExcelDTO;
 import com.aiurt.boot.standard.entity.InspectionCode;
+import com.aiurt.boot.standard.entity.InspectionCodeDeviceType;
+import com.aiurt.boot.standard.mapper.InspectionCodeDeviceTypeMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
 import com.aiurt.boot.strategy.entity.InspectionCoOrgRel;
 import com.aiurt.boot.strategy.service.IInspectionCoOrgRelService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.aspect.annotation.PermissionData;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -46,6 +49,8 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
     private IInspectionCodeService inspectionCodeService;
     @Autowired
     private IInspectionCoOrgRelService orgRelService;
+    @Autowired
+    private InspectionCodeDeviceTypeMapper inspectionCodeDeviceTypeMapper;
 
     /**
      * 分页列表查询检修标准
@@ -109,6 +114,17 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
             inspectionCoOrgRel.setInspectionCoCode(inspectionCode.getCode());
             orgRelService.save(inspectionCoOrgRel);
         }
+
+        List<String> deviceTypeCodeList = inspectionCode.getDeviceTypeCodeList();
+        if (CollUtil.isNotEmpty(deviceTypeCodeList)) {
+            for (String deviceTypeCode : deviceTypeCodeList) {
+                InspectionCodeDeviceType inspectionCodeDeviceType = new InspectionCodeDeviceType();
+                inspectionCodeDeviceType.setInspectionCode(inspectionCode.getCode());
+                inspectionCodeDeviceType.setDeviceTypeCode(deviceTypeCode);
+                inspectionCodeDeviceTypeMapper.insert(inspectionCodeDeviceType);
+            }
+        }
+
         inspectionCodeService.save(inspectionCode);
         return Result.OK("添加成功！");
     }
@@ -137,6 +153,22 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
         if (ObjectUtil.isNotEmpty(isAppointDevice) && InspectionConstant.NO_ISAPPOINT_DEVICE.equals(isAppointDevice)) {
             inspectionCode.setDeviceTypeCode(null);
         }
+        List<InspectionCodeDeviceType> patrolStandardDeviceTypes = inspectionCodeDeviceTypeMapper.selectList(new LambdaQueryWrapper<InspectionCodeDeviceType>()
+                .eq(InspectionCodeDeviceType::getInspectionCode, inspectionCode.getCode())
+                .eq(InspectionCodeDeviceType::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if(CollUtil.isNotEmpty(patrolStandardDeviceTypes)){
+            inspectionCodeDeviceTypeMapper.deleteBatchIds(patrolStandardDeviceTypes);
+        }
+        List<String> deviceTypeCodeList = inspectionCode.getDeviceTypeCodeList();
+        if (CollUtil.isNotEmpty(deviceTypeCodeList)) {
+            for (String deviceTypeCode : deviceTypeCodeList) {
+                InspectionCodeDeviceType inspectionCodeDeviceType = new InspectionCodeDeviceType();
+                inspectionCodeDeviceType.setInspectionCode(inspectionCode.getCode());
+                inspectionCodeDeviceType.setDeviceTypeCode(deviceTypeCode);
+                inspectionCodeDeviceTypeMapper.insert(inspectionCodeDeviceType);
+            }
+        }
+
         inspectionCodeService.updateById(inspectionCode);
         return Result.OK("编辑成功!");
     }

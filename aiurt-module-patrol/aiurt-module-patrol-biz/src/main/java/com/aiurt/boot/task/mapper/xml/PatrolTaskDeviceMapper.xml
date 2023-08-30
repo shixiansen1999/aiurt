@@ -65,6 +65,7 @@
         FROM patrol_task_device ptd
                      JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
                      LEFT JOIN patrol_standard ps ON pts.standard_id = ps.id
+                     LEFT JOIN patrol_standard_device_type psdt ON psdt.standard_code = ps.code
                      LEFT JOIN device ON ptd.device_code = device.`code`
                      LEFT JOIN cs_major cm ON pts.profession_code = cm.major_code
                      LEFT JOIN cs_subsystem cs ON pts.subsystem_code = cs.system_code
@@ -96,6 +97,9 @@
         <if test="taskDevice.startTimeBegin != null and taskDevice.startTimeEnd != null">
             and DATE_FORMAT(ptd.start_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{taskDevice.startTimeBegin}, '%Y-%m-%d')
             and DATE_FORMAT(ptd.start_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{taskDevice.startTimeEnd}, '%Y-%m-%d')
+        </if>
+        <if test="multipleDeviceTypes eq '1'.toString() ">
+            and psdt.device_type_code = #{taskDevice.deviceTypeCode}
         </if>
     </select>
     <select id="selectBillInfoByNumber" resultType="com.aiurt.boot.task.param.PatrolTaskDeviceParam">

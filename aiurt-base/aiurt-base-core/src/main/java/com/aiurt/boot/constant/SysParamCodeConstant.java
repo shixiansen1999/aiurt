@@ -516,4 +516,9 @@ public interface SysParamCodeConstant {
      * 培训编码-是否根据线路生成编码
      */
     String TRAIN_TASK_CODE="train_task_code";
+
+    /**
+     * 	巡视、检修标准是否关联多个设备分类
+     */
+    String MULTIPLE_DEVICE_TYPES = "multiple_device_types";
 }
