@@ -70,4 +70,9 @@ public interface DailyFaultApi {
      * @return
      */
     Map<String, FaultReportDTO> getFaultUserReport(List<String> teamId,String startTime,String endTime,String userId,List<String> userIds);
+    /**
+     * 获取当前用户未完成的故障维修单
+     * @return
+     */
+    HashMap<String, String> getUnFinishFaultTask();
 }

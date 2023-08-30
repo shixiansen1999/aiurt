@@ -105,6 +105,9 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
                     e.setOther("有");
                 }
             }}
+
+            List<BdQuestionOptions> lists = bdQuestionMapper.lists(e.getId());
+            e.setExamAllQuestionOptionList(lists);
         });
         GlobalThreadLocal.setDataFilter(b);
         return pageList.setRecords(questionList);
