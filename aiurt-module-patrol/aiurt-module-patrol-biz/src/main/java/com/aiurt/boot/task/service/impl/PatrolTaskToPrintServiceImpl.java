@@ -161,6 +161,12 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
             w.getWorksheets().get(0).autoFitRows();
             pdfSaveOptions.setOnePagePerSheet(true);
             pdfSaveOptions.setAllColumnsInOnePagePerSheet(true);
+            // 获取最后一行的高度
+            int lastRowIndex = w.getWorksheets().get(0).getCells().getMaxDataRow();
+            // 设置最后一行的高度，您可以根据需要调整高度值
+            double newHeight = 80;
+            w.getWorksheets().get(0).getCells().setRowHeight(lastRowIndex, newHeight);
+
             w.save(response.getOutputStream(), pdfSaveOptions);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -277,6 +283,12 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
             w.getWorksheets().get(0).autoFitRows();
             pdfSaveOptions.setOnePagePerSheet(true);
             pdfSaveOptions.setAllColumnsInOnePagePerSheet(true);
+           // 获取最后一行的高度
+            int lastRowIndex = w.getWorksheets().get(0).getCells().getMaxDataRow();
+            // 设置最后一行的高度，您可以根据需要调整高度值
+            double newHeight = 80;
+            w.getWorksheets().get(0).getCells().setRowHeight(lastRowIndex, newHeight);
+
             w.save(response.getOutputStream(), pdfSaveOptions);
         } catch (Exception e) {
             throw new RuntimeException(e);
