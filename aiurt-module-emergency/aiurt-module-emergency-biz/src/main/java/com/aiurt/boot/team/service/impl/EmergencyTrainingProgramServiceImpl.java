@@ -322,11 +322,11 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
                 for (TrainingProgramModel trainingProgramModel : trainingProgramModels) {
                     StringBuilder stringBuilder = new StringBuilder();
                     //数据重复性校验
-                    String s = data.get(trainingProgramModel.getTrainingProgramName());
+                    String s = data.get(trainingProgramModel.getTrainingProgramName()+trainingProgramModel.getTrainingPlanTime());
                     if (StrUtil.isNotEmpty(s)) {
                         stringBuilder.append("该数据存在相同数据，");
                     } else {
-                        data.put(trainingProgramModel.getTrainingProgramName(), trainingProgramModel.getTrainingTeam());
+                        data.put(trainingProgramModel.getTrainingProgramName()+trainingProgramModel.getTrainingPlanTime(), trainingProgramModel.getTrainingTeam());
                     }
                     //数据校验
                     checkTrainingProgram(stringBuilder, trainingProgramModel);
@@ -381,8 +381,8 @@ public class EmergencyTrainingProgramServiceImpl extends ServiceImpl<EmergencyTr
             TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/emergencyTrainingProgramError.xlsx");
             Map<String, Object> errorMap = new HashMap<String, Object>();
             List<Map<String, String>> mapList = new ArrayList<>();
-            Map<String, String> map = new HashMap<>();
             for (TrainingProgramModel trainingProgramModel : trainingProgramModels) {
+                Map<String, String> map = new HashMap<>();
                 map.put("trainingProgramName", trainingProgramModel.getTrainingProgramName());
                 map.put("trainingTeam", trainingProgramModel.getTrainingTeam());
                 map.put("trainingPlanTime", trainingProgramModel.getTrainingPlanTime());
