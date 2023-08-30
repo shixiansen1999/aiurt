@@ -295,7 +295,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         if (CollUtil.isNotEmpty(patrolPlanDto.getPatrolStandards())) {
             List<PatrolStandardDto> patrolStandardDto = patrolPlanDto.getPatrolStandards();
             List<Device> devices = patrolPlanDto.getDevices();
-            //通信十一期通过配置不需要去掉需要指定设备的限制
+            //通信十一期通过配置去掉需要指定设备的限制
             SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
             patrolStandardDto.forEach(p -> {
                 if (p.getDeviceType().equals(1)) {
@@ -496,7 +496,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 throw new AiurtBootException("计划暂未挑选巡检标准表，不允许启用！");
             }
 
-            //通信十一期通过配置不需要去掉需要指定设备的限制
+            //通信十一期通过配置去掉需要指定设备的限制
             SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
             // 判断标准表中如果与设备类型相关是否选定了设备
             Optional.ofNullable(patrolPlanStandard).orElseGet(Collections::emptyList).stream().forEach(l -> {

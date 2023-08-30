@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.service.*;
 import com.aiurt.boot.standard.entity.PatrolStandard;
@@ -18,6 +19,8 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -65,6 +68,8 @@ public class TaskPool implements Job {
     @Autowired
     private IPatrolCheckResultService patrolCheckResultService;
 
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -264,7 +269,10 @@ public class TaskPool implements Job {
 
             Integer deviceType = standard.getDeviceType();
 
-            if (PatrolConstant.DEVICE_INDEPENDENCE.equals(deviceType)) {
+            //通信十一期通过配置去掉需要指定设备的限制，如果与设备相关且关联多个设备类型，则和与设备无关一样的处理，通过站点生成对应的巡检单
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+
+            if (PatrolConstant.DEVICE_INDEPENDENCE.equals(deviceType) || "1".equals(paramModel.getValue())) {
                 // 与设备无关
                 // 根据计划ID获取计划
                 PatrolPlan patrolPlan = patrolPlanService.getById(l.getPlanId());
