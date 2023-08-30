@@ -194,7 +194,7 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
             }
         }
 
-        // 处理条件关系表达式,设计 <![CDATA[${var:equals(name,"李四")} && ${var:lt(money, 100)}]]
+        // 处理条件关系表达式,设计 <![CDATA[${var:equals(name,"李四") && var:lt(money, 100)}]]
         String processedExpressionWithStr = null;
         String processedExpressionWithNameStr = null;
         // 有流程条件才进行替换操作
@@ -207,7 +207,7 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
         }
 
         if (StrUtil.isNotEmpty(processedExpressionWithStr)) {
-            propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, processedExpressionWithStr);
+            propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, String.format("${%s}", processedExpressionWithStr));
         }
 
         if (ObjectUtil.isNotEmpty(flowRelationObjectNode)) {
@@ -298,7 +298,7 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
 
         for (FlowConditionDTO flowConditionDTO : dtoList) {
             String exp = generateExpression(flowConditionDTO);
-            relationMaps.addNumberRelation(flowConditionDTO.getNumber(), String.format("${var:%s(%s)}",flowConditionDTO.getCondition(), exp));
+            relationMaps.addNumberRelation(flowConditionDTO.getNumber(), String.format("var:%s(%s)",flowConditionDTO.getCondition(), exp));
 
             FlowConditionEnum flowConditionEnum = FlowConditionEnum.getByCode(flowConditionDTO.getCondition());
             String conditionName = ObjectUtil.isNotEmpty(flowConditionEnum) ? flowConditionEnum.getName() : "";

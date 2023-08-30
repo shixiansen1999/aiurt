@@ -6,6 +6,7 @@ import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalYearService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.common.entity.UpdateStateEntity;
 import com.aiurt.common.util.XlsUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -121,5 +122,12 @@ public class EmergencyRehearsalYearController extends BaseController<EmergencyRe
     public void exportTemplateXl(HttpServletResponse response) throws IOException {
         emergencyRehearsalYearService.exportTemplateXl(response);
     }
+
+    @GetMapping(value = "/updateState")
+    public Result<?> updateState(UpdateStateEntity updateStateEntity) {
+        emergencyRehearsalYearService.updateStates(updateStateEntity);
+        return Result.OK();
+    }
+
 
 }

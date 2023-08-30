@@ -25,7 +25,7 @@ public class ActCustomInterfaceServiceImpl extends ServiceImpl<ActCustomInterfac
         LambdaQueryWrapper<ActCustomInterface> lam = new LambdaQueryWrapper<>();
         lam.eq(ActCustomInterface::getName, name);
         if (StrUtil.isNotEmpty(id)) {
-            lam.eq(ActCustomInterface::getId, id);
+            lam.ne(ActCustomInterface::getId, id);
         }
         Long count = baseMapper.selectCount(lam);
         return count > 0;

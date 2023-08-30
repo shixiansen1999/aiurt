@@ -147,19 +147,28 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                     propertiesNode.put(PROPERTY_MULTIINSTANCE_COLLECTION, FlowVariableConstant.ASSIGNEE_LIST + baseElement.getId());
                     propertiesNode.put(PROPERTY_MULTIINSTANCE_VARIABLE, "assignee");
                     propertiesNode.putNull(PROPERTY_MULTIINSTANCE_VARIABLE_AGGREGATIONS);
-
+                    MultiInstanceLoopCharacteristics loopCharacteristics = userTask.getLoopCharacteristics();
                     switch (approvalRuleEnum) {
                         // 任意会签
                         case TASK_MULTI_INSTANCE_TYPE_1:
+                            if (Objects.nonNull(loopCharacteristics)) {
+                                loopCharacteristics.setSequential(false);
+                            }
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Parallel");
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_CONDITION, "${nrOfCompletedInstances >= 1}");
                             break;
                         // 并行
                         case TASK_MULTI_INSTANCE_TYPE_2:
+                            if (Objects.nonNull(loopCharacteristics)) {
+                                loopCharacteristics.setSequential(false);
+                            }
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Parallel");
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_CONDITION, "${nrOfCompletedInstances == nrOfInstances}");
                             break;
                         default:
+                            if (Objects.nonNull(loopCharacteristics)) {
+                                loopCharacteristics.setSequential(true);
+                            }
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Sequential");
                     }
                 }

@@ -81,6 +81,11 @@ public final class FlowApprovalType {
      */
     public static final String CANCEL = "cancel";
 
+    /**
+     * 删除流程
+     */
+    public static final String DELETE = "delete";
+
 
 
     public static final Map<Object, String> DICT_MAP = new HashMap<>(16);
@@ -97,6 +102,7 @@ public final class FlowApprovalType {
         DICT_MAP.put(REMOVE_USER, "减签");
         DICT_MAP.put(TRANSFER, "转办");
         DICT_MAP.put(CANCEL, "撤销");
+        DICT_MAP.put(DELETE, "删除流程");
     }
 
     /**

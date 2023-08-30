@@ -3,6 +3,7 @@ package com.aiurt.modules.listener;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
@@ -12,6 +13,7 @@ import com.aiurt.common.util.HttpContextUtils;
 import com.aiurt.config.sign.util.HttpUtils;
 import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
+import com.aiurt.modules.common.enums.MultiApprovalRuleEnum;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
@@ -47,6 +49,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author fgw
@@ -96,14 +101,15 @@ public class TaskCreateListener implements FlowableEventListener {
         ActCustomTaskExt taskExt = taskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, taskDefinitionKey);
 
         // 任务节点前附加操作
-        FlowableNodeActionUtils.processTaskData(processDefinitionId,taskDefinitionKey,processInstanceId,FlowModelExtElementConstant.EXT_PRE_NODE_ACTION);
+
+        FlowableNodeActionUtils.processTaskData(taskEntity,processDefinitionId,taskDefinitionKey,processInstanceId,FlowModelExtElementConstant.EXT_PRE_NODE_ACTION);
 
         // 判断是否为流程多实例
         List<String> list = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
                 .getVariable(processInstanceId, FlowVariableConstant.ASSIGNEE_LIST + taskDefinitionKey, List.class);
         if (CollectionUtil.isNotEmpty(list)) {
             // 发送待办
-            buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(taskEntity.getAssignee()));
+           // buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(taskEntity.getAssignee()));
             return;
         }
 
@@ -270,8 +276,18 @@ public class TaskCreateListener implements FlowableEventListener {
 
             bpmnTodoDTO.setTitle(bpmnTodoDTO.getProcessName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd"));
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
-            todoBaseApi.createBbmnTodoTask(bpmnTodoDTO);
+            ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
+            threadPoolExecutor.execute(()->{
+                todoBaseApi.createBbmnTodoTask(bpmnTodoDTO);
+            });
+            threadPoolExecutor.shutdown();
+            try {
+                // 等待线程池中的任务全部完成
+                threadPoolExecutor.awaitTermination(100, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                // 处理中断异常
 
+            }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }

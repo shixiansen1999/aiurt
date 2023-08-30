@@ -1,8 +1,22 @@
 package com.aiurt.modules.complete.service.impl;
+import java.util.Date;
+
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
+import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.common.collect.Maps;
 import java.util.*;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.common.api.dto.message.MessageDTO;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.common.enums.MultiApprovalRuleEnum;
 import com.aiurt.modules.complete.dto.CompleteTaskContext;
 import com.aiurt.modules.complete.dto.FlowCompleteReqDTO;
@@ -26,6 +40,10 @@ import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
+import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -66,6 +84,9 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
 
     @Autowired
     private DefaultSelectUser defaultSelectUser;
+
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
 
     /**
      * 始前处理
@@ -141,7 +162,6 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
             flowCompleteReqDTO.setNextNodeUserParam(nodeUserDTOList);
         }
 
-        // 判断是否找到存在的九二点
     }
 
     /**
@@ -196,7 +216,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(nodeId).list();
 
             taskList.stream().forEach(task -> {
-                task.setDescription("");
+                task.setDescription("ANY_NODE");
                 taskService.complete(task.getId());
             });
         }
@@ -212,12 +232,14 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
      */
     @Override
     public void afterDeal(CompleteTaskContext taskContext) {
+        ProcessInstance processInstance = taskContext.getProcessInstance();
         Task currentTask = taskContext.getCurrentTask();
         String nodeId = currentTask.getTaskDefinitionKey();
         String definitionId = currentTask.getProcessDefinitionId();
-        List<String> userList = customUserService.getUserByTaskInfo(definitionId, nodeId, "0");
+        List<String> userList = customUserService.getUserByTaskInfo(definitionId, nodeId, "1");
 
         String processInstanceId = currentTask.getProcessInstanceId();
+        String assignee = currentTask.getAssignee();
         String taskId = currentTask.getId();
 
         List<ActCustomProcessCopy> copyList = userList.stream().map(userName -> {
@@ -231,7 +253,62 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         if (CollUtil.isNotEmpty(copyList)) {
             processCopyService.saveBatch(copyList);
         }
+        if (CollUtil.isNotEmpty(userList)) {
+            String startUserId = processInstance.getStartUserId();
+            LoginUser loginUser = sysBaseAPI.getUserByName(startUserId);
+            String format = DateUtil.format(processInstance.getStartTime(), "yyyy-MM-dd");
+            // 发送消息
+            HashMap<String, Object> map = new HashMap<>(16);
+            map.put("creatBy", loginUser.getRealname());
+            map.put("creatTime",format);
 
-        // 发送消息
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, processInstance.getBusinessKey());
+
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.BPM.getType());
+
+            MessageDTO messageDTO = new MessageDTO();
+            messageDTO.setIsMarkdown(true);
+            messageDTO.setFromUser(assignee);
+            messageDTO.setToUser(StrUtil.join(",", userList));
+            messageDTO.setToAll(false);
+            messageDTO.setTitle("有流程传送给您");
+            messageDTO.setContent("");
+            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_2);
+            messageDTO.setStartTime(new Date());
+            messageDTO.setMsgAbstract("有新的流程抄送消息");
+            messageDTO.setPublishingContent("有新的流程抄送消息，请查看");
+            messageDTO.setBusKey(processInstance.getBusinessKey());
+            messageDTO.setBusType(SysAnnmentTypeEnum.BPM.getType());
+            messageDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE_PROCESS);
+            messageDTO.setIsRingBell(false);
+            messageDTO.setRingDuration(0);
+            messageDTO.setRingType(0);
+            messageDTO.setType("");
+            messageDTO.setData(map);
+            messageDTO.setTaskId(currentTask.getId());
+
+            messageDTO.setProcessInstanceId(currentTask.getProcessInstanceId());
+
+            List<String> processDefinitionIdList = StrUtil.split(processInstance.getProcessDefinitionId(), ':');
+            if (CollectionUtil.isNotEmpty(processDefinitionIdList) && processDefinitionIdList.size()>0) {
+                // 流程标识
+                String modkelKey = processDefinitionIdList.get(0);
+                LambdaQueryWrapper<ActCustomModelInfo> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(ActCustomModelInfo::getModelKey, modkelKey).last("limit 1");
+                IActCustomModelInfoService bean = SpringContextUtils.getBean(IActCustomModelInfoService.class);
+                ActCustomModelInfo one = bean.getOne(wrapper);
+                if (Objects.nonNull(one)) {
+                    String name = StrUtil.contains(one.getName(), "流程") ? one.getName() : one.getName()+"流程";
+                    messageDTO.setProcessCode(one.getModelKey());
+                    messageDTO.setProcessDefinitionKey(one.getModelKey());
+                    messageDTO.setProcessName(name);
+                }
+            }
+            messageDTO.setType("XT");
+            messageDTO.setData(map);
+            sysBaseAPI.sendTemplateMessage(messageDTO);
+        }
+
+
     }
 }
