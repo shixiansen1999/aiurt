@@ -267,6 +267,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
 
         // 设置办理人
+        taskService.claim(task.getId(), loginName);
         taskService.setAssignee(task.getId(), loginName);
 
         // 保存数据
@@ -315,7 +316,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 获取任务
         Task task = this.getProcessInstanceActiveTask(processInstanceId, taskId);
         if (task == null) {
-            throw new AiurtBootException("数据验证失败，请核对指定的任务Id，请刷新后重试！");
+            throw new AiurtBootException("该任务已被办理！");
         }
 
         // 设置签收
