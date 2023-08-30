@@ -19,6 +19,6 @@
                 and f.status = #{faultExternal.status}
             </if>
         </where>
-        ORDER BY f.create_time DESC
+        ORDER BY f.status ASC ,f.create_time DESC
     </select>
 </mapper>
