@@ -1,4 +1,5 @@
 package com.aiurt.modules.flow.service.impl;
+import java.util.Date;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -266,6 +267,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
 
         // 设置办理人
+        taskService.claim(task.getId(), loginName);
         taskService.setAssignee(task.getId(), loginName);
 
         // 保存数据
@@ -314,7 +316,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 获取任务
         Task task = this.getProcessInstanceActiveTask(processInstanceId, taskId);
         if (task == null) {
-            throw new AiurtBootException("数据验证失败，请核对指定的任务Id，请刷新后重试！");
+            throw new AiurtBootException("该任务已被办理！");
         }
 
         // 设置签收
@@ -1278,7 +1280,8 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (CollectionUtil.isNotEmpty(processInstanceIdSet)) {
             query.processInstanceIds(processInstanceIdSet);
         }
-
+        // 只查询
+        query.notDeleted();
 
         query.orderByProcessInstanceStartTime().desc();
 
@@ -1420,7 +1423,26 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteProcessInstance(String processInstanceId,String delReason) {
-        runtimeService.deleteProcessInstance(processInstanceId,delReason);
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery()
+                .processInstanceId(processInstanceId).singleResult();
+        if (Objects.isNull(historicProcessInstance)) {
+            throw new AiurtBootException(AiurtErrorEnum.PROCESS_INSTANCE_IS_DELETE.getCode(),
+                    AiurtErrorEnum.PROCESS_INSTANCE_IS_DELETE.getMessage());
+        }
+
+        historyService.deleteHistoricProcessInstance(processInstanceId);
+
+        //todo 工单删除
+
+        // 操作日志
+        ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment();
+        actCustomTaskComment.setProcessInstanceId(historicProcessInstance.getId());
+        actCustomTaskComment.setComment(delReason);
+        actCustomTaskComment.setApprovalType(FlowApprovalType.DELETE);
+        actCustomTaskComment.setCreateRealname(loginUser.getUsername());
+        customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
     }
 
     /**
@@ -1776,9 +1798,10 @@ public class FlowApiServiceImpl implements FlowApiService {
             UserTask userTask = flowElementUtil.getFirstUserTaskByDefinitionId(processDefinitionId);
             firstTaskKey = userTask.getId();
         }
+        String finalFirstTaskKey = firstTaskKey;
         // 已完成的，
         List<HistoricTaskInstance> finishList = instanceList.stream().filter(taskInstance -> Objects.nonNull(taskInstance.getEndTime()))
-                .filter(taskInstance -> Objects.nonNull(taskInstance.getClaimTime())).collect(Collectors.toList());
+                .filter(taskInstance -> StrUtil.equalsIgnoreCase(finalFirstTaskKey, taskInstance.getTaskDefinitionKey()) || Objects.nonNull(taskInstance.getClaimTime())).collect(Collectors.toList());
 
         // 未完成的
         List<HistoricTaskInstance> unFinishList = instanceList.stream().filter(taskInstance -> Objects.isNull(taskInstance.getEndTime())).collect(Collectors.toList());
@@ -1790,8 +1813,6 @@ public class FlowApiServiceImpl implements FlowApiService {
         Map<String, LoginUser> userMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, t -> t, (t1, t2) -> t1));
 
         Map<String, List<HistoricTaskInstance>> unFinishMap = unFinishList.stream().collect(Collectors.groupingBy(HistoricTaskInstance::getTaskDefinitionKey));
-        String finalFirstTaskKey = firstTaskKey;
-
 
         unFinishMap.forEach((key,list)->{
             List<HistoricTaskInstance> taskInstanceList = unFinishMap.get(key);
@@ -1812,6 +1833,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
             historicTaskInfoList.add(historicTaskInfo);
         });
+
         finishList.stream().forEach(entity -> {
             HistoricTaskInfo historicTaskInfo = bulidHistorcTaskInfo(entity);
 

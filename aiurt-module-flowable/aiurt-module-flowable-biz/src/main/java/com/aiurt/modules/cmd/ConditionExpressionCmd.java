@@ -1,5 +1,6 @@
 package com.aiurt.modules.cmd;
 
+import cn.hutool.core.util.StrUtil;
 import org.flowable.common.engine.api.delegate.Expression;
 import org.flowable.common.engine.impl.interceptor.Command;
 import org.flowable.common.engine.impl.interceptor.CommandContext;
@@ -25,10 +26,25 @@ public class ConditionExpressionCmd implements Command<Boolean> {
         this.variables = variables;
     }
 
+    public static void main(String[] args) {
+        String condition = StrUtil.replace(StrUtil.replace("${var:eq(ROLE_INITIATOR,\"foreman\")} && ${var:eq(ORG_INITIATOR,\"1602946694465556482\")}", "${", ""), "}", "");
+        System.out.println();
+    }
+
 
     @Override
     public Boolean execute(CommandContext commandContext) {
-        Expression expression = CommandContextUtil.getProcessEngineConfiguration().getExpressionManager().createExpression(conditionExpression);
+        // ${var:eq(ROLE_INITIATOR,"foreman")} && ${var:eq(ORG_INITIATOR,"1602946694465556482")} 有问题的不能 有一个${}
+        if (StrUtil.isBlank(conditionExpression)) {
+            return false;
+        }
+        String condition = StrUtil.replace(StrUtil.replace(conditionExpression, "${", ""), "}", "");
+        if (StrUtil.isBlank(condition)) {
+            return false;
+        }
+
+        condition = String.format("${%s}", condition);
+        Expression expression = CommandContextUtil.getProcessEngineConfiguration().getExpressionManager().createExpression(condition);
 
         execution.setTransientVariables(variables);
         Object result = expression.getValue(execution);
