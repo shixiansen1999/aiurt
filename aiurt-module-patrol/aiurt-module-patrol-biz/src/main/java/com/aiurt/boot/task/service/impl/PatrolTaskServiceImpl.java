@@ -1496,7 +1496,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //保存巡检任务标准表的信息
         String taskId = patrolTask.getId();
         List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();
-        //通信十一期通过配置不需要去掉需要指定设备的限制
+        //通信十一期通过配置去掉需要指定设备的限制
         SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
         patrolStandardList.stream().forEach(ns -> {
             PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
@@ -1930,7 +1930,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //保存巡检任务标准表的信息
         String taskId = patrolTaskManualDTO.getId();
         List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();
-        //通信十一期通过配置不需要去掉需要指定设备的限制
+        //通信十一期通过配置去掉需要指定设备的限制
         SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
         patrolStandardList.stream().forEach(ns -> {
             PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
