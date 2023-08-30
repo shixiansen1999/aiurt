@@ -17,6 +17,7 @@ import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.boot.task.service.IPatrolTaskUserService;
 import com.aiurt.boot.task.service.impl.PatrolTaskPrintServiceImpl;
+import com.aiurt.boot.task.service.impl.PatrolTaskToPrintServiceImpl;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
@@ -76,6 +77,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     private ISysParamAPI sysParamApi;
     @Autowired
     private PatrolTaskPrintServiceImpl patrolTaskPrintService;
+    @Autowired
+    private PatrolTaskToPrintServiceImpl patrolTaskToPrintService;
     /**
      * PC巡检任务列表-巡视任务池
      *
@@ -823,6 +826,17 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         PrintForBasicDTO printPatrolTask = patrolTaskPrintService.printForBasic(id,standardId);
         return printPatrolTask;
     }
+
+    @AutoLog(value = "巡检任务表-打印巡视详情")
+    @ApiOperation(value = "巡检任务表-打印巡视详情", notes = "巡检任务表-打印巡视详情")
+    @GetMapping(value = "/printPatrolTaskToPdf")
+    public Result<?> printPatrolTaskToPdf(@RequestParam(name="ids",required=true) String ids,
+                                     @RequestParam(name="standardId",required=true) String standardId,
+                                     HttpServletRequest req, HttpServletResponse response) {
+        patrolTaskToPrintService.printPatrolTaskToPdf(ids,standardId,response);
+        return Result.OK("成功");
+    }
+
     /**
      *获取mac地址
      *
