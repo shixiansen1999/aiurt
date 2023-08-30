@@ -126,6 +126,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Transactional(rollbackFor = Exception.class)
     public Result<?> add(WorkLogDTO dto, HttpServletRequest req) {
         WorkLog depot = new WorkLog();
+        BeanUtil.copyProperties(dto, depot);
+
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String userId = loginUser.getId();
         String logCode = generateLogCode();
@@ -133,43 +135,21 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setOrgId(loginUser.getOrgId());
         depot.setSubmitId(userId);
         depot.setCreateBy(userId);
-        depot.setUnfinishedMatters(dto.getUnfinishedMatters());
-        depot.setFaultContent(dto.getFaultContent());
 
-        //根据当前登录人id获取巡视待办消息
-        depot.setPatrolContent(dto.getPatrolContent());
-        //根据用户id和所在周的时间获取检修池内容
-
-        dto.setRepairContent(dto.getRepairContent());
-        depot.setRepairContent(dto.getRepairContent());
-        depot.setStatus(dto.getStatus());
         depot.setConfirmStatus(0);
         depot.setCheckStatus(0);
         if (depot.getStatus()==1){
             depot.setSubmitTime(new Date());
         }
-        depot.setWorkContent(dto.getWorkContent());
-        depot.setContent(dto.getContent());
 
         //工作内容赋值
-        depot.setIsDisinfect(dto.getIsDisinfect());
-        depot.setIsClean(dto.getIsClean());
-        depot.setIsAbnormal(dto.getIsAbnormal());
-        depot.setIsEmergencyDisposal(dto.getIsEmergencyDisposal());
-        depot.setIsDocumentPublicity(dto.getIsDocumentPublicity());
         if (dto.getIsEmergencyDisposal().equals(WorkLogConstans.IS)) {
             depot.setEmergencyDisposalContent(dto.getEmergencyDisposalContent());
         }
         if (dto.getIsDocumentPublicity().equals(WorkLogConstans.IS)) {
             depot.setDocumentPublicityContent(dto.getDocumentPublicityContent());
         }
-        depot.setOtherWorkContent(dto.getOtherWorkContent());
-        depot.setNote(dto.getNote());
-        depot.setSchedule(dto.getSchedule());
-        depot.setHandoverId(dto.getHandoverId());
 
-        depot.setSucceedId(dto.getSucceedId());
-        depot.setApproverId(dto.getApproverId());
         if (StringUtils.isNotBlank(dto.getApproverId())) {
             depot.setApprovalTime(new Date());
         }else {
@@ -177,15 +157,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
         depot.setLogTime(dto.getLogTime());
         depot.setDelFlag(0);
-        depot.setConstructTime(dto.getConstructTime());
-        depot.setAssortTime(dto.getAssortTime());
-        depot.setAssortLocation(dto.getAssortLocation());
-        depot.setAssortUnit(dto.getAssortUnit());
-        depot.setAssortIds(dto.getAssortIds());
-        depot.setAssortNum(dto.getAssortNum());
-        depot.setAssortContent(dto.getAssortContent());
-        depot.setPatrolRepairContent(dto.getPatrolRepairContent());
-        depot.setStationCode(dto.getStationCode());
+
         depotMapper.insert(depot);
         dto.setId(depot.getId());
         //插入附件列表
@@ -973,9 +945,14 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setFaultContent(dto.getFaultContent());
         workLog.setPatrolRepairContent(dto.getPatrolRepairContent());
         workLog.setAssortContent(dto.getAssortContent());
+        workLog.setFaultCode(dto.getFaultCode());
         workLog.setFaultContent(dto.getFaultContent());
+        workLog.setRepairCode(dto.getRepairCode());
         workLog.setRepairContent(dto.getRepairContent());
+        workLog.setPatrolIds(dto.getPatrolIds());
         workLog.setPatrolContent(dto.getPatrolContent());
+        workLog.setUnfinishCode(dto.getUnfinishCode());
+        workLog.setUnfinishContent(dto.getUnfinishContent());
         workLog.setSchedule(dto.getSchedule());
         if (dto.getStatus() != null) {
             workLog.setStatus(1);
@@ -1211,6 +1188,18 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         HashMap<String, String> inspectionTaskDevice = inspectionApi.getInspectionTaskDevice(startTime, endTime);
         //获取故障内容
         HashMap<String, String> faultTask = dailyFaultApi.getFaultTask(startTime, endTime);
+        //获取未完成工作内，包括未完成故障内容，未完成巡视内容
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_LOG_UNFINISH_WORK);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            HashMap<String, String> unFinishFaultTask = dailyFaultApi.getUnFinishFaultTask();
+            HashMap<String, String> unFinishPatrolTask = patrolApi.getUnFinishPatrolTask();
+            String content = (unFinishFaultTask.get("content") != null ? unFinishFaultTask.get("content") : "") + (unFinishPatrolTask.get("content") != null ? unFinishPatrolTask.get("content") : "");
+            String code = (unFinishFaultTask.get("code") != null ? unFinishFaultTask.get("code") : "") + (unFinishPatrolTask.get("code") != null ? unFinishPatrolTask.get("code") : "");
+            map.put("unfinishContent", content);
+            map.put("unfinishCode", code);
+        }
+
         map.put("patrolContent", userTask.get("content"));
         map.put("repairContent", inspectionTaskDevice.get("content"));
         map.put("faultContent", faultTask.get("content"));

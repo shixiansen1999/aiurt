@@ -60,6 +60,11 @@ public class WorkLogDetailResult {
     @ApiModelProperty(value = "故障报修")
     private  String  faultContent;
 
+    /**未完成任务内容*/
+    @Excel(name = "未完成任务内容", width = 15)
+    @ApiModelProperty(value = "未完成任务内容")
+    private  String  unfinishContent;
+
     /**交接班内容*/
     @Excel(name = "交接班内容", width = 35)
     @ApiModelProperty(value = "交接班内容")
