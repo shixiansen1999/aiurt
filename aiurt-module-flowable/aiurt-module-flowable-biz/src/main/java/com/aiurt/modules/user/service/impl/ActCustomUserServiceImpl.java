@@ -16,10 +16,7 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -91,6 +88,9 @@ public class ActCustomUserServiceImpl extends ServiceImpl<ActCustomUserMapper, A
                 .eq(ActCustomUser::getType, type)
                 .eq(ActCustomUser::getDelFlag, CommonConstant.DEL_FLAG_0);
         ActCustomUser customUser = baseMapper.selectOne(queryWrapper);
+        if (Objects.isNull(customUser)) {
+            return Collections.emptyList();
+        }
 
         String userName = customUser.getUserName();
         String post = customUser.getPost();
