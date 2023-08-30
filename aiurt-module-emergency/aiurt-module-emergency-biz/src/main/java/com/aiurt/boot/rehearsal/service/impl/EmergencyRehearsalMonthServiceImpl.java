@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalMonthDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyImplementationRecord;
@@ -20,8 +21,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +48,8 @@ public class EmergencyRehearsalMonthServiceImpl extends ServiceImpl<EmergencyReh
     private EmergencyImplementationRecordMapper emergencyImplementationRecordMapper;
     @Autowired
     private ISysBaseAPI sysBaseApi;
-
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
     @Override
     public String addMonthPlan(EmergencyRehearsalMonth emergencyRehearsalMonth) {
         Assert.notNull(emergencyRehearsalMonth.getPlanId(), "年计划ID不能为空！");
@@ -102,11 +106,17 @@ public class EmergencyRehearsalMonthServiceImpl extends ServiceImpl<EmergencyReh
             emergencyRehearsalMonthDTO.setOrgCodes(orgCodes);
         }
         IPage<EmergencyRehearsalMonthVO> pageList = emergencyRehearsalMonthMapper.queryPageList(page, emergencyRehearsalMonthDTO);
+
+        //信号新增不需要排除写过记录的月计划配置
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.EXCLUDE_USED_MONTH);
+        boolean value = "1".equals(paramModel.getValue());
         pageList.getRecords().forEach(monthPlan -> {
-            boolean exists = emergencyImplementationRecordMapper.exists(new LambdaQueryWrapper<EmergencyImplementationRecord>()
-                    .eq(EmergencyImplementationRecord::getPlanId, monthPlan.getId())
-                    .eq(EmergencyImplementationRecord::getDelFlag, CommonConstant.DEL_FLAG_0));
-            monthPlan.setDelete(!exists);
+            if (!value) {
+                boolean exists = emergencyImplementationRecordMapper.exists(new LambdaQueryWrapper<EmergencyImplementationRecord>()
+                        .eq(EmergencyImplementationRecord::getPlanId, monthPlan.getId())
+                        .eq(EmergencyImplementationRecord::getDelFlag, CommonConstant.DEL_FLAG_0));
+                monthPlan.setDelete(!exists);
+            }
         });
         return pageList;
     }

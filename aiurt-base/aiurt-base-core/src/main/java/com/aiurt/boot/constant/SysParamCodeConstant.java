@@ -525,4 +525,16 @@ public interface SysParamCodeConstant {
      * 巡视工时是否使用mac计算，如果不使用就是各工单时长之和
      */
     String PATROL_DURATION_USE_MAC = "patrol_duration_use_mac";
+    /**
+     * 检修任务领取是否放开时间限制
+     */
+    String INSPECTION_RECEIVE_ANYTIME="inspection_receive_anytime";
+    /**
+     * 调度故障是否只需要1,2号线故障
+     */
+    String FAULT_EXTERNAL_XH12="fault_external_xh12";
+    /**
+     * 应急演练实施记录是否排除使用过的月度演练计划
+     */
+    String EXCLUDE_USED_MONTH="exclude_used_month";
 }

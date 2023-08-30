@@ -16,4 +16,6 @@ import java.util.List;
 public interface FaultExternalMapper extends BaseMapper<FaultExternal> {
 
     List<FaultExternal> selectFaultExternalPage(@Param("page") Page<FaultExternal> page, @Param("faultExternal")FaultExternal faultExternal);
+
+    Integer getLineCode(Integer iline);
 }
