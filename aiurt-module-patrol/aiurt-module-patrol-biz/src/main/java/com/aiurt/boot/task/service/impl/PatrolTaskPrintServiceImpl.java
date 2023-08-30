@@ -332,10 +332,10 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
        }else if ("pis_system.xlsx".equals(excelName) || "pis_system1.xlsx".equals(excelName)){
            patrolData = getRemark(taskId,headerMap,excelName,standardId);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
-       } else if("cctv_system.xlsx".equals(excelName)){
+       } else if ("cctv_system.xlsx".equals(excelName)){
            patrolData = getCctvSystem(taskId,headerMap,standardId);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
-       }else if("network_manage.xlsx".equals(excelName)){
+       }else if ("network_manage.xlsx".equals(excelName)){
            patrolData = printPatrolTaskByNetworkManage(taskId,standardId,headerMap);
            excelWriter.fill(new FillWrapper("list",patrolData),writeSheet);
        } else if ("equipmentInspection.xlsx".equals(excelName)) {
