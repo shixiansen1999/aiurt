@@ -114,6 +114,9 @@ public class FlowableNodeActionUtils {
         }
 
         JSONObject node = getNodeActionConfig(nodeAction, actCustomTaskExt);
+        if (Objects.isNull(node)) {
+            return;
+        }
 
         String stateValue = node.getString(FlowModelExtElementConstant.STATE_UPDATE);
         String customInterfaceAddress = node.getString(FlowModelExtElementConstant.CUSTOM_INTERFACE);
