@@ -6,7 +6,6 @@ import com.aiurt.modules.user.dto.SelectUserContext;
 import com.aiurt.modules.user.entity.ActCustomUser;
 import com.aiurt.modules.user.enums.VariableUserTypeEnum;
 import com.aiurt.modules.user.pipeline.AbstractUserFilter;
-import com.aiurt.modules.user.pipeline.context.UserContext;
 import com.aiurt.modules.user.service.IFlowUserService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -20,7 +19,7 @@ import java.util.stream.Collectors;
 /**
  * @author fgw
  */
-@Component
+@Service
 public class CustomVariableUserFilter extends AbstractUserFilter<SelectUserContext> {
 
     @Autowired

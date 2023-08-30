@@ -1,6 +1,7 @@
 package com.aiurt.modules.flow.utils;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
@@ -582,7 +583,7 @@ public class FlowElementUtil {
         // 非系统变量
         List<ActCustomVariable> list = variableService.list(new LambdaQueryWrapper<ActCustomVariable>().eq(ActCustomVariable::getModelId, one.getModelId())
                 .eq(ActCustomVariable::getVariableType, 1).eq(ActCustomVariable::getType, 0));
-        if (Objects.nonNull(busData) && CollUtil.isNotEmpty(list)) {
+        if (Objects.nonNull(busData) && MapUtil.isNotEmpty(busData) && CollUtil.isNotEmpty(list)) {
             Object approvalType = busData.get("__APPROVAL_TYPE");
             if (Objects.nonNull(approvalType)) {
                 variableData.put("operationType", approvalType);
