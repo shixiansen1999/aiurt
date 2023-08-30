@@ -59,7 +59,6 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
-import liquibase.pro.packaged.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -2377,9 +2376,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 throw new AiurtBootException("该检修任务不在您的领取范围之内哦");
             }
         }
-
+        //信号三期根据配置不需要在指定时间内才能领取
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.INSPECTION_RECEIVE_ANYTIME);
+        boolean value = "1".equals(paramModel.getValue());
         // 现在的时间大于任务的开始时间才可以进行领取
-        if (repairPool.getStartTime() != null && DateUtil.compare(new Date(), repairPool.getStartTime()) < 0) {
+        if (repairPool.getStartTime() != null && DateUtil.compare(new Date(), repairPool.getStartTime()) < 0 && !value) {
             throw new AiurtBootException("未到检修任务开始时间，暂时无法领取");
         }
     }
