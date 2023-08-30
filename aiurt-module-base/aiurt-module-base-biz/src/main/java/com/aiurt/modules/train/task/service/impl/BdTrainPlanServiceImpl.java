@@ -239,7 +239,7 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
             String classify = reportVO.getClassify();
             String classifyType = null;
             if(classify != null){
-                classifyType = sysBaseAPI.translateDict("patrol_plan_period", Convert.toStr(classify));
+                classifyType = sysBaseAPI.translateDict("classify_state", Convert.toStr(classify));
             }
             reportVO.setClassify(classifyType);
             //培训出勤率
