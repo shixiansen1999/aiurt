@@ -94,9 +94,9 @@ public class EmergencyRehearsalMonthServiceImpl extends ServiceImpl<EmergencyReh
         if (ObjectUtil.isEmpty(emergencyRehearsalMonthDTO) || StrUtil.isEmpty(emergencyRehearsalMonthDTO.getPlanId())) {
             throw new AiurtBootException("年演练计划ID不能为空！");
         }
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         // 允许挑选用户组织机构权限下的月计划
         if (ObjectUtil.isNotEmpty(emergencyRehearsalMonthDTO.getRecordInterface()) && emergencyRehearsalMonthDTO.getRecordInterface()) {
-            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
             List<CsUserDepartModel> depts = sysBaseApi.getDepartByUserId(loginUser.getId());
             List<String> orgCodes = depts.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
@@ -112,7 +112,7 @@ public class EmergencyRehearsalMonthServiceImpl extends ServiceImpl<EmergencyReh
         if (ObjectUtil.isNotNull(emergencyRehearsalMonthDTO.getRecordInterface())) {
             emergencyRehearsalMonthDTO.setRecordInterface(value);
         }
-
+        emergencyRehearsalMonthDTO.setUserOrgCode(loginUser.getOrgCode());
         IPage<EmergencyRehearsalMonthVO> pageList = emergencyRehearsalMonthMapper.queryPageList(page, emergencyRehearsalMonthDTO);
         pageList.getRecords().forEach(monthPlan -> {
                 boolean exists = emergencyImplementationRecordMapper.exists(new LambdaQueryWrapper<EmergencyImplementationRecord>()
