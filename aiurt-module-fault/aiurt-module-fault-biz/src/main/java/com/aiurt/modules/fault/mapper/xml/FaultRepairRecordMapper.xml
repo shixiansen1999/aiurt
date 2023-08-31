@@ -126,8 +126,8 @@
         LEFT JOIN fault_repair_record frr on f.code = frr.fault_code and frr.del_flag = 0
         <where>
             f.status = 12
-            AND  DATE_FORMAT(f.end_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d')
-            AND  DATE_FORMAT(f.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
+            AND  DATE_FORMAT(f.end_time ,'%Y-%m-%d %H:%i:%S') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d %H:%i:%S')
+            AND  DATE_FORMAT(f.end_time ,'%Y-%m-%d %H:%i:%S') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d %H:%i:%S')
             <if test="userNames != null and userNames.size() != 0">
                 and frr.appoint_user_name  in
                 <foreach collection="userNames" item="item" open="(" separator="," close=")">
@@ -148,8 +148,8 @@
                 LEFT JOIN fault_repair_record frr on f.code = frr.fault_code and frr.del_flag = 0
                 <where>
                     f.status = 12
-                    AND  DATE_FORMAT(f.end_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d')
-                    AND  DATE_FORMAT(f.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
+                    AND  DATE_FORMAT(f.end_time ,'%Y-%m-%d %H:%i:%S') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d %H:%i:%S')
+                    AND  DATE_FORMAT(f.end_time ,'%Y-%m-%d %H:%i:%S') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d %H:%i:%S')
                     <if test="userNames != null and userNames.size() != 0">
                         and frr.appoint_user_name  in
                         <foreach collection="userNames" item="item" open="(" separator="," close=")">
