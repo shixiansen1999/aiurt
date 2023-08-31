@@ -6,14 +6,12 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.converter.CustomDateConverter;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.http.HttpEntity;
@@ -78,7 +76,9 @@ public class ReflectionService {
                 return this.invokeService(className.get(0), className.get(1), paramMap);
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);
-                throw new AiurtBootException("调用本地服务异常!");
+                Throwable cause = e.getCause();
+                String message = Objects.nonNull(cause) ? cause.getMessage() : "调用本地服务异常";
+                throw new AiurtBootException(message);
             }
         }
     }
