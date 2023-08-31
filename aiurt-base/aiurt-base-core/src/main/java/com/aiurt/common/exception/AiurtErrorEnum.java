@@ -25,7 +25,7 @@ public enum AiurtErrorEnum {
     MULTI_INSTANCE_USER_NULL(61005, "执行多实例任务时，选择的人员不能为空！"),
     PROCESS_INSTANCE_NOT_FOUND(61006, "流程实例不存在！"),
     PROCESS_INSTANCE_IS_DELETE(61007, "该流程实例已者不存在或被删除"),
-    NEXT_NODE_NOT_FOUND(61008, "当前配置异常(%s)，请联系管理员处理"),
+    NEXT_NODE_NOT_FOUND(61008, "当前配置异常(%s)，请联系管理员处理！"),
     /**
      * 7 开头
      */
