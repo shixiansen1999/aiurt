@@ -215,8 +215,8 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         // 校验
         if (completeTask) {
             if (CollectionUtil.isEmpty(targetFlowElement)) {
-                throw new AiurtBootException(AiurtErrorEnum.FLOW_DEFINITION_NOT_FOUND.getCode(),
-                        String.format(AiurtErrorEnum.FLOW_DEFINITION_NOT_FOUND.getMessage(), "无法找到下一步办理节点"));
+                throw new AiurtBootException(AiurtErrorEnum.NEXT_NODE_NOT_FOUND.getCode(),
+                        String.format(AiurtErrorEnum.NEXT_NODE_NOT_FOUND.getMessage(), "无法找到下一步办理节点"));
             }
         }
 
