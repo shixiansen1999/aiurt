@@ -271,6 +271,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 fault.setResponseDuration(0);
                 // 创建维修记录
                 FaultRepairRecord record = FaultRepairRecord.builder()
+                        .faultPhenomenon(fault.getFaultPhenomenon())
                         // 做类型
                         .faultCode(fault.getCode())
                         // 故障现象
