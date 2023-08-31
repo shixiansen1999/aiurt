@@ -23,6 +23,6 @@
                 or f.sexecode like concat('%', #{faultExternal.faultPhenomenonOrCode}, '%'))
             </if>
         </where>
-        ORDER BY f.status ASC ,f.create_time DESC
+        ORDER BY f.create_time DESC
     </select>
 </mapper>
