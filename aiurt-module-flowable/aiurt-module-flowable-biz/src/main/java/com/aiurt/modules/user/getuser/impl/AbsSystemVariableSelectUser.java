@@ -5,9 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.modeler.dto.FlowUserRelationAttributeModel;
 import com.aiurt.modules.user.entity.ActCustomUser;
 import com.aiurt.modules.user.enums.FlowUserRelationEnum;
-import com.aiurt.modules.user.getuser.SelectUser;
-import com.aiurt.modules.user.getuser.SystemVariableSelectUserStrategy;
-import com.aiurt.modules.user.getuser.dto.SelectionParameters;
+import com.aiurt.modules.user.getuser.strategy.SystemVariableSelectUserStrategy;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -20,20 +18,10 @@ import java.util.stream.Collectors;
  * @author fgw
  */
 
-public abstract class AbsSystemVariableSelectUser implements SelectUser {
+public abstract class AbsSystemVariableSelectUser {
 
     @Autowired
     private SystemVariableGetUserFactory factory;
-
-    /**
-     * 获取用户列表
-     *
-     * @param parameters@return 用户列表
-     */
-    @Override
-    public List<String> getUserList(SelectionParameters parameters) {
-        return getUserList(parameters.getCustomUser(), parameters.getProcessInstance());
-    }
 
     /**
      * 获取用户下

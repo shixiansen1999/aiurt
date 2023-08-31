@@ -26,8 +26,8 @@ public class UserPipelineConfig {
     @Bean
     public FilterChainPipeline chargePipeline(){
         FilterChainPipeline filterChainPipeline = new FilterChainPipeline();
-        filterChainPipeline.addFirst("车辆信息判断", customVariableUserFilter);
-        filterChainPipeline.addFirst("车辆信息查询", systemVariableUserFilter);
+        filterChainPipeline.addFirst("自定义变量", customVariableUserFilter);
+        filterChainPipeline.addFirst("系统变量", systemVariableUserFilter);
         filterChainPipeline.addFirst("基础选人", baseUserFilter);
         return filterChainPipeline;
     }

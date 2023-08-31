@@ -36,8 +36,7 @@ import com.aiurt.modules.online.businessdata.service.IActCustomBusinessDataServi
 import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.aiurt.modules.online.page.service.IActCustomPageService;
 import com.aiurt.modules.user.entity.ActCustomUser;
-import com.aiurt.modules.user.getuser.impl.DefaultSelectUser;
-import com.aiurt.modules.user.getuser.impl.RelationSelectUser;
+import com.aiurt.modules.user.getuser.DefaultSelectUserService;
 import com.aiurt.modules.user.service.IActCustomUserService;
 import com.aiurt.modules.user.service.IFlowUserService;
 import com.alibaba.fastjson.JSON;
@@ -46,7 +45,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
@@ -78,7 +76,6 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.system.vo.SysUserModel;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,7 +152,7 @@ public class FlowApiServiceImpl implements FlowApiService {
     private IMultiInTaskService multiInTaskService;
 
     @Autowired
-    private RelationSelectUser relationSelectUser;
+    private DefaultSelectUserService relationSelectUser;
 
 
     /**
@@ -2041,10 +2038,10 @@ public class FlowApiServiceImpl implements FlowApiService {
                 .collect(Collectors.toList());
 
         ActCustomUser customUserByTaskInfo = actCustomUserService.getActCustomUserByTaskInfo(processInstance.getProcessDefinitionId(), userTask.getId(), FlowConstant.USER_TYPE_0);
-        List<String> resultList = relationSelectUser.selectList(customUserByTaskInfo, processInstance, variables);
+        List<String> resultList = relationSelectUser.getUserList(customUserByTaskInfo,variables, processInstance);
         // Filter out existing users from the result list
-        resultList.removeAll(userList);
         if (CollUtil.isNotEmpty(resultList)) {
+            resultList.removeAll(userList);
             String[] array = resultList.stream().toArray(String[]::new);
             List<SysUserModel> data = Optional.ofNullable(sysBaseAPI.queryUserByNames(array)).orElse(Collections.emptyList()).stream()
                     .filter(Objects::nonNull).map(this::buildSysUserModel).collect(Collectors.toList());

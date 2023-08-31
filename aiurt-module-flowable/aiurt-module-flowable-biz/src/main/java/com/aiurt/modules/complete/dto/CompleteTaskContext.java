@@ -1,11 +1,13 @@
 package com.aiurt.modules.complete.dto;
 
 import lombok.Data;
+import org.flowable.bpmn.model.FlowElement;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,6 +45,13 @@ public class CompleteTaskContext implements Serializable {
      */
     private String multiApprovalRule;
 
+    /**
+     * 目标节点
+     */
+    private List<FlowElement> targetFlowElement;
 
-
+    /**
+     * 是否提交任务
+     */
+    private Boolean completeTask;
 }
