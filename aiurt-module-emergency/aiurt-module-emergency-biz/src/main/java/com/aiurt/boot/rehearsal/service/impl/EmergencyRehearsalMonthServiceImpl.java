@@ -105,18 +105,20 @@ public class EmergencyRehearsalMonthServiceImpl extends ServiceImpl<EmergencyReh
             }
             emergencyRehearsalMonthDTO.setOrgCodes(orgCodes);
         }
-        IPage<EmergencyRehearsalMonthVO> pageList = emergencyRehearsalMonthMapper.queryPageList(page, emergencyRehearsalMonthDTO);
 
         //信号新增不需要排除写过记录的月计划配置
         SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.EXCLUDE_USED_MONTH);
         boolean value = "1".equals(paramModel.getValue());
+        if (ObjectUtil.isNotNull(emergencyRehearsalMonthDTO.getRecordInterface())) {
+            emergencyRehearsalMonthDTO.setRecordInterface(value);
+        }
+
+        IPage<EmergencyRehearsalMonthVO> pageList = emergencyRehearsalMonthMapper.queryPageList(page, emergencyRehearsalMonthDTO);
         pageList.getRecords().forEach(monthPlan -> {
-            if (!value) {
                 boolean exists = emergencyImplementationRecordMapper.exists(new LambdaQueryWrapper<EmergencyImplementationRecord>()
                         .eq(EmergencyImplementationRecord::getPlanId, monthPlan.getId())
                         .eq(EmergencyImplementationRecord::getDelFlag, CommonConstant.DEL_FLAG_0));
                 monthPlan.setDelete(!exists);
-            }
         });
         return pageList;
     }
