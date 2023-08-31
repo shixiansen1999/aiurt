@@ -2250,12 +2250,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                         }
                         //巡检工单详情
                         printStandardDetailDTO.setUserName(patrolTaskMapper.getUsername(patrolTask.getEndUserId()));
-                        printStandardDetailDTO.setSubmitTime(DateUtil.format(patrolTask.getSubmitTime(),"yyyy-MM-dd HH:mm:ss"));
+                        printStandardDetailDTO.setSubmitTime(taskDeviceParam.getCheckTime());
                         printStandardDetailDTO.setSignUrl(patrolTask.getSignUrl());
                         printStandardDetailDTO.setPeriod(patrolPlanPeriod);
-                        printStandardDetailDTO.setSpotCheckTime(taskDeviceParam.getCheckTime());
                         printStandardDetailDTO.setChildren(tree);
                         printStandardDetailDTO.setSpotCheckUserName(taskDeviceParam.getSamplePersonName());
+                        //抽检人不为空，则显示为提交时间
+                        if(StrUtil.isNotBlank(printStandardDetailDTO.getSpotCheckUserName())){
+                            printStandardDetailDTO.setSpotCheckTime(taskDeviceParam.getCheckTime());
+                        }
                         printStandardDetailDTO.setDeviceName(taskDeviceParam.getDeviceName());
                         printStandardDetailDTO.setDeviceLocation(taskDeviceParam.getDevicePositionName());
                         printStandardDetailDTO.setDepartInfo(organizationInfo);

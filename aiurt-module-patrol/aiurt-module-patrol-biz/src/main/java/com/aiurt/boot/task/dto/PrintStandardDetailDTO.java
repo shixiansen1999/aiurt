@@ -50,7 +50,9 @@ public class PrintStandardDetailDTO {
     private String spotCheckUserName;
 
     @ApiModelProperty(value = "提交时间")
-    private String submitTime;
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private java.util.Date submitTime;
 
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
