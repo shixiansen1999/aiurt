@@ -188,6 +188,7 @@ public class FaultExternal extends DictEntity implements Serializable  {
     private String sreportdept;
 	/**status*/
     @ApiModelProperty(value = "status")
+    @Dict(dicCode = "dispatch_fault_status")
     private Integer status;
 	/**createTime*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
