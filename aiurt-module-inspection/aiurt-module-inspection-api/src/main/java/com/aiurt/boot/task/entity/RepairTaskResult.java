@@ -172,6 +172,26 @@ public class RepairTaskResult implements Serializable {
     @ApiModelProperty(value = "附件url")
     private List<String> url;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "程序及方法")
+    private String procMethods;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "设备名称")
+    private String deviceName;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "设备位置")
+    private String equipmentLocation;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "抽检人名称")
+    private String samplingName;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "抽检人签名")
+    private String samplingUrl;
+    @TableField(exist = false)
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "抽检人的时间")
+    private java.util.Date samplingDate ;
     /**
      * 子节点
      */

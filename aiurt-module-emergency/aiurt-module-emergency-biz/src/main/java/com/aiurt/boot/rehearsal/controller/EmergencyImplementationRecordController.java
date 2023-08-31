@@ -126,7 +126,19 @@ public class EmergencyImplementationRecordController extends BaseController<Emer
         EmergencyRecordReadOneVO recordVO = emergencyImplementationRecordService.queryById(id);
         return Result.OK(recordVO);
     }
-
+    /**
+     * 应急实施记录-通过id查询打印信息
+     *
+     * @param ids
+     * @return
+     */
+    @AutoLog(value = "应急实施记录-通过id查询打印数据")
+    @ApiOperation(value = "应急实施记录-通过id查询打印数据", notes = "应急实施记录-通过id查询打印数据")
+    @GetMapping(value = "/printEmergency")
+    public Result<List<EmergencyRecordReadOneVO>> printEmergency(@RequestParam(name = "ids", required = true) String ids) {
+        List<EmergencyRecordReadOneVO> recordVO = emergencyImplementationRecordService.printEmergency(ids);
+        return Result.OK(recordVO);
+    }
     /**
      * 应急模块-责任部门和用户联动信息
      */

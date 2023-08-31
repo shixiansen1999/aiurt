@@ -13,6 +13,7 @@
 <!--        su.realname as teacher,-->
         btt.train_target,
         btt.exam_status,
+        btt.classify,
         btt.task_state,
          ( select realname from sys_user where id = btt.teacher_id) as teacher,
          ( select depart_name from  sys_depart  where id = btt.task_team_id) as sysOrgCode,
