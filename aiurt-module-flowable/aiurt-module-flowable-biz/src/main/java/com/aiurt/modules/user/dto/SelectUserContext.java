@@ -1,10 +1,10 @@
 package com.aiurt.modules.user.dto;
 
-import cn.hutool.core.collection.CollUtil;
 import com.aiurt.modules.user.entity.ActCustomUser;
 import com.aiurt.modules.user.pipeline.context.AbstractUserContext;
 import com.aiurt.modules.user.pipeline.selector.FilterSelector;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.flowable.engine.runtime.ProcessInstance;
 
 import java.util.ArrayList;
@@ -16,7 +16,8 @@ import java.util.Objects;
 /**
  * @author fgw
  */
-@Data
+@Setter
+@Getter
 public class SelectUserContext extends AbstractUserContext {
 
     /**
@@ -51,7 +52,7 @@ public class SelectUserContext extends AbstractUserContext {
     }
 
     public void  addUserList(List<String> userList) {
-        if (Objects.isNull(userList)) {
+        if (Objects.isNull(this.userList)) {
             this.userList = new ArrayList<>();
         }
         this.userList.addAll(userList);

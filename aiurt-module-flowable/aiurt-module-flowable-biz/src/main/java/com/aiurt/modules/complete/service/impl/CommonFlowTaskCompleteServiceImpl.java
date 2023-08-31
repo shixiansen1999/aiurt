@@ -3,18 +3,18 @@ import java.util.Date;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
+import com.aiurt.modules.user.getuser.DefaultSelectUserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.google.common.collect.Maps;
+
 import java.util.*;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.convert.Convert;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.common.enums.MultiApprovalRuleEnum;
@@ -30,10 +30,10 @@ import com.aiurt.modules.multideal.dto.MultiDealDTO;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
 import com.aiurt.modules.multideal.service.IMultiInstanceDealService;
 import com.aiurt.modules.user.entity.ActCustomUser;
-import com.aiurt.modules.user.getuser.impl.DefaultSelectUser;
 import com.aiurt.modules.user.service.IActCustomUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.FlowElement;
+import org.flowable.bpmn.model.UserTask;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
@@ -42,7 +42,6 @@ import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -83,7 +82,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
     private IActCustomProcessCopyService processCopyService;
 
     @Autowired
-    private DefaultSelectUser defaultSelectUser;
+    private DefaultSelectUserService defaultSelectUser;
 
     @Autowired
     private ISysBaseAPI sysBaseAPI;
@@ -145,23 +144,27 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         Integer isAutoSelect = customTaskExt.getIsAutoSelect();
         // 办理规则 如果办理规则为空则，就是旧版流程选人，不需要处理, 现在新版也是存在
         // 多实例最后一步，自动选人则构造下一步节点以及下一个节点的数据,
-        if (completeTask && Objects.nonNull(isAutoSelect) && isAutoSelect == 1) {
-            // 如果单实例，或者识多实例最后一部办理人时需要自动选人
-            log.info("当前活动是多少实例，且是多实例的最后一个活动，或者时单例任务，设置下一步办理人");
+        if (completeTask) {
+            log.info("提交任务（多实例最后一步提交），获取下一步节点信息包括结束节点");
             FlowElement flowElement = flowElementUtil.getFlowElement(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
             List<FlowElement> targetFlowElement = flowElementUtil.getTargetFlowElement(execution, flowElement, busData);
-            Map<String, Object> finalVariableData = variableData;
-            List<NextNodeUserDTO> nodeUserDTOList = targetFlowElement.stream().map(element -> {
-                NextNodeUserDTO nextNodeUserDTO = new NextNodeUserDTO();
-                nextNodeUserDTO.setNodeId(element.getId());
-                ActCustomUser actCustomUser = customUserService.getActCustomUserByTaskInfo(task.getProcessDefinitionId(), element.getId(), "0");
-                List<String> userList = defaultSelectUser.selectAllList(actCustomUser, processInstance, finalVariableData);
-                nextNodeUserDTO.setApprover(userList);
-                return nextNodeUserDTO;
-            }).collect(Collectors.toList());
-            flowCompleteReqDTO.setNextNodeUserParam(nodeUserDTOList);
+            taskContext.setTargetFlowElement(targetFlowElement);
+            if (Objects.nonNull(isAutoSelect) && isAutoSelect == 1) {
+                // 如果单实例，或者识多实例最后一部办理人时需要自动选人
+                log.info("当前活动是多少实例，且是多实例的最后一个活动，或者时单例任务，设置下一步办理人");
+                Map<String, Object> finalVariableData = variableData;
+                List<NextNodeUserDTO> nodeUserDTOList = targetFlowElement.stream().filter(element-> element instanceof UserTask).map(element -> {
+                    NextNodeUserDTO nextNodeUserDTO = new NextNodeUserDTO();
+                    nextNodeUserDTO.setNodeId(element.getId());
+                    ActCustomUser actCustomUser = customUserService.getActCustomUserByTaskInfo(task.getProcessDefinitionId(), element.getId(), "0");
+                    List<String> userList = defaultSelectUser.getAllUserList(actCustomUser, finalVariableData, processInstance);
+                    nextNodeUserDTO.setApprover(userList);
+                    return nextNodeUserDTO;
+                }).collect(Collectors.toList());
+                flowCompleteReqDTO.setNextNodeUserParam(nodeUserDTOList);
+            }
         }
-
+        taskContext.setCompleteTask(completeTask);
     }
 
     /**
@@ -207,6 +210,16 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         String processInstanceId = currentTask.getProcessInstanceId();
         String nodeId = currentTask.getTaskDefinitionKey();
         Map<String, Object> variableData = taskContext.getVariableData();
+        Boolean completeTask = taskContext.getCompleteTask();
+        List<FlowElement> targetFlowElement = taskContext.getTargetFlowElement();
+        // 校验
+        if (completeTask) {
+            if (CollectionUtil.isEmpty(targetFlowElement)) {
+                throw new AiurtBootException(AiurtErrorEnum.NEXT_NODE_NOT_FOUND.getCode(),
+                        String.format(AiurtErrorEnum.NEXT_NODE_NOT_FOUND.getMessage(), "无法找到下一步办理节点"));
+            }
+        }
+
         taskService.complete(currentTask.getId(), variableData);
 
         // 如果任意会签， 则需要自动提交其他任务
