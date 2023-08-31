@@ -43,11 +43,14 @@
             select plan_id
             from emergency_implementation_record
             where del_flag = 0
-              and org_code in
+            <if test="condition.userOrgCode != null and condition.userOrgCode != ''">
+                and org_code = #{condition.userOrgCode}
+            </if>
+            )
+            and erm.org_code in
             <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
-            )
         </if>
         order by erm.create_time desc
     </select>
