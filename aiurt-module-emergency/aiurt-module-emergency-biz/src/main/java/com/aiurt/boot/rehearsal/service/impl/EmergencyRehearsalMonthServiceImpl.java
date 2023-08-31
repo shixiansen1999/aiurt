@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.rehearsal.constant.EmergencyConstant;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalMonthDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyImplementationRecord;
@@ -20,8 +21,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +48,8 @@ public class EmergencyRehearsalMonthServiceImpl extends ServiceImpl<EmergencyReh
     private EmergencyImplementationRecordMapper emergencyImplementationRecordMapper;
     @Autowired
     private ISysBaseAPI sysBaseApi;
-
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
     @Override
     public String addMonthPlan(EmergencyRehearsalMonth emergencyRehearsalMonth) {
         Assert.notNull(emergencyRehearsalMonth.getPlanId(), "年计划ID不能为空！");
@@ -90,9 +94,9 @@ public class EmergencyRehearsalMonthServiceImpl extends ServiceImpl<EmergencyReh
         if (ObjectUtil.isEmpty(emergencyRehearsalMonthDTO) || StrUtil.isEmpty(emergencyRehearsalMonthDTO.getPlanId())) {
             throw new AiurtBootException("年演练计划ID不能为空！");
         }
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         // 允许挑选用户组织机构权限下的月计划
         if (ObjectUtil.isNotEmpty(emergencyRehearsalMonthDTO.getRecordInterface()) && emergencyRehearsalMonthDTO.getRecordInterface()) {
-            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             Assert.notNull(loginUser, "检测到未登录，请登录后操作！");
             List<CsUserDepartModel> depts = sysBaseApi.getDepartByUserId(loginUser.getId());
             List<String> orgCodes = depts.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
@@ -101,12 +105,20 @@ public class EmergencyRehearsalMonthServiceImpl extends ServiceImpl<EmergencyReh
             }
             emergencyRehearsalMonthDTO.setOrgCodes(orgCodes);
         }
+
+        //信号新增不需要排除写过记录的月计划配置
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.EXCLUDE_USED_MONTH);
+        boolean value = "1".equals(paramModel.getValue());
+        if (ObjectUtil.isNotNull(emergencyRehearsalMonthDTO.getRecordInterface())) {
+            emergencyRehearsalMonthDTO.setRecordInterface(value);
+        }
+        emergencyRehearsalMonthDTO.setUserOrgCode(loginUser.getOrgCode());
         IPage<EmergencyRehearsalMonthVO> pageList = emergencyRehearsalMonthMapper.queryPageList(page, emergencyRehearsalMonthDTO);
         pageList.getRecords().forEach(monthPlan -> {
-            boolean exists = emergencyImplementationRecordMapper.exists(new LambdaQueryWrapper<EmergencyImplementationRecord>()
-                    .eq(EmergencyImplementationRecord::getPlanId, monthPlan.getId())
-                    .eq(EmergencyImplementationRecord::getDelFlag, CommonConstant.DEL_FLAG_0));
-            monthPlan.setDelete(!exists);
+                boolean exists = emergencyImplementationRecordMapper.exists(new LambdaQueryWrapper<EmergencyImplementationRecord>()
+                        .eq(EmergencyImplementationRecord::getPlanId, monthPlan.getId())
+                        .eq(EmergencyImplementationRecord::getDelFlag, CommonConstant.DEL_FLAG_0));
+                monthPlan.setDelete(!exists);
         });
         return pageList;
     }

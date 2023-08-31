@@ -527,4 +527,16 @@ public interface SysParamCodeConstant {
      */
     String MULTIPLE_DEVICE_TYPES = "multiple_device_types";
 
+    /**
+     * 检修任务领取是否放开时间限制
+     */
+    String INSPECTION_RECEIVE_ANYTIME="inspection_receive_anytime";
+    /**
+     * 调度故障是否只需要1,2号线故障
+     */
+    String FAULT_EXTERNAL_XH12="fault_external_xh12";
+    /**
+     * 应急演练实施记录是否排除使用过的月度演练计划
+     */
+    String EXCLUDE_USED_MONTH="exclude_used_month";
 }
