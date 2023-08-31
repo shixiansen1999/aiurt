@@ -1,9 +1,8 @@
-package com.aiurt.modules.user.getuser.impl;
+package com.aiurt.modules.user.getuser.strategy;
 
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.modules.user.getuser.SystemVariableSelectUserStrategy;
+import com.aiurt.modules.user.getuser.strategy.SystemVariableSelectUserStrategy;
 import com.aiurt.modules.user.service.IFlowUserService;
-import org.checkerframework.checker.units.qual.A;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;

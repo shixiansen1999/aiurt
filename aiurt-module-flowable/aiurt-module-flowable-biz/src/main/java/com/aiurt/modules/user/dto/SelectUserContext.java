@@ -52,7 +52,7 @@ public class SelectUserContext extends AbstractUserContext {
     }
 
     public void  addUserList(List<String> userList) {
-        if (Objects.isNull(userList)) {
+        if (Objects.isNull(this.userList)) {
             this.userList = new ArrayList<>();
         }
         this.userList.addAll(userList);

@@ -410,7 +410,7 @@ public class FlowElementUtil {
 
 
     /**
-     * 获取下一个代办的节点
+     * 获取下一个代办的节点, 包括结束节点
      * @param execution 执行实例
      * @param sourceFlowElement  源节点
      * @param flowElementList 结果集
@@ -425,7 +425,7 @@ public class FlowElementUtil {
                 //如果只有一条连接线，直接找这条连接线的出口节点，然后继续递归获得接下来的节点
                 SequenceFlow sequenceFlow = thisFlowNode.getOutgoingFlows().get(0);
                 FlowElement targetFlowElement = sequenceFlow.getTargetFlowElement();
-                if (targetFlowElement instanceof UserTask) {
+                if (targetFlowElement instanceof UserTask || targetFlowElement instanceof EndEvent) {
                     flowElementList.add(targetFlowElement);
                 } else {
                     getTargetFlowElement(execution, targetFlowElement, flowElementList, variables);
@@ -442,7 +442,7 @@ public class FlowElementUtil {
                     }
                     if (result) {
                         FlowElement targetFlowElement = sequenceFlow.getTargetFlowElement();
-                        if (targetFlowElement instanceof UserTask) {
+                        if (targetFlowElement instanceof UserTask || targetFlowElement instanceof EndEvent) {
                             flowElementList.add(targetFlowElement);
                         } else {
                             getTargetFlowElement(execution, targetFlowElement, flowElementList, variables);
@@ -470,7 +470,7 @@ public class FlowElementUtil {
                 FlowElement targetFlowElement = sequenceFlow.getTargetFlowElement();
                 if (targetFlowElement instanceof UserTask) {
                     flowElementList.add(targetFlowElement);
-                } else {
+                }  else {
                     getTargetFlowElement(targetFlowElement, flowElementList, variables);
                 }
             } else if (thisFlowNode.getOutgoingFlows().size() > 1) {
@@ -534,8 +534,6 @@ public class FlowElementUtil {
         variableData.put(FlowCustomVariableConstant.ROLE_INITIATOR, user.getRoleCodes());
         variableData.put(FlowCustomVariableConstant.POSITION_INITIATOR, user.getPost());
         variableData.put(FlowCustomVariableConstant.ORG_INITIATOR, user.getOrgId());
-
-
 
         // 内置的系统变量
         return variableData;

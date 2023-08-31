@@ -1,4 +1,4 @@
-package com.aiurt.modules.user.getuser;
+package com.aiurt.modules.user.getuser.strategy;
 
 import org.flowable.engine.runtime.ProcessInstance;
 

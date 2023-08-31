@@ -1,7 +1,7 @@
 package com.aiurt.modules.user.getuser.impl;
 
 import com.aiurt.modules.user.enums.FlowUserRelationEnum;
-import com.aiurt.modules.user.getuser.SystemVariableSelectUserStrategy;
+import com.aiurt.modules.user.getuser.strategy.SystemVariableSelectUserStrategy;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;

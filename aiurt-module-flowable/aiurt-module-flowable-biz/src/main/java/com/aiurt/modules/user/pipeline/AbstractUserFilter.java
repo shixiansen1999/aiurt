@@ -26,7 +26,7 @@ public abstract class AbstractUserFilter<T extends UserContext> implements UserF
     }
 
     /**
-     *
+     * 具体执行
      * @param context
      */
     protected abstract void handle(T context);

@@ -24,6 +24,7 @@ import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.model.*;
 import org.flowable.editor.language.json.converter.*;
 
+import javax.validation.Valid;
 import java.util.*;
 
 /**
@@ -122,6 +123,22 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
             propertiesNode.put(PROPERTY_SEQUENCEFLOW_CONDITION, sequenceFlow.getConditionExpression());
         }
 
+        Map<String, List<ExtensionElement>> extensionElements = baseElement.getExtensionElements();
+        // 处理flowable:transferType流转条件
+        List<ExtensionElement> flowTransferTypeElementList = extensionElements.getOrDefault(FlowModelAttConstant.TRANSFER_TYPE, new ArrayList<>());
+        if (CollUtil.isNotEmpty(flowTransferTypeElementList)) {
+            ExtensionElement extensionElement = flowTransferTypeElementList.get(0);
+            // 修复，组合条件删除了，但是表达式没有删除的
+            String value = extensionElement.getAttributeValue(null, "value");
+            // 0为内置按钮
+            if (StrUtil.equalsAnyIgnoreCase(value, "1","2")) {
+                propertiesNode.remove(PROPERTY_SEQUENCEFLOW_CONDITION);
+            }
+
+            ObjectNode objectNode = FlowRelationUtil.createObjectNodeFromFields(FlowTransferTypeDTO.class, extensionElement);
+            flowNode.set(FlowModelAttConstant.TRANSFER_TYPE, objectNode);
+        }
+
         // 检查给定的SequenceFlow是否为其源FlowElement的默认流向，并将结果设置到propertiesNode中。
         checkAndSetDefaultFlow(sequenceFlow, container, propertiesNode);
 
@@ -131,7 +148,6 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
         convertExecutionListenersToJson(sequenceFlow, propertiesNode);
 
         // 按钮流转条件
-        Map<String, List<ExtensionElement>> extensionElements = baseElement.getExtensionElements();
         convertPropertyElements(extensionElements, CUSTOM_CONDITION, flowNode, "type", "operationType");
         convertPropertyElements(extensionElements, PROPERTY, flowNode, "value", "name");
         convertPropertyElements(extensionElements, SERVICE, flowNode, FlowModelAttConstant.NAME);
@@ -148,13 +164,9 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
         // 处理流程条件关系
         handleRelation(flowNode, propertiesNode, extensionElements, relationMaps);
 
-        // 处理flowable:transferType流转条件
-        List<ExtensionElement> flowTransferTypeElementList = extensionElements.getOrDefault(FlowModelAttConstant.TRANSFER_TYPE, new ArrayList<>());
-        if (CollUtil.isNotEmpty(flowTransferTypeElementList)) {
-            ExtensionElement extensionElement = flowTransferTypeElementList.get(0);
-            ObjectNode objectNode = FlowRelationUtil.createObjectNodeFromFields(FlowTransferTypeDTO.class, extensionElement);
-            flowNode.set(FlowModelAttConstant.TRANSFER_TYPE, objectNode);
-        }
+
+
+
 
         flowNode.set(EDITOR_SHAPE_PROPERTIES, propertiesNode);
         shapesArrayNode.add(flowNode);
