@@ -1161,8 +1161,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                 endTime = DateUtil.parse(nowday+" 16:29:59");
             } else {
                 //晚班
-                startTime = DateUtil.parse(nowday+" 16:30:00");
-                endTime = DateUtil.parse(nextAM);
+                startTime = DateUtil.parse(lastPM);
+                endTime = DateUtil.parse(nowday+" 08:29:59");
             }
         }else {
             //正常写入日志
