@@ -131,7 +131,7 @@ public class DailyFaultApiImpl implements DailyFaultApi {
             }
 
         } else {
-            //获取当前用户部门的人作为被指派/领取人/同行人，负责的故障报修单，并且到达时间在指定时间范围内
+            //查出指定时间范围内已完成的故障
             List<FaultRepairRecord> recordList =  recordMapper.getTodayRecord(startTime, endTime,userNames);
 
             StringBuilder content = new StringBuilder();
