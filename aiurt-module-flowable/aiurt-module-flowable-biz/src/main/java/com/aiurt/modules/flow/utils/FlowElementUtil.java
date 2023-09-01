@@ -531,7 +531,7 @@ public class FlowElementUtil {
         // 发起人角色， 部门， 岗位
         LoginUser user = sysBaseApi.getUserByName(startUserId);
         variableData.put(FlowCustomVariableConstant.ROLE_INITIATOR, user.getRoleCodes());
-        variableData.put(FlowCustomVariableConstant.POSITION_INITIATOR, user.getPost());
+        variableData.put(FlowCustomVariableConstant.POSITION_INITIATOR, user.getJobName());
         variableData.put(FlowCustomVariableConstant.ORG_INITIATOR, user.getOrgId());
 
         // 内置的系统变量
