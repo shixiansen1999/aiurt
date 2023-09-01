@@ -232,7 +232,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         ProcessDefinition result = processDefinitionResult.getResult();
         if (result.isSuspended()) {
-            throw new AiurtBootException("当前流程定义已被挂起，不能启动新流程！");
+            throw new AiurtBootException("当前程主版本已被挂起，请联系管理员！");
         }
         // 设置流程变量
         Map<String, Object> busData = startBpmnDTO.getBusData();
@@ -1271,7 +1271,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
 
         if (StrUtil.isNotBlank(reqDTO.getProcessDefinitionName())) {
-            query.processInstanceNameLike("%" + reqDTO.getProcessDefinitionName() + "%");
+            query.processDefinitionName("%" + reqDTO.getProcessDefinitionName() + "%");
         }
 
         if (CollectionUtil.isNotEmpty(processInstanceIdSet)) {
@@ -1690,6 +1690,11 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Override
     public TaskInfoDTO viewInitialTaskInfo(String processDefinitionKey) {
 
+        ProcessDefinition processDefinition = flowElementUtil.getProcessDefinition(processDefinitionKey);
+        if (processDefinition.isSuspended()) {
+            throw new AiurtBootException("当前程主版本已被挂起，请联系管理员！");
+        }
+
         UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(processDefinitionKey);
 
         // 下
@@ -1698,7 +1703,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
         TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
         taskInfoDTO.setTaskKey(userTask.getId());
-        ProcessDefinition processDefinition = flowElementUtil.getProcessDefinition(processDefinitionKey);
+
         ActCustomTaskExt customTaskExt = customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinition.getId(), userTask.getId());
         if (Objects.nonNull(customTaskExt)) {
             String formJson = customTaskExt.getFormJson();
