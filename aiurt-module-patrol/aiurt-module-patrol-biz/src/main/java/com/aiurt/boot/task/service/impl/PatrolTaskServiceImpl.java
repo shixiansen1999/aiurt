@@ -2177,7 +2177,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
-    public List<PrintPatrolTaskStandardDTO> printPatrolTaskAndStandardById(String ids,String standardId) {
+    public List<PrintPatrolTaskStandardDTO> printPatrolTaskAndStandardById(String ids,String patrolNumber) {
         List<PrintPatrolTaskStandardDTO> arrayList = new ArrayList<>();
         List<String> idList = StrUtil.splitTrim(ids, ",");
         for (String id : idList) {
@@ -2198,59 +2198,67 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 //获取检修项
                 List<PrintStandardDetailDTO> billInfo = dto.getBillInfo();
                 List<PrintStandardDetailDTO> printStandardDetailDTOS = new ArrayList<>();
+                //批量打印，打印任务里面的所有工单
                 if (CollUtil.isNotEmpty(billInfo)) {
-                    for (PrintStandardDetailDTO printStandardDetailDTO : billInfo) {
-                        String billCode = printStandardDetailDTO.getBillCode();
-                        //构建树
-                        PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumberToPrint(billCode))
-                                .orElseGet(PatrolTaskDeviceParam::new);
-                        List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
-                        // 字典翻译检查值
-                        Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
-                                .stream().filter(l->StrUtil.isNotEmpty(l.getText()))
-                                .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-                        checkResultList.stream().forEach(c -> {
-                            c.setCheckDictName(requiredItems.get(String.valueOf(c.getRequired())));
-                        });
-                        List<PatrolCheckResultDTO> tree = getTree(checkResultList, "0");
-                        //获取设备位置
-                        StationDTO stationDTO = new StationDTO();
-                        stationDTO.setLineCode(taskDeviceParam.getLineCode());
-                        stationDTO.setStationCode(taskDeviceParam.getStationCode());
-                        stationDTO.setPositionCode(taskDeviceParam.getPositionCode());
-                        List<StationDTO> stationDTOList = new ArrayList<>();
-                        stationDTOList.add(stationDTO);
-                        //设备位置翻译
-                        String s = manager.translateStation(stationDTOList);
-                        //设备的位置
-                        if (ObjectUtil.isNotEmpty(taskDeviceParam.getDeviceCode())) {
-                            taskDeviceParam.setDevicePositionName(s);
-                        } else {
-                            taskDeviceParam.setInspectionPositionName(s);
-                            taskDeviceParam.setDevicePositionName(null);
+                        for (PrintStandardDetailDTO printStandardDetailDTO : billInfo) {
+                            String billCode = printStandardDetailDTO.getBillCode();
+                            //工单详情打印，只打印选中的工单
+                            if (StrUtil.isEmpty(patrolNumber) || billCode.equals(patrolNumber)) {
+                                getPatrolStandardDetail(printStandardDetailDTO, patrolTask, printStandardDetailDTOS, billCode, organizationInfo, patrolPlanPeriod);
+                            }
                         }
-                        //巡检工单详情
-                        printStandardDetailDTO.setUserName(patrolTaskMapper.getUsername(patrolTask.getEndUserId()));
-                        printStandardDetailDTO.setSubmitTime(taskDeviceParam.getCheckTime());
-                        printStandardDetailDTO.setSignUrl(patrolTask.getSignUrl());
-                        printStandardDetailDTO.setPeriod(patrolPlanPeriod);
-                        printStandardDetailDTO.setChildren(tree);
-                        printStandardDetailDTO.setSpotCheckUserName(taskDeviceParam.getSamplePersonName());
-                        //抽检人不为空，则显示为提交时间
-                        if(StrUtil.isNotBlank(printStandardDetailDTO.getSpotCheckUserName())){
-                            printStandardDetailDTO.setSpotCheckTime(taskDeviceParam.getCheckTime());
-                        }
-                        printStandardDetailDTO.setDeviceName(taskDeviceParam.getDeviceName());
-                        printStandardDetailDTO.setDeviceLocation(taskDeviceParam.getDevicePositionName());
-                        printStandardDetailDTO.setDepartInfo(organizationInfo);
-                        printStandardDetailDTOS.add(printStandardDetailDTO);
-                    }
                 }
                 printPatrolTaskStandardDTO.setBillInfo(printStandardDetailDTOS);
                 arrayList.add(printPatrolTaskStandardDTO);
             }
         }
         return arrayList;
+    }
+
+    public void getPatrolStandardDetail(PrintStandardDetailDTO printStandardDetailDTO,PatrolTask patrolTask, List<PrintStandardDetailDTO> printStandardDetailDTOS,String billCode,List<PatrolTaskOrganizationDTO> organizationInfo,String patrolPlanPeriod){
+        //构建树
+        PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumberToPrint(billCode))
+                .orElseGet(PatrolTaskDeviceParam::new);
+        List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
+        // 字典翻译检查值
+        Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
+                .stream().filter(l->StrUtil.isNotEmpty(l.getText()))
+                .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+        checkResultList.stream().forEach(c -> {
+            c.setCheckDictName(requiredItems.get(String.valueOf(c.getRequired())));
+        });
+        List<PatrolCheckResultDTO> tree = getTree(checkResultList, "0");
+        //获取设备位置
+        StationDTO stationDTO = new StationDTO();
+        stationDTO.setLineCode(taskDeviceParam.getLineCode());
+        stationDTO.setStationCode(taskDeviceParam.getStationCode());
+        stationDTO.setPositionCode(taskDeviceParam.getPositionCode());
+        List<StationDTO> stationDTOList = new ArrayList<>();
+        stationDTOList.add(stationDTO);
+        //设备位置翻译
+        String s = manager.translateStation(stationDTOList);
+        //设备的位置
+        if (ObjectUtil.isNotEmpty(taskDeviceParam.getDeviceCode())) {
+            taskDeviceParam.setDevicePositionName(s);
+        } else {
+            taskDeviceParam.setInspectionPositionName(s);
+            taskDeviceParam.setDevicePositionName(null);
+        }
+        //巡检工单详情
+        printStandardDetailDTO.setUserName(patrolTaskMapper.getUsername(patrolTask.getEndUserId()));
+        printStandardDetailDTO.setSubmitTime(taskDeviceParam.getCheckTime());
+        printStandardDetailDTO.setSignUrl(patrolTask.getSignUrl());
+        printStandardDetailDTO.setPeriod(patrolPlanPeriod);
+        printStandardDetailDTO.setChildren(tree);
+        printStandardDetailDTO.setSpotCheckUserName(taskDeviceParam.getSamplePersonName());
+        //抽检人不为空，则显示为提交时间
+        if(StrUtil.isNotBlank(printStandardDetailDTO.getSpotCheckUserName())){
+            printStandardDetailDTO.setSpotCheckTime(taskDeviceParam.getCheckTime());
+        }
+        printStandardDetailDTO.setDeviceName(taskDeviceParam.getDeviceName());
+        printStandardDetailDTO.setDeviceLocation(taskDeviceParam.getDevicePositionName());
+        printStandardDetailDTO.setDepartInfo(organizationInfo);
+        printStandardDetailDTOS.add(printStandardDetailDTO);
     }
 
     /**
