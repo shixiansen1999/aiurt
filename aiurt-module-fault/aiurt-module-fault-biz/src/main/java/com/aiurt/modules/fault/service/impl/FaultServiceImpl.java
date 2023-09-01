@@ -1532,6 +1532,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         repairRecordDTO.setStationPositionCode(fault.getStationPositionCode());
         repairRecordDTO.setIsSignalFault(fault.getIsSignalFault());
 
+        //查询影响
+        repairRecordDTO.setAffectDrive(fault.getAffectDrive());
+        repairRecordDTO.setAffectPassengerService(fault.getAffectPassengerService());
+        repairRecordDTO.setIsStopService(fault.getIsStopService());
+
         // 查询参与人
         List<FaultRepairParticipants> participantsList = repairParticipantsService.queryParticipantsByRecordId(repairRecord.getId());
         repairRecordDTO.setParticipantsList(participantsList);
@@ -1656,6 +1661,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         Fault fault = isExist(faultCode);
 
+        //新增配置
+        SysParamModel isShowAffectPassengerService = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_SHOW_AFFECTPASSENGERSERVICE);
+        boolean equals = "1".equals(isShowAffectPassengerService.getValue());
+        if (equals) {
+            fault.setAffectDrive(repairRecordDTO.getAffectDrive());
+            fault.setAffectPassengerService(repairRecordDTO.getAffectPassengerService());
+            fault.setIsStopService(repairRecordDTO.getIsStopService());
+        }
         FaultRepairRecord one = repairRecordService.getById(repairRecordDTO.getId());
 
         String userIds = repairRecordDTO.getUsers();
@@ -1909,9 +1922,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     }
                 }
             }
+            SysParamModel isExternalSpecialUse = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
+            boolean isExternalSpecialUseValue = "1".equals(isExternalSpecialUse.getValue());
             //推送数据到调度系统
-            faultExternalService.complete(repairRecordDTO,one.getEndTime(),loginUser);
-
+            if (!isExternalSpecialUseValue) {
+                faultExternalService.complete(repairRecordDTO,one.getEndTime(),loginUser);
+            }
             //更新故障时长,更新解决时长
             long faultDuration = DateUtil.between(fault.getEndTime(), fault.getHappenTime(), DateUnit.SECOND);
             fault.setFaultDuration((int) faultDuration);
@@ -1980,6 +1996,18 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     return;
                 }else{
                     fault.setControlCenterReviewStatus(1);
+                    //推送数据到调度系统
+                    LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
+                    wrapper.eq(FaultRepairRecord::getFaultCode, faultCode)
+                            .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
+                            .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1");
+                    FaultRepairRecord repairRecord = repairRecordService.getBaseMapper().selectOne(wrapper);
+                    RepairRecordDTO repairRecordDTO = new RepairRecordDTO();
+                    repairRecordDTO.setId(repairRecord.getId());
+                    repairRecordDTO.setIsSignalFault(fault.getIsSignalFault());
+                    repairRecordDTO.setMaintenanceMeasures(repairRecord.getMaintenanceMeasures());
+                    LoginUser userByName = sysBaseAPI.getUserByName(repairRecord.getAppointUserName());
+                    faultExternalService.complete(repairRecordDTO,repairRecord.getEndTime(),userByName);
                 }
             }
 

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
@@ -184,4 +185,32 @@ public class RepairRecordDTO extends DictEntity implements Serializable  {
     @TableField(exist = false)
     @Dict(dicCode = "is_signal_fault")
     private Integer isSignalFault;
+
+    /**故障现象*/
+    @Excel(name = "故障现象", width = 15)
+    @ApiModelProperty(value = "故障现象")
+    @Dict(dictTable = "fault_knowledge_base_type", dicCode = "code", dicText = "name")
+    private String faultPhenomenon;
+    
+    /**是否影响行车*/
+    @Excel(name = "是否影响行车", width = 15)
+    @TableField(exist = false)
+    @ApiModelProperty(value = "fault_yn,是否影响行车,1:是,0否,2未知",  required = true)
+    @Dict(dicCode = "fault_yn")
+    private Integer affectDrive;
+
+    /**是否影响客运服务*/
+    @Excel(name = "是否影响客运服务", width = 15)
+    @TableField(exist = false)
+    @ApiModelProperty(value = "fault_yn,是否影响客运服务,1:是,0否,2未知",  required = true)
+    @Dict(dicCode = "fault_yn")
+    private Integer affectPassengerService;
+
+
+    /**是否停止服务*/
+    @Excel(name = "是否停止服务", width = 15)
+    @TableField(exist = false)
+    @Dict(dicCode = "fault_yn")
+    @ApiModelProperty(value = "fault_yn,是否停止服务,1:是,0否,2未知",  required = true)
+    private Integer isStopService;
 }

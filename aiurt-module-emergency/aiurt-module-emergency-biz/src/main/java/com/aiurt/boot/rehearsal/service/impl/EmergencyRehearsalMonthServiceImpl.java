@@ -146,6 +146,9 @@ public class EmergencyRehearsalMonthServiceImpl extends ServiceImpl<EmergencyReh
             return page;
         }
         emergencyRehearsalMonthDTO.setOrgCodes(orgCodes);
-        return emergencyRehearsalMonthMapper.queryMonthList(page, emergencyRehearsalMonthDTO);
+        //信号新增不需要排除写过记录的月计划配置
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.EXCLUDE_USED_MONTH);
+        boolean value = "1".equals(paramModel.getValue());
+        return emergencyRehearsalMonthMapper.queryMonthList(page, emergencyRehearsalMonthDTO,value);
     }
 }
