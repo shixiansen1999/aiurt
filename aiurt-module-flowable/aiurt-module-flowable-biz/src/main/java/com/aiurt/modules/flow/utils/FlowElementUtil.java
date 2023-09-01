@@ -23,7 +23,6 @@ import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.task.api.history.HistoricTaskInstance;
-import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -285,7 +284,7 @@ public class FlowElementUtil {
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
                     Throwable cause = e.getCause();
-                    throw new AiurtBootException(cause.getMessage());
+                    throw new AiurtBootException(ObjectUtil.isNotEmpty(cause) ? cause.getMessage() : e.getMessage());
                 }
             }
         }
