@@ -187,5 +187,19 @@ public class FaultExternalController extends BaseController<FaultExternal, IFaul
 			 return Result.error("添加失败,原因:"+e.getMessage());
 		 }
 	 }
-
+	 /**
+	  *  非故障
+	  *
+	  * @param id
+	  * @return
+	  */
+	 @AutoLog(value = "调度系统故障-非故障")
+	 @ApiOperation(value="调度系统故障-非故障", notes="调度系统故障-非故障")
+	 @GetMapping(value = "/editNotFault")
+	 public Result<String> editNotFault(@RequestParam(name="id",required=true) String id) {
+		 FaultExternal byId = faultExternalService.getById(id);
+		 byId.setStatus(2);
+		 faultExternalService.updateById(byId);
+		 return Result.OK("编辑成功!");
+	 }
 }
