@@ -216,10 +216,10 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
     /**
      * 打印巡视详情（统一）
      * @param ids
-     * @param standardId
+     * @param patrolNumber
      * @return
      */
-    List<PrintPatrolTaskStandardDTO> printPatrolTaskAndStandardById(String ids,String standardId);
+    List<PrintPatrolTaskStandardDTO> printPatrolTaskAndStandardById(String ids,String patrolNumber);
 
     /**
      * pc手工下发任务-删除
