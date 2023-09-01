@@ -131,7 +131,7 @@ public class DailyFaultApiImpl implements DailyFaultApi {
             }
 
         } else {
-            //获取当前用户部门的人作为被指派/领取人/同行人，负责的故障报修单，并且到达时间在指定时间范围内
+            //查出指定时间范围内已完成的故障
             List<FaultRepairRecord> recordList =  recordMapper.getTodayRecord(startTime, endTime,userNames);
 
             StringBuilder content = new StringBuilder();
@@ -422,6 +422,61 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         } catch (InterruptedException e) {
             // 处理中断异常
             log.info("循环方法的线程中断异常", e.getMessage());
+        }
+        return map;
+    }
+
+    @Override
+    public HashMap<String, String> getUnFinishFaultTask() {
+        Integer sort = 1;
+        HashMap<String, String> map = new HashMap<>();
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<LoginUser> sysUsers = sysBaseApi.getUserPersonnel(sysUser.getOrgId());
+        List<String> userNames = Optional.ofNullable(sysUsers).orElse(Collections.emptyList()).stream().map(LoginUser::getUsername).collect(Collectors.toList());
+        if (CollUtil.isEmpty(userNames)) {
+            return map;
+        }
+        //查出所有未完成维修单的故障
+        List<Fault> unFinishFaultTask = recordMapper.getUnFinishFaultTask(userNames);
+        if (CollUtil.isNotEmpty(unFinishFaultTask)) {
+            StringBuilder content = new StringBuilder();
+            StringBuilder code = new StringBuilder();
+
+            for (Fault fault : unFinishFaultTask) {
+                String stationName = sysBaseApi.getPosition(fault.getStationCode());
+                String lineName = sysBaseApi.getPosition(fault.getLineCode());
+                content.append(sort).append(".").append(lineName).append("-").append(stationName).append(" ");
+                sort++;
+                if (StrUtil.isNotBlank(fault.getSymptoms())) {
+                    content.append(fault.getSymptoms());
+                }else {
+                    content.append(" 未填写故障原因");
+                }
+
+                if (StrUtil.isNotBlank(fault.getAppointUserName())) {
+                    String realname = sysBaseApi.getUserByName(fault.getAppointUserName()).getRealname();
+                    content.append(" 维修人:").append(realname);
+                } else {
+                    content.append(" 未指派维修人:");
+                }
+                content.append("-");
+
+                String faultStatus = sysBaseApi.translateDict("fault_status", Convert.toStr(fault.getStatus()));
+                content.append(faultStatus);
+                content.append("\n");
+                code.append(fault.getCode()).append(",");
+            }
+            if (content.length() > 1) {
+                // 截取字符
+                content = content.deleteCharAt(content.length() - 1);
+                content.append("。");
+                map.put("content", content.toString());
+            }
+            if (code.length() > 1) {
+                // 截取字符
+                code = code.deleteCharAt(code.length() - 1);
+                map.put("code", code.toString());
+            }
         }
         return map;
     }

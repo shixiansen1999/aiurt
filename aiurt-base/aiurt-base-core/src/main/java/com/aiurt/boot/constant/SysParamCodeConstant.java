@@ -337,6 +337,11 @@ public interface SysParamCodeConstant {
      * 	工作内容是否需要查出所有未完成故障
      */
     String 	WORKLOG_UNFINISH_FAULT = "worklog_unfinish_fault";
+    /**
+     * 	工作日志是否查询故障巡视未完成任务
+     */
+    String 	WORK_LOG_UNFINISH_WORK = "work_log_unfinish_work";
+
     String APP_PATROL_TASK_POOL_SORT = "app_patrol_task_pool_sort";
     /**
      * 取消去办理的消息类型
@@ -516,4 +521,9 @@ public interface SysParamCodeConstant {
      * 培训编码-是否根据线路生成编码
      */
     String TRAIN_TASK_CODE="train_task_code";
+
+    /**
+     * 	巡视、检修标准是否关联多个设备分类
+     */
+    String MULTIPLE_DEVICE_TYPES = "multiple_device_types";
 }

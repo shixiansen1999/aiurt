@@ -24,7 +24,8 @@
             a.work_tick_path,
             a.symptoms,
             a.repair_duration,
-            a.response_duration
+            a.response_duration,
+            su.org_name
         from
         fault_repair_record a
         LEFT JOIN sys_user su on a.appoint_user_name = su.username
@@ -122,19 +123,18 @@
 
     <select id="getTodayRecord" resultType="com.aiurt.modules.fault.entity.FaultRepairRecord">
         SELECT frr.symptoms,frr.appoint_user_name,frr.fault_code,frr.solve_status
-        FROM
-        fault_repair_record frr
-        LEFT JOIN fault_repair_participants frp ON frr.id = frp.fault_repair_record_id
+        from fault f
+        LEFT JOIN fault_repair_record frr on f.code = frr.fault_code and frr.del_flag = 0
         <where>
-        frr.del_flag = 0
-        AND  DATE_FORMAT(frr.arrive_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d')
-        AND  DATE_FORMAT(frr.arrive_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
-        <if test="userNames != null and userNames.size() != 0">
-            and ( frr.appoint_user_name or frp.user_name) in
+            f.status = 12
+            AND  DATE_FORMAT(f.end_time ,'%Y-%m-%d %H:%i:%S') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d %H:%i:%S')
+            AND  DATE_FORMAT(f.end_time ,'%Y-%m-%d %H:%i:%S') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d %H:%i:%S')
+            <if test="userNames != null and userNames.size() != 0">
+                and frr.appoint_user_name  in
                 <foreach collection="userNames" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
-        </if>
+            </if>
         </where>
         group by frr.fault_code
     </select>
@@ -149,8 +149,8 @@
                 LEFT JOIN fault_repair_record frr on f.code = frr.fault_code and frr.del_flag = 0
                 <where>
                     f.status = 12
-                    AND  DATE_FORMAT(f.end_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d')
-                    AND  DATE_FORMAT(f.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
+                    AND  DATE_FORMAT(f.end_time ,'%Y-%m-%d %H:%i:%S') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d %H:%i:%S')
+                    AND  DATE_FORMAT(f.end_time ,'%Y-%m-%d %H:%i:%S') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d %H:%i:%S')
                     <if test="userNames != null and userNames.size() != 0">
                         and frr.appoint_user_name  in
                         <foreach collection="userNames" item="item" open="(" separator="," close=")">
@@ -174,5 +174,22 @@
                 </where>
                     ) as result
         group by result.code
+    </select>
+
+    <select id="getUnFinishFaultTask" resultType="com.aiurt.modules.fault.entity.Fault">
+        select
+        f.code,f.line_code,f.station_code,f.symptoms,f.appoint_user_name,f.status
+        from fault f
+        LEFT JOIN fault_repair_record frr on f.code = frr.fault_code and frr.del_flag = 0
+        <where>
+            f.status != 12 and f.status != 0
+            <if test="userNames != null and userNames.size() != 0">
+                and frr.appoint_user_name  in
+                <foreach collection="userNames" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by f.code
     </select>
 </mapper>

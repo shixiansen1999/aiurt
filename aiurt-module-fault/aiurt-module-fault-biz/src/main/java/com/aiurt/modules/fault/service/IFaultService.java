@@ -229,4 +229,11 @@ public interface IFaultService extends IService<Fault> {
      * @param hangUpDTO 挂起传的参数
      */
     void leaderHangUp(HangUpDTO hangUpDTO);
+
+    /**
+     * 打印
+     * @param code
+     * @return
+     */
+    String printFault(String code);
 }

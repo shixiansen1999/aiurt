@@ -98,4 +98,10 @@ public interface FaultRepairRecordMapper extends BaseMapper<FaultRepairRecord> {
      * @return
      */
     List<Fault> getTodayFault(@Param("startTime")DateTime startTime, @Param("endTime")DateTime endTime, @Param("userNames")List<String> userNames);
+    /**
+     * 获取当前用户未完成的故障维修单
+     * @param userNames
+     * @return
+     */
+    List<Fault> getUnFinishFaultTask( @Param("userNames")List<String> userNames);
 }
