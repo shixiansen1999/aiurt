@@ -796,9 +796,9 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @ApiOperation(value = "巡检任务表-打印巡视详情-打印所有工单", notes = "巡检任务表-打印巡视详情-打印所有工单")
     @GetMapping(value = "/printPatrolTaskStandardDetailById")
     public Result<List<PrintPatrolTaskStandardDTO>> printPatrolTaskStandardDetailById(@RequestParam(name="ids",required=true) String ids,
-                                                                            @RequestParam(name="standardId",required=false) String standardId,
+                                                                            @RequestParam(name="patrolNumber",required=false) String patrolNumber,
                                                                       HttpServletRequest req) {
-        List<PrintPatrolTaskStandardDTO> printPatrolTaskStandardDTOS = patrolTaskService.printPatrolTaskAndStandardById(ids,standardId);
+        List<PrintPatrolTaskStandardDTO> printPatrolTaskStandardDTOS = patrolTaskService.printPatrolTaskAndStandardById(ids,patrolNumber);
         return Result.OK(printPatrolTaskStandardDTOS);
     }
 
