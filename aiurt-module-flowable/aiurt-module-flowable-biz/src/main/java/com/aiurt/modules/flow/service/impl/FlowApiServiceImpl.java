@@ -990,6 +990,7 @@ public class FlowApiServiceImpl implements FlowApiService {
     public HighLightedNodeDTO viewHighlightFlowData(String processInstanceId) {
         log.info("请求参数：{}", processInstanceId);
         HistoricProcessInstance hpi = this.getHistoricProcessInstance(processInstanceId);
+
         BpmnModel bpmnModel = this.getBpmnModelByDefinitionId(hpi.getProcessDefinitionId());
         //Process对象集合
         List<Process> processList = bpmnModel.getProcesses();
@@ -1421,21 +1422,23 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteProcessInstance(String processInstanceId,String delReason) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-
-        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery()
-                .processInstanceId(processInstanceId).singleResult();
-        if (Objects.isNull(historicProcessInstance)) {
-            throw new AiurtBootException(AiurtErrorEnum.PROCESS_INSTANCE_IS_DELETE.getCode(),
-                    AiurtErrorEnum.PROCESS_INSTANCE_IS_DELETE.getMessage());
+        try {
+            ProcessInstance processInstance = getProcessInstance(processInstanceId);
+            if (Objects.isNull(processInstance)) {
+                throw new AiurtBootException("该流程实例已被删除！");
+            }
+        } catch (Exception e) {
+           throw new AiurtBootException("该流程实例已被删除！");
         }
 
-        historyService.deleteHistoricProcessInstance(processInstanceId);
+
+        runtimeService.deleteProcessInstance(processInstanceId, delReason);
 
         //todo 工单删除
 
         // 操作日志
         ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment();
-        actCustomTaskComment.setProcessInstanceId(historicProcessInstance.getId());
+        actCustomTaskComment.setProcessInstanceId(processInstanceId);
         actCustomTaskComment.setComment(delReason);
         actCustomTaskComment.setApprovalType(FlowApprovalType.DELETE);
         actCustomTaskComment.setCreateRealname(loginUser.getUsername());
