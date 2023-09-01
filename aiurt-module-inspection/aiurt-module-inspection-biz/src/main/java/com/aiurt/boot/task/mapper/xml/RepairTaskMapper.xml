@@ -466,6 +466,7 @@
                 and status = #{status}
             </if>
         </where>
+        GROUP BY t1.id
         order by sort_no ASC
     </select>
 
