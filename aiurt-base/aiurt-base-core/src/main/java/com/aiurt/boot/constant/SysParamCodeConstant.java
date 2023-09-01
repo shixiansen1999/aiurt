@@ -530,7 +530,7 @@ public interface SysParamCodeConstant {
      */
     String INSPECTION_RECEIVE_ANYTIME="inspection_receive_anytime";
     /**
-     * 调度故障是否只需要1,2号线故障
+     * 	调度故障是否只需要本系统线路的故障
      */
     String FAULT_EXTERNAL_XH12="fault_external_xh12";
     /**
