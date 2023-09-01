@@ -1531,6 +1531,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         repairRecordDTO.setStationPositionCode(fault.getStationPositionCode());
         repairRecordDTO.setIsSignalFault(fault.getIsSignalFault());
 
+        //查询影响
+        repairRecordDTO.setAffectDrive(fault.getAffectDrive());
+        repairRecordDTO.setAffectPassengerService(fault.getAffectPassengerService());
+        repairRecordDTO.setIsStopService(fault.getIsStopService());
+
         // 查询参与人
         List<FaultRepairParticipants> participantsList = repairParticipantsService.queryParticipantsByRecordId(repairRecord.getId());
         repairRecordDTO.setParticipantsList(participantsList);
@@ -1655,6 +1660,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         Fault fault = isExist(faultCode);
 
+        //新增配置
+        SysParamModel isShowAffectPassengerService = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_SHOW_AFFECTPASSENGERSERVICE);
+        boolean equals = "1".equals(isShowAffectPassengerService.getValue());
+        if (equals) {
+            fault.setAffectDrive(repairRecordDTO.getAffectDrive());
+            fault.setAffectPassengerService(repairRecordDTO.getAffectPassengerService());
+            fault.setIsStopService(repairRecordDTO.getIsStopService());
+        }
         FaultRepairRecord one = repairRecordService.getById(repairRecordDTO.getId());
 
         String userIds = repairRecordDTO.getUsers();
