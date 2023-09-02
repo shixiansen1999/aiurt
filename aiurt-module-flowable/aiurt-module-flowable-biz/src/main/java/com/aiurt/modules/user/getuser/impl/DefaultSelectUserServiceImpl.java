@@ -7,7 +7,7 @@ import com.aiurt.modules.user.filters.CustomVariableUserFilter;
 import com.aiurt.modules.user.filters.SystemVariableUserFilter;
 import com.aiurt.modules.user.getuser.DefaultSelectUserService;
 import com.aiurt.modules.user.pipeline.FilterChainPipeline;
-import com.aiurt.modules.user.pipeline.selector.LocalListBasedFilterSelector;
+import com.aiurt.modules.common.pipeline.selector.LocalListBasedFilterSelector;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

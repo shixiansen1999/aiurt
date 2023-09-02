@@ -1,5 +1,6 @@
-package com.aiurt.modules.user.pipeline.selector;
+package com.aiurt.modules.common.pipeline.selector;
 
+import com.aiurt.modules.common.pipeline.selector.FilterSelector;
 import com.google.common.collect.Lists;
 
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.Objects;
 /**
  * @author fgw
  */
-public class LocalListBasedFilterSelector implements FilterSelector{
+public class LocalListBasedFilterSelector implements FilterSelector {
 
     private List<String> filterNames = Lists.newArrayList();
 

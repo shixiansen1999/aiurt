@@ -1,4 +1,4 @@
-package com.aiurt.modules.user.pipeline.selector;
+package com.aiurt.modules.common.pipeline.selector;
 
 import java.util.Collections;
 import java.util.List;
