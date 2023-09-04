@@ -30,6 +30,7 @@ import com.aiurt.boot.team.entity.EmergencyTrainingRecordAtt;
 import com.aiurt.boot.team.model.ProcessRecordModel;
 import com.aiurt.boot.team.service.IEmergencyTeamService;
 import com.aiurt.common.api.CommonAPI;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.MinioUtil;
@@ -169,6 +170,13 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             emergencyPlan.setEmergencyPlanStatus(EmergencyPlanConstant.TO_SUBMITTED);
             emergencyPlan.setStatus(null);
             emergencyPlan.setOrgCode(orgCode);
+            //校验应急预案名称不可重复
+            LambdaQueryWrapper<EmergencyPlan> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(EmergencyPlan::getEmergencyPlanName, emergencyPlan.getEmergencyPlanName()).eq(EmergencyPlan::getDelFlag, CommonConstant.DEL_FLAG_0);
+            List<EmergencyPlan> emergencyPlans = emergencyPlanMapper.selectList(queryWrapper);
+            if (CollUtil.isNotEmpty(emergencyPlans)) {
+                throw new AiurtBootException("该应急预案名称已存在！");
+            }
             this.save(emergencyPlan);
 
             String planId = emergencyPlan.getId();
@@ -217,6 +225,17 @@ public class EmergencyPlanServiceImpl extends ServiceImpl<EmergencyPlanMapper, E
             }
             EmergencyPlan emergencyPlan = new EmergencyPlan();
             BeanUtils.copyProperties(emergencyPlanDto, emergencyPlan);
+
+            //校验应急预案名称不可重复
+            LambdaQueryWrapper<EmergencyPlan> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(EmergencyPlan::getEmergencyPlanName, emergencyPlan.getEmergencyPlanName())
+                    .ne(EmergencyPlan::getId,id)
+                    .eq(EmergencyPlan::getDelFlag, CommonConstant.DEL_FLAG_0);
+            List<EmergencyPlan> emergencyPlans = emergencyPlanMapper.selectList(queryWrapper);
+            if (CollUtil.isNotEmpty(emergencyPlans)) {
+                throw new AiurtBootException("该应急预案名称已存在！");
+            }
+
             this.updateById(emergencyPlan);
 
             //应急队伍关联

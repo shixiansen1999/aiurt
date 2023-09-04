@@ -10,6 +10,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.asset.dto.FixedAssetsDTO;
@@ -40,6 +41,8 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,6 +58,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -65,6 +70,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, FixedAssets> implements IFixedAssetsService {
+
+    private static final Logger log = LoggerFactory.getLogger(FixedAssetsServiceImpl.class);
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
     @Value("${jeecg.path.errorExcelUpload}")
@@ -252,26 +259,20 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
                     return Result.error("文件导入失败:文件内容不能为空！");
                 }
                 Map<String, String> data = new HashMap<>();
+                ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
                 for (FixedAssetsModel fixedAssetsModel : fixedAssetsModels) {
-                    StringBuilder stringBuilder = new StringBuilder();
-                    //数据重复性校验
-                    String s = data.get(fixedAssetsModel.getAssetCode());
-                    if (StrUtil.isNotEmpty(s)) {
-                        stringBuilder.append("该数据存在相同数据，");
-                    } else {
-                        data.put(fixedAssetsModel.getAssetCode(), fixedAssetsModel.getAssetName());
-                    }
-                    //必填数据校验
-                    checkRequired(stringBuilder, fixedAssetsModel);
-                    //非必填数据校验
-                    checkNotRequired(stringBuilder, fixedAssetsModel);
-                    if (stringBuilder.length() > 0) {
-                        // 截取字符
-                        stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
-                        fixedAssetsModel.setMistake(stringBuilder.toString());
-                        errorLines++;
-                    }
+                    threadPoolExecutor.execute(() -> this.executeMethod(data,fixedAssetsModel));
                 }
+                threadPoolExecutor.shutdown();
+                try {
+                    // 等待线程池中的任务全部完成
+                    threadPoolExecutor.awaitTermination(100, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    // 处理中断异常
+                    log.info("循环方法的线程中断异常", e.getMessage());
+                }
+
+                errorLines = (int) fixedAssetsModels.stream().filter(f -> StrUtil.isNotBlank(f.getMistake())).count();
                 if (errorLines > 0) {
                     //存在错误，导出错误清单
                     return getErrorExcel(errorLines, errorMessage, fixedAssetsModels, successLines, null, type);
@@ -290,7 +291,26 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         }
         return Result.ok("文件导入失败！");
     }
+    private void executeMethod( Map<String, String> data,FixedAssetsModel fixedAssetsModel) {
+        StringBuilder stringBuilder = new StringBuilder();
+        //数据重复性校验
+        String s = data.get(fixedAssetsModel.getAssetCode());
+        if (StrUtil.isNotEmpty(s)) {
+            stringBuilder.append("该数据存在相同数据，");
+        } else {
+            data.put(fixedAssetsModel.getAssetCode(), fixedAssetsModel.getAssetName());
+        }
+        //必填数据校验
+        checkRequired(stringBuilder, fixedAssetsModel);
+        //非必填数据校验
+        checkNotRequired(stringBuilder, fixedAssetsModel);
 
+        if (stringBuilder.length() > 0) {
+            // 截取字符
+            stringBuilder = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            fixedAssetsModel.setMistake(stringBuilder.toString());
+        }
+    }
 
     /**必填数据校验*/
     private void checkRequired(StringBuilder stringBuilder, FixedAssetsModel fixedAssetsModel) {
@@ -395,7 +415,7 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
         String locationName = fixedAssetsModel.getLocationName();
         if (StrUtil.isNotBlank(locationName)) {
             List<String> list = StrUtil.splitTrim(locationName, "/");
-            if (list.size() == 2 || list.size() ==1) {
+            if (list.size() == 2) {
                 JSONObject lineByName = sysBaseAPI.getLineByName(list.get(0));
                 JSONObject stationByName = sysBaseAPI.getStationByName(list.get(1));
                 if (ObjectUtil.isNotEmpty(lineByName) && ObjectUtil.isNotEmpty(stationByName)) {
@@ -456,14 +476,12 @@ public class FixedAssetsServiceImpl extends ServiceImpl<FixedAssetsMapper, Fixed
             TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/fixedAssetsError.xlsx");
             Map<String, Object> errorMap = new HashMap<String, Object>();
             List<Map<String, Object>> mapList = new ArrayList<>();
-            Map<String, Object> map = new HashMap<>();
-
 
             for (FixedAssetsModel fixedAssetsModel : fixedAssetsModels) {
 
                 String buildBuyDate = fixedAssetsModel.getBuildBuyDate()!=null?DateUtil.format(fixedAssetsModel.getBuildBuyDate(), "yyyy-MM-dd"):"";
                 String startDate =fixedAssetsModel.getStartDate()!=null?DateUtil.format(fixedAssetsModel.getStartDate(), "yyyy-MM-dd"):"";
-
+                Map<String, Object> map = new HashMap<>();
                 map.put("assetName", fixedAssetsModel.getAssetName());
                 map.put("locationName", fixedAssetsModel.getLocationName());
                 map.put("categoryName", fixedAssetsModel.getCategoryName());

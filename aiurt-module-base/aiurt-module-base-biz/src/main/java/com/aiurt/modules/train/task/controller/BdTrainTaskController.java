@@ -104,19 +104,7 @@ public class BdTrainTaskController {
 	@ApiOperation(value="培训任务-添加", notes="培训任务-添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody BdTrainTaskPage bdTrainTaskPage) {
-		BdTrainTask bdTrainTask = new BdTrainTask();
-		BeanUtils.copyProperties(bdTrainTaskPage, bdTrainTask);
-		bdTrainTask.setNumber(0);
-		bdTrainTask.setTaskState(0);
-		if (bdTrainTask.getExamStatus()==0) {
-			bdTrainTask.setMakeUpState(0);
-			bdTrainTask.setStudyResourceState(0);
-		}
-		SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(bdTrainTask.getTaskTeamId());
-		bdTrainTask.setTaskTeamCode(sysDepartModel.getOrgCode());
-		bdTrainTaskService.saveMain(bdTrainTask, bdTrainTaskPage.getBdTrainTaskSignList());
-		List<String> userIds = bdTrainTask.getUserIds();
-		bdTrainTaskService.addTrainTaskUser(bdTrainTask.getId(),bdTrainTask.getTaskTeamId(),userIds);
+		bdTrainTaskService.add(bdTrainTaskPage);
 		return Result.OK("添加成功！");
 	}
 

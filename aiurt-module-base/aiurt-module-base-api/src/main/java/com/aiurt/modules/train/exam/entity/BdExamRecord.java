@@ -290,4 +290,9 @@ public class BdExamRecord implements Serializable {
     @TableField(exist = false)
     @Dict(dicCode = "is_makeup_exam")
     private Integer isMakeupExam;
+
+    /**错题集id*/
+    @ApiModelProperty(value = "错题集id")
+    @TableField(exist = false)
+    private String examMistakesId;
 }

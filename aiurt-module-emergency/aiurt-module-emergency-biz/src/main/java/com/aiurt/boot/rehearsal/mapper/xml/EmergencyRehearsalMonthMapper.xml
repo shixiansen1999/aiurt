@@ -33,7 +33,7 @@
             and erm.org_code = #{condition.orgCode}
         </if>
         <if test="condition.rehearsalTime != null">
-            and date_format(erm.rehearsal_time, '%Y-%m-%d') = date_format(#{condition.rehearsalTime}, '%Y-%m-%d')
+            and date_format(erm.rehearsal_time, '%Y-%m') = date_format(#{condition.rehearsalTime}, '%Y-%m')
         </if>
         <if test="condition.step != null and condition.step != ''">
             and erm.step like concat('%', #{condition.step}, '%')
