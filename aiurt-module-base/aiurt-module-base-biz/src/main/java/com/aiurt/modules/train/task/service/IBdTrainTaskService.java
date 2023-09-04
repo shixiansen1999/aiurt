@@ -215,4 +215,10 @@ public interface IBdTrainTaskService extends IService<BdTrainTask> {
 	 * @return
 	 */
 	Page<UserDTO> getTrainTeacher(Page<UserDTO> pageList, UserDTO userDTO);
+
+	/**
+	 * 添加培训任务
+	 * @param bdTrainTaskPage
+	 */
+	void add(BdTrainTaskPage bdTrainTaskPage);
 }

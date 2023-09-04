@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.mistakes.mapper.BdExamMistakesMapper">
+
+    <select id="pageList" resultType="com.aiurt.modules.train.mistakes.dto.resp.BdExamMistakesRespDTO">
+        SELECT
+            bem.id AS id,
+            bem.user_id AS userId,
+            su.realname AS realName,
+            bem.train_task_id AS trainTaskId,
+            btt.exam_task_name AS examTaskName,
+            bem.name AS name,
+            btt.task_team_id AS taskTeamId,
+            sd.org_code AS taskTeamOrgCode,
+            sd.depart_name AS taskTeamName,
+            bem.state AS state
+        FROM bd_exam_mistakes bem
+        INNER JOIN bd_train_task btt ON btt.id=bem.train_task_id
+        LEFT JOIN sys_depart sd ON sd.id=btt.task_team_id
+        LEFT JOIN sys_user su ON su.id=bem.user_id
+        <where>
+            <if test="bdExamMistakesReqDTO.trainTaskId != null and bdExamMistakesReqDTO.trainTaskId != ''">
+                bem.train_task_id=#{bdExamMistakesReqDTO.trainTaskId}
+            </if>
+        </where>
+    </select>
+</mapper>
