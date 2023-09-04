@@ -161,4 +161,7 @@ public class MaterialAccountDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "应急预案标识")
     private java.lang.String planFlag;
+
+    @ApiModelProperty(value = "是否查询全部，不分页")
+    private Boolean isGetAll;
 }
