@@ -9,6 +9,7 @@ import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.materials.constant.MaterialsConstant;
@@ -142,6 +143,16 @@ public class EmergencyMaterialsServiceImpl extends ServiceImpl<EmergencyMaterial
             }
         }
         List<MaterialAccountDTO> materialAccountList = emergencyMaterialsMapper.getMaterialAccountList(pageList, condition);
+        // 是否查询全部，不分页，这个是为了应急物资巡检新增时只存入了10条数据的bug使用
+        // TODO: 这里直接查那么多条会有性能问题，后续优化
+        if (BooleanUtil.isTrue(condition.getIsGetAll()) && pageList.getTotal() > pageList.getSize()) {
+            Page<MaterialAccountDTO> page = new Page<>(1, pageList.getTotal());
+            materialAccountList = emergencyMaterialsMapper.getMaterialAccountList(page, condition);
+
+            pageList.setCurrent(1L);
+            pageList.setPages(1L);
+            pageList.setSize(pageList.getTotal());
+        }
         List<PatrolStandardItemsModel> patrolStandardItemsModels = iSysBaseAPI.patrolStandardList(condition.getPatrolStandardId());
         materialAccountList.forEach(e -> {
             if (StrUtil.isNotBlank(e.getUserId())) {
