@@ -25,12 +25,8 @@ import com.alibaba.excel.util.MapUtils;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.alibaba.excel.write.metadata.fill.FillWrapper;
-import com.aspose.cells.PageSetup;
-import com.aspose.cells.PdfSaveOptions;
-import com.aspose.cells.Style;
-import com.aspose.cells.Worksheet;
+import com.aspose.cells.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.spire.xls.PaperSizeType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -264,7 +260,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
                 processFilledFile(type, firstColumn, lastColumn, cellByText, filePath, startRow, endRow, workbook, sheet);
             }
 
-            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
+//            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -859,7 +855,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
             List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
             List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceIdAndParent(collect);
             for (PatrolCheckResultDTO c : checkResultList) {
-                if (c.getCheck()==1){
+                if (c.getCheck()==1 && c.getParentId().equals("0")){
                     PrintDTO printDTO = new PrintDTO();
                     printDTO.setStandard(ObjectUtil.defaultIfEmpty(c.getQualityStandard(), c.getContent()).replaceAll("[\n ]", ""));
                     printDTO.setEquipment(c.getContent());

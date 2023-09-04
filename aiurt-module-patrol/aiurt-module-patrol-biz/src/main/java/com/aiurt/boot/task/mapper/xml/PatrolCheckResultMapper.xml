@@ -86,7 +86,8 @@
         pcr.check_result,
         pcr.remark,
         pcr.`check`,
-        css.system_name as subsystemName
+        css.system_name as subsystemName,
+        pcr.parent_id
         FROM
         patrol_check_result pcr
         LEFT JOIN patrol_task_device ptd ON pcr.task_device_id = ptd.id
