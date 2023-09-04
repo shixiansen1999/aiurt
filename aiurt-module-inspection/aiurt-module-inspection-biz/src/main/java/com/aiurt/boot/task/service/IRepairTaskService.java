@@ -196,7 +196,7 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @param id 检修单id
      * @return
      */
-    void submitMonad(String id);
+    void submitMonad(String id, String samplingSignUrl);
 
     /**
      * 检修单同行人下拉
