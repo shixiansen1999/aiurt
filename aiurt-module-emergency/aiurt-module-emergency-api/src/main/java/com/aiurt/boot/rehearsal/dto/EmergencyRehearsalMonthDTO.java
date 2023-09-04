@@ -2,9 +2,7 @@ package com.aiurt.boot.rehearsal.dto;
 
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalMonth;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -23,4 +21,7 @@ public class EmergencyRehearsalMonthDTO extends EmergencyRehearsalMonth {
      */
     @ApiModelProperty(value = "部门权限的编码")
     private List<String> orgCodes;
+
+    @ApiModelProperty(value = "当前登录人部门")
+    private java.lang.String userOrgCode;
 }
