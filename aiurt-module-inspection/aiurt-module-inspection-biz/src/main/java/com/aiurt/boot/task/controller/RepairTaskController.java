@@ -599,8 +599,9 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
     @ApiOperation(value = "检修任务表-打印检修详情", notes = "检修任务表-打印检修详情")
     @GetMapping(value = "/printRepairTaskById")
     public Result<List<PrintRepairTaskDTO>> printRepairTaskById(@RequestParam(name="ids",required=true) String ids,
+                                                                @RequestParam(name="overhaulCode",required=false) String overhaulCode,
                                                           HttpServletRequest req) {
-        List<PrintRepairTaskDTO> printPatrolTaskDTOs = repairTaskService.printRepairTaskById(ids);
+        List<PrintRepairTaskDTO> printPatrolTaskDTOs = repairTaskService.printRepairTaskById(ids,overhaulCode);
         return Result.OK(printPatrolTaskDTOs);
     }
 }

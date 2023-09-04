@@ -484,6 +484,26 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     }
 
     @Override
+    public List<PrintTaskStationDTO> getBillGangedInfoToPrint(String taskId) {
+        List<PrintStandardDetailDTO> billGangedInfo = patrolTaskDeviceMapper.getBillGangedInfoToPrint(taskId);
+        billGangedInfo.forEach(b->{b.setTableName(b.getTableName().replaceAll("\n", ""));});
+        Map<String, List<PrintStandardDetailDTO>> collect = billGangedInfo.stream().filter((t) -> StrUtil.isNotBlank(t.getStationCode())).collect(Collectors.groupingBy(PrintStandardDetailDTO::getStationCode));
+        List<PrintTaskStationDTO> stationList = new ArrayList<>();
+        for (Map.Entry<String, List<PrintStandardDetailDTO>> entry : collect.entrySet()) {
+            String stationCode = entry.getKey();
+            if (ObjectUtil.isEmpty(stationCode)) {
+                continue;
+            }
+            PrintTaskStationDTO station = new PrintTaskStationDTO();
+            station.setStationCode(stationCode);
+            station.setStationName(patrolTaskDeviceMapper.getStationName(stationCode));
+            station.setBillInfo(entry.getValue());
+            stationList.add(station);
+        }
+        return stationList;
+    }
+
+    @Override
     public Map<String, Object> selectBillInfoByNumber(String patrolNumber) {
         PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumber(patrolNumber))
                 .orElseGet(PatrolTaskDeviceParam::new);

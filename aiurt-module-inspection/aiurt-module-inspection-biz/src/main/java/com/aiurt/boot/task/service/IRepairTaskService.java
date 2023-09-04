@@ -254,9 +254,10 @@ public interface IRepairTaskService extends IService<RepairTask> {
     /**
      * 检修任务表-打印检修详情
      * @param ids
+     * @param overhaulCode
      * @return
      */
-    List<PrintRepairTaskDTO> printRepairTaskById(String ids);
+    List<PrintRepairTaskDTO> printRepairTaskById(String ids,String overhaulCode);
 
     /**
      * 根据检修任务id获取需要签名的人员列表

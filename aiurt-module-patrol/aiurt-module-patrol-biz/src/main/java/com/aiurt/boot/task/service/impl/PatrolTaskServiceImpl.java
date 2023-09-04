@@ -2196,6 +2196,135 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
+    public List<PrintPatrolTaskStandardDTO> printPatrolTaskAndStandardById(String ids,String patrolNumber) {
+        List<PrintPatrolTaskStandardDTO> arrayList = new ArrayList<>();
+        List<String> idList = StrUtil.splitTrim(ids, ",");
+        for (String id : idList) {
+            PrintPatrolTaskStandardDTO printPatrolTaskStandardDTO = new PrintPatrolTaskStandardDTO();
+            PatrolTask patrolTask = patrolTaskMapper.selectById(id);
+            Assert.notNull(patrolTask, "未找到对应记录！");
+            String patrolPlanPeriod = null;
+            if(patrolTask.getPeriod() != null){
+                 patrolPlanPeriod = sysBaseApi.translateDict("patrol_plan_period", Convert.toStr(patrolTask.getPeriod()));
+            }
+
+            printPatrolTaskStandardDTO.setId(patrolTask.getId());
+            // 组织机构信息
+            List<PatrolTaskOrganizationDTO> organizationInfo = patrolTaskOrganizationMapper.selectOrgByTaskCode(patrolTask.getCode());
+            //巡视单内容
+            List<PrintTaskStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfoToPrint(id);
+            for (PrintTaskStationDTO dto : billGangedInfo) {
+                //获取检修项
+                List<PrintStandardDetailDTO> billInfo = dto.getBillInfo();
+                List<PrintStandardDetailDTO> printStandardDetailDTOS = new ArrayList<>();
+                //批量打印，打印任务里面的所有工单
+                if (CollUtil.isNotEmpty(billInfo)) {
+                        for (PrintStandardDetailDTO printStandardDetailDTO : billInfo) {
+                            String billCode = printStandardDetailDTO.getBillCode();
+                            //工单详情打印，只打印选中的工单
+                            if (StrUtil.isEmpty(patrolNumber) || billCode.equals(patrolNumber)) {
+                                getPatrolStandardDetail(printStandardDetailDTO, patrolTask, printStandardDetailDTOS, billCode, organizationInfo, patrolPlanPeriod);
+                            }
+                        }
+                }
+                printPatrolTaskStandardDTO.setBillInfo(printStandardDetailDTOS);
+                arrayList.add(printPatrolTaskStandardDTO);
+            }
+        }
+        return arrayList;
+    }
+
+    public void getPatrolStandardDetail(PrintStandardDetailDTO printStandardDetailDTO,PatrolTask patrolTask, List<PrintStandardDetailDTO> printStandardDetailDTOS,String billCode,List<PatrolTaskOrganizationDTO> organizationInfo,String patrolPlanPeriod){
+        //构建树
+        PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumberToPrint(billCode))
+                .orElseGet(PatrolTaskDeviceParam::new);
+        List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
+        // 字典翻译检查值
+        Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
+                .stream().filter(l->StrUtil.isNotEmpty(l.getText()))
+                .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+        checkResultList.stream().forEach(c -> {
+            c.setCheckDictName(requiredItems.get(String.valueOf(c.getRequired())));
+        });
+        List<PatrolCheckResultDTO> tree = getTree(checkResultList, "0");
+        //获取设备位置
+        StationDTO stationDTO = new StationDTO();
+        stationDTO.setLineCode(taskDeviceParam.getLineCode());
+        stationDTO.setStationCode(taskDeviceParam.getStationCode());
+        stationDTO.setPositionCode(taskDeviceParam.getPositionCode());
+        List<StationDTO> stationDTOList = new ArrayList<>();
+        stationDTOList.add(stationDTO);
+        //设备位置翻译
+        String s = manager.translateStation(stationDTOList);
+        //设备的位置
+        if (ObjectUtil.isNotEmpty(taskDeviceParam.getDeviceCode())) {
+            taskDeviceParam.setDevicePositionName(s);
+        } else {
+            taskDeviceParam.setInspectionPositionName(s);
+            taskDeviceParam.setDevicePositionName(null);
+        }
+        //巡检工单详情
+        printStandardDetailDTO.setUserName(patrolTaskMapper.getUsername(patrolTask.getEndUserId()));
+        printStandardDetailDTO.setSubmitTime(taskDeviceParam.getCheckTime());
+        printStandardDetailDTO.setSignUrl(patrolTask.getSignUrl());
+        printStandardDetailDTO.setPeriod(patrolPlanPeriod);
+        printStandardDetailDTO.setChildren(tree);
+        printStandardDetailDTO.setSpotCheckUserName(taskDeviceParam.getSamplePersonName());
+        //抽检人不为空，则显示为提交时间
+        if(StrUtil.isNotBlank(printStandardDetailDTO.getSpotCheckUserName())){
+            printStandardDetailDTO.setSpotCheckTime(taskDeviceParam.getCheckTime());
+        }
+        printStandardDetailDTO.setDeviceName(taskDeviceParam.getDeviceName());
+        printStandardDetailDTO.setDeviceLocation(taskDeviceParam.getDevicePositionName());
+        printStandardDetailDTO.setDepartInfo(organizationInfo);
+        printStandardDetailDTOS.add(printStandardDetailDTO);
+    }
+
+    /**
+     * 构建巡检项目树
+     *
+     * @param list
+     * @param parentId
+     * @return
+     */
+    public List<PatrolCheckResultDTO> getTree(List<PatrolCheckResultDTO> list, String parentId) {
+        // 树的根节点
+        List<PatrolCheckResultDTO> tree = Optional.ofNullable(list).orElseGet(Collections::emptyList)
+                .stream().filter(l -> ObjectUtil.isNotEmpty(l.getParentId()) && parentId.equals(l.getParentId()))
+                .collect(Collectors.toList());
+        // 非根节点数据
+        List<PatrolCheckResultDTO> subList = Optional.ofNullable(list).orElseGet(Collections::emptyList)
+                .stream().filter(l -> !parentId.equals(l.getParentId()))
+                .collect(Collectors.toList());
+        // 构建根节点下的子树
+        tree.stream().forEach(l -> {
+            List<PatrolCheckResultDTO> subTree = buildTree(subList, l.getOldId());
+            l.setChildren(subTree);
+        });
+        return tree;
+    }
+    /**
+     * 递归获取子树
+     *
+     * @param list
+     * @param parentId
+     * @return
+     */
+    public List<PatrolCheckResultDTO> buildTree(List<PatrolCheckResultDTO> list, String parentId) {
+        List<PatrolCheckResultDTO> tree = new ArrayList<>();
+        for (PatrolCheckResultDTO dept : list) {
+            if (dept.getParentId() != null) {
+                if (dept.getParentId().equals(parentId)) {
+                    List<PatrolCheckResultDTO> subList = buildTree(list, dept.getId());
+                    dept.setChildren(subList);
+                    tree.add(dept);
+                }
+            }
+        }
+        return tree;
+    }
+
+    @Override
     public void patrolTaskManualDelete(String id) {
         if (StrUtil.isEmpty(id)) {
             throw new AiurtBootException("操作失败");
