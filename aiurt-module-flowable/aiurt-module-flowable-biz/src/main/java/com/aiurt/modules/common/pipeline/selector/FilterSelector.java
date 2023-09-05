@@ -1,9 +1,9 @@
-package com.aiurt.modules.user.pipeline.selector;
+package com.aiurt.modules.common.pipeline.selector;
 
 import java.util.List;
 
 /**
- * <p>虚设的选择器</p>
+ * <p>过滤器的选择器，确定着责任链由那些拦截器组成</p>
  * @author fgw
  */
 public interface FilterSelector {

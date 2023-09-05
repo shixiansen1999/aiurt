@@ -2,7 +2,7 @@ package com.aiurt.modules.user.dto;
 
 import com.aiurt.modules.user.entity.ActCustomUser;
 import com.aiurt.modules.user.pipeline.context.AbstractUserContext;
-import com.aiurt.modules.user.pipeline.selector.FilterSelector;
+import com.aiurt.modules.common.pipeline.selector.FilterSelector;
 import lombok.Getter;
 import lombok.Setter;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -40,6 +40,8 @@ public class SelectUserContext extends AbstractUserContext {
      */
     private List<String> userList;
 
+    private Boolean continueChain;
+
 
     public SelectUserContext(FilterSelector selector) {
         super(selector);
@@ -48,6 +50,9 @@ public class SelectUserContext extends AbstractUserContext {
 
     @Override
     public boolean continueChain() {
+        if (Objects.nonNull(this.continueChain)) {
+            return this.continueChain;
+        }
         return true;
     }
 
