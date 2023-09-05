@@ -224,9 +224,9 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
             Object read = JsonPath.read(jsonStr, "$.childShapes[*].properties.userassignee[*].user");
 
-            Set<String> preNodeActionList =  JsonPath.read(jsonStr, "$.childShapes[*].properties.preNodeAction.customInterfaceId");
+            List<String> preNodeActionList =  JsonPath.read(jsonStr, "$.childShapes[*].properties.preNodeAction.customInterfaceId");
 
-            Set<String> postNodeActionRead = JsonPath.read(jsonStr, "$.childShapes[*].properties.postNodeAction.customInterfaceId");
+            List<String> postNodeActionRead = JsonPath.read(jsonStr, "$.childShapes[*].properties.postNodeAction.customInterfaceId");
 
             preNodeActionSet = preNodeActionList.stream()
                     .filter(item -> item != null && !item.isEmpty())
