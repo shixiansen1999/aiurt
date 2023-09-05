@@ -1,0 +1,42 @@
+@startuml
+actor User
+participant ActCustomPageController
+participant ActCustomPageServiceImpl
+participant IActCustomPageFieldService
+
+User -> ActCustomPageController: 请求同步表单字段数据
+activate ActCustomPageController
+
+ActCustomPageController -> ActCustomPageServiceImpl: 保存数据
+activate ActCustomPageServiceImpl
+
+ActCustomPageServiceImpl -> ActCustomPageServiceImpl: 校验参数
+alt 校验失败
+    ActCustomPageServiceImpl --> ActCustomPageController: 返回失败
+    deactivate ActCustomPageServiceImpl
+else 校验通过
+
+    ActCustomPageServiceImpl -> IActCustomPageFieldService: 删除数据
+    activate ActCustomPageServiceImpl
+    activate IActCustomPageFieldService
+    IActCustomPageFieldService --> IActCustomPageFieldService: 删除数据
+    alt 删除失败
+
+        IActCustomPageFieldService->ActCustomPageServiceImpl:删除失败
+         deactivate IActCustomPageFieldService
+        ActCustomPageServiceImpl --> ActCustomPageController: 同步表单字段数据失败
+
+    else 删除成功
+        ActCustomPageServiceImpl->IActCustomPageFieldService:保存数据
+         activate  IActCustomPageFieldService
+        IActCustomPageFieldService -> IActCustomPageFieldService: 保存数据
+        IActCustomPageFieldService --> ActCustomPageServiceImpl: 返回保存结果
+        deactivate IActCustomPageFieldService
+    end
+
+    ActCustomPageServiceImpl --> ActCustomPageController: 返回保存结果
+    deactivate ActCustomPageServiceImpl
+end
+ActCustomPageController -> User: 返回保存结果
+deactivate ActCustomPageController
+@enduml

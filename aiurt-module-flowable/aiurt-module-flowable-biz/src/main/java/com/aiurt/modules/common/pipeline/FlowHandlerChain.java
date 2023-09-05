@@ -1,12 +1,11 @@
-package com.aiurt.modules.remind.pipeline;
+package com.aiurt.modules.common.pipeline;
 
-import com.aiurt.modules.remind.pipeline.context.RemindContext;
+import com.aiurt.modules.common.pipeline.context.FlowContext;
 
 /**
  * @author fgw
  */
-public interface RemindFilterChain<T extends RemindContext> {
-
+public interface FlowHandlerChain<T extends FlowContext> {
 
     /**
      * 事件处理流程

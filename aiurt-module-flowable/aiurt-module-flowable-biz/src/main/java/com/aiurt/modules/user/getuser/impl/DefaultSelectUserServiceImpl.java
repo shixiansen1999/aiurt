@@ -1,20 +1,23 @@
 package com.aiurt.modules.user.getuser.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.modules.user.dto.SelectUserContext;
 import com.aiurt.modules.user.entity.ActCustomUser;
-import com.aiurt.modules.user.filters.BaseUserFilter;
-import com.aiurt.modules.user.filters.CustomVariableUserFilter;
-import com.aiurt.modules.user.filters.SystemVariableUserFilter;
+import com.aiurt.modules.user.filters.BaseUserHandler;
+import com.aiurt.modules.user.filters.CustomVariableUserHandler;
+import com.aiurt.modules.user.filters.SystemVariableUserHandler;
 import com.aiurt.modules.user.getuser.DefaultSelectUserService;
 import com.aiurt.modules.user.pipeline.FilterChainPipeline;
-import com.aiurt.modules.common.pipeline.selector.LocalListBasedFilterSelector;
+import com.aiurt.modules.common.pipeline.selector.LocalListBasedHandlerSelector;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author fgw
@@ -37,17 +40,21 @@ public class DefaultSelectUserServiceImpl implements DefaultSelectUserService {
     @Override
     public List<String> getAllUserList(ActCustomUser actCustomUser, Map<String, Object> variableData, ProcessInstance processInstance) {
         List<String> filterNames = new ArrayList<>();
-        filterNames.add(BaseUserFilter.class.getSimpleName());
-        filterNames.add(CustomVariableUserFilter.class.getSimpleName());
-        filterNames.add(SystemVariableUserFilter.class.getSimpleName());
-        LocalListBasedFilterSelector filterSelector = new LocalListBasedFilterSelector(filterNames);
+        filterNames.add(BaseUserHandler.class.getSimpleName());
+        filterNames.add(CustomVariableUserHandler.class.getSimpleName());
+        filterNames.add(SystemVariableUserHandler.class.getSimpleName());
+        LocalListBasedHandlerSelector filterSelector = new LocalListBasedHandlerSelector(filterNames);
 
         SelectUserContext context = new SelectUserContext(filterSelector);
         context.setCustomUser(actCustomUser);
         context.setVariable(variableData);
         context.setProcessInstance(processInstance);
         filterChainPipeline.getFilterChain().handle(context);
-        return context.getUserList();
+        if (CollUtil.isEmpty(context.getUserList())) {
+            return Collections.emptyList();
+        }
+        List<String> list = context.getUserList().stream().distinct().collect(Collectors.toList());
+        return list;
     }
 
     /**
@@ -61,15 +68,18 @@ public class DefaultSelectUserServiceImpl implements DefaultSelectUserService {
     @Override
     public List<String> getUserList(ActCustomUser actCustomUser, Map<String, Object> variableData, ProcessInstance processInstance) {
         List<String> filterNames = new ArrayList<>();
-        filterNames.add(CustomVariableUserFilter.class.getSimpleName());
-        filterNames.add(SystemVariableUserFilter.class.getSimpleName());
-        LocalListBasedFilterSelector filterSelector = new LocalListBasedFilterSelector(filterNames);
+        filterNames.add(CustomVariableUserHandler.class.getSimpleName());
+        filterNames.add(SystemVariableUserHandler.class.getSimpleName());
+        LocalListBasedHandlerSelector filterSelector = new LocalListBasedHandlerSelector(filterNames);
 
         SelectUserContext context = new SelectUserContext(filterSelector);
         context.setCustomUser(actCustomUser);
         context.setVariable(variableData);
         context.setProcessInstance(processInstance);
-        filterChainPipeline.getFilterChain().handle(context);
-        return context.getUserList();
+        if (CollUtil.isEmpty(context.getUserList())) {
+            return Collections.emptyList();
+        }
+        List<String> list = context.getUserList().stream().distinct().collect(Collectors.toList());
+        return list;
     }
 }

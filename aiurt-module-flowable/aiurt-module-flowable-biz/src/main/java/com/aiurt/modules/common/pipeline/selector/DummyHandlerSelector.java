@@ -7,7 +7,7 @@ import java.util.List;
  * <p>虚设的选择器</p>
  * @author fgw
  */
-public class DummyFilterSelector implements FilterSelector{
+public class DummyHandlerSelector implements HandlerSelector {
     /**
      * filter 匹配
      *
@@ -15,7 +15,7 @@ public class DummyFilterSelector implements FilterSelector{
      * @return
      */
     @Override
-    public boolean matchFilter(String currentFilterName) {
+    public boolean matchHandler(String currentFilterName) {
         return false;
     }
 
@@ -25,7 +25,7 @@ public class DummyFilterSelector implements FilterSelector{
      * @return
      */
     @Override
-    public List<String> getFilterNames() {
+    public List<String> getHandlerNames() {
         return Collections.emptyList();
     }
 }

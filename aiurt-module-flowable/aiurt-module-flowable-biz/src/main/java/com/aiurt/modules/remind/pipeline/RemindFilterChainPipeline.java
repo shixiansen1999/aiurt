@@ -1,4 +1,4 @@
-package com.aiurt.modules.user.pipeline;
+package com.aiurt.modules.remind.pipeline;
 
 import com.aiurt.modules.common.pipeline.DefaultFlowHandlerChain;
 import com.aiurt.modules.common.pipeline.FlowHandler;
@@ -6,24 +6,25 @@ import com.aiurt.modules.common.pipeline.FlowHandler;
 /**
  * @author fgw
  */
-public class FilterChainPipeline<T extends FlowHandler>{
+public class RemindFilterChainPipeline<T extends FlowHandler> {
+
 
     private DefaultFlowHandlerChain last;
 
-    public FilterChainPipeline() {
+    public RemindFilterChainPipeline() {
     }
 
     public DefaultFlowHandlerChain getFilterChain() {
         return this.last;
     }
 
-    public FilterChainPipeline addFirst(T filter) {
+    public RemindFilterChainPipeline addFirst(T filter) {
         DefaultFlowHandlerChain newChain = new DefaultFlowHandlerChain(this.last, filter);
         this.last = newChain;
         return this;
     }
 
-    public FilterChainPipeline addFirst(String desc, T filter) {
+    public RemindFilterChainPipeline addFirst(String desc, T filter) {
         DefaultFlowHandlerChain newChain = new DefaultFlowHandlerChain(this.last, filter);
         this.last = newChain;
         return this;

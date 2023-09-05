@@ -1,9 +1,9 @@
 package com.aiurt.modules.user.filters;
 
+import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.user.dto.SelectUserContext;
 import com.aiurt.modules.user.entity.ActCustomUser;
 import com.aiurt.modules.user.getuser.impl.DefaultSystemVariableSelectUser;
-import com.aiurt.modules.user.pipeline.AbstractUserFilter;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import java.util.List;
  * @author fgw
  */
 @Service
-public class SystemVariableUserFilter extends AbstractUserFilter<SelectUserContext> {
+public class SystemVariableUserHandler extends AbstractFlowHandler<SelectUserContext> {
 
     @Autowired
     private DefaultSystemVariableSelectUser systemVariableSelectUser;
@@ -23,7 +23,7 @@ public class SystemVariableUserFilter extends AbstractUserFilter<SelectUserConte
      * @param context
      */
     @Override
-    protected void handle(SelectUserContext context) {
+    public void handle(SelectUserContext context) {
         // 工厂 + 策略模型
         ActCustomUser customUser = context.getCustomUser();
 

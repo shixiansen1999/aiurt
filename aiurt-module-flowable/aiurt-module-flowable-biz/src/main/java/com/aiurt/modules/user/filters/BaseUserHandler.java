@@ -1,13 +1,12 @@
 package com.aiurt.modules.user.filters;
 
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.user.dto.SelectUserContext;
 import com.aiurt.modules.user.entity.ActCustomUser;
-import com.aiurt.modules.user.pipeline.AbstractUserFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,7 +18,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public class BaseUserFilter extends AbstractUserFilter<SelectUserContext> {
+public class BaseUserHandler extends AbstractFlowHandler<SelectUserContext> {
 
     @Autowired
     private ISysBaseAPI sysBaseApi;
@@ -28,7 +27,7 @@ public class BaseUserFilter extends AbstractUserFilter<SelectUserContext> {
      * @param context
      */
     @Override
-    protected void handle(SelectUserContext context) {
+    public void handle(SelectUserContext context) {
         ActCustomUser customUser = context.getCustomUser();
         String userName = customUser.getUserName();
         String post = customUser.getPost();

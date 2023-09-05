@@ -1,8 +1,8 @@
 package com.aiurt.modules.user.config;
 
-import com.aiurt.modules.user.filters.BaseUserFilter;
-import com.aiurt.modules.user.filters.CustomVariableUserFilter;
-import com.aiurt.modules.user.filters.SystemVariableUserFilter;
+import com.aiurt.modules.user.filters.BaseUserHandler;
+import com.aiurt.modules.user.filters.CustomVariableUserHandler;
+import com.aiurt.modules.user.filters.SystemVariableUserHandler;
 import com.aiurt.modules.user.pipeline.FilterChainPipeline;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -15,13 +15,13 @@ import org.springframework.context.annotation.Configuration;
 public class UserPipelineConfig {
 
     @Autowired
-    private BaseUserFilter baseUserFilter;
+    private BaseUserHandler baseUserFilter;
 
     @Autowired
-    private CustomVariableUserFilter customVariableUserFilter;
+    private CustomVariableUserHandler customVariableUserFilter;
 
     @Autowired
-    private SystemVariableUserFilter systemVariableUserFilter;
+    private SystemVariableUserHandler systemVariableUserFilter;
 
     @Bean
     public FilterChainPipeline chargePipeline(){

@@ -1,16 +1,15 @@
 package com.aiurt.modules.user.filters;
 
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.modeler.dto.FlowUserRelationAttributeModel;
 import com.aiurt.modules.user.dto.SelectUserContext;
 import com.aiurt.modules.user.entity.ActCustomUser;
 import com.aiurt.modules.user.enums.VariableUserTypeEnum;
-import com.aiurt.modules.user.pipeline.AbstractUserFilter;
 import com.aiurt.modules.user.service.IFlowUserService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -20,7 +19,7 @@ import java.util.stream.Collectors;
  * @author fgw
  */
 @Service
-public class CustomVariableUserFilter extends AbstractUserFilter<SelectUserContext> {
+public class CustomVariableUserHandler extends AbstractFlowHandler<SelectUserContext> {
 
     @Autowired
     private IFlowUserService flowUserService;
@@ -29,7 +28,7 @@ public class CustomVariableUserFilter extends AbstractUserFilter<SelectUserConte
      * @param context
      */
     @Override
-    protected void handle(SelectUserContext context) {
+    public void handle(SelectUserContext context) {
         ActCustomUser customUser = context.getCustomUser();
         Map<String, Object> variables = context.getVariable();
 
