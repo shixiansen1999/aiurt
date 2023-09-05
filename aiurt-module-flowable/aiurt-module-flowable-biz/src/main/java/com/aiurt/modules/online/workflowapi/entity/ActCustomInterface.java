@@ -2,6 +2,7 @@ package com.aiurt.modules.online.workflowapi.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.base.BaseEntity;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -29,7 +30,7 @@ import java.util.Date;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="act_custom_interface对象", description="act_custom_interface")
-public class ActCustomInterface extends BaseEntity implements Serializable {
+public class ActCustomInterface extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/

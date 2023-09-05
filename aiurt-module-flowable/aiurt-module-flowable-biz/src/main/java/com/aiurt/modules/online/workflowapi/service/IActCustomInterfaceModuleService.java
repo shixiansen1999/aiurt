@@ -1,9 +1,9 @@
 package com.aiurt.modules.online.workflowapi.service;
 
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.online.workflowapi.entity.ActCustomInterfaceModule;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.vo.SelectTreeModel;
 
 
@@ -37,17 +37,16 @@ public interface IActCustomInterfaceModuleService extends IService<ActCustomInte
    * 修改节点
    *
    * @param actCustomInterfaceModule
-   * @throws JeecgBootException
+   * @throws AiurtBootException
    */
-	void updateActCustomInterfaceModule(ActCustomInterfaceModule actCustomInterfaceModule) throws JeecgBootException;
+	void updateActCustomInterfaceModule(ActCustomInterfaceModule actCustomInterfaceModule) throws AiurtBootException;
 
 	/**
 	 * 删除节点
 	 *
 	 * @param id
-   * @throws JeecgBootException
 	 */
-	void deleteActCustomInterfaceModule(String id) throws JeecgBootException;
+	void deleteActCustomInterfaceModule(String id) throws AiurtBootException;
 
 	  /**
 	   * 查询所有数据，无分页
