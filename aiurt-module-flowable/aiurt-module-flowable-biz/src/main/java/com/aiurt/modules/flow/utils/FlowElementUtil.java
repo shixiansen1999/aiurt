@@ -466,17 +466,23 @@ public class FlowElementUtil {
                 //如果只有一条连接线，直接找这条连接线的出口节点，然后继续递归获得接下来的节点
                 SequenceFlow sequenceFlow = thisFlowNode.getOutgoingFlows().get(0);
                 FlowElement targetFlowElement = sequenceFlow.getTargetFlowElement();
-                if (targetFlowElement instanceof UserTask) {
-                    flowElementList.add(targetFlowElement);
-                }  else {
-                    getTargetFlowElement(targetFlowElement, flowElementList, variables);
+                boolean result = true;
+                if (StrUtil.isNotBlank(sequenceFlow.getConditionExpression())) {
+                    //计算连接线上的表达式
+                    result = managementService.executeCommand(new ConditionExpressionV2Cmd(sequenceFlow.getConditionExpression(), variables));
+                }
+                if (result) {
+                    if (targetFlowElement instanceof UserTask) {
+                        flowElementList.add(targetFlowElement);
+                    }  else {
+                        getTargetFlowElement(targetFlowElement, flowElementList, variables);
+                    }
                 }
             } else if (thisFlowNode.getOutgoingFlows().size() > 1) {
                 //如果有多条连接线，遍历连接线，找出一个连接线条件执行为True的，获得它的出口节点
                 for (SequenceFlow sequenceFlow : thisFlowNode.getOutgoingFlows()) {
                     boolean result = true;
                     if (StrUtil.isNotBlank(sequenceFlow.getConditionExpression())) {
-                        variables.put("day", 3);
                         //计算连接线上的表达式
                         result = managementService.executeCommand(new ConditionExpressionV2Cmd(sequenceFlow.getConditionExpression(), variables));
                     }

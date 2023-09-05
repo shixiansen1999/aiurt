@@ -26,10 +26,7 @@ public class ConditionExpressionCmd implements Command<Boolean> {
         this.variables = variables;
     }
 
-    public static void main(String[] args) {
-        String condition = StrUtil.replace(StrUtil.replace("${var:eq(ROLE_INITIATOR,\"foreman\")} && ${var:eq(ORG_INITIATOR,\"1602946694465556482\")}", "${", ""), "}", "");
-        System.out.println();
-    }
+
 
 
     @Override
