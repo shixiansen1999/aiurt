@@ -1,12 +1,12 @@
-package com.aiurt.modules.user.getuser.impl;
+package com.aiurt.modules.user.getuser.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import com.aiurt.modules.user.dto.SelectUserContext;
 import com.aiurt.modules.user.entity.ActCustomUser;
-import com.aiurt.modules.user.filters.BaseUserHandler;
-import com.aiurt.modules.user.filters.CustomVariableUserHandler;
-import com.aiurt.modules.user.filters.SystemVariableUserHandler;
-import com.aiurt.modules.user.getuser.DefaultSelectUserService;
+import com.aiurt.modules.user.handler.BaseUserHandler;
+import com.aiurt.modules.user.handler.CustomVariableUserHandler;
+import com.aiurt.modules.user.handler.SystemVariableUserHandler;
+import com.aiurt.modules.user.getuser.service.DefaultSelectUserService;
 import com.aiurt.modules.user.pipeline.FilterChainPipeline;
 import com.aiurt.modules.common.pipeline.selector.LocalListBasedHandlerSelector;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -76,6 +76,7 @@ public class DefaultSelectUserServiceImpl implements DefaultSelectUserService {
         context.setCustomUser(actCustomUser);
         context.setVariable(variableData);
         context.setProcessInstance(processInstance);
+        filterChainPipeline.getFilterChain().handle(context);
         if (CollUtil.isEmpty(context.getUserList())) {
             return Collections.emptyList();
         }

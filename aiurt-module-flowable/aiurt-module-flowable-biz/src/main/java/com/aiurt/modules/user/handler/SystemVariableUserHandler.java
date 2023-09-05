@@ -1,9 +1,9 @@
-package com.aiurt.modules.user.filters;
+package com.aiurt.modules.user.handler;
 
 import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.user.dto.SelectUserContext;
 import com.aiurt.modules.user.entity.ActCustomUser;
-import com.aiurt.modules.user.getuser.impl.DefaultSystemVariableSelectUser;
+import com.aiurt.modules.user.getuser.systemvariable.impl.DefaultSystemVariableSelectUser;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ public class SystemVariableUserHandler extends AbstractFlowHandler<SelectUserCon
      */
     @Override
     public void handle(SelectUserContext context) {
-        // 工厂 + 策略模型
+        // 工厂
         ActCustomUser customUser = context.getCustomUser();
 
         ProcessInstance processInstance = context.getProcessInstance();

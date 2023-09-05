@@ -1,4 +1,4 @@
-package com.aiurt.modules.user.getuser.strategy;
+package com.aiurt.modules.user.getuser.systemvariable;
 
 import org.flowable.engine.runtime.ProcessInstance;
 
@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * @author fgw
  */
-public interface SystemVariableSelectUserStrategy {
+public interface ISystemVariableSelectUserService {
 
     /**
      * 系统变量

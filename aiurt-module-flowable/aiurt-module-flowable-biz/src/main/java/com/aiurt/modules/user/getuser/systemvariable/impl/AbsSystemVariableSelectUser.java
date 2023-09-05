@@ -1,11 +1,12 @@
-package com.aiurt.modules.user.getuser.impl;
+package com.aiurt.modules.user.getuser.systemvariable.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.modeler.dto.FlowUserRelationAttributeModel;
 import com.aiurt.modules.user.entity.ActCustomUser;
 import com.aiurt.modules.user.enums.FlowUserRelationEnum;
-import com.aiurt.modules.user.getuser.strategy.SystemVariableSelectUserStrategy;
+import com.aiurt.modules.user.getuser.systemvariable.ISystemVariableSelectUserService;
+import com.aiurt.modules.user.getuser.systemvariable.impl.SystemVariableGetUserFactory;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -49,7 +50,7 @@ public abstract class AbsSystemVariableSelectUser {
                 return;
             }
             // 使用策略
-            SystemVariableSelectUserStrategy bean = factory.getBean(relationEnum);
+            ISystemVariableSelectUserService bean = factory.getBean(relationEnum);
             if (Objects.isNull(bean)) {
                 return;
             }

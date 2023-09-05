@@ -1,4 +1,4 @@
-package com.aiurt.modules.user.getuser;
+package com.aiurt.modules.user.getuser.service;
 
 import com.aiurt.modules.user.entity.ActCustomUser;
 import org.flowable.engine.runtime.ProcessInstance;

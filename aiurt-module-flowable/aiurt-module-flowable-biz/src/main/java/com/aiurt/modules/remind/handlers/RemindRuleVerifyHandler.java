@@ -1,24 +1,22 @@
 package com.aiurt.modules.remind.handlers;
 
 import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
-import com.aiurt.modules.common.pipeline.FlowHandlerChain;
 import com.aiurt.modules.remind.context.FlowRemindContext;
-import org.springframework.stereotype.Component;
 
 /**
+ * <p>提醒规则校验</p>
  * @author fgw
  */
-@Component
-public class BuildContextHandler extends AbstractFlowHandler<FlowRemindContext> {
+public class RemindRuleVerifyHandler extends AbstractFlowHandler<FlowRemindContext> {
 
 
     /**
-     * 具体执行
+     * 执行任务
      *
      * @param context
      */
     @Override
     public void handle(FlowRemindContext context) {
-        // 具体逻辑实现
+        // 仅发起人可催办流程，且可以对每个流程节点每 5 分钟催办一次；
     }
 }

@@ -36,7 +36,7 @@ import com.aiurt.modules.online.businessdata.service.IActCustomBusinessDataServi
 import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.aiurt.modules.online.page.service.IActCustomPageService;
 import com.aiurt.modules.user.entity.ActCustomUser;
-import com.aiurt.modules.user.getuser.DefaultSelectUserService;
+import com.aiurt.modules.user.getuser.service.DefaultSelectUserService;
 import com.aiurt.modules.user.service.IActCustomUserService;
 import com.aiurt.modules.user.service.IFlowUserService;
 import com.alibaba.fastjson.JSON;

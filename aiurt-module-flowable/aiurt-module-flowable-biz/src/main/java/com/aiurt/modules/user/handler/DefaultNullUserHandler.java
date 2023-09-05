@@ -1,8 +1,11 @@
-package com.aiurt.modules.user.filters;
+package com.aiurt.modules.user.handler;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.common.pipeline.FlowHandlerChain;
 import com.aiurt.modules.user.dto.SelectUserContext;
+import com.aiurt.modules.user.entity.ActCustomUser;
 import org.springframework.stereotype.Service;
 
 /**
@@ -20,7 +23,20 @@ public class DefaultNullUserHandler extends AbstractFlowHandler<SelectUserContex
      */
     @Override
     public void doHandle(SelectUserContext context, FlowHandlerChain chain) {
-        super.doHandle(context, chain);
+        if (context.getHandlerSelector().matchHandler(this.getClass().getSimpleName())) {
+            ActCustomUser customUser = context.getCustomUser();
+
+            // 是否开启任务
+            if (CollUtil.isEmpty(context.getUserList())) {
+                // 业务处理
+                handle(context);
+            }
+        }
+
+        if (context.continueChain()) {
+            // 执行下一个过滤器
+            chain.fireNext(context);
+        }
     }
 
     /**

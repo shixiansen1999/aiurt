@@ -1,7 +1,7 @@
-package com.aiurt.modules.user.getuser.strategy;
+package com.aiurt.modules.user.getuser.systemvariable.impl;
 
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.modules.user.getuser.strategy.SystemVariableSelectUserStrategy;
+import com.aiurt.modules.user.getuser.systemvariable.ISystemVariableSelectUserService;
 import com.aiurt.modules.user.service.IFlowUserService;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -19,7 +19,7 @@ import java.util.Objects;
  * @author fgw
  */
 @Service
-public class InitiatorDepartmentLeaderStrategy implements SystemVariableSelectUserStrategy {
+public class InitiatorDepartmentLeaderServiceImpl implements ISystemVariableSelectUserService {
 
     @Autowired
     private ISysBaseAPI sysBaseApi;

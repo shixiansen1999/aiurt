@@ -1,8 +1,10 @@
-package com.aiurt.modules.user.getuser.impl;
+package com.aiurt.modules.user.getuser.systemvariable.impl;
 
 import com.aiurt.modules.user.enums.FlowUserRelationEnum;
-import com.aiurt.modules.user.getuser.strategy.InitiatorDepartmentLeaderStrategy;
-import com.aiurt.modules.user.getuser.strategy.SuperiorLeaderStrategy;
+import com.aiurt.modules.user.getuser.systemvariable.impl.AbsSystemVariableSelectUser;
+import com.aiurt.modules.user.getuser.systemvariable.impl.InitiatorDepartmentLeaderServiceImpl;
+import com.aiurt.modules.user.getuser.systemvariable.impl.SuperiorLeaderServiceImpl;
+import com.aiurt.modules.user.getuser.systemvariable.impl.SystemVariableGetUserFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +17,13 @@ import javax.annotation.PostConstruct;
 public class DefaultSystemVariableSelectUser extends AbsSystemVariableSelectUser {
 
     @Autowired
-    private InitiatorDepartmentLeaderStrategy initiatorDepartmentLeader;
+    private InitiatorDepartmentLeaderServiceImpl initiatorDepartmentLeader;
 
     @Autowired
     private SystemVariableGetUserFactory systemVariableGetUserFactory;
 
     @Autowired
-    private SuperiorLeaderStrategy superiorLeader;
+    private SuperiorLeaderServiceImpl superiorLeader;
 
     @PostConstruct
     public void init() {

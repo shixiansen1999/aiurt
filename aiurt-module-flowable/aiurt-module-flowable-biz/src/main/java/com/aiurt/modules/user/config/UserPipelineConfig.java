@@ -1,12 +1,13 @@
 package com.aiurt.modules.user.config;
 
-import com.aiurt.modules.user.filters.BaseUserHandler;
-import com.aiurt.modules.user.filters.CustomVariableUserHandler;
-import com.aiurt.modules.user.filters.SystemVariableUserHandler;
+import com.aiurt.modules.user.handler.BaseUserHandler;
+import com.aiurt.modules.user.handler.CustomVariableUserHandler;
+import com.aiurt.modules.user.handler.SystemVariableUserHandler;
 import com.aiurt.modules.user.pipeline.FilterChainPipeline;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.Resource;
 
 /**
  * @author fgw
@@ -14,21 +15,29 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class UserPipelineConfig {
 
-    @Autowired
-    private BaseUserHandler baseUserFilter;
+    @Resource
+    private BaseUserHandler baseUserHandler;
 
-    @Autowired
-    private CustomVariableUserHandler customVariableUserFilter;
+    @Resource
+    private CustomVariableUserHandler customVariableUserHandler;
 
-    @Autowired
-    private SystemVariableUserHandler systemVariableUserFilter;
+    @Resource
+    private SystemVariableUserHandler systemVariableUserHandler;
 
     @Bean
     public FilterChainPipeline chargePipeline(){
         FilterChainPipeline filterChainPipeline = new FilterChainPipeline();
-        filterChainPipeline.addFirst("自定义变量", customVariableUserFilter);
-        filterChainPipeline.addFirst("系统变量", systemVariableUserFilter);
-        filterChainPipeline.addFirst("基础选人", baseUserFilter);
+        filterChainPipeline.addFirst("自定义变量", customVariableUserHandler);
+        filterChainPipeline.addFirst("系统变量", systemVariableUserHandler);
+        filterChainPipeline.addFirst("基础选人", baseUserHandler);
         return filterChainPipeline;
+    }
+
+    public static void main(String[] args) {
+        FilterChainPipeline filterChainPipeline = new FilterChainPipeline();
+        filterChainPipeline.addFirst("自定义变量", new CustomVariableUserHandler());
+        filterChainPipeline.addFirst("系统变量", new SystemVariableUserHandler());
+        filterChainPipeline.addFirst("基础选人", new BaseUserHandler());
+        System.out.println(filterChainPipeline);
     }
 }

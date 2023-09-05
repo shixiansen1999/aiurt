@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * <p>催办上下文</p>
  * @author fgw
  */
 @Setter
@@ -46,6 +47,8 @@ public class FlowRemindContext extends AbstractFlowContext {
      */
     @Override
     public boolean continueChain() {
+
+        processInstance.getBusinessKey();
         if (Objects.nonNull(this.continueChain)) {
             return this.continueChain;
         }
