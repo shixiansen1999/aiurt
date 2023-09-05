@@ -1,7 +1,6 @@
 package com.aiurt.modules.user.pipeline.context;
 
-import com.aiurt.modules.user.pipeline.selector.FilterSelector;
-import lombok.Data;
+import com.aiurt.modules.common.pipeline.selector.FilterSelector;
 
 /**
  * @author fgw

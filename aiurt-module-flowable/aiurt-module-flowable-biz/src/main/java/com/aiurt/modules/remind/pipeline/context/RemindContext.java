@@ -1,12 +1,12 @@
-package com.aiurt.modules.user.pipeline.context;
+package com.aiurt.modules.remind.pipeline.context;
 
 import com.aiurt.modules.common.pipeline.selector.FilterSelector;
 
 /**
- * <p>上下文对象</p>
+ * 催办上下文
  * @author fgw
  */
-public interface UserContext {
+public interface RemindContext {
 
     /**
      * 获取过滤器选择器

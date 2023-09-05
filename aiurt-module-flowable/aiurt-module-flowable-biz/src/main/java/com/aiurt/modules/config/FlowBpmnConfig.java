@@ -1,11 +1,14 @@
 package com.aiurt.modules.config;
 
+import com.aiurt.modules.el.funtion.CustomVariableContainsAnyExpressionFunction;
 import com.aiurt.modules.listener.*;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
+import org.flowable.common.engine.api.delegate.FlowableFunctionDelegate;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.editor.language.json.converter.BpmnJsonConverter;
+import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.spring.SpringProcessEngineConfiguration;
 import org.flowable.spring.boot.EngineConfigurationConfigurer;
 import org.springframework.context.annotation.Bean;
@@ -43,6 +46,12 @@ public class FlowBpmnConfig implements EngineConfigurationConfigurer<SpringProce
         typedEventListeners.put(FlowableEngineEventType.PROCESS_STARTED.name(), Arrays.asList(new ProcessStartListener()));
         typedEventListeners.put(FlowableEngineEventType.PROCESS_COMPLETED.name(), Arrays.asList(new ProcessCompletedListener()));
         configuration.setTypedEventListeners(typedEventListeners);
+
+        // 自定义el表达式
+        ProcessEngineConfigurationImpl processEngineConfiguration = configuration;
+        processEngineConfiguration.initFunctionDelegates();
+        List<FlowableFunctionDelegate> flowableFunctionDelegates = processEngineConfiguration.getFlowableFunctionDelegates();
+        flowableFunctionDelegates.add(new CustomVariableContainsAnyExpressionFunction());
 
         //设置字体
         configuration.setActivityFontName("宋体");
