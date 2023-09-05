@@ -183,7 +183,7 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
             return false;
         }
 
-        Integer nrOfCompletedInstances = taskService.getVariableLocal(taskId, FlowVariableConstant.LOOP_COUNTER, Integer.class);
+        Integer nrOfCompletedInstances = taskService.getVariable(taskId, FlowVariableConstant.LOOP_COUNTER, Integer.class);
         if (nrOfCompletedInstances == null){
             log.info("活动（{}）,节点（{}），不是多单实例", taskId, nodeId);
             return false;
