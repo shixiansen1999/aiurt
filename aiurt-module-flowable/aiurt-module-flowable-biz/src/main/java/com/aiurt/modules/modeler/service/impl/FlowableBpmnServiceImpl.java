@@ -69,6 +69,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @program: flow
@@ -214,6 +215,8 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         // 设置模板json格式
         ObjectNode modelNode = bpmnJsonConverter.convertToJson(bpmnModel, converterContext);
 
+        Set<String> preNodeActionSet = new HashSet<>();
+        Set<String> postNodeActionSet = new HashSet<>();
         // 常用人员
         if (Objects.nonNull(modelNode)) {
 
@@ -221,19 +224,24 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
             Object read = JsonPath.read(jsonStr, "$.childShapes[*].properties.userassignee[*].user");
 
-            //
-            Gson gson = new Gson();
-            List<List<FlowUserAttributeModel>> modelList = gson.fromJson(JSON.toJSONString(read), new TypeToken<List<List<FlowUserAttributeModel>>>() {}.getType());
-            Set<String> set = modelList.stream()
-                    .flatMap(List::stream)
-                    .map(FlowUserAttributeModel::getValue)
+            Set<String> preNodeActionList =  JsonPath.read(jsonStr, "$.childShapes[*].properties.preNodeAction.customInterfaceId");
+
+            Set<String> postNodeActionRead = JsonPath.read(jsonStr, "$.childShapes[*].properties.postNodeAction.customInterfaceId");
+
+            preNodeActionSet = preNodeActionList.stream()
+                    .filter(item -> item != null && !item.isEmpty())
                     .collect(Collectors.toSet());
 
-            // 更新常用人员数据；
+            postNodeActionSet = postNodeActionRead.stream()
+                    .filter(item -> item != null && !item.isEmpty())
+                    .collect(Collectors.toSet());
 
+            Set<String> set = extractElementsByAttribute(read);
+
+
+            // 更新常用人员数据；
             sysUserUsageApi.updateSysUserUsage(loginUser.getId(), new ArrayList<>(set));
         }
-
 
         AbstractModel savedModel = modelService.saveModel(modelId, processModel.getName(), processModel.getKey(),
                 processModel.getDescription(), modelNode.toString(), false,
@@ -244,6 +252,10 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         modelInfoLambdaQueryWrapper.eq(ActCustomModelInfo::getModelId, savedModel.getId());
         ActCustomModelInfo modelInfo = modelInfoService.getOne(modelInfoLambdaQueryWrapper);
         modelInfo.setStatus(ModelFormStatusEnum.DFB.getStatus());
+        String nodeActionSet = Stream.concat(preNodeActionSet.stream(), postNodeActionSet.stream())
+                .distinct()
+                .collect(Collectors.joining(","));
+        modelInfo.setCustomInterfaceIds(nodeActionSet);
         modelInfoService.updateById(modelInfo);
         return "保存成功";
     }
@@ -625,5 +637,23 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         });
 
         return jsonObject;
+    }
+
+    /**
+     * 从给定的 JSON 数据中提取具有指定属性的元素值，并将这些元素值存储在一个集合中。
+     *
+     * @param read 包含 JSON 数据的对象，可以是字符串或其他 JSON 数据结构。
+     * @return 包含提取的元素值的集合，如果没有找到匹配的元素则返回空集合。
+     */
+    public Set<String> extractElementsByAttribute(Object read) {
+        // 使用 Gson 将 JSON 字符串转换为 List<List<elementType>> 类型
+        Gson gson = new Gson();
+        List<List<FlowUserAttributeModel>> modelList = gson.fromJson(JSON.toJSONString(read), new TypeToken<List<List<FlowUserAttributeModel>>>() {}.getType());
+        Set<String> set = modelList.stream()
+                .flatMap(List::stream)
+                .map(FlowUserAttributeModel::getValue)
+                .collect(Collectors.toSet());
+
+        return set;
     }
 }

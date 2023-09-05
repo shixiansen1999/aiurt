@@ -1420,29 +1420,33 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteProcessInstance(String processInstanceId,String delReason) {
+    public void deleteProcessInstance(String processInstanceId, String delReason) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        try {
-            ProcessInstance processInstance = getProcessInstance(processInstanceId);
-            if (Objects.isNull(processInstance)) {
-                throw new AiurtBootException("该流程实例已被删除！");
-            }
-        } catch (Exception e) {
-           throw new AiurtBootException("该流程实例已被删除！");
+
+        // 查询流程实例和历史流程实例
+        ProcessInstance processInstance = getProcessInstance(processInstanceId);
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery()
+                .processInstanceId(processInstanceId)
+                .singleResult();
+
+        if (Objects.isNull(processInstance) && Objects.isNull(historicProcessInstance)) {
+            throw new AiurtBootException("该流程实例已被删除！");
         }
 
-
-        runtimeService.deleteProcessInstance(processInstanceId, delReason);
+        if (ObjectUtil.isNotEmpty(processInstance)) {
+            runtimeService.deleteProcessInstance(processInstanceId, delReason);
+            // 操作日志
+            ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment();
+            actCustomTaskComment.setProcessInstanceId(processInstanceId);
+            actCustomTaskComment.setComment(delReason);
+            actCustomTaskComment.setApprovalType(FlowApprovalType.DELETE);
+            actCustomTaskComment.setCreateRealname(loginUser.getUsername());
+            customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
+        } else {
+            historyService.deleteHistoricProcessInstance(processInstanceId);
+        }
 
         //todo 工单删除
-
-        // 操作日志
-        ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment();
-        actCustomTaskComment.setProcessInstanceId(processInstanceId);
-        actCustomTaskComment.setComment(delReason);
-        actCustomTaskComment.setApprovalType(FlowApprovalType.DELETE);
-        actCustomTaskComment.setCreateRealname(loginUser.getUsername());
-        customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
     }
 
     /**

@@ -6,6 +6,9 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
+import com.aiurt.modules.modeler.mapper.ActCustomModelInfoMapper;
+import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.online.workflowapi.entity.ActCustomInterface;
 import com.aiurt.modules.online.workflowapi.entity.ActCustomInterfaceModule;
 import com.aiurt.modules.online.workflowapi.mapper.ActCustomInterfaceMapper;
@@ -16,8 +19,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import kotlin.jvm.internal.PackageReference;
 import org.jeecg.common.system.vo.DictModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -36,6 +41,8 @@ import java.util.stream.Collectors;
 public class ActCustomInterfaceServiceImpl extends ServiceImpl<ActCustomInterfaceMapper, ActCustomInterface> implements IActCustomInterfaceService {
     @Autowired
     private ActCustomInterfaceModuleMapper actCustomInterfaceModuleMapper;
+    @Autowired
+    private ActCustomModelInfoMapper actCustomModelInfoMapper;
 
     @Override
     public boolean isNameExists(String name, String id) {
@@ -50,8 +57,14 @@ public class ActCustomInterfaceServiceImpl extends ServiceImpl<ActCustomInterfac
 
     @Override
     public boolean removeInterfaceById(String id) {
+        if (StrUtil.isEmpty(id)) {
+            return false;
+        }
         // 被流程关联的接口不能被删除
-
+        long count = actCustomModelInfoMapper.countByCustomInterfaceIds(Arrays.asList(id));
+        if (count > 0) {
+            throw new AiurtBootException("接口在流程中被使用，无法删除");
+        }
         return this.removeById(id);
     }
 
@@ -69,6 +82,19 @@ public class ActCustomInterfaceServiceImpl extends ServiceImpl<ActCustomInterfac
         if (cusInterfaceCount > 0) {
             throw new AiurtBootException("模块下有接口信息，无法删除模块");
         }
+    }
+
+    @Override
+    public boolean removeInterfaceByIds(List<String> ids) {
+        if (CollUtil.isEmpty(ids)) {
+            return false;
+        }
+        // 被流程关联的接口不能被删除
+        long count = actCustomModelInfoMapper.countByCustomInterfaceIds(ids);
+        if (count > 0) {
+            throw new AiurtBootException("接口在流程中被使用，无法删除");
+        }
+        return this.removeByIds(ids);
     }
 
 }

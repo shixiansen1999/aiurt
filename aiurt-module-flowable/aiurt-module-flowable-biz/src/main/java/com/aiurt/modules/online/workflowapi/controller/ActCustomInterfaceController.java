@@ -124,8 +124,8 @@ public class ActCustomInterfaceController extends BaseController<ActCustomInterf
     @ApiOperation(value = "批量删除删自定义接口", notes = "批量删除删自定义接口")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
-        this.actCustomInterfaceService.removeByIds(Arrays.asList(ids.split(",")));
-        return Result.OK("批量删除成功!");
+        boolean isSuccess = this.actCustomInterfaceService.removeInterfaceByIds(Arrays.asList(ids.split(",")));
+        return isSuccess?Result.OK("批量删除成功!"):Result.error("批量删除失败!");
     }
 
     /**

@@ -159,4 +159,7 @@ public class ActCustomModelInfo implements Serializable {
     @ApiModelProperty(value = "路由地址")
     @TableField(exist = false)
     private String routerName;
+
+    @ApiModelProperty(value = "自定义接口id字符串，多个用逗号隔开")
+    private String customInterfaceIds;
 }
