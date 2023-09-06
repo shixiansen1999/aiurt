@@ -149,7 +149,7 @@ public class FlowableNodeActionUtils {
         // 默认给sql拼接业务id
         String sql = buildCustomUpdateSql(customSql, businessId);
 
-        if(StrUtil.isEmpty(sql)){
+        if (StrUtil.isEmpty(sql)) {
             return;
         }
 
@@ -207,6 +207,13 @@ public class FlowableNodeActionUtils {
         }
     }
 
+    /**
+     * 给自定义SQL拼接业务id条件。是update或者delete语句必须要拼接条件
+     *
+     * @param customSql  自定义SQL。
+     * @param businessId 业务ID或标识，并作为更新条件。
+     * @return 构建的SQL语句，如果自定义SQL不安全或不是UPDATE语句，则返回null。
+     */
     private static String buildCustomUpdateSql(String customSql, String businessId) {
         if (StrUtil.isEmpty(customSql)) {
             return null;
@@ -214,12 +221,18 @@ public class FlowableNodeActionUtils {
 
         boolean safeSql = SafeSqlCheckerUtils.isSafeSql(customSql);
         if (!safeSql) {
-            log.error("流程节点自定义SQL执行失败，SQL中只能包含update或者select语句");
+            log.error("流程节点自定义SQL安全检查失败！");
             return null;
         }
 
-        // 判断是否为 UPDATE 语句
-        if (customSql.trim().toLowerCase().startsWith("update")) {
+        // 判断是否为 UPDATE 或者 DELETE 语句，如果是两者之一，需要拼接条件
+        if (customSql.trim().toLowerCase().startsWith(SafeSqlCheckerUtils.SQL_UPDATE)
+                || customSql.trim().toLowerCase().startsWith(SafeSqlCheckerUtils.SQL_DELETE)) {
+            if (StrUtil.isEmpty(businessId)) {
+                log.error("流程节点自定义SQL拼接失败，SQL是update或者delete语句时，业务id为空");
+                return null;
+            }
+
             StringBuilder sqlBuilder = new StringBuilder(customSql);
 
             // 查找 WHERE 关键字的位置
@@ -241,7 +254,7 @@ public class FlowableNodeActionUtils {
             return sqlBuilder.toString();
         }
 
-        return null;
+        return customSql;
     }
 
     /**
@@ -318,5 +331,31 @@ public class FlowableNodeActionUtils {
         return businessId;
     }
 
+    public static void main(String[] args) {
+        // 测试安全的UPDATE语句
+        String safeUpdateSql = "UPDATE users SET name = 'John' WHERE id = 1";
+        String safeResult = buildCustomUpdateSql(safeUpdateSql, "1");
+        System.out.println("Safe Update SQL Result: " + safeResult);
+
+        // 测试包含无效条件的SQL语句
+        String invalidConditionSql = "DELETE FROM orders WHERE 1=1 OR 2=2";
+        String invalidConditionResult = buildCustomUpdateSql(invalidConditionSql, "1");
+        System.out.println("Invalid Condition SQL Result: " + invalidConditionResult);
+
+        // 测试其他SQL语句
+        String otherSql = "INSERT INTO customers (name, email) VALUES ('Alice', 'alice@example.com')";
+        String otherResult = buildCustomUpdateSql(otherSql, "1");
+        System.out.println("Other SQL Result: " + otherResult);
+
+        // 测试未提供业务id的情况
+        String missingBusinessIdSql = "UPDATE products SET price = 10 WHERE id = 5";
+        String missingBusinessIdResult = buildCustomUpdateSql(missingBusinessIdSql, null);
+        System.out.println("Missing Business ID SQL Result: " + missingBusinessIdResult);
+
+        // 测试长字符串SQL语句
+        String longSql = "DELETE FROM orders WHERE " + "id = '1'";
+        String result5 = buildCustomUpdateSql(longSql, "ceshi");
+        System.out.println("Long SQL Result: " + result5);
+    }
 
 }

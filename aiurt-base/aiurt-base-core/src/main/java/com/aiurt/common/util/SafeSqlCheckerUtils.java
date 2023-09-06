@@ -9,8 +9,11 @@ import java.util.regex.Pattern;
  * @Description:
  */
 public class SafeSqlCheckerUtils {
-    private static final Pattern SAFE_SQL_PATTERN = Pattern.compile(
-            "(?i)\\b(?:SELECT|UPDATE)\\b.*", Pattern.DOTALL);
+
+    public static final String SQL_UPDATE = "update";
+    public static final String SQL_DELETE = "delete";
+    private static final Pattern SAFE_SQL_PATTERN = Pattern.compile("(?i)\\b(?:SELECT|UPDATE|INSERT|DELETE)\\b.*", Pattern.DOTALL);
+    private static final Pattern INVALID_CONDITION_PATTERN = Pattern.compile("\\d+\\s*=\\s*\\d+");
 
     /**
      * 检查SQL语句是否仅包含UPDATE和SELECT语法。
@@ -20,11 +23,21 @@ public class SafeSqlCheckerUtils {
      */
     public static boolean isSafeSql(String sql) {
         Matcher matcher = SAFE_SQL_PATTERN.matcher(sql);
-        return matcher.matches();
+        if (!matcher.matches()) {
+            return false;
+        }
+
+        // 使用正则表达式检查是否包含无效的条件
+        Matcher conditionMatcher = INVALID_CONDITION_PATTERN.matcher(sql);
+        if (conditionMatcher.find()) {
+            return false;
+        }
+
+        return true;
     }
 
     public static void main(String[] args) {
-        String safeSelect = "delete * FROM users";
+        String safeSelect = "INSERT INTO customers (name, email) VALUES ('John', 'john@example.com')";
         String safeUpdate = "delete users SET status = 'active' WHERE id = (select id from sys_user)";
         String mixedSql = "INSERT INTO users (name, age) VALUES ('John', 30)";
 

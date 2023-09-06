@@ -285,7 +285,7 @@ public class HttpUtils {
     }
 
     public static void main(String[] args) {
-        String url = "https://api.example.com/some/api/endpoint";
+        String url = "http://www.jeec1g.com/";
 
         // 设置请求头
         Map<String, String> headers = new HashMap<>();
