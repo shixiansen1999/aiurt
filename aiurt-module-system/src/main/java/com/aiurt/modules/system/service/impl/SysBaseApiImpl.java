@@ -183,6 +183,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private ISysUserDepartService sysUserDepartService;
     @Resource
     private SysPermissionMapper sysPermissionMapper;
+    @Resource
+    private ISysPermissionService sysPermissionService;
     @Autowired
     private ISysPermissionDataRuleService sysPermissionDataRuleService;
 
@@ -4075,6 +4077,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }).collect(Collectors.toList());
 
         return result;
+    }
+
+    /**
+     * 获取系统所有菜单
+     * @param id
+     * @return
+     */
+    @Override
+    public SysPermissionModel getAllPermission(String id) {
+        SysPermission sysPermission = sysPermissionService.getById(id);
+        SysPermissionModel sysPermissionModel = new SysPermissionModel();
+        BeanUtils.copyProperties(sysPermission, sysPermissionModel);
+        return sysPermissionModel;
     }
 
     /**

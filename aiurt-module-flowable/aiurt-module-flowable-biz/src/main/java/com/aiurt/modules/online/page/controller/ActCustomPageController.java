@@ -59,22 +59,8 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-
-		LambdaQueryWrapper<ActCustomPage> queryWrapper = new LambdaQueryWrapper<>();
-		String sysOrgCode = actCustomPage.getSysOrgCode();
-		if (StrUtil.isNotBlank(sysOrgCode)) {
-			SysDepartModel sysDepartModel = sysBaseApi.selectAllById(sysOrgCode);
-			if (Objects.nonNull(sysDepartModel)) {
-				actCustomPage.setSysOrgCode(sysDepartModel.getOrgCode());
-			}
-
-			queryWrapper.eq(ActCustomPage::getSysOrgCode, actCustomPage.getSysOrgCode());
-		}
-
-		queryWrapper.like(StrUtil.isNotBlank(actCustomPage.getPageName()),ActCustomPage::getPageName, actCustomPage.getPageName());
-
 		Page<ActCustomPage> page = new Page<>(pageNo, pageSize);
-		IPage<ActCustomPage> pageList = actCustomPageService.page(page, queryWrapper);
+		IPage<ActCustomPage> pageList = actCustomPageService.queryPageList(page, actCustomPage);
 		return Result.OK(pageList);
 	}
 
@@ -88,13 +74,7 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 	@ApiOperation(value="设计表单-添加", notes="设计表单-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody ActCustomPage actCustomPage) {
-		actCustomPage.setPageVersion(1);
-		actCustomPage.setPageModule(String.format("%s%s","p",System.currentTimeMillis()));
-		if(ObjectUtil.isEmpty(actCustomPage.getPageType())){
-
-		}
-		actCustomPageService.save(actCustomPage);
-		return Result.OK("添加成功！");
+		return actCustomPageService.add(actCustomPage);
 	}
 
 	/**
@@ -107,7 +87,10 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 	@ApiOperation(value="设计表单-编辑", notes="设计表单-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody ActCustomPage actCustomPage) {
-
+		// 检查数据库中是否已存在具有相同name的记录
+		if (actCustomPageService.isNameExists(actCustomPage.getPageName(), actCustomPage.getId())) {
+			return Result.error("名称已存在，请使用其他名称！");
+		}
 		actCustomPageService.edit(actCustomPage);
 		return Result.OK("编辑成功!");
 	}

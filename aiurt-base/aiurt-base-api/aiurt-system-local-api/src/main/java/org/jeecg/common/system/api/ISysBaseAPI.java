@@ -1358,5 +1358,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<SysUserRoleModel> getRole(List<String> roleCode);
+
+    /**
+     * 获取系统所有菜单
+     * @param id
+     * @return
+     */
+    SysPermissionModel getAllPermission(String id);
 }
 

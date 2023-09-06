@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.SelectTreeModel;
 import org.jeecg.common.util.oConvertUtils;
@@ -75,6 +76,27 @@ public class ActCustomPageModuleController extends BaseController<ActCustomPageM
 				 loadAllChildren(temp);
 			 }
 		 }
+	 }
+
+	 /**
+	  * 构建模块树
+	  *
+	  * @return
+	  */
+	 @ApiOperation(value = "构建模块树", notes = "构建模块树")
+	 @RequestMapping(value = "/getModuleTree", method = RequestMethod.GET)
+	 public Result<List<SelectTreeModel>> getModuleTree(@RequestParam(name = "name", required = false) String name) {
+		 Result<List<SelectTreeModel>> result = new Result<>();
+		 try {
+			 List<SelectTreeModel> ls = actCustomPageModuleService.getModuleTree(name);
+			 result.setResult(ls);
+			 result.setSuccess(true);
+		 } catch (Exception e) {
+			 e.printStackTrace();
+			 result.setMessage(e.getMessage());
+			 result.setSuccess(false);
+		 }
+		 return result;
 	 }
 
 	 /**
