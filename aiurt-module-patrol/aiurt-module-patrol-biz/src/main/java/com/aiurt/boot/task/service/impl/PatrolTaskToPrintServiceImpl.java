@@ -185,6 +185,9 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
         Integer firstColumn = null;
         Integer lastColumn = null;
         CellAddress cellByText = null;
+        CellAddress cellByText2 = null;
+        Integer remarkColumn = null;
+
         try {
 //            inputStreamTemplate = new FileInputStream(templateFileName);
             workbookTpl = WorkbookFactory.create(minioFile);
@@ -196,6 +199,9 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
 
             //查询项目列所在合并区域的结束列
             cellByText = FilePrintUtils.findCellByText(sheet, 3, 3, "{list.content}");
+            //查询项目列所在合并区域的结束列
+            cellByText2 = FilePrintUtils.findCellByText(sheet, 3, 3, "{list.remark}");
+            remarkColumn = cellByText2.getColumn();
 
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
@@ -240,7 +246,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
                 // 打印设置
 //                FilePrintUtils.printSet(sheet);
                 // 对已填充数据的文件进行后处理
-                processFilledFile(type, firstColumn, lastColumn, cellByText, filePath, startRow, endRow, workbook, sheet);
+                processFilledFile(type, firstColumn, lastColumn,remarkColumn, cellByText, filePath, startRow, endRow, workbook, sheet);
             }
 
 //            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
@@ -611,7 +617,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
      * @throws IOException
      */
 
-    private static void processFilledFile(String type, Integer firstColumn, Integer lastColumn, CellAddress cellByText, String filePath, int startRow, int endRow, Workbook workbook, Sheet sheet) throws IOException {
+    private static void processFilledFile(String type, Integer firstColumn, Integer lastColumn,Integer remarkColumn, CellAddress cellByText, String filePath, int startRow, int endRow, Workbook workbook, Sheet sheet) throws IOException {
         if ("patrolType8".equals(type)){
             //如果项目列占用多列，则需合并
             if (ObjectUtil.isEmpty(cellByText)){
@@ -621,6 +627,8 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
             }
             //自动换行
             FilePrintUtils.setWrapText(workbook,7,1,1,1,1,true);
+            //设置备注列自动换行
+            FilePrintUtils.setWrapText(workbook,7,startRow,endRow,remarkColumn,remarkColumn,false);
 
             //合并指定范围行的单元格
             FilePrintUtils.mergeCellsInColumnRange(workbook,true, startRow, endRow, firstColumn, lastColumn);
@@ -632,6 +640,8 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
             // setWrapText(workbook,1,startRow,endRow,0,0);
             FilePrintUtils.setWrapText(workbook,15,1,1,1,1,true);
             FilePrintUtils.setWrapText(workbook,7, startRow, endRow,0, 1,false);
+            //设置备注列自动换行
+            FilePrintUtils.setWrapText(workbook,7,startRow,endRow,remarkColumn,remarkColumn,false);
             //合并指定范围行的单元格
             FilePrintUtils.mergeCellsInColumnRange(workbook,true, startRow, endRow, firstColumn, lastColumn);
             //设置第一列列宽
@@ -643,6 +653,9 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
             FilePrintUtils.addReturn(workbook, startRow, endRow,0,0);
             FilePrintUtils.setWrapText(workbook,7,1,1,1,1,true);
             FilePrintUtils.setWrapText(workbook,7, startRow, endRow,1, firstColumn >3?3:2,false);
+            //设置备注列自动换行
+            FilePrintUtils.setWrapText(workbook,7,startRow,endRow,remarkColumn,remarkColumn,false);
+
             //合并指定范围行的单元格
             FilePrintUtils.mergeCellsInColumnRange(workbook,true, startRow, endRow, firstColumn, lastColumn);
             //设置第一列列宽
