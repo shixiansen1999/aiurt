@@ -148,25 +148,8 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
         sysAttachment.setType("minio");
         sysBaseApi.saveSysAttachment(sysAttachment);
 
-        //excel转PDF流输出
-        try (
-                FileInputStream in = new FileInputStream(filePath)) {
-            PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
-            com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
-            //自动调整行高
-            w.getWorksheets().get(0).autoFitRows();
-            pdfSaveOptions.setOnePagePerSheet(true);
-            pdfSaveOptions.setAllColumnsInOnePagePerSheet(true);
-            // 获取最后一行的高度
-            int lastRowIndex = w.getWorksheets().get(0).getCells().getMaxDataRow();
-            // 设置最后一行的高度，您可以根据需要调整高度值
-            double newHeight = 80;
-            w.getWorksheets().get(0).getCells().setRowHeight(lastRowIndex, newHeight);
-
-            w.save(response.getOutputStream(), pdfSaveOptions);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        //excel转换成pdf输出流
+        fileToPdf(filePath, response);
     }
 
 
@@ -270,16 +253,60 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
         sysAttachment.setType("minio");
         sysBaseApi.saveSysAttachment(sysAttachment);
         //excel转换成pdf输出流
+        fileToPdf(filePath, response);
+    }
+
+
+    /**
+     * 将文件转化成pdf流直接放到response响应
+     * 此函数主要是给上面打印将excel转成pdf流输出使用
+     * @param filePath 文件路径
+     * @param response 响应
+     */
+    public void fileToPdf(String filePath, HttpServletResponse response){
+        //excel转PDF流输出
         response.setCharacterEncoding("UTF-8");
-        try (
-                FileInputStream in = new FileInputStream(filePath)) {
+        try (FileInputStream in = new FileInputStream(filePath)) {
             PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
             com.aspose.cells.Workbook w = new com.aspose.cells.Workbook(in);
             //自动调整行高
-            w.getWorksheets().get(0).autoFitRows();
+            // w.getWorksheets().get(0).autoFitRows();
             pdfSaveOptions.setOnePagePerSheet(true);
             pdfSaveOptions.setAllColumnsInOnePagePerSheet(true);
-           // 获取最后一行的高度
+
+            Worksheet worksheet = w.getWorksheets().get(0);
+            // 遍历单元格并减小字体大小与设置行高
+            for (int rowIndex = 0; rowIndex <= worksheet.getCells().getMaxDataRow(); rowIndex++) {
+                // 该行的行高，默认15，当有更大的时候，行高取最大的
+                int maxRowHeight = 15;
+
+                for (int colIndex = 0; colIndex <= worksheet.getCells().getMaxDataColumn(); colIndex++) {
+                    Cell cell = worksheet.getCells().get(rowIndex, colIndex);
+
+                    // 单元格的行高，单元格行高与最大行高，谁大取谁，但是如果是合并单元格，并且是合并了多行的单元格不进行比较
+                    Range mergedRange = cell.getMergedRange();
+                    int mergedRowCount = mergedRange != null ? mergedRange.getRowCount(): 1;
+                    int cellHeight = cell.getHeightOfValue();
+                    if (mergedRowCount == 1 && cellHeight > maxRowHeight){
+                        maxRowHeight = cellHeight;
+                    }
+
+                    // 将字体减小一号，不然pdf输出有的单元格显示内容不全
+                    Style style = cell.getStyle();
+                    Font font = style.getFont();
+                    // 设置字体名称为宋体
+                    // font.setName("SimSun");
+                    int reducedFontSize = font.getSize() - 1;
+                    font.setSize(reducedFontSize);
+                    cell.setStyle(style);
+                }
+
+                // 设置行高
+                // log.info("第{}行的行高是{}", rowIndex, maxRowHeight);
+                worksheet.getCells().getRows().get(rowIndex).setHeight(maxRowHeight);
+            }
+
+            // 获取最后一行的高度
             int lastRowIndex = w.getWorksheets().get(0).getCells().getMaxDataRow();
             // 设置最后一行的高度，您可以根据需要调整高度值
             double newHeight = 80;
@@ -290,7 +317,6 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
             throw new RuntimeException(e);
         }
     }
-
 
     /**
      * 根据模板类型获取纵向合并列设置
