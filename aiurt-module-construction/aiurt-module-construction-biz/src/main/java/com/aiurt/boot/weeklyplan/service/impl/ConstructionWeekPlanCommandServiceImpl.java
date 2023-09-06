@@ -1,6 +1,7 @@
 package com.aiurt.boot.weeklyplan.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -93,6 +94,30 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
     @Override
     public IPage<ConstructionWeekPlanCommandVO> queryPageList(Page<ConstructionWeekPlanCommandVO> page, ConstructionWeekPlanCommandDTO constructionWeekPlanCommandDTO) {
         IPage<ConstructionWeekPlanCommandVO> pageList = constructionWeekPlanCommandMapper.queryPageList(page, constructionWeekPlanCommandDTO);
+        if (CollUtil.isNotEmpty(pageList.getRecords())) {
+            //翻译
+            List<DictModel> line = iSysBaseApi.queryTableDictItemsByCode("cs_line", "line_name", "line_code");
+            Map<String, String> lineMap = line.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
+            List<DictModel> station = iSysBaseApi.queryTableDictItemsByCode("cs_station", "station_name", "station_code");
+            Map<String, String> stationMap = station.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
+            List<DictModel> depart = iSysBaseApi.queryTableDictItemsByCode("sys_depart", "depart_name", "org_code");
+            Map<String, String> departMap = depart.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
+
+            List<DictModel> constructionWeekPlanLine = iSysBaseApi.queryTableDictItemsByCode("construction_week_plan_line", "line_name", "line_code");
+            Map<String, String> constructionWeekPlanLineMap = constructionWeekPlanLine.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
+            List<DictModel> constructionWeekPlanStation = iSysBaseApi.queryTableDictItemsByCode("construction_week_plan_station", "station_name", "station_code");
+            Map<String, String> constructionWeekPlanStationMap = constructionWeekPlanStation.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (oldValue, newValue) -> newValue));
+            List<DictModel> constructionWeekPlanDepart = iSysBaseApi.queryTableDictItemsByCode("construction_week_plan_org", "depart_name", "id");
+            Map<String, String> constructionWeekPlanDepartMap = constructionWeekPlanDepart.stream().collect(Collectors.toMap(DictModel::getValue,DictModel::getText, (oldValue, newValue) -> newValue));
+
+            for (ConstructionWeekPlanCommandVO record : pageList.getRecords()) {
+                record.setOrgName(constructionWeekPlanDepartMap.get(record.getOrgCode()) != null ? constructionWeekPlanDepartMap.get(record.getOrgCode()) : departMap.get(record.getOrgCode()));
+                record.setLineName(constructionWeekPlanLineMap.get(record.getLineCode()) != null ? constructionWeekPlanLineMap.get(record.getLineCode()) : lineMap.get(record.getLineCode()));
+                record.setFirstStationName(constructionWeekPlanStationMap.get(record.getFirstStationCode()) != null ? constructionWeekPlanStationMap.get(record.getFirstStationCode()) : stationMap.get(record.getFirstStationCode()));
+                record.setSubstationName(constructionWeekPlanStationMap.get(record.getSubstationCode()) != null ? constructionWeekPlanStationMap.get(record.getSubstationCode()) : stationMap.get(record.getSubstationCode()));
+                record.setSecondStationName(constructionWeekPlanStationMap.get(record.getSecondStationCode()) != null ? constructionWeekPlanStationMap.get(record.getSecondStationCode()) : stationMap.get(record.getSecondStationCode()));
+            }
+        }
         return pageList;
     }
 
@@ -247,6 +272,36 @@ public class ConstructionWeekPlanCommandServiceImpl extends ServiceImpl<Construc
         }
         constructionWeekPlanCommand.setModelKey("week_plan_construction");
         constructionWeekPlanCommand.setProcessInstanceId(processInstanceId);
+
+        String departName = iSysBaseApi.translateDictFromTable("sys_depart", "depart_name", "org_code", constructionWeekPlanCommand.getOrgCode());
+        String assistStationName = iSysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", constructionWeekPlanCommand.getAssistStationCode());
+        String lineName = iSysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", constructionWeekPlanCommand.getLineCode());
+        String firstStationName = iSysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", constructionWeekPlanCommand.getFirstStationCode());
+        String substationName = iSysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", constructionWeekPlanCommand.getSubstationCode());
+        String secondStationName = iSysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", constructionWeekPlanCommand.getSecondStationCode());
+
+        String constructionDepartName = iSysBaseApi.translateDictFromTable("construction_week_plan_org", "depart_name", "id", constructionWeekPlanCommand.getOrgCode());
+        String constructionAssistStationName = iSysBaseApi.translateDictFromTable("construction_week_plan_station", "station_name", "station_code", constructionWeekPlanCommand.getAssistStationCode());
+        String constructionLineName = iSysBaseApi.translateDictFromTable("construction_week_plan_line", "line_name", "line_code", constructionWeekPlanCommand.getLineCode());
+        String constructionFirstStationName = iSysBaseApi.translateDictFromTable("construction_week_plan_station", "station_name", "station_code", constructionWeekPlanCommand.getFirstStationCode());
+        String constructionSubstationName = iSysBaseApi.translateDictFromTable("construction_week_plan_station", "station_name", "station_code", constructionWeekPlanCommand.getSubstationCode());
+        String constructionSecondStationName = iSysBaseApi.translateDictFromTable("construction_week_plan_station", "station_name", "station_code", constructionWeekPlanCommand.getSecondStationCode());
+
+        constructionWeekPlanCommand.setOrgName(constructionDepartName != null ? constructionDepartName : departName);
+        constructionWeekPlanCommand.setAssistStationName(constructionAssistStationName != null ? constructionAssistStationName : assistStationName);
+        constructionWeekPlanCommand.setLineName(constructionLineName != null ? constructionLineName : lineName);
+        constructionWeekPlanCommand.setFirstStationName(constructionFirstStationName != null ? constructionFirstStationName : firstStationName);
+        constructionWeekPlanCommand.setSubstationName(constructionSubstationName != null ? constructionSubstationName : substationName);
+        constructionWeekPlanCommand.setSecondStationName(constructionSecondStationName != null ? constructionSecondStationName : secondStationName);
+
+        if (StrUtil.isNotBlank(constructionWeekPlanCommand.getAssistStationCode())) {
+            ConstructionCommandAssist constructionCommandAssist = new ConstructionCommandAssist();
+            constructionCommandAssist.setStationCode(constructionWeekPlanCommand.getAssistStationCode());
+            constructionCommandAssist.setStationName(constructionWeekPlanCommand.getAssistStationName());
+            assists.add(constructionCommandAssist);
+            constructionWeekPlanCommand.setConstructionAssist(assists);
+        }
+
         return constructionWeekPlanCommand;
     }
 

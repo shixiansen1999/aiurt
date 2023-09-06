@@ -64,11 +64,17 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
     @ApiModelProperty(value = "作业单位ID")
     @Dict(dictTable = "construction_week_plan_org", dicText = "depart_name", dicCode = "id")
     private String orgCode;
+    @ApiModelProperty(value = "作业单位")
+    @TableField(exist = false)
+    private String orgName;
     /**辅站编码*/
     @Excel(name = "辅站编码", width = 15)
     @ApiModelProperty(value = "辅站编码")
-    @Dict(dictTable = "construction_week_plan_org", dicText = "depart_name", dicCode = "id")
+    @Dict(dictTable = "construction_week_plan_station", dicText = "station_name", dicCode = "station_code")
     private String assistStationCode;
+    @ApiModelProperty(value = "辅站")
+    @TableField(exist = false)
+    private String assistStationName;
 	/**作业日期*/
 	@Excel(name = "作业日期", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
@@ -96,6 +102,9 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
     @ApiModelProperty(value = "作业线路编码")
     @Dict(dictTable = "construction_week_plan_line", dicText = "line_name", dicCode = "line_code")
     private String lineCode;
+    @ApiModelProperty(value = "线路")
+    @TableField(exist = false)
+    private String lineName;
 	/**供电要求ID*/
 	@Excel(name = "供电要求ID", width = 15)
     @ApiModelProperty(value = "供电要求ID")
@@ -127,16 +136,25 @@ public class ConstructionWeekPlanCommand extends DictEntity implements Serializa
     @ApiModelProperty(value = "请点车站编码")
     @Dict(dictTable = "construction_week_plan_station", dicText = "station_name", dicCode = "station_code")
     private String firstStationCode;
+    @ApiModelProperty(value = "请点车站")
+    @TableField(exist = false)
+    private String firstStationName;
 	/**变电所编码*/
 	@Excel(name = "变电所编码", width = 15)
     @ApiModelProperty(value = "变电所编码")
     @Dict(dictTable = "construction_week_plan_station", dicText = "station_name", dicCode = "station_code")
     private String substationCode;
+    @ApiModelProperty(value = "变电所")
+    @TableField(exist = false)
+    private String substationName;
 	/**销点车站编码*/
 	@Excel(name = "销点车站编码", width = 15)
     @ApiModelProperty(value = "销点车站编码")
     @Dict(dictTable = "construction_week_plan_station", dicText = "station_name", dicCode = "station_code")
     private String secondStationCode;
+    @ApiModelProperty(value = "销点车站")
+    @TableField(exist = false)
+    private String secondStationName;
 	/**作业人数*/
 	@Excel(name = "作业人数", width = 15)
     @ApiModelProperty(value = "作业人数")
