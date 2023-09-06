@@ -215,29 +215,12 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         // 设置模板json格式
         ObjectNode modelNode = bpmnJsonConverter.convertToJson(bpmnModel, converterContext);
 
-        Set<String> preNodeActionSet = new HashSet<>();
-        Set<String> postNodeActionSet = new HashSet<>();
         // 常用人员
         if (Objects.nonNull(modelNode)) {
 
             String jsonStr =  modelNode.toString();
-
             Object read = JsonPath.read(jsonStr, "$.childShapes[*].properties.userassignee[*].user");
-
-            List<String> preNodeActionList =  JsonPath.read(jsonStr, "$.childShapes[*].properties.preNodeAction.customInterfaceId");
-
-            List<String> postNodeActionRead = JsonPath.read(jsonStr, "$.childShapes[*].properties.postNodeAction.customInterfaceId");
-
-            preNodeActionSet = preNodeActionList.stream()
-                    .filter(item -> item != null && !item.isEmpty())
-                    .collect(Collectors.toSet());
-
-            postNodeActionSet = postNodeActionRead.stream()
-                    .filter(item -> item != null && !item.isEmpty())
-                    .collect(Collectors.toSet());
-
             Set<String> set = extractElementsByAttribute(read);
-
 
             // 更新常用人员数据；
             sysUserUsageApi.updateSysUserUsage(loginUser.getId(), new ArrayList<>(set));
@@ -252,9 +235,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         modelInfoLambdaQueryWrapper.eq(ActCustomModelInfo::getModelId, savedModel.getId());
         ActCustomModelInfo modelInfo = modelInfoService.getOne(modelInfoLambdaQueryWrapper);
         modelInfo.setStatus(ModelFormStatusEnum.DFB.getStatus());
-        String nodeActionSet = Stream.concat(preNodeActionSet.stream(), postNodeActionSet.stream())
-                .distinct()
-                .collect(Collectors.joining(","));
+        String nodeActionSet = extractCustomInterfaceIds(modelNode);
         modelInfo.setCustomInterfaceIds(nodeActionSet);
         modelInfoService.updateById(modelInfo);
         return "保存成功";
@@ -655,5 +636,37 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                 .collect(Collectors.toSet());
 
         return set;
+    }
+
+    /**
+     * 从给定的模型节点中提取并合并前后节点动作的自定义接口ID，返回一个以逗号分隔的字符串。
+     *
+     * @param modelNode 包含模型数据的对象，可以为null。
+     * @return 包含合并的自定义接口ID的逗号分隔字符串，如果没有找到匹配的ID则返回null。
+     */
+    public String extractCustomInterfaceIds(Object modelNode) {
+        if (ObjectUtil.isEmpty(modelNode)) {
+            return null;
+        }
+
+        String jsonStr = modelNode.toString();
+
+        List<String> preNodeActionList = JsonPath.read(jsonStr, "$.childShapes[*].properties.preNodeAction.customInterfaceId");
+        List<String> postNodeActionRead = JsonPath.read(jsonStr, "$.childShapes[*].properties.postNodeAction.customInterfaceId");
+
+        Set<String> preNodeActionSet = preNodeActionList
+                .stream()
+                .filter(item -> item != null && !item.isEmpty())
+                .collect(Collectors.toSet());
+
+        Set<String> postNodeActionSet = postNodeActionRead.stream()
+                .filter(item -> item != null && !item.isEmpty())
+                .collect(Collectors.toSet());
+
+        String nodeActionSet = Stream.concat(preNodeActionSet.stream(), postNodeActionSet.stream())
+                .distinct()
+                .collect(Collectors.joining(","));
+
+        return nodeActionSet;
     }
 }
