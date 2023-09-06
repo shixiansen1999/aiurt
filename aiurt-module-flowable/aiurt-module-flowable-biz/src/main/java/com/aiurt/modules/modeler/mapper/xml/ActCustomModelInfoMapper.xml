@@ -2,4 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.modeler.mapper.ActCustomModelInfoMapper">
 
+    <select id="countByCustomInterfaceIds" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM act_custom_model_info
+        <where>
+        <if test="customInterfaceIds != null and customInterfaceIds.size() > 0">
+            <foreach collection="customInterfaceIds" item="customInterfaceId" separator="OR">
+                FIND_IN_SET(#{customInterfaceId}, custom_interface_ids)
+            </foreach>
+        </if>
+        </where>
+    </select>
 </mapper>

@@ -42,4 +42,12 @@ public interface IActCustomInterfaceService extends IService<ActCustomInterface>
      */
     void checkAndThrowIfModuleHasAssociatedInterfaces(List<String> moduleIds) throws AiurtBootException;
 
+    /**
+     * 根据自定义接口ID列表批量删除记录。
+     *
+     * @param ids 包含自定义接口ID的列表，可以为空。
+     * @return 删除是否成功，成功返回true，否则返回false。
+     */
+    boolean removeInterfaceByIds(List<String> ids);
+
 }
