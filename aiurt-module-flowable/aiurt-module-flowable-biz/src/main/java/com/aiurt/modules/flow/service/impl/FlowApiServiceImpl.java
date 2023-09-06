@@ -542,21 +542,15 @@ public class FlowApiServiceImpl implements FlowApiService {
             log.info("流程实例请求参数为空！");
             return taskInfoDTO;
         }
-
-        Task task = this.getProcessInstanceActiveTask(processInstanceId, taskId);
+        TaskInfo task = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskId(taskId).singleResult();
+        if (Objects.isNull(task)) {
+            throw new AiurtBootException("数据验证失败，任务id不存在");
+        }
+        //task = this.getProcessInstanceActiveTask(processInstanceId, taskId);
         String taskDefinitionKey = "";
 
         if (Objects.nonNull(task)) {
             taskDefinitionKey = task.getTaskDefinitionKey();
-        }
-
-        // 任务结束了
-        if (Objects.isNull(task) && StrUtil.isNotBlank(taskId)) {
-
-            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskId(taskId).singleResult();
-            if (Objects.nonNull(taskInstance)) {
-                taskDefinitionKey = taskInstance.getTaskDefinitionKey();
-            }
         }
 
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
