@@ -34,4 +34,12 @@ public interface ActCustomPageModuleMapper extends BaseMapper<ActCustomPageModul
 	 */
 	List<SelectTreeModel> queryListByPid(@Param("pid") String pid, @Param("query") Map<String, String> query);
 
+	/**
+	 * 获取树形结构的模块数据
+	 *
+	 * @param name
+	 * @return
+	 */
+	List<SelectTreeModel> getModuleTree(@Param("name") String name);
+
 }
