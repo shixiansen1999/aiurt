@@ -3,6 +3,9 @@ FROM anapsix/alpine-java:8_server-jre_unlimited
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 RUN mkdir -p /aiurt-platfrom/config/jeecg
+RUN mkdir -p /data/wwwroot/support/test/
+RUN mkdir -p /data/wwwroot/support/upload/
+RUN mkdir -p /data/wwwroot/support/dist/
 
 WORKDIR /aiurt-platfrom
 
