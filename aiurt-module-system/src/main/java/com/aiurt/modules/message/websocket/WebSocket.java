@@ -144,12 +144,12 @@ public class WebSocket {
      * @param message
      */
     public void sendMessage(String userId, String message) {
-        /*BaseMap baseMap = new BaseMap();
+        BaseMap baseMap = new BaseMap();
         baseMap.put("userId", userId);
         baseMap.put("message", message);
-        baseRedisClient.sendMessage(REDIS_TOPIC_NAME, baseMap);*/
+        baseRedisClient.sendMessage(REDIS_TOPIC_NAME, baseMap);
 
-        Session session = sessionPool.get(userId);
+       /* Session session = sessionPool.get(userId);
         if (session != null&&session.isOpen()) {
             try {
                 log.info("【websocket消息】 单点消息:"+message);
@@ -167,7 +167,7 @@ public class WebSocket {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
+        }*/
     }
     /**
      * 配置错误信息处理
