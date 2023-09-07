@@ -1,5 +1,6 @@
 package com.aiurt.modules.modeler.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.entity.ActCustomVariable;
@@ -142,5 +143,34 @@ public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInf
            log.error(e.getMessage());
         }
         return actCustomModelInfo;
+    }
+
+    /**
+     * 流程信息编辑
+     *
+     * @param actCustomModelInfo
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void edit(ActCustomModelInfo actCustomModelInfo) {
+        ActCustomModelInfo one = this.getById(actCustomModelInfo.getId());
+        if (Objects.isNull(one) || StrUtil.isBlank(one.getModelId())) {
+            throw new AiurtBootException("流程模板不存在，无法修改。");
+        }
+
+        Model model = modelService.getModel(one.getModelId());
+        if (Objects.isNull(model)) {
+            throw new AiurtBootException("流程模板不存在，无法修改。");
+        }
+
+
+
+        if (!StrUtil.equals(one.getModelKey(), actCustomModelInfo.getModelKey())) {
+            throw new AiurtBootException("流程标识不能修改！");
+        }
+        this.updateById(actCustomModelInfo);
+
+        model.setName(one.getName());
+        modelService.saveModel(model);
     }
 }
