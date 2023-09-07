@@ -160,7 +160,6 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
         return sysAttachment.getId()+"?fileName="+sysAttachment.getFileName();
     }
 
-
     /**
      * 通用模板数据封装
      *
