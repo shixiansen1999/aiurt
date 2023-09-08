@@ -2,6 +2,7 @@ package com.aiurt.modules.train.task.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.train.task.dto.*;
 import com.aiurt.modules.train.task.entity.BdTrainTask;
@@ -118,6 +119,7 @@ public class BdTrainTaskController {
 	@AutoLog(value = "培训任务-编辑")
 	@ApiOperation(value="培训任务-编辑", notes="培训任务-编辑")
 	@PutMapping(value = "/edit")
+	@LimitSubmit(key = "edit:#bdTrainTaskPage", limit = 30)
 	public Result<?> edit(@RequestBody BdTrainTaskPage bdTrainTaskPage) {
 		return bdTrainTaskService.edit(bdTrainTaskPage);
 	}
