@@ -159,4 +159,6 @@ public class FaultDTO extends DictEntity implements Serializable {
     @ApiModelProperty(value = "故障现象")
     private String symptoms;
 
+    @ApiModelProperty(value = "排查方法")
+    private String method;
 }
