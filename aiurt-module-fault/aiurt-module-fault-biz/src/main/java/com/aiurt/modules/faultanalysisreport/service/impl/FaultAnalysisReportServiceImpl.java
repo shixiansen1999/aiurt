@@ -26,14 +26,12 @@ import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMap
 import com.aiurt.modules.flow.api.FlowBaseApi;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.knowledge.entity.CauseSolution;
-import com.aiurt.modules.knowledge.entity.KnowledgeBase;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.apache.commons.collections.ArrayStack;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -150,6 +148,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
             faultDTO.setDeviceTypeCode(faultKnowledgeBase.getDeviceTypeCode());
             faultDTO.setMaterialCode(faultKnowledgeBase.getMaterialCode());
             faultDTO.setFaultPhenomenon(faultKnowledgeBase.getKnowledgeBaseTypeCode());
+            faultDTO.setMethod(faultKnowledgeBase.getMethod());
         }else {
             FaultKnowledgeBase faultKnowledgeBase1 = new FaultKnowledgeBase();
             faultKnowledgeBase1.setFaultPhenomenon(faultDTO.getSymptoms());
