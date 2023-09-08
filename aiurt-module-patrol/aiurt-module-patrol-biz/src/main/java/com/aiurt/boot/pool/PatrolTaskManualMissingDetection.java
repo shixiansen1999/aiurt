@@ -76,6 +76,8 @@ public class PatrolTaskManualMissingDetection implements Job {
      * 每天0点检测漏检的手工下发任务
      */
     private void taskDetection() {
+        // 当前时间
+        Date now = new Date();
 
         // 获取以下状态为0待指派、1待确认、2待执行、3已退回、4执行中的任务
         List<Integer> status = Arrays.asList(PatrolConstant.TASK_INIT, PatrolConstant.TASK_CONFIRM,
@@ -110,10 +112,8 @@ public class PatrolTaskManualMissingDetection implements Job {
             if (null == l.getPatrolDate() && null == l.getEndDate()) {
                 return;
             }
-            Date patrolDate = l.getPatrolDate();
+            Date patrolDate = DateUtil.parse(DateUtil.format(l.getEndDate(), "yyyy-MM-dd " + "23:59:59"));
 
-            // 当前时间
-            Date now = new Date();
             int compare = DateUtil.compare(now, patrolDate);
             if (compare >= 0) {
                 l.setOmitStatus(PatrolConstant.OMIT_STATUS);
