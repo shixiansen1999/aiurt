@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.train.question.dto.BdQuestionDTO;
 import com.aiurt.modules.train.question.entity.BdQuestion;
@@ -16,12 +18,12 @@ import com.aiurt.modules.train.question.service.IBdQuestionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import jdk.nashorn.internal.objects.Global;
 import org.apache.shiro.SecurityUtils;
-import org.elasticsearch.common.Glob;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,8 +54,20 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
 
+    @Autowired
+    private ISysParamAPI sysParamAPI;
+
     @Override
     public Page<BdQuestion> queryPageList(Page<BdQuestion> pageList,BdQuestion condition) {
+        SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.IS_QUERY_QUESTION_BY_DEPT);
+        if (ObjectUtil.isEmpty(sysParamModel)) {
+            throw new AiurtBootException("请检查该配置：是否根据部门过滤习题");
+        }
+        boolean b1 = "1".equals(sysParamModel.getValue());
+        if (!b1) {
+            condition.setOrgCode(null);
+        }
+
         List<BdQuestion> questionList = bdQuestionMapper.list(pageList,condition);
         boolean b = GlobalThreadLocal.setDataFilter(false);
         questionList.forEach(e -> {

@@ -486,4 +486,9 @@ public interface SysParamCodeConstant {
      * 取消挂起时是否更新维修负责人
      */
     String CANCEL_HANGUP_CH_AUN = "cancel_hangup_ch_aun";
+
+    /**
+     * 是否根据部门过滤习题
+     */
+    String IS_QUERY_QUESTION_BY_DEPT = "is_query_question_by_dept";
 }
