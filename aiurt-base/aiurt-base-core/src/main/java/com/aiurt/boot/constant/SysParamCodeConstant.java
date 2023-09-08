@@ -521,6 +521,7 @@ public interface SysParamCodeConstant {
     String PATROL_DURATION_USE_MAC = "patrol_duration_use_mac";
 
 
+
     /**
      * 	巡视、检修标准是否关联多个设备分类
      *

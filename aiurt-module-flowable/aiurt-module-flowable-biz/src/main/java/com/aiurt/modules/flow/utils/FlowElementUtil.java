@@ -303,7 +303,8 @@ public class FlowElementUtil {
                     }
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
-                    throw e;
+                    Throwable cause = e.getCause();
+                    throw new AiurtBootException(ObjectUtil.isNotEmpty(cause) ? cause.getMessage() : e.getMessage());
                 }
             }
         }
