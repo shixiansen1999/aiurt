@@ -13,6 +13,8 @@ import com.aiurt.common.api.vo.TreeNode;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.ExcelUtils;
 import com.aiurt.common.util.MinioUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.train.question.dto.BdQuestionDTO;
 import com.aiurt.modules.train.question.dto.BdQuestionImportExcelDTO;
@@ -35,10 +37,12 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.BeanUtils;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -83,8 +87,20 @@ public class BdQuestionServiceImpl extends ServiceImpl<BdQuestionMapper, BdQuest
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
 
+    @Autowired
+    private ISysParamAPI sysParamAPI;
+
     @Override
     public Page<BdQuestion> queryPageList(Page<BdQuestion> pageList,BdQuestion condition) {
+        SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.IS_QUERY_QUESTION_BY_DEPT);
+        if (ObjectUtil.isEmpty(sysParamModel)) {
+            throw new AiurtBootException("请检查该配置：是否根据部门过滤习题");
+        }
+        boolean b1 = "1".equals(sysParamModel.getValue());
+        if (!b1) {
+            condition.setOrgCode(null);
+        }
+
         List<BdQuestion> questionList = bdQuestionMapper.list(pageList,condition);
         boolean b = GlobalThreadLocal.setDataFilter(false);
         questionList.forEach(e -> {
