@@ -1,12 +1,16 @@
 package com.aiurt.modules.online.page.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtNoDataException;
 import com.aiurt.modules.online.page.entity.ActCustomPage;
+import com.aiurt.modules.online.page.entity.ActCustomPageField;
+import com.aiurt.modules.online.page.mapper.ActCustomPageFieldMapper;
 import com.aiurt.modules.online.page.mapper.ActCustomPageMapper;
+import com.aiurt.modules.online.page.service.IActCustomPageFieldService;
 import com.aiurt.modules.online.page.service.IActCustomPageService;
 import com.aiurt.modules.online.workflowapi.entity.ActCustomInterface;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -39,6 +43,8 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
     private ISysBaseAPI sysBaseAPI;
     @Autowired
     private ActCustomPageModuleServiceImpl actCustomPageModuleService;
+    @Autowired
+    private IActCustomPageFieldService actCustomPageFieldService;
 
     /**
      * 编辑菜单
@@ -111,7 +117,14 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
         String lastSixDigits = timestampString.substring(timestampString.length() - 6);
         actCustomPage.setPageTag(String.format("%s%s", "pageTag", lastSixDigits));
         baseMapper.insert(actCustomPage);
-        return Result.OK("添加成功");
+        //保存表单字段
+        String id = actCustomPage.getId();
+        List<ActCustomPageField> fieldList = actCustomPage.getFieldList();
+        for (ActCustomPageField customPageField : fieldList) {
+            customPageField.setPageId(id);
+        }
+        actCustomPageFieldService.saveBatch(fieldList);
+    return Result.OK("添加成功");
     }
 
     /**

@@ -103,6 +103,12 @@ public class ActCustomPage extends DictEntity implements Serializable {
     @ApiModelProperty(value = "表单描述")
     private String pageDesc;
 
+    /**是否有子节点*/
+    @Excel(name = "同步字段", width = 15)
+    @ApiModelProperty(value = "是否有子节点")
+    @TableField(exist = false)
+    private List<ActCustomPageField> fieldList;
+
     /**
      * 删除状态 0-未删除 1-已删除
      */
