@@ -11,10 +11,7 @@ import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
 import com.aiurt.modules.editor.language.json.converter.CustomBpmnJsonConverter;
 import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
-import com.aiurt.modules.modeler.dto.FlowUserAttributeModel;
-import com.aiurt.modules.modeler.dto.FlowUserModel;
-import com.aiurt.modules.modeler.dto.FlowUserRelationAttributeModel;
-import com.aiurt.modules.modeler.dto.ModelInfoVo;
+import com.aiurt.modules.modeler.dto.*;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
@@ -30,6 +27,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
@@ -668,5 +666,58 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                 .collect(Collectors.joining(","));
 
         return nodeActionSet;
+    }
+
+
+    /**
+     * 对比
+     *
+     * @param compareDTO
+     * @return
+     */
+    @Override
+    public Boolean compare(CompareDTO compareDTO) {
+
+        String modelId = compareDTO.getModelId();
+        Model processModel = modelService.getModel(modelId);
+        if (Objects.isNull(processModel)) {
+            return false;
+        }
+
+        String modelEditorJson = processModel.getModelEditorJson();
+        ByteArrayInputStream modelStream = new ByteArrayInputStream(compareDTO.getModelXml().getBytes());
+
+
+        XMLInputFactory xif = XmlUtil.createSafeXmlInputFactory();
+        InputStreamReader xmlIn = new InputStreamReader(modelStream, StandardCharsets.UTF_8);
+        XMLStreamReader xtr = null;
+        try {
+            xtr = xif.createXMLStreamReader(xmlIn);
+        } catch (XMLStreamException e) {
+           return false;
+        }
+        // 实现将bpmn xml转换成BpmnModel内存模型对象
+        BpmnModel bpmnModel = bpmnXMLConverter.convertToBpmnModel(xtr);
+        // 默认值
+        bpmnModel.setTargetNamespace(BaseBpmnJsonConverter.NAMESPACE);
+        ObjectMapper objectMapper = new ObjectMapper();
+        ConverterContext converterContext = new ConverterContext(modelService, objectMapper);
+        //
+        List<AbstractModel> decisionTables = modelService.getModelsByModelType(AbstractModel.MODEL_TYPE_DECISION_TABLE);
+        decisionTables.forEach(abstractModel -> {
+            Model model = (Model) abstractModel;
+            converterContext.addDecisionTableModel(model);
+        });
+
+        // 设置模板json格式
+        ObjectNode modelNode = bpmnJsonConverter.convertToJson(bpmnModel, converterContext);
+
+        try {
+            ObjectNode editorJsonNode = (ObjectNode) objectMapper.readTree(modelEditorJson);
+            return !modelNode.equals(editorJsonNode);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
