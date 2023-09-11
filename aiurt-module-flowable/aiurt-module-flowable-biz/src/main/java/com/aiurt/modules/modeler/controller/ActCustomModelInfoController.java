@@ -75,6 +75,7 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 		}
 
 		QueryWrapper<ActCustomModelInfo> queryWrapper = QueryGenerator.initQueryWrapper(actCustomModelInfo, req.getParameterMap());
+		queryWrapper.lambda().orderByDesc(ActCustomModelInfo::getCreateTime);
 		Page<ActCustomModelInfo> page = new Page<>(pageNo, pageSize);
 		IPage<ActCustomModelInfo> pageList = actCustomModelInfoService.page(page, queryWrapper);
 
@@ -110,15 +111,7 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody @Valid  ActCustomModelInfo actCustomModelInfo) {
 
-		ActCustomModelInfo one = actCustomModelInfoService.getById(actCustomModelInfo.getId());
-		if (Objects.isNull(one)) {
-			throw new AiurtBootException("流程模板不存在，无法修改");
-		}
-
-		if (!StrUtil.equals(one.getModelKey(), actCustomModelInfo.getModelKey())) {
-			throw new AiurtBootException("流程标识不能修改！");
-		}
-		actCustomModelInfoService.updateById(actCustomModelInfo);
+		actCustomModelInfoService.edit(actCustomModelInfo);
 		return Result.OK("编辑成功!");
 	}
 

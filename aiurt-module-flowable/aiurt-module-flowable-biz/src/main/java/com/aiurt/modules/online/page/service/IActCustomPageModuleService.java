@@ -59,10 +59,10 @@ public interface IActCustomPageModuleService extends IService<ActCustomPageModul
 	/**
 	 * 【vue3专用】根据父级编码加载分类字典的数据
 	 *
-	 * @param parentCode
+	 * @param parentId
 	 * @return
 	 */
-	List<SelectTreeModel> queryListByCode(String parentCode);
+	List<SelectTreeModel> queryListByCode(String parentId);
 
 	/**
 	 * 【vue3专用】根据pid查询子节点集合
@@ -71,5 +71,13 @@ public interface IActCustomPageModuleService extends IService<ActCustomPageModul
 	 * @return
 	 */
 	List<SelectTreeModel> queryListByPid(String pid);
+
+	/**
+	 * 获取树形结构的模块数据
+	 *
+	 * @param name 模块名称
+	 * @return 树形结构的模块数据列表
+	 */
+	List<SelectTreeModel> getModuleTree(String name);
 
 }
