@@ -103,6 +103,7 @@ public class PatrolTaskThreadService implements Callable<PatrolTaskParam> {
             // 该巡视任务是否有关联故障
             Integer patrolTaskFaultNum = this.patrolTaskMapper.getPatrolTaskFaultNum(patrolTaskParam.getId());
             patrolTaskParam.setIsRelateFault(patrolTaskFaultNum != null && (patrolTaskFaultNum > 0));
+            patrolTaskParam.setIsRelateFaultName(patrolTaskFaultNum != null && (patrolTaskFaultNum > 0) ? "是" : "否");
 
             /*//巡视单内容
             if (ObjectUtil.isNotEmpty(patrolTaskParam.getHavePrint()) && patrolTaskParam.getHavePrint()) {
