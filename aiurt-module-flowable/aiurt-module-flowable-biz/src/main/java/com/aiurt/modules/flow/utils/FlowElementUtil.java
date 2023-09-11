@@ -323,7 +323,15 @@ public class FlowElementUtil {
      * @param processDefinitionId 流程定义Id
      */
     public void activateProcessDefinition(String processDefinitionId) {
+
         repositoryService.activateProcessDefinitionById(processDefinitionId);
+    }
+
+    public void vaildProcessDefinition(String processDefinitionId) {
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
+        if (Objects.isNull(processDefinition)) {
+            throw new AiurtBootException("该流程定义信息不存在！");
+        }
     }
 
 

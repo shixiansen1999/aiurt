@@ -4,6 +4,7 @@ package com.aiurt.modules.modeler.controller;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.modeler.dto.CompareDTO;
 import com.aiurt.modules.modeler.dto.ModelInfoVo;
 import com.aiurt.modules.modeler.service.IFlowableBpmnService;
 import io.swagger.annotations.Api;
@@ -12,10 +13,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
-import org.flowable.common.engine.impl.context.Context;
-import org.flowable.common.engine.impl.interceptor.CommandContext;
-import org.flowable.engine.ProcessEngines;
-import org.flowable.engine.impl.util.CommandContextUtil;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -107,6 +104,13 @@ public class BpmnDesignerController {
 
         flowableBpmnService.publishBpmn(modelId);
         return Result.OK("部署成功");
+    }
+
+    @ApiOperation("编辑前后对比")
+    @PostMapping("/compare")
+    public Result<Boolean> compare(@RequestBody CompareDTO compareDTO) {
+        Boolean result = flowableBpmnService.compare(compareDTO);
+        return Result.OK(result);
     }
 
 }
