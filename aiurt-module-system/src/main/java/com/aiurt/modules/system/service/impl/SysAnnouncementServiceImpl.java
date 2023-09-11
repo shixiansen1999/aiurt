@@ -366,6 +366,10 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_FLOW);
 			sysMessageTypeDTO.setValue(sysParamModel.getValue());
 		}
+		if (SysParamCodeConstant.FAULT_PRODUCE_REPORT.equals(type)) {
+			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.FAULT_PRODUCE_REPORT);
+			sysMessageTypeDTO.setValue(sysParamModel.getValue());
+		}
 		return sysMessageTypeDTO;
 	}
 

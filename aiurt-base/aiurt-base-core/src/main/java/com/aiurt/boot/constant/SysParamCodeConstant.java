@@ -195,6 +195,10 @@ public interface SysParamCodeConstant {
      * 工作日志
      */
     String WORKLOG = "worklog";
+    /**
+     * 工作日志流程
+     */
+    String FAULT_PRODUCE_REPORT = "fault_produce_report";
 
     /**
      * 物资出入库流程
