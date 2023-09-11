@@ -1,5 +1,6 @@
 package com.aiurt.modules.online.page.service;
 
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.online.page.entity.ActCustomPageModule;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -36,17 +37,17 @@ public interface IActCustomPageModuleService extends IService<ActCustomPageModul
    * 修改节点
    *
    * @param actCustomPageModule
-   * @throws JeecgBootException
+   * @throws AiurtBootException
    */
-	void updateActCustomPageModule(ActCustomPageModule actCustomPageModule) throws JeecgBootException;
+	void updateActCustomPageModule(ActCustomPageModule actCustomPageModule) throws AiurtBootException;
 
 	/**
 	 * 删除节点
 	 *
 	 * @param id
-   * @throws JeecgBootException
+   * @throws AiurtBootException
 	 */
-	void deleteActCustomPageModule(String id) throws JeecgBootException;
+	void deleteActCustomPageModule(String id) throws AiurtBootException;
 
 	  /**
 	   * 查询所有数据，无分页
