@@ -110,6 +110,7 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
         String timestampString = String.valueOf(timestamp);
         String lastSixDigits = timestampString.substring(timestampString.length() - 6);
         actCustomPage.setPageTag(String.format("%s%s", "pageTag", lastSixDigits));
+        baseMapper.insert(actCustomPage);
         return Result.OK("添加成功");
     }
 

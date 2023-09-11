@@ -51,7 +51,7 @@ public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageMod
         //新增时设置hasChild为0
 	    actCustomPageModule.setHasChild(IActCustomPageModuleService.NOCHILD);
         //新增时获取菜单名称
-        SysPermissionModel sysPermissionModel = sysBaseApi.getAllPermission(actCustomPageModule.getId());
+        SysPermissionModel sysPermissionModel = sysBaseApi.getPermissionById(actCustomPageModule.getId());
         if (ObjectUtil.isNotEmpty(sysPermissionModel)) {
             String permissionName = sysPermissionModel.getName();
             actCustomPageModule.setModuleName(permissionName);
@@ -74,13 +74,13 @@ public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageMod
 	public void updateActCustomPageModule(ActCustomPageModule actCustomPageModule) {
 		ActCustomPageModule entity = this.getById(actCustomPageModule.getId());
 		if(entity==null) {
-			throw new JeecgBootException("未找到对应实体");
+			throw new AiurtBootException("未找到对应实体");
 		}
 		String old_pid = entity.getPid();
 		String new_pid = actCustomPageModule.getPid();
 		if(!old_pid.equals(new_pid)) {
 			updateOldParentNode(old_pid);
-			if(oConvertUtils.isEmpty(new_pid)){
+			if(StrUtil.isEmpty(new_pid)){
 				actCustomPageModule.setPid(IActCustomPageModuleService.ROOT_PID_VALUE);
 			}
 			if(!IActCustomPageModuleService.ROOT_PID_VALUE.equals(actCustomPageModule.getPid())) {
@@ -174,7 +174,7 @@ public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageMod
 
     @Override
     public List<SelectTreeModel> queryListByPid(String pid) {
-        if (oConvertUtils.isEmpty(pid)) {
+        if (StrUtil.isEmpty(pid)) {
             pid = ROOT_PID_VALUE;
         }
         return baseMapper.queryListByPid(pid, null);
