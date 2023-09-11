@@ -46,7 +46,8 @@
         select sr.user_id as userId,
         su.realname as userName,
         su.org_name as orgName,
-        su.work_no as workNo
+        su.work_no as workNo,
+        su.salary_code as salaryCode
         from schedule_record sr
         inner join sys_user su on sr.user_id = su.id
         where su.status = 1

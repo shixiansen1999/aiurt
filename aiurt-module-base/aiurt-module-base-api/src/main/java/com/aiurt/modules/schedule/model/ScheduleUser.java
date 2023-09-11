@@ -8,4 +8,5 @@ public class ScheduleUser {
     private String userName;
     private String orgName;
     private String workNo;
+    private String salaryCode;
 }
