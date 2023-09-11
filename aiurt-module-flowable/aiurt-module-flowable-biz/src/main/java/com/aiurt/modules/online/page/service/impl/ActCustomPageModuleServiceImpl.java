@@ -41,7 +41,8 @@ public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageMod
     @Autowired
     private ISysBaseAPI sysBaseApi;
 	@Override
-	public void addActCustomPageModule(ActCustomPageModule actCustomPageModule) {
+    @Transactional(rollbackFor = Exception.class)
+    public void addActCustomPageModule(ActCustomPageModule actCustomPageModule) {
         LambdaQueryWrapper<ActCustomPageModule> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ActCustomPageModule::getId,actCustomPageModule.getId());
         List<ActCustomPageModule> actCustomPageModules = baseMapper.selectList(queryWrapper);
@@ -71,7 +72,8 @@ public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageMod
 	}
 
 	@Override
-	public void updateActCustomPageModule(ActCustomPageModule actCustomPageModule) {
+    @Transactional(rollbackFor = Exception.class)
+    public void updateActCustomPageModule(ActCustomPageModule actCustomPageModule) {
 		ActCustomPageModule entity = this.getById(actCustomPageModule.getId());
 		if(entity==null) {
 			throw new AiurtBootException("未找到对应实体");
