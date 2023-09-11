@@ -4008,7 +4008,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
      * @return
      */
     @Override
-    public SysPermissionModel getAllPermission(String id) {
+    public SysPermissionModel getPermissionById(String id) {
         SysPermission sysPermission = sysPermissionService.getById(id);
         SysPermissionModel sysPermissionModel = new SysPermissionModel();
         BeanUtils.copyProperties(sysPermission, sysPermissionModel);

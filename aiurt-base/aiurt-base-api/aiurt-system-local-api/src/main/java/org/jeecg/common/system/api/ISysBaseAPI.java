@@ -1335,10 +1335,10 @@ public interface ISysBaseAPI extends CommonAPI {
     List<SysUserRoleModel> getRole(List<String> roleCode);
 
     /**
-     * 获取系统所有菜单
+     * 根据id获取系统菜单
      * @param id
      * @return
      */
-    SysPermissionModel getAllPermission(String id);
+    SysPermissionModel getPermissionById(String id);
 }
 
