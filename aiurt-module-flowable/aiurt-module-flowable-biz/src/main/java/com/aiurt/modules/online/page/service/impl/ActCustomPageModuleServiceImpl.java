@@ -1,14 +1,25 @@
 package com.aiurt.modules.online.page.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.aiurt.modules.online.page.entity.ActCustomPageModule;
+import com.aiurt.modules.online.page.mapper.ActCustomPageMapper;
 import com.aiurt.modules.online.page.mapper.ActCustomPageModuleMapper;
 import com.aiurt.modules.online.page.service.IActCustomPageModuleService;
+import com.aiurt.modules.online.page.service.IActCustomPageService;
+import com.aiurt.modules.tree.TreeBuilder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.exception.JeecgBootException;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.SelectTreeModel;
+import org.jeecg.common.system.vo.SysPermissionModel;
 import org.jeecg.common.util.oConvertUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,11 +36,27 @@ import java.util.List;
 @Service
 public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageModuleMapper, ActCustomPageModule> implements IActCustomPageModuleService {
 
+    @Autowired
+    private ActCustomPageMapper actCustomPageMapper;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
 	@Override
 	public void addActCustomPageModule(ActCustomPageModule actCustomPageModule) {
-	   //新增时设置hasChild为0
+        LambdaQueryWrapper<ActCustomPageModule> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ActCustomPageModule::getId,actCustomPageModule.getId());
+        List<ActCustomPageModule> actCustomPageModules = baseMapper.selectList(queryWrapper);
+        if(CollUtil.isNotEmpty(actCustomPageModules)){
+            throw new AiurtBootException("该菜单已经存在，请不要重复添加");
+        }
+        //新增时设置hasChild为0
 	    actCustomPageModule.setHasChild(IActCustomPageModuleService.NOCHILD);
-		if(oConvertUtils.isEmpty(actCustomPageModule.getPid())){
+        //新增时获取菜单名称
+        SysPermissionModel sysPermissionModel = sysBaseApi.getPermissionById(actCustomPageModule.getId());
+        if (ObjectUtil.isNotEmpty(sysPermissionModel)) {
+            String permissionName = sysPermissionModel.getName();
+            actCustomPageModule.setModuleName(permissionName);
+        }
+        if(StrUtil.isEmpty(actCustomPageModule.getPid())){
 			actCustomPageModule.setPid(IActCustomPageModuleService.ROOT_PID_VALUE);
 		}else{
 			//如果当前节点父ID不为空 则设置父节点的hasChildren 为1
@@ -47,13 +74,13 @@ public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageMod
 	public void updateActCustomPageModule(ActCustomPageModule actCustomPageModule) {
 		ActCustomPageModule entity = this.getById(actCustomPageModule.getId());
 		if(entity==null) {
-			throw new JeecgBootException("未找到对应实体");
+			throw new AiurtBootException("未找到对应实体");
 		}
 		String old_pid = entity.getPid();
 		String new_pid = actCustomPageModule.getPid();
 		if(!old_pid.equals(new_pid)) {
 			updateOldParentNode(old_pid);
-			if(oConvertUtils.isEmpty(new_pid)){
+			if(StrUtil.isEmpty(new_pid)){
 				actCustomPageModule.setPid(IActCustomPageModuleService.ROOT_PID_VALUE);
 			}
 			if(!IActCustomPageModuleService.ROOT_PID_VALUE.equals(actCustomPageModule.getPid())) {
@@ -65,8 +92,13 @@ public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageMod
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void deleteActCustomPageModule(String id) throws JeecgBootException {
-		//查询选中节点下所有子节点一并删除
+	public void deleteActCustomPageModule(String id) throws AiurtBootException {
+        //如果模块被引用，则不可以删除
+        List<ActCustomPage> pageCustomModule = actCustomPageMapper.selectList(new QueryWrapper<ActCustomPage>().eq("page_module", id));
+        if(CollUtil.isNotEmpty(pageCustomModule)){
+            throw new AiurtBootException("该模块已被引用，无法删除");
+        }
+        //查询选中节点下所有子节点一并删除
         id = this.queryTreeChildIds(id);
         if(id.indexOf(",")>0) {
             StringBuffer sb = new StringBuffer();
@@ -94,7 +126,7 @@ public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageMod
         }else{
             ActCustomPageModule actCustomPageModule = this.getById(id);
             if(actCustomPageModule==null) {
-                throw new JeecgBootException("未找到对应实体");
+                throw new AiurtBootException("未找到对应实体");
             }
             updateOldParentNode(actCustomPageModule.getPid());
             baseMapper.deleteById(id);
@@ -123,17 +155,17 @@ public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageMod
     }
 
     @Override
-    public List<SelectTreeModel> queryListByCode(String parentCode) {
+    public List<SelectTreeModel> queryListByCode(String parentId) {
         String pid = ROOT_PID_VALUE;
-        if (oConvertUtils.isNotEmpty(parentCode)) {
+        if (StrUtil.isNotEmpty(parentId)) {
             LambdaQueryWrapper<ActCustomPageModule> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(ActCustomPageModule::getPid, parentCode);
+            queryWrapper.eq(ActCustomPageModule::getPid, parentId);
             List<ActCustomPageModule> list = baseMapper.selectList(queryWrapper);
             if (list == null || list.size() == 0) {
-                throw new JeecgBootException("该编码【" + parentCode + "】不存在，请核实!");
+                throw new AiurtBootException("该编码【" + parentId + "】不存在，请核实!");
             }
             if (list.size() > 1) {
-                throw new JeecgBootException("该编码【" + parentCode + "】存在多个，请核实!");
+                throw new AiurtBootException("该编码【" + parentId + "】存在多个，请核实!");
             }
             pid = list.get(0).getId();
         }
@@ -142,13 +174,19 @@ public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageMod
 
     @Override
     public List<SelectTreeModel> queryListByPid(String pid) {
-        if (oConvertUtils.isEmpty(pid)) {
+        if (StrUtil.isEmpty(pid)) {
             pid = ROOT_PID_VALUE;
         }
         return baseMapper.queryListByPid(pid, null);
     }
 
-	/**
+    @Override
+    public List<SelectTreeModel> getModuleTree(String name) {
+        List<SelectTreeModel> moduleTree = baseMapper.getModuleTree(name);
+        return TreeBuilder.buildTree(moduleTree);
+    }
+
+    /**
 	 * 根据所传pid查询旧的父级节点的子节点并修改相应状态值
 	 * @param pid
 	 */

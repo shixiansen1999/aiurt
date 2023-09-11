@@ -225,6 +225,18 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 propertiesNode.set(FlowModelExtElementConstant.FORM_FIELD_CONFIG, arrayNode);
             }
 
+            // 表单类型
+            List<ExtensionElement> formType = extensionElements.get(FlowModelExtElementConstant.EXT_FORM_TYPE);
+            buildJsonElement(propertiesNode, formType, FlowModelExtElementConstant.EXT_FORM_TYPE);
+
+            // 关联表单
+            List<ExtensionElement> associatedForm = extensionElements.get(FlowModelExtElementConstant.EXT_ASSOCIATED_FORM);
+            buildJsonElement(propertiesNode, associatedForm, FlowModelExtElementConstant.EXT_ASSOCIATED_FORM);
+
+            // 字段权限配置
+            List<ExtensionElement> formPermissionConfig = extensionElements.get(FlowModelExtElementConstant.EXT_FORM_PERMISSION_CONFIG);
+            buildJsonElement(propertiesNode, formPermissionConfig, FlowModelExtElementConstant.EXT_FORM_PERMISSION_CONFIG);
+
         }
     }
 
@@ -301,6 +313,18 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             // 抄送人
             addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_CARBON_COPY,
                     JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_CARBON_COPY, elementNode));
+
+            // 表单类型
+            addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_FORM_TYPE,
+                    JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_FORM_TYPE, elementNode));
+
+            // 关联表单
+            addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_ASSOCIATED_FORM,
+                    JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_ASSOCIATED_FORM, elementNode));
+
+            // 字段权限配置
+            addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_FORM_PERMISSION_CONFIG,
+                    JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_FORM_PERMISSION_CONFIG, elementNode));
 
             // 1.0选人
             // 选人类型， initiator是为：流程发起人, data

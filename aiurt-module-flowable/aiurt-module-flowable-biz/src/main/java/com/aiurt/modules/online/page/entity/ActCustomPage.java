@@ -2,8 +2,10 @@ package com.aiurt.modules.online.page.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.annotation.*;
@@ -28,7 +30,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="act_custom_page对象", description="设计表单")
-public class ActCustomPage implements Serializable {
+public class ActCustomPage extends DictEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -63,7 +65,13 @@ public class ActCustomPage implements Serializable {
     /**表单所属模块*/
 	@Excel(name = "表单所属模块", width = 15)
     @ApiModelProperty(value = "表单所属模块")
+    @Dict(dicCode = "id",dicText = "module_name",dictTable = "act_custom_page_module")
     private String pageModule;
+
+    /**表单标识*/
+    @Excel(name = "表单标识", width = 15)
+    @ApiModelProperty(value = "表单标识")
+    private String pageTag;
 	/**表单全局属性*/
 	@Excel(name = "表单全局属性", width = 15)
     @ApiModelProperty(value = "表单全局属性")
@@ -90,6 +98,16 @@ public class ActCustomPage implements Serializable {
 	@Excel(name = "表单类型：0-静态表单，1-动态表单", width = 15)
     @ApiModelProperty(value = "表单类型：0-静态表单，1-动态表单")
     private Integer pageType;
+    /**表单描述*/
+    @Excel(name = "表单描述", width = 15)
+    @ApiModelProperty(value = "表单描述")
+    private String pageDesc;
+
+    /**是否有子节点*/
+    @Excel(name = "同步字段", width = 15)
+    @ApiModelProperty(value = "是否有子节点")
+    @TableField(exist = false)
+    private List<ActCustomPageField> fieldList;
 
     /**
      * 删除状态 0-未删除 1-已删除

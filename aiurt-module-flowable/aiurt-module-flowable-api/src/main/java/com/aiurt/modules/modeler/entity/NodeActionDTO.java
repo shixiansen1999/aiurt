@@ -16,4 +16,6 @@ public class NodeActionDTO implements Serializable {
     private String stateUpdate;
     private String customInterface;
     private String customSql;
+
+    private String customInterfaceId;
 }

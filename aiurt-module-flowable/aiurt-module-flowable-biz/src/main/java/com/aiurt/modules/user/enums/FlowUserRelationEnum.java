@@ -17,10 +17,7 @@ public enum FlowUserRelationEnum {
      */
     SUPERIOR_LEADER_OF_INITIATOR("superior_leader_of_initiator", "发起人上级部门领导"),
 
-    /**
-     * 流程变量
-     */
-    PROCESS_VARIABLE("process_variable", "流程变量"),
+    /** 流程变量PROCESS_VARIABLE("process_variable", "流程变量"),  */
 
     /**
      * 自定义实现类

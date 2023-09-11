@@ -11,10 +11,7 @@ import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
 import com.aiurt.modules.editor.language.json.converter.CustomBpmnJsonConverter;
 import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
-import com.aiurt.modules.modeler.dto.FlowUserAttributeModel;
-import com.aiurt.modules.modeler.dto.FlowUserModel;
-import com.aiurt.modules.modeler.dto.FlowUserRelationAttributeModel;
-import com.aiurt.modules.modeler.dto.ModelInfoVo;
+import com.aiurt.modules.modeler.dto.*;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
@@ -30,6 +27,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
@@ -69,6 +67,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @program: flow
@@ -218,22 +217,12 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         if (Objects.nonNull(modelNode)) {
 
             String jsonStr =  modelNode.toString();
-
             Object read = JsonPath.read(jsonStr, "$.childShapes[*].properties.userassignee[*].user");
-
-            //
-            Gson gson = new Gson();
-            List<List<FlowUserAttributeModel>> modelList = gson.fromJson(JSON.toJSONString(read), new TypeToken<List<List<FlowUserAttributeModel>>>() {}.getType());
-            Set<String> set = modelList.stream()
-                    .flatMap(List::stream)
-                    .map(FlowUserAttributeModel::getValue)
-                    .collect(Collectors.toSet());
+            Set<String> set = extractElementsByAttribute(read);
 
             // 更新常用人员数据；
-
             sysUserUsageApi.updateSysUserUsage(loginUser.getId(), new ArrayList<>(set));
         }
-
 
         AbstractModel savedModel = modelService.saveModel(modelId, processModel.getName(), processModel.getKey(),
                 processModel.getDescription(), modelNode.toString(), false,
@@ -244,6 +233,8 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         modelInfoLambdaQueryWrapper.eq(ActCustomModelInfo::getModelId, savedModel.getId());
         ActCustomModelInfo modelInfo = modelInfoService.getOne(modelInfoLambdaQueryWrapper);
         modelInfo.setStatus(ModelFormStatusEnum.DFB.getStatus());
+        String nodeActionSet = extractCustomInterfaceIds(modelNode);
+        modelInfo.setCustomInterfaceIds(nodeActionSet);
         modelInfoService.updateById(modelInfo);
         return "保存成功";
     }
@@ -625,5 +616,108 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         });
 
         return jsonObject;
+    }
+
+    /**
+     * 从给定的 JSON 数据中提取具有指定属性的元素值，并将这些元素值存储在一个集合中。
+     *
+     * @param read 包含 JSON 数据的对象，可以是字符串或其他 JSON 数据结构。
+     * @return 包含提取的元素值的集合，如果没有找到匹配的元素则返回空集合。
+     */
+    public Set<String> extractElementsByAttribute(Object read) {
+        // 使用 Gson 将 JSON 字符串转换为 List<List<elementType>> 类型
+        Gson gson = new Gson();
+        List<List<FlowUserAttributeModel>> modelList = gson.fromJson(JSON.toJSONString(read), new TypeToken<List<List<FlowUserAttributeModel>>>() {}.getType());
+        Set<String> set = modelList.stream()
+                .flatMap(List::stream)
+                .map(FlowUserAttributeModel::getValue)
+                .collect(Collectors.toSet());
+
+        return set;
+    }
+
+    /**
+     * 从给定的模型节点中提取并合并前后节点动作的自定义接口ID，返回一个以逗号分隔的字符串。
+     *
+     * @param modelNode 包含模型数据的对象，可以为null。
+     * @return 包含合并的自定义接口ID的逗号分隔字符串，如果没有找到匹配的ID则返回null。
+     */
+    public String extractCustomInterfaceIds(Object modelNode) {
+        if (ObjectUtil.isEmpty(modelNode)) {
+            return null;
+        }
+
+        String jsonStr = modelNode.toString();
+
+        List<String> preNodeActionList = JsonPath.read(jsonStr, "$.childShapes[*].properties.preNodeAction.customInterfaceId");
+        List<String> postNodeActionRead = JsonPath.read(jsonStr, "$.childShapes[*].properties.postNodeAction.customInterfaceId");
+
+        Set<String> preNodeActionSet = preNodeActionList
+                .stream()
+                .filter(item -> item != null && !item.isEmpty())
+                .collect(Collectors.toSet());
+
+        Set<String> postNodeActionSet = postNodeActionRead.stream()
+                .filter(item -> item != null && !item.isEmpty())
+                .collect(Collectors.toSet());
+
+        String nodeActionSet = Stream.concat(preNodeActionSet.stream(), postNodeActionSet.stream())
+                .distinct()
+                .collect(Collectors.joining(","));
+
+        return nodeActionSet;
+    }
+
+
+    /**
+     * 对比
+     *
+     * @param compareDTO
+     * @return
+     */
+    @Override
+    public Boolean compare(CompareDTO compareDTO) {
+
+        String modelId = compareDTO.getModelId();
+        Model processModel = modelService.getModel(modelId);
+        if (Objects.isNull(processModel)) {
+            return false;
+        }
+
+        String modelEditorJson = processModel.getModelEditorJson();
+        ByteArrayInputStream modelStream = new ByteArrayInputStream(compareDTO.getModelXml().getBytes());
+
+
+        XMLInputFactory xif = XmlUtil.createSafeXmlInputFactory();
+        InputStreamReader xmlIn = new InputStreamReader(modelStream, StandardCharsets.UTF_8);
+        XMLStreamReader xtr = null;
+        try {
+            xtr = xif.createXMLStreamReader(xmlIn);
+        } catch (XMLStreamException e) {
+           return false;
+        }
+        // 实现将bpmn xml转换成BpmnModel内存模型对象
+        BpmnModel bpmnModel = bpmnXMLConverter.convertToBpmnModel(xtr);
+        // 默认值
+        bpmnModel.setTargetNamespace(BaseBpmnJsonConverter.NAMESPACE);
+        ObjectMapper objectMapper = new ObjectMapper();
+        ConverterContext converterContext = new ConverterContext(modelService, objectMapper);
+        //
+        List<AbstractModel> decisionTables = modelService.getModelsByModelType(AbstractModel.MODEL_TYPE_DECISION_TABLE);
+        decisionTables.forEach(abstractModel -> {
+            Model model = (Model) abstractModel;
+            converterContext.addDecisionTableModel(model);
+        });
+
+        // 设置模板json格式
+        ObjectNode modelNode = bpmnJsonConverter.convertToJson(bpmnModel, converterContext);
+
+        try {
+            ObjectNode editorJsonNode = (ObjectNode) objectMapper.readTree(modelEditorJson);
+            return !modelNode.equals(editorJsonNode);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

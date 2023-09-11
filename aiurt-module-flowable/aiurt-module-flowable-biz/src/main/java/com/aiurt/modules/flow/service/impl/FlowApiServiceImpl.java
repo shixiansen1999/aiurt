@@ -1323,8 +1323,19 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Transactional(rollbackFor = Exception.class)
     public void stopProcessInstance(StopProcessInstanceDTO instanceDTO) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        ProcessInstance processInstance = getProcessInstance(instanceDTO.getProcessInstanceId());
-        String definitionId = processInstance.getProcessDefinitionId();
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(instanceDTO.getProcessInstanceId()).singleResult();
+
+        if (Objects.isNull(historicProcessInstance)) {
+            throw new AiurtBootException("该流程实例不存在！");
+        }
+        Date endTime = historicProcessInstance.getEndTime();
+        if (Objects.isNull(endTime)) {
+            throw new AiurtBootException("该流程实例结束！");
+        }
+
+        String definitionId = historicProcessInstance.getProcessDefinitionId();
+        // The process instance id (== as the id for the runtime process instance).
+        String processInstanceId = historicProcessInstance.getId();
         List<Task> list = taskService.createTaskQuery().processInstanceId(instanceDTO.getProcessInstanceId()).active().list();
 
         if (CollUtil.isEmpty(list)) {
@@ -1339,11 +1350,11 @@ public class FlowApiServiceImpl implements FlowApiService {
             // 结束节点
             EndEvent endEvent = flowElementUtil.getEndEvent(processDefinitionId);
             // 任务取消标识变量
-            boolean hasVariable = runtimeService.hasVariable(processInstance.getId(), FlowModelAttConstant.CANCEL);
+            boolean hasVariable = runtimeService.hasVariable(processInstanceId, FlowModelAttConstant.CANCEL);
             if (!hasVariable) {
-                runtimeService.setVariable(processInstance.getId(), FlowModelAttConstant.CANCEL, true);
+                runtimeService.setVariable(processInstanceId, FlowModelAttConstant.CANCEL, true);
             } else {
-                runtimeService.setVariable(processInstance.getId(), FlowModelAttConstant.CANCEL, false);
+                runtimeService.setVariable(processInstanceId, FlowModelAttConstant.CANCEL, false);
             }
             // 流程跳转, flowable 已提供
             runtimeService.createChangeActivityStateBuilder()
@@ -1359,18 +1370,18 @@ public class FlowApiServiceImpl implements FlowApiService {
             customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
 
             // 更新待办
-            todoBaseApi.updateBpmnTaskState(task.getId(), processInstance.getProcessInstanceId(), loginUser.getUsername(), "1");
+            todoBaseApi.updateBpmnTaskState(task.getId(), processInstanceId, loginUser.getUsername(), "1");
         }
 
         // 暂时处理先 todo
         if (StrUtil.startWithIgnoreCase(definitionId, "bd_work_ticket2") || StrUtil.startWithIgnoreCase(definitionId, "bd_work_titck")) {
-            String businessKey = processInstance.getBusinessKey();
+            String businessKey = historicProcessInstance.getBusinessKey();
             if (StrUtil.isNotBlank(businessKey)) {
                 actCustomTaskCommentMapper.updateWorkticketState(businessKey);
             }
 
         } else if (StrUtil.startWithIgnoreCase(definitionId, "week_plan_construction") || StrUtil.startWithIgnoreCase(definitionId, "supplementary_plan")) {
-            String businessKey = processInstance.getBusinessKey();
+            String businessKey = historicProcessInstance.getBusinessKey();
             if (StrUtil.isNotBlank(businessKey)) {
                 actCustomTaskCommentMapper.updateConstructionWeekPlanCommand(businessKey);
             }
@@ -1414,29 +1425,33 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteProcessInstance(String processInstanceId,String delReason) {
+    public void deleteProcessInstance(String processInstanceId, String delReason) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        try {
-            ProcessInstance processInstance = getProcessInstance(processInstanceId);
-            if (Objects.isNull(processInstance)) {
-                throw new AiurtBootException("该流程实例已被删除！");
-            }
-        } catch (Exception e) {
-           throw new AiurtBootException("该流程实例已被删除！");
+
+        // 查询流程实例和历史流程实例
+        ProcessInstance processInstance = getProcessInstance(processInstanceId);
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery()
+                .processInstanceId(processInstanceId)
+                .singleResult();
+
+        if (Objects.isNull(processInstance) && Objects.isNull(historicProcessInstance)) {
+            throw new AiurtBootException("该流程实例已被删除！");
         }
 
-
-        runtimeService.deleteProcessInstance(processInstanceId, delReason);
+        if (ObjectUtil.isNotEmpty(processInstance)) {
+            runtimeService.deleteProcessInstance(processInstanceId, delReason);
+            // 操作日志
+            ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment();
+            actCustomTaskComment.setProcessInstanceId(processInstanceId);
+            actCustomTaskComment.setComment(delReason);
+            actCustomTaskComment.setApprovalType(FlowApprovalType.DELETE);
+            actCustomTaskComment.setCreateRealname(loginUser.getUsername());
+            customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
+        } else {
+            historyService.deleteHistoricProcessInstance(processInstanceId);
+        }
 
         //todo 工单删除
-
-        // 操作日志
-        ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment();
-        actCustomTaskComment.setProcessInstanceId(processInstanceId);
-        actCustomTaskComment.setComment(delReason);
-        actCustomTaskComment.setApprovalType(FlowApprovalType.DELETE);
-        actCustomTaskComment.setCreateRealname(loginUser.getUsername());
-        customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
     }
 
     /**

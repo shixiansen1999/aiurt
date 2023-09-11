@@ -22,4 +22,20 @@
 		</if>
 	</select>
 
+	<select id="getModuleTree" parameterType="java.lang.Object" resultType="org.jeecg.common.system.vo.SelectTreeModel">
+		SELECT
+		id AS `key`,
+		module_name AS title,
+		id AS `value`,
+		(case when has_child = '1' then 0 else 1 end) as isLeaf,
+		IFNULL( pid, 0 ) AS parentId
+		FROM
+		act_custom_page_module
+		<where>
+			<if test="name != null and name != ''">
+				and module_name LIKE CONCAT('%', #{name}, '%')
+			</if>
+		</where>
+	</select>
+
 </mapper>
