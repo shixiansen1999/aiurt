@@ -7,14 +7,18 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtNoDataException;
+import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
+import com.aiurt.modules.modeler.mapper.ActCustomModelInfoMapper;
 import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.aiurt.modules.online.page.entity.ActCustomPageField;
 import com.aiurt.modules.online.page.mapper.ActCustomPageFieldMapper;
 import com.aiurt.modules.online.page.mapper.ActCustomPageMapper;
+import com.aiurt.modules.online.page.mapper.ActCustomPageModuleMapper;
 import com.aiurt.modules.online.page.service.IActCustomPageFieldService;
 import com.aiurt.modules.online.page.service.IActCustomPageService;
 import com.aiurt.modules.online.workflowapi.entity.ActCustomInterface;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import liquibase.pro.packaged.L;
@@ -26,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -44,13 +49,15 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
     private ActCustomPageModuleServiceImpl actCustomPageModuleService;
     @Autowired
     private IActCustomPageFieldService actCustomPageFieldService;
-
+    @Autowired
+    private ActCustomModelInfoMapper actCustomModelInfoMapper;
     /**
      * 编辑菜单
      *
      * @param actCustomPage
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void edit(ActCustomPage actCustomPage) {
 
         ActCustomPage page = getById(actCustomPage.getId());
@@ -128,6 +135,7 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<String> add(ActCustomPage actCustomPage) {
         // 检查数据库中是否已存在具有相同名称的记录
         if (isNameExists(actCustomPage.getPageName(), null)) {
@@ -149,6 +157,40 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
         actCustomPageFieldService.saveBatch(fieldList);
     return Result.OK("添加成功");
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<String> deleteById(String id) {
+        //如果模块被引用，则不可以删除
+        List<ActCustomModelInfo> pageCustomModule = actCustomModelInfoMapper.selectList(new QueryWrapper<ActCustomModelInfo>().eq("page_id", id).eq("del_flag",CommonConstant.DEL_FLAG_0));
+        if(CollUtil.isNotEmpty(pageCustomModule)){
+            throw new AiurtBootException("该表单已被引用，无法删除");
+        }
+        baseMapper.deleteById(id);
+        return Result.OK("删除成功");
+    }
+
+    @Override
+    public Result<String> deleteByIds(List<String> ids) {
+        if(CollUtil.isNotEmpty(ids)){
+            // 查找所有被引用的表单
+            List<String> referencedIds = new ArrayList<>();
+            for (String id : ids) {
+                List<ActCustomModelInfo> pageCustomModule = actCustomModelInfoMapper.selectList(new QueryWrapper<ActCustomModelInfo>().eq("page_id", id).eq("del_flag",CommonConstant.DEL_FLAG_0));
+                if (CollUtil.isNotEmpty(pageCustomModule)) {
+                    referencedIds.add(id);
+                }
+            }
+            // 如果有被引用的表单，抛出异常
+            if (CollUtil.isNotEmpty(referencedIds)) {
+                throw new AiurtBootException("有表单已被引用，无法删除!");
+            }
+            // 执行批量删除
+            baseMapper.deleteBatchIds(ids);
+        }
+        return Result.OK("删除成功");
+    }
+
 
     /**
      * 根据左侧树查询节点及子节点
