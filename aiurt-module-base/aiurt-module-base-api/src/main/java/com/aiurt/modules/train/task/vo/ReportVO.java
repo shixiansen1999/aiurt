@@ -29,6 +29,9 @@ public class ReportVO implements Serializable {
     @Excel(name = "培训内容", width = 15)
     @ApiModelProperty(value = "培训内容")
     private String planSubName;
+    @Excel(name = "培训类型", width = 15)
+    @ApiModelProperty(value = "培训类型")
+    private String classify;
     @Excel(name = "培训课时", width = 15)
     @ApiModelProperty(value = "培训课时")
     private String taskHours;
@@ -64,4 +67,6 @@ public class ReportVO implements Serializable {
     @Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")
     private String remarks;
+    @ApiModelProperty(value = "参培人员累计课时")
+    private String allPeopleTaskHours;
 }

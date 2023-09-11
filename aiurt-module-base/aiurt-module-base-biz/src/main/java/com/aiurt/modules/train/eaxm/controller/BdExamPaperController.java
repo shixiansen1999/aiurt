@@ -1,5 +1,6 @@
 package com.aiurt.modules.train.eaxm.controller;
 
+import com.aiurt.common.aspect.annotation.PermissionData;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -70,6 +71,7 @@ public class BdExamPaperController extends BaseController<BdExamPaper, IBdExamPa
 	@ApiResponses({
 			@ApiResponse(code = 200, message = "OK", response = BdExamPaper.class),
 	})
+	@PermissionData(pageComponent = "trainAss/ExamPaper/BdExamPaperList")
 	@PostMapping(value = "/examPaperList")
 	public Result<?> examPaperList(@RequestBody BdExamPaper bdExamPaper,HttpServletRequest req) {
 		if (bdExamPaper.getPageNo()==null||bdExamPaper.getPageSize()==null){

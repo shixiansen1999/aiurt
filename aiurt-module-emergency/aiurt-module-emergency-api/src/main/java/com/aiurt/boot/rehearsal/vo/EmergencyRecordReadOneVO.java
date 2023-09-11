@@ -59,4 +59,6 @@ public class EmergencyRecordReadOneVO extends EmergencyImplementationRecord {
      */
     @ApiModelProperty(value = "观察岗位/点位名称，格式：线路/站点/位置")
     private String positionName;
+    @ApiModelProperty(value = "人员名称")
+    private String userName;
 }

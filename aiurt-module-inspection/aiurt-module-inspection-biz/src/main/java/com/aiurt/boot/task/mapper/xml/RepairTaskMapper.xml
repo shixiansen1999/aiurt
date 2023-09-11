@@ -271,7 +271,9 @@
         rtsr.subsystem_code as systemCode,
         rtsr.device_type_code as deviceTypeCode,
         rtdr.submit_time as submitTime,
-        rtr.status as statusCode
+        rtr.status as statusCode,
+        rtsr.code as standardCode,
+        rtdr.sampling_sign_url
         FROM
             repair_task_device_rel rtdr
                 LEFT JOIN repair_task rt ON rt.id = rtdr.repair_task_id
@@ -458,15 +460,18 @@
 
     <select id="selectSingle" resultType="com.aiurt.boot.task.entity.RepairTaskResult">
         SELECT
-	       *
+	       t1.*,
+        t2.proc_methods
         FROM
-	    repair_task_result
+	    repair_task_result t1
+        left join inspection_code_content t2 on t1.code = t2.code
         <where>
 	      task_device_rel_id = #{id}
             <if test="status!=null">
                 and status = #{status}
             </if>
         </where>
+        GROUP BY t1.id
         order by sort_no ASC
     </select>
 

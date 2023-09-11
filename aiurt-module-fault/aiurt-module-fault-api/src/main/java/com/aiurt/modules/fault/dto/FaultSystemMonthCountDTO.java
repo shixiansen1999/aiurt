@@ -30,5 +30,5 @@ public class FaultSystemMonthCountDTO implements Serializable {
     private String systemName;
 
     @ApiModelProperty(value = "子系统维修次数")
-    private Integer frequency;
+    private Long frequency;
 }

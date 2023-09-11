@@ -38,7 +38,8 @@ public interface EmergencyRehearsalMonthMapper extends BaseMapper<EmergencyRehea
      * app查询月度演练计划
      * @param page
      * @param emergencyRehearsalMonthDTO
+     * @param value
      * @return
      */
-    IPage<EmergencyRehearsalMonthVO> queryMonthList(@Param("page") IPage<EmergencyRehearsalMonthVO> page, @Param("condition") EmergencyRehearsalMonthDTO emergencyRehearsalMonthDTO);
+    IPage<EmergencyRehearsalMonthVO> queryMonthList(@Param("page") IPage<EmergencyRehearsalMonthVO> page, @Param("condition") EmergencyRehearsalMonthDTO emergencyRehearsalMonthDTO, @Param("value") boolean value);
 }

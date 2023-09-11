@@ -526,4 +526,25 @@ public interface SysParamCodeConstant {
      * 	巡视、检修标准是否关联多个设备分类
      */
     String MULTIPLE_DEVICE_TYPES = "multiple_device_types";
+    /**
+     * 检修任务领取是否放开时间限制
+     */
+    String INSPECTION_RECEIVE_ANYTIME="inspection_receive_anytime";
+    /**
+     * 	调度故障是否只需要本系统线路的故障
+     */
+    String FAULT_EXTERNAL_XH12="fault_external_xh12";
+    /**
+     * 应急演练实施记录是否排除使用过的月度演练计划
+     */
+    String EXCLUDE_USED_MONTH="exclude_used_month";
+    /**
+     * 故障上报、填写维修记录是否需要“是否影响客运服务”、“是否影响行车”、“是否停止服务”；调度故障是否必填
+     */
+    String IS_SHOW_AFFECTPASSENGERSERVICE="is_show_affectPassengerService";
+
+    /**
+     * 是否根据部门过滤习题
+     */
+    String IS_QUERY_QUESTION_BY_DEPT = "is_query_question_by_dept";
 }

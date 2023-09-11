@@ -277,8 +277,17 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
             }
             FaultExternal external = this.getOne(new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getIndocno, faultExternal.getIndocno()));
             if (external == null) {
+                //信号只要1,2号线的调度故障,如果不是12号线直接返回
+                SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.FAULT_EXTERNAL_XH12);
+                boolean value = "1".equals(paramModel.getValue());
+                Integer lineCode = faultExternalMapper.getLineCode(faultExternal.getIline());
+                if (value && lineCode == 0) {
+                    return  Result.OK("添加成功！");
+                }
+                faultExternal.setStatus(0);
                 faultExternalMapper.insert(faultExternal);
                 sysBaseApi.sendAllMessage();
+
             } else {
                 faultExternalMapper.update(faultExternal, new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getIndocno, faultExternal.getIndocno()));
             }

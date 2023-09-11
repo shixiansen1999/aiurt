@@ -140,4 +140,7 @@ public class PatrolTaskDevice implements Serializable {
     @ApiModelProperty(value = "工单的巡视时长")
     private Integer duration;
 
+    /**抽检人签名*/
+    @ApiModelProperty(value = "抽检人签名")
+    private String sampleSignUrl;
 }
