@@ -1,17 +1,23 @@
 package com.aiurt.modules.online.page.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtNoDataException;
 import com.aiurt.modules.online.page.entity.ActCustomPage;
+import com.aiurt.modules.online.page.entity.ActCustomPageField;
+import com.aiurt.modules.online.page.mapper.ActCustomPageFieldMapper;
 import com.aiurt.modules.online.page.mapper.ActCustomPageMapper;
+import com.aiurt.modules.online.page.service.IActCustomPageFieldService;
 import com.aiurt.modules.online.page.service.IActCustomPageService;
 import com.aiurt.modules.online.workflowapi.entity.ActCustomInterface;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import liquibase.pro.packaged.L;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.SelectTreeModel;
@@ -21,10 +27,7 @@ import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @Description: 设计表单
@@ -39,6 +42,8 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
     private ISysBaseAPI sysBaseAPI;
     @Autowired
     private ActCustomPageModuleServiceImpl actCustomPageModuleService;
+    @Autowired
+    private IActCustomPageFieldService actCustomPageFieldService;
 
     /**
      * 编辑菜单
@@ -84,6 +89,30 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
             }
         }
         Page<ActCustomPage> actCustomPagePage = baseMapper.selectPage(page, queryWrapper);
+        //关联表单字段查询
+        List<ActCustomPage> records = actCustomPagePage.getRecords();
+        // 收集所有表单的ID
+        List<String> pageIds = new ArrayList<>();
+        for (ActCustomPage record : records) {
+            pageIds.add(record.getId());
+        }
+        // 批量查询所有记录的字段
+        LambdaQueryWrapper<ActCustomPageField> query = new LambdaQueryWrapper<>();
+        query.in(ActCustomPageField::getPageId, pageIds)
+                .eq(ActCustomPageField::getDelFlag, CommonConstant.DEL_FLAG_0);
+        List<ActCustomPageField> actCustomPageFields = actCustomPageFieldService.getBaseMapper().selectList(query);
+       // 使用 Map 来组织字段列表，以便后续关联到相应的记录
+        Map<String, List<ActCustomPageField>> pageIdToFieldsMap = new HashMap<>(32);
+        for (ActCustomPageField field : actCustomPageFields) {
+            String pageId = field.getPageId();
+            pageIdToFieldsMap.computeIfAbsent(pageId, k -> new ArrayList<>()).add(field);
+        }
+        // 关联字段列表到相应的记录
+        for (ActCustomPage record : records) {
+            List<ActCustomPageField> fields = pageIdToFieldsMap.get(record.getId());
+            record.setFieldList(fields);
+        }
+        actCustomPagePage.setRecords(records);
         return actCustomPagePage;
     }
 
@@ -111,7 +140,14 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
         String lastSixDigits = timestampString.substring(timestampString.length() - 6);
         actCustomPage.setPageTag(String.format("%s%s", "pageTag", lastSixDigits));
         baseMapper.insert(actCustomPage);
-        return Result.OK("添加成功");
+        //保存表单字段
+        String id = actCustomPage.getId();
+        List<ActCustomPageField> fieldList = actCustomPage.getFieldList();
+        for (ActCustomPageField customPageField : fieldList) {
+            customPageField.setPageId(id);
+        }
+        actCustomPageFieldService.saveBatch(fieldList);
+    return Result.OK("添加成功");
     }
 
     /**

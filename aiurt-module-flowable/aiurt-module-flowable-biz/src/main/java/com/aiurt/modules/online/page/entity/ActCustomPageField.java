@@ -1,9 +1,6 @@
 package com.aiurt.modules.online.page.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -34,18 +31,18 @@ public class ActCustomPageField implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "id")
     private String id;
-	/**字段名称*/
-	@Excel(name = "字段名称", width = 15)
+    /**字段标识*/
+    @Excel(name = "字段标识", width = 15)
+    @ApiModelProperty(value = "字段标识")
+    private String field;
+    /**字段名称*/
+    @Excel(name = "字段名称", width = 15)
     @ApiModelProperty(value = "字段名称")
-    private String fieldName;
-	/**字段英文名*/
-	@Excel(name = "字段英文名", width = 15)
-    @ApiModelProperty(value = "字段英文名")
-    private String fieldValue;
-	/**字段类型：0-主表字段，1-子表字段*/
-	@Excel(name = "字段类型：0-主表字段，1-子表字段", width = 15)
-    @ApiModelProperty(value = "字段类型：0-主表字段，1-子表字段")
-    private Integer fieldType;
+    private String name;
+	/**是否只读 0-否 1-是*/
+    @Excel(name = "是否只读", width = 15)
+    @ApiModelProperty(value = "是否只读 0-否 1-是")
+    private Boolean readOnly;
 	/**页面id(关联act_custon_page的id)*/
 	@Excel(name = "页面id(关联act_custon_page的id)", width = 15)
     @ApiModelProperty(value = "页面id(关联act_custon_page的id)")
