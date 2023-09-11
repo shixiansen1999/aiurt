@@ -149,6 +149,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                 userSchedule.setUserName(scheduleUser.getUserName());
                 userSchedule.setOrgName(scheduleUser.getOrgName());
                 userSchedule.setWorkNo(scheduleUser.getWorkNo());
+                userSchedule.setSalaryCode(scheduleUser.getSalaryCode());
                 userSchedule.setDate(date);
                 List<ScheduleRecordModel> scheduleRecordList = new ArrayList<ScheduleRecordModel>(maximum);
                 for (int index = 0; index < maximum; index++) {
