@@ -180,7 +180,7 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
         }
         List<ActCustomModelInfo> pageCustomModule = actCustomModelInfoMapper.selectList(lambdaQueryWrapper);
         if(CollUtil.isNotEmpty(pageCustomModule)){
-            throw new AiurtBootException("该表单已被引用，无法删除");
+            throw new AiurtBootException("表单已被引用，无法删除");
         }
         baseMapper.deleteById(id);
         return Result.OK("删除成功");
@@ -199,7 +199,7 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
             }
             // 如果有被引用的表单，抛出异常
             if (CollUtil.isNotEmpty(referencedIds)) {
-                throw new AiurtBootException("有表单已被引用，无法删除!");
+                throw new AiurtBootException("表单已被引用，无法删除!");
             }
             // 执行批量删除
             baseMapper.deleteBatchIds(ids);
