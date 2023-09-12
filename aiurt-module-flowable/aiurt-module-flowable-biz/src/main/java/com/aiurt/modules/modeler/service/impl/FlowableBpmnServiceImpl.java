@@ -40,6 +40,7 @@ import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.Process;
 import org.flowable.bpmn.model.*;
 import org.flowable.editor.language.json.converter.BaseBpmnJsonConverter;
+import org.flowable.editor.language.json.converter.BpmnJsonConverter;
 import org.flowable.editor.language.json.converter.util.CollectionUtils;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.Deployment;
@@ -98,7 +99,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
      * bpmn json和BpmnModel 转换器
      */
     @Autowired
-    protected CustomBpmnJsonConverter bpmnJsonConverter;
+    protected BpmnJsonConverter bpmnJsonConverter;
 
     @Autowired
     @Lazy

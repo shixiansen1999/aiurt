@@ -13,7 +13,7 @@ public class DeduplicatePipelineConfig {
 
 
     @Bean
-    public DeduplicateHandlerChainPipeline remindPipeline(){
+    public DeduplicateHandlerChainPipeline deduplicatePipeline(){
         DeduplicateHandlerChainPipeline filterChainPipeline = new DeduplicateHandlerChainPipeline();
         //filterChainPipeline.addFirst("构建context", buildContextFilter);
         return filterChainPipeline;

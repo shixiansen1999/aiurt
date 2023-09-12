@@ -376,33 +376,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
         }
     }
 
-    /**
-     * 构造属性
-     * @param value 属性值
-     * @param userTask 任务节点
-     * @param prefix 前缀
-     * @param attr xml 节点属性
-     */
-    private void addCustomAttributeForPrefix(String value, UserTask userTask, String prefix, String attr) {
-        if (StrUtil.isNotBlank(value)) {
-            ExtensionAttribute attribute = new ExtensionAttribute();
-            attribute.setName(attr);
-            attribute.setValue(value);
-            attribute.setNamespacePrefix(prefix);
-            attribute.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
-            userTask.addAttribute(attribute);
-        }
-    }
 
-    private void addCustomAttribute(JsonNode elementNode, UserTask userTask, String s) {
-        String formType = JsonConverterUtil.getPropertyValueAsString(s, elementNode);
-        if (StrUtil.isNotBlank(formType)) {
-            ExtensionAttribute attribute = new ExtensionAttribute();
-            attribute.setName(s);
-            attribute.setValue(formType);
-            userTask.addAttribute(attribute);
-        }
-    }
 
 
 
