@@ -117,6 +117,9 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
         // 关联字段列表到相应的记录
         for (ActCustomPage record : records) {
             List<ActCustomPageField> fields = pageIdToFieldsMap.get(record.getId());
+            if (fields == null) {
+                fields = Collections.emptyList();
+            }
             record.setFieldList(fields);
         }
         actCustomPagePage.setRecords(records);
