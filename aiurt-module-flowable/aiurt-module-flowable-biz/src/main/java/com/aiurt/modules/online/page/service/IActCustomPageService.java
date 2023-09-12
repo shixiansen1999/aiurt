@@ -21,7 +21,7 @@ public interface IActCustomPageService extends IService<ActCustomPage> {
      * 编辑菜单
      * @param actCustomPage
      */
-    void edit(ActCustomPage actCustomPage);
+    Result<String> edit(ActCustomPage actCustomPage);
 
     /**
      *表单分页列表
