@@ -69,6 +69,5 @@ public class ActCustomPageField implements Serializable {
 	/**0-未删除，1已删除*/
 	@Excel(name = "0-未删除，1已删除", width = 15)
     @ApiModelProperty(value = "0-未删除，1已删除")
-    @TableLogic
     private Integer delFlag;
 }
