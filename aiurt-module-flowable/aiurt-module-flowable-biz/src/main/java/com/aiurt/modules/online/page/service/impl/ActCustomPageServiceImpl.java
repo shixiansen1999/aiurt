@@ -1,28 +1,21 @@
 package com.aiurt.modules.online.page.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.common.exception.AiurtNoDataException;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.mapper.ActCustomModelInfoMapper;
 import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.aiurt.modules.online.page.entity.ActCustomPageField;
-import com.aiurt.modules.online.page.mapper.ActCustomPageFieldMapper;
 import com.aiurt.modules.online.page.mapper.ActCustomPageMapper;
-import com.aiurt.modules.online.page.mapper.ActCustomPageModuleMapper;
 import com.aiurt.modules.online.page.service.IActCustomPageFieldService;
 import com.aiurt.modules.online.page.service.IActCustomPageService;
-import com.aiurt.modules.online.workflowapi.entity.ActCustomInterface;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import liquibase.pro.packaged.L;
-import liquibase.pro.packaged.N;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.SelectTreeModel;
@@ -45,7 +38,7 @@ import java.util.*;
 public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, ActCustomPage> implements IActCustomPageService {
 
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
     @Autowired
     private ActCustomPageModuleServiceImpl actCustomPageModuleService;
     @Autowired
@@ -59,19 +52,32 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void edit(ActCustomPage actCustomPage) {
-
+    public Result<String> edit(ActCustomPage actCustomPage) {
         ActCustomPage page = getById(actCustomPage.getId());
-
         if (Objects.isNull(page)) {
             throw new AiurtBootException("不存在该记录，请刷新重试");
         }
-
+      // 检查数据库中是否已存在具有相同name的记录
+        if (isNameExists(actCustomPage.getPageName(), actCustomPage.getId())) {
+            return Result.error("名称已存在，请使用其他名称！");
+        }
         Integer pageVersion = Optional.ofNullable(page.getPageVersion()).orElse(1);
         // 修改版本号
         actCustomPage.setPageVersion(pageVersion +1);
-
         updateById(actCustomPage);
+        //表单字段编辑
+        String id = actCustomPage.getId();
+        QueryWrapper<ActCustomPageField> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(ActCustomPageField::getPageId, id);
+        actCustomPageFieldService.remove(wrapper);
+        List<ActCustomPageField> fieldList = actCustomPage.getFieldList();
+        if (CollectionUtil.isNotEmpty(fieldList)) {
+            fieldList.forEach(l -> {
+                l.setPageId(id);
+            });
+            actCustomPageFieldService.saveBatch(fieldList);
+        }
+        return Result.OK("编辑成功");
     }
 
     @Override
@@ -79,7 +85,7 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
         LambdaQueryWrapper<ActCustomPage> queryWrapper = new LambdaQueryWrapper<>();
         String sysOrgCode = actCustomPage.getSysOrgCode();
         if (StrUtil.isNotBlank(sysOrgCode)) {
-            SysDepartModel sysDepartModel = sysBaseAPI.selectAllById(sysOrgCode);
+            SysDepartModel sysDepartModel = sysBaseApi.selectAllById(sysOrgCode);
             if (Objects.nonNull(sysDepartModel)) {
                 actCustomPage.setSysOrgCode(sysDepartModel.getOrgCode());
             }
