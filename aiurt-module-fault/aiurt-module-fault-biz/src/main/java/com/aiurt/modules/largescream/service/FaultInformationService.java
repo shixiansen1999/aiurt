@@ -441,7 +441,10 @@ public class FaultInformationService {
             String changmonth = substring + "月";
             faultMonthCountDTO.setMonth(changmonth);
             //查询当月的故障
-            List<FaultSystemDTO> largeFaultMonthCount = faultInformationMapper.getLargeFaultMonthCount(month, lineCode, majors);
+            //0912需求变更查询排除非信号故障，信号专用
+            SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.IS_DISTINGUISH_SIGNAL_FAULT);
+            boolean isSignalFault = "1".equals(paramModel.getValue());
+            List<FaultSystemDTO> largeFaultMonthCount = faultInformationMapper.getLargeFaultMonthCount(month, lineCode, majors,isSignalFault);
             // 保存每个子系统下的故障数
             Map<String, Long> collect = null;
             if (CollUtil.isNotEmpty(largeFaultMonthCount)) {
