@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import liquibase.pro.packaged.L;
+import liquibase.pro.packaged.N;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.SelectTreeModel;
@@ -105,8 +106,10 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
         }
         // 批量查询所有记录的字段
         LambdaQueryWrapper<ActCustomPageField> query = new LambdaQueryWrapper<>();
-        query.in(ActCustomPageField::getPageId, pageIds)
-                .eq(ActCustomPageField::getDelFlag, CommonConstant.DEL_FLAG_0);
+        if(CollUtil.isNotEmpty(pageIds)){
+            query.in(ActCustomPageField::getPageId, pageIds)
+                    .eq(ActCustomPageField::getDelFlag, CommonConstant.DEL_FLAG_0);
+        }
         List<ActCustomPageField> actCustomPageFields = actCustomPageFieldService.getBaseMapper().selectList(query);
        // 使用 Map 来组织字段列表，以便后续关联到相应的记录
         Map<String, List<ActCustomPageField>> pageIdToFieldsMap = new HashMap<>(32);
@@ -117,7 +120,7 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
         // 关联字段列表到相应的记录
         for (ActCustomPage record : records) {
             List<ActCustomPageField> fields = pageIdToFieldsMap.get(record.getId());
-            if (fields == null) {
+            if (CollUtil.isEmpty(fields)) {
                 fields = Collections.emptyList();
             }
             record.setFieldList(fields);
@@ -165,7 +168,11 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
     @Transactional(rollbackFor = Exception.class)
     public Result<String> deleteById(String id) {
         //如果模块被引用，则不可以删除
-        List<ActCustomModelInfo> pageCustomModule = actCustomModelInfoMapper.selectList(new QueryWrapper<ActCustomModelInfo>().eq("page_id", id).eq("del_flag",CommonConstant.DEL_FLAG_0));
+        LambdaQueryWrapper<ActCustomModelInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if(StrUtil.isNotEmpty(id)){
+            lambdaQueryWrapper.eq(ActCustomModelInfo::getPageId,id).eq(ActCustomModelInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
+        }
+        List<ActCustomModelInfo> pageCustomModule = actCustomModelInfoMapper.selectList(lambdaQueryWrapper);
         if(CollUtil.isNotEmpty(pageCustomModule)){
             throw new AiurtBootException("该表单已被引用，无法删除");
         }
