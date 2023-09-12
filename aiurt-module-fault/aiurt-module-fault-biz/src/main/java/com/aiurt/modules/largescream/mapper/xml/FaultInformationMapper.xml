@@ -393,6 +393,9 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
                     #{item}
                 </foreach>
             </if>
+            <if test="isSignalFault">
+                and f.is_signal_fault = 0
+            </if>
         </where>
     </select>
 
