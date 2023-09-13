@@ -1,6 +1,8 @@
 package com.aiurt.modules.flow.service.impl;
 import java.util.Date;
 
+import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
+
 import com.aiurt.modules.modeler.entity.*;
 import com.aiurt.modules.modeler.service.IActCustomModelExtService;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
@@ -39,6 +41,7 @@ import com.aiurt.modules.user.getuser.service.DefaultSelectUserService;
 import com.aiurt.modules.user.service.IActCustomUserService;
 import com.aiurt.modules.user.service.IFlowUserService;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -619,6 +622,11 @@ public class FlowApiServiceImpl implements FlowApiService {
                 // 是否自动选人
                 if (Objects.nonNull(flowTaskExt.getIsAutoSelect()) && flowTaskExt.getIsAutoSelect() == 0) {
                     taskInfoDTO.setIsAutoSelect(false);
+                }
+                //表单权限设置，是否可见和编辑
+                JSONArray formFieldConfig = flowTaskExt.getFormFieldConfig();
+                if(Objects.nonNull(formFieldConfig)){
+                    taskInfoDTO.setFieldList(formFieldConfig);
                 }
             }
         } else {
@@ -1796,6 +1804,11 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
         taskInfoDTO.setProcessName(processDefinition.getName());
         taskInfoDTO.setProcessDefinitionKey(processDefinitionKey);
+        //获取表单权限设置
+        JSONArray formFieldConfig = customTaskExt.getFormFieldConfig();
+        if(Objects.nonNull(formFieldConfig)){
+            taskInfoDTO.setFieldList(formFieldConfig);
+        }
         return taskInfoDTO;
     }
 

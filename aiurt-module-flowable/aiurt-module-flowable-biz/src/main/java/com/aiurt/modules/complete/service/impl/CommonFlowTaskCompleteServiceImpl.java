@@ -284,7 +284,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
             messageDTO.setFromUser(assignee);
             messageDTO.setToUser(StrUtil.join(",", userList));
             messageDTO.setToAll(false);
-            messageDTO.setTitle("有流程传送给您");
+            messageDTO.setTitle("流程抄送");
             messageDTO.setContent("");
             messageDTO.setCategory(CommonConstant.MSG_CATEGORY_2);
             messageDTO.setStartTime(new Date());
