@@ -1806,7 +1806,9 @@ public class FlowApiServiceImpl implements FlowApiService {
         taskInfoDTO.setProcessDefinitionKey(processDefinitionKey);
         //获取表单权限设置
         JSONArray formFieldConfig = customTaskExt.getFormFieldConfig();
-        taskInfoDTO.setFieldList(formFieldConfig);
+        if(Objects.nonNull(formFieldConfig)){
+            taskInfoDTO.setFieldList(formFieldConfig);
+        }
         return taskInfoDTO;
     }
 
