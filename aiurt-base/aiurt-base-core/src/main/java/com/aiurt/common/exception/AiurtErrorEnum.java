@@ -26,6 +26,7 @@ public enum AiurtErrorEnum {
     PROCESS_INSTANCE_NOT_FOUND(61006, "流程实例不存在！"),
     PROCESS_INSTANCE_IS_DELETE(61007, "该流程实例已者不存在或被删除"),
     NEXT_NODE_NOT_FOUND(61008, "当前配置异常(%s)，请联系管理员处理！"),
+    NEXT_NODE_IS_END(61009, "该流程已结束"),
     /**
      * 7 开头
      */

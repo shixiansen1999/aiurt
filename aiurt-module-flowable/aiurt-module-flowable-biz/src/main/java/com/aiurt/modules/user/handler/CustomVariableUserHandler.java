@@ -1,5 +1,6 @@
 package com.aiurt.modules.user.handler;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.modeler.dto.FlowUserRelationAttributeModel;
@@ -35,6 +36,9 @@ public class CustomVariableUserHandler extends AbstractFlowHandler<SelectUserCon
         JSONArray jsonArray = customUser.getRelation();
 
         List<FlowUserRelationAttributeModel> relation = JSON.parseArray(JSON.toJSONString(jsonArray), FlowUserRelationAttributeModel.class);
+        if (CollUtil.isEmpty(relation)) {
+            return;
+        }
 
         List<String> resultList = relation.stream()
                 .filter(model -> StrUtil.isNotBlank(model.getVariable()))
@@ -67,6 +71,5 @@ public class CustomVariableUserHandler extends AbstractFlowHandler<SelectUserCon
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
         context.addUserList(resultList);
-
     }
 }

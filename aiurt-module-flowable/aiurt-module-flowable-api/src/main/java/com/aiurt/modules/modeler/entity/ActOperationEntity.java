@@ -4,7 +4,10 @@ package com.aiurt.modules.modeler.entity;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -13,6 +16,9 @@ import java.io.Serializable;
  */
 @Data
 @ApiModel(value = "测试")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ActOperationEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -34,6 +34,9 @@ public abstract class AbsSystemVariableSelectUser {
         JSONArray jsonArray = customUser.getRelation();
 
         List<FlowUserRelationAttributeModel> relation = JSON.parseArray(JSON.toJSONString(jsonArray), FlowUserRelationAttributeModel.class);
+        if (CollUtil.isEmpty(relation)) {
+            return Collections.emptyList();
+        }
 
         // 系统变量
         List<FlowUserRelationAttributeModel> systemVarList = relation.stream().filter(model -> StrUtil.isBlank(model.getVariable())
