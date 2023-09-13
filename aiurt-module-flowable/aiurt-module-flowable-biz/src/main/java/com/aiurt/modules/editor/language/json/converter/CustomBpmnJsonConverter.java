@@ -91,6 +91,9 @@ public class CustomBpmnJsonConverter extends BpmnJsonConverter {
         Process mainProcess = bpmnModel.getMainProcess();
         // 自定义属性
         JsonNode extensionData = modelNode.get("customProperties");
+        if (Objects.isNull(extensionData)) {
+            return bpmnModel;
+        }
         JsonNode remindNode = extensionData.get(FlowModelExtElementConstant.EXT_REMIND);
         addExtensionElement(mainProcess, FlowModelExtElementConstant.EXT_REMIND, remindNode);
 

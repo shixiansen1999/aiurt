@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.jayway.jsonpath.JsonPath;
+import liquibase.pro.packaged.F;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -498,8 +499,13 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
             // 表单字段在节点上的配置
             List<ExtensionElement> extensionElements = extensionMap.get(FlowModelExtElementConstant.EXT_FIELD_LIST);
-            flowTaskExt.setFormFieldConfig(extractFormFields(extensionElements));
-
+            if (CollUtil.isNotEmpty(extensionElements)) {
+                ExtensionElement extensionElement = extensionElements.get(0);
+                String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_VALUE);
+                if (StrUtil.isNotBlank(attributeValue)) {
+                    flowTaskExt.setFormFieldConfig(JSONObject.parseArray(attributeValue));
+                }
+            }
         }
 
         taskExtList.add(flowTaskExt);
@@ -669,7 +675,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         JSONObject jsonObject = new JSONObject();
 
         elementAttributeMap.forEach((key, attributeList) -> {
-            String attributeValue = attributeList.stream()
+            String attributeValue = attributeList.stream().filter(extensionAttribute -> StrUtil.isNotBlank(extensionAttribute.getValue()))
                     .map(ExtensionAttribute::getValue)
                     .findFirst()
                     .orElse(null);

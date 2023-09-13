@@ -266,9 +266,14 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             String alias = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_USER_ALIAS);
             JsonNode jsonNode = parseUserAssigneeValue(value);
             ObjectNode objectNode = objectMapper.createObjectNode();
-            objectNode.put(FlowModelExtElementConstant.EXT_USER_NAME, StrUtil.isNotBlank(name) ? name : "");
+
+            if (StrUtil.isNotBlank(name)) {
+                objectNode.put(FlowModelExtElementConstant.EXT_USER_NAME, StrUtil.isNotBlank(name) ? name : "");
+            }
+            if (StrUtil.isNotBlank(alias)) {
+                objectNode.put(FlowModelExtElementConstant.EXT_USER_ALIAS, alias);
+            }
             objectNode.set(FlowModelExtElementConstant.EXT_USER_VALUE, jsonNode);
-            objectNode.put(FlowModelExtElementConstant.EXT_USER_ALIAS, alias);
             propertiesNode.set(elementName, objectNode);
         }
     }
