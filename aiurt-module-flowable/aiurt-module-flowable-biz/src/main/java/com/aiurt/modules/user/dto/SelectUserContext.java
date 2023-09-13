@@ -1,8 +1,8 @@
 package com.aiurt.modules.user.dto;
 
+import com.aiurt.modules.common.pipeline.context.AbstractFlowContext;
+import com.aiurt.modules.common.pipeline.selector.HandlerSelector;
 import com.aiurt.modules.user.entity.ActCustomUser;
-import com.aiurt.modules.user.pipeline.context.AbstractUserContext;
-import com.aiurt.modules.common.pipeline.selector.FilterSelector;
 import lombok.Getter;
 import lombok.Setter;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -18,7 +18,7 @@ import java.util.Objects;
  */
 @Setter
 @Getter
-public class SelectUserContext extends AbstractUserContext {
+public class SelectUserContext extends AbstractFlowContext {
 
     /**
      * 自定义用户
@@ -40,10 +40,11 @@ public class SelectUserContext extends AbstractUserContext {
      */
     private List<String> userList;
 
+
     private Boolean continueChain;
 
 
-    public SelectUserContext(FilterSelector selector) {
+    public SelectUserContext(HandlerSelector selector) {
         super(selector);
     }
 

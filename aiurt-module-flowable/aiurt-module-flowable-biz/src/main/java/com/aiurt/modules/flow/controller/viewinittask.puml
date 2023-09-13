@@ -1,0 +1,39 @@
+@startuml
+participant Actor
+Actor->FlowOperationController: viewRuntimeTaskInfo（查询当前节点信息）
+activate FlowOperationController
+FlowOperationController -> FlowApiServiceImpl : viewRuntimeTaskInfo（查询当前节点信息）
+activate FlowApiServiceImpl
+FlowApiServiceImpl -> historyService : 根据taskId查询任务
+activate historyService
+historyService--> FlowApiServiceImpl:TaskInfo
+deactivate historyService
+FlowApiServiceImpl -> historyService : 根据实例id查询流程实例
+activate historyService
+historyService-->FlowApiServiceImpl:HistoricProcessInstance
+deactivate historyService
+alt 流程实例或者任务不存在
+FlowApiServiceImpl-->FlowOperationController: 该节点不存在
+FlowOperationController-->Actor:该节点不存在
+else
+FlowApiServiceImpl->IActCustomTaskExtService: 查询任务扩展属性
+activate IActCustomTaskExtService
+IActCustomTaskExtService-->FlowApiServiceImpl:ActCustomTaskExt
+    alt 扩展属性存在
+        alt 本人未结束任务
+            FlowApiServiceImpl->FlowApiServiceImpl:设置表单，表单权限字段，办理等按钮
+        else 非本人任务或者本人已结束任务
+            FlowApiServiceImpl->FlowApiServiceImpl: 默认详情表单
+            alt 当前用户是发起人
+                FlowApiServiceImpl->FlowApiServiceImpl:处理催办，撤回按钮
+            else
+            end
+        end
+    else 扩展属性不存在
+    end
+    FlowApiServiceImpl-->FlowOperationController:
+    deactivate FlowApiServiceImpl
+    FlowOperationController-->Actor:
+    deactivate FlowOperationController
+end
+@enduml

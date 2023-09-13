@@ -8,7 +8,7 @@ import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
-import com.aiurt.modules.user.getuser.DefaultSelectUserService;
+import com.aiurt.modules.user.getuser.service.DefaultSelectUserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
 import java.util.*;

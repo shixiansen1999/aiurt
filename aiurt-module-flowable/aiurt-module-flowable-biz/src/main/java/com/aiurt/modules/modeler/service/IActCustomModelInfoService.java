@@ -38,4 +38,11 @@ public interface IActCustomModelInfoService extends IService<ActCustomModelInfo>
      * @param actCustomModelInfo
      */
     void edit(ActCustomModelInfo actCustomModelInfo);
+
+    /**
+     * 根据modelKey查询模板信息
+     * @param modelKey
+     * @return
+     */
+    ActCustomModelInfo queryByModelKey(String modelKey);
 }

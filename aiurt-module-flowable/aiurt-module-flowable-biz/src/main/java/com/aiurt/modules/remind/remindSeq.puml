@@ -1,0 +1,47 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+participant Actor
+Actor->FlowRemindController:催办
+activate FlowRemindController
+FlowRemindController->FlowRemindServiceImpl:manualRemind()
+activate FlowRemindServiceImpl
+FlowRemindServiceImpl->FlowRemindServiceImpl:构造selector
+FlowRemindServiceImpl->BuildContextHandler:handle()
+activate BuildContextHandler
+BuildContextHandler->BuildContextHandler: 构造上下文context(流程实例，代办用户)
+BuildContextHandler->RemindRuleVerifyHandler: handle()
+activate RemindRuleVerifyHandler
+RemindRuleVerifyHandler->RemindRuleVerifyHandler:催办规则校验
+alt 催办规则校验不通过
+RemindRuleVerifyHandler-->BuildContextHandler:催办失败,不符合规则
+BuildContextHandler-->FlowRemindServiceImpl
+FlowRemindServiceImpl-->FlowRemindController
+deactivate RemindRuleVerifyHandler
+else 催办规则校验通过
+
+RemindRuleVerifyHandler->RemindUserBuildHandler:handle()
+activate RemindRuleVerifyHandler
+activate RemindUserBuildHandler
+RemindUserBuildHandler->RemindUserBuildHandler:查询代办人员
+RemindUserBuildHandler->RemindSendMessageHandler:handle()
+activate RemindSendMessageHandler
+RemindSendMessageHandler->RemindSendMessageHandler: 发送消息
+RemindSendMessageHandler->RemindRecordUpdateHandler:handle()
+activate RemindRecordUpdateHandler
+RemindRecordUpdateHandler->RemindRecordUpdateHandler: 更新催办记录
+RemindRecordUpdateHandler-->RemindSendMessageHandler
+deactivate RemindRecordUpdateHandler
+RemindSendMessageHandler-->RemindUserBuildHandler
+deactivate RemindSendMessageHandler
+RemindUserBuildHandler-->RemindRuleVerifyHandler
+deactivate RemindUserBuildHandler
+RemindRuleVerifyHandler-->BuildContextHandler
+deactivate RemindRuleVerifyHandler
+BuildContextHandler-->FlowRemindServiceImpl
+deactivate BuildContextHandler
+FlowRemindServiceImpl-->FlowRemindController
+deactivate FlowRemindServiceImpl
+FlowRemindController-->Actor
+end
+@enduml

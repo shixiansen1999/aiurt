@@ -1,5 +1,8 @@
 package com.aiurt.modules.flow.service.impl;
 import java.util.Date;
+
+import com.aiurt.modules.modeler.entity.*;
+import com.aiurt.modules.modeler.service.IActCustomModelExtService;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -24,10 +27,6 @@ import com.aiurt.modules.flow.mapper.ActCustomTaskCommentMapper;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
-import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
-import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
-import com.aiurt.modules.modeler.entity.ActCustomVariable;
-import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.modeler.service.IActCustomVariableService;
@@ -36,7 +35,7 @@ import com.aiurt.modules.online.businessdata.service.IActCustomBusinessDataServi
 import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.aiurt.modules.online.page.service.IActCustomPageService;
 import com.aiurt.modules.user.entity.ActCustomUser;
-import com.aiurt.modules.user.getuser.DefaultSelectUserService;
+import com.aiurt.modules.user.getuser.service.DefaultSelectUserService;
 import com.aiurt.modules.user.service.IActCustomUserService;
 import com.aiurt.modules.user.service.IFlowUserService;
 import com.alibaba.fastjson.JSON;
@@ -153,6 +152,9 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     @Autowired
     private DefaultSelectUserService relationSelectUser;
+
+    @Autowired
+    private IActCustomModelExtService modelExtService;
 
 
     /**
@@ -542,48 +544,51 @@ public class FlowApiServiceImpl implements FlowApiService {
             log.info("流程实例请求参数为空！");
             return taskInfoDTO;
         }
-
-        Task task = this.getProcessInstanceActiveTask(processInstanceId, taskId);
+        HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskId(taskId).singleResult();
+        if (Objects.isNull(task)) {
+            throw new AiurtBootException("该任务不存在，请联系管理员！");
+        }
         String taskDefinitionKey = "";
 
         if (Objects.nonNull(task)) {
             taskDefinitionKey = task.getTaskDefinitionKey();
         }
 
-        // 任务结束了
-        if (Objects.isNull(task) && StrUtil.isNotBlank(taskId)) {
-
-            HistoricTaskInstance taskInstance = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskId(taskId).singleResult();
-            if (Objects.nonNull(taskInstance)) {
-                taskDefinitionKey = taskInstance.getTaskDefinitionKey();
-            }
-        }
-
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-        //ProcessInstance processInstance = getProcessInstance(processInstanceId);
-
 
         if (Objects.isNull(historicProcessInstance) || StrUtil.isBlank(taskDefinitionKey)) {
-            throw new AiurtBootException("数据验证失败，指定的任务Id，请刷新后重试！");
+            throw new AiurtBootException(AiurtErrorEnum.PROCESS_INSTANCE_NOT_FOUND.getCode(), AiurtErrorEnum.PROCESS_INSTANCE_NOT_FOUND.getMessage());
         }
+
+        // modelKey
+        String processDefinitionKey = historicProcessInstance.getProcessDefinitionKey();
+        // 查询流程模板信息
+        ActCustomModelInfo actCustomModelInfo = modelInfoService.queryByModelKey(processDefinitionKey);
 
         if (StrUtil.isBlank(processDefinitionId) ) {
             processDefinitionId = historicProcessInstance.getProcessDefinitionId();
         }
 
-
+        // 查询流程全局配置属性
+        ActCustomModelExt customModelExt = modelExtService.getByProcessDefinitionId(processDefinitionId);
+        // 流程节点属性
         ActCustomTaskExt flowTaskExt =
-                customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId,taskDefinitionKey);
-        if (flowTaskExt != null) {
-            // 判断为办理人才返回操作按钮
-            if (StrUtil.isNotBlank(flowTaskExt.getOperationListJson()) && this.isAssigneeOrCandidate(task)) {
-                String operationListJson = flowTaskExt.getOperationListJson();
-                List<ActOperationEntity> objectList = JSON.parseArray(operationListJson, ActOperationEntity.class);
+                customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, taskDefinitionKey);
+
+        // 任务结束时间
+        Date endTime = task.getEndTime();
+        // 是否未本人的任务
+        boolean isOwnerTask = this.isAssigneeOrCandidate(task);
+        // 本人任务未结束，不显示催办，提醒功能按钮
+        if (Objects.isNull(endTime) && isOwnerTask) {
+            if (Objects.nonNull(flowTaskExt) && StrUtil.isNotBlank(flowTaskExt.getOperationListJson())) {
+                List<ActOperationEntity> objectList = JSON.parseArray(flowTaskExt.getOperationListJson(), ActOperationEntity.class);
                 // 过滤，只有驳回后才能取消
                 boolean back = flowElementUtil.isBackToFirstTask(processDefinitionId, taskDefinitionKey, processInstanceId);
                 if (!back) {
                     objectList = objectList.stream().filter(entity -> !StrUtil.equalsIgnoreCase(entity.getType(), FlowApprovalType.CANCEL)).collect(Collectors.toList());
                 }
+
                 // 排序
                 objectList.stream().forEach(entity -> {
                     Integer o = entity.getShowOrder();
@@ -593,36 +598,61 @@ public class FlowApiServiceImpl implements FlowApiService {
                 });
                 objectList = objectList.stream().sorted(Comparator.comparing(ActOperationEntity::getShowOrder)).collect(Collectors.toList());
                 taskInfoDTO.setOperationList(objectList);
-            }
-            /*if (StrUtil.isNotBlank(flowTaskExt.getVariableListJson())) {
-                // taskInfoDTO.setVariableList(JSON.parseArray(flowTaskExt.getVariableListJson(), JSONObject.class));
-            }*/
-            String formJson = flowTaskExt.getFormJson();
-            if (StrUtil.isNotBlank(formJson)) {
-                // 表单类型
-                JSONObject jsonObject = JSONObject.parseObject(formJson);
-                String formType = jsonObject.getString(FlowModelAttConstant.FORM_TYPE);
-                // 中间业务数据
-                // 表单设计
-                if (StrUtil.equalsIgnoreCase(formType, FlowModelAttConstant.DYNAMIC_FORM_TYPE)) {
-                    setPageAttr(taskInfoDTO, jsonObject);
 
-                } else {
-                    // 定制表单
-                    taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
-                    // 判断是否是表单设计器，
-                    taskInfoDTO.setRouterName(jsonObject.getString("formUrl"));
+                String formJson = flowTaskExt.getFormJson();
+                if (StrUtil.isNotBlank(formJson)) {
+                    // 表单类型
+                    JSONObject jsonObject = JSONObject.parseObject(formJson);
+                    String formType = jsonObject.getString(FlowModelAttConstant.FORM_TYPE);
+                    // 中间业务数据
+                    // 表单设计
+                    if (StrUtil.equalsIgnoreCase(formType, FlowModelAttConstant.DYNAMIC_FORM_TYPE)) {
+                        setPageAttr(taskInfoDTO, jsonObject);
+                    } else {
+                        // 定制表单
+                        taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
+                        // 判断是否是表单设计器，
+                        taskInfoDTO.setRouterName(jsonObject.getString("formUrl"));
+                    }
+                }
+
+                // 是否自动选人
+                if (Objects.nonNull(flowTaskExt.getIsAutoSelect()) && flowTaskExt.getIsAutoSelect() == 0) {
+                    taskInfoDTO.setIsAutoSelect(false);
                 }
             }
+        } else {
+            String startUserId = historicProcessInstance.getStartUserId();
+            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            // 未结束，非本人-已结束，非本人- 已结束，本人任务
+            // 都是详情表单，不返回任何按钮。
+            taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
 
-            ActCustomBusinessData actCustomBusinessData = businessDataService.queryByProcessInstanceId(processInstanceId, taskId);
-            if (Objects.nonNull(actCustomBusinessData)) {
-                taskInfoDTO.setBusData(actCustomBusinessData.getData());
+            // 如果是发起人做返回催办，撤回按钮， 流程未结束, 发起节点的任务
+            List<ActOperationEntity> objectList = new ArrayList<>();
+            if (StrUtil.equalsIgnoreCase(startUserId, loginUser.getUsername()) && Objects.isNull(historicProcessInstance.getEndTime())) {
+                if (Objects.nonNull(customModelExt)) {
+                    Integer remind = Optional.ofNullable(customModelExt.getIsRemind()).orElse(0);
+                    if (remind == 1) {
+                        ActOperationEntity entity = ActOperationEntity.builder()
+                                .btnType("primary")
+                                .hasRemark(false)
+                                .label("催办")
+                                .type("remind")
+                                .mustRemark(false)
+                                .secordEnsure(false)
+                                .build();
+                        objectList.add(entity);
+                    }
+                }
             }
+            taskInfoDTO.setOperationList(objectList);
+        }
 
-            if (Objects.nonNull(flowTaskExt.getIsAutoSelect()) && flowTaskExt.getIsAutoSelect() == 0) {
-                taskInfoDTO.setIsAutoSelect(false);
-            }
+        // 中间业务数据
+        ActCustomBusinessData actCustomBusinessData = businessDataService.queryByProcessInstanceId(processInstanceId, taskId);
+        if (Objects.nonNull(actCustomBusinessData)) {
+            taskInfoDTO.setBusData(actCustomBusinessData.getData());
         }
 
         taskInfoDTO.setTaskKey(taskDefinitionKey);
