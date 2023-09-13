@@ -68,7 +68,9 @@ public class RemindSendMessageHandler extends AbstractFlowHandler<FlowRemindCont
             messageDTO.setFromUser(loginName);
             messageDTO.setToUser(task.getAssignee());
             messageDTO.setToAll(false);
-            messageDTO.setTitle(processInstance.getProcessDefinitionName());
+            String processDefinitionName = processInstance.getProcessDefinitionName();
+            String name = StrUtil.contains(processDefinitionName, "流程") ? processDefinitionName : processDefinitionName + "流程";
+            messageDTO.setTitle(name);
             messageDTO.setCategory(CommonConstant.MSG_CATEGORY_2);
             messageDTO.setStartTime(new Date());
             messageDTO.setMsgAbstract("有流程【催办】提醒");
@@ -84,7 +86,6 @@ public class RemindSendMessageHandler extends AbstractFlowHandler<FlowRemindCont
             messageDTO.setTaskId(task.getId());
 
             messageDTO.setProcessInstanceId(task.getProcessInstanceId());
-            String name = StrUtil.contains(processInstance.getProcessDefinitionName(), "流程") ? processInstance.getProcessDefinitionName() : processInstance.getProcessDefinitionName() + "流程";
             messageDTO.setProcessCode(processInstance.getProcessDefinitionKey());
             messageDTO.setProcessDefinitionKey(processInstance.getProcessDefinitionKey());
             messageDTO.setProcessName(name);
