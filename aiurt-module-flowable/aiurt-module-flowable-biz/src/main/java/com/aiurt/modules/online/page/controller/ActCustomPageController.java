@@ -87,12 +87,7 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 	@ApiOperation(value="设计表单-编辑", notes="设计表单-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody ActCustomPage actCustomPage) {
-		// 检查数据库中是否已存在具有相同name的记录
-		if (actCustomPageService.isNameExists(actCustomPage.getPageName(), actCustomPage.getId())) {
-			return Result.error("名称已存在，请使用其他名称！");
-		}
-		actCustomPageService.edit(actCustomPage);
-		return Result.OK("编辑成功!");
+		return actCustomPageService.edit(actCustomPage);
 	}
 
 	/**
@@ -104,8 +99,7 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 	@ApiOperation(value="设计表单-通过id删除", notes="设计表单-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		actCustomPageService.removeById(id);
-		return Result.OK("删除成功!");
+		return actCustomPageService.deleteById(id);
 	}
 
 	/**
@@ -117,7 +111,7 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 	@ApiOperation(value="设计表单-批量删除", notes="设计表单-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.actCustomPageService.removeByIds(Arrays.asList(ids.split(",")));
+		this.actCustomPageService.deleteByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
 	}
 

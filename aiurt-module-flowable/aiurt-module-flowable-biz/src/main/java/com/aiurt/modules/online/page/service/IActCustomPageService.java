@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
+import java.util.List;
+
 /**
  * @Description: 设计表单
  * @Author: aiurt
@@ -19,7 +21,7 @@ public interface IActCustomPageService extends IService<ActCustomPage> {
      * 编辑菜单
      * @param actCustomPage
      */
-    void edit(ActCustomPage actCustomPage);
+    Result<String> edit(ActCustomPage actCustomPage);
 
     /**
      *表单分页列表
@@ -45,5 +47,18 @@ public interface IActCustomPageService extends IService<ActCustomPage> {
      */
     Result<String> add(ActCustomPage actCustomPage);
 
+    /**
+     * 删除
+     * @param id
+     * @return
+     */
+    Result<String> deleteById(String id);
+
+    /**
+     * 批量删除
+     * @param ids
+     * @return
+     */
+    Result<String> deleteByIds(List<String> ids);
 
 }

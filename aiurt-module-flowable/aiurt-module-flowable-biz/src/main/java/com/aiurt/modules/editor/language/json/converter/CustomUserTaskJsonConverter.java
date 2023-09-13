@@ -108,9 +108,9 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             log.info("处理自定义属性:{}",JSON.toJSONString(attributes));
             attributes.forEach((key,list)->{
                 ExtensionAttribute extensionAttribute = list.get(0);
-                ObjectNode objectNode = super.objectMapper.createObjectNode();
-                objectNode.put(extensionAttribute.getName(), extensionAttribute.getValue());
-                propertiesNode.put(extensionAttribute.getName(),  extensionAttribute.getValue());
+                if (StrUtil.isNotBlank(extensionAttribute.getValue())) {
+                    propertiesNode.put(extensionAttribute.getName(),  extensionAttribute.getValue());
+                }
             });
 
             Map<String, List<ExtensionElement>> extensionElements = baseElement.getExtensionElements();
