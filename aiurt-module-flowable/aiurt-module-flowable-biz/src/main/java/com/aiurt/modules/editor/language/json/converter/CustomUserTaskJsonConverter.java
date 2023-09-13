@@ -234,8 +234,8 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             buildJsonElement(propertiesNode, associatedForm, FlowModelExtElementConstant.EXT_ASSOCIATED_FORM);
 
             // 字段权限配置
-            List<ExtensionElement> formPermissionConfig = extensionElements.get(FlowModelExtElementConstant.EXT_FORM_PERMISSION_CONFIG);
-            buildJsonElement(propertiesNode, formPermissionConfig, FlowModelExtElementConstant.EXT_FORM_PERMISSION_CONFIG);
+            List<ExtensionElement> formPermissionConfig = extensionElements.get(FlowModelExtElementConstant.EXT_FIELD_LIST);
+            buildJsonElement(propertiesNode, formPermissionConfig, FlowModelExtElementConstant.EXT_FIELD_LIST);
 
         }
     }
@@ -323,8 +323,8 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                     JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_ASSOCIATED_FORM, elementNode));
 
             // 字段权限配置
-            addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_FORM_PERMISSION_CONFIG,
-                    JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_FORM_PERMISSION_CONFIG, elementNode));
+            addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_FIELD_LIST,
+                    JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_FIELD_LIST, elementNode));
 
             // 1.0选人
             // 选人类型， initiator是为：流程发起人, data

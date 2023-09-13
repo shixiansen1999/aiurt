@@ -437,7 +437,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
             flowTaskExt.setPostNodeAction(createJsonObjectFromExtensionMap(extensionMap, FlowModelExtElementConstant.EXT_POST_NODE_ACTION));
 
             // 表单字段在节点上的配置
-            List<ExtensionElement> extensionElements = extensionMap.get(FlowModelExtElementConstant.FORM_FIELD_CONFIG);
+            List<ExtensionElement> extensionElements = extensionMap.get(FlowModelExtElementConstant.EXT_FIELD_LIST);
             flowTaskExt.setFormFieldConfig(extractFormFields(extensionElements));
 
         }

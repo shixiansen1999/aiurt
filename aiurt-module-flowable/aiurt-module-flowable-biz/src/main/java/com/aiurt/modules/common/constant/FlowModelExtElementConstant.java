@@ -83,7 +83,7 @@ public interface FlowModelExtElementConstant {
     /**
      * 表单权限配置
      */
-    String EXT_FORM_PERMISSION_CONFIG = "formPermissionConfig";
+    String EXT_FIELD_LIST = "fieldList";
 
     /**
      * 自定义流程全局属性
