@@ -31,6 +31,8 @@ public class RemindRecordUpdateHandler extends AbstractFlowHandler<FlowRemindCon
         ActCustomRemindRecord lastRemindRecord = context.getLastRemindRecord();
         ActCustomRemindRecord actCustomRemindRecord = BeanUtil.copyProperties(lastRemindRecord, ActCustomRemindRecord.class, "id", "lastRemindTime", "receiveUserName");
         actCustomRemindRecord.setLastRemindTime(new Date());
+        actCustomRemindRecord.setProcessInstanceId(context.getProcessInstanceId());
+        actCustomRemindRecord.setRemindUserName(context.getLoginName());
         actCustomRemindRecord.setReceiveUserName(StrUtil.join(",", context.getUserNameList()));
         remindRecordService.save(actCustomRemindRecord);
     }
