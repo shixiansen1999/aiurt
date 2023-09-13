@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.flowable.bpmn.model.ExtensionElement;
 
 import java.util.List;
 
@@ -87,6 +88,12 @@ public class TaskInfoDTO {
      */
     @ApiModelProperty(value = "任务节点的自定义变量列表")
     List<JSONObject> variableList;
+
+    /**
+     * 表单字段权限配置列表
+     */
+    @ApiModelProperty(value = "表单字段权限配置列表")
+    private JSONArray fieldList;
 
     @ApiModelProperty("流程模板key")
     private String processDefinitionKey;
