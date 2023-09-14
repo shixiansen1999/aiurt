@@ -119,4 +119,12 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * @return
      */
     PatrolTaskDeviceDTO getPatrolTaskDeviceDetail(String id);
+
+    /**
+     * app巡检-巡检清单-确认提交工单时查询mac地址匹配结果
+     * @param id
+     * @return
+     */
+    Integer patrolTaskCheckItemsGetMac(String id);
+
 }
