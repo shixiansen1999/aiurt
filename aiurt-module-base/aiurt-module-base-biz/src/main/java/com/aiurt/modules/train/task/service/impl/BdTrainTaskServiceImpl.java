@@ -183,7 +183,8 @@ public String taskCode(Integer trainLine){
 			//人员有变化
 			if (CollectionUtil.isNotEmpty(bdTrainTask.getUserIds())) {
 				bdTrainTaskUserMapper.deleteByMainId(bdTrainTask.getId());
-				List<String> userIds = bdTrainTask.getUserIds();
+				List<String> userIds = new ArrayList<>();
+				userIds.addAll(bdTrainTask.getUserIds());
 				//讲师也在培训档案中
 				userIds.add(bdTrainTask.getTeacherId());
 				// 看是不是所有人员都要培训档案，如果有人没有培训档案的，直接抛出错误
@@ -196,7 +197,7 @@ public String taskCode(Integer trainLine){
 				if (!trainArchiveIdList.containsAll(userIds)) {
 					throw new AiurtBootException("培训档案中没有相关培训人员记录！");
 				}
-				this.addTrainTaskUser(bdTrainTask.getId(), bdTrainTask.getTaskTeamId(), userIds);
+				this.addTrainTaskUser(bdTrainTask.getId(), bdTrainTask.getTaskTeamId(), bdTrainTask.getUserIds());
 			}
 			//是否考试有变化
 			if (bdTrainTask.getExamStatus()!= null && bdTrainTask.getExamStatus()==0) {
@@ -788,7 +789,8 @@ private void queryBdTrainTask(List<BdTrainTaskUser> userTasks,String uid){
 		}
 		SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(bdTrainTask.getTaskTeamId());
 		bdTrainTask.setTaskTeamCode(sysDepartModel.getOrgCode());
-		List<String> userIds = bdTrainTask.getUserIds();
+		List<String> userIds = new ArrayList<>();
+		userIds.addAll(bdTrainTask.getUserIds());
 		//讲师也在培训档案中
 		userIds.add(bdTrainTask.getTeacherId());
 		// 看是不是所有人员都要培训档案，如果有人没有培训档案的，直接抛出错误
@@ -803,6 +805,6 @@ private void queryBdTrainTask(List<BdTrainTaskUser> userTasks,String uid){
 		}
 
 		this.saveMain(bdTrainTask, bdTrainTaskPage.getBdTrainTaskSignList());
-		this.addTrainTaskUser(bdTrainTask.getId(),bdTrainTask.getTaskTeamId(),userIds);
+		this.addTrainTaskUser(bdTrainTask.getId(),bdTrainTask.getTaskTeamId(),bdTrainTask.getUserIds());
 	}
 }
