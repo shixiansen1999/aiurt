@@ -186,6 +186,7 @@
                         <exclude>config/application-*.yml</exclude>
                         <!--<exclude>config/ehcache.xml</exclude> -->
                         <exclude>config/logback-spring.xml</exclude>
+                        <exclude>fonts/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
