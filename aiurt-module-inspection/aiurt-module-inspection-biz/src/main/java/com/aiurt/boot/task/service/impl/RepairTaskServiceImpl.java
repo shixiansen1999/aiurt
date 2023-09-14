@@ -3627,7 +3627,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         return imageMap;
     }
     @Override
-    public List<PrintRepairTaskDTO> printRepairTaskById(String ids) {
+    public List<PrintRepairTaskDTO> printRepairTaskById(String ids,String overhaulCode) {
         List<String> idList = StrUtil.splitTrim(ids, ",");
         //创建结果集
         List<PrintRepairTaskDTO> list = new ArrayList<>();
@@ -3646,7 +3646,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }else {
                 //获取任务检查项
                 RepairTask one = records.get(0);
-                getRepairTaskResult(id, printRepairTaskDTO, one,list);
+                getRepairTaskResult(id, printRepairTaskDTO, one,list,overhaulCode);
             }
         }
         return list;
@@ -3885,7 +3885,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     /**获取任务检查项*/
-    private void getRepairTaskResult(String id , PrintRepairTaskDTO printRepairTaskDTO, RepairTask one,List<PrintRepairTaskDTO> list){
+    private void getRepairTaskResult(String id , PrintRepairTaskDTO printRepairTaskDTO, RepairTask one,List<PrintRepairTaskDTO> list,String overhaulCode){
         printRepairTaskDTO.setOrgName(one.getOrganizational());
 
         // 所属周（相对年）
@@ -3947,6 +3947,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         }
                     }
                 }
+            }
+            if (StrUtil.isNotEmpty(overhaulCode)){
+                tasks = tasks.stream().filter(t-> t.getOverhaulCode().equals(overhaulCode)).collect(Collectors.toList());
             }
             //获取单号
             //taskDeviceCode.addAll(tasks.stream().map(RepairTaskDTO::getOverhaulCode).collect(Collectors.toList()));
@@ -4050,7 +4053,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     //抽检人签名
                     RepairTaskDeviceRel repairTaskDeviceRel = repairTaskDeviceRelMapper.selectOne(new LambdaQueryWrapper<RepairTaskDeviceRel>()
                             .eq(RepairTaskDeviceRel::getCode,repairTaskDTO.getOverhaulCode()).eq(RepairTaskDeviceRel::getDelFlag,0));
-                    // r.setSamplingUrl(repairTaskDeviceRel.getSamplingSignUrl());
+                    r.setSamplingUrl(repairTaskDeviceRel.getSamplingSignUrl());
                 }
                 r.setDeviceName(repairTaskDTO.getEquipmentName());
                 r.setEquipmentLocation(repairTaskDTO.getEquipmentLocation());

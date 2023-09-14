@@ -1,0 +1,13 @@
+./src/main/java/*
+./src/main/bin/*
+./src/main/assembly/*
+./src/main/templates/*
+./src/main/static/*
+./src/main/fonts/*
+./src/main/config/*
+./src/test/*
+
+./target/classes/com/*
+./target/classes/static/*
+./target/classes/templates/*
+./target/aiurt-module-system-3.2.0.jar

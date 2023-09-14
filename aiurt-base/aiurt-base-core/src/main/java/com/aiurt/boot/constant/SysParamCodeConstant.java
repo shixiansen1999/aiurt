@@ -545,4 +545,9 @@ public interface SysParamCodeConstant {
      * 故障上报、填写维修记录是否需要“是否影响客运服务”、“是否影响行车”、“是否停止服务”；调度故障是否必填
      */
     String IS_SHOW_AFFECTPASSENGERSERVICE="is_show_affectPassengerService";
+
+    /**
+     * 是否根据部门过滤习题
+     */
+    String IS_QUERY_QUESTION_BY_DEPT = "is_query_question_by_dept";
 }

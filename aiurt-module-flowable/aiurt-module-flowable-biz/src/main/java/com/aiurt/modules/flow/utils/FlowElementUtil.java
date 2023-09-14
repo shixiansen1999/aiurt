@@ -1,40 +1,29 @@
 package com.aiurt.modules.flow.utils;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
-import com.aiurt.modules.cmd.ConditionExpressionCmd;
-import com.aiurt.modules.cmd.ConditionExpressionV2Cmd;
-import com.aiurt.modules.common.constant.FlowCustomVariableConstant;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
 import com.aiurt.modules.modeler.dto.OperationList;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
-import com.aiurt.modules.modeler.entity.ActCustomVariable;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
-import com.aiurt.modules.modeler.service.IActCustomVariableService;
 import com.aiurt.modules.utils.ReflectionService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.model.*;
-import org.flowable.common.engine.impl.interceptor.CommandExecutor;
-import org.flowable.engine.*;
-import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
+import org.flowable.engine.HistoryService;
+import org.flowable.engine.RepositoryService;
+import org.flowable.engine.RuntimeService;
 import org.flowable.engine.repository.ProcessDefinition;
-import org.flowable.engine.runtime.Execution;
-import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -303,7 +292,8 @@ public class FlowElementUtil {
                     }
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
-                    throw e;
+                    Throwable cause = e.getCause();
+                    throw new AiurtBootException(ObjectUtil.isNotEmpty(cause) ? cause.getMessage() : e.getMessage());
                 }
             }
         }
