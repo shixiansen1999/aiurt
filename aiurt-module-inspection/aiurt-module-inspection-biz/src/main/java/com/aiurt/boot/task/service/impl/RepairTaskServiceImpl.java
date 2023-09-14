@@ -9,6 +9,7 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.InspectionApi;
@@ -31,6 +32,7 @@ import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.boot.task.service.IRepairTaskSignUserService;
+import com.aiurt.boot.task.service.IRepairTaskStandardRelService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
@@ -47,6 +49,7 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.enums.WriteDirectionEnum;
 import com.alibaba.excel.metadata.data.WriteCellData;
+import com.alibaba.excel.util.IoUtils;
 import com.alibaba.excel.util.MapUtils;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
@@ -60,9 +63,15 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.ImageUtils;
+import org.apache.poi.util.Units;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
+import org.apache.poi.xssf.usermodel.XSSFShape;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -75,19 +84,28 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.*;
+import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @Description: repair_task
@@ -151,10 +169,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
     @Autowired
     private IRepairTaskSignUserService repairTaskSignUserService;
+    @Autowired
+    private IRepairTaskStandardRelService repairTaskStandardRelService;
 
     @Value("${support.path.exportRepairTaskPath}")
     private String exportPath;
-
+    @Value("${jeecg.minio.bucketName}")
+    private String bucketName;
+    @Value(value = "${jeecg.path.upload}")
+    private String uploadpath;
     /**
      * 检修任务列表查询
      *
@@ -3247,9 +3270,20 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public void archRepairTask(RepairTask repairTask, String token, String archiveUserId, String refileFolderId, String realname, String sectId) {
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-            String fileName = repairTask.getSiteName() + "检修记录表" + sdf.format(repairTask.getStartTime());
+            dealInfo(repairTask);
+            SXSSFWorkbook archiveRepairTask = createArchiveRepairTask(repairTask, "/templates/repairTaskTemplate.xlsx");
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
             Date date = new Date();
+            Date startTime = repairTask.getStartTime();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+            String fileName = repairTask.getSiteName() + "检修记录表" + sdf.format(startTime);
+            String path = exportPath + fileName + ".xlsx";
+            FileOutputStream fos = new FileOutputStream(path);
+            archiveRepairTask.write(os);
+            fos.write(os.toByteArray());
+            os.close();
+            fos.close();
+            PdfUtil.excel2pdf(path);
             //传入档案系统
             //创建文件夹
             String foldername = fileName + "_" + date.getTime();
@@ -3258,7 +3292,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             String fileType = "pdf";
             File file = new File(exportPath + fileName + "." + fileType);
             Long size = file.length();
-            InputStream in = new FileInputStream(file);
+            InputStream in = Files.newInputStream(file.toPath());
             JSONObject res = archiveUtils.upload(token, refileFolderIdNew, fileName + "." + fileType, size, fileType, in);
             String fileId = res.getString("fileId");
             Map<String, String> fileInfo = new HashMap<>();
@@ -3266,12 +3300,12 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             fileInfo.put("operateType", "upload");
             ArrayList<Object> fileList = new ArrayList<>();
             fileList.add(fileInfo);
-            Map values = new HashMap();
+            Map<String, Object> values = new HashMap<>();
             values.put("archiver", archiveUserId);
             values.put("username", realname);
-            values.put("duration", repairTask.getSecertduration());
+            values.put("duration", repairTask.getSecertDuration());
             values.put("secert", repairTask.getSecert());
-            values.put("secertduration", repairTask.getSecertduration());
+            values.put("secertDuration", repairTask.getSecertDuration());
             values.put("name", fileName);
             values.put("fileList", fileList);
             values.put("number", values.get("number"));
@@ -3291,6 +3325,352 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void dealInfo(RepairTask repairTask) {
+        List<RepairTaskStationDTO> repairTaskStationDTOS = this.repairTaskStationList(repairTask.getId());
+        //检查结果状态字典
+        List<DictModel> resultDicts = sysBaseApi.queryDictItemsByCode(DictConstant.OVERHAUL_RESULT);
+        Map<Integer, String> dictMap = CollUtil.isNotEmpty(resultDicts)
+                ? resultDicts.stream().collect(Collectors.toMap(d -> Integer.valueOf(d.getValue()), DictModel::getText))
+                : new HashMap<>(0);
+        //所有检查项
+        List<RepairTaskResult> allResultList = new ArrayList<>();
+        //备件更换信息
+        List<SpareResult> spareChange = new ArrayList<>();
+        //处理结果
+        StringBuilder stringBuilder = new StringBuilder();
+        //附件
+        List<String> enclosureUrl = new ArrayList<>();
+        //所有状态
+        Set<Integer> statuss = new HashSet<>();
+        int i = 0;
+        for (RepairTaskStationDTO stationDTO : repairTaskStationDTOS) {
+            //获取站点下所有工单
+            List<RepairTaskDeviceRel> repairTaskDeviceRels = repairTaskDeviceRelMapper.selectList(new LambdaQueryWrapper<RepairTaskDeviceRel>()
+                    .eq(RepairTaskDeviceRel::getRepairTaskId, repairTask.getId())
+                    .eq(RepairTaskDeviceRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+            if (CollUtil.isNotEmpty(repairTaskDeviceRels)) {
+                repairTaskDeviceRels = repairTaskDeviceRels.stream().filter(d -> {
+                    //无设备
+                    if (StrUtil.equals(stationDTO.getStationCode(), d.getStationCode())) {
+                        return true;
+                    }
+                    //有设备
+                    String deviceCode = d.getDeviceCode();
+                    if(StrUtil.isNotBlank(deviceCode)){
+                        JSONObject deviceByCode = sysBaseApi.getDeviceByCode(deviceCode);
+                        if (ObjectUtil.isNotEmpty(deviceByCode)) {
+                            String station_code = deviceByCode.getString("stationCode");
+                            return stationDTO.getStationCode().equals(station_code);
+                        }
+                    }
+                    return false;
+                }).collect(Collectors.toList());
+            }
+            //遍历每个工单
+            for (RepairTaskDeviceRel d : repairTaskDeviceRels) {
+                //获取检修位置
+                String maintenancePosition;
+                //判断设备code是否为空
+                if (ObjectUtil.isNotEmpty(d.getDeviceCode())) {
+                    List<StationDTO> stationDTOList = repairTaskMapper.selectStationLists(d.getDeviceCode());
+                    String station = manager.translateStation(stationDTOList);
+                    //判断具体位置是否为空
+                    if (ObjectUtil.isNotEmpty(d.getSpecificLocation())) {
+                        if (ObjectUtil.isNotEmpty(station)) {
+                            maintenancePosition = d.getSpecificLocation() + station;
+                        } else {
+                            maintenancePosition = d.getSpecificLocation();
+                        }
+                    } else {
+                        maintenancePosition = station;
+                    }
+                } else {
+                    List<StationDTO> stationDTOList1 = new ArrayList<>();
+                    StationDTO stationDto = new StationDTO();
+                    stationDto.setStationCode(d.getStationCode());
+                    stationDto.setLineCode(d.getLineCode());
+                    stationDto.setPositionCode(d.getPositionCode());
+                    stationDTOList1.add(stationDto);
+                    String station = manager.translateStation(stationDTOList1);
+                    if (ObjectUtil.isNotEmpty(d.getSpecificLocation())) {
+                        if (ObjectUtil.isNotEmpty(station)) {
+                            maintenancePosition = d.getSpecificLocation() + station;
+                        } else {
+                            maintenancePosition = d.getSpecificLocation();
+                        }
+                    } else {
+                        maintenancePosition = station;
+                    }
+                }
+
+                //获取备件更换信息
+                String faultCode = d.getFaultCode();
+                if (StrUtil.isNotBlank(faultCode)) {
+                    //获取备件更换信息
+                    List<SpareResult> change = sysBaseApi.getSpareChange(faultCode);
+                    spareChange.addAll(change);
+
+                    //处理结果
+                    String faultRepairReuslt = sysBaseApi.getFaultRepairReuslt(faultCode);
+                    if (StrUtil.isNotBlank(faultRepairReuslt)) {
+                        stringBuilder.append(Convert.toStr(++i)).append(".").append("故障编号：").append(faultCode).append(",").append(faultRepairReuslt).append(",");
+                    } else {
+                        stringBuilder.append(Convert.toStr(++i)).append(".").append(faultCode).append(":该故障没有完成维修").append(",");
+                    }
+                }
+
+                //获取检查项
+                List<RepairTaskResult> repairTaskResultList = repairTaskMapper.selectSingle(d.getId(), null);
+                RepairTaskStandardRel standardRel = repairTaskStandardRelService.getOne(new LambdaQueryWrapper<RepairTaskStandardRel>()
+                        .eq(RepairTaskStandardRel::getId, d.getTaskStandardRelId()),false);
+                repairTaskResultList.forEach(r -> {
+                    if ("0".equals(r.getPid())) {
+                        String systemName = manager.translateMajor(Collections.singletonList(standardRel.getSubsystemCode()), InspectionConstant.SUBSYSTEM);
+                        r.setName(maintenancePosition + "-" + systemName + ":" + (r.getName() != null ? r.getName() : ""));
+                    }
+                    r.setStatusName(dictMap.get(r.getStatus()));
+                    if (ObjectUtil.isNotEmpty(r.getStatus())) {
+                        statuss.add(r.getStatus());
+                    }
+                });
+                List<RepairTaskResult> treeList = treeFirst(repairTaskResultList);
+                allResultList.addAll(treeList);
+
+                //获取工单全部附件
+                if (CollUtil.isNotEmpty(repairTaskResultList)) {
+                    List<String> rtrIds = repairTaskResultList.stream().map(RepairTaskResult::getId).collect(Collectors.toList());
+                    if (CollUtil.isNotEmpty(rtrIds)) {
+                        List<RepairTaskEnclosure> repairTaskEnclosures = repairTaskEnclosureMapper.selectList(new LambdaQueryWrapper<RepairTaskEnclosure>()
+                                .eq(RepairTaskEnclosure::getDelFlag, CommonConstant.DEL_FLAG_0)
+                                .in(RepairTaskEnclosure::getRepairTaskResultId, rtrIds));
+                        if (CollUtil.isNotEmpty(repairTaskEnclosures)) {
+                            List<String> urls = repairTaskEnclosures.stream().map(RepairTaskEnclosure::getUrl).collect(Collectors.toList());
+                            enclosureUrl.addAll(urls);
+                        }
+                    }
+                }
+            };
+        }
+        //设置检查项
+        repairTask.setRepairTaskResultList(allResultList);
+        //设置备件更换信息
+        repairTask.setSpareChange(spareChange);
+        //设置附件
+        repairTask.setEnclosureUrl(enclosureUrl);
+        //设置检查记录
+        if (statuss.contains(2)) {
+            repairTask.setRepairRecord(dictMap.get(2));
+        } else if (statuss.contains(1)) {
+            repairTask.setRepairRecord(dictMap.get(1));
+        }
+        //设置处理结果
+        if (stringBuilder.length() > 0) {
+            // 截取字符
+            StringBuilder sb = stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+            repairTask.setRepairResult(sb.toString());
+        }
+    }
+
+    private SXSSFWorkbook createArchiveRepairTask(RepairTask repairTask, String path) {
+        InputStream in;
+        XSSFWorkbook xssfWb = null;
+        try {
+            org.springframework.core.io.Resource resource = new ClassPathResource(path);
+            in = resource.getInputStream();
+            xssfWb = new XSSFWorkbook(in);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        SXSSFWorkbook workbook = new SXSSFWorkbook(xssfWb);
+        Sheet sheet = workbook.getXSSFWorkbook().getSheetAt(0);
+        PrintSetup printSetup = sheet.getPrintSetup();
+        //横向展示
+        //printSetup.setLandscape(true);
+        //A4
+        printSetup.setPaperSize((short) 9);
+        Row row = sheet.getRow(0);
+        Cell cell = row.getCell(0);
+        String head = repairTask.getLineName()+repairTask.getSiteName() + "检修记录表";
+        cell.setCellValue(head);
+        Row rowOne = sheet.getRow(1);
+        Cell c11 = rowOne.getCell(1);
+        c11.setCellValue(repairTask.getOrganizational());
+        //检修日期
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String start ="";
+        String end ="";
+        if (repairTask.getStartTime()!=null){
+            start = sdf.format(repairTask.getStartTime());
+        }
+        if (repairTask.getEndTime()!=null){
+            end = sdf.format(repairTask.getEndTime());
+        }
+        Cell c13 = rowOne.getCell(3);
+        c13.setCellValue(StrUtil.trim(start+" "+end));
+        Row rowTwo = sheet.getRow(2);
+        Cell c21 = rowTwo.getCell(1);
+        c21.setCellValue(repairTask.getLineName()+repairTask.getSiteName());
+        Cell c23 = rowTwo.getCell(3);
+        c23.setCellValue(sdf.format(repairTask.getStartTime()));
+        Row rowThree = sheet.getRow(3);
+        Cell c31 = rowThree.getCell(1);
+        c31.setCellValue(repairTask.getOverhaulName());
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Cell c33 = rowThree.getCell(3);
+        if (ObjectUtil.isNotEmpty(repairTask.getBeginTime())) {
+            c33.setCellValue(format.format(repairTask.getBeginTime()));
+        }
+        Row rowFour = sheet.getRow(4);
+        //内容
+        StringBuilder content = new StringBuilder();
+        List<RepairTaskResult> list = repairTask.getRepairTaskResultList();
+        for (RepairTaskResult repairTaskResult : list) {
+            content.append(repairTaskResult.getName());
+            List<RepairTaskResult> children = repairTaskResult.getChildren();
+            if (CollUtil.isNotEmpty(children)) {
+                content.append("：");
+                for (int j = 0, index = 0; j < children.size(); j++) {
+                    ++index;
+                    content.append(index + "." + children.get(j).getName());
+                }
+            }
+            content.append("\r\n");
+        }
+        if (ObjectUtil.isNotEmpty(content)) {
+            float height = ArchExecelUtil.getExcelCellAutoHeight(content.toString(),16f);
+            Cell c41 = rowFour.getCell(1);
+            CellStyle c41Style = c41.getCellStyle();
+            c41Style.setWrapText(true);
+            c41.setCellValue(content.toString());
+            rowFour.setHeightInPoints(height/2);
+        }
+        //检修记录
+        Row fowFive = sheet.getRow(5);
+        Cell c51 = fowFive.getCell(1);
+        c51.setCellValue(repairTask.getRepairRecord());
+        //处理结果
+        Row rowSix = sheet.getRow(6);
+        Cell c61 = rowSix.getCell(1);
+        //c61.setCellValue(repairTask.getProcessContent());
+        c61.setCellValue(repairTask.getRepairRecord());
+        //更换备件
+        Row rowSeven = sheet.getRow(7);
+        Cell c71 = rowSeven.getCell(1);
+        CellStyle c71Style = c71.getCellStyle();
+        c71Style.setWrapText(true);
+        List<SpareResult> spareResults = repairTask.getSpareChange();
+        if (spareResults != null){
+            int index2 = 0;
+            StringBuilder spare = new StringBuilder();
+            for (SpareResult spareResult : spareResults) {
+                index2++;
+                spare.append(index2).append(".").append("组件名称(旧)：").append(spareResult.getOldSparePartName()).append(" ")
+                        .append("数量：").append(spareResult.getOldSparePartNum()).append("  ")
+                        .append("组件名称(新)：").append(spareResult.getNewSparePartName())
+                        .append("数量：").append(spareResult.getNewSparePartNum());
+            }
+            float height2 = ArchExecelUtil.getExcelCellAutoHeight(spare.toString(),16f);
+            c71.setCellValue(spare.toString());
+            rowSeven.setHeightInPoints(height2);
+        }
+        //附件信息 TODO
+        Row rowEight = sheet.getRow(8);
+        Cell c81 = rowEight.getCell(1);
+
+        //
+        Row rowNine = sheet.getRow(9);
+        Cell c91 = rowNine.getCell(1);
+        c91.setCellValue(repairTask.getWorkTypeName());
+        Cell c93 = rowNine.getCell(3);
+        c93.setCellValue(repairTask.getPlanOrderCode());
+
+        //计划令 TODO
+        Row rowTen = sheet.getRow(10);
+        Cell c101 = rowTen.getCell(1);
+        String planOrderCodeUrl = repairTask.getPlanOrderCodeUrl();
+        if (StrUtil.isNotBlank(planOrderCodeUrl)) {
+            InputStream inputStream = null;
+            SysAttachment sysAttachment = null;
+            try {
+                if (planOrderCodeUrl.contains("?")) {
+                    int index = planOrderCodeUrl.indexOf("?");
+                    String attachId = planOrderCodeUrl.substring(0, index);
+                    sysAttachment = iSysBaseAPI.getFilePath(attachId);
+
+                }
+                if (ObjectUtil.isNotEmpty(sysAttachment)) {
+                    if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
+                        inputStream = MinioUtil.getMinioFile(bucketName, sysAttachment.getFilePath());
+                    } else {
+                        String filePath = uploadpath + File.separator + sysAttachment.getFilePath();
+                        File file = new File(filePath);
+                        if (file.exists()) {
+                            inputStream = new BufferedInputStream(Files.newInputStream(Paths.get(filePath)));
+                        }
+                    }
+                } else {
+                    String filePath = uploadpath + File.separator + planOrderCodeUrl;
+                    File file = new File(filePath);
+                    if (file.exists()) {
+                        inputStream = new BufferedInputStream(Files.newInputStream(Paths.get(filePath)));
+                    }
+                }
+                if (ObjectUtil.isNotEmpty(inputStream)) {
+                    byte[] bytes = IoUtils.toByteArray(inputStream);
+                    //画图的顶级管理器，一个sheet只能获取一个（一定要注意这点）
+                    int pictureIdx = sheet.getWorkbook().addPicture(bytes, Workbook.PICTURE_TYPE_JPEG);
+                    Drawing drawingPatriarch = sheet.createDrawingPatriarch();
+                    CreationHelper helper = sheet.getWorkbook().getCreationHelper();
+                    ClientAnchor anchor = helper.createClientAnchor();
+                    anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_AND_RESIZE);
+                    anchor.setCol1(1);
+                    anchor.setCol2(4);
+                    anchor.setRow1(10);
+                    anchor.setRow2(11);
+                    anchor.setDx1(5000);
+                    anchor.setDy1(5000);
+                    drawingPatriarch.createPicture(anchor, pictureIdx);
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            } finally {
+                if (inputStream != null) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        log.error(e.getMessage());
+                    }
+                }
+            }
+        }
+        //
+        Row rowELe = sheet.getRow(11);
+        Cell c111= rowELe.getCell(1);
+        c111.setCellValue(repairTask.getSumitUserName());
+        Cell c113 = rowELe.getCell(3);
+        c113.setCellValue(DateUtil.format(repairTask.getSubmitTime(), "yyyy-MM-dd HH:mm:ss"));
+
+        //
+        Row rowTwe = sheet.getRow(12);
+        Cell c121= rowTwe.getCell(1);
+        c121.setCellValue(repairTask.getConfirmUserName());
+        Cell c123 = rowTwe.getCell(3);
+        if (repairTask.getConfirmTime()!=null) {
+            c123.setCellValue(format.format(repairTask.getConfirmTime()));
+        }
+        //
+        Row rowThr = sheet.getRow(13);
+        Cell c131 = rowThr.getCell(1);
+        c131.setCellValue(repairTask.getReceiptUserName());
+        Cell c133 = rowThr.getCell(3);
+        if (repairTask.getReceiptTime()!=null) {
+            c133.setCellValue(format.format(repairTask.getReceiptTime()));
+        }
+
+
+        return workbook;
     }
 
     @Override

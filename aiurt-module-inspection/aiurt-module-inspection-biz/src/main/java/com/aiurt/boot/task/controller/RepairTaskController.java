@@ -549,12 +549,6 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
         String sectId = typeInfo.get("sectId").toString();
         data.forEach(repairTask -> {
             repairTaskService.archRepairTask(repairTask, finalToken, finalArchiveUserId, refileFolderId, username, sectId);
-            try {
-                repairTaskService.exportPdf(request,repairTask,response);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
         });
         return Result.ok("归档成功");
     }
