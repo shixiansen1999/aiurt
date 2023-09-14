@@ -155,6 +155,10 @@ public class Schedule {
     private String workNo;
 
     @TableField(exist = false)
+    @ApiModelProperty(value = "工资编号")
+    private String salaryCode;
+
+    @TableField(exist = false)
     @ApiModelProperty(value = "查询条件")
     private String text;
 
