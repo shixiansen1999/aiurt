@@ -1373,7 +1373,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             throw new AiurtBootException("该流程实例不存在！");
         }
         Date endTime = historicProcessInstance.getEndTime();
-        if (Objects.isNull(endTime)) {
+        if (Objects.nonNull(endTime)) {
             throw new AiurtBootException("该流程实例结束！");
         }
 

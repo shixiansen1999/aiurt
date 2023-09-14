@@ -378,6 +378,19 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                 modelExt.setIsRecall(1);
             }
         }
+        // 去重
+        List<ExtensionElement> duplicateElementList = extensionElements.get(FlowModelExtElementConstant.EXT_ASSIGN_DUPLICATE_RULE);
+        if (CollUtil.isNotEmpty(duplicateElementList)) {
+            ExtensionElement extensionElement = duplicateElementList.get(0);
+            String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_RULE);
+            if (StrUtil.isNotBlank(attributeValue)) {
+                modelExt.setIsDedulicate(1);
+                modelExt.setDedulicateRule(attributeValue);
+            } else {
+                modelExt.setIsDedulicate(0);
+            }
+        }
+
         return modelExt;
     }
 
