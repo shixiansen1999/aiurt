@@ -196,7 +196,7 @@ public String taskCode(Integer trainLine){
 				if (!trainArchiveIdList.containsAll(userIds)) {
 					throw new AiurtBootException("培训档案中没有相关培训人员记录！");
 				}
-				this.addTrainTaskUser(bdTrainTask.getId(), bdTrainTask.getTaskTeamId(), userIds);
+				this.addTrainTaskUser(bdTrainTask.getId(), bdTrainTask.getTaskTeamId(), bdTrainTask.getUserIds());
 			}
 			//是否考试有变化
 			if (bdTrainTask.getExamStatus()!= null && bdTrainTask.getExamStatus()==0) {
@@ -803,6 +803,6 @@ private void queryBdTrainTask(List<BdTrainTaskUser> userTasks,String uid){
 		}
 
 		this.saveMain(bdTrainTask, bdTrainTaskPage.getBdTrainTaskSignList());
-		this.addTrainTaskUser(bdTrainTask.getId(),bdTrainTask.getTaskTeamId(),userIds);
+		this.addTrainTaskUser(bdTrainTask.getId(),bdTrainTask.getTaskTeamId(),bdTrainTask.getUserIds());
 	}
 }
