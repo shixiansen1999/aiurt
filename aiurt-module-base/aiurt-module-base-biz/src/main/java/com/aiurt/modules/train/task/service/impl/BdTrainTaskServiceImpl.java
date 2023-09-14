@@ -184,6 +184,18 @@ public String taskCode(Integer trainLine){
 			if (CollectionUtil.isNotEmpty(bdTrainTask.getUserIds())) {
 				bdTrainTaskUserMapper.deleteByMainId(bdTrainTask.getId());
 				List<String> userIds = bdTrainTask.getUserIds();
+				//讲师也在培训档案中
+				userIds.add(bdTrainTask.getTeacherId());
+				// 看是不是所有人员都要培训档案，如果有人没有培训档案的，直接抛出错误
+				LambdaQueryWrapper<TrainArchive> queryWrapper = new LambdaQueryWrapper<>();
+				queryWrapper.select(TrainArchive::getUserId);
+				queryWrapper.eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0);
+				queryWrapper.in(TrainArchive::getUserId, userIds);
+				List<TrainArchive> list = archiveService.list(queryWrapper);
+				List<String> trainArchiveIdList = list.stream().map(TrainArchive::getUserId).collect(Collectors.toList());
+				if (!trainArchiveIdList.containsAll(userIds)) {
+					throw new AiurtBootException("培训档案中没有相关培训人员记录！");
+				}
 				this.addTrainTaskUser(bdTrainTask.getId(), bdTrainTask.getTaskTeamId(), userIds);
 			}
 			//是否考试有变化
@@ -237,6 +249,10 @@ public String taskCode(Integer trainLine){
 	private void constructArchive(BdTrainTask trainTask) {
 		List<TrainRecord> trainRecords = new ArrayList<>();
 		List<BdTrainTaskUser> list = examRecordMapper.userList(trainTask.getId());
+
+		//讲师也要有培训记录
+		list.add(new BdTrainTaskUser().setUserId(trainTask.getTeacherId()));
+
 		List<TrainArchive> archiveList = archiveService.list(new LambdaQueryWrapper<TrainArchive>().eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0));
 		Map<String, TrainArchive> archiveMap = archiveList.stream().collect(Collectors.toMap(TrainArchive::getUserId, Function.identity()));
 		if(CollUtil.isNotEmpty(list)){
@@ -772,8 +788,9 @@ private void queryBdTrainTask(List<BdTrainTaskUser> userTasks,String uid){
 		}
 		SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(bdTrainTask.getTaskTeamId());
 		bdTrainTask.setTaskTeamCode(sysDepartModel.getOrgCode());
-		this.saveMain(bdTrainTask, bdTrainTaskPage.getBdTrainTaskSignList());
 		List<String> userIds = bdTrainTask.getUserIds();
+		//讲师也在培训档案中
+		userIds.add(bdTrainTask.getTeacherId());
 		// 看是不是所有人员都要培训档案，如果有人没有培训档案的，直接抛出错误
 		LambdaQueryWrapper<TrainArchive> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.select(TrainArchive::getUserId);
@@ -785,6 +802,7 @@ private void queryBdTrainTask(List<BdTrainTaskUser> userTasks,String uid){
 			throw new AiurtBootException("培训档案中没有相关培训人员记录！");
 		}
 
+		this.saveMain(bdTrainTask, bdTrainTaskPage.getBdTrainTaskSignList());
 		this.addTrainTaskUser(bdTrainTask.getId(),bdTrainTask.getTaskTeamId(),userIds);
 	}
 }

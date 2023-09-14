@@ -180,6 +180,19 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 		patrolTaskDeviceService.getPatrolSubmit(patrolTaskDevice);
 		return Result.OK("提交工单成功");
 	}
+
+	/**
+	 * app巡检-巡检清单-确认提交工单时查询mac地址匹配结果
+	 * @param id
+	 * @return
+	 */
+	@AutoLog(value = " app巡检-巡检清单-确认提交工单-查询mac地址匹配结果", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
+	@ApiOperation(value = " app巡检-巡检清单-确认提交工单-查询mac地址匹配结果", notes = " app巡检-巡检清单-确认提交工单-查询mac地址匹配结果")
+	@GetMapping(value = "/patrolTaskCheckItemsGetMac")
+	public Result<?> patrolTaskCheckItemsGetMac(@RequestParam(name ="id")String id) {
+		Integer macStatus = patrolTaskDeviceService.patrolTaskCheckItemsGetMac(id);
+		return Result.OK(macStatus);
+	}
 	/**
 	 *   添加
 	 *
