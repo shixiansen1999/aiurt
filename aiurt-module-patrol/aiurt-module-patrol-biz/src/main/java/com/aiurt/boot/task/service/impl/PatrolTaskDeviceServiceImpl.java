@@ -227,6 +227,24 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         return pageList.setRecords(patrolTaskDeviceList);
     }
 
+
+    @Override
+    public Integer patrolTaskCheckItemsGetMac(String id) {
+        PatrolTaskDevice taskDevice = patrolTaskDeviceMapper.selectOne(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getId, id));
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //mac地址匹配,获取用户当前位置,并存好
+        SysUserPositionCurrentDTO sysUserPositionCurrent = patrolTaskDeviceMapper.getSysUserPositionCurrent(sysUser.getUsername());
+        Integer macStatus = 0;
+        if (ObjectUtil.isNotNull(sysUserPositionCurrent) && StrUtil.isNotBlank(sysUserPositionCurrent.getStationCode())) {
+            List<String> stationCodes = StrUtil.splitTrim(sysUserPositionCurrent.getStationCode(), ",");
+            if (stationCodes.contains(taskDevice.getStationCode())) {
+                macStatus = 1;
+            }
+        }
+        return macStatus;
+    }
+
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void getPatrolSubmit(PatrolTaskDevice patrolTaskDevice) {

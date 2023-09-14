@@ -2575,6 +2575,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (StrUtil.isNotBlank(fault.getUsername())) {
             queryWrapper.lambda().eq(Fault::getAppointUserName, fault.getUsername());
         }
+        if (ObjectUtil.isNotNull(fault.getIsSignalFault())) {
+            queryWrapper.lambda().eq(Fault::getIsSignalFault, fault.getIsSignalFault());
+        }
+
         queryWrapper.lambda().like(StrUtil.isNotBlank(phnamon), Fault::getSymptoms, phnamon);
 
         // 故障等级
