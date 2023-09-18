@@ -53,6 +53,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.util.Units;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
@@ -69,7 +70,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -1337,6 +1340,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //printSetup.setLandscape(true);
         //A4
         printSetup.setPaperSize((short) 9);
+        //画图的顶级管理器，一个sheet只能获取一个（一定要注意这点）
+        Drawing drawingPatriarch = sheet.createDrawingPatriarch();
+        CreationHelper helper = sheet.getWorkbook().getCreationHelper();
         Row row = sheet.getRow(0);
         Cell cell = row.getCell(0);
         String head = "工作日志";
@@ -1407,68 +1413,121 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             CellStyle c91Style = c91.getCellStyle();
             c91Style.setWrapText(true);
             heigth9 = ArchExecelUtil.getExcelCellAutoHeight(assortContent, 12f);
+            rowNine.setHeightInPoints(heigth9);
         }
 
-        //附件
+        //附件，只展示图片
+        List<String> urlList = StrUtil.splitTrim(workLogResult.getUrlList(), ",");
+        if (CollUtil.isNotEmpty(urlList)) {
+            List<BufferedImage> bufferedImageList = new ArrayList<>();
+            //遍历附件，获取其中的图片
+            for (String url : urlList) {
+                BufferedImage bufferedImage = null;
+                try (InputStream inputStreamByUrl = this.getInputStreamByUrl(url)) {
+                    //读取图片，非图片bufferedImage为null
+                    if (ObjectUtil.isNotNull(inputStreamByUrl)) {
+                        bufferedImage = ImageIO.read(inputStreamByUrl);
+                    }
+                    if (ObjectUtil.isNotNull(bufferedImage)) {
+                        bufferedImageList.add(bufferedImage);
+                    }
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+            //插入图片到单元格
+            if (CollUtil.isNotEmpty(bufferedImageList)) {
+                //设置边距
+                int widthCol1 = Units.columnWidthToEMU(sheet.getColumnWidth(1));
+                int heightRow9 = Units.toEMU(heigth9);
+                int wMar = 2 * Units.EMU_PER_POINT;
+                int hMar = Units.EMU_PER_POINT;
+                int size = bufferedImageList.size();
+                //每个图片宽度（大致平均值）
+                int ave = (widthCol1 - (size + 1) * wMar) / size;
+                for (int i = 0; i < size; i++) {
+                    try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+                        ImageIO.write(bufferedImageList.get(i), "jpg", byteArrayOutputStream);
+                        byte[] bytes = byteArrayOutputStream.toByteArray();
+                        int pictureIdx = sheet.getWorkbook().addPicture(bytes, Workbook.PICTURE_TYPE_JPEG);
+                        ClientAnchor anchor = helper.createClientAnchor();
+                        anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_AND_RESIZE);
+                        anchor.setCol1(3);
+                        anchor.setCol2(3);
+                        anchor.setRow1(8);
+                        anchor.setRow2(8);
+                        anchor.setDx1((i + 1) * wMar + i * ave);
+                        anchor.setDy1(hMar);
+                        anchor.setDx2((i + 1) * (wMar + ave));
+                        anchor.setDy2(heightRow9 - hMar);
+                        drawingPatriarch.createPicture(anchor, pictureIdx);
+                    } catch (IOException e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+            }
+        }
 
         //签名
         String signature = workLogResult.getSignature();
         if (StrUtil.isNotBlank(signature)) {
-            InputStream inputStream = null;
-            SysAttachment sysAttachment = null;
-            try {
-                if (signature.contains("?")) {
-                    int index = signature.indexOf("?");
-                    String attachId = signature.substring(0, index);
-                    sysAttachment = iSysBaseAPI.getFilePath(attachId);
-
-                }
-                if (ObjectUtil.isNotEmpty(sysAttachment)) {
-                    if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
-                        inputStream = MinioUtil.getMinioFile(bucketName, sysAttachment.getFilePath());
-                    } else {
-                        String filePath = uploadpath + File.separator + sysAttachment.getFilePath();
-                        File file = new File(filePath);
-                        if (file.exists()) {
-                            inputStream = new BufferedInputStream(Files.newInputStream(Paths.get(filePath)));
-                        }
-                    }
-                } else {
-                    String filePath = uploadpath + File.separator + signature;
-                    File file = new File(filePath);
-                    if (file.exists()) {
-                        inputStream = new BufferedInputStream(Files.newInputStream(Paths.get(filePath)));
-                    }
-                }
-                if (ObjectUtil.isNotEmpty(inputStream)) {
-                    byte[] bytes = IoUtils.toByteArray(inputStream);
-                    //画图的顶级管理器，一个sheet只能获取一个（一定要注意这点）
+            try (InputStream inputStreamByUrl = this.getInputStreamByUrl(signature)) {
+                if (ObjectUtil.isNotEmpty(inputStreamByUrl)) {
+                    byte[] bytes = IoUtils.toByteArray(inputStreamByUrl);
                     int pictureIdx = sheet.getWorkbook().addPicture(bytes, Workbook.PICTURE_TYPE_JPEG);
-                    Drawing drawingPatriarch = sheet.createDrawingPatriarch();
-                    CreationHelper helper = sheet.getWorkbook().getCreationHelper();
                     ClientAnchor anchor = helper.createClientAnchor();
                     anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_AND_RESIZE);
                     anchor.setCol1(1);
                     anchor.setCol2(4);
                     anchor.setRow1(10);
                     anchor.setRow2(11);
-                    anchor.setDx1(4800);
-                    anchor.setDy1(4800);
+                    anchor.setDx1(Units.EMU_PER_POINT);
+                    anchor.setDy1(Units.EMU_PER_POINT);
                     drawingPatriarch.createPicture(anchor, pictureIdx);
                 }
             } catch (Exception e) {
                 log.error(e.getMessage());
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        log.error(e.getMessage());
-                    }
-                }
             }
         }
         return workbook;
+    }
+
+    /**
+     * 根据图片url获取InputSream
+     * @param url
+     * @return
+     */
+    private InputStream getInputStreamByUrl(String url) {
+        InputStream inputStream = null;
+        SysAttachment sysAttachment = null;
+        try {
+            if (url.contains("?")) {
+                int index = url.indexOf("?");
+                String attachId = url.substring(0, index);
+                sysAttachment = iSysBaseAPI.getFilePath(attachId);
+
+            }
+            if (ObjectUtil.isNotEmpty(sysAttachment)) {
+                if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
+                    inputStream = MinioUtil.getMinioFile(bucketName, sysAttachment.getFilePath());
+                } else {
+                    String filePath = uploadpath + File.separator + sysAttachment.getFilePath();
+                    File file = new File(filePath);
+                    if (file.exists()) {
+                        inputStream = new BufferedInputStream(Files.newInputStream(Paths.get(filePath)));
+                    }
+                }
+            } else {
+                String filePath = uploadpath + File.separator + url;
+                File file = new File(filePath);
+                if (file.exists()) {
+                    inputStream = new BufferedInputStream(Files.newInputStream(Paths.get(filePath)));
+                }
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+        return inputStream;
     }
 
     @Override
