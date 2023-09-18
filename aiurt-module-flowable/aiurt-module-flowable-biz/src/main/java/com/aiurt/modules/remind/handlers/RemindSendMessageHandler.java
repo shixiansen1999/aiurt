@@ -52,7 +52,7 @@ public class RemindSendMessageHandler extends AbstractFlowHandler<FlowRemindCont
         List<String> list = remindList.stream().map(Task::getAssignee).collect(Collectors.toList());
         context.setUserNameList(list);
         Date startTime = processInstance.getStartTime();
-        String createTime = DateUtil.format(startTime, "yyyy-MM-dd");
+        String createTime = DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss");
 
         // 发送消息
         HashMap<String, Object> map = new HashMap<>(16);
@@ -74,10 +74,10 @@ public class RemindSendMessageHandler extends AbstractFlowHandler<FlowRemindCont
             messageDTO.setCategory(CommonConstant.MSG_CATEGORY_2);
             messageDTO.setStartTime(new Date());
             messageDTO.setMsgAbstract("有流程【催办】提醒");
-            messageDTO.setPublishingContent("你有一条新的流程催办，请尽快处理");
+            messageDTO.setPublishingContent("您有一条新的流程催办，请尽快处理");
             messageDTO.setBusKey(processInstance.getBusinessKey());
             messageDTO.setBusType(SysAnnmentTypeEnum.BPM.getType());
-            messageDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE_PROCESS);
+            messageDTO.setTemplateCode("bpm_service_recall_process");
             messageDTO.setIsRingBell(false);
             messageDTO.setRingDuration(0);
             messageDTO.setRingType(0);
