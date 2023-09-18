@@ -106,4 +106,8 @@ public class TaskInfoDTO {
     private String processName;
 
     private Boolean isAutoSelect = true;
+
+
+    @ApiModelProperty("催办")
+    private Boolean isRemind = false;
 }
