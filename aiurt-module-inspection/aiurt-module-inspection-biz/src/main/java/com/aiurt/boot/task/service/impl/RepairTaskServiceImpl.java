@@ -94,6 +94,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
+import javax.net.ssl.TrustManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
@@ -3456,6 +3457,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         //printSetup.setLandscape(true);
         //A4
         printSetup.setPaperSize((short) 9);
+        //画图的顶级管理器，一个sheet只能获取一个（一定要注意这点）
+        Drawing drawingPatriarch = sheet.createDrawingPatriarch();
+        CreationHelper helper = sheet.getWorkbook().getCreationHelper();
         Row row = sheet.getRow(0);
         Cell cell = row.getCell(0);
         String head = repairTask.getLineName()+repairTask.getSiteName() + "检修记录表";
@@ -3541,9 +3545,58 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             c71.setCellValue(spare.toString());
             rowSeven.setHeightInPoints(height2);
         }
-        //附件信息 TODO
+        //附件信息，只展示图片
         Row rowEight = sheet.getRow(8);
-        Cell c81 = rowEight.getCell(1);
+        List<String> enclosureUrlList = repairTask.getEnclosureUrl();
+        if (CollUtil.isNotEmpty(enclosureUrlList)) {
+            List<BufferedImage> bufferedImageList = new ArrayList<>();
+            //遍历附件，获取其中的图片
+            for (String url : enclosureUrlList) {
+                BufferedImage bufferedImage = null;
+                try (InputStream inputStreamByUrl = this.getInputStreamByUrl(url)) {
+                    //读取图片，非图片bufferedImage为null
+                    if (ObjectUtil.isNotNull(inputStreamByUrl)) {
+                        bufferedImage = ImageIO.read(inputStreamByUrl);
+                    }
+                    if (ObjectUtil.isNotNull(bufferedImage)) {
+                        bufferedImageList.add(bufferedImage);
+                    }
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+            //插入图片到单元格
+            if (CollUtil.isNotEmpty(bufferedImageList)) {
+                //设置边距
+                int widthCol1 = Units.columnWidthToEMU(sheet.getColumnWidth(1));
+                int heightRow8 = Units.toEMU(rowEight.getHeightInPoints());
+                int wMar = 3 * Units.EMU_PER_POINT;
+                int hMar = 2 * Units.EMU_PER_POINT;
+                int size = bufferedImageList.size();
+                //每个图片宽度（大致平均值）
+                int ave = (widthCol1 - (size + 1) * wMar) / size;
+                for (int i = 0; i < size; i++) {
+                    try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+                        ImageIO.write(bufferedImageList.get(i), "jpg", byteArrayOutputStream);
+                        byte[] bytes = byteArrayOutputStream.toByteArray();
+                        int pictureIdx = sheet.getWorkbook().addPicture(bytes, Workbook.PICTURE_TYPE_JPEG);
+                        ClientAnchor anchor = helper.createClientAnchor();
+                        anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_AND_RESIZE);
+                        anchor.setCol1(1);
+                        anchor.setCol2(2);
+                        anchor.setRow1(8);
+                        anchor.setRow2(8);
+                        anchor.setDx1((i + 1) * wMar + i * ave);
+                        anchor.setDy1(hMar);
+                        anchor.setDx2((i + 1) * (wMar + ave));
+                        anchor.setDy2(heightRow8 - hMar);
+                        drawingPatriarch.createPicture(anchor, pictureIdx);
+                    } catch (IOException e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+            }
+        }
 
         //
         Row rowNine = sheet.getRow(9);
@@ -3557,58 +3610,22 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         Cell c101 = rowTen.getCell(1);
         String planOrderCodeUrl = repairTask.getPlanOrderCodeUrl();
         if (StrUtil.isNotBlank(planOrderCodeUrl)) {
-            InputStream inputStream = null;
-            SysAttachment sysAttachment = null;
-            try {
-                if (planOrderCodeUrl.contains("?")) {
-                    int index = planOrderCodeUrl.indexOf("?");
-                    String attachId = planOrderCodeUrl.substring(0, index);
-                    sysAttachment = iSysBaseAPI.getFilePath(attachId);
-
-                }
-                if (ObjectUtil.isNotEmpty(sysAttachment)) {
-                    if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
-                        inputStream = MinioUtil.getMinioFile(bucketName, sysAttachment.getFilePath());
-                    } else {
-                        String filePath = uploadpath + File.separator + sysAttachment.getFilePath();
-                        File file = new File(filePath);
-                        if (file.exists()) {
-                            inputStream = new BufferedInputStream(Files.newInputStream(Paths.get(filePath)));
-                        }
-                    }
-                } else {
-                    String filePath = uploadpath + File.separator + planOrderCodeUrl;
-                    File file = new File(filePath);
-                    if (file.exists()) {
-                        inputStream = new BufferedInputStream(Files.newInputStream(Paths.get(filePath)));
-                    }
-                }
-                if (ObjectUtil.isNotEmpty(inputStream)) {
-                    byte[] bytes = IoUtils.toByteArray(inputStream);
-                    //画图的顶级管理器，一个sheet只能获取一个（一定要注意这点）
+            try (InputStream inputStreamByUrl = this.getInputStreamByUrl(planOrderCodeUrl)) {
+                if (ObjectUtil.isNotEmpty(inputStreamByUrl)) {
+                    byte[] bytes = IoUtils.toByteArray(inputStreamByUrl);
                     int pictureIdx = sheet.getWorkbook().addPicture(bytes, Workbook.PICTURE_TYPE_JPEG);
-                    Drawing drawingPatriarch = sheet.createDrawingPatriarch();
-                    CreationHelper helper = sheet.getWorkbook().getCreationHelper();
                     ClientAnchor anchor = helper.createClientAnchor();
                     anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_AND_RESIZE);
                     anchor.setCol1(1);
                     anchor.setCol2(4);
                     anchor.setRow1(10);
                     anchor.setRow2(11);
-                    anchor.setDx1(5000);
-                    anchor.setDy1(5000);
+                    anchor.setDx1(Units.EMU_PER_POINT);
+                    anchor.setDy1(Units.EMU_PER_POINT);
                     drawingPatriarch.createPicture(anchor, pictureIdx);
                 }
             } catch (Exception e) {
                 log.error(e.getMessage());
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        log.error(e.getMessage());
-                    }
-                }
             }
         }
         //
@@ -3637,6 +3654,44 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
 
         return workbook;
+    }
+
+    /**
+     * 根据图片url获取InputSream
+     * @param url
+     * @return
+     */
+    private InputStream getInputStreamByUrl(String url) {
+        InputStream inputStream = null;
+        SysAttachment sysAttachment = null;
+        try {
+            if (url.contains("?")) {
+                int index = url.indexOf("?");
+                String attachId = url.substring(0, index);
+                sysAttachment = iSysBaseAPI.getFilePath(attachId);
+
+            }
+            if (ObjectUtil.isNotEmpty(sysAttachment)) {
+                if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
+                    inputStream = MinioUtil.getMinioFile(bucketName, sysAttachment.getFilePath());
+                } else {
+                    String filePath = uploadpath + File.separator + sysAttachment.getFilePath();
+                    File file = new File(filePath);
+                    if (file.exists()) {
+                        inputStream = new BufferedInputStream(Files.newInputStream(Paths.get(filePath)));
+                    }
+                }
+            } else {
+                String filePath = uploadpath + File.separator + url;
+                File file = new File(filePath);
+                if (file.exists()) {
+                    inputStream = new BufferedInputStream(Files.newInputStream(Paths.get(filePath)));
+                }
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+        return inputStream;
     }
 
     @Override
