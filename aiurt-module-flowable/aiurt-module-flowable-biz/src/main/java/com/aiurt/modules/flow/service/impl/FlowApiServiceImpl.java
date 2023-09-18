@@ -652,6 +652,11 @@ public class FlowApiServiceImpl implements FlowApiService {
                                 .build();
                         objectList.add(entity);
                     }
+                    Integer recall = Optional.ofNullable(customModelExt.getIsRecall()).orElse(0);
+                    if(recall == 1){
+                        taskInfoDTO.setWithdraw(true);
+                    }
+
                 }
             }
             taskInfoDTO.setOperationList(objectList);

@@ -369,7 +369,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                             .collect(Collectors.toList());
 
                     // 打印提取的 "nodeId"
-                    modelExt.setRecallNodeId(StrUtil.join(",", nodeIds));
+                    modelExt.setRecallNodeId(StrUtil.join(";", nodeIds));
                     modelExt.setIsRecall(1);
                 } catch (Exception e) {
                    log.error(e.getMessage(), e);
