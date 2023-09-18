@@ -1310,7 +1310,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
 
         if (StrUtil.isNotBlank(reqDTO.getProcessDefinitionName())) {
-            query.processDefinitionName("%" + reqDTO.getProcessDefinitionName() + "%");
+            query.processDefinitionName(reqDTO.getProcessDefinitionName());
         }
 
         if (CollectionUtil.isNotEmpty(processInstanceIdSet)) {
