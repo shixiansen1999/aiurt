@@ -296,4 +296,6 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "false无安全事项，true为有安全事项")
     @TableField(exist = false)
     private Boolean isNullSafetyPrecautions;
+    @ApiModelProperty(value = "故障编码")
+    private String faultCode;
 }
