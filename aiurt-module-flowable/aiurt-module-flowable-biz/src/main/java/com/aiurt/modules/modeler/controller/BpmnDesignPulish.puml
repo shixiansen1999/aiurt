@@ -1,0 +1,48 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+participant Actor
+Actor -> BpmnDesignerController : 发布流程
+activate BpmnDesignerController
+BpmnDesignerController -> FlowableBpmnServiceImpl : 发布流程
+activate FlowableBpmnServiceImpl
+FlowableBpmnServiceImpl->IActCustomModelInfoService: 查询模板信息
+activate IActCustomModelInfoService
+IActCustomModelInfoService-->FlowableBpmnServiceImpl:ActCustomModelInfo
+deactivate IActCustomModelInfoService
+alt 模板信息不存在
+    FlowableBpmnServiceImpl --> BpmnDesignerController: 发布失败
+    deactivate FlowableBpmnServiceImpl
+    BpmnDesignerController-->Actor:发布失败
+else 模板信息存在
+
+    FlowableBpmnServiceImpl->ModelService:查询model
+    activate FlowableBpmnServiceImpl
+    activate ModelService
+    ModelService-->FlowableBpmnServiceImpl:Model
+    deactivate ModelService
+    alt 模板不存在
+        FlowableBpmnServiceImpl --> BpmnDesignerController: 发布失败
+        deactivate FlowableBpmnServiceImpl
+        BpmnDesignerController-->Actor:发布失败
+    else 模板存在
+    activate FlowableBpmnServiceImpl
+    FlowableBpmnServiceImpl->ModelService:根据model查询BpmnModel
+    activate ModelService
+    ModelService-->FlowableBpmnServiceImpl:BpmnModel
+    deactivate ModelService
+    activate  FlowableBpmnServiceImpl
+    FlowableBpmnServiceImpl->FlowableBpmnServiceImpl: 构建用户新任务自定义属性（用户办理，查询人等）
+    FlowableBpmnServiceImpl->FlowableBpmnServiceImpl: 部署流程
+    FlowableBpmnServiceImpl->FlowableBpmnServiceImpl: 更新版本信息，状态
+    FlowableBpmnServiceImpl->FlowableBpmnServiceImpl: 保存用户任务办理人抄送人数据
+    FlowableBpmnServiceImpl->FlowableBpmnServiceImpl: 保存用户任务属性配置
+    deactivate  FlowableBpmnServiceImpl
+    FlowableBpmnServiceImpl-->BpmnDesignerController: 发布成功
+    deactivate  FlowableBpmnServiceImpl
+    BpmnDesignerController-->Actor: 发布成功
+    deactivate BpmnDesignerController
+    end
+end
+
+@enduml

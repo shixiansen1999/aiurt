@@ -1,5 +1,6 @@
 package com.aiurt.modules.config;
 
+import com.aiurt.modules.editor.language.json.converter.CustomBpmnJsonConverter;
 import com.aiurt.modules.el.funtion.CustomVariableContainsAnyExpressionFunction;
 import com.aiurt.modules.listener.*;
 import lombok.extern.slf4j.Slf4j;
@@ -72,6 +73,6 @@ public class FlowBpmnConfig implements EngineConfigurationConfigurer<SpringProce
 
     @Bean
     public BpmnJsonConverter createBpmnJsonConverter() {
-        return new BpmnJsonConverter();
+        return new CustomBpmnJsonConverter();
     }
 }

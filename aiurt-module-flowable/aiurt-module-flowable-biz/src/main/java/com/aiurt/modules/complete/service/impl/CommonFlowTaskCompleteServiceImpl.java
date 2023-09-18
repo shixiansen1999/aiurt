@@ -8,7 +8,7 @@ import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
-import com.aiurt.modules.user.getuser.DefaultSelectUserService;
+import com.aiurt.modules.user.getuser.service.DefaultSelectUserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
 import java.util.*;
@@ -284,7 +284,9 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
             messageDTO.setFromUser(assignee);
             messageDTO.setToUser(StrUtil.join(",", userList));
             messageDTO.setToAll(false);
-            messageDTO.setTitle("有流程传送给您");
+            String processDefinitionName = processInstance.getProcessDefinitionName();
+            String name = StrUtil.contains(processDefinitionName, "流程") ? processDefinitionName : processDefinitionName+"流程";
+            messageDTO.setTitle(name);
             messageDTO.setContent("");
             messageDTO.setCategory(CommonConstant.MSG_CATEGORY_2);
             messageDTO.setStartTime(new Date());
@@ -302,21 +304,10 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
 
             messageDTO.setProcessInstanceId(currentTask.getProcessInstanceId());
 
-            List<String> processDefinitionIdList = StrUtil.split(processInstance.getProcessDefinitionId(), ':');
-            if (CollectionUtil.isNotEmpty(processDefinitionIdList) && processDefinitionIdList.size()>0) {
-                // 流程标识
-                String modkelKey = processDefinitionIdList.get(0);
-                LambdaQueryWrapper<ActCustomModelInfo> wrapper = new LambdaQueryWrapper<>();
-                wrapper.eq(ActCustomModelInfo::getModelKey, modkelKey).last("limit 1");
-                IActCustomModelInfoService bean = SpringContextUtils.getBean(IActCustomModelInfoService.class);
-                ActCustomModelInfo one = bean.getOne(wrapper);
-                if (Objects.nonNull(one)) {
-                    String name = StrUtil.contains(one.getName(), "流程") ? one.getName() : one.getName()+"流程";
-                    messageDTO.setProcessCode(one.getModelKey());
-                    messageDTO.setProcessDefinitionKey(one.getModelKey());
-                    messageDTO.setProcessName(name);
-                }
-            }
+            messageDTO.setProcessCode(processInstance.getProcessDefinitionKey());
+            messageDTO.setProcessDefinitionKey(processInstance.getProcessDefinitionKey());
+            messageDTO.setProcessName(name);
+
             messageDTO.setType("XT");
             messageDTO.setData(map);
             sysBaseAPI.sendTemplateMessage(messageDTO);

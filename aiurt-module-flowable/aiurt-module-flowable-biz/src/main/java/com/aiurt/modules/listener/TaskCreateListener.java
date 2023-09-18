@@ -109,7 +109,7 @@ public class TaskCreateListener implements FlowableEventListener {
                 .getVariable(processInstanceId, FlowVariableConstant.ASSIGNEE_LIST + taskDefinitionKey, List.class);
         if (CollectionUtil.isNotEmpty(list)) {
             // 发送待办
-           // buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(taskEntity.getAssignee()));
+            buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(taskEntity.getAssignee()));
             return;
         }
 
@@ -217,7 +217,6 @@ public class TaskCreateListener implements FlowableEventListener {
 
     private void buildToDoList(TaskEntity taskEntity, ProcessInstance instance, ActCustomTaskExt taskExt, List<String> userNameList) {
         try {
-
             BpmnTodoDTO bpmnTodoDTO = new BpmnTodoDTO();
             bpmnTodoDTO.setTaskKey(taskEntity.getTaskDefinitionKey());
             bpmnTodoDTO.setTaskId(taskEntity.getId());
@@ -237,26 +236,15 @@ public class TaskCreateListener implements FlowableEventListener {
                 }
             }
             HashMap<String, Object> map = new HashMap<>();
-            MessageDTO messageDTO = new MessageDTO();
             // 处理流程
+            String processDefinitionKey = instance.getProcessDefinitionKey();
+            String processDefinitionName = instance.getProcessDefinitionName();
             List<String> processDefinitionIdList = StrUtil.split(processDefinitionId, ':');
-            if (CollectionUtil.isNotEmpty(processDefinitionIdList) && processDefinitionIdList.size()>0) {
-                // 流程标识
-                String modkelKey = processDefinitionIdList.get(0);
-                LambdaQueryWrapper<ActCustomModelInfo> wrapper = new LambdaQueryWrapper<>();
-                wrapper.eq(ActCustomModelInfo::getModelKey, modkelKey).last("limit 1");
-                IActCustomModelInfoService bean = SpringContextUtils.getBean(IActCustomModelInfoService.class);
-                ActCustomModelInfo one = bean.getOne(wrapper);
-                if (Objects.nonNull(one)) {
-                    bpmnTodoDTO.setProcessCode(one.getModelKey());
-                    String name = StrUtil.contains(one.getName(), "流程") ? one.getName() : one.getName()+"流程";
-                    bpmnTodoDTO.setProcessName(name);
-                    messageDTO.setProcessCode(one.getModelKey());
-                    messageDTO.setProcessName(name);
-                    bpmnTodoDTO.setProcessDefinitionKey(one.getModelKey());
-                }
-                map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,processDefinitionIdList.get(0));
-            }
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,processDefinitionIdList.get(0));
+            bpmnTodoDTO.setProcessCode(processDefinitionKey);
+            String name = StrUtil.contains(processDefinitionName, "流程") ? processDefinitionName : processDefinitionName+"流程";
+            bpmnTodoDTO.setProcessName(name);
+            bpmnTodoDTO.setProcessDefinitionKey(processDefinitionKey);
 
             //发送待办
             String startUserId = instance.getStartUserId();
@@ -276,18 +264,8 @@ public class TaskCreateListener implements FlowableEventListener {
 
             bpmnTodoDTO.setTitle(bpmnTodoDTO.getProcessName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd"));
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
-            ThreadPoolExecutor threadPoolExecutor = ThreadUtil.newExecutor(3, 5);
-            threadPoolExecutor.execute(()->{
-                todoBaseApi.createBbmnTodoTask(bpmnTodoDTO);
-            });
-            threadPoolExecutor.shutdown();
-            try {
-                // 等待线程池中的任务全部完成
-                threadPoolExecutor.awaitTermination(100, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                // 处理中断异常
+            todoBaseApi.createBbmnTodoTask(bpmnTodoDTO);
 
-            }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }

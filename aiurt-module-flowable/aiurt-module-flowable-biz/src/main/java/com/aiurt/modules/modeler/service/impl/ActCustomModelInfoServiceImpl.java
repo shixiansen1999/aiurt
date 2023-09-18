@@ -173,4 +173,19 @@ public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInf
         model.setName(one.getName());
         modelService.saveModel(model);
     }
+
+
+    /**
+     * 根据modelKey查询模板信息
+     *
+     * @param modelKey
+     * @return
+     */
+    @Override
+    public ActCustomModelInfo queryByModelKey(String modelKey) {
+        LambdaQueryWrapper<ActCustomModelInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ActCustomModelInfo::getModelKey, modelKey).last("limit 1");
+        ActCustomModelInfo actCustomModelInfo = baseMapper.selectOne(wrapper);
+        return actCustomModelInfo;
+    }
 }

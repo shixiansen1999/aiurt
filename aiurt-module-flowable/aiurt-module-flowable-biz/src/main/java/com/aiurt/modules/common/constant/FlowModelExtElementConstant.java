@@ -69,4 +69,49 @@ public interface FlowModelExtElementConstant {
      * 表单字段在节点上的配置
      */
     String FORM_FIELD_CONFIG = "formFieldConfig";
+
+    /**
+     * 表单类型
+     */
+    String EXT_FORM_TYPE = "formType";
+
+    /**
+     * 关联表单
+     */
+    String EXT_ASSOCIATED_FORM = "associatedForm";
+
+    /**
+     * 表单权限配置
+     */
+    String EXT_FORM_PERMISSION_CONFIG = "formPermissionConfig";
+
+    /**
+     * 表单权限配置
+     */
+    String EXT_FIELD_LIST = "fieldList";
+
+    /**
+     * 自定义流程全局属性
+     */
+    String EXT_CUSTOM_PROPERTIES = "customProperties";
+
+    /**
+     * 提醒属性
+     */
+    String EXT_REMIND = "remind";
+
+    /**
+     * value 通用属性
+     */
+    String EXT_VALUE = "value";
+
+    /**
+     * 撤回
+     */
+    String EXT_RECALL = "recall";
+
+    /**
+     * 撤回节点属性
+     */
+    String EXT_RECALL_NODE = "node";
 }

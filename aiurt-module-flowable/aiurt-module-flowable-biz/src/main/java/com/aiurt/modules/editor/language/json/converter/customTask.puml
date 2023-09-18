@@ -1,0 +1,57 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class BpmnJsonConverter {
+     # {static} convertersToJsonMap: Map<Class<? extends BaseElement>, Class<? extends BaseBpmnJsonConverter>>
+     # {static} convertersToBpmnMap: Map<String, Class<? extends BaseBpmnJsonConverter>>
+     + convertToJson(BpmnModel) ObjectNode
+}
+
+class CustomBpmnJsonConverter extends BpmnJsonConverter {
+     # objectMapper: ObjectMapper
+     + convertToJson(BpmnModel,BpmnJsonConverterContext) ObjectNode
+     + convertToBpmnModel(JsonNode, BpmnJsonConverterContext) BpmnModel
+}
+
+class BaseBpmnJsonConverter {
+    # objectMapper: ObjectMapper
+    + convertToJson(BpmnJsonConverterContext,BaseElement, ActivityProcessor, BpmnModel,FlowElementsContainer,ArrayNode ,double, double ) void
+    # {abstract}  convertElementToJson(ObjectNode,BaseElement,BpmnJsonConverterContext) void
+    # {abstract}  convertJsonToElement(JsonNode,JsonNode,Map<String, JsonNode>,BpmnJsonConverterContext) BaseElement
+}
+
+class UserTaskJsonConverter extends BaseBpmnJsonConverter {
+    # convertElementToJson(ObjectNode, BaseElement,BpmnJsonConverterContext)
+    # convertJsonToElement(JsonNode, JsonNode,Map<String, JsonNode>, BpmnJsonConverterContext) FlowElement
+}
+
+class CustomUserTaskJsonConverter extends UserTaskJsonConverter {
+    # convertElementToJson(ObjectNode, BaseElement,BpmnJsonConverterContext)
+    # convertJsonToElement(JsonNode, JsonNode,Map<String, JsonNode>, BpmnJsonConverterContext) FlowElement
+}
+
+class ModelServiceImpl {
++ getBpmnModel(AbstractModel)：BpmnModel
++ getBpmnModel(AbstractModel , ConverterContext):BpmnModel
+}
+
+class MyModelServiceImpl extends ModelServiceImpl {
+    # bpmnJsonConverter CustomBpmnJsonConverter
+    + getBpmnModel(AbstractModel,ConverterContext):BpmnModel
+}
+
+class SequenceFlowJsonConverter extends BaseBpmnJsonConverter {
++ convertToJson(BpmnJsonConverterContext, BaseElement, ActivityProcessor, BpmnModel,FlowElementsContainer, ArrayNode, double, double) void
++ convertJsonToElement(JsonNode, JsonNode, Map<String, JsonNode>, BpmnJsonConverterContext) FlowElement
+}
+
+class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
+    + convertToJson(BpmnJsonConverterContext, BaseElement, ActivityProcessor, BpmnModel,FlowElementsContainer, ArrayNode, double, double) void
+    + convertJsonToElement(JsonNode, JsonNode, Map<String, JsonNode>, BpmnJsonConverterContext) FlowElement
+}
+
+MyModelServiceImpl "1" o-- "1" CustomBpmnJsonConverter:聚合关系
+MyModelServiceImpl ...> CustomBpmnJsonConverter: create
+BpmnJsonConverter "1" o-- "many" BaseBpmnJsonConverter
+@enduml
+

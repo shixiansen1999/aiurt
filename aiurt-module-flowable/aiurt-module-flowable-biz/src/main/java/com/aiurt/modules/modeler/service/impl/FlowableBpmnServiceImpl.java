@@ -12,14 +12,12 @@ import com.aiurt.modules.editor.language.json.converter.CustomBpmnJsonConverter;
 import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
 import com.aiurt.modules.modeler.dto.*;
+import com.aiurt.modules.modeler.entity.ActCustomModelExt;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.aiurt.modules.modeler.enums.ModelFormStatusEnum;
-import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
-import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
-import com.aiurt.modules.modeler.service.IFlowableBpmnService;
-import com.aiurt.modules.modeler.service.IFlowableModelService;
+import com.aiurt.modules.modeler.service.*;
 import com.aiurt.modules.user.entity.ActCustomUser;
 import com.aiurt.modules.user.service.IActCustomUserService;
 import com.alibaba.fastjson.JSON;
@@ -28,11 +26,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.jayway.jsonpath.JsonPath;
+import liquibase.pro.packaged.F;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -40,6 +40,7 @@ import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.Process;
 import org.flowable.bpmn.model.*;
 import org.flowable.editor.language.json.converter.BaseBpmnJsonConverter;
+import org.flowable.editor.language.json.converter.BpmnJsonConverter;
 import org.flowable.editor.language.json.converter.util.CollectionUtils;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.Deployment;
@@ -52,6 +53,7 @@ import org.flowable.ui.modeler.service.ConverterContext;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.system.api.ISysUserUsageApi;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -68,6 +70,7 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @program: flow
@@ -98,7 +101,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
      * bpmn json和BpmnModel 转换器
      */
     @Autowired
-    protected CustomBpmnJsonConverter bpmnJsonConverter;
+    protected BpmnJsonConverter bpmnJsonConverter;
 
     @Autowired
     @Lazy
@@ -118,6 +121,9 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
     @Autowired
     private ISysUserUsageApi sysUserUsageApi;
+
+    @Autowired
+    private IActCustomModelExtService actCustomModelExtService;
 
     @Override
     public Model createInitBpmn(ActCustomModelInfo modelInfo, LoginUser user) {
@@ -268,6 +274,9 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         List<ActCustomUser> userList = new ArrayList<>();
         buildTaskExtList(bpmnModel, taskExtList, userList);
 
+        // 构建全局属性
+        ActCustomModelExt modelExt = getActCustomModelExt(bpmnModel);
+
         // 部署流程
         Deployment deploy = repositoryService.createDeployment()
                 .name(model.getName())
@@ -307,16 +316,69 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
         // 已发布
         modelInfo.setStatus(ModelFormStatusEnum.YFB.getStatus());
-
+        // 更新模板信息
         modelInfoService.updateById(modelInfo);
+        // 保存任务属性
         if (CollUtil.isNotEmpty(taskExtList)) {
             taskExtList.forEach(t -> t.setProcessDefinitionId(definition.getId()));
             taskExtService.saveBatch(taskExtList);
         }
+
+        // 办理人&候选人
         if (CollUtil.isNotEmpty(userList)) {
             userList.forEach(t->t.setProcessDefinitionId(definition.getId()));
             userService.saveBatch(userList);
         }
+
+        // 流程全局属性
+        modelExt.setModelKey(model.getKey()).setProcessDefinitionId(definition.getId());
+        actCustomModelExtService.save(modelExt);
+    }
+
+    @Nullable
+    private ActCustomModelExt getActCustomModelExt(BpmnModel bpmnModel) {
+        // 全局属性实现
+        Process mainProcess = bpmnModel.getMainProcess();
+        Map<String, List<ExtensionElement>> extensionElements = mainProcess.getExtensionElements();
+        //
+        ActCustomModelExt modelExt = ActCustomModelExt.builder().build();
+        List<ExtensionElement> extensionElementList = extensionElements.get(FlowModelExtElementConstant.EXT_REMIND);
+        if (CollUtil.isNotEmpty(extensionElementList)) {
+            ExtensionElement extensionElement = extensionElementList.get(0);
+            String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_VALUE);
+            // 是否提醒
+            if (StrUtil.equalsIgnoreCase(attributeValue, "true")) {
+                modelExt.setIsRemind(1);
+            } else {
+                modelExt.setIsRemind(0);
+            }
+        }
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<ExtensionElement> recallElementList = extensionElements.get(FlowModelExtElementConstant.EXT_RECALL);
+        if (CollUtil.isNotEmpty(recallElementList)) {
+            ExtensionElement extensionElement = recallElementList.get(0);
+            String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_RECALL_NODE);
+            // 是否提醒
+            if (StrUtil.isNotBlank(attributeValue)) {
+                try {
+                    // 解析 JSON 数据
+                    JsonNode rootNode = objectMapper.readTree(attributeValue);
+                    // 使用 Stream API 提取 "nodeId" 数据
+                    List<String> nodeIds = StreamSupport.stream(rootNode.spliterator(), false)
+                            .map(node -> node.get("nodeId").asText())
+                            .collect(Collectors.toList());
+
+                    // 打印提取的 "nodeId"
+                    modelExt.setRecallNodeId(StrUtil.join(",", nodeIds));
+                    modelExt.setIsRecall(1);
+                } catch (Exception e) {
+                   log.error(e.getMessage(), e);
+                }
+            }else {
+                modelExt.setIsRecall(1);
+            }
+        }
+        return modelExt;
     }
 
     /**
@@ -436,9 +498,14 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
             flowTaskExt.setPostNodeAction(createJsonObjectFromExtensionMap(extensionMap, FlowModelExtElementConstant.EXT_POST_NODE_ACTION));
 
             // 表单字段在节点上的配置
-            List<ExtensionElement> extensionElements = extensionMap.get(FlowModelExtElementConstant.FORM_FIELD_CONFIG);
-            flowTaskExt.setFormFieldConfig(extractFormFields(extensionElements));
-
+            List<ExtensionElement> extensionElements = extensionMap.get(FlowModelExtElementConstant.EXT_FIELD_LIST);
+            if (CollUtil.isNotEmpty(extensionElements)) {
+                ExtensionElement extensionElement = extensionElements.get(0);
+                String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_VALUE);
+                if (StrUtil.isNotBlank(attributeValue)) {
+                    flowTaskExt.setFormFieldConfig(JSONObject.parseArray(attributeValue));
+                }
+            }
         }
 
         taskExtList.add(flowTaskExt);
@@ -608,7 +675,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         JSONObject jsonObject = new JSONObject();
 
         elementAttributeMap.forEach((key, attributeList) -> {
-            String attributeValue = attributeList.stream()
+            String attributeValue = attributeList.stream().filter(extensionAttribute -> StrUtil.isNotBlank(extensionAttribute.getValue()))
                     .map(ExtensionAttribute::getValue)
                     .findFirst()
                     .orElse(null);

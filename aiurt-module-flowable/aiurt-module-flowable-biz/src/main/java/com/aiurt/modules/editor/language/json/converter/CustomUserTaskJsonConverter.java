@@ -224,6 +224,19 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 ArrayNode arrayNode = convertExtensionElementsToJson(formFieldConfigElements, FormFiledJsonDTO.class);
                 propertiesNode.set(FlowModelExtElementConstant.FORM_FIELD_CONFIG, arrayNode);
             }
+
+            // 表单类型
+            List<ExtensionElement> formType = extensionElements.get(FlowModelExtElementConstant.EXT_FORM_TYPE);
+            buildJsonElement(propertiesNode, formType, FlowModelExtElementConstant.EXT_FORM_TYPE);
+
+            // 关联表单
+            List<ExtensionElement> associatedForm = extensionElements.get(FlowModelExtElementConstant.EXT_ASSOCIATED_FORM);
+            buildJsonElement(propertiesNode, associatedForm, FlowModelExtElementConstant.EXT_ASSOCIATED_FORM);
+
+            // 字段权限配置
+            List<ExtensionElement> formPermissionConfig = extensionElements.get(FlowModelExtElementConstant.EXT_FIELD_LIST);
+            buildJsonElement(propertiesNode, formPermissionConfig, FlowModelExtElementConstant.EXT_FIELD_LIST);
+
         }
     }
 
@@ -253,9 +266,14 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             String alias = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_USER_ALIAS);
             JsonNode jsonNode = parseUserAssigneeValue(value);
             ObjectNode objectNode = objectMapper.createObjectNode();
-            objectNode.put(FlowModelExtElementConstant.EXT_USER_NAME, StrUtil.isNotBlank(name) ? name : "");
+
+            if (StrUtil.isNotBlank(name)) {
+                objectNode.put(FlowModelExtElementConstant.EXT_USER_NAME, StrUtil.isNotBlank(name) ? name : "");
+            }
+            if (StrUtil.isNotBlank(alias)) {
+                objectNode.put(FlowModelExtElementConstant.EXT_USER_ALIAS, alias);
+            }
             objectNode.set(FlowModelExtElementConstant.EXT_USER_VALUE, jsonNode);
-            objectNode.put(FlowModelExtElementConstant.EXT_USER_ALIAS, alias);
             propertiesNode.set(elementName, objectNode);
         }
     }
@@ -300,6 +318,19 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             // 抄送人
             addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_CARBON_COPY,
                     JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_CARBON_COPY, elementNode));
+
+            // 表单类型
+            addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_FORM_TYPE,
+                    JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_FORM_TYPE, elementNode));
+
+            // 关联表单
+            addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_ASSOCIATED_FORM,
+                    JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_ASSOCIATED_FORM, elementNode));
+
+            // 字段权限配置
+            addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_FIELD_LIST,
+                    JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_FIELD_LIST, elementNode));
+
             // 1.0选人
             // 选人类型， initiator是为：流程发起人, data
             addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.USER_TYPE);
@@ -350,33 +381,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
         }
     }
 
-    /**
-     * 构造属性
-     * @param value 属性值
-     * @param userTask 任务节点
-     * @param prefix 前缀
-     * @param attr xml 节点属性
-     */
-    private void addCustomAttributeForPrefix(String value, UserTask userTask, String prefix, String attr) {
-        if (StrUtil.isNotBlank(value)) {
-            ExtensionAttribute attribute = new ExtensionAttribute();
-            attribute.setName(attr);
-            attribute.setValue(value);
-            attribute.setNamespacePrefix(prefix);
-            attribute.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
-            userTask.addAttribute(attribute);
-        }
-    }
 
-    private void addCustomAttribute(JsonNode elementNode, UserTask userTask, String s) {
-        String formType = JsonConverterUtil.getPropertyValueAsString(s, elementNode);
-        if (StrUtil.isNotBlank(formType)) {
-            ExtensionAttribute attribute = new ExtensionAttribute();
-            attribute.setName(s);
-            attribute.setValue(formType);
-            userTask.addAttribute(attribute);
-        }
-    }
 
 
 
