@@ -675,7 +675,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (Objects.nonNull(customModelExt) && Optional.ofNullable(customModelExt.getIsRemind()).orElse(0) == 1) {
             taskInfoDTO.setIsRemind(true);
             List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId).active().list();
-            if (CollUtil.isNotEmpty(list) && list.size() == 0) {
+            if (CollUtil.isNotEmpty(list) && list.size() == 1) {
                 Task task1 = list.get(0);
                 if (Objects.nonNull(task1) && StrUtil.equalsIgnoreCase(loginUser.getUsername(), task1.getAssignee())) {
                     taskInfoDTO.setIsRemind(false);
