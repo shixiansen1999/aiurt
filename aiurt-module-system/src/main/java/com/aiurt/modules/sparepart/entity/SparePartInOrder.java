@@ -68,6 +68,14 @@ public class SparePartInOrder implements Serializable {
 	@Excel(name = "申领编号", width = 15)
 	@ApiModelProperty(value = "申领编号")
 	private String applyCode;
+
+	@ApiModelProperty(value = "领料单表ID")
+	private String materialRequisitionId;
+	@ApiModelProperty(value = "入库类型")
+	@Dict(dicCode = "spare_in_type")
+	private Integer inType;
+	@ApiModelProperty(value = "库存结余")
+	private Integer balance;
 	/**物资分类*/
 	@Excel(name = "物资分类", width = 15)
 	@ApiModelProperty(value = "物资分类名称")

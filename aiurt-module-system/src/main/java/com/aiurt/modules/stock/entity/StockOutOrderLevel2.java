@@ -110,6 +110,14 @@ public class StockOutOrderLevel2 extends DictEntity {
 	@ApiModelProperty(value = "保管仓库编号")
 	@Dict(dictTable ="spare_part_stock_info",dicText = "warehouse_name",dicCode = "warehouse_code")
 	private  String  custodialWarehouseCode;
+
+	@ApiModelProperty(value = "领料单表ID")
+	private String materialRequisitionId;
+	@ApiModelProperty(value = "二级库出库类型")
+	@Dict(dicCode = "stock_out_type")
+	private Integer outType;
+	@ApiModelProperty(value = "库存结余")
+	private Integer balance;
 	/**保管仓库名称*/
 	@Excel(name = "保管仓库名称")
 	@ApiModelProperty(value = "保管仓库名称")

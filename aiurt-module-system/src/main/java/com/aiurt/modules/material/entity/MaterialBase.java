@@ -109,8 +109,8 @@ public class MaterialBase extends DictEntity {
 	@Dict(dictTable ="cs_manufactor",dicText = "name",dicCode = "id")
 	private  String  manufactorCode;
 	/**生产厂商手动翻译*/
-	@Excel(name = "生产厂商名称", width = 15)
-	@ApiModelProperty(value = "生产厂商名称")
+	@Excel(name = "厂家/品牌", width = 15)
+	@ApiModelProperty(value = "厂家/品牌")
 	@TableField(exist = false)
 	private  String  manufactorCodeName;
 
@@ -128,7 +128,12 @@ public class MaterialBase extends DictEntity {
 	@Excel(name = "单价", width = 15)
 	@ApiModelProperty(value = " 单价")
 	private  String  price;
-
+	@Excel(name = "技术参数", width = 15)
+	@ApiModelProperty(value = "技术参数")
+	private String technicalParameter;
+	@Excel(name = "备注", width = 15)
+	@ApiModelProperty(value = "备注")
+	private String remark;
 	/**
 	 * 是否是易耗品：0否1是
 	 */
