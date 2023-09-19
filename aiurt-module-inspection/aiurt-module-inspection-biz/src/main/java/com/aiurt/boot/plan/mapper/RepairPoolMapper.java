@@ -199,4 +199,11 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @return  List<StationPlanDTO> queryCenterPlanStationList
      */
     List<StationPlanDTO> queryCenterPlanStationList(@Param("page")Page<StationPlanDTO> page, @Param("stationCodeList")String[] stationCodeList);
+
+    /**
+     * 根据计划编码查询关联的设备code集合
+     * @param repairPoolCode
+     * @return
+     */
+    String queryDeviceNameByPoolCode(@Param("repairPoolCode") String repairPoolCode);
 }
