@@ -401,4 +401,17 @@
         </if>
         order by cs.line_name
     </select>
+    <select id="queryDeviceNameByPoolCode" resultType="java.lang.String">
+        SELECT
+            GROUP_CONCAT(d.`name`)
+        FROM
+            repair_pool rp
+                INNER JOIN repair_pool_rel rpr ON rpr.repair_pool_code = rp.`code`
+                INNER JOIN repair_pool_device_rel rpdr ON rpdr.repair_pool_rel_id = rpr.id
+                INNER JOIN device d ON d.`code` = rpdr.device_code
+        WHERE
+            rp.del_flag = 0
+          and rpr.del_flag = 0
+          and rp.`code` = #{repairPoolCode}
+    </select>
 </mapper>
