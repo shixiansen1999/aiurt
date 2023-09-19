@@ -26,11 +26,8 @@ public class FlowRecallController {
      @Resource
      private IFlowRecallService flowRecallService;
 
-    @GetMapping("/manualRemind")
+    @PostMapping("/manualRemind")
     @ApiOperation(value = "流程撤回")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "processInstanceId", value = "流程实例id", required = true, paramType = "query")
-    })
     public Result<?> manualRecall(@RequestBody RecallReqDTO recallReqDTO) {
         flowRecallService.recall(recallReqDTO);
         return Result.OK("撤回成功");

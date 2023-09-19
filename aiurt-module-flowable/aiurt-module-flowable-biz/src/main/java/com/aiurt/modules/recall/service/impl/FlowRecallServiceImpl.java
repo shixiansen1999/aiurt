@@ -72,6 +72,7 @@ public class FlowRecallServiceImpl implements IFlowRecallService {
             actCustomTaskComment.setTaskId(task.getId());
             actCustomTaskComment.setTaskKey(task.getTaskDefinitionKey());
             actCustomTaskComment.setTaskName(task.getName());
+            actCustomTaskComment.setCreateRealname(loginUser.getUsername());
             actCustomTaskComment.setComment(recallReason);
             actCustomTaskComment.setApprovalType("recall");
             actCustomTaskComment.setProcessInstanceId(processInstanceId);

@@ -75,20 +75,19 @@ public class RecallRuleVerifyHandler extends AbstractFlowHandler<FlowRecallConte
                 .filter(s -> Arrays.asList(split).contains(s))
                 .collect(Collectors.toList());
 
-        boolean anyProcessed = keyList.stream().anyMatch(s -> {
-            List<HistoricTaskInstance> historicTaskInstanceList = historyService
+        if (CollUtil.isNotEmpty(keyList)) {
+            List<HistoricTaskInstance> historicTaskInstances = historyService
                     .createHistoricTaskInstanceQuery()
                     .processInstanceId(processInstanceId)
-                    .taskDefinitionKey(s)
+                    .taskDefinitionKeys(keyList)
                     .list();
 
-            return historicTaskInstanceList.stream()
-                    .anyMatch(historicTaskInstance -> historicTaskInstance.getEndTime() != null);
-        });
-
-        if (anyProcessed) {
+            if (historicTaskInstances.stream().anyMatch(instance -> instance.getEndTime() != null)) {
+                context.setContinueChain(false);
+                throw new AiurtBootException("已有审批人处理，无法撤回");
+            }
+        } else {
             context.setContinueChain(false);
-            throw new AiurtBootException("已有审批人处理，无法撤回");
         }
     }
 }
