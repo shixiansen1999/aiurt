@@ -46,7 +46,7 @@ public class MaterialStockOutInRecord extends BaseEntity implements Serializable
     private java.lang.String confirmUserId;
 	/**出库/入库单的id*/
     @ApiModelProperty(value = "出库/入库单的id")
-    private java.lang.String id;
+    private java.lang.String orderId;
     /**出库/入库单的code*/
     @ApiModelProperty(value = "出库/入库单的code")
     private java.lang.String orderCode;
