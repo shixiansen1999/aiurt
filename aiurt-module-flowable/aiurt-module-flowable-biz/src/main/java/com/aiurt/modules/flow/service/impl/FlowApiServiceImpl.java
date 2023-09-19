@@ -637,24 +637,9 @@ public class FlowApiServiceImpl implements FlowApiService {
             taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
 
             // 如果是发起人做返回催办，撤回按钮， 流程未结束, 发起节点的任务
-            List<ActOperationEntity> objectList = new ArrayList<>();
-            if (StrUtil.equalsIgnoreCase(startUserId, loginUser.getUsername()) && Objects.isNull(historicProcessInstance.getEndTime())) {
-                if (Objects.nonNull(customModelExt)) {
-                    Integer remind = Optional.ofNullable(customModelExt.getIsRemind()).orElse(0);
-                    if (remind == 1) {
-                        ActOperationEntity entity = ActOperationEntity.builder()
-                                .btnType("primary")
-                                .hasRemark(false)
-                                .label("催办")
-                                .type("remind")
-                                .mustRemark(false)
-                                .secordEnsure(false)
-                                .build();
-                        objectList.add(entity);
-                    }
-                }
+            if (isCurrentUserInitiatorAndProcessNotEnded(startUserId, loginUser, historicProcessInstance)) {
+                handleRemindLogic(taskInfoDTO, customModelExt, processInstanceId, loginUser);
             }
-            taskInfoDTO.setOperationList(objectList);
         }
 
         // 中间业务数据
@@ -666,6 +651,37 @@ public class FlowApiServiceImpl implements FlowApiService {
         taskInfoDTO.setTaskKey(taskDefinitionKey);
         taskInfoDTO.setProcessName(historicProcessInstance.getProcessDefinitionName());
         return taskInfoDTO;
+    }
+
+    /**
+     * 用于检查是否为发起人且流程未结束
+     * @param startUserId
+     * @param loginUser
+     * @param historicProcessInstance
+     * @return
+     */
+    private boolean isCurrentUserInitiatorAndProcessNotEnded(String startUserId, LoginUser loginUser, HistoricProcessInstance historicProcessInstance) {
+        return StrUtil.equalsIgnoreCase(startUserId, loginUser.getUsername()) && Objects.isNull(historicProcessInstance.getEndTime());
+    }
+
+    /**
+     * 用于处理提醒逻辑
+     * @param taskInfoDTO
+     * @param customModelExt
+     * @param processInstanceId
+     * @param loginUser
+     */
+    private void handleRemindLogic(TaskInfoDTO taskInfoDTO, ActCustomModelExt customModelExt, String processInstanceId, LoginUser loginUser) {
+        if (Objects.nonNull(customModelExt) && Optional.ofNullable(customModelExt.getIsRemind()).orElse(0) == 1) {
+            taskInfoDTO.setIsRemind(true);
+            List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId).active().list();
+            if (CollUtil.isNotEmpty(list) && list.size() == 1) {
+                Task task1 = list.get(0);
+                if (Objects.nonNull(task1) && StrUtil.equalsIgnoreCase(loginUser.getUsername(), task1.getAssignee())) {
+                    taskInfoDTO.setIsRemind(false);
+                }
+            }
+        }
     }
 
     /**
@@ -1410,7 +1426,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             // 添加审批意见
             ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment(task);
             actCustomTaskComment.setApprovalType(FlowApprovalType.CANCEL);
-            actCustomTaskComment.setCreateRealname(loginUser.getUsername());
+            actCustomTaskComment.setCreateRealname(loginUser.getRealname());
             customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
 
             // 更新待办
@@ -1448,18 +1464,15 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         UserTask firstUserTask = flowElementUtil.getFirstUserTaskByDefinitionId(processInstance.getProcessDefinitionId());
 
-        Task task = taskService.createTaskQuery().taskId(instanceDTO.getTaskId()).singleResult();
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(instanceDTO.getProcessInstanceId()).list();
+
+        List<String> nodeIdList = taskList.stream().map(Task::getTaskDefinitionKey).collect(Collectors.toList());
 
         // 流程跳转, flowable 已提供
         runtimeService.createChangeActivityStateBuilder()
                 .processInstanceId(instanceDTO.getProcessInstanceId())
-                .moveActivityIdTo(task.getTaskDefinitionKey(), firstUserTask.getId())
+                .moveActivityIdsToSingleActivityId(nodeIdList, firstUserTask.getId())
                 .changeState();
-
-        ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment(task);
-        actCustomTaskComment.setApprovalType(FlowApprovalType.REJECT_FIRST_USER_TASK);
-        actCustomTaskComment.setCreateRealname(loginUser.getUsername());
-        customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
     }
 
     /**
