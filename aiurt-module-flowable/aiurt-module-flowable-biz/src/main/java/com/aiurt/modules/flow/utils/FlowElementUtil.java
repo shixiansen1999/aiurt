@@ -222,7 +222,11 @@ public class FlowElementUtil {
         LambdaQueryWrapper<ActCustomVersion> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ActCustomVersion::getModelId, customModelInfo.getModelId())
                 .eq(ActCustomVersion::getMainVersion, FlowConstant.MAIN_VERSION_1).last("limit 1");
-        return actCustomVersionService.getOne(queryWrapper);
+        ActCustomVersion one = actCustomVersionService.getOne(queryWrapper);
+        if (Objects.isNull(one)) {
+            throw new AiurtBootException("该流程未发布！");
+        }
+        return one;
     }
 
     /**
