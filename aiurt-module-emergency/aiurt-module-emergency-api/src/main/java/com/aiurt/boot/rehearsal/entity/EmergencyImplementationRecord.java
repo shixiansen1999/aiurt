@@ -1,26 +1,23 @@
 package com.aiurt.boot.rehearsal.entity;
 
-import java.io.Serializable;
-
 import com.aiurt.boot.rehearsal.constant.EmergencyDictConstant;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.hibernate.validator.constraints.Length;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * @Description: emergency_implementation_record
@@ -77,7 +74,6 @@ public class EmergencyImplementationRecord extends DictEntity implements Seriali
 	@Excel(name = "演练地点", width = 15)
     @ApiModelProperty(value = "演练地点，精确到点位")
     @Dict(dictTable = "cs_station_position", dicCode = "position_code", dicText = "position_name")
-    @NotNull(message = "演练地点不能为空！", groups = {Save.class, Update.class})
     private java.lang.String stationCode;
 
 
@@ -89,7 +85,6 @@ public class EmergencyImplementationRecord extends DictEntity implements Seriali
 	@Excel(name = "观察岗位/点位", width = 15)
     @ApiModelProperty(value = "观察岗位/点位，精确到点位")
     @Dict(dictTable = "cs_station_position", dicCode = "position_code", dicText = "position_name")
-    @NotNull(message = "观察岗位/点位不能为空！", groups = {Save.class, Update.class})
     private java.lang.String positionCode;
 	/**记录人ID*/
 	@Excel(name = "记录人ID", width = 15)
@@ -153,4 +148,7 @@ public class EmergencyImplementationRecord extends DictEntity implements Seriali
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
+
+    @ApiModelProperty(value = "观察岗位/站点(输入)")
+    private String observationPosition;
 }
