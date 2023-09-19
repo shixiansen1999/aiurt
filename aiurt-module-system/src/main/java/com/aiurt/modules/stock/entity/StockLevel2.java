@@ -147,7 +147,7 @@ public class StockLevel2 extends DictEntity {
 	private String oneLevelTotalPrices;
 	@ApiModelProperty(value = "厂家/品牌")
 	@Dict(dictTable ="cs_manufactor",dicText = "name",dicCode = "id")
-	private String manufactorCode;
+	private String manufactorId;
 	@ApiModelProperty(value = "技术参数")
 	private String technicalParameter;
 

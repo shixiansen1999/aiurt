@@ -1,6 +1,7 @@
 package com.aiurt.modules.sparepart.entity;
 
 import com.aiurt.common.aspect.annotation.DeptFilterColumn;
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -78,8 +79,9 @@ public class SparePartStock implements Serializable {
 	@Excel(name = "组织机构id", width = 15)
     @ApiModelProperty(value = "组织机构id")
     private String orgId;
-    @ApiModelProperty(value = "生产厂商(厂家/品牌)")
-    private String manufactorCode;
+    @Dict(dictTable ="cs_manufactor",dicText = "name",dicCode = "id")
+    @ApiModelProperty(value = "生产厂商(厂家/品牌)，关联cs_manufactor.id")
+    private String manufactorId;
     @ApiModelProperty(value = "单价")
     private BigDecimal price;
     @ApiModelProperty(value = "总价")
