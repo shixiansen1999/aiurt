@@ -3,6 +3,7 @@ package com.aiurt.modules.material.controller;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
@@ -397,7 +398,13 @@ public class MaterialBaseTypeController {
         MaterialBaseType materialBaseType = iMaterialBaseTypeService.getById(id);
         String pid = materialBaseType.getPid();
         if(CommonConstant.SYSTEM_SPLIT_PID.equals(pid)){
-            materialBaseType.setPidName("");
+            if (StrUtil.isNotEmpty(materialBaseType.getSystemCode())) {
+                CsSubsystem csSubsystem = csSubsystemService.getOne(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getSystemCode, materialBaseType.getSystemCode()).eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0));
+                materialBaseType.setPidName(csSubsystem==null?"":csSubsystem.getSystemName());
+            } else {
+                CsMajor csMajor = csMajorService.getOne(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getMajorCode,materialBaseType.getMajorCode()).eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0));
+                materialBaseType.setPidName(csMajor==null?"":csMajor.getMajorName());
+            }
         }else{
             MaterialBaseType pm = iMaterialBaseTypeService.getById(pid);
             materialBaseType.setPidName(pm.getBaseTypeName());
