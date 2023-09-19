@@ -385,6 +385,15 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
      */
     @Override
     public void updateStates(UpdateStateEntity updateStateEntity) {
-        updateState(updateStateEntity);
+
+        String businessKey = updateStateEntity.getBusinessKey();
+        EmergencyRehearsalYear rehearsalYear = this.getById(businessKey);
+        if (ObjectUtil.isEmpty(rehearsalYear)) {
+            throw new AiurtBootException("未找到ID为【" + businessKey + "】的数据！");
+        }
+        Integer states = updateStateEntity.getStates();
+
+        rehearsalYear.setStatus(states);
+        this.updateById(rehearsalYear);
     }
 }
