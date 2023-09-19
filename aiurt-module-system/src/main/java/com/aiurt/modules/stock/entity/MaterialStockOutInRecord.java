@@ -27,14 +27,14 @@ public class MaterialStockOutInRecord extends BaseEntity implements Serializable
 	/**物资编号*/
     @ApiModelProperty(value = "物资编号")
     private java.lang.String materialCode;
-	/**出库的仓库编码*/
-    @ApiModelProperty(value = "出库的仓库编码")
+	/**出库/入库的仓库编码*/
+    @ApiModelProperty(value = "出库/入库的仓库编码")
     private java.lang.String warehouseCode;
 	/**组织机构编号*/
     @ApiModelProperty(value = "组织机构编号")
     private java.lang.String sysOrgCode;
-	/**出库数量*/
-    @ApiModelProperty(value = "出库数量")
+	/**出库/入库数量*/
+    @ApiModelProperty(value = "出库/入库数量")
     private java.lang.Integer num;
 	/**确认时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
@@ -44,8 +44,11 @@ public class MaterialStockOutInRecord extends BaseEntity implements Serializable
 	/**确认人ID*/
     @ApiModelProperty(value = "确认人ID")
     private java.lang.String confirmUserId;
-	/**出库单号*/
-    @ApiModelProperty(value = "出库单号")
+	/**出库/入库单的id*/
+    @ApiModelProperty(value = "出库/入库单的id")
+    private java.lang.String id;
+    /**出库/入库单的code*/
+    @ApiModelProperty(value = "出库/入库单的code")
     private java.lang.String orderCode;
 	/**备件出库单状态：1待确认、2已确认*/
     @ApiModelProperty(value = "备件出库单状态：1待确认、2已确认")
@@ -53,9 +56,15 @@ public class MaterialStockOutInRecord extends BaseEntity implements Serializable
 	/**领料单表ID*/
     @ApiModelProperty(value = "领料单表ID")
     private java.lang.String materialRequisitionId;
+    /**领料单表code*/
+    @ApiModelProperty(value = "领料单表code")
+    private java.lang.String materialRequisitionCode;
 	/**记录类型（3三级库出入库，2二级库出入库）*/
     @ApiModelProperty(value = "记录类型（3三级库出入库，2二级库出入库）")
     private java.lang.Integer materialRequisitionType;
+    /**入库还是出库，1入库 2出库*/
+    @ApiModelProperty(value = "入库还是出库，1入库 2出库")
+    private java.lang.Integer outInType;
 	/**库存结余*/
     @ApiModelProperty(value = "库存结余")
     private java.lang.Integer balance;
