@@ -6,6 +6,7 @@ import com.aiurt.modules.modeler.entity.ActCustomModelExt;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomModelExtService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
+import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -21,6 +22,7 @@ import java.util.Objects;
  * <p>构造上下文</p>
  * @author fgw
  */
+@Slf4j
 @Component
 public class BuildDeduplicateContextHandler<T extends FlowDeduplicateContext> extends AbstractFlowHandler<T> {
 
