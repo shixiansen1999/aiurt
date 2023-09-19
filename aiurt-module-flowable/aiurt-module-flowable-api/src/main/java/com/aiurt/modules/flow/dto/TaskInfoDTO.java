@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.flowable.bpmn.model.ExtensionElement;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -93,7 +94,7 @@ public class TaskInfoDTO {
      * 表单字段权限配置列表
      */
     @ApiModelProperty(value = "表单字段权限配置列表")
-    private JSONArray fieldList;
+    private JSONArray fieldList = new JSONArray();
 
     @ApiModelProperty("流程模板key")
     private String processDefinitionKey;
