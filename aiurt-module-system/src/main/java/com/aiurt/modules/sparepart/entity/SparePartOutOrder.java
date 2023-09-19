@@ -4,6 +4,8 @@ import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
+import com.aiurt.common.system.base.entity.BaseEntity;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -111,6 +113,13 @@ public class SparePartOutOrder implements Serializable {
 	@Excel(name = "已出库剩余数量", width = 15)
     @ApiModelProperty(value = "已出库剩余数量")
     private String unused;
+    @ApiModelProperty(value = "领料单表ID")
+    private String materialRequisitionId;
+    @ApiModelProperty(value = "备件出库类型")
+    @Dict(dicCode = "spare_out_type")
+    private Integer outType;
+    @ApiModelProperty(value = "库存结余")
+    private Integer balance;
 	/**删除状态(0.未删除 1.已删除)*/
 	@Excel(name = "删除状态(0.未删除 1.已删除)", width = 15)
     @ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")

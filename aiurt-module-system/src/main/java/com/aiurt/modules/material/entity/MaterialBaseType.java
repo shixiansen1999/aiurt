@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.google.protobuf.DescriptorProtos;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -69,6 +70,10 @@ public class MaterialBaseType extends DictEntity {
     @ApiModelProperty(value = "分类名称")
 	private  String  baseTypeName;
 
+	@Excel(name = "别名", width = 15)
+	@ApiModelProperty(value = "分类名称")
+	private String anotherName;
+
 	/**设备类型编码*/
 	@Excel(name = "分类状态", width = 15)
 	@ApiModelProperty(value = "分类状态,默认启用，1：启用，0停用")
@@ -97,6 +102,10 @@ public class MaterialBaseType extends DictEntity {
 	@Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "org_code")
 	@DeptFilterColumn
 	private  String  sysOrgCode;
+
+	@Excel(name = "备注", width = 15)
+	@ApiModelProperty(value = "备注")
+	private String remarks;
 
 	/**创建人*/
     @ApiModelProperty(value = "创建人")

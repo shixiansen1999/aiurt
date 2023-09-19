@@ -17,6 +17,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -77,6 +78,14 @@ public class SparePartStock implements Serializable {
 	@Excel(name = "组织机构id", width = 15)
     @ApiModelProperty(value = "组织机构id")
     private String orgId;
+    @ApiModelProperty(value = "生产厂商(厂家/品牌)")
+    private String manufactorCode;
+    @ApiModelProperty(value = "单价")
+    private BigDecimal price;
+    @ApiModelProperty(value = "总价")
+    private BigDecimal totalPrices;
+    @ApiModelProperty(value = "技术参数")
+    private BigDecimal technicalParameter;
 	/**删除状态(0.未删除 1.已删除)*/
 	@Excel(name = "删除状态(0.未删除 1.已删除)", width = 15)
     @ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")
@@ -167,10 +176,6 @@ public class SparePartStock implements Serializable {
     @ApiModelProperty(value = "生产厂商名称")
     @TableField(exist = false)
     private String manufactorCodeName;
-    /**单价(元)*/
-    @ApiModelProperty(value = " 单价")
-    @TableField(exist = false)
-    private String price;
     /**当前模块*/
     @ApiModelProperty(value = "当前模块")
     @TableField(exist = false)
