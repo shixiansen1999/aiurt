@@ -1426,7 +1426,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             //
             // 添加审批意见
             ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment(task);
-            actCustomTaskComment.setApprovalType(FlowApprovalType.CANCEL);
+            actCustomTaskComment.setApprovalType(FlowApprovalType.STOP);
             actCustomTaskComment.setCreateRealname(loginUser.getRealname());
             customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
 
