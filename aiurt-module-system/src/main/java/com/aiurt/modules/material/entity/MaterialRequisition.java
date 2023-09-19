@@ -37,8 +37,8 @@ public class MaterialRequisition extends BaseEntity implements Serializable {
     @ApiModelProperty(value = "组织机构编号")
     private java.lang.String sysOrgCode;
     /**领用时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "领用时间")
     private java.util.Date applyTime;
     /**申领仓库编号*/
