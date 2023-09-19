@@ -388,7 +388,7 @@ public class RepairTask extends BaseEntity {
 
     @ApiModelProperty(value = "保管期限")
     @TableField(exist = false)
-    private String secertduration;
+    private String secertDuration;
 
     /**归档状态*/
     @Excel(name = "归档状态", width = 15)
