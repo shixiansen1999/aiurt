@@ -2,6 +2,7 @@ package com.aiurt.modules.stock.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
+import com.aiurt.modules.stock.dto.StockLevel2RespDTO;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -53,14 +54,17 @@ public class StockLevel2Controller {
     @ApiOperation(value = "二级库管理-二级库库存管理-分页列表查询", notes = "二级库管理-二级库库存管理-分页列表查询")
     @GetMapping(value = "/list")
     @PermissionData(pageComponent = "secondLevelWarehouse/StockLevel2List")
-    public Result<IPage<StockLevel2>> queryPageList(StockLevel2 stockLevel2,
+    public Result<IPage<StockLevel2RespDTO>> queryPageList(StockLevel2 stockLevel2,
                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                          HttpServletRequest req) {
         Page<StockLevel2> page = new Page<StockLevel2>(pageNo, pageSize);
-        IPage<StockLevel2> pageList = iStockLevel2Service.pageList(page,stockLevel2);
+        IPage<StockLevel2RespDTO> pageList = iStockLevel2Service.pageList(page,stockLevel2);
         return Result.OK(pageList);
     }
+
+
+
     /**
      *  编辑
      *

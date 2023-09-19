@@ -1,5 +1,6 @@
 package com.aiurt.modules.stock.service;
 
+import com.aiurt.modules.stock.dto.StockLevel2RespDTO;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -20,7 +21,7 @@ public interface IStockLevel2Service extends IService<StockLevel2> {
      * @param stockLevel2
      * @return
      */
-    IPage<StockLevel2> pageList(Page<StockLevel2> page, StockLevel2 stockLevel2);
+    IPage<StockLevel2RespDTO> pageList(Page<StockLevel2> page, StockLevel2 stockLevel2);
 
     /**
      * 获取详情

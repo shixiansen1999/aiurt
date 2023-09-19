@@ -174,11 +174,6 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
                 if(stockLevel2 != null){
                     Integer num = stockLevel2.getNum();
                     stockLevel2.setNum(num - (null!=sparePartApplyMaterial.getActualNum()?sparePartApplyMaterial.getActualNum():1));
-                    // 出库后，重新计算总价，总价=单价*数量
-					if (stockLevel2.getPrice() != null && stockLevel2.getNum() != null){
-						stockLevel2.setTotalPrices(stockLevel2.getPrice().multiply(BigDecimal.valueOf(stockLevel2.getNum())));
-					}
-                    stockLevel2Service.updateById(stockLevel2);
                 }
                 //7. 如果存在盘点单，对盘点物资修改
                 if(stockLevel2CheckList != null && stockLevel2CheckList.size()>0){
