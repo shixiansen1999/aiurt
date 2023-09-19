@@ -1389,7 +1389,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             throw new AiurtBootException("该流程实例不存在！");
         }
         Date endTime = historicProcessInstance.getEndTime();
-        if (Objects.isNull(endTime)) {
+        if (Objects.nonNull(endTime)) {
             throw new AiurtBootException("该流程实例结束！");
         }
 
@@ -1426,7 +1426,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             // 添加审批意见
             ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment(task);
             actCustomTaskComment.setApprovalType(FlowApprovalType.CANCEL);
-            actCustomTaskComment.setCreateRealname(loginUser.getUsername());
+            actCustomTaskComment.setCreateRealname(loginUser.getRealname());
             customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
 
             // 更新待办
@@ -1464,18 +1464,15 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         UserTask firstUserTask = flowElementUtil.getFirstUserTaskByDefinitionId(processInstance.getProcessDefinitionId());
 
-        Task task = taskService.createTaskQuery().taskId(instanceDTO.getTaskId()).singleResult();
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(instanceDTO.getProcessInstanceId()).list();
+
+        List<String> nodeIdList = taskList.stream().map(Task::getTaskDefinitionKey).collect(Collectors.toList());
 
         // 流程跳转, flowable 已提供
         runtimeService.createChangeActivityStateBuilder()
                 .processInstanceId(instanceDTO.getProcessInstanceId())
-                .moveActivityIdTo(task.getTaskDefinitionKey(), firstUserTask.getId())
+                .moveActivityIdsToSingleActivityId(nodeIdList, firstUserTask.getId())
                 .changeState();
-
-        ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment(task);
-        actCustomTaskComment.setApprovalType(FlowApprovalType.REJECT_FIRST_USER_TASK);
-        actCustomTaskComment.setCreateRealname(loginUser.getUsername());
-        customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
     }
 
     /**
