@@ -25,6 +25,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -173,6 +174,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String importBpmnModel(String modelId, String fileName, ByteArrayInputStream modelStream, LoginUser user) {
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -235,13 +237,11 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                 null, user.getUsername());
 
         // 更新act_customl_info
-        LambdaQueryWrapper<ActCustomModelInfo> modelInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        modelInfoLambdaQueryWrapper.eq(ActCustomModelInfo::getModelId, savedModel.getId());
-        ActCustomModelInfo modelInfo = modelInfoService.getOne(modelInfoLambdaQueryWrapper);
-        modelInfo.setStatus(ModelFormStatusEnum.DFB.getStatus());
         String nodeActionSet = extractCustomInterfaceIds(modelNode);
-        modelInfo.setCustomInterfaceIds(nodeActionSet);
-        modelInfoService.updateById(modelInfo);
+        LambdaUpdateWrapper<ActCustomModelInfo> update = new LambdaUpdateWrapper<>();
+        update.eq(ActCustomModelInfo::getModelId, savedModel.getId()).set(ActCustomModelInfo::getStatus, ModelFormStatusEnum.DFB.getStatus())
+                .set(ActCustomModelInfo::getCustomInterfaceIds, nodeActionSet);
+        modelInfoService.update(update);
         return "保存成功";
     }
 
@@ -296,7 +296,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         if (CollectionUtils.isNotEmpty(definitionList)) {
             // 设置其他版本为非主版本
             LambdaUpdateWrapper<ActCustomVersion> updateWrapper = new LambdaUpdateWrapper<>();
-            updateWrapper.eq(ActCustomVersion::getModelId, modelId).set(ActCustomVersion::getMainVersion, "0");
+            updateWrapper.eq(ActCustomVersion::getModelId, modelId).eq(ActCustomVersion::getMainVersion, "1").set(ActCustomVersion::getMainVersion, "0");
             versionService.update(updateWrapper);
 
             ProcessDefinition processDefinition = definitionList.get(0);
