@@ -106,6 +106,9 @@ public class TaskInfoDTO {
     @ApiModelProperty(value = "流程名称")
     private String processName;
 
+    @ApiModelProperty(value = "撤回按钮")
+    private Boolean withdraw;
+
     private Boolean isAutoSelect = true;
 
 
