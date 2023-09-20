@@ -564,6 +564,8 @@ public class FlowApiServiceImpl implements FlowApiService {
             throw new AiurtBootException(AiurtErrorEnum.PROCESS_INSTANCE_NOT_FOUND.getCode(), AiurtErrorEnum.PROCESS_INSTANCE_NOT_FOUND.getMessage());
         }
 
+        taskInfoDTO.setBusinessKey(historicProcessInstance.getBusinessKey());
+
         // modelKey
         String processDefinitionKey = historicProcessInstance.getProcessDefinitionKey();
         // 查询流程模板信息
@@ -644,7 +646,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
 
         // 中间业务数据
-        ActCustomBusinessData actCustomBusinessData = businessDataService.queryByProcessInstanceId(processInstanceId, taskId);
+        ActCustomBusinessData actCustomBusinessData = businessDataService.queryOne(processInstanceId, taskId, taskDefinitionKey);
         if (Objects.nonNull(actCustomBusinessData)) {
             taskInfoDTO.setBusData(actCustomBusinessData.getData());
         }
