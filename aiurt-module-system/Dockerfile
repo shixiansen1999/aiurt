@@ -11,6 +11,7 @@ WORKDIR /aiurt-platfrom
 
 EXPOSE 8080
 
+COPY ./target/classes/fonts/chinese /usr/share/fonts/ttf-dejavu/chinese
 ADD ./src/main/resources/jeecg ./config/jeecg
 ADD ./target/aiurt-module-system-3.2.0-docker.tar.gz ./
 
