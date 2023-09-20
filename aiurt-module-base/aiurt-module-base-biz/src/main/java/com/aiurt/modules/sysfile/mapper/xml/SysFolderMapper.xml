@@ -6,24 +6,19 @@
         SELECT
         sft1.id AS id,
         sft1.parent_id AS parentId,
-        sft1.`name` AS title,
-        sft1.id AS value,
-        IFNULL(MAX(sffp1.permission), 0) AS permission,
-        IF(sft2.id IS NULL, 1, 0) AS isLeaf,
+        sft1.NAME AS title,
+        sft1.id AS `value`,
+        IFNULL( MAX( sffp1.permission ), 0 ) AS permission,
+        IF
+        ( sft2.id IS NULL, 1, 0 ) AS isLeaf,
         sft1.grade AS grade
-        FROM sys_file_type sft1
-        LEFT JOIN
-        sys_file_type sft2 ON (
-        sft1.id = sft2.parent_id
-        AND EXISTS (
-        SELECT
-        1
         FROM
-        sys_folder_file_permission sffp
-        WHERE
-        sffp.del_flag = 0
-        AND ( sffp.user_id = #{userId} OR sffp.org_code = #{orgCode} )
-        AND ((
+        sys_file_type sft1
+        LEFT JOIN sys_file_type sft2 ON sft1.id = sft2.parent_id
+        LEFT JOIN sys_folder_file_permission sffp ON sffp.del_flag = 0
+        AND ( sffp.user_id =  #{userId} OR sffp.org_code =  #{orgCode}  )
+        AND (
+        (
         sffp.folder_id IN (
         SELECT
         s1.id
@@ -42,17 +37,21 @@
         WHERE
         sf1.code_cc IS NOT NULL
         AND sf1.code_cc != ''
-        AND sf1.code_cc LIKE CONCAT( sft2.folder_code_cc, '%' )))))
+        AND sf1.code_cc LIKE CONCAT( sft2.folder_code_cc, '%' )))
         )
-        LEFT JOIN sys_folder_file_permission sffp1 ON (
-        sft1.id = sffp1.folder_id
-        AND (sffp1.user_id = #{userId} OR sffp1.org_code = #{orgCode}))
-        WHERE EXISTS(
-        SELECT 1
-        FROM sys_folder_file_permission sffp
-        WHERE sffp.del_flag = 0
-        AND (sffp.user_id = #{userId} OR sffp.org_code = #{orgCode})
-        AND ((
+        LEFT JOIN sys_folder_file_permission sffp1 ON sft1.id = sffp1.folder_id
+        AND ( sffp1.user_id =  #{userId} OR sffp1.org_code =  #{orgCode}  )
+        WHERE
+        EXISTS (
+        SELECT
+        1
+        FROM
+        sys_folder_file_permission sffp
+        WHERE
+        sffp.del_flag = 0
+        AND ( sffp.user_id =  #{userId} OR sffp.org_code =  #{orgCode}  )
+        AND (
+        (
         sffp.folder_id IN (
         SELECT
         s1.id
@@ -61,8 +60,7 @@
         WHERE
         s1.folder_code IS NOT NULL
         AND s1.folder_code != ''
-        AND s1.folder_code_cc LIKE CONCAT( sft1.folder_code_cc, '%' )
-        ))
+        AND s1.folder_code_cc LIKE CONCAT( sft1.folder_code_cc, '%' )))
         OR (
         sffp.file_id IN (
         SELECT
@@ -72,16 +70,19 @@
         WHERE
         sf1.code_cc IS NOT NULL
         AND sf1.code_cc != ''
-        AND sf1.code_cc LIKE CONCAT( sft1.folder_code_cc, '%' )
-        ))))
+        AND sf1.code_cc LIKE CONCAT( sft1.folder_code_cc, '%' )))
+        )
+        )
         AND sft1.del_flag = 0
-        AND sft1.folder_code_cc != ''
         AND sft1.folder_code_cc IS NOT NULL
         AND sft1.parent_id = #{pid}
         <if test="name!='' and name !=null">
             AND sft1.name LIKE CONCAT('%',#{name}, '%' )
         </if>
-        GROUP BY sft1.id
-        ORDER BY sft1.create_time DESC,sft1.id ASC
+        GROUP BY
+        sft1.id
+        ORDER BY
+        sft1.create_time DESC,
+        sft1.id ASC;
     </select>
 </mapper>
