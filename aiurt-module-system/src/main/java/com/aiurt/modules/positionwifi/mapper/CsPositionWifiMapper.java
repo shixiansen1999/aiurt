@@ -34,7 +34,8 @@ public interface CsPositionWifiMapper extends BaseMapper<CsPositionWifi> {
      * @param mac
      * @return
      */
-    String getStationCodeByMac(String mac);
+    String getStationCodeByMac(@Param("mac") String mac);
+
     /**
      * 获取换乘站站点
      * @param stationCodes

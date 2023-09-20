@@ -2,14 +2,24 @@ package com.aiurt.modules.utils;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.convert.ConverterRegistry;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.converter.CustomDateConverter;
-import com.aiurt.modules.manage.entity.ActCustomVersion;
+import com.aiurt.common.exception.AiurtBootException;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.beanutils.ConvertUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.DefaultParameterNameDiscoverer;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Method;
@@ -22,10 +32,56 @@ import java.util.*;
 @Service
 public class ReflectionService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ReflectionService.class);
+
+    private static final String HTTP_PREFIX = "http://";
+
+    private static final String CODE_FIELD_NAME = "code";
+    private static final String RESULT_FIELD_NAME = "result";
+    private static final int SUCCESS_CODE = 200;
+
     @Resource
     private ApplicationContext applicationContext;
 
     private static final List<Class> WRAP_CLASS = Arrays.asList(Integer.class, Boolean.class, Double.class,Byte.class,Short.class, Long.class, Float.class, Double.class, BigDecimal.class, String.class);
+
+
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    /**
+     *
+     * @param service
+     * @param paramMap
+     * @return
+     */
+    public Object proxy(String service, Map<String,Object> paramMap)  {
+
+        // 检查输入参数的有效性
+        if (service == null || paramMap == null) {
+            throw new IllegalArgumentException("Invalid input parameter");
+        }
+
+        if (StrUtil.startWithIgnoreCase(service, HTTP_PREFIX)) {
+            // 构造请求头
+            HttpHeaders headers = createHttpHeaders();
+            // 请求体
+            HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(paramMap, headers);
+            return doPost(httpEntity, service);
+        } else {
+            // 本地方法
+            List<String> className = StrUtil.split(service, '.');
+            try {
+                return this.invokeService(className.get(0), className.get(1), paramMap);
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+                Throwable cause = e.getCause();
+                String message = Objects.nonNull(cause) ? cause.getMessage() : "调用本地服务异常";
+                throw new AiurtBootException(message);
+            }
+        }
+    }
 
 
     /**
@@ -145,5 +201,44 @@ public class ReflectionService {
             return  new HashSet();
         }
         return parameterType.newInstance();
+    }
+
+    /**
+     * 构造请求头， token， contentType
+     * @return
+     */
+    private HttpHeaders createHttpHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set(CommonConstant.X_ACCESS_TOKEN, TokenUtil.getToken());
+        return headers;
+    }
+
+    /**
+     * post 请求
+     * @param httpEntity
+     * @param url
+     * @return
+     */
+    private Object doPost(HttpEntity<Map<String, Object>> httpEntity, String url) {
+        logger.info("post 请求：{}，请求参数：", url, httpEntity.getBody());
+        ResponseEntity<JSONObject> responseEntity = restTemplate.postForEntity(url, httpEntity, JSONObject.class);
+        JSONObject body = getResponseBody(responseEntity);
+        logger.info("请求结果：{}", JSONObject.toJSONString(body));
+        int code = body.getIntValue(CODE_FIELD_NAME);
+        String result = body.getString(RESULT_FIELD_NAME);
+        String message = body.getString("message");
+        if (code != SUCCESS_CODE && StrUtil.isBlank(result)) {
+            throw new AiurtBootException("流程创建或者提交失败！"+ message);
+        }
+        return result;
+    }
+
+    private JSONObject getResponseBody(ResponseEntity<JSONObject> responseEntity) {
+        JSONObject body = responseEntity.getBody();
+        if (body == null) {
+            throw new AiurtBootException("请求接口异常");
+        }
+        return body;
     }
 }

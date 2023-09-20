@@ -195,6 +195,10 @@ public interface SysParamCodeConstant {
      * 工作日志
      */
     String WORKLOG = "worklog";
+    /**
+     * 工作日志流程
+     */
+    String FAULT_PRODUCE_REPORT = "fault_produce_report";
 
     /**
      * 物资出入库流程
@@ -291,6 +295,14 @@ public interface SysParamCodeConstant {
      */
     String FAULT_EXTERNAL_SYSTEM_ID = "fault_external_system_id";
     /**
+     * 是否区分信号故障
+     */
+    String IS_DISTINGUISH_SIGNAL_FAULT = "is_distinguish_signal_fault";
+    /**
+     * 调度故障是否开启专用配置
+     */
+    String IS_EXTERNAL_SPECIAL_USE = "is_external_special_use";
+    /**
      * 根据配置决定故障上报是否开启控制中心班组自检故障指派功能及权限
      */
     String FAULT_CENTER_ADD = "fault_center_add";
@@ -318,6 +330,19 @@ public interface SysParamCodeConstant {
      * 通信分部编码
      */
     String 	SPECIAL_TEAM = "special_team";
+    /**
+     * 根据配置，获取施工计划导入列表
+     */
+    String CONSTRUCTION_WEEK_PLAN_COMMAND = "construction_week_plan_command";
+
+    /**
+     * 根据配置，传参部门，获取施工计划导入列表
+     */
+    String DEPARTMENT_NAME = "department_name";
+    /**
+     * 根据配置，传参状态，获取施工计划导入列表
+     */
+    String PLAN_ISTATE = "planIstate";
 
     /**
      * app端检修工单填写同行人是否可选全部班组
@@ -329,6 +354,11 @@ public interface SysParamCodeConstant {
      * 	工作内容是否需要查出所有未完成故障
      */
     String 	WORKLOG_UNFINISH_FAULT = "worklog_unfinish_fault";
+    /**
+     * 	工作日志是否查询故障巡视未完成任务
+     */
+    String 	WORK_LOG_UNFINISH_WORK = "work_log_unfinish_work";
+
     String APP_PATROL_TASK_POOL_SORT = "app_patrol_task_pool_sort";
     /**
      * 取消去办理的消息类型
@@ -367,19 +397,6 @@ public interface SysParamCodeConstant {
      */
     String NO_RECEIVE_FAULT_RING_DURATION = "no_receive_fault_ring_duration";
     /**
-     * 根据配置，获取施工计划导入列表
-     */
-    String CONSTRUCTION_WEEK_PLAN_COMMAND = "construction_week_plan_command";
-
-    /**
-     * 根据配置，传参部门，获取施工计划导入列表
-     */
-    String DEPARTMENT_NAME = "department_name";
-    /**
-     * 根据配置，传参状态，获取施工计划导入列表
-     */
-    String PLAN_ISTATE = "planIstate";
-    /**
      * 根据配置，传参开始时间，获取施工计划导入列表
      */
     String LAST_MONTH = "start_month";
@@ -389,25 +406,15 @@ public interface SysParamCodeConstant {
     String NEW_MONTH = "end_month";
 
 
-    /**
-     * 企业微信跳转地址
-     */
-    String WECHAT_MESSAGE_URL = "wechat_message_url";
-
-    /**
-     * 故障操作日志查询是否根据处理时间升序排序
-     */
-    String FAULT_OPERATION_ORDER = "fault_operation_order";
-
-    /**
-     * 故障完成后是否给中心班组成员提示音
-     */
-    String FAULT_FINISH_CENTER_MSG = "fault_finish_center_msg";
 
     /**
      * 无故障时也生成生产日报的专业，多个专业使用英文逗号分隔
      */
     String GENERATE_REPORT_MAJOR = "generate_report_major";
+    /**
+     * 企业微信跳转地址
+     */
+    String WECHAT_MESSAGE_URL = "wechat_message_url";
     /**
      * 节假日类型为补班时调整的班次名称
      */
@@ -418,9 +425,18 @@ public interface SysParamCodeConstant {
     String SCHEDULE_FOR_REST = "schedule_for_rest";
 
     /**
+     * 故障完成后是否给中心班组成员提示音
+     */
+    String FAULT_FINISH_CENTER_MSG = "fault_finish_center_msg";
+
+    /**
      * 企业微信认证url
      */
     String WECHAT_AUTHORIZE_URL = "wechat_authorize_url";
+    /**
+     * 故障操作日志查询是否根据处理时间升序排序
+     */
+    String FAULT_OPERATION_ORDER = "fault_operation_order";
     /**
      * 获取企业微信私域授权地址
      */
@@ -429,6 +445,11 @@ public interface SysParamCodeConstant {
      * 大屏人员信息工班长排在首位
      */
     String FOREMAN_SORT = "foreman_sort";
+
+    /**
+     * 公安消防班组id
+     */
+    String GONGANXIAOFANG_ID = "gonganxiaofang_id";
     /**
      * 日完成事项是否统计的维保数按照维保开始时间计算
      */
@@ -437,13 +458,6 @@ public interface SysParamCodeConstant {
      * 工作日志只获取班组数量,组织机构类型不为公司部门
      */
     String WORK_LOG_ORG_CATEGORY = "work_log_org_category";
-
-    /**
-     * 公安消防班组id
-     */
-    String GONGANXIAOFANG_ID = "gonganxiaofang_id";
-
-
     /**
      * 获取施工计划登录token所需客户ID
      */
@@ -460,6 +474,7 @@ public interface SysParamCodeConstant {
      * 获取施工计划登录门户url
      */
     String CONSTRUCTION_URL="construction_url";
+
     /**
      * 故障挂起超时未处理提醒
      */
@@ -486,4 +501,56 @@ public interface SysParamCodeConstant {
      * 取消挂起时是否更新维修负责人
      */
     String CANCEL_HANGUP_CH_AUN = "cancel_hangup_ch_aun";
+
+    /**
+     * 备件管理是否启用全新数量、已使用数量、待报废数量、委外送修数量
+     */
+    String SPARE_PART_EXTRA_NUM = "spare_part_extra_num";
+    /**
+     * 故障备件更换是否更换一次，走一次备件流程
+     */
+    String SPARE_PART_EXTRA = "spare_part_extra";
+    /**
+     * 培训编码-是否根据线路生成编码
+     */
+    String TRAIN_TASK_CODE="train_task_code";
+    /**
+     * 备件库存信息是否查库存为零的数据
+     */
+    String SPARE_PART_ZERO = "spare_part_zero";
+
+    /**
+     * 巡视工时是否使用mac计算，如果不使用就是各工单时长之和
+     */
+    String PATROL_DURATION_USE_MAC = "patrol_duration_use_mac";
+
+
+
+    /**
+     * 	巡视、检修标准是否关联多个设备分类
+     *
+     */
+    String MULTIPLE_DEVICE_TYPES = "multiple_device_types";
+
+    /**
+     * 检修任务领取是否放开时间限制
+     */
+    String INSPECTION_RECEIVE_ANYTIME="inspection_receive_anytime";
+    /**
+     * 	调度故障是否只需要本系统线路的故障
+     */
+    String FAULT_EXTERNAL_XH12="fault_external_xh12";
+    /**
+     * 应急演练实施记录是否排除使用过的月度演练计划
+     */
+    String EXCLUDE_USED_MONTH="exclude_used_month";
+    /**
+     * 故障上报、填写维修记录是否需要“是否影响客运服务”、“是否影响行车”、“是否停止服务”；调度故障是否必填
+     */
+    String IS_SHOW_AFFECTPASSENGERSERVICE="is_show_affectPassengerService";
+
+    /**
+     * 是否根据部门过滤习题
+     */
+    String IS_QUERY_QUESTION_BY_DEPT = "is_query_question_by_dept";
 }

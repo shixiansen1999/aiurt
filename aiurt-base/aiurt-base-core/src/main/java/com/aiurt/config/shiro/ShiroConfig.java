@@ -140,9 +140,8 @@ public class ShiroConfig {
         //测试示例
         filterChainDefinitionMap.put("/test/bigScreen/**", "anon"); //大屏模板例子
         filterChainDefinitionMap.put("/plan/repairPoolUser/**", "anon");
-        //filterChainDefinitionMap.put("/test/jeecgDemo/rabbitMqClientTest/**", "anon"); //MQ测试
-        //filterChainDefinitionMap.put("/test/jeecgDemo/html", "anon"); //模板页面
-        //filterChainDefinitionMap.put("/test/jeecgDemo/redis/**", "anon"); //redis测试
+        filterChainDefinitionMap.put("/template/downloadTemplate/**", "anon");
+        filterChainDefinitionMap.put("/errorlist/download/**", "anon");
 
         //websocket排除
         filterChainDefinitionMap.put("/websocket/**", "anon");//系统通知和公告

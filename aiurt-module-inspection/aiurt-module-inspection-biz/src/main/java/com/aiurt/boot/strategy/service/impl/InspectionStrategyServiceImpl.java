@@ -13,6 +13,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.manager.dto.*;
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
@@ -47,6 +48,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.*;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.DictModel;
@@ -105,7 +108,8 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
     private ISysBaseAPI sysBaseApi;
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
-
+    @Resource
+    private ISysParamAPI iSysParamAPI;
     @Override
     public IPage<InspectionStrategyDTO> pageList(Page<InspectionStrategyDTO> page, InspectionStrategyDTO inspectionStrategyDTO) {
         if (Objects.nonNull(inspectionStrategyDTO.getSiteCode())) {
@@ -257,7 +261,9 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                 if (ObjectUtil.isEmpty(inspectionCode)) {
                     throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
                 }
-                if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && CollUtil.isEmpty(re.getDevices())) {
+                //通信十一期通过配置去掉需要指定设备的限制
+                SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+                if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && CollUtil.isEmpty(re.getDevices()) && "0".equals(paramModel.getValue())) {
                     throw new AiurtBootException(String.format("名字为%s需要指定设备", ObjectUtil.isNotEmpty(inspectionCode) ? inspectionCode.getTitle() : ""));
                 }
             });
@@ -583,7 +589,9 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             if (ObjectUtil.isEmpty(inspectionCode)) {
                 throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
             }
-            if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice())) {
+            //通信十一期通过配置去掉需要指定设备的限制
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+            if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && "0".equals(paramModel.getValue())) {
                 List<InspectionStrDeviceRel> inspectionStrDeviceRels = inspectionStrDeviceRelMapper.selectList(new LambdaQueryWrapper<InspectionStrDeviceRel>().eq(InspectionStrDeviceRel::getInspectionStrRelId, re.getId()));
                 if (CollUtil.isEmpty(inspectionStrDeviceRels)) {
                     throw new AiurtBootException(String.format("名字为%s的检修标准需要指定设备", ObjectUtil.isNotEmpty(inspectionCode) ? inspectionCode.getTitle() : ""));

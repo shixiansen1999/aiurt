@@ -3,12 +3,15 @@ package com.aiurt.boot.rehearsal.service;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearAddDTO;
 import com.aiurt.boot.rehearsal.dto.EmergencyRehearsalYearDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyRehearsalYear;
+import com.aiurt.modules.common.entity.UpdateStateEntity;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @Description: emergency_rehearsal_year
@@ -55,4 +58,23 @@ public interface IEmergencyRehearsalYearService extends IService<EmergencyRehear
      * @return
      */
     void exportXls(HttpServletRequest request, HttpServletResponse response, String ids,String orgCode);
+    /**
+     * 通过excel导入数据
+     * @param request
+     * @param response
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
+    /**
+     * 模板导出
+     * @param response
+     * @throws IOException
+     */
+    void exportTemplateXl(HttpServletResponse response) throws IOException;
+
+    /**
+     *
+     * @param updateStateEntity
+     */
+    void updateStates(UpdateStateEntity updateStateEntity);
 }

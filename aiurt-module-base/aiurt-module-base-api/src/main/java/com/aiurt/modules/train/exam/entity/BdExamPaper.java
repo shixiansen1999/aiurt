@@ -1,5 +1,6 @@
 package com.aiurt.modules.train.exam.entity;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -38,6 +39,11 @@ public class BdExamPaper implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private String id;
+    /**该试卷的所属班组*/
+    @Excel(name = "所属班组", width = 15)
+    @ApiModelProperty(value = "所属班组")
+    @DeptFilterColumn
+    private String orgCode;
 	/**试卷名称*/
 	@Excel(name = "试卷名称", width = 15)
     @ApiModelProperty(value = "试卷名称")

@@ -4,6 +4,7 @@ package com.aiurt.modules.modeler.controller;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.modeler.dto.CompareDTO;
 import com.aiurt.modules.modeler.dto.ModelInfoVo;
 import com.aiurt.modules.modeler.service.IFlowableBpmnService;
 import io.swagger.annotations.Api;
@@ -103,6 +104,13 @@ public class BpmnDesignerController {
 
         flowableBpmnService.publishBpmn(modelId);
         return Result.OK("部署成功");
+    }
+
+    @ApiOperation("编辑前后对比")
+    @PostMapping("/compare")
+    public Result<Boolean> compare(@RequestBody CompareDTO compareDTO) {
+        Boolean result = flowableBpmnService.compare(compareDTO);
+        return Result.OK(result);
     }
 
 }

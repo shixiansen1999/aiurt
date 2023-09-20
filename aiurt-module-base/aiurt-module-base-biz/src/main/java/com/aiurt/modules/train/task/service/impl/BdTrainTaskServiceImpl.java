@@ -5,8 +5,10 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
@@ -15,6 +17,8 @@ import com.aiurt.modules.train.exam.entity.BdExamPaper;
 import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.feedback.entity.*;
 import com.aiurt.modules.train.feedback.mapper.*;
+import com.aiurt.modules.train.mistakes.entity.BdExamMistakes;
+import com.aiurt.modules.train.mistakes.service.IBdExamMistakesService;
 import com.aiurt.modules.train.quzrtz.QuartzServiceImpl;
 import com.aiurt.modules.train.quzrtz.job.CronUtlit;
 import com.aiurt.modules.train.task.dto.*;
@@ -34,10 +38,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -88,6 +95,9 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	private BdTrainStudentFeedbackRecordMapper bdTrainStudentFeedbackRecordMapper;
 
 	@Autowired
+	private IBdExamMistakesService examMistakesService;
+
+	@Autowired
 	private QuartzServiceImpl quartzService;
 	@Autowired
 	private ISysBaseAPI iSysBaseAPI;
@@ -95,31 +105,13 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	private ITrainArchiveService archiveService;
 	@Autowired
 	private ITrainRecordService recordService;
+	@Autowired
+	private ISysParamAPI iSysParamAPI;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void saveMain(BdTrainTask bdTrainTask, List<BdTrainTaskSign> bdTrainTaskSignList) {
-		int year = DateUtil.year(new Date());
-		int month = DateUtil.month(new Date())+1;
-		String taskCode = "YY-THXH-"+month+"-"+year+"-";
-		String formatTaskCode = "";
-		List<BdTrainTask> bdTrainTasks = bdTrainTaskMapper.selectList(new LambdaQueryWrapper<BdTrainTask>());
-		if(CollUtil.isNotEmpty(bdTrainTasks)){
-			List<String> taskCodes = bdTrainTasks.stream().filter(e->ObjectUtil.isNotEmpty(e.getTaskCode())).map(BdTrainTask::getTaskCode).collect(Collectors.toList());
-			if(CollUtil.isNotEmpty(taskCodes)){
-				Integer number = 1;
-				do{
-					String format = String.format("%02d",number );
-					formatTaskCode = taskCode+format;
-					number++;
-				}
-				while (taskCodes.contains(formatTaskCode));
-			}else {
-				formatTaskCode = taskCode+"01";
-			}
-		} else {
-			formatTaskCode = taskCode+"01";
-		}
+		String formatTaskCode = taskCode(bdTrainTask.getTrainLine());
 		bdTrainTask.setTaskCode(formatTaskCode);
 		bdTrainTaskMapper.insert(bdTrainTask);
 		if(bdTrainTaskSignList!=null && bdTrainTaskSignList.size()>0) {
@@ -130,7 +122,35 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 			}
 		}
 	}
-
+public String taskCode(Integer trainLine){
+	Integer year = DateUtil.year(new Date());
+	Integer month = DateUtil.month(new Date())+1;
+	SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.TRAIN_TASK_CODE);
+	String value = sysParamModel.getValue();
+	if("0".equals(value)){
+		trainLine = month;
+	}
+	String taskCode = "YY-THXH-"+trainLine+"-"+year+"-";
+	String formatTaskCode = "";
+	List<BdTrainTask> bdTrainTasks = bdTrainTaskMapper.selectList(new LambdaQueryWrapper<BdTrainTask>());
+	if(CollUtil.isNotEmpty(bdTrainTasks)){
+		List<String> taskCodes = bdTrainTasks.stream().filter(e->ObjectUtil.isNotEmpty(e.getTaskCode())).map(BdTrainTask::getTaskCode).collect(Collectors.toList());
+		if(CollUtil.isNotEmpty(taskCodes)){
+			Integer number = 1;
+			do{
+				String format = String.format("%02d",number );
+				formatTaskCode = taskCode+format;
+				number++;
+			}
+			while (taskCodes.contains(formatTaskCode));
+		}else {
+			formatTaskCode = taskCode+"01";
+		}
+	} else {
+		formatTaskCode = taskCode+"01";
+	}
+	return  formatTaskCode;
+}
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateMain(BdTrainTask bdTrainTask,List<BdTrainTaskSign> bdTrainTaskSignList) {
@@ -163,14 +183,29 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 			//人员有变化
 			if (CollectionUtil.isNotEmpty(bdTrainTask.getUserIds())) {
 				bdTrainTaskUserMapper.deleteByMainId(bdTrainTask.getId());
-				List<String> userIds = bdTrainTask.getUserIds();
-				this.addTrainTaskUser(bdTrainTask.getId(), bdTrainTask.getTaskTeamId(), userIds);
+				List<String> userIds = new ArrayList<>();
+				userIds.addAll(bdTrainTask.getUserIds());
+				//讲师也在培训档案中
+				userIds.add(bdTrainTask.getTeacherId());
+				// 看是不是所有人员都要培训档案，如果有人没有培训档案的，直接抛出错误
+				LambdaQueryWrapper<TrainArchive> queryWrapper = new LambdaQueryWrapper<>();
+				queryWrapper.select(TrainArchive::getUserId);
+				queryWrapper.eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0);
+				queryWrapper.in(TrainArchive::getUserId, userIds);
+				List<TrainArchive> list = archiveService.list(queryWrapper);
+				List<String> trainArchiveIdList = list.stream().map(TrainArchive::getUserId).collect(Collectors.toList());
+				if (!trainArchiveIdList.containsAll(userIds)) {
+					throw new AiurtBootException("培训档案中没有相关培训人员记录！");
+				}
+				this.addTrainTaskUser(bdTrainTask.getId(), bdTrainTask.getTaskTeamId(), bdTrainTask.getUserIds());
 			}
 			//是否考试有变化
 			if (bdTrainTask.getExamStatus()!= null && bdTrainTask.getExamStatus()==0) {
 				bdTrainTask.setMakeUpState(0);
 				bdTrainTask.setStudyResourceState(0);
 			}
+			String formatTaskCode = taskCode(bdTrainTask.getTrainLine());
+			bdTrainTask.setTaskCode(formatTaskCode);
 		}
 		//发布
 		if (bdTrainTask.getTaskState() == 1) {
@@ -215,6 +250,10 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	private void constructArchive(BdTrainTask trainTask) {
 		List<TrainRecord> trainRecords = new ArrayList<>();
 		List<BdTrainTaskUser> list = examRecordMapper.userList(trainTask.getId());
+
+		//讲师也要有培训记录
+		list.add(new BdTrainTaskUser().setUserId(trainTask.getTeacherId()));
+
 		List<TrainArchive> archiveList = archiveService.list(new LambdaQueryWrapper<TrainArchive>().eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0));
 		Map<String, TrainArchive> archiveMap = archiveList.stream().collect(Collectors.toMap(TrainArchive::getUserId, Function.identity()));
 		if(CollUtil.isNotEmpty(list)){
@@ -554,12 +593,32 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	}
 	@Override
 	public Page<BdTrainTask> queryPageList(Page<BdTrainTask> pageList, BdTrainTask bdTrainTask) {
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		bdTrainTask.setTaskTeamCode(sysUser.getOrgCode());
 		List<BdTrainTask> trainTasks = bdTrainTaskMapper.queryPageList(pageList, bdTrainTask);
+		List<String> trainTaskIdList = new ArrayList<>();
 		trainTasks.forEach(b->{
 			List<BdTrainTaskUser> userListById = bdTrainTaskUserMapper.getUserListById(b.getId());
 			List<String> userIds = userListById.stream().map(BdTrainTaskUser::getUserId).collect(Collectors.toList());
 			b.setUserIds(userIds);
+			trainTaskIdList.add(b.getId());
 		});
+
+		if (CollUtil.isEmpty(trainTaskIdList)){
+			return pageList.setRecords(trainTasks);
+		}
+		// 添加是否有错题的判断字段
+		// 查询培训任务对应的错题集
+		LambdaQueryWrapper<BdExamMistakes> queryWrapper = new LambdaQueryWrapper<>();
+		// 只查询trainTaskId
+		queryWrapper.select(BdExamMistakes::getTrainTaskId);
+		queryWrapper.eq(BdExamMistakes::getDelFlag, CommonConstant.DEL_FLAG_0);
+		queryWrapper.in(BdExamMistakes::getTrainTaskId, trainTaskIdList);
+		List<BdExamMistakes> list = examMistakesService.list(queryWrapper);
+		// 错题集中查询出来的培训任务
+		List<String> existTrainTaskIdList = list.stream().map(BdExamMistakes::getTrainTaskId).collect(Collectors.toList());
+		trainTasks.forEach(t->t.setHasMistakes(existTrainTaskIdList.contains(t.getId())));
+
 		return pageList.setRecords(trainTasks);
 	}
 
@@ -716,5 +775,36 @@ private void queryBdTrainTask(List<BdTrainTaskUser> userTasks,String uid){
 	public  Page<UserDTO> getTrainTeacher(Page<UserDTO> pageList, UserDTO userDTO) {
 		List<UserDTO> trainTeacher = bdTrainTaskMapper.getTrainTeacher(pageList, userDTO);
 		return pageList.setRecords(trainTeacher);
+	}
+
+	@Override
+	public void add(BdTrainTaskPage bdTrainTaskPage) {
+		BdTrainTask bdTrainTask = new BdTrainTask();
+		BeanUtils.copyProperties(bdTrainTaskPage, bdTrainTask);
+		bdTrainTask.setNumber(0);
+		bdTrainTask.setTaskState(0);
+		if (bdTrainTask.getExamStatus()==0) {
+			bdTrainTask.setMakeUpState(0);
+			bdTrainTask.setStudyResourceState(0);
+		}
+		SysDepartModel sysDepartModel = iSysBaseAPI.selectAllById(bdTrainTask.getTaskTeamId());
+		bdTrainTask.setTaskTeamCode(sysDepartModel.getOrgCode());
+		List<String> userIds = new ArrayList<>();
+		userIds.addAll(bdTrainTask.getUserIds());
+		//讲师也在培训档案中
+		userIds.add(bdTrainTask.getTeacherId());
+		// 看是不是所有人员都要培训档案，如果有人没有培训档案的，直接抛出错误
+		LambdaQueryWrapper<TrainArchive> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.select(TrainArchive::getUserId);
+		queryWrapper.eq(TrainArchive::getDelFlag, CommonConstant.DEL_FLAG_0);
+		queryWrapper.in(TrainArchive::getUserId, userIds);
+		List<TrainArchive> list = archiveService.list(queryWrapper);
+		List<String> trainArchiveIdList = list.stream().map(TrainArchive::getUserId).collect(Collectors.toList());
+		if (!trainArchiveIdList.containsAll(userIds)) {
+			throw new AiurtBootException("培训档案中没有相关培训人员记录！");
+		}
+
+		this.saveMain(bdTrainTask, bdTrainTaskPage.getBdTrainTaskSignList());
+		this.addTrainTaskUser(bdTrainTask.getId(),bdTrainTask.getTaskTeamId(),bdTrainTask.getUserIds());
 	}
 }

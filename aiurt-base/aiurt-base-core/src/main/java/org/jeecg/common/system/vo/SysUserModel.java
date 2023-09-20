@@ -37,6 +37,9 @@ public class SysUserModel implements Serializable {
     @ApiModelProperty(value = "是否是角色标记")
     private Boolean isRole;
 
+    @ApiModelProperty(value = "是否是部门标记")
+    private Boolean isOrg;
+
     @ApiModelProperty(value = "是否是岗位标记")
     private Boolean isPost;
 
@@ -59,5 +62,5 @@ public class SysUserModel implements Serializable {
     private List<SysUserModel> children;
 
     @ApiModelProperty(value = "人员数量")
-    private Integer userNum;
+    private Long userNum;
 }

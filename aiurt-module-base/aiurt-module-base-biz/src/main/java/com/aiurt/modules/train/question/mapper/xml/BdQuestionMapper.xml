@@ -18,6 +18,9 @@
             <if test="condition.id != null">
                 and t1.id LIKE CONCAT("%", #{condition.id}, "%")
             </if>
+            <if test="condition.orgCode != null and condition.orgCode != ''">
+                and t1.org_code = #{condition.orgCode}
+            </if>
             <if test="condition.queType != null">
                 and t1.que_type = #{condition.queType}
             </if>

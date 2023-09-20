@@ -8,14 +8,20 @@ import com.aiurt.modules.manage.mapper.ActCustomVersionMapper;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.flowable.engine.repository.ProcessDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -42,6 +48,7 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
      * @param actCustomVersion
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void suspendFlowProcess(ActCustomVersion actCustomVersion) {
         // 参数校验
         ActCustomVersion customVersion = vaildEntity(actCustomVersion);
@@ -51,6 +58,8 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
         if (status == 0) {
             throw new AiurtBootException("当前流程发布版本已处于挂起状态！");
         }
+
+        flowElementUtil.vaildProcessDefinition(customVersion.getProcessDefinitionId());
 
         customVersion.setStatus(0);
 
@@ -65,6 +74,7 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
      * @param actCustomVersion
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void activeFlowProcess(ActCustomVersion actCustomVersion) {
         // 参数校验
         ActCustomVersion customVersion = vaildEntity(actCustomVersion);
@@ -73,6 +83,9 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
         if (status == 1) {
             throw new AiurtBootException("当前流程发布版本已处于激活状态！");
         }
+
+        flowElementUtil.vaildProcessDefinition(customVersion.getProcessDefinitionId());
+
 
         customVersion.setStatus(1);
 
@@ -90,6 +103,7 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
      * @param actCustomVersion
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateMainVersion(ActCustomVersion actCustomVersion) {
 
         ActCustomVersion customVersion = vaildEntity(actCustomVersion);
@@ -103,7 +117,7 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
 
         String modelId = customVersion.getModelId();
 
-        updateWrapper.set(ActCustomVersion::getMainVersion, "0").eq(ActCustomVersion::getModelId, modelId);
+        updateWrapper.set(ActCustomVersion::getMainVersion, "0").eq(ActCustomVersion::getModelId, modelId).eq(ActCustomVersion::getMainVersion, "1");
 
         update(updateWrapper);
 
@@ -136,5 +150,20 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
         }
 
         return customVersion;
+    }
+
+    /**
+     * 分页查询
+     *
+     * @param page
+     * @param modelId
+     * @return
+     */
+    @Override
+    public IPage<ActCustomVersion> queryPageList(Page<ActCustomVersion> page, String modelId) {
+        List<ActCustomVersion> actCustomVersions = baseMapper.queryPageList(page, modelId);
+
+        page.setRecords(actCustomVersions);
+        return page;
     }
 }

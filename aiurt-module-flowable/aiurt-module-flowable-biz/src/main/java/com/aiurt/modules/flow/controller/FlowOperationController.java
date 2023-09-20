@@ -170,11 +170,7 @@ public class FlowOperationController {
     /**
      * 已办任务
      *
-     * @param processDefinitionName 流程名。
-     * @param beginDate             流程发起开始时间。
-     * @param endDate               流程发起结束时间。
-     * @param pageNo                当前页。
-     * @param pageSize              每页数量。
+     * @param historicTaskReqDTO
      * @return 查询结果应答。
      */
     @PostMapping("/listHistoricTask")
@@ -262,7 +258,7 @@ public class FlowOperationController {
     @ApiOperation(value = "删除流程",notes = "删除流程")
     public Result<?> deleteProcessInstance(@RequestParam(value = "processInstanceId") String processInstanceId, @RequestParam(value = "delReason", required = false) String delReason) {
         flowApiService.deleteProcessInstance(processInstanceId, delReason);
-        return Result.OK("终止流程成功");
+        return Result.OK("删除流程成功");
     }
 
     /**
@@ -349,6 +345,32 @@ public class FlowOperationController {
         TaskInfoDTO taskInfoVo = flowApiService.viewEndProcessTaskInfo(processInstanceId);
         return Result.OK(taskInfoVo);
     }
+
+    /**
+     * 获取办理时选人维度列表。
+     *
+     * @param processParticipantsReqDTO 包含流程实例ID和任务id和表单数据的请求信息
+     * @return 包含流程参与者信息的结果列表
+     */
+    @PostMapping("/getProcessParticipantsInfo")
+    @ApiOperation(value = "获取办理时选人维度列表", notes = "获取办理时选人维度列表")
+    public Result<List<ProcessParticipantsInfoDTO>> getProcessParticipantsInfo(@RequestBody ProcessParticipantsReqDTO processParticipantsReqDTO) {
+        List<ProcessParticipantsInfoDTO> result = flowApiService.getProcessParticipantsInfo(processParticipantsReqDTO);
+        return Result.OK(result);
+    }
+
+    /**
+     * 获取首个任务的选人数据
+     * @param processParticipantsReqDTO
+     * @return
+     */
+    @ApiOperation(value = "获取首个任务的选人数据", notes = "获取办理时选人维度列表")
+    @PostMapping("/getProcessParticipantsInfoWithOutStart")
+    public Result<List<ProcessParticipantsInfoDTO>> getProcessParticipantsInfoWithOutStart(@RequestBody ProcessParticipantsReqDTO processParticipantsReqDTO) {
+        List<ProcessParticipantsInfoDTO> result = flowApiService.getProcessParticipantsInfoWithOutStart(processParticipantsReqDTO);
+        return Result.OK(result);
+    }
+
 
 
 }

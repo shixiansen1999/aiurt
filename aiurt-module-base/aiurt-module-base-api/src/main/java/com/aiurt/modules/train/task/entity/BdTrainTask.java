@@ -320,6 +320,10 @@ public class BdTrainTask implements Serializable ,Cloneable{
     @ApiModelProperty(value = "是否为计划内容")
     @Dict(dicCode = "is_annual_plan")
     private Integer isAnnualPlan;
+    /**培训-线路*/
+    @ApiModelProperty(value = "培训-线路，0-通用、1-1号线、2-2号线、3-3号线、4-4号线 、8-8号线）")
+    @Dict(dicCode = "train_line")
+    private Integer trainLine;
 
     @ApiModelProperty(value = "pageNo")
     @TableField(exist = false)
@@ -328,6 +332,11 @@ public class BdTrainTask implements Serializable ,Cloneable{
     @ApiModelProperty(value = "pageSize")
     @TableField(exist = false)
     private Integer pageSize;
+
+    /**该培训任务是否有错题集*/
+    @ApiModelProperty(value = "该培训任务是否有错题集")
+    @TableField(exist = false)
+    private Boolean hasMistakes;
     /**
      * 克隆方法
      * @return

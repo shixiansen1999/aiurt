@@ -6,6 +6,8 @@ import com.aiurt.boot.rehearsal.service.IEmergencyRehearsalYearService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.common.entity.UpdateStateEntity;
+import com.aiurt.common.util.XlsUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @Description: emergency_rehearsal_year
@@ -94,17 +97,37 @@ public class EmergencyRehearsalYearController extends BaseController<EmergencyRe
         emergencyRehearsalYearService.exportXls(request, response, ids,orgCode);
 //        return super.exportXls(request, emergencyRehearsalYear, EmergencyRehearsalYear.class, "emergency_rehearsal_year");
     }
-//
-//    /**
-//      * 通过excel导入数据
-//    *
-//    * @param request
-//    * @param response
-//    * @return
-//    */
-//    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-//    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-//        return super.importExcel(request, response, EmergencyRehearsalYear.class);
-//    }
+
+    /**
+     * 通过excel导入数据
+     *
+     * @param request
+     * @param response
+     * @return
+     */
+    @ApiOperation(value="应急演练管理-通过excel导入数据", notes="应急演练管理-通过excel导入数据")
+    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+        return emergencyRehearsalYearService.importExcel(request, response);
+    }
+
+    /**
+     * 模板下载
+     *
+     * @param response
+     */
+    @AutoLog(value = "应急演练管理-模板下载")
+    @ApiOperation(value="应急演练管理-模板下载", notes="应急演练管理-模板下载")
+    @RequestMapping(value = "/exportTemplateXl",method = RequestMethod.GET)
+    public void exportTemplateXl(HttpServletResponse response) throws IOException {
+        emergencyRehearsalYearService.exportTemplateXl(response);
+    }
+
+    @GetMapping(value = "/updateState")
+    public Result<?> updateState(UpdateStateEntity updateStateEntity) {
+        emergencyRehearsalYearService.updateStates(updateStateEntity);
+        return Result.OK();
+    }
+
 
 }

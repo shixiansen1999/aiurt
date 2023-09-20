@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.boot.standard.mapper.PatrolStandardDeviceTypeMapper">
+
+<select id="queryByPatrolStandardCode" resultType="com.aiurt.boot.standard.entity.PatrolStandardDeviceType">
+    select psdt.device_type_code,d.name as deviceTypeName
+    from patrol_standard_device_type psdt
+    left join device_type d on psdt.device_type_code =d.code AND d.del_flag=0
+    where psdt.del_flag = 0 and psdt.standard_code = #{code}
+    </select>
+</mapper>

@@ -1,5 +1,6 @@
 package com.aiurt.modules.modeler.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.entity.ActCustomVariable;
@@ -13,6 +14,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
+import org.flowable.engine.RepositoryService;
 import org.flowable.ui.modeler.domain.Model;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.system.vo.LoginUser;
@@ -55,6 +57,9 @@ public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInf
 
     @Autowired
     private IActCustomVariableService customVariableService;
+
+    @Autowired
+    private RepositoryService repositoryService;
 
     /**
      * 添加模板
@@ -105,9 +110,13 @@ public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInf
         if (CollectionUtils.isNotEmpty(idList)) {
             String id = idList.get(0);
             ActCustomModelInfo modelInfo = this.getById(id);
+            String modelKey = modelInfo.getModelKey();
+
+            // 同时删除流程定义信息
             if (modelInfo.getStatus().equals(ModelFormStatusEnum.CG.getStatus())) {
                 this.removeById(id);
                 String modelId = modelInfo.getModelId();
+               // repositoryService.getBpmnModel(modelId);
                 modelService.deleteModel(modelId);
             } else {
                 throw new AiurtBootException("模型不是草稿状态，请勿删除！");
@@ -133,6 +142,50 @@ public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInf
         } catch (UnsupportedEncodingException e) {
            log.error(e.getMessage());
         }
+        return actCustomModelInfo;
+    }
+
+    /**
+     * 流程信息编辑
+     *
+     * @param actCustomModelInfo
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void edit(ActCustomModelInfo actCustomModelInfo) {
+        ActCustomModelInfo one = this.getById(actCustomModelInfo.getId());
+        if (Objects.isNull(one) || StrUtil.isBlank(one.getModelId())) {
+            throw new AiurtBootException("流程模板不存在，无法修改。");
+        }
+
+        Model model = modelService.getModel(one.getModelId());
+        if (Objects.isNull(model)) {
+            throw new AiurtBootException("流程模板不存在，无法修改。");
+        }
+
+
+
+        if (!StrUtil.equals(one.getModelKey(), actCustomModelInfo.getModelKey())) {
+            throw new AiurtBootException("流程标识不能修改！");
+        }
+        this.updateById(actCustomModelInfo);
+
+        model.setName(one.getName());
+        modelService.saveModel(model);
+    }
+
+
+    /**
+     * 根据modelKey查询模板信息
+     *
+     * @param modelKey
+     * @return
+     */
+    @Override
+    public ActCustomModelInfo queryByModelKey(String modelKey) {
+        LambdaQueryWrapper<ActCustomModelInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ActCustomModelInfo::getModelKey, modelKey).last("limit 1");
+        ActCustomModelInfo actCustomModelInfo = baseMapper.selectOne(wrapper);
         return actCustomModelInfo;
     }
 }

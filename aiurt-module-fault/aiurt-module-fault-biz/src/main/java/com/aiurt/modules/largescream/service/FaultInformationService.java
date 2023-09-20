@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -424,10 +425,14 @@ public class FaultInformationService {
         //获取当前登录人的专业编码
         List<String> majors = getCurrentLoginUserMajors();
         int x = 5;
+        // 当前时间
+        Date now = new Date();
+        // 存放子系统code和名称
+        //HashMap<String, String> systemMap = new HashMap<>(16);
         for (int i = 0; i <= x; i++) {
-            Integer sum = 0;
+            double duration = 0D;
             //创建一个新的系统故障单集合
-            List<FaultSystemMonthCountDTO> faultSystemMonthCountDTOList = new ArrayList<>();
+            //List<FaultSystemMonthCountDTO> faultSystemMonthCountDTOList = new ArrayList<>();
             //月份故障单
             FaultMonthCountDTO faultMonthCountDTO = new FaultMonthCountDTO();
             //获取最近半年月份，上一个月往前推半年
@@ -435,20 +440,45 @@ public class FaultInformationService {
             String substring = month.substring(5, 7);
             String changmonth = substring + "月";
             faultMonthCountDTO.setMonth(changmonth);
-            //查询按系统分类好的并统计故障次数
-            List<FaultSystemMonthCountDTO> largeFaultMonthCount = faultInformationMapper.getLargeFaultMonthCount(month, lineCode, majors);
-            for (FaultSystemMonthCountDTO faultSystemCountDTO : largeFaultMonthCount) {
-                sum += faultSystemCountDTO.getFrequency();
-                //将名字改成系统+次数
-                if (ObjectUtil.isNotEmpty(faultSystemCountDTO.getSystemName())) {
-                    String name = faultSystemCountDTO.getSystemName() + " " + faultSystemCountDTO.getFrequency();
-                    faultSystemCountDTO.setSystemName(name);
-                }
-                faultSystemMonthCountDTOList.add(faultSystemCountDTO);
+            //查询当月的故障
+            //0912需求变更查询排除非信号故障，信号专用
+            SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.IS_DISTINGUISH_SIGNAL_FAULT);
+            boolean isSignalFault = "1".equals(paramModel.getValue());
+            List<FaultSystemDTO> largeFaultMonthCount = faultInformationMapper.getLargeFaultMonthCount(month, lineCode, majors,isSignalFault);
+            // 保存每个子系统下的故障数
+            Map<String, Long> collect = null;
+            if (CollUtil.isNotEmpty(largeFaultMonthCount)) {
+                // 计算故障的duration
+                largeFaultMonthCount.forEach(f -> {
+                    //systemMap.putIfAbsent(f.getSubSystemCode(), f.getSystemName());
+                    if (ObjectUtil.isEmpty(f.getDuration())) {
+                        f.setDuration(DateUtil.between(f.getHappenTime(), now, DateUnit.SECOND));
+                    }
+                });
+                // 计算总duration
+                long sum = largeFaultMonthCount.stream().mapToLong(FaultSystemDTO::getDuration).sum();
+                // 转换为分钟
+                duration = BigDecimal.valueOf(sum / 60).setScale(1, RoundingMode.HALF_UP).doubleValue();
+                // todo 需要显示子系统的数据再打开以下相关注释
+                /*// 分组统计故障数
+                collect = largeFaultMonthCount.stream().collect(Collectors.groupingBy(FaultSystemDTO::getSubSystemCode, Collectors.counting()));
+                collect.entrySet().parallelStream().forEach(e -> {
+                    FaultSystemMonthCountDTO faultSystemCountDTO = new FaultSystemMonthCountDTO();
+                    faultSystemCountDTO.setSubSystemCode(e.getKey());
+                    //将名字改成系统+次数
+                    String systemName = systemMap.get(e.getKey());
+                    if (ObjectUtil.isNotEmpty(systemName)) {
+                        String name = systemMap.get(e.getKey()) + " " + e.getValue();
+                        faultSystemCountDTO.setSystemName(name);
+                    }
+                    faultSystemCountDTO.setFrequency(e.getValue());
+                    faultSystemMonthCountDTOList.add(faultSystemCountDTO);
+                });*/
             }
             //将月份内的所有故障次数求和
-            faultMonthCountDTO.setSum(sum);
-            faultMonthCountDTO.setFaultSystemMonthCountDTOList(faultSystemMonthCountDTOList);
+            faultMonthCountDTO.setSum(largeFaultMonthCount.size());
+            faultMonthCountDTO.setDuration(String.valueOf(duration));
+            //faultMonthCountDTO.setFaultSystemMonthCountDTOList(faultSystemMonthCountDTOList);
             faultMonthCountDTOList.add(faultMonthCountDTO);
         }
         return faultMonthCountDTOList;

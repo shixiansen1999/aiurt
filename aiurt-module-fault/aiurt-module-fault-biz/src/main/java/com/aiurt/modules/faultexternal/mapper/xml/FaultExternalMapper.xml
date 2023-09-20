@@ -18,7 +18,16 @@
             <if test="faultExternal.status !=null">
                 and f.status = #{faultExternal.status}
             </if>
+            <if test="faultExternal.faultPhenomenonOrCode !=null and faultExternal.faultPhenomenonOrCode != '' ">
+                and (f.sproandway like concat('%', #{faultExternal.faultPhenomenonOrCode}, '%')
+                or f.sexecode like concat('%', #{faultExternal.faultPhenomenonOrCode}, '%'))
+            </if>
         </where>
         ORDER BY f.create_time DESC
+    </select>
+
+    <select id="getLineCode" resultType="java.lang.Integer">
+        select ifnull(count(*),0) from fault_external_line_sta_rel felsr where felsr.iline = #{iline}
+        and felsr.line_code in (select cs_line.line_code from cs_line where del_flag = 0)
     </select>
 </mapper>

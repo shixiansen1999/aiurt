@@ -375,8 +375,8 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
         group by f.sub_system_code,f.line_Code
     </select>
 
-    <select id="getLargeFaultMonthCount" resultType="com.aiurt.modules.fault.dto.FaultSystemMonthCountDTO">
-        SELECT cs.system_name, f.sub_system_code,f.line_code,count(*) as frequency
+    <select id="getLargeFaultMonthCount" resultType="com.aiurt.modules.fault.dto.FaultSystemDTO">
+        SELECT f.id, f.code, f.happen_time, f.duration, cs.system_name, f.sub_system_code,f.line_code
         FROM fault f
             LEFT JOIN cs_subsystem cs ON f.sub_system_code = cs.system_code
         <where>
@@ -393,8 +393,10 @@ INSERT INTO reliability_work_time(`id`, `line_code`, `system_code`, `should_work
                     #{item}
                 </foreach>
             </if>
+            <if test="isSignalFault">
+                and f.is_signal_fault = 0
+            </if>
         </where>
-        group by f.sub_system_code,f.line_Code
     </select>
 
     <select id="getSystemFaultSum" resultType="com.aiurt.modules.fault.dto.FaultSystemTimesDTO">

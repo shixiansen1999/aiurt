@@ -51,7 +51,7 @@ public class SysTodoListServiceImpl extends ServiceImpl<SysTodoListMapper, SysTo
             records.forEach(todoList->{
                 String taskType = todoList.getTaskType();
                 if (StrUtil.equalsIgnoreCase("bpmn", taskType) && StrUtil.equalsIgnoreCase("1,3", sysTodoList.getTodoType())) {
-                    Task activeTask = flowApiService.getProcessInstanceActiveTask(todoList.getProcessInstanceId(), null);
+                    Task activeTask = flowApiService.getProcessInstanceActiveTask(todoList.getProcessInstanceId(), todoList.getTaskId());
                     if (Objects.nonNull(activeTask)) {
                         todoList.setTaskId(activeTask.getId());
                     }

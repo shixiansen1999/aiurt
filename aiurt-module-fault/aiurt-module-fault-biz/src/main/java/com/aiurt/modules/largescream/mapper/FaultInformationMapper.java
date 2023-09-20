@@ -159,9 +159,10 @@ public interface FaultInformationMapper {
      * @param month
      * @param lineCode
      * @param majors
+     * @param isSignalFault
      * @return
      */
-    List<FaultSystemMonthCountDTO> getLargeFaultMonthCount(@Param("month") String month, @Param("lineCode") String lineCode,@Param("majors") List<String> majors);
+    List<FaultSystemDTO> getLargeFaultMonthCount(@Param("month") String month, @Param("lineCode") String lineCode, @Param("majors") List<String> majors, @Param("isSignalFault")boolean isSignalFault);
 
     /**
      * 按系统分类获取子系统下故障维修时长总数

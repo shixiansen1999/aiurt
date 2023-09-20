@@ -9,6 +9,7 @@ import com.aiurt.boot.plan.service.IEmergencyPlanService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.common.entity.UpdateStateEntity;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;

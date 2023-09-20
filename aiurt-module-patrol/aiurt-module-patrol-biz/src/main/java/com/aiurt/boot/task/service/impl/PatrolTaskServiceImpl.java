@@ -18,6 +18,8 @@ import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.boot.standard.entity.PatrolStandardDeviceType;
+import com.aiurt.boot.standard.mapper.PatrolStandardDeviceTypeMapper;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.statistics.dto.IndexStationDTO;
 import com.aiurt.boot.task.dto.*;
@@ -40,6 +42,7 @@ import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.excel.EasyExcel;
@@ -152,7 +155,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private PatrolSamplePersonMapper patrolSamplePersonMapper;
     @Autowired
     private ISysParamAPI iSysParamAPI;
-
+    @Autowired
+    private PatrolStandardDeviceTypeMapper patrolStandardDeviceTypeMapper;
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
@@ -1284,47 +1288,51 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDTO.getId());
         SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_SUBMIT_SIGNATURE);
         boolean value = "1".equals(paramModel.getValue());
-        if (manager.checkTaskUser(patrolTask.getCode()) == false && !admin) {
+        if (!manager.checkTaskUser(patrolTask.getCode()) && !admin) {
             throw new AiurtBootException("只有该任务的巡检人才可以提交任务");
-        } else {
-            List<PatrolTaskDevice> taskDevices = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTask.getId()));
-            List<PatrolTaskDevice> errDeviceList = taskDevices.stream().filter(e -> PatrolConstant.RESULT_EXCEPTION.equals(e.getCheckResult())).collect(Collectors.toList());
-            LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-            if (PatrolConstant.TASK_CHECK.equals(patrolTask.getAuditor())) {
-                if (CollUtil.isNotEmpty(errDeviceList)) {
-                    updateWrapper.set(PatrolTask::getStatus, 6)
-                            .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
-                            .set(PatrolTask::getSubmitTime, LocalDateTime.now())
-                            .set(PatrolTask::getAbnormalState, 0)
-                            .eq(PatrolTask::getId, patrolTaskDTO.getId());
-                } else {
-                    updateWrapper.set(PatrolTask::getStatus, 6)
-                            .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
-                            .set(PatrolTask::getSubmitTime, LocalDateTime.now())
-                            .set(PatrolTask::getAbnormalState, 1)
-                            .eq(PatrolTask::getId, patrolTaskDTO.getId());
-                }
+        }
+        List<PatrolTaskDevice> taskDevices = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTask.getId()));
+        List<PatrolTaskDevice> errDeviceList = taskDevices.stream().filter(e -> PatrolConstant.RESULT_EXCEPTION.equals(e.getCheckResult())).collect(Collectors.toList());
+        LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
+        if (PatrolConstant.TASK_CHECK.equals(patrolTask.getAuditor())) {
+            if (CollUtil.isNotEmpty(errDeviceList)) {
+                updateWrapper.set(PatrolTask::getStatus, 6)
+                        .set(PatrolTask::getEndUserId, sysUser.getId())
+                        .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
+                        .set(PatrolTask::getSubmitTime, LocalDateTime.now())
+                        .set(PatrolTask::getAbnormalState, 0)
+                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
             } else {
-                if (CollUtil.isNotEmpty(errDeviceList)) {
-                    updateWrapper.set(PatrolTask::getStatus, 7)
-                            .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
-                            .set(PatrolTask::getSubmitTime, LocalDateTime.now())
-                            .set(PatrolTask::getAbnormalState, 0)
-                            .eq(PatrolTask::getId, patrolTaskDTO.getId());
-                } else {
-                    updateWrapper.set(PatrolTask::getStatus, 7)
-                            .set(PatrolTask::getEndUserId, sysUser.getId())
-                            .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
-                            .set(PatrolTask::getAbnormalState, 1)
-                            .set(PatrolTask::getSubmitTime, LocalDateTime.now())
-                            .eq(PatrolTask::getId, patrolTaskDTO.getId());
-                }
-
+                updateWrapper.set(PatrolTask::getStatus, 6)
+                        .set(PatrolTask::getEndUserId, sysUser.getId())
+                        .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
+                        .set(PatrolTask::getSubmitTime, LocalDateTime.now())
+                        .set(PatrolTask::getAbnormalState, 1)
+                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
             }
-            // 无论任务是否要审核，都要更新巡视工时
+        } else {
+            if (CollUtil.isNotEmpty(errDeviceList)) {
+                updateWrapper.set(PatrolTask::getStatus, 7)
+                        .set(PatrolTask::getEndUserId, sysUser.getId())
+                        .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
+                        .set(PatrolTask::getSubmitTime, LocalDateTime.now())
+                        .set(PatrolTask::getAbnormalState, 0)
+                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
+            } else {
+                updateWrapper.set(PatrolTask::getStatus, 7)
+                        .set(PatrolTask::getEndUserId, sysUser.getId())
+                        .set(PatrolTask::getSignUrl, value?user.getSignatureUrl():patrolTaskDTO.getSignUrl())
+                        .set(PatrolTask::getAbnormalState, 1)
+                        .set(PatrolTask::getSubmitTime, LocalDateTime.now())
+                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
+            }
+
+        }
+        // 无论任务是否要审核，都要更新巡视工时
+        // 根据配置决定巡视工时是使用mac计算，还是巡视工单时长之和
+        SysParamModel model = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_DURATION_USE_MAC);
+        if ("1".equals(model.getValue())) {
+            // 使用mac计算工时
             // 根据id获取task
             PatrolTask task = this.getById(patrolTaskDTO.getId());
             // 查询出任务所在的站点，需求说一个任务不可能有多个站点，所以就取第一个
@@ -1354,98 +1362,103 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
 
             }
+        }else{
+            // 巡视时长使用各工单时长之和
+            Integer duration = patrolTaskMapper.getTaskDurationBySumDevice(patrolTaskDTO.getId());
+            updateWrapper.set(PatrolTask::getDuration, duration);
+        }
 
-            //获取mac地址
-            List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(task.getId());
+        //获取mac地址
+        List<PatrolTaskDeviceDTO> mac = patrolTaskDeviceMapper.getMac(patrolTaskDTO.getId());
 
-            if (CollUtil.isNotEmpty(mac)) {
-                long l = mac.stream().filter(m -> m.getMacStatus().equals(PatrolConstant.MAC_STATUS_EXCEPTION) || ObjectUtil.isEmpty(m.getMacStatus())).count();
-                if (l == 0L) {
-                    updateWrapper.set(PatrolTask::getMacStatus, 1);
-                }else {
-                    updateWrapper.set(PatrolTask::getMacStatus, 0);
-                }
-            } else {
+        if (CollUtil.isNotEmpty(mac)) {
+            long l = mac.stream().filter(m -> m.getMacStatus().equals(PatrolConstant.MAC_STATUS_EXCEPTION) || ObjectUtil.isEmpty(m.getMacStatus())).count();
+            if (l == 0L) {
+                updateWrapper.set(PatrolTask::getMacStatus, 1);
+            }else {
                 updateWrapper.set(PatrolTask::getMacStatus, 0);
             }
-
-            patrolTaskMapper.update(new PatrolTask(), updateWrapper);
-            // 提交任务如果需要审核则发送一条审核待办消息
-            try {
-                if (PatrolConstant.TASK_CHECK.equals(patrolTask.getAuditor())) {
-                    QueryWrapper<PatrolTaskOrganization> wrapper = new QueryWrapper<>();
-                    wrapper.lambda().eq(PatrolTaskOrganization::getTaskCode, patrolTask.getCode())
-                            .eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0);
-                    List<PatrolTaskOrganization> organizations = patrolTaskOrganizationMapper.selectList(wrapper);
-                    List<String> orgCodes = organizations.stream().map(PatrolTaskOrganization::getOrgCode).collect(Collectors.toList());
-                    String userName = sysBaseApi.getUserNameByOrgCodeAndRoleCode(orgCodes, Arrays.asList(RoleConstant.FOREMAN));
-
-                    QueryWrapper<PatrolTaskUser> queryWrapper = new QueryWrapper<>();
-                    queryWrapper.lambda().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()).eq(PatrolTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0);
-                    List<PatrolTaskUser> taskUsers = patrolTaskUserMapper.selectList(queryWrapper);
-                    if (CollectionUtil.isEmpty(taskUsers)) {
-                        return;
-                    }
-
-                    String[] userIds = taskUsers.stream().map(PatrolTaskUser::getUserId).toArray(String[]::new);
-                    List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
-                    String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
-
-                    //构建消息模板
-                    HashMap<String, Object> map = new HashMap<>();
-                    map.put("code",patrolTask.getCode());
-                    map.put("patrolTaskName",patrolTask.getName());
-                    List<String>  station = patrolTaskStationMapper.getStationByTaskCode(patrolTask.getCode());
-                    map.put("patrolStation",CollUtil.join(station,","));
-                    if (patrolTask.getPatrolDate() != null) {
-                        String patrolDate = DateUtil.format(patrolTask.getPatrolDate(), "yyyy-MM-dd");
-                        map.put("patrolTaskTime",patrolDate);
-                    }else {
-                        String s1 = DateUtil.format(patrolTask.getStartDate(), "yyyy-MM-dd");
-                        String s2 = DateUtil.format(patrolTask.getEndDate(), "yyyy-MM-dd");
-                        map.put("patrolTaskTime",s1+"-"+s2);
-                    }
-                    map.put("patrolName", realNames);
-
-                    //发送通知
-                    MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),userName, "巡视任务-审核通过" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_4);
-                    PatrolMessageDTO patrolMessageDTO = new PatrolMessageDTO();
-                    BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
-                    //业务类型，消息类型，消息模板编码，摘要，发布内容
-                    /*patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
-                    messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
-                    messageDTO.setMsgAbstract("巡视任务完成");
-                    messageDTO.setPublishingContent("巡视任务已完成，请确认");
-                    sendMessage(messageDTO,realNames,null,patrolMessageDTO);*/
-                    //发送代办
-                    TodoDTO todoDTO = new TodoDTO();
-                    todoDTO.setData(map);
-                    SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);
-                    todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-
-                    todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
-                    todoDTO.setTitle("巡视任务-审核"+DateUtil.today());
-                    todoDTO.setMsgAbstract("巡视任务完成");
-                    todoDTO.setPublishingContent("巡视任务已完成，请确认");
-
-                    todoDTO.setProcessDefinitionName("巡视管理");
-                    todoDTO.setTaskName(patrolTask.getName() + "(待审核)");
-                    todoDTO.setBusinessKey(patrolTask.getId());
-                    todoDTO.setBusinessType(TodoBusinessTypeEnum.PATROL_AUDIT.getType());
-                    todoDTO.setCurrentUserName(userName);
-                    todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
-                    todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
-                    todoDTO.setUrl(PatrolMessageUrlConstant.AUDIT_URL);
-                    todoDTO.setAppUrl(PatrolMessageUrlConstant.AUDIT_APP_URL);
-                    isTodoBaseAPI.createTodoTask(todoDTO);
-
-                    // 更新待办
-                    isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_EXECUTE.getType(), patrolTaskDTO.getId(), sysUser.getUsername(), "1");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        } else {
+            updateWrapper.set(PatrolTask::getMacStatus, 0);
         }
+
+        patrolTaskMapper.update(new PatrolTask(), updateWrapper);
+        // 提交任务如果需要审核则发送一条审核待办消息
+        try {
+            if (PatrolConstant.TASK_CHECK.equals(patrolTask.getAuditor())) {
+                QueryWrapper<PatrolTaskOrganization> wrapper = new QueryWrapper<>();
+                wrapper.lambda().eq(PatrolTaskOrganization::getTaskCode, patrolTask.getCode())
+                        .eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0);
+                List<PatrolTaskOrganization> organizations = patrolTaskOrganizationMapper.selectList(wrapper);
+                List<String> orgCodes = organizations.stream().map(PatrolTaskOrganization::getOrgCode).collect(Collectors.toList());
+                String userName = sysBaseApi.getUserNameByOrgCodeAndRoleCode(orgCodes, Arrays.asList(RoleConstant.FOREMAN));
+
+                QueryWrapper<PatrolTaskUser> queryWrapper = new QueryWrapper<>();
+                queryWrapper.lambda().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()).eq(PatrolTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+                List<PatrolTaskUser> taskUsers = patrolTaskUserMapper.selectList(queryWrapper);
+                if (CollectionUtil.isEmpty(taskUsers)) {
+                    return;
+                }
+
+                String[] userIds = taskUsers.stream().map(PatrolTaskUser::getUserId).toArray(String[]::new);
+                List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(userIds);
+                String realNames = loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining(","));
+
+                //构建消息模板
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("code",patrolTask.getCode());
+                map.put("patrolTaskName",patrolTask.getName());
+                List<String>  station = patrolTaskStationMapper.getStationByTaskCode(patrolTask.getCode());
+                map.put("patrolStation",CollUtil.join(station,","));
+                if (patrolTask.getPatrolDate() != null) {
+                    String patrolDate = DateUtil.format(patrolTask.getPatrolDate(), "yyyy-MM-dd");
+                    map.put("patrolTaskTime",patrolDate);
+                }else {
+                    String s1 = DateUtil.format(patrolTask.getStartDate(), "yyyy-MM-dd");
+                    String s2 = DateUtil.format(patrolTask.getEndDate(), "yyyy-MM-dd");
+                    map.put("patrolTaskTime",s1+"-"+s2);
+                }
+                map.put("patrolName", realNames);
+
+                //发送通知
+                MessageDTO messageDTO = new MessageDTO(sysUser.getUsername(),userName, "巡视任务-审核通过" + DateUtil.today(), null, CommonConstant.MSG_CATEGORY_4);
+                PatrolMessageDTO patrolMessageDTO = new PatrolMessageDTO();
+                BeanUtil.copyProperties(patrolTask,patrolMessageDTO);
+                //业务类型，消息类型，消息模板编码，摘要，发布内容
+                /*patrolMessageDTO.setBusType(SysAnnmentTypeEnum.PATROL_ASSIGN.getType());
+                messageDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
+                messageDTO.setMsgAbstract("巡视任务完成");
+                messageDTO.setPublishingContent("巡视任务已完成，请确认");
+                sendMessage(messageDTO,realNames,null,patrolMessageDTO);*/
+                //发送代办
+                TodoDTO todoDTO = new TodoDTO();
+                todoDTO.setData(map);
+                SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_MESSAGE_PROCESS);
+                todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+
+                todoDTO.setTemplateCode(CommonConstant.PATROL_SERVICE_NOTICE);
+                todoDTO.setTitle("巡视任务-审核"+DateUtil.today());
+                todoDTO.setMsgAbstract("巡视任务完成");
+                todoDTO.setPublishingContent("巡视任务已完成，请确认");
+
+                todoDTO.setProcessDefinitionName("巡视管理");
+                todoDTO.setTaskName(patrolTask.getName() + "(待审核)");
+                todoDTO.setBusinessKey(patrolTask.getId());
+                todoDTO.setBusinessType(TodoBusinessTypeEnum.PATROL_AUDIT.getType());
+                todoDTO.setCurrentUserName(userName);
+                todoDTO.setTaskType(TodoTaskTypeEnum.PATROL.getType());
+                todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+                todoDTO.setUrl(PatrolMessageUrlConstant.AUDIT_URL);
+                todoDTO.setAppUrl(PatrolMessageUrlConstant.AUDIT_APP_URL);
+                isTodoBaseAPI.createTodoTask(todoDTO);
+
+                // 更新待办
+                isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.PATROL_EXECUTE.getType(), patrolTaskDTO.getId(), sysUser.getUsername(), "1");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -1492,6 +1505,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //保存巡检任务标准表的信息
         String taskId = patrolTask.getId();
         List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();
+        //通信十一期通过配置去掉需要指定设备的限制
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
         patrolStandardList.stream().forEach(ns -> {
             PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
             patrolTaskStandard.setTaskId(taskId);
@@ -1506,7 +1521,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
-            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()) {
+            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()  && "0".equals(paramModel.getValue()) ) {
                 List<DeviceDTO> deviceList = ns.getDeviceList();
                 if (CollUtil.isEmpty(deviceList)) {
                     throw new AiurtBootException("要指定设备才可以保存");
@@ -1610,6 +1625,16 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
             });
             e.setDeviceList(dtoList);
+
+            List<PatrolStandardDeviceType> patrolStandardDeviceTypes = patrolStandardDeviceTypeMapper.selectList(new LambdaQueryWrapper<PatrolStandardDeviceType>().eq(PatrolStandardDeviceType::getStandardCode, e.getCode()).select(PatrolStandardDeviceType::getDeviceTypeCode));
+            if (CollUtil.isNotEmpty(patrolStandardDeviceTypes)) {
+                Set<String> deviceTypeCodes = patrolStandardDeviceTypes.stream().map(PatrolStandardDeviceType::getDeviceTypeCode).collect(Collectors.toSet());
+                e.setDeviceTypeCodeList(new ArrayList<>(deviceTypeCodes));
+                List<DeviceType> typeList = sysBaseApi.selectDeviceTypeByCodes(deviceTypeCodes);
+                String deviceTypeNames = typeList.stream().map(DeviceType::getName).collect(Collectors.joining(";"));
+                e.setDeviceTypeName(deviceTypeNames);
+            }
+
         });
         return pageList.setRecords(standardList);
     }
@@ -1914,6 +1939,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //保存巡检任务标准表的信息
         String taskId = patrolTaskManualDTO.getId();
         List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();
+        //通信十一期通过配置去掉需要指定设备的限制
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
         patrolStandardList.stream().forEach(ns -> {
             PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
             patrolTaskStandard.setTaskId(taskId);
@@ -1928,27 +1955,28 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
-            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()) {
+            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()  && "0".equals(paramModel.getValue())  ) {
                 List<DeviceDTO> deviceList = ns.getDeviceList();
                 if(CollUtil.isEmpty(deviceList)){
                      throw new AiurtBootException("要指定设备才可以保存");
+                }else{
+                    //遍历设备单号
+                    deviceList.stream().forEach(dv -> {
+                        PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
+                        patrolTaskDevice.setTaskId(taskId);//巡检任务id
+                        patrolTaskDevice.setDelFlag(0);
+                        patrolTaskDevice.setStatus(0);//单号状态
+                        patrolTaskDevice.setPatrolNumber(PatrolCodeUtil.getBillCode());
+                        patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
+                        patrolTaskDevice.setDeviceCode(dv.getCode());//设备code
+                        Device device = patrolTaskDeviceMapper.getDevice(dv.getCode());
+                        patrolTaskDevice.setLineCode(device.getLineCode());//线路code
+                        patrolTaskDevice.setStationCode(device.getStationCode());//站点code
+                        patrolTaskDevice.setPositionCode(device.getPositionCode());//位置code
+                        patrolTaskDeviceMapper.insert(patrolTaskDevice);
+                        patrolTaskDeviceService.copyItems(patrolTaskDevice);
+                    });
                 }
-                //遍历设备单号
-                deviceList.stream().forEach(dv -> {
-                    PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
-                    patrolTaskDevice.setTaskId(taskId);//巡检任务id
-                    patrolTaskDevice.setDelFlag(0);
-                    patrolTaskDevice.setStatus(0);//单号状态
-                    patrolTaskDevice.setPatrolNumber(PatrolCodeUtil.getBillCode());
-                    patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
-                    patrolTaskDevice.setDeviceCode(dv.getCode());//设备code
-                    Device device = patrolTaskDeviceMapper.getDevice(dv.getCode());
-                    patrolTaskDevice.setLineCode(device.getLineCode());//线路code
-                    patrolTaskDevice.setStationCode(device.getStationCode());//站点code
-                    patrolTaskDevice.setPositionCode(device.getPositionCode());//位置code
-                    patrolTaskDeviceMapper.insert(patrolTaskDevice);
-                    patrolTaskDeviceService.copyItems(patrolTaskDevice);
-                });
             } else {
                 List<String> stationCodeList1 = patrolTaskManualDTO.getStationCodeList();
                 stationCodeList1.stream().forEach(sc -> {
@@ -2042,12 +2070,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         if (CollUtil.isNotEmpty(accompanyList)) {
             accompanyList = accompanyList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolAccompany::getUserId))), ArrayList::new));
-            String peerPeople = accompanyList.stream().map(PatrolAccompany::getUsername).collect(Collectors.joining(";"));
+            String peerPeople = accompanyList.stream().map(PatrolAccompany::getUsername).collect(Collectors.joining(","));
             e.setPeerPeople(peerPeople);
         }
         if (CollUtil.isNotEmpty(samplePersonList)) {
             samplePersonList = samplePersonList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(PatrolSamplePerson::getUserId))), ArrayList::new));
-            String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining(";"));
+            String samplePersonName = samplePersonList.stream().map(PatrolSamplePerson::getUsername).collect(Collectors.joining(","));
             e.setSamplePersonName(samplePersonName);
         }
         return e;
@@ -2165,6 +2193,135 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             arrayList.add(taskDTO);
         }
         return arrayList;
+    }
+
+    @Override
+    public List<PrintPatrolTaskStandardDTO> printPatrolTaskAndStandardById(String ids,String patrolNumber) {
+        List<PrintPatrolTaskStandardDTO> arrayList = new ArrayList<>();
+        List<String> idList = StrUtil.splitTrim(ids, ",");
+        for (String id : idList) {
+            PrintPatrolTaskStandardDTO printPatrolTaskStandardDTO = new PrintPatrolTaskStandardDTO();
+            PatrolTask patrolTask = patrolTaskMapper.selectById(id);
+            Assert.notNull(patrolTask, "未找到对应记录！");
+            String patrolPlanPeriod = null;
+            if(patrolTask.getPeriod() != null){
+                 patrolPlanPeriod = sysBaseApi.translateDict("patrol_plan_period", Convert.toStr(patrolTask.getPeriod()));
+            }
+
+            printPatrolTaskStandardDTO.setId(patrolTask.getId());
+            // 组织机构信息
+            List<PatrolTaskOrganizationDTO> organizationInfo = patrolTaskOrganizationMapper.selectOrgByTaskCode(patrolTask.getCode());
+            //巡视单内容
+            List<PrintTaskStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfoToPrint(id);
+            for (PrintTaskStationDTO dto : billGangedInfo) {
+                //获取检修项
+                List<PrintStandardDetailDTO> billInfo = dto.getBillInfo();
+                List<PrintStandardDetailDTO> printStandardDetailDTOS = new ArrayList<>();
+                //批量打印，打印任务里面的所有工单
+                if (CollUtil.isNotEmpty(billInfo)) {
+                        for (PrintStandardDetailDTO printStandardDetailDTO : billInfo) {
+                            String billCode = printStandardDetailDTO.getBillCode();
+                            //工单详情打印，只打印选中的工单
+                            if (StrUtil.isEmpty(patrolNumber) || billCode.equals(patrolNumber)) {
+                                getPatrolStandardDetail(printStandardDetailDTO, patrolTask, printStandardDetailDTOS, billCode, organizationInfo, patrolPlanPeriod);
+                            }
+                        }
+                }
+                printPatrolTaskStandardDTO.setBillInfo(printStandardDetailDTOS);
+                arrayList.add(printPatrolTaskStandardDTO);
+            }
+        }
+        return arrayList;
+    }
+
+    public void getPatrolStandardDetail(PrintStandardDetailDTO printStandardDetailDTO,PatrolTask patrolTask, List<PrintStandardDetailDTO> printStandardDetailDTOS,String billCode,List<PatrolTaskOrganizationDTO> organizationInfo,String patrolPlanPeriod){
+        //构建树
+        PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumberToPrint(billCode))
+                .orElseGet(PatrolTaskDeviceParam::new);
+        List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
+        // 字典翻译检查值
+        Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
+                .stream().filter(l->StrUtil.isNotEmpty(l.getText()))
+                .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+        checkResultList.stream().forEach(c -> {
+            c.setCheckDictName(requiredItems.get(String.valueOf(c.getRequired())));
+        });
+        List<PatrolCheckResultDTO> tree = getTree(checkResultList, "0");
+        //获取设备位置
+        StationDTO stationDTO = new StationDTO();
+        stationDTO.setLineCode(taskDeviceParam.getLineCode());
+        stationDTO.setStationCode(taskDeviceParam.getStationCode());
+        stationDTO.setPositionCode(taskDeviceParam.getPositionCode());
+        List<StationDTO> stationDTOList = new ArrayList<>();
+        stationDTOList.add(stationDTO);
+        //设备位置翻译
+        String s = manager.translateStation(stationDTOList);
+        //设备的位置
+        if (ObjectUtil.isNotEmpty(taskDeviceParam.getDeviceCode())) {
+            taskDeviceParam.setDevicePositionName(s);
+        } else {
+            taskDeviceParam.setInspectionPositionName(s);
+            taskDeviceParam.setDevicePositionName(null);
+        }
+        //巡检工单详情
+        printStandardDetailDTO.setUserName(patrolTaskMapper.getUsername(patrolTask.getEndUserId()));
+        printStandardDetailDTO.setSubmitTime(taskDeviceParam.getCheckTime());
+        printStandardDetailDTO.setSignUrl(patrolTask.getSignUrl());
+        printStandardDetailDTO.setPeriod(patrolPlanPeriod);
+        printStandardDetailDTO.setChildren(tree);
+        printStandardDetailDTO.setSpotCheckUserName(taskDeviceParam.getSamplePersonName());
+        //抽检人不为空，则显示为提交时间
+        if(StrUtil.isNotBlank(printStandardDetailDTO.getSpotCheckUserName())){
+            printStandardDetailDTO.setSpotCheckTime(taskDeviceParam.getCheckTime());
+        }
+        printStandardDetailDTO.setDeviceName(taskDeviceParam.getDeviceName());
+        printStandardDetailDTO.setDeviceLocation(taskDeviceParam.getDevicePositionName());
+        printStandardDetailDTO.setDepartInfo(organizationInfo);
+        printStandardDetailDTOS.add(printStandardDetailDTO);
+    }
+
+    /**
+     * 构建巡检项目树
+     *
+     * @param list
+     * @param parentId
+     * @return
+     */
+    public List<PatrolCheckResultDTO> getTree(List<PatrolCheckResultDTO> list, String parentId) {
+        // 树的根节点
+        List<PatrolCheckResultDTO> tree = Optional.ofNullable(list).orElseGet(Collections::emptyList)
+                .stream().filter(l -> ObjectUtil.isNotEmpty(l.getParentId()) && parentId.equals(l.getParentId()))
+                .collect(Collectors.toList());
+        // 非根节点数据
+        List<PatrolCheckResultDTO> subList = Optional.ofNullable(list).orElseGet(Collections::emptyList)
+                .stream().filter(l -> !parentId.equals(l.getParentId()))
+                .collect(Collectors.toList());
+        // 构建根节点下的子树
+        tree.stream().forEach(l -> {
+            List<PatrolCheckResultDTO> subTree = buildTree(subList, l.getOldId());
+            l.setChildren(subTree);
+        });
+        return tree;
+    }
+    /**
+     * 递归获取子树
+     *
+     * @param list
+     * @param parentId
+     * @return
+     */
+    public List<PatrolCheckResultDTO> buildTree(List<PatrolCheckResultDTO> list, String parentId) {
+        List<PatrolCheckResultDTO> tree = new ArrayList<>();
+        for (PatrolCheckResultDTO dept : list) {
+            if (dept.getParentId() != null) {
+                if (dept.getParentId().equals(parentId)) {
+                    List<PatrolCheckResultDTO> subList = buildTree(list, dept.getId());
+                    dept.setChildren(subList);
+                    tree.add(dept);
+                }
+            }
+        }
+        return tree;
     }
 
     @Override

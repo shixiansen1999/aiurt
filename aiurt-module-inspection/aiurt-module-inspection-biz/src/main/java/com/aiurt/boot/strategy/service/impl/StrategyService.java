@@ -12,7 +12,9 @@ import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.entity.InspectionCodeContent;
+import com.aiurt.boot.standard.entity.InspectionCodeDeviceType;
 import com.aiurt.boot.standard.mapper.InspectionCodeContentMapper;
+import com.aiurt.boot.standard.mapper.InspectionCodeDeviceTypeMapper;
 import com.aiurt.boot.strategy.context.FunctionStrategy;
 import com.aiurt.boot.strategy.entity.*;
 import com.aiurt.boot.strategy.mapper.InspectionStrDeviceRelMapper;
@@ -25,6 +27,7 @@ import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.UpdateHelperUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -66,6 +69,10 @@ public class StrategyService {
     private RepairPoolCodeContentMapper repairPoolCodeContentMapper;
     @Resource
     private RepairPoolRelMapper relMapper;
+    @Autowired
+    private InspectionCodeDeviceTypeMapper inspectionCodeDeviceTypeMapper;
+    @Autowired
+    private RepairPoolCodeDeviceTypeMapper repairPoolCodeDeviceTypeMapper;
 
     private Map<Integer, FunctionStrategy<InspectionStrategy, List<RepairPoolCode>, List<InspectionStrOrgRel>, List<InspectionStrStaRel>>> map = new ConcurrentHashMap<>(8);
 
@@ -632,6 +639,19 @@ public class StrategyService {
                 String staId = repairPoolCode.getId();
                 result.add(repairPoolCode);
 
+                //保存检修标准设备类型关联
+                List<InspectionCodeDeviceType> patrolStandardDeviceTypes = inspectionCodeDeviceTypeMapper.selectList(new LambdaQueryWrapper<InspectionCodeDeviceType>()
+                        .eq(InspectionCodeDeviceType::getInspectionCode, inspectionCode.getCode())
+                        .eq(InspectionCodeDeviceType::getDelFlag, CommonConstant.DEL_FLAG_0));
+
+                if (CollUtil.isNotEmpty(patrolStandardDeviceTypes)) {
+                    for (InspectionCodeDeviceType deviceTypeCode : patrolStandardDeviceTypes) {
+                        RepairPoolCodeDeviceType repairPoolCodeDeviceType = new RepairPoolCodeDeviceType();
+                        repairPoolCodeDeviceType.setRepairPoolCode(repairPoolCode.getCode());
+                        repairPoolCodeDeviceType.setDeviceTypeCode(deviceTypeCode.getDeviceTypeCode());
+                        repairPoolCodeDeviceTypeMapper.insert(repairPoolCodeDeviceType);
+                    }
+                }
                 // <K,V> K是旧的id,V新生成的id，用来维护复制检修项目时的pid更新
                 HashMap<String, String> map = new HashMap<>(50);
 

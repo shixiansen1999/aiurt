@@ -11,6 +11,7 @@ import com.aiurt.common.util.Md5Util;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.config.JeeccgBaseConfig;
 import com.aiurt.modules.system.dto.SysPermissionDTO;
+import com.aiurt.modules.system.dto.SysPermissionTreeDTO;
 import com.aiurt.modules.system.entity.SysDepartPermission;
 import com.aiurt.modules.system.entity.SysPermission;
 import com.aiurt.modules.system.entity.SysPermissionDataRule;
@@ -217,6 +218,83 @@ public class SysPermissionController {
     /*update_end author:wuxianquan date:20190908 for:先查询一级菜单，当用户点击展开菜单时加载子菜单 */
 
     // update_begin author:sunjianlei date:20200108 for: 新增批量根据父ID查询子级菜单的接口 -------------
+
+
+    /**
+     * 系统菜单列表(一级菜单)
+     *
+     * @return
+     */
+    @ApiOperation(value = "流程表单-查询所有一级菜单", notes = "流程表单-查询所有一级菜单")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "isApp", value = "是否是移动端模块（1是，0否）", required = false, dataTypeClass = Integer.class),
+    })
+    @RequestMapping(value = "/getSystemFirstMenuList", method = RequestMethod.GET)
+    public Result<List<SysPermissionTreeDTO>> getSystemFirstMenuList(@RequestParam(name = "isApp", required = false) Integer isApp) {
+        long start = System.currentTimeMillis();
+        Result<List<SysPermissionTreeDTO>> result = new Result<>();
+        try {
+            QueryWrapper<SysPermission> query = new QueryWrapper<SysPermission>();
+            query.eq("menu_type", CommonConstant.MENU_TYPE_0);
+            query.eq("del_flag", CommonConstant.DEL_FLAG_0);
+            // 兼容同时查询pc端和移动端的查询
+            if (ObjectUtil.isNotEmpty(isApp)) {
+                query.eq("is_app", isApp);
+            }
+            query.orderByAsc("sort_no");
+            List<SysPermission> list = sysPermissionService.list(query);
+            List<SysPermissionTreeDTO> sysPermissionTreeList = new ArrayList<SysPermissionTreeDTO>();
+            for (SysPermission sysPermission : list) {
+                SysPermissionTreeDTO sysPermissionTree = new SysPermissionTreeDTO(sysPermission);
+                sysPermissionTreeList.add(sysPermissionTree);
+            }
+            result.setResult(sysPermissionTreeList);
+            result.setSuccess(true);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        log.info("======获取一级菜单数据=====耗时:" + (System.currentTimeMillis() - start) + "毫秒");
+        return result;
+    }
+
+
+
+
+    /**
+     * 流程表单-查询子菜单
+     *
+     * @param parentId 父id
+     * @return
+     */
+    @ApiOperation(value = "查询子菜单", notes = "查询子菜单")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "parentId", value = "父id", required = true, dataTypeClass = String.class),
+    })
+    @RequestMapping(value = "/getSystemChildMenu", method = RequestMethod.GET)
+    public Result<List<SysPermissionTreeDTO>> getSystemChildMenu(@RequestParam("parentId") String parentId) {
+        Integer menuType = CommonConstant.MENU_TYPE_1;
+        Result<List<SysPermissionTreeDTO>> result = new Result<>();
+        try {
+            LambdaQueryWrapper<SysPermission> query = new LambdaQueryWrapper<SysPermission>();
+            if (ObjectUtil.isNotEmpty(menuType)) {
+                query.eq(SysPermission::getMenuType, menuType);
+            }
+            query.eq(SysPermission::getParentId, parentId);
+            query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0);
+            query.orderByAsc(SysPermission::getSortNo);
+            List<SysPermission> list = sysPermissionService.list(query);
+            List<SysPermissionTreeDTO> sysPermissionTreeList = new ArrayList<SysPermissionTreeDTO>();
+            for (SysPermission sysPermission : list) {
+                SysPermissionTreeDTO sysPermissionTree = new SysPermissionTreeDTO(sysPermission);
+                sysPermissionTreeList.add(sysPermissionTree);
+            }
+            result.setResult(sysPermissionTreeList);
+            result.setSuccess(true);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return result;
+    }
 
     /**
      * 查询子菜单

@@ -149,4 +149,10 @@ public class FlowConstant {
      * 是否为主版本(1是)
      */
     public static final String MAIN_VERSION_1 = "1";
+
+    /**
+     * 人员类型 0：办理人，1：抄送人
+     */
+    public static final String USER_TYPE_0 = "0";
+    public static final String USER_TYPE_1 = "1";
 }

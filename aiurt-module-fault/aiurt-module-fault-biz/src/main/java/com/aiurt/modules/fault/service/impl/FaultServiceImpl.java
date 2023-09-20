@@ -16,16 +16,16 @@ import com.aiurt.boot.api.InspectionApi;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.dto.FaultCallbackDTO;
+import com.aiurt.boot.task.CustomCellMergeHandler;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.constant.enums.TodoTaskTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.common.util.CommonUtils;
-import com.aiurt.common.util.RedisUtil;
-import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.common.util.*;
 import com.aiurt.modules.basic.entity.CsWork;
+import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.constants.FaultDictCodeConstant;
@@ -58,6 +58,13 @@ import com.aiurt.modules.schedule.dto.ScheduleUserWorkDTO;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.todo.dto.TodoDTO;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.metadata.data.WriteCellData;
+import com.alibaba.excel.util.MapUtils;
+import com.alibaba.excel.write.metadata.WriteSheet;
+import com.alibaba.excel.write.metadata.fill.FillConfig;
+import com.alibaba.excel.write.metadata.fill.FillWrapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -71,6 +78,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.ansj.domain.Result;
 import org.ansj.domain.Term;
 import org.ansj.splitWord.analysis.ToAnalysis;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISparePartBaseApi;
@@ -84,17 +94,20 @@ import org.quartz.SimpleTrigger;
 import org.quartz.TriggerBuilder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -110,7 +123,8 @@ import java.util.stream.Stream;
 public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements IFaultService {
 
     private static final String SELF_FAULT_MODE_CODE = "0";
-
+    @Value("${jeecg.path.upload:/opt/upFiles}")
+    private String path;
 
     @Autowired
     private IFaultDeviceService faultDeviceService;
@@ -165,6 +179,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     @Autowired
     private IFaultRepairRecordService faultRepairRecordService;
+
+    @Autowired
+    private FaultRepairRecordMapper faultRepairRecordMappered;
 
     @Autowired
     private IFaultCauseDetailService faultCauseDetailService;
@@ -243,16 +260,18 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
                 fault.setApprovalPassTime(new Date());
             } else {
+                Date date = new Date();
                 fault.setAppointUserName(user.getUsername());
                 fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
                 // 方便统计
                 //fault.setApprovalPassTime(fault.getReceiveTime());
-                Date date = new Date();
+
                 fault.setApprovalPassTime(date);
                 //响应时长为0
                 fault.setResponseDuration(0);
                 // 创建维修记录
                 FaultRepairRecord record = FaultRepairRecord.builder()
+                        .faultPhenomenon(fault.getFaultPhenomenon())
                         // 做类型
                         .faultCode(fault.getCode())
                         // 故障现象
@@ -1511,6 +1530,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         repairRecordDTO.setLineCode(fault.getLineCode());
         repairRecordDTO.setStationCode(fault.getStationCode());
         repairRecordDTO.setStationPositionCode(fault.getStationPositionCode());
+        repairRecordDTO.setIsSignalFault(fault.getIsSignalFault());
+
+        //查询影响
+        repairRecordDTO.setAffectDrive(fault.getAffectDrive());
+        repairRecordDTO.setAffectPassengerService(fault.getAffectPassengerService());
+        repairRecordDTO.setIsStopService(fault.getIsStopService());
+
         // 查询参与人
         List<FaultRepairParticipants> participantsList = repairParticipantsService.queryParticipantsByRecordId(repairRecord.getId());
         repairRecordDTO.setParticipantsList(participantsList);
@@ -1535,6 +1561,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                             .newSparePartSplitCode(sparepart.getNewSparePartSplitCode())
                             .lendOutOrderId(sparepart.getLendOutOrderId())
                             .warehouseCode(sparepart.getWarehouseCode())
+                            .consumablesType(sparepart.getConsumables())
                             .build();
                     return build;
                 }).collect(Collectors.toList());
@@ -1559,6 +1586,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                             .newSparePartSplitCode(sparepart.getNewSparePartSplitCode())
                             .lendOutOrderId(sparepart.getLendOutOrderId())
                             .warehouseCode(sparepart.getWarehouseCode())
+                            .consumablesType(sparepart.getConsumables())
                             .build();
                     return build;
                 }).collect(Collectors.toList());
@@ -1633,6 +1661,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         Fault fault = isExist(faultCode);
 
+        //新增配置
+        SysParamModel isShowAffectPassengerService = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_SHOW_AFFECTPASSENGERSERVICE);
+        boolean equals = "1".equals(isShowAffectPassengerService.getValue());
+        if (equals) {
+            fault.setAffectDrive(repairRecordDTO.getAffectDrive());
+            fault.setAffectPassengerService(repairRecordDTO.getAffectPassengerService());
+            fault.setIsStopService(repairRecordDTO.getIsStopService());
+        }
         FaultRepairRecord one = repairRecordService.getById(repairRecordDTO.getId());
 
         String userIds = repairRecordDTO.getUsers();
@@ -1651,6 +1687,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }).collect(Collectors.toList());
             repairParticipantsService.saveBatch(participantsList);
         }
+        //是否是信号故障
+        fault.setIsSignalFault(repairRecordDTO.getIsSignalFault());
         // 故障现象
         fault.setSymptoms(repairRecordDTO.getSymptoms());
         // 设备
@@ -1806,6 +1844,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         //是否需要自动提交签名（通信需要、站台门不需要）
         SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_SUBMIT_SIGNATURE);
         boolean value = "1".equals(paramModel.getValue());
+        //备件更换是否更换一次组件，就走一次备件流程
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPARE_PART_EXTRA);
+        String modelValue = sysParamModel.getValue();
         if(value){
             LoginUser user = sysBaseAPI.getUserById(loginUser.getId());
             one.setSignPath(user.getSignatureUrl());
@@ -1840,6 +1881,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     todoDTO.setTitle("维修待审核");
                     todoDTO.setMsgAbstract("维修待审核");
                     todoDTO.setPublishingContent("故障维修完成待审核");
+                    SysParamModel isExternalSpecialUse = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
+                    if ("1".equals(isExternalSpecialUse.getValue()) && "1".equals(fault.getFaultModeCode())) {
+                        todoDTO.setIsRingBell(true);
+                    }
                     sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障维修结果待审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
                 } catch (Exception e) {
                     log.error(e.getMessage(), e);
@@ -1847,7 +1892,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }else {
                 fault.setState(FaultStatesEnum.FINISH.getStatus());
                 fault.setStatus(FaultStatusEnum.Close.getStatus());
-                noAudit(faultCode);
+                if("0".equals(modelValue)){
+                    noAudit(faultCode);
+                }
                 // 如果非标准方案这新增一个标准库
                 addFaultKnowledgeBase(faultCode, fault);
                 // 通信试运行八期：故障完成之后，给中心班组提示音
@@ -1875,9 +1922,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     }
                 }
             }
+            SysParamModel isExternalSpecialUse = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
+            boolean isExternalSpecialUseValue = "1".equals(isExternalSpecialUse.getValue());
             //推送数据到调度系统
-            faultExternalService.complete(repairRecordDTO,one.getEndTime(),loginUser);
-
+            if (!isExternalSpecialUseValue) {
+                faultExternalService.complete(repairRecordDTO,one.getEndTime(),loginUser);
+            }
             //更新故障时长,更新解决时长
             long faultDuration = DateUtil.between(fault.getEndTime(), fault.getHappenTime(), DateUnit.SECOND);
             fault.setFaultDuration((int) faultDuration);
@@ -1916,8 +1966,51 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         Integer approvalStatus = resultDTO.getApprovalStatus();
 
         Integer flag = 1;
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
 
         if (flag.equals(approvalStatus)) {
+            if ("1".equals(paramModel.getValue()) && "1".equals(fault.getFaultModeCode())) {
+                //工班长审核之后到控制中心班组审核
+                if (fault.getControlCenterReviewStatus() == null || fault.getControlCenterReviewStatus().equals(FaultConstant.CONTROL_CENTER_REVIEW_STATUS_2)) {
+                    // 审核
+                    try {
+                        TodoDTO todoDTO = new TodoDTO();
+                        todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE);
+                        todoDTO.setTitle("维修待审核");
+                        todoDTO.setMsgAbstract("维修待审核");
+                        todoDTO.setPublishingContent("故障维修完成待审核");
+                        todoDTO.setIsRingBell(true);
+                        FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+                        BeanUtil.copyProperties(fault, faultMessageDTO);
+                        sendTodo(faultCode, RoleConstant.ZXBANZHANG, null, "故障维修结果待审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
+                        sendTodo(faultCode, RoleConstant.ZXCHENGYUAN, null, "故障维修结果待审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
+                    //控制中心待审核
+                    fault.setControlCenterReviewStatus(0);
+                    updateById(fault);
+
+                    todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_RESULT.getType(), faultCode, loginUser.getUsername(), "1");
+                    saveLog(loginUser, "维修结果审核通过", faultCode, FaultStatusEnum.Close.getStatus(), resultDTO.getApprovalRejection());
+                    return;
+                }else{
+                    fault.setControlCenterReviewStatus(1);
+                    //推送数据到调度系统
+                    LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
+                    wrapper.eq(FaultRepairRecord::getFaultCode, faultCode)
+                            .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
+                            .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1");
+                    FaultRepairRecord repairRecord = repairRecordService.getBaseMapper().selectOne(wrapper);
+                    RepairRecordDTO repairRecordDTO = new RepairRecordDTO();
+                    repairRecordDTO.setId(repairRecord.getId());
+                    repairRecordDTO.setIsSignalFault(fault.getIsSignalFault());
+                    repairRecordDTO.setMaintenanceMeasures(repairRecord.getMaintenanceMeasures());
+                    LoginUser userByName = sysBaseAPI.getUserByName(repairRecord.getAppointUserName());
+                    faultExternalService.complete(repairRecordDTO,repairRecord.getEndTime(),userByName);
+                }
+            }
+
             fault.setState(FaultStatesEnum.FINISH.getStatus());
             fault.setStatus(FaultStatusEnum.Close.getStatus());
             // 修改备件, 更改状态
@@ -1988,9 +2081,39 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
             //
         } else {
+            FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
+            BeanUtil.copyProperties(fault, faultMessageDTO);
+
+            if ("1".equals(paramModel.getValue()) && "1".equals(fault.getFaultModeCode())) {
+                if (FaultConstant.CONTROL_CENTER_REVIEW_STATUS_0.equals(fault.getControlCenterReviewStatus())) {
+                    //控制中心驳回给工班长
+                    // 审核
+                    try {
+                        HashMap<String, Object> map = new HashMap<>();
+                        map.put("approvalRejection", resultDTO.getApprovalRejection());
+
+                        TodoDTO todoDTO = new TodoDTO();
+                        todoDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
+                        todoDTO.setTitle("维修确认驳回");
+                        todoDTO.setMsgAbstract("维修确认被驳回");
+                        todoDTO.setPublishingContent("故障维修确认被退回，请重新处理");
+                        todoDTO.setData(map);
+                        todoDTO.setIsRingBell(true);
+                        sendTodo(faultCode, RoleConstant.FOREMAN, null, "故障维修结果待审核", TodoBusinessTypeEnum.FAULT_RESULT.getType(),todoDTO,faultMessageDTO);
+                        fault.setControlCenterReviewStatus(2);
+                        updateById(fault);
+                        todoBaseApi.updateTodoTaskState(TodoBusinessTypeEnum.FAULT_RESULT.getType(), faultCode, loginUser.getUsername(), "1");
+                        saveLog(loginUser, "维修结果驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), resultDTO.getApprovalRejection());
+                        return;
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+
+            }
+
             try {
-                FaultMessageDTO faultMessageDTO = new FaultMessageDTO();
-                BeanUtil.copyProperties(fault, faultMessageDTO);
+
                 HashMap<String, Object> map = new HashMap<>();
                 map.put("approvalRejection", resultDTO.getApprovalRejection());
 
@@ -2008,16 +2131,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 // 审核
                 sendTodo(faultCode, null, fault.getAppointUserName(), "故障维修处理", TodoBusinessTypeEnum.FAULT_DEAL.getType(), todoDTO, faultMessageDTO);
 
-                /*MessageDTO messageDTO = new MessageDTO(loginUser.getUsername(), fault.getAppointUserName(), "维修确认驳回" + DateUtil.today(), null);
 
-                messageDTO.setData(map);
-                //业务类型，消息类型，消息模板编码，摘要，发布内容
-                faultMessageDTO.setBusType(SysAnnmentTypeEnum.FAULT.getType());
-                messageDTO.setTemplateCode(CommonConstant.FAULT_SERVICE_NOTICE_REJECT);
-                messageDTO.setMsgAbstract("维修确认被驳回");
-                messageDTO.setPublishingContent("故障维修确认被退回，请重新处理");
-
-                sendMessage(messageDTO,faultMessageDTO);*/
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -2447,6 +2561,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         } else {
             if (StrUtil.isNotBlank(faultPhenomenon)) {
                 queryWrapper.like("symptoms", faultPhenomenon);
+                queryWrapper.or().like("code", faultPhenomenon);
             }
         }
         queryWrapper.apply(StrUtil.isNotBlank(stationCode), "(line_code = {0} or station_code = {0} or station_position_code = {0})", stationCode);
@@ -2461,6 +2576,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (StrUtil.isNotBlank(fault.getUsername())) {
             queryWrapper.lambda().eq(Fault::getAppointUserName, fault.getUsername());
         }
+        if (ObjectUtil.isNotNull(fault.getIsSignalFault())) {
+            queryWrapper.lambda().eq(Fault::getIsSignalFault, fault.getIsSignalFault());
+        }
+
         queryWrapper.lambda().like(StrUtil.isNotBlank(phnamon), Fault::getSymptoms, phnamon);
 
         // 故障等级
@@ -3449,6 +3568,26 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         boolean faultCenterWrite = "1".equals(iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_WRITE).getValue());
 
         records.parallelStream().forEach(fault1 -> {
+            //信号二期调度中心下发的故障审核，判断决定是工班长审核还是控制中心审核
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
+            if ("1".equals(paramModel.getValue()) && "1".equals(fault1.getFaultModeCode())) {
+                fault1.setReviewFlag(false);
+                boolean a = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.ZXBANZHANG))||user.getRoleCodes().contains(RoleConstant.ZXCHENGYUAN));
+                boolean b = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.FOREMAN)));
+
+                if ( a && FaultConstant.CONTROL_CENTER_REVIEW_STATUS_0.equals(fault1.getControlCenterReviewStatus())) {
+                    fault1.setReviewFlag(true);
+                }
+                if ( b && (fault1.getControlCenterReviewStatus() == null || FaultConstant.CONTROL_CENTER_REVIEW_STATUS_2.equals(fault1.getControlCenterReviewStatus()))) {
+                    fault1.setReviewFlag(true);
+                }
+                boolean c = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.ADMIN)));
+                if (c) {
+                    fault1.setReviewFlag(true);
+                }
+            }
+
+
             //通信八期获取维修记录中的处理情况和处理方式，并且把各时长转换为天时分秒
             LambdaQueryWrapper<FaultRepairRecord> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(FaultRepairRecord::getFaultCode, fault1.getCode()).eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0).select(FaultRepairRecord::getMaintenanceMeasures,FaultRepairRecord::getProcessing);
@@ -4179,5 +4318,162 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 故障挂起超时未处理提醒
         processHangUpTimeOutToRemind(fault);
+    }
+
+    @Override
+    public String printFault(String code) {
+        String templateFileName = "patrol" +"/" + "template" + "/" + "printFault.xlsx";
+        log.info("templateFileName:"+templateFileName);
+
+        // 填充数据后的文件路径
+        String fileName = "故障列表详情" + System.currentTimeMillis() + ".xlsx";
+        fileName = fileName.replaceAll("[/*?:\"<>|]", "-");
+        String relatiePath = "/" + "patrol" + "/" + "print" + "/" + fileName;
+        String filePath = path +"/" +  fileName;
+
+        //填充头部Map
+        RepairRecordDetailDTO repairRecordDetailDTO = faultRepairRecordMappered.queryRecordByFaultCode(code).get(0);
+        Map<String, Object> headerMap = getHeaderData(code,repairRecordDetailDTO);
+        Map<String, Object> imageMap = new HashMap<>();
+        List<String> imageList = null;
+        if(StrUtil.isNotEmpty(repairRecordDetailDTO.getSignPath())&& repairRecordDetailDTO.getSignPath().indexOf("?")!=-1){
+            int index =  repairRecordDetailDTO.getSignPath().indexOf("?");
+            SysAttachment sysAttachment = sysBaseAPI.getFilePath(repairRecordDetailDTO.getSignPath().substring(0, index));
+            InputStream inputStream = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
+            if(ObjectUtil.isEmpty(inputStream)){
+                imageMap.put("signImage",null);
+            } else {
+                try {
+                    byte[] convert = FilePrintUtils.convert(inputStream);
+                    WriteCellData writeImageData = FilePrintUtils.writeCellImageData(convert,imageList);
+                    imageMap.put("signImage",writeImageData);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }else{
+            imageMap.put("signImage",null);
+        }
+        InputStream minioFile2 = MinioUtil.getMinioFile("platform", templateFileName);
+        ExcelWriter excelWriter = null;
+        try {
+            excelWriter = EasyExcel.write(filePath).withTemplate(minioFile2).build();
+            int[] mergeColumnIndex = {0,1,2};
+            CustomCellMergeHandler customCellMergeStrategy = new CustomCellMergeHandler(3,mergeColumnIndex);
+            WriteSheet writeSheet = EasyExcel.writerSheet().registerWriteHandler(customCellMergeStrategy).build();
+            FillConfig fillConfig = FillConfig.builder().forceNewRow(Boolean.TRUE).build();
+            // FillConfig fillConfig = FillConfig.builder().direction(WriteDirectionEnum.HORIZONTAL).build();
+
+            //填充列表数据
+            excelWriter = fillData(code,excelWriter, writeSheet,headerMap,filePath,fillConfig);
+            //填充表头
+            excelWriter.fill(headerMap, writeSheet);
+            //填充图片
+            excelWriter.fill(imageMap, writeSheet);
+
+            excelWriter.finish();
+            //对已填充数据的文件进行后处理
+            processFilledFile(filePath);
+
+            MinioUtil.upload(new FileInputStream(filePath),relatiePath);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        SysAttachment sysAttachment = new SysAttachment();
+        sysAttachment.setFileName(fileName);
+        sysAttachment.setFilePath(relatiePath);
+        sysAttachment.setType("minio");
+        sysBaseAPI.saveSysAttachment(sysAttachment);
+
+        return sysAttachment.getId()+"?fileName="+sysAttachment.getFileName();
+    }
+
+
+
+    private ExcelWriter fillData(String code, ExcelWriter excelWriter, WriteSheet writeSheet, Map<String, Object> headerMap, String filePath, FillConfig fillConfig) {
+        List<PrintFaultDTO> list = new ArrayList<>();
+        DeviceChangeRecordDTO deviceChangeRecordDTO = faultRepairRecordService.queryDeviceChangeRecord(code);
+        if (Objects.nonNull(deviceChangeRecordDTO)){
+            AtomicInteger i = new AtomicInteger(1);
+            if (CollUtil.isNotEmpty(deviceChangeRecordDTO.getDeviceChangeList())){
+                deviceChangeRecordDTO.getDeviceChangeList().forEach(d->{
+                    PrintFaultDTO printFaultDTO = new PrintFaultDTO();
+                    printFaultDTO.setSerialNumber("No."+i);
+                    printFaultDTO.setDeviceName(d.getName());
+                    printFaultDTO.setNum(d.getNewSparePartNum());
+                    printFaultDTO.setDeviceCode(d.getSpecifications());
+                    list.add(printFaultDTO);
+                    i.getAndIncrement();
+                });
+            }
+            if (CollUtil.isNotEmpty(deviceChangeRecordDTO.getConsumableList())){
+                deviceChangeRecordDTO.getConsumableList().forEach(d->{
+                    PrintFaultDTO printFaultDTO = new PrintFaultDTO();
+                    printFaultDTO.setSerialNumber("No."+i);
+                    printFaultDTO.setDeviceName(d.getName());
+                    printFaultDTO.setNum(d.getNewSparePartNum());
+                    printFaultDTO.setDeviceCode(d.getSpecifications());
+                    list.add(printFaultDTO);
+                    i.getAndIncrement();
+                });
+            }
+        }
+        excelWriter.fill(new FillWrapper("list",list),fillConfig,writeSheet);
+        return  excelWriter;
+    }
+
+    private Map<String, Object> getHeaderData(String code, RepairRecordDetailDTO repairRecordDetailDTO) {
+        Map<String, Object> map = MapUtils.newHashMap();
+        Fault faultByCode = queryByCode(code);
+        String lineName = sysBaseAPI.getLineNameByCode(faultByCode.getLineCode());
+        JSONObject csStation = sysBaseAPI.getCsStationByCode(faultByCode.getStationCode());
+        String stationName = csStation.getString("stationName");
+        String positionName = baseMapper.getPositionByCode(faultByCode.getStationPositionCode());
+        String lineAndStationOrPositon = lineName+"-"+stationName;
+        if (StrUtil.isNotEmpty(positionName)){
+            lineAndStationOrPositon = lineAndStationOrPositon + "-"+positionName;
+        }
+        map.put("positionName",lineAndStationOrPositon);
+        map.put("faultApplicant",sysBaseAPI.queryUser(faultByCode.getFaultApplicant()).getRealname());
+        map.put("receiveTime", DateUtil.format(faultByCode.getReceiveTime(),"yyyy-MM-dd HH:mm:ss"));
+        map.put("endTime", DateUtil.format(faultByCode.getEndTime(),"yyyy-MM-dd HH:mm:ss"));
+        map.put("deviceName",faultByCode.getDeviceNames());
+        map.put("orgName",repairRecordDetailDTO.getOrgName());
+        map.put("symptoms",lineAndStationOrPositon +"\n"+faultByCode.getPhenomenonTypeName());
+        map.put("maintenanceMeasures",repairRecordDetailDTO.getMaintenanceMeasures());
+        map.put("solveStatusName",repairRecordDetailDTO.getSolveStatusName());
+        map.put("realName",repairRecordDetailDTO.getAppointRealName());
+
+        return map;
+    }
+    /**
+     * 定制模板的文件后处理
+     * @param filePath
+     * @throws IOException
+     */
+    private static void processFilledFile(String filePath) throws IOException {
+        try (InputStream inputStream = new FileInputStream(filePath);
+             Workbook workbook = WorkbookFactory.create(inputStream)) {
+            Sheet sheet  = workbook.getSheetAt(0);
+            //打印设置
+            FilePrintUtils.printSet(sheet);
+
+            // 保存修改后的Excel文件
+            OutputStream outputStream = null;
+            try{
+                outputStream = new FileOutputStream(filePath);
+                workbook.write(outputStream);
+            }finally {
+                if (null!=inputStream){
+                    inputStream.close();
+                }
+                if (null!=outputStream){
+                    outputStream.close();
+                }
+                if (null!=workbook){
+                    workbook.close();
+                }
+            }
+        }
     }
 }

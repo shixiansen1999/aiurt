@@ -1,5 +1,19 @@
 package com.aiurt.config.sign.util;
 
+import cn.hutool.core.map.MapUtil;
+import com.aiurt.common.constant.SymbolConstant;
+import com.aiurt.common.util.oConvertUtils;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,15 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import javax.servlet.http.HttpServletRequest;
-
-import com.aiurt.common.util.oConvertUtils;
-import lombok.extern.slf4j.Slf4j;
-import com.aiurt.common.constant.SymbolConstant;
-import org.springframework.http.HttpMethod;
-
-import com.alibaba.fastjson.JSONObject;
 
 /**
  * http 工具类 获取请求中的参数
@@ -183,5 +188,114 @@ public class HttpUtils {
             result.put(s.substring(0, index), s.substring(index + 1));
         }
         return result;
+    }
+
+    /**
+     * 预先检测 HTTP 请求是否可行
+     * @param url
+     * @return
+     */
+    public static Boolean checkUrl(String url) {
+        // 检测url是否可达
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            // Perform a HEAD request to check feasibility
+            ResponseEntity<Void> exchange = restTemplate.exchange(
+                    url,
+                    HttpMethod.HEAD,
+                    null,
+                    Void.class
+            );
+            // Check if the response code indicates a successful connection
+            if (exchange.getStatusCode().is2xxSuccessful()) {
+               log.info("HTTP request is feasible. Proceed with the full request.");
+                // Now you can proceed with the actual HTTP request using restTemplate.getForObject(), restTemplate.exchange(), etc.
+                return true;
+            } else {
+                log.info("HTTP request is not feasible (Response code: " + exchange.getStatusCode() + ")");
+            }
+        }catch (Exception e) {
+            log.error("Error occurred during precheck: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * 发送HTTP GET请求并获取响应内容。
+     *
+     * @param url     请求的URL地址
+     * @param headers 请求头参数，可为null
+     * @param params  请求参数，可为null
+     * @return 从服务器返回的响应内容
+     */
+    public static String sendGetRequest(String url, Map<String, String> headers, Map<String, String> params) {
+        StringBuilder response = new StringBuilder();
+       /* if (!checkUrl(url)) {
+            return "";
+        }*/
+        try {
+            // 构建参数字符串
+            if (MapUtil.isNotEmpty(params)) {
+                log.info("request params: {}",params);
+                url = String.format("%s%s%s", url, url.contains("?") ? "&" : "?", buildQueryString(params));
+            }
+            // 设置请求头
+            HttpHeaders requestHeaders = new HttpHeaders();
+            if (MapUtil.isNotEmpty(headers)) {
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    requestHeaders.set(entry.getKey(), entry.getValue());
+                }
+            }
+            HttpEntity requestEntity = new HttpEntity(requestHeaders);
+
+
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<Result> exchange = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    requestEntity,
+                    Result.class
+            );
+            Result result = exchange.getBody();
+            log.info("请求接口接口：{}", JSON.toJSONString(result));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return response.toString();
+    }
+
+    /**
+     * 构建HTTP请求参数字符串。
+     *
+     * @param params 请求参数，以键值对的形式传入
+     * @return 构建的参数字符串，形如 "key1=value1&key2=value2"
+     * @throws UnsupportedEncodingException 如果URL编码时出现不支持的字符集异常
+     */
+    private static String buildQueryString(Map<String, String> params) {
+        StringBuilder queryString = new StringBuilder();
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            if (queryString.length() > 0) {
+                queryString.append("&");
+            }
+            queryString.append(entry.getKey()).append("=").append(entry.getValue());
+        }
+        return queryString.toString();
+    }
+
+    public static void main(String[] args) {
+        String url = "http://www.jeec1g.com/";
+
+        // 设置请求头
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", "Bearer YourAccessToken");
+
+        // 设置请求参数
+        Map<String, String> params = new HashMap<>();
+        params.put("param1", "value1");
+        params.put("param2", "value2");
+
+        String response = sendGetRequest(url, headers, params);
+        System.out.println("API Response:\n" + response);
     }
 }

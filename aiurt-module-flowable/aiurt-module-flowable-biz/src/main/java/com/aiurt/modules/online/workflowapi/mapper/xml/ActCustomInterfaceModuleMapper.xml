@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.online.workflowapi.mapper.ActCustomInterfaceModuleMapper">
+
+	<update id="updateTreeNodeStatus" parameterType="java.lang.String">
+		update act_custom_interface_module set has_child = #{status} where id = #{id}
+	</update>
+
+	<select id="getModuleTree" parameterType="java.lang.Object" resultType="org.jeecg.common.system.vo.SelectTreeModel">
+		SELECT
+		id AS `key`,
+		module_name AS title,
+		id AS `value`,
+		IFNULL( pid, 0 ) AS parentId
+		FROM
+		act_custom_interface_module
+		<where>
+			<if test="name != null and name != ''">
+				and module_name LIKE CONCAT('%', #{name}, '%')
+			</if>
+		</where>
+	</select>
+
+</mapper>

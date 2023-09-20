@@ -1,13 +1,14 @@
 package com.aiurt.modules.worklog.service.impl;
 
-import cn.afterturn.easypoi.excel.ExcelExportUtil;
-import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.Week;
+import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.math.MathUtil;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -22,6 +23,7 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.result.*;
 import com.aiurt.common.util.*;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
+import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.entity.CsStationPosition;
@@ -37,6 +39,7 @@ import com.aiurt.modules.worklog.mapper.WorkLogRemindMapper;
 import com.aiurt.modules.worklog.param.LogCountParam;
 import com.aiurt.modules.worklog.param.WorkLogParam;
 import com.aiurt.modules.worklog.service.IWorkLogService;
+import com.alibaba.excel.util.IoUtils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
@@ -49,7 +52,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.util.Units;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.constant.CommonConstant;
@@ -59,12 +65,17 @@ import org.jeecg.common.system.vo.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
+import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -116,6 +127,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     private ScheduleRecordMapper scheduleRecordMapper;
     @Value("${support.path.exportWorkLogPath}")
     private String exportPath;
+    @Value("${jeecg.minio.bucketName}")
+    private String bucketName;
+    @Value(value = "${jeecg.path.upload}")
+    private String uploadpath;
     /**
      * 新增工作日志
      * @param dto
@@ -126,6 +141,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Transactional(rollbackFor = Exception.class)
     public Result<?> add(WorkLogDTO dto, HttpServletRequest req) {
         WorkLog depot = new WorkLog();
+        BeanUtil.copyProperties(dto, depot);
+
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String userId = loginUser.getId();
         String logCode = generateLogCode();
@@ -133,43 +150,21 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setOrgId(loginUser.getOrgId());
         depot.setSubmitId(userId);
         depot.setCreateBy(userId);
-        depot.setUnfinishedMatters(dto.getUnfinishedMatters());
-        depot.setFaultContent(dto.getFaultContent());
 
-        //根据当前登录人id获取巡视待办消息
-        depot.setPatrolContent(dto.getPatrolContent());
-        //根据用户id和所在周的时间获取检修池内容
-
-        dto.setRepairContent(dto.getRepairContent());
-        depot.setRepairContent(dto.getRepairContent());
-        depot.setStatus(dto.getStatus());
         depot.setConfirmStatus(0);
         depot.setCheckStatus(0);
         if (depot.getStatus()==1){
             depot.setSubmitTime(new Date());
         }
-        depot.setWorkContent(dto.getWorkContent());
-        depot.setContent(dto.getContent());
 
         //工作内容赋值
-        depot.setIsDisinfect(dto.getIsDisinfect());
-        depot.setIsClean(dto.getIsClean());
-        depot.setIsAbnormal(dto.getIsAbnormal());
-        depot.setIsEmergencyDisposal(dto.getIsEmergencyDisposal());
-        depot.setIsDocumentPublicity(dto.getIsDocumentPublicity());
         if (dto.getIsEmergencyDisposal().equals(WorkLogConstans.IS)) {
             depot.setEmergencyDisposalContent(dto.getEmergencyDisposalContent());
         }
         if (dto.getIsDocumentPublicity().equals(WorkLogConstans.IS)) {
             depot.setDocumentPublicityContent(dto.getDocumentPublicityContent());
         }
-        depot.setOtherWorkContent(dto.getOtherWorkContent());
-        depot.setNote(dto.getNote());
-        depot.setSchedule(dto.getSchedule());
-        depot.setHandoverId(dto.getHandoverId());
 
-        depot.setSucceedId(dto.getSucceedId());
-        depot.setApproverId(dto.getApproverId());
         if (StringUtils.isNotBlank(dto.getApproverId())) {
             depot.setApprovalTime(new Date());
         }else {
@@ -177,15 +172,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
         depot.setLogTime(dto.getLogTime());
         depot.setDelFlag(0);
-        depot.setConstructTime(dto.getConstructTime());
-        depot.setAssortTime(dto.getAssortTime());
-        depot.setAssortLocation(dto.getAssortLocation());
-        depot.setAssortUnit(dto.getAssortUnit());
-        depot.setAssortIds(dto.getAssortIds());
-        depot.setAssortNum(dto.getAssortNum());
-        depot.setAssortContent(dto.getAssortContent());
-        depot.setPatrolRepairContent(dto.getPatrolRepairContent());
-        depot.setStationCode(dto.getStationCode());
+
         depotMapper.insert(depot);
         dto.setId(depot.getId());
         //插入附件列表
@@ -973,9 +960,14 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setFaultContent(dto.getFaultContent());
         workLog.setPatrolRepairContent(dto.getPatrolRepairContent());
         workLog.setAssortContent(dto.getAssortContent());
+        workLog.setFaultCode(dto.getFaultCode());
         workLog.setFaultContent(dto.getFaultContent());
+        workLog.setRepairCode(dto.getRepairCode());
         workLog.setRepairContent(dto.getRepairContent());
+        workLog.setPatrolIds(dto.getPatrolIds());
         workLog.setPatrolContent(dto.getPatrolContent());
+        workLog.setUnfinishCode(dto.getUnfinishCode());
+        workLog.setUnfinishContent(dto.getUnfinishContent());
         workLog.setSchedule(dto.getSchedule());
         if (dto.getStatus() != null) {
             workLog.setStatus(1);
@@ -1184,8 +1176,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                 endTime = DateUtil.parse(nowday+" 16:29:59");
             } else {
                 //晚班
-                startTime = DateUtil.parse(nowday+" 16:30:00");
-                endTime = DateUtil.parse(nextAM);
+                startTime = DateUtil.parse(lastPM);
+                endTime = DateUtil.parse(nowday+" 08:29:59");
             }
         }else {
             //正常写入日志
@@ -1211,6 +1203,18 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         HashMap<String, String> inspectionTaskDevice = inspectionApi.getInspectionTaskDevice(startTime, endTime);
         //获取故障内容
         HashMap<String, String> faultTask = dailyFaultApi.getFaultTask(startTime, endTime);
+        //获取未完成工作内，包括未完成故障内容，未完成巡视内容
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_LOG_UNFINISH_WORK);
+        boolean value = "1".equals(paramModel.getValue());
+        if (value) {
+            HashMap<String, String> unFinishFaultTask = dailyFaultApi.getUnFinishFaultTask();
+            HashMap<String, String> unFinishPatrolTask = patrolApi.getUnFinishPatrolTask();
+            String content = (unFinishFaultTask.get("content") != null ? unFinishFaultTask.get("content") : "") + (unFinishPatrolTask.get("content") != null ? unFinishPatrolTask.get("content") : "");
+            String code = (unFinishFaultTask.get("code") != null ? unFinishFaultTask.get("code") : "") + (unFinishPatrolTask.get("code") != null ? unFinishPatrolTask.get("code") : "");
+            map.put("unfinishContent", content);
+            map.put("unfinishCode", code);
+        }
+
         map.put("patrolContent", userTask.get("content"));
         map.put("repairContent", inspectionTaskDevice.get("content"));
         map.put("faultContent", faultTask.get("content"));
@@ -1223,29 +1227,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     public void archWorkLog(WorkLogResult workLogResult, String token, String archiveUserId, String refileFolderId, String realname, String sectId) {
         try {
-            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            HashMap<String, Object> map = new HashMap<>();
-            map.put("submitTime", DateUtil.format(workLogResult.getSubmitTime(), "yyyy-MM-dd HH:mm:ss"));
-            map.put("submitName", workLogResult.getSubmitName());
-            map.put("patrolRepairContent", workLogResult.getPatrolRepairContent());
-            map.put("faultContent", workLogResult.getPatrolContent());
-            map.put("workContent", workLogResult.getWorkContent());
-            map.put("content", workLogResult.getContent());
-            map.put("succeedName", workLogResult.getSucceedName());
-            map.put("assortTime", workLogResult.getAssortTime());
-            map.put("assortLocationName", workLogResult.getAssortLocationName());
-            map.put("assortUnit", workLogResult.getAssortUnit());
-            map.put("assortIds", workLogResult.getAssortIds());
-            map.put("assortNum", workLogResult.getAssortNum());
-            map.put("assortContent", workLogResult.getAssortContent());
-            map.put("signature", workLogResult.getSignature());
-
-            String title = "工作日志列表数据";
-            Workbook workbook = ExcelExportUtil.exportExcel(new TemplateExportParams("templates/workLogTemplate.xlsx"), map);
-
-            //SXSSFWorkbook archiveRepairTask = ExcelUtils.createArchiveWorkLog(workLogResult, templatePath);
-            //ByteArrayOutputStream os = new ByteArrayOutputStream();
-
+            dealInfo(workLogResult);
+            SXSSFWorkbook archiveRepairTask = createArchiveWorkLog(workLogResult, "/templates/workLogTemplate.xlsx");
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
             Date date = new Date();
             Date submitTime = workLogResult.getSubmitTime();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -1253,16 +1237,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             workLogResult.setSubmitOrgName("");
             String path = exportPath + fileName + ".xlsx";
             FileOutputStream fos = new FileOutputStream(path);
-            BufferedOutputStream bos = new BufferedOutputStream(fos);
-            workbook.write(bos);
-
-            //archiveRepairTask.write(os);
-            //fos.write(os.toByteArray());
-            //os.close();
-
-            bos.close();
+            archiveRepairTask.write(os);
+            fos.write(os.toByteArray());
+            os.close();
             fos.close();
-
             PdfUtil.excel2pdf(path);
             //传入档案系统
             //创建文件夹
@@ -1272,7 +1250,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             String fileType = "pdf";
             File file = new File(exportPath + fileName + "." + fileType);
             Long size = file.length();
-            InputStream in = new FileInputStream(file);
+            InputStream in = Files.newInputStream(file.toPath());
             JSONObject res = archiveUtils.upload(token, refileFolderIdNew, fileName + "." + fileType, size, fileType, in);
             String fileId = res.getString("fileId");
             Map<String, String> fileInfo = new HashMap<>();
@@ -1292,7 +1270,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             archiveInfo.setArchivername(realname);
             archiveInfo.setArchtypeid();
             archiveInfo.setCarrier("电子");
-            archiveInfo.setDuration(workLogResult.getSecertduration());
+            archiveInfo.setDuration(workLogResult.getSecertDuration());
             archiveInfo.setObjtype("其他");
             archiveInfo.setEntrystate("0");
             archiveInfo.setFileList(fileList);
@@ -1304,7 +1282,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             archiveInfo.setSecert(workLogResult.getSecert());
             //number怎么取值
             archiveInfo.setRefileFolderId(refileFolderIdNew);
-            archiveInfo.setSecertduration(workLogResult.getSecertduration());
+            archiveInfo.setSecertDuration(workLogResult.getSecertDuration());
             archiveInfo.setSectid(sectId);
             archiveInfo.setTimes(archDate.getTime());
             sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -1338,6 +1316,218 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void dealInfo(WorkLogResult workLogResult) {
+        //巡检修内容
+        workLogResult.setPatrolRepairContent("巡视工作完成情况："  + workLogResult.getPatrolContent() + StrUtil.CRLF + "检修工作完成情况：" + workLogResult.getRepairContent());
+    }
+
+    private SXSSFWorkbook createArchiveWorkLog(WorkLogResult workLogResult, String path) {
+        InputStream in = null;
+        XSSFWorkbook xssfWb = null;
+        try {
+            org.springframework.core.io.Resource resource = new ClassPathResource(path);
+            in = resource.getInputStream();
+            xssfWb = new XSSFWorkbook(in);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        SXSSFWorkbook workbook = new SXSSFWorkbook(xssfWb);
+        Sheet sheet = workbook.getXSSFWorkbook().getSheetAt(0);
+        PrintSetup printSetup = sheet.getPrintSetup();
+        //横向展示
+        //printSetup.setLandscape(true);
+        //A4
+        printSetup.setPaperSize((short) 9);
+        //画图的顶级管理器，一个sheet只能获取一个（一定要注意这点）
+        Drawing drawingPatriarch = sheet.createDrawingPatriarch();
+        CreationHelper helper = sheet.getWorkbook().getCreationHelper();
+        Row row = sheet.getRow(0);
+        Cell cell = row.getCell(0);
+        String head = "工作日志";
+        cell.setCellValue(head);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Row rowOne = sheet.getRow(1);
+        if (ObjectUtil.isNotEmpty(workLogResult.getSubmitTime())) {
+            Cell c11 = rowOne.getCell(1);
+            c11.setCellValue(sdf.format(workLogResult.getSubmitTime()));
+        }
+        Cell c13 = rowOne.getCell(3);
+        c13.setCellValue(workLogResult.getSubmitName());
+
+        if (StrUtil.isNotBlank(workLogResult.getPatrolRepairContent())) {
+            Row rowTwo = sheet.getRow(2);
+            Cell c21 = rowTwo.getCell(1);
+            c21.setCellValue(workLogResult.getPatrolRepairContent());
+            CellStyle c21Style = c21.getCellStyle();
+            float height2 = ArchExecelUtil.getExcelCellAutoHeight(workLogResult.getPatrolRepairContent(), 20f);
+            c21Style.setWrapText(true);
+            rowTwo.setHeightInPoints(height2);
+        }
+
+        if (workLogResult.getFaultContent() != null) {
+            Row rowThree = sheet.getRow(3);
+            Cell c31 = rowThree.getCell(1);
+            c31.setCellValue(workLogResult.getFaultContent());
+            CellStyle c31Style = c31.getCellStyle();
+            c31Style.setWrapText(true);
+            float height3 = ArchExecelUtil.getExcelCellAutoHeight(workLogResult.getFaultContent(), 20f);
+            rowThree.setHeightInPoints(height3);
+        }
+
+        Row rowFour = sheet.getRow(4);
+        Cell c41 = rowFour.getCell(1);
+        c41.setCellValue(workLogResult.getWorkContent() == null ? "" : workLogResult.getWorkContent());
+        Row rowFive = sheet.getRow(5);
+        Cell c51 = rowFive.getCell(1);
+        c51.setCellValue(workLogResult.getContent() == null ? "" : workLogResult.getContent());
+
+        Row rowSix = sheet.getRow(6);
+        Cell c61 = rowSix.getCell(1);
+        c61.setCellValue(workLogResult.getSucceedName() == null ? "无" : workLogResult.getSucceedName());
+        Cell c63 = rowSix.getCell(3);
+        if (workLogResult.getAssortTimes() != null && workLogResult.getAssortTimes().length > 1) {
+            String[] assortTimes = workLogResult.getAssortTimes();
+            c63.setCellValue(assortTimes[0] + " 至 " + assortTimes[1]);
+        }
+
+        Row rowSev = sheet.getRow(7);
+        Cell c71 = rowSev.getCell(1);
+        c71.setCellValue(workLogResult.getAssortLocationName());
+        Cell c73 = rowSev.getCell(3);
+        c73.setCellValue(workLogResult.getAssortUnit());
+
+        Row rowEig = sheet.getRow(8);
+        Cell c81 = rowEig.getCell(1);
+        c81.setCellValue(workLogResult.getAssortNames());
+        Cell c83 = rowEig.getCell(3);
+        c83.setCellValue(workLogResult.getAssortNum() == null ? "" : workLogResult.getAssortNum().toString());
+
+        Row rowNine = sheet.getRow(9);
+        float heigth9 = 25f;
+        String assortContent = workLogResult.getAssortContent();
+        if (StrUtil.isNotBlank(assortContent)) {
+            Cell c91 = rowNine.getCell(1);
+            c91.setCellValue(assortContent);
+            CellStyle c91Style = c91.getCellStyle();
+            c91Style.setWrapText(true);
+            heigth9 = ArchExecelUtil.getExcelCellAutoHeight(assortContent, 12f);
+            rowNine.setHeightInPoints(heigth9);
+        }
+
+        //附件，只展示图片
+        List<String> urlList = StrUtil.splitTrim(workLogResult.getUrlList(), ",");
+        if (CollUtil.isNotEmpty(urlList)) {
+            List<BufferedImage> bufferedImageList = new ArrayList<>();
+            //遍历附件，获取其中的图片
+            for (String url : urlList) {
+                BufferedImage bufferedImage = null;
+                try (InputStream inputStreamByUrl = this.getInputStreamByUrl(url)) {
+                    //读取图片，非图片bufferedImage为null
+                    if (ObjectUtil.isNotNull(inputStreamByUrl)) {
+                        bufferedImage = ImageIO.read(inputStreamByUrl);
+                    }
+                    if (ObjectUtil.isNotNull(bufferedImage)) {
+                        bufferedImageList.add(bufferedImage);
+                    }
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+            //插入图片到单元格
+            if (CollUtil.isNotEmpty(bufferedImageList)) {
+                //设置边距
+                int widthCol1 = Units.columnWidthToEMU(sheet.getColumnWidth(1));
+                int heightRow9 = Units.toEMU(heigth9);
+                int wMar = 2 * Units.EMU_PER_POINT;
+                int hMar = Units.EMU_PER_POINT;
+                int size = bufferedImageList.size();
+                //每个图片宽度（大致平均值）
+                int ave = (widthCol1 - (size + 1) * wMar) / size;
+                for (int i = 0; i < size; i++) {
+                    try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+                        ImageIO.write(bufferedImageList.get(i), "jpg", byteArrayOutputStream);
+                        byte[] bytes = byteArrayOutputStream.toByteArray();
+                        int pictureIdx = sheet.getWorkbook().addPicture(bytes, Workbook.PICTURE_TYPE_JPEG);
+                        ClientAnchor anchor = helper.createClientAnchor();
+                        anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_AND_RESIZE);
+                        anchor.setCol1(3);
+                        anchor.setCol2(3);
+                        anchor.setRow1(8);
+                        anchor.setRow2(8);
+                        anchor.setDx1((i + 1) * wMar + i * ave);
+                        anchor.setDy1(hMar);
+                        anchor.setDx2((i + 1) * (wMar + ave));
+                        anchor.setDy2(heightRow9 - hMar);
+                        drawingPatriarch.createPicture(anchor, pictureIdx);
+                    } catch (IOException e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+            }
+        }
+
+        //签名
+        String signature = workLogResult.getSignature();
+        if (StrUtil.isNotBlank(signature)) {
+            try (InputStream inputStreamByUrl = this.getInputStreamByUrl(signature)) {
+                if (ObjectUtil.isNotEmpty(inputStreamByUrl)) {
+                    byte[] bytes = IoUtils.toByteArray(inputStreamByUrl);
+                    int pictureIdx = sheet.getWorkbook().addPicture(bytes, Workbook.PICTURE_TYPE_JPEG);
+                    ClientAnchor anchor = helper.createClientAnchor();
+                    anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_AND_RESIZE);
+                    anchor.setCol1(1);
+                    anchor.setCol2(4);
+                    anchor.setRow1(10);
+                    anchor.setRow2(11);
+                    anchor.setDx1(Units.EMU_PER_POINT);
+                    anchor.setDy1(Units.EMU_PER_POINT);
+                    drawingPatriarch.createPicture(anchor, pictureIdx);
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        }
+        return workbook;
+    }
+
+    /**
+     * 根据图片url获取InputSream
+     * @param url
+     * @return
+     */
+    private InputStream getInputStreamByUrl(String url) {
+        InputStream inputStream = null;
+        SysAttachment sysAttachment = null;
+        try {
+            if (url.contains("?")) {
+                int index = url.indexOf("?");
+                String attachId = url.substring(0, index);
+                sysAttachment = iSysBaseAPI.getFilePath(attachId);
+
+            }
+            if (ObjectUtil.isNotEmpty(sysAttachment)) {
+                if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
+                    inputStream = MinioUtil.getMinioFile(bucketName, sysAttachment.getFilePath());
+                } else {
+                    String filePath = uploadpath + File.separator + sysAttachment.getFilePath();
+                    File file = new File(filePath);
+                    if (file.exists()) {
+                        inputStream = new BufferedInputStream(Files.newInputStream(Paths.get(filePath)));
+                    }
+                }
+            } else {
+                String filePath = uploadpath + File.separator + url;
+                File file = new File(filePath);
+                if (file.exists()) {
+                    inputStream = new BufferedInputStream(Files.newInputStream(Paths.get(filePath)));
+                }
+            }
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+        return inputStream;
     }
 
     @Override

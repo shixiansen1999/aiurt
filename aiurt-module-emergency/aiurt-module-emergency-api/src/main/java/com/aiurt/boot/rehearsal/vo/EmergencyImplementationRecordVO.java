@@ -2,7 +2,6 @@ package com.aiurt.boot.rehearsal.vo;
 
 import com.aiurt.boot.rehearsal.dto.EmergencyDeptDTO;
 import com.aiurt.boot.rehearsal.entity.EmergencyImplementationRecord;
-import com.aiurt.boot.rehearsal.entity.EmergencyRecordDept;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -10,7 +9,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -42,7 +40,7 @@ public class EmergencyImplementationRecordVO extends EmergencyImplementationReco
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM")
     @DateTimeFormat(pattern = "yyyy-MM")
     @ApiModelProperty(value = "计划演练日期，格式yyyy-MM")
-    private Date planRehearsalTime;
+    private String planRehearsalTime;
     /**
      * 组织部门编码
      */

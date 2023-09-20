@@ -9,4 +9,18 @@ from patrol_accompany
 where task_device_code = #{id}
 and user_id is not null
 and username is not null
-</select></mapper>
+</select>
+    <select id="getUserNames" resultType="java.lang.String">
+        SELECT username
+        from patrol_accompany
+        where del_flag = 0
+        <if test="patrolNumbers !=null and patrolNumbers.size>0">
+        and task_device_code in
+        <foreach collection="patrolNumbers" item="patrolNumbers" open="(" close=")" separator=",">
+            #{patrolNumbers}
+        </foreach>
+        </if>
+          and user_id is not null
+          and username is not null
+    </select>
+</mapper>

@@ -1,0 +1,44 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class CustomBpmnJsonConverter
+class BpmnJsonConverter
+class MyModelServiceImpl
+class ModelServiceImpl
+interface ModelService
+
+
+ModelService <|.. ModelServiceImpl
+ModelServiceImpl <|-- MyModelServiceImpl
+BpmnJsonConverter <|-- CustomBpmnJsonConverter
+ModelServiceImpl o-- BpmnJsonConverter : 聚合
+MyModelServiceImpl o-- CustomBpmnJsonConverter : 聚合
+
+class BpmnJsonConverter{
+# ObjectMapper objectMapper
+convertToJson(BpmnModel model, BpmnJsonConverterContext converterContext) ObjectNode
+convertToBpmnModel(JsonNode modelNode, BpmnJsonConverterContext converterContext) BpmnModel
+}
+
+class CustomBpmnJsonConverter{
+# ObjectMapper objectMapper
+convertToJson(BpmnModel model, BpmnJsonConverterContext converterContext) ObjectNode
+convertToBpmnModel(JsonNode modelNode, BpmnJsonConverterContext converterContext) BpmnModel
+}
+
+
+interface ModelService{
+getBpmnModel(AbstractModel model, ConverterContext appConverterContext) BpmnModel
+getBpmnModel(AbstractModel model) BpmnModel
+}
+class MyModelServiceImpl{
+# CustomBpmnJsonConverter bpmnJsonConverter
+getBpmnModel(AbstractModel model, ConverterContext appConverterContext) BpmnModel
+}
+
+class ModelServiceImpl{
+# BpmnJsonConverter bpmnJsonConverter
+getBpmnModel(AbstractModel model, ConverterContext appConverterContext) BpmnModel
+}
+
+@enduml

@@ -19,6 +19,7 @@ public class ReCheckVO {
     @ApiModelProperty(value = "复核状态")
     private Integer isRelease;
     @ApiModelProperty(value = "培训部门")
+    @Dict(dictTable = "sys_depart", dicText = "depart_name", dicCode = "org_code")
     private String sysOrgCode;
     @ApiModelProperty(value = "参考人员")
     private String examPersonName;

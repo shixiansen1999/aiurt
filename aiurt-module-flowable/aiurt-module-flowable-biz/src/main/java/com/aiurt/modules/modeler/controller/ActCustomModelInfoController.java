@@ -75,26 +75,13 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 		}
 
 		QueryWrapper<ActCustomModelInfo> queryWrapper = QueryGenerator.initQueryWrapper(actCustomModelInfo, req.getParameterMap());
+		queryWrapper.lambda().orderByDesc(ActCustomModelInfo::getCreateTime);
 		Page<ActCustomModelInfo> page = new Page<>(pageNo, pageSize);
 		IPage<ActCustomModelInfo> pageList = actCustomModelInfoService.page(page, queryWrapper);
 
 		// 已发布的
 		pageList.getRecords().stream().forEach(modeInfo->{
-
-			try {
-				if (StrUtil.equalsIgnoreCase("3", String.valueOf(modeInfo.getStatus()))) {
-					TaskInfoDTO taskInfoDTO = flowApiService.viewInitialTaskInfo(modeInfo.getModelKey());
-					modeInfo.setRouterName(modeInfo.getBusinessUrl());
-					if (Objects.nonNull(taskInfoDTO)) {
-						String routerName = taskInfoDTO.getRouterName();
-						if (StrUtil.isNotBlank(routerName)) {
-							modeInfo.setRouterName(routerName);
-						}
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			modeInfo.setRouterName(modeInfo.getBusinessUrl());
 		});
 		return Result.OK(pageList);
 	}
@@ -122,17 +109,9 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 	@AutoLog(value = "flowable流程模板定义信息-编辑")
 	@ApiOperation(value="flowable流程模板定义信息-编辑", notes="flowable流程模板定义信息-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody ActCustomModelInfo actCustomModelInfo) {
+	public Result<String> edit(@RequestBody @Valid  ActCustomModelInfo actCustomModelInfo) {
 
-		ActCustomModelInfo one = actCustomModelInfoService.getById(actCustomModelInfo.getId());
-		if (Objects.isNull(one)) {
-			throw new AiurtBootException("流程模板不存在，无法修改");
-		}
-
-		if (!StrUtil.equals(one.getModelKey(), actCustomModelInfo.getModelKey())) {
-			throw new AiurtBootException("流程标识不能修改！");
-		}
-		actCustomModelInfoService.updateById(actCustomModelInfo);
+		actCustomModelInfoService.edit(actCustomModelInfo);
 		return Result.OK("编辑成功!");
 	}
 
@@ -145,7 +124,7 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 	@AutoLog(value = "flowable流程模板定义信息-通过id删除")
 	@ApiOperation(value="flowable流程模板定义信息-通过id删除", notes="flowable流程模板定义信息-通过id删除")
 	@DeleteMapping(value = "/delete")
-	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+	public Result<String> delete(@RequestParam(name="id",required=true) String id, @RequestParam(value = "type", required = false) String type) {
 		List<String> list = new ArrayList<>();
 		list.add(id);
 		actCustomModelInfoService.deleteById(list);

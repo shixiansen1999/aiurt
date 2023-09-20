@@ -6,6 +6,7 @@ import lombok.Data;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author fgw
@@ -24,11 +25,14 @@ public class FlowTaskCompleteCommentDTO implements Serializable {
      * 流程任务的批注内容。
      */
     @ApiModelProperty(value = "流程任务的批注内容")
-   // @NotBlank(message = "数据验证失败，任务审批内容不能为空！")
     private String comment;
 
 
     @ApiModelProperty(value = "委托账号，转办账号")
     private String delegateAssignee;
+
+
+    @ApiModelProperty(value = "下一个节点参与人参数")
+    private List<NextNodeUserDTO> nextNodeUserParam;
 
 }

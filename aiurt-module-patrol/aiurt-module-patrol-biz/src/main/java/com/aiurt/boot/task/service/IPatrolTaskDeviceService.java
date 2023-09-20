@@ -3,6 +3,7 @@ package com.aiurt.boot.task.service;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolStationDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
+import com.aiurt.boot.task.dto.PrintTaskStationDTO;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.modules.device.entity.Device;
@@ -98,6 +99,13 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      */
     List<PatrolStationDTO> getBillGangedInfo(String taskId);
     /**
+     * 根据任务ID获取工单站点和巡检表联动信息
+     *
+     * @param taskId
+     * @return
+     */
+    List<PrintTaskStationDTO> getBillGangedInfoToPrint(String taskId);
+    /**
      * 根据工单ID获取工单站点和巡检表联动信息
      *
      * @param deviceId
@@ -111,4 +119,12 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * @return
      */
     PatrolTaskDeviceDTO getPatrolTaskDeviceDetail(String id);
+
+    /**
+     * app巡检-巡检清单-确认提交工单时查询mac地址匹配结果
+     * @param id
+     * @return
+     */
+    Integer patrolTaskCheckItemsGetMac(String id);
+
 }

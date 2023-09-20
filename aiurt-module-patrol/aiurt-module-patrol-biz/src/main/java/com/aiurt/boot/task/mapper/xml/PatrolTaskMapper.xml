@@ -615,7 +615,10 @@
 
     </select>
     <select id="getIndexTaskList" resultType="com.aiurt.boot.statistics.model.IndexTaskInfo">
-        SELECT pt.id,pt.`name`, pt.abnormal_state, pt.`code`, pt.`status`, pt.submit_time,pt.mac_status
+        SELECT pt.id,pt.`name`, pt.abnormal_state, pt.`code`, pt.`status`, pt.submit_time,pt.mac_status,
+        <!-- 这两个字段是用于打印预览(taskId,standardId)-->
+        pt.id as taskId,
+        ptsd.standard_id as standardId
         FROM patrol_task pt
         left join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
         left join patrol_task_standard ptsd on pt.id = ptsd.task_id and ptsd.del_flag = 0
@@ -2073,7 +2076,10 @@
         ptd.`status`,
         ptd.check_time as submitTime,
         ptd.duration as duration,
-        ptd.mac_status
+        ptd.mac_status,
+        <!--这两个字段用于打印预览(taskId，standardId)-->
+        statistics.id as taskId,
+        ps.id as standardId
         FROM
         (
         <include refid="IndexTaskDevice"/>
@@ -2348,12 +2354,19 @@
         GROUP BY pt.id
         order by pt.create_time desc
     </select>
+
     <select id="getPatrolTaskFaultNum" resultType="java.lang.Integer">
         SELECT COUNT(*)
         FROM patrol_task_device ptd
         INNER JOIN patrol_task_fault ptf ON ptf.patrol_number=ptd.patrol_number
         INNER JOIN fault f ON f.`code`=ptf.fault_code AND f.`status`>2
         WHERE ptd.task_id=#{patrolTaskId}
+    </select>
+
+    <select id="getTaskDurationBySumDevice" resultType="java.lang.Integer">
+        SELECT SUM(IFNULL(duration,0))
+        FROM patrol_task_device
+        WHERE task_id = #{patrolTaskId}
     </select>
 
     <sql id="taskCountONMonth">

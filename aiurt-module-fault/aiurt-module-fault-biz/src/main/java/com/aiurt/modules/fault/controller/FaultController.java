@@ -3,6 +3,8 @@ package com.aiurt.modules.fault.controller;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.aspect.annotation.PermissionData;
@@ -10,6 +12,7 @@ import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.basic.entity.CsWork;
+import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultDevice;
@@ -28,9 +31,12 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -67,7 +73,8 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     @Autowired
     private ISysBaseAPI sysBaseAPI;
-
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
     /**
      * 分页列表查询
      *
@@ -164,7 +171,26 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             @ApiImplicitParam(name = "code", value = "故障编码", required = true, paramType = "query")
     })
     public Result<Fault> queryByCode(@RequestParam(name = "code", required = true) String code) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Fault fault = faultService.queryByCode(code);
+        //信号二期调度中心下发的故障审核，判断决定是工班长审核还是控制中心审核
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
+        if ("1".equals(paramModel.getValue()) && "1".equals(fault.getFaultModeCode())) {
+            fault.setReviewFlag(false);
+            boolean a = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.ZXBANZHANG))||user.getRoleCodes().contains(RoleConstant.ZXCHENGYUAN));
+            boolean b = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.FOREMAN)));
+
+            if ( a && FaultConstant.CONTROL_CENTER_REVIEW_STATUS_0.equals(fault.getControlCenterReviewStatus())) {
+                fault.setReviewFlag(true);
+            }
+            if ( b && (fault.getControlCenterReviewStatus() == null || FaultConstant.CONTROL_CENTER_REVIEW_STATUS_2.equals(fault.getControlCenterReviewStatus()))) {
+                fault.setReviewFlag(true);
+            }
+            boolean c = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.ADMIN)));
+            if (c) {
+                fault.setReviewFlag(true);
+            }
+        }
         if (fault == null) {
             return Result.error("未找到对应数据");
         }
@@ -600,6 +626,20 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         List<DeviceAssemblyDTO> list = faultService.queryDeviceAssemblyByDeviceCode(deviceCode, faultCauseSolutionIdList);
         return Result.OK(list);
     }
+    /**
 
+     *
+     * @param code
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "故障列表-打印详情")
+    @ApiOperation(value = "故障列表-打印详情", notes = "故障列表-打印详情")
+    @GetMapping(value = "/printFault")
+    public Result<?> printFault(@RequestParam(name="code",required=true) String code,
+                                         HttpServletRequest req) {
+        String printFault = faultService.printFault(code);
+        return Result.OK("成功",printFault);
+    }
 
 }

@@ -11,13 +11,16 @@
         t8.start_time as startOverhaulTime,
         t8.end_time as endOverhaulTime,
         t8.device_code as equipmentCode,
-        t8.code as overhaulCode
+        t8.code as overhaulCode,
+        rp.inspection_str_code,
+        rp.is_manual
         FROM
         repair_task t1
         LEFT JOIN repair_task_org_rel t2 ON t1.`code` = t2.repair_task_code
         LEFT JOIN repair_task_station_rel t4 ON t1.`code` = t4.repair_task_code
         LEFT JOIN repair_task_standard_rel t6 ON t1.id=t6.repair_task_id
         LEFT JOIN repair_task_device_rel t8 ON t1.id = t8.repair_task_id
+        LEFT JOIN repair_pool rp ON t1.repair_pool_id=rp.id
         <where>
             t1.del_flag =0
             <if test="condition.id!=null ">
@@ -70,13 +73,16 @@
         t8.start_time as startOverhaulTime,
         t8.end_time as endOverhaulTime,
         t8.device_code as equipmentCode,
-        t8.code as overhaulCode
+        t8.code as overhaulCode,
+        rp.inspection_str_code,
+        rp.is_manual
         FROM
         repair_task t1
         LEFT JOIN repair_task_org_rel t2 ON t1.`code` = t2.repair_task_code
         LEFT JOIN repair_task_station_rel t4 ON t1.`code` = t4.repair_task_code
         LEFT JOIN repair_task_standard_rel t6 ON t1.id=t6.repair_task_id
         LEFT JOIN repair_task_device_rel t8 ON t1.id = t8.repair_task_id
+        LEFT JOIN repair_pool rp ON t1.repair_pool_id=rp.id
         <where>
             t1.del_flag =0
             <if test="collection != null and collection.size() != 0">
@@ -265,7 +271,9 @@
         rtsr.subsystem_code as systemCode,
         rtsr.device_type_code as deviceTypeCode,
         rtdr.submit_time as submitTime,
-        rtr.status as statusCode
+        rtr.status as statusCode,
+        rtsr.code as standardCode,
+        rtdr.sampling_sign_url
         FROM
             repair_task_device_rel rtdr
                 LEFT JOIN repair_task rt ON rt.id = rtdr.repair_task_id
@@ -312,6 +320,7 @@
         repair_task t1
         LEFT JOIN repair_task_device_rel t2 ON t1.id = t2.repair_task_id
         LEFT JOIN repair_task_standard_rel t3 ON t2.task_standard_rel_id = t3.id
+        LEFT JOIN inspection_code_device_type t4 ON t3.code = t4.inspection_code
         left join sys_user su on su.id = t2.staff_id
         <where>
             t1.del_flag = 0
@@ -340,6 +349,9 @@
             <if test="condition.startTimeBegin!=null and condition.startTimeEnd!=null ">
                 and DATE_FORMAT(t2.start_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTimeBegin}, '%Y-%m-%d')
                 and DATE_FORMAT(t2.end_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startTimeEnd}, '%Y-%m-%d')
+            </if>
+            <if test="multipleDeviceTypes eq '1'.toString() ">
+                and t4.device_type_code = #{condition.deviceTypeCode}
             </if>
         </where>
         order by t1.start_time desc
@@ -448,15 +460,18 @@
 
     <select id="selectSingle" resultType="com.aiurt.boot.task.entity.RepairTaskResult">
         SELECT
-	       *
+	       t1.*,
+        t2.proc_methods
         FROM
-	    repair_task_result
+	    repair_task_result t1
+        left join inspection_code_content t2 on t1.code = t2.code
         <where>
 	      task_device_rel_id = #{id}
             <if test="status!=null">
                 and status = #{status}
             </if>
         </where>
+        GROUP BY t1.id
         order by sort_no ASC
     </select>
 

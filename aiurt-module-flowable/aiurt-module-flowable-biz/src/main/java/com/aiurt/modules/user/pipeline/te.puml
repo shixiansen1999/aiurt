@@ -1,0 +1,96 @@
+@startuml
+interface UserFilter<T extends UserContext> {
+    +doFilter(context: T, chain: UserFilterChain): void
+}
+
+abstract class AbstractUserFilter<T extends UserContext>{
+    +doFilter(context: T,chain:UserFilterChain): void
+    +{abstract}handle(context: T): void
+}
+
+class BaseUserFilter {
+    +handle(context: T): void
+}
+class CustomVariableUserFilter {
+    +handle(context: T): void
+}
+class SystemVariableUserFilter {
+    +handle(context: T): void
+}
+class DefaultNullUserFilter {
+    +doFilter(context: T,chain:UserFilterChain): void
+    +handle(context: T): void
+}
+
+interface FilterSelector {
+    +matchFilter(currentFilterName: String): boolean
+    +getFilterNames(): List<String>
+}
+
+interface UserContext {
+    +getFilterSelector(): FilterSelector
+    +continueChain(): boolean
+}
+
+abstract class AbstractUserContext  {
+    - selector: FilterSelector
+    + AbstractUserContext(selector: FilterSelector)
+    + getFilterSelector(): FilterSelector
+}
+
+class SelectUserContext {
+    - customUser ActCustomUser
+    - processInstance ProcessInstance
+    - variable Map
+    - userList List
+    + SelectUserContext(selector: FilterSelector)
+    + continueChain() boolean
+    + addUserList(userList List):void
+}
+
+interface UserFilterChain<T extends UserContext> {
+    +handle(context: T): void
+    +fireNext(ctx: T): void
+}
+
+class FilterChainPipeline<T extends UserFilter> {
+
+}
+
+class DefaultFilterChain<T extends UserContext> {
+    -next: UserFilterChain<T>
+    -filter: UserFilter<T>
+    +DefaultFilterChain(chain: UserFilterChain, filter: UserFilter)
+    +handle(context: T): void
+    +fireNext(ctx: T): void
+}
+
+DefaultFilterChain ..|> UserFilterChain
+
+UserFilterChain ..|> UserContext
+UserFilterChain "1" o-- "0..1" DefaultFilterChain : contains
+
+UserFilterChain --> UserFilterChain : handle()
+UserFilterChain --> UserFilterChain : fireNext()
+
+UserFilter <|-- DefaultFilterChain
+
+UserContext ..|> FilterSelector
+AbstractUserContext ..|> UserContext
+SelectUserContext --|> AbstractUserContext
+AbstractUserFilter ..|> UserFilter
+BaseUserFilter --|> AbstractUserFilter
+CustomVariableUserFilter --|> AbstractUserFilter
+DefaultNullUserFilter --|> AbstractUserFilter
+SystemVariableUserFilter --|> AbstractUserFilter
+
+BaseUserFilter ..> SelectUserContext
+CustomVariableUserFilter ..> SelectUserContext
+DefaultNullUserFilter..> SelectUserContext
+SystemVariableUserFilter..> SelectUserContext
+AbstractUserFilter ..> UserContext
+
+
+CustomVariableUserFilter --|> AbstractUserFilter
+CustomVariableUserFilter ..> SelectUserContext
+@enduml

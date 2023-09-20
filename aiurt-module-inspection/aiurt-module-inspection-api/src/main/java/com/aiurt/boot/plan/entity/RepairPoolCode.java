@@ -183,4 +183,11 @@ public class RepairPoolCode implements Serializable {
     @ApiModelProperty(value = "检修设备编码")
     @TableField(exist = false)
     private List<String> deviceCodes;
+
+    /**
+     * 设备类型多选
+     */
+    @ApiModelProperty(value = "设备类型多选")
+    @TableField(exist = false)
+    private List<String> deviceTypeCodeList;
 }

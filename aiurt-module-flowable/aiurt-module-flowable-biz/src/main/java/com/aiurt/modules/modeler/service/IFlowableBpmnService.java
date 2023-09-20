@@ -1,5 +1,6 @@
 package com.aiurt.modules.modeler.service;
 
+import com.aiurt.modules.modeler.dto.CompareDTO;
 import com.aiurt.modules.modeler.dto.ModelInfoVo;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import org.flowable.bpmn.model.BpmnModel;
@@ -65,4 +66,11 @@ public interface IFlowableBpmnService {
      * @return
      */
     ModelInfoVo loadBpmnXmlByModelKey(String modelKey);
+
+    /**
+     * 对比
+     * @param compareDTO
+     * @return
+     */
+    Boolean compare(CompareDTO compareDTO);
 }

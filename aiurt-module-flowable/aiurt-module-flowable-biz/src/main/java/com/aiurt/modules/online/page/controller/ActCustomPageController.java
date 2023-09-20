@@ -1,5 +1,6 @@
 package com.aiurt.modules.online.page.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
@@ -58,22 +59,8 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-
-		LambdaQueryWrapper<ActCustomPage> queryWrapper = new LambdaQueryWrapper<>();
-		String sysOrgCode = actCustomPage.getSysOrgCode();
-		if (StrUtil.isNotBlank(sysOrgCode)) {
-			SysDepartModel sysDepartModel = sysBaseApi.selectAllById(sysOrgCode);
-			if (Objects.nonNull(sysDepartModel)) {
-				actCustomPage.setSysOrgCode(sysDepartModel.getOrgCode());
-			}
-
-			queryWrapper.eq(ActCustomPage::getSysOrgCode, actCustomPage.getSysOrgCode());
-		}
-
-		queryWrapper.like(StrUtil.isNotBlank(actCustomPage.getPageName()),ActCustomPage::getPageName, actCustomPage.getPageName());
-
 		Page<ActCustomPage> page = new Page<>(pageNo, pageSize);
-		IPage<ActCustomPage> pageList = actCustomPageService.page(page, queryWrapper);
+		IPage<ActCustomPage> pageList = actCustomPageService.queryPageList(page, actCustomPage);
 		return Result.OK(pageList);
 	}
 
@@ -87,9 +74,7 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 	@ApiOperation(value="设计表单-添加", notes="设计表单-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody ActCustomPage actCustomPage) {
-		actCustomPage.setPageVersion(1);
-		actCustomPageService.save(actCustomPage);
-		return Result.OK("添加成功！");
+		return actCustomPageService.add(actCustomPage);
 	}
 
 	/**
@@ -102,9 +87,7 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 	@ApiOperation(value="设计表单-编辑", notes="设计表单-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody ActCustomPage actCustomPage) {
-
-		actCustomPageService.edit(actCustomPage);
-		return Result.OK("编辑成功!");
+		return actCustomPageService.edit(actCustomPage);
 	}
 
 	/**
@@ -116,8 +99,7 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 	@ApiOperation(value="设计表单-通过id删除", notes="设计表单-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		actCustomPageService.removeById(id);
-		return Result.OK("删除成功!");
+		return actCustomPageService.deleteById(id);
 	}
 
 	/**
@@ -129,7 +111,7 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 	@ApiOperation(value="设计表单-批量删除", notes="设计表单-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.actCustomPageService.removeByIds(Arrays.asList(ids.split(",")));
+		this.actCustomPageService.deleteByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
 	}
 
@@ -151,13 +133,21 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 
 	@GetMapping(value = "/queryList")
 	@ApiOperation("查询表单list")
-	public Result<List<ActCustomPage>> queryList(@RequestParam(value = "pageName",required = false) String pageName) {
+	public Result<List<ActCustomPage>> queryList(@RequestParam(value = "pageName",required = false) String pageName,
+												 @RequestParam(value = "pageType",required = false) Integer pageType) {
 		LambdaQueryWrapper<ActCustomPage> wrapper = new LambdaQueryWrapper<>();
-
 		wrapper.eq(ActCustomPage::getDelFlag, CommonConstant.DEL_FLAG_0);
+		if(StrUtil.isNotEmpty(pageName)){
+			wrapper.like(ActCustomPage::getPageName, pageName);
+		}
+		if(ObjectUtil.isNotEmpty(pageType)){
+			wrapper.eq(ActCustomPage::getPageType, pageType);
+		}
 
 		List<ActCustomPage> actCustomPageList = actCustomPageService.getBaseMapper().selectList(wrapper);
 
 		return Result.OK(actCustomPageList);
 	}
+
+
 }

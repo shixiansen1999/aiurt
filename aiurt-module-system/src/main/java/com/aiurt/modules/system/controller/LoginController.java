@@ -105,11 +105,11 @@ public class LoginController {
 	private ISysThirdAccountService sysThirdAccountService;
 
 	@Autowired
-	private ILoginService loginService;
+	private WebSocket webSocket;
 
 
 	@Autowired
-	private WebSocket webSocket;
+	private ILoginService loginService;
 
 	@ApiOperation("登录接口")
 	@RequestMapping(value = "/login", method = RequestMethod.POST)

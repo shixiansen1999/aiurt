@@ -17,6 +17,7 @@ import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.boot.task.service.IPatrolTaskUserService;
 import com.aiurt.boot.task.service.impl.PatrolTaskPrintServiceImpl;
+import com.aiurt.boot.task.service.impl.PatrolTaskToPrintServiceImpl;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
@@ -76,6 +77,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     private ISysParamAPI sysParamApi;
     @Autowired
     private PatrolTaskPrintServiceImpl patrolTaskPrintService;
+    @Autowired
+    private PatrolTaskToPrintServiceImpl patrolTaskToPrintService;
     /**
      * PC巡检任务列表-巡视任务池
      *
@@ -789,6 +792,16 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK(printPatrolTaskDTOS);
     }
 
+    @AutoLog(value = "巡检任务表-打印巡视详情-打印所有工单")
+    @ApiOperation(value = "巡检任务表-打印巡视详情-打印所有工单", notes = "巡检任务表-打印巡视详情-打印所有工单")
+    @GetMapping(value = "/printPatrolTaskStandardDetailById")
+    public Result<List<PrintPatrolTaskStandardDTO>> printPatrolTaskStandardDetailById(@RequestParam(name="ids",required=true) String ids,
+                                                                            @RequestParam(name="patrolNumber",required=false) String patrolNumber,
+                                                                      HttpServletRequest req) {
+        List<PrintPatrolTaskStandardDTO> printPatrolTaskStandardDTOS = patrolTaskService.printPatrolTaskAndStandardById(ids,patrolNumber);
+        return Result.OK(printPatrolTaskStandardDTOS);
+    }
+
     /**
 
      *
@@ -805,6 +818,35 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         String printPatrolTaskDTOS = patrolTaskPrintService.printPatrolTask(ids,standardId);
         return Result.OK("成功",printPatrolTaskDTOS);
     }
+
+    /**
+
+     * 获取打印所有数据
+     * @param id
+     * @param standardId
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "巡检任务表-打印")
+    @ApiOperation(value = "巡检任务表-打印巡视详情", notes = "巡检任务表-打印巡视详情")
+    @GetMapping(value = "/print")
+    public PrintForBasicDTO print(@RequestParam(name="id",required=true) String id,
+                                     @RequestParam(name="standardId",required=true) String standardId,
+                                     HttpServletRequest req) {
+        PrintForBasicDTO printPatrolTask = patrolTaskPrintService.printForBasic(id,standardId);
+        return printPatrolTask;
+    }
+
+    @AutoLog(value = "巡检任务表-打印巡视详情")
+    @ApiOperation(value = "巡检任务表-打印巡视详情", notes = "巡检任务表-打印巡视详情")
+    @GetMapping(value = "/printPatrolTaskToPdf")
+    public Result<?> printPatrolTaskToPdf(@RequestParam(name="ids",required=true) String ids,
+                                     @RequestParam(name="standardId",required=true) String standardId,
+                                     HttpServletRequest req, HttpServletResponse response) {
+        patrolTaskToPrintService.printPatrolTaskToPdf(ids,standardId,response);
+        return Result.OK("成功");
+    }
+
     /**
      *获取mac地址
      *

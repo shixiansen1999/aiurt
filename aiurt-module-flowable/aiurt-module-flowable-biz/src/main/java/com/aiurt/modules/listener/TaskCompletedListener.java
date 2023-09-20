@@ -1,5 +1,7 @@
 package com.aiurt.modules.listener;
 
+import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
+import com.aiurt.modules.utils.FlowableNodeActionUtils;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.common.engine.impl.event.FlowableEntityEventImpl;
@@ -38,13 +40,21 @@ public class TaskCompletedListener implements FlowableEventListener {
 
         logger.debug("活动启动监听事件,设置办理人员......");
         TaskEntity taskEntity = (TaskEntity) entity;
-
+        String id = taskEntity.getId();
+        // 流程定义id
+        String processDefinitionId = taskEntity.getProcessDefinitionId();
+        // 流程实例id
+        String processInstanceId = taskEntity.getProcessInstanceId();
+        // 流程节点定义id
+        String taskDefinitionKey = taskEntity.getTaskDefinitionKey();
 
         try {
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
-            todoBaseApi.updateBpmnTaskState(taskEntity.getId(), taskEntity.getProcessInstanceId(), taskEntity.getAssignee(),"1");
+           // todoBaseApi.updateBpmnTaskState(id, taskEntity.getProcessInstanceId(), taskEntity.getAssignee(), "1");
+            // 任务节点前附加操作
+            FlowableNodeActionUtils.processTaskData(taskEntity, processDefinitionId, taskDefinitionKey, processInstanceId, FlowModelExtElementConstant.EXT_POST_NODE_ACTION);
         } catch (Exception e) {
-           logger.error(e.getMessage(), e);
+            logger.error(e.getMessage(), e);
         }
     }
 

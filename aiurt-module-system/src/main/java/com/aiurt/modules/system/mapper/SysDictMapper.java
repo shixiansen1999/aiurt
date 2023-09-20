@@ -287,4 +287,23 @@ public interface SysDictMapper extends BaseMapper<SysDict> {
 	 * @return
 	 */
 	DictModel dictByid(@Param("id") String id);
+
+	/**
+	 * 字典表的 翻译(返回多个值)
+	 *
+	 * @param table 数据库表名称
+	 * @param text
+	 * @param code
+	 * @param key
+	 * @return
+	 */
+	List<String> queryTableDictValueByKey(@Param("table") String table,@Param("text") String text,@Param("code") String code,@Param("key") String key, @Param("delFlag") Long delFlag );
+
+	/**
+	 * 通过字典code获取字典数据
+	 * @param code
+	 * @param key
+	 * @return
+	 */
+	public List<String> queryDictValueByKey(@Param("code") String code,@Param("key") String key);
 }

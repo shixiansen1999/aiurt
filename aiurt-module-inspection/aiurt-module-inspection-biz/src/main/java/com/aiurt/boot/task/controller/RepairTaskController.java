@@ -549,12 +549,6 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
         String sectId = typeInfo.get("sectId").toString();
         data.forEach(repairTask -> {
             repairTaskService.archRepairTask(repairTask, finalToken, finalArchiveUserId, refileFolderId, username, sectId);
-            try {
-                repairTaskService.exportPdf(request,repairTask,response);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
         });
         return Result.ok("归档成功");
     }
@@ -599,8 +593,9 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
     @ApiOperation(value = "检修任务表-打印检修详情", notes = "检修任务表-打印检修详情")
     @GetMapping(value = "/printRepairTaskById")
     public Result<List<PrintRepairTaskDTO>> printRepairTaskById(@RequestParam(name="ids",required=true) String ids,
+                                                                @RequestParam(name="overhaulCode",required=false) String overhaulCode,
                                                           HttpServletRequest req) {
-        List<PrintRepairTaskDTO> printPatrolTaskDTOs = repairTaskService.printRepairTaskById(ids);
+        List<PrintRepairTaskDTO> printPatrolTaskDTOs = repairTaskService.printRepairTaskById(ids,overhaulCode);
         return Result.OK(printPatrolTaskDTOs);
     }
 }

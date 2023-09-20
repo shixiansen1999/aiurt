@@ -1,5 +1,6 @@
 package com.aiurt.modules.train.task.dto;
 
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
@@ -21,7 +22,7 @@ import java.util.List;
  * @version: 1.0
  */
 @Data
-public class BdTrainTaskDTO {
+public class BdTrainTaskDTO extends DictEntity {
     /**用户id*/
     @Excel(name = "用户id", width = 15)
     @ApiModelProperty(value = "用户id")
@@ -29,10 +30,12 @@ public class BdTrainTaskDTO {
     /**签到状态(1已签到.0未签到)*/
     @Excel(name = "签到状态(1已签到.0未签到)", width = 15)
     @ApiModelProperty(value = "签到状态(1已签到.0未签到)")
+    @Dict(dicCode = "signState_type")
     private Integer signState;
     /**反馈转态(1已反馈,0未反馈)*/
     @Excel(name = "反馈转态(1已反馈,0未反馈)", width = 15)
     @ApiModelProperty(value = "反馈转态(1已反馈,0未反馈)")
+    @Dict(dicCode = "feedState_type")
     private Integer feedState;
     /**实际开始培训时间*/
     @Excel(name = "实际开始培训时间", width = 15, format = "yyyy-MM-dd HH:mm")
@@ -72,7 +75,7 @@ public class BdTrainTaskDTO {
     /**培训部门*/
     @Excel(name = "培训部门", width = 15)
     @ApiModelProperty(value = "培训部门")
-    private Integer taskTeamId;
+    private String taskTeamId;
     /**培训部门名称*/
     @Excel(name = "培训部门名称", width = 15)
     @ApiModelProperty(value = "培训部门名称")

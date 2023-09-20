@@ -7,6 +7,8 @@ import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.common.enums.SystemVariableEnum;
 import com.aiurt.modules.modeler.dto.ActCustomVariableDTO;
+import com.aiurt.modules.modeler.dto.ConnectionConditionConfigDTO;
+import com.aiurt.modules.modeler.dto.FlowConditionDTO;
 import com.aiurt.modules.modeler.entity.ActCustomVariable;
 import com.aiurt.modules.modeler.service.IActCustomVariableService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -131,7 +133,7 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 		wrapper.eq(ActCustomVariable::getModelId, modelId).eq(ActCustomVariable::getVariableName, variableName);
 		long count = actCustomVariableService.count(wrapper);
 		if (count >= 1) {
-			throw new AiurtBootException("流程标识已存在，请重新填写!");
+			throw new AiurtBootException("变量标识已存在，请重新填写!");
 		}
 		return Result.OK();
 	}
@@ -169,5 +171,10 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 		return Result.OK(resultList);
 	}
 
-
+	@ApiOperation(value = "获取连接条件配置的字段名称下拉列表")
+	@GetMapping(value = "/getFilterFieldNamesDropdown")
+	public Result<List<ConnectionConditionConfigDTO>> getFilterFieldNamesDropdown(@RequestParam(name="modelId") String modelId) {
+		List<ConnectionConditionConfigDTO> flowConditionDtos = actCustomVariableService.getFilterFieldNamesDropdown(modelId);
+		return Result.OK(flowConditionDtos);
+	}
 }
