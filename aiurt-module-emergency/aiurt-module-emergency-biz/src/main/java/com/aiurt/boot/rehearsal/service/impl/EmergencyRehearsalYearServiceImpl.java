@@ -35,10 +35,12 @@ import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -280,70 +282,75 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
         def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         TransactionStatus status = transactionManager.getTransaction(def);
 
-        String id = emergencyRehearsalYearAddDTO.getId();
-        if (StrUtil.isEmpty(id)) {
-            EmergencyRehearsalYear rehearsalYear = new EmergencyRehearsalYear();
-            BeanUtils.copyProperties(emergencyRehearsalYearAddDTO, rehearsalYear);
-            // 构造年计划编号
-            String code = "NDYJ" + DateUtil.format(new Date(), "yyyyMMdd-");
-            EmergencyRehearsalYear emergencyRehearsalYear = this.lambdaQuery().like(EmergencyRehearsalYear::getCode, code)
-                    .orderByDesc(EmergencyRehearsalYear::getCode)
-                    .last("limit 1")
-                    .one();
-            if (ObjectUtil.isEmpty(emergencyRehearsalYear)) {
-                code += String.format("%02d", 1);
-            } else {
-                String yearCode = emergencyRehearsalYear.getCode();
-                Integer serialNo = Integer.valueOf(yearCode.substring(yearCode.lastIndexOf("-") + 1));
-                if (serialNo >= 99) {
-                    code += (serialNo + 1);
+        try {
+            String id = emergencyRehearsalYearAddDTO.getId();
+            if (StrUtil.isEmpty(id)) {
+                EmergencyRehearsalYear rehearsalYear = new EmergencyRehearsalYear();
+                BeanUtils.copyProperties(emergencyRehearsalYearAddDTO, rehearsalYear);
+                // 构造年计划编号
+                String code = "NDYJ" + DateUtil.format(new Date(), "yyyyMMdd-");
+                EmergencyRehearsalYear emergencyRehearsalYear = this.lambdaQuery().like(EmergencyRehearsalYear::getCode, code)
+                        .orderByDesc(EmergencyRehearsalYear::getCode)
+                        .last("limit 1")
+                        .one();
+                if (ObjectUtil.isEmpty(emergencyRehearsalYear)) {
+                    code += String.format("%02d", 1);
                 } else {
-                    code += String.format("%02d", (serialNo + 1));
+                    String yearCode = emergencyRehearsalYear.getCode();
+                    Integer serialNo = Integer.valueOf(yearCode.substring(yearCode.lastIndexOf("-") + 1));
+                    if (serialNo >= 99) {
+                        code += (serialNo + 1);
+                    } else {
+                        code += String.format("%02d", (serialNo + 1));
+                    }
                 }
-            }
-            rehearsalYear.setCode(code);
-            this.save(rehearsalYear);
+                rehearsalYear.setCode(code);
+                this.save(rehearsalYear);
 
-            String planId = rehearsalYear.getId();
-            List<EmergencyRehearsalMonth> monthList = emergencyRehearsalYearAddDTO.getMonthList();
-            if (CollectionUtil.isNotEmpty(monthList)) {
-                for (EmergencyRehearsalMonth month : monthList) {
-                    String monthCode = emergencyRehearsalMonthService.getMonthCode();
-                    month.setPlanId(planId);
-                    month.setCode(monthCode);
-                    month.setYearWithin(EmergencyConstant.WITHIN_1);
-                    emergencyRehearsalMonthService.save(month);
+                String planId = rehearsalYear.getId();
+                List<EmergencyRehearsalMonth> monthList = emergencyRehearsalYearAddDTO.getMonthList();
+                if (CollectionUtil.isNotEmpty(monthList)) {
+                    for (EmergencyRehearsalMonth month : monthList) {
+                        String monthCode = emergencyRehearsalMonthService.getMonthCode();
+                        month.setPlanId(planId);
+                        month.setCode(monthCode);
+                        month.setYearWithin(EmergencyConstant.WITHIN_1);
+                        emergencyRehearsalMonthService.save(month);
+                    }
                 }
-            }
-            transactionManager.commit(status);
-            return planId;
-        } else {
-            EmergencyRehearsalYear rehearsalYear = this.getById(id);
-            Assert.notNull(rehearsalYear, "未找到对应数据！");
-            // 代提审才允许编辑
-            if (!EmergencyConstant.YEAR_STATUS_1.equals(rehearsalYear.getStatus())) {
-                throw new AiurtBootException("已提审的计划不允许编辑！");
-            }
-            EmergencyRehearsalYear emergencyRehearsalYear = new EmergencyRehearsalYear();
-            BeanUtils.copyProperties(emergencyRehearsalYearAddDTO, emergencyRehearsalYear);
-            this.updateById(emergencyRehearsalYear);
+                transactionManager.commit(status);
+                return planId;
+            } else {
+                EmergencyRehearsalYear rehearsalYear = this.getById(id);
+                Assert.notNull(rehearsalYear, "未找到对应数据！");
+                // 代提审才允许编辑
+                if (!EmergencyConstant.YEAR_STATUS_1.equals(rehearsalYear.getStatus())) {
+                    throw new AiurtBootException("已提审的计划不允许编辑！");
+                }
+                EmergencyRehearsalYear emergencyRehearsalYear = new EmergencyRehearsalYear();
+                BeanUtils.copyProperties(emergencyRehearsalYearAddDTO, emergencyRehearsalYear);
+                this.updateById(emergencyRehearsalYear);
 
-            QueryWrapper<EmergencyRehearsalMonth> wrapper = new QueryWrapper<>();
-            wrapper.lambda().eq(EmergencyRehearsalMonth::getPlanId, id);
-            emergencyRehearsalMonthService.remove(wrapper);
-            List<EmergencyRehearsalMonth> monthList = emergencyRehearsalYearAddDTO.getMonthList();
-            if (CollectionUtil.isNotEmpty(monthList)) {
-                for (EmergencyRehearsalMonth month : monthList) {
-                    String monthCode = emergencyRehearsalMonthService.getMonthCode();
-                    month.setPlanId(id);
-                    month.setCode(monthCode);
-                    month.setYearWithin(EmergencyConstant.WITHIN_1);
-                    emergencyRehearsalMonthService.save(month);
+                QueryWrapper<EmergencyRehearsalMonth> wrapper = new QueryWrapper<>();
+                wrapper.lambda().eq(EmergencyRehearsalMonth::getPlanId, id);
+                emergencyRehearsalMonthService.remove(wrapper);
+                List<EmergencyRehearsalMonth> monthList = emergencyRehearsalYearAddDTO.getMonthList();
+                if (CollectionUtil.isNotEmpty(monthList)) {
+                    for (EmergencyRehearsalMonth month : monthList) {
+                        String monthCode = emergencyRehearsalMonthService.getMonthCode();
+                        month.setPlanId(id);
+                        month.setCode(monthCode);
+                        month.setYearWithin(EmergencyConstant.WITHIN_1);
+                        emergencyRehearsalMonthService.save(month);
+                    }
                 }
+                transactionManager.commit(status);
+                return id;
             }
-            transactionManager.commit(status);
-            return id;
+        } catch (Exception e) {
+            transactionManager.rollback(status);
         }
+        return null;
     }
 
     @Override
