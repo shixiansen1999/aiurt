@@ -9,6 +9,7 @@ package com.aiurt.modules.recall.handler;/**
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
@@ -62,9 +63,8 @@ public class RecallRuleVerifyHandler extends AbstractFlowHandler<FlowRecallConte
         //判断流程当前达到节点是否在流程配置节点集合中
         //获取流程配置中的节点集合
         String recallNodeId = actCustomModelExt.getRecallNodeId();
-        String[] split = recallNodeId.split(";");
+        String[] split = recallNodeId.split(",");
         //获取流程当前节点
-        // 获取流程当前节点
         List<Task> taskList = taskService.createTaskQuery()
                 .processInstanceId(processInstanceId)
                 .list();

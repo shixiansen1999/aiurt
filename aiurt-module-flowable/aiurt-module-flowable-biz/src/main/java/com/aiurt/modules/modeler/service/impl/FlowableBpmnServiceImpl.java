@@ -365,11 +365,11 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                     JsonNode rootNode = objectMapper.readTree(attributeValue);
                     // 使用 Stream API 提取 "nodeId" 数据
                     List<String> nodeIds = StreamSupport.stream(rootNode.spliterator(), false)
-                            .map(node -> node.get("nodeId").asText())
+                            .map(node -> node.asText())
                             .collect(Collectors.toList());
 
                     // 打印提取的 "nodeId"
-                    modelExt.setRecallNodeId(StrUtil.join(";", nodeIds));
+                    modelExt.setRecallNodeId(StrUtil.join(",", nodeIds));
                     modelExt.setIsRecall(1);
                 } catch (Exception e) {
                    log.error(e.getMessage(), e);

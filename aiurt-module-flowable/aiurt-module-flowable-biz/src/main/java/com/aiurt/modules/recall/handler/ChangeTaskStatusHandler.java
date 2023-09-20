@@ -45,19 +45,10 @@ import java.util.List;
 @Component
 public class ChangeTaskStatusHandler extends AbstractFlowHandler<FlowRecallContext> {
     @Resource
-    private HistoryService historyService;
-
-    @Resource
-    private IActCustomModelExtService modelExtService;
+    private FlowElementUtil flowElementUtil;
 
     @Resource
     private TaskService taskService;
-
-    @Resource
-    private IActCustomTaskCommentService actCustomTaskCommentService;
-
-    @Resource
-    private RepositoryService repositoryService;
 
     @Autowired
     private RuntimeService runtimeService;
@@ -65,18 +56,19 @@ public class ChangeTaskStatusHandler extends AbstractFlowHandler<FlowRecallConte
     public void handle(FlowRecallContext context) {
         //撤回之后将我的已办任务变成我的待办
         String processInstanceId = context.getProcessInstanceId();
-         //获取流程所有节点
+        HistoricProcessInstance processInstance = context.getProcessInstance();
+        String processDefinitionId = processInstance.getProcessDefinitionId();
+        //获取流程所有节点
         List<String> activityIdsToMove = new ArrayList<>();
-        List<Task> list = taskService.createTaskQuery().active().list();
+        List<Task> list = taskService.createTaskQuery().active().processInstanceId(processInstanceId).list();
         for (Task task : list) {
-            activityIdsToMove.add(task.getId());
+            //去重
+            if (!activityIdsToMove.contains(task.getTaskDefinitionKey())) {
+                activityIdsToMove.add(task.getTaskDefinitionKey());
+            }
         }
         //获取流程发起节点
-        Task task = taskService.createTaskQuery()
-                .processInstanceId(processInstanceId)
-                .singleResult();
-        BpmnModel bpmnModel = repositoryService.getBpmnModel(task.getProcessDefinitionId());
-        StartEvent startEvent = bpmnModel.getMainProcess().findFlowElementsOfType(StartEvent.class, false).get(0);
+        FlowElement startEvent = flowElementUtil.getStartFlowNodeByDefinitionId(processDefinitionId);
         String startElementId = null;
         if (ObjectUtil.isNotEmpty(startEvent)) {
              startElementId = startEvent.getId();

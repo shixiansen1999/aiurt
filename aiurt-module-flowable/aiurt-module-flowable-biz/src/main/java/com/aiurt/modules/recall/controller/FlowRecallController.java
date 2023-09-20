@@ -26,7 +26,7 @@ public class FlowRecallController {
      @Resource
      private IFlowRecallService flowRecallService;
 
-    @PostMapping("/manualRemind")
+    @PostMapping("/manualRecall")
     @ApiOperation(value = "流程撤回")
     public Result<?> manualRecall(@RequestBody RecallReqDTO recallReqDTO) {
         flowRecallService.recall(recallReqDTO);
