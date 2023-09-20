@@ -111,6 +111,24 @@ public class StockLevel2ServiceImpl extends ServiceImpl<StockLevel2Mapper, Stock
     }
 
     @Override
+    public StockLevel2RespDTO queryDetailById(String id){
+        StockLevel2 stockLevel2 = getDetailById(id);
+        StockLevel2RespDTO stockLevel2RespDTO = new StockLevel2RespDTO();
+        BeanUtils.copyProperties(stockLevel2, stockLevel2RespDTO);
+
+        // 计算总价
+        stockLevel2RespDTO.setPrice(stockLevel2.getPrice() != null ? new BigDecimal(stockLevel2.getPrice()): null);
+        if (stockLevel2RespDTO.getNum() != null && stockLevel2RespDTO.getPrice() != null){
+            stockLevel2RespDTO.setTotalPrices(stockLevel2RespDTO.getPrice().multiply(BigDecimal.valueOf(stockLevel2RespDTO.getNum())));
+        }else{
+            stockLevel2RespDTO.setTotalPrices(BigDecimal.valueOf(0));
+        }
+        // 物资表里面的manufactorCode字段实际上是厂商表的id
+        stockLevel2RespDTO.setManufactorId(stockLevel2.getManufactorCode());
+        return stockLevel2RespDTO;
+    }
+
+    @Override
     public List<StockLevel2> exportXls(StockLevel2 stockLevel2,String ids) {
         List<String> strings = new ArrayList<>();
         if (StrUtil.isNotEmpty(ids)) {

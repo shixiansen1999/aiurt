@@ -86,9 +86,10 @@ public class StockLevel2Controller {
     @AutoLog(value = "二级库管理-二级库库存管理-详情查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockLevel2List")
     @ApiOperation(value = "二级库管理-二级库库存管理-详情查询", notes = "二级库管理-二级库库存管理-详情查询")
     @GetMapping(value = "/queryById")
-    public Result<StockLevel2> queryById(@RequestParam(name = "id", required = true) String id) {
-        StockLevel2 stockLevel2 = iStockLevel2Service.getDetailById(id);
-        return Result.ok(stockLevel2);
+    public Result<StockLevel2RespDTO> queryById(@RequestParam(name = "id", required = true) String id) {
+        // StockLevel2 stockLevel2 = iStockLevel2Service.getDetailById(id);
+        StockLevel2RespDTO stockLevel2RespDTO = iStockLevel2Service.queryDetailById(id);
+        return Result.ok(stockLevel2RespDTO);
     }
 
     @AutoLog(value = "二级库管理-二级库库存管理-导出", operateType = 6, operateTypeAlias = "导出", permissionUrl = "/secondLevelWarehouse/StockLevel2List")

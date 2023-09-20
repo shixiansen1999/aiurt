@@ -135,21 +135,12 @@ public class StockLevel2 extends DictEntity {
 	@TableField(exist = false)
 	private  String  stockInTimeExcel;
 
-	@ApiModelProperty(value = "单价")
-	private BigDecimal price;
-	@ApiModelProperty(value = "总价")
-	private BigDecimal totalPrices;
 	@ApiModelProperty(value = "一级库数量")
 	private Integer oneLevelNum;
 	@ApiModelProperty(value = "一级库存放地点")
 	private String oneLevelWarehouseCode;
 	@ApiModelProperty(value = "一级库总价")
-	private String oneLevelTotalPrices;
-	@ApiModelProperty(value = "厂家/品牌")
-	@Dict(dictTable ="cs_manufactor",dicText = "name",dicCode = "id")
-	private String manufactorId;
-	@ApiModelProperty(value = "技术参数")
-	private String technicalParameter;
+	private BigDecimal oneLevelTotalPrices;
 
 	/**备注*/
 	@ApiModelProperty(value = "备注")
@@ -195,6 +186,17 @@ public class StockLevel2 extends DictEntity {
 	@ApiModelProperty(value = "规格型号")
 	@TableField(exist = false)
 	private  String  specifications;
+
+	/**物资类型*/
+	@ApiModelProperty(value = "单价")
+	@TableField(exist = false)
+	private  String  price;
+
+	/**物资类型*/
+	@ApiModelProperty(value = "生产厂商")
+	@TableField(exist = false)
+	@Dict(dictTable ="cs_manufactor",dicText = "name",dicCode = "id")
+	private  String  manufactorCode;
 
 	/**组织机构id*/
 	@ApiModelProperty(value = "组织机构id")

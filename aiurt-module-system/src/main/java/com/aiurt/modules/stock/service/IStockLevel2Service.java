@@ -31,6 +31,15 @@ public interface IStockLevel2Service extends IService<StockLevel2> {
     StockLevel2 getDetailById(String id);
 
     /**
+     * 根据库存信息表的id获取详情
+     * 这个方法其实是上面getDetailById方法的一些拓展：添加一些字段，返回对象是DTO等
+     *
+     * @param id 库存信息表id
+     * @return StockLevel2RespDTO对象
+     */
+    StockLevel2RespDTO queryDetailById(String id);
+
+    /**
      * 获取导出列表
      * @param ids
      * @return

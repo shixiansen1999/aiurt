@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -16,15 +17,15 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 二级库库存信息分类列表查询的返回DTO
+ * 二级库库存信息查询的返回DTO
  *
  * @author 华宜威
  * @date 2023-09-19 17:13:57
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="二级库库存信息分类列表查询的返回DTO", description="二级库库存信息分类列表查询的返回DTO")
-public class StockLevel2RespDTO implements Serializable {
+@ApiModel(value="二级库库存信息查询的返回DTO", description="二级库库存信息查询的返回DTO")
+public class StockLevel2RespDTO extends DictEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -122,7 +123,7 @@ public class StockLevel2RespDTO implements Serializable {
     private String oneLevelWarehouseCode;
 
     @ApiModelProperty(value = "一级库总价")
-    private String oneLevelTotalPrices;
+    private BigDecimal oneLevelTotalPrices;
 
     @ApiModelProperty(value = "厂家/品牌")
     @Dict(dictTable ="cs_manufactor",dicText = "name",dicCode = "id")
