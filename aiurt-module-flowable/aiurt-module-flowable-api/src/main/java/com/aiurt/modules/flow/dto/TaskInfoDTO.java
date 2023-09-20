@@ -109,10 +109,6 @@ public class TaskInfoDTO {
     @ApiModelProperty(value = "撤回按钮")
     private Boolean withdraw = false;
 
-
-    @ApiModelProperty("催办")
-    private Boolean isRemind = false;
-
     private Boolean isAutoSelect = true;
 
 
