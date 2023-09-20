@@ -11,7 +11,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
+import liquibase.pro.packaged.R;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -200,6 +202,20 @@ public class FaultExternalController extends BaseController<FaultExternal, IFaul
 		 FaultExternal byId = faultExternalService.getById(id);
 		 byId.setStatus(2);
 		 faultExternalService.updateById(byId);
+		 return Result.OK("编辑成功!");
+	 }
+
+	 /**
+	  * 转派
+	  * @param dto
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "调度系统故障-转派")
+	 @ApiModelProperty(value = "调度系统故障-转派", notes = "调度系统故障-转派")
+	 @PostMapping(value = "/reassign")
+	 public Result<?> reassign(@RequestBody FaultExternalDTO dto, HttpServletRequest req) {
+		 faultExternalService.reassign(dto, req);
 		 return Result.OK("编辑成功!");
 	 }
 }

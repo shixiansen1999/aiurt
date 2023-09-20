@@ -236,4 +236,10 @@ public class FaultExternal extends DictEntity implements Serializable  {
     @TableField(exist = false)
     @ApiModelProperty(value = "故障现象或者编码")
     private String faultPhenomenonOrCode;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "故障单状态")
+    private Integer faultStatus;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否能转派")
+    private Boolean canReassign;
 }

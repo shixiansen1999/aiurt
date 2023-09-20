@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultexternal.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -188,6 +189,8 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
                     }
                     if("1".equals(external.getTransportservice())){
                         external.setAffectPassengerService(1); }
+                    //已下发故障待指派可以转派
+                    external.setCanReassign(external.getFaultStatus() != null && external.getStatus() == 1 && external.getFaultStatus() <= 3);
                 }
             }
         }
@@ -296,5 +299,62 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
             log.error(e.getMessage(), e);
             return  Result.error("添加失败");
         }
+    }
+
+    @Override
+    public void reassign(FaultExternalDTO dto, HttpServletRequest req) {
+        if (StrUtil.isBlank(dto.getFaultcode())) {
+            throw new AiurtBootException("故障未下发");
+        }
+        Fault fault = faultService.getOne(new LambdaQueryWrapper<Fault>().eq(Fault::getCode, dto.getFaultcode()), false);
+        if (ObjectUtil.isEmpty(fault)) {
+            throw new AiurtBootException("未找到该故障单：" + dto.getFaultcode());
+        }
+        fault.setLineCode(dto.getLineCode());
+        fault.setStationCode(dto.getStationCode());
+        fault.setStationPositionCode(dto.getStationPositionCode());
+        if (StringUtils.isNotBlank(dto.getDevicesIds())) {
+            fault.setDevicesIds(dto.getDevicesIds());
+        }
+        fault.setMajorCode(dto.getMajorCode());
+        fault.setFaultPhenomenon(dto.getFaultPhenomenon());
+        fault.setFaultTypeCode(dto.getFaultTypeCode());
+        fault.setFaultLevel(dto.getFaultLevel());
+        //报修人
+        fault.setFaultApplicant(dto.getFaultApplicant());
+        //紧急程度
+        fault.setUrgency(dto.getUrgency());
+        //是否委外
+        fault.setIsOutsource(dto.getIsOutsource());
+        //接报人
+        fault.setReceiveUserName(dto.getReceiveUserName());
+        //报修组织机构
+        fault.setFaultApplicantDept(dto.getFaultApplicantDept());
+        //报修方式
+        fault.setFaultModeCode(dto.getFaultModeCode());
+        //所属子系统
+        fault.setSubSystemCode(dto.getSubSystemCode());
+        //是否影响行车
+        fault.setAffectDrive(dto.getAffectDrive());
+        //是否影响客运服务
+        fault.setAffectPassengerService(dto.getAffectPassengerService());
+        //是否停止服务
+        fault.setIsStopService(dto.getIsStopService());
+        //抄送人
+        fault.setRemindUserName(dto.getRemindUserName());
+        //附件
+        fault.setPath(dto.getPath());
+        if (StringUtils.isNotBlank(dto.getLocation())) {
+            fault.setDetailLocation(dto.getLocation());
+        }
+        if (StringUtils.isNotBlank(dto.getScope())) {
+            fault.setScope(dto.getScope());
+        }
+        fault.setHappenTime(dto.getHappenTime());
+        fault.setFaultDeviceList(dto.getFaultDeviceList());
+        fault.setIsFaultExternal(true);
+        //故障现象
+        fault.setSymptoms(dto.getSymptoms());
+        faultService.edit(fault);
     }
 }
