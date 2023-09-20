@@ -365,7 +365,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                     JsonNode rootNode = objectMapper.readTree(attributeValue);
                     // 使用 Stream API 提取 "nodeId" 数据
                     List<String> nodeIds = StreamSupport.stream(rootNode.spliterator(), false)
-                            .map(node -> node.get("nodeId").asText())
+                            .map(node -> node.asText())
                             .collect(Collectors.toList());
 
                     // 打印提取的 "nodeId"

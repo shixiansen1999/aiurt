@@ -685,6 +685,17 @@ public class FlowApiServiceImpl implements FlowApiService {
                 }
             }
         }
+        //撤回按钮
+        if (Objects.nonNull(customModelExt) && Optional.ofNullable(customModelExt.getIsRecall()).orElse(0) == 1) {
+            taskInfoDTO.setWithdraw(true);
+            List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId).active().list();
+            if (CollUtil.isNotEmpty(list) && list.size() == 1) {
+                Task task1 = list.get(0);
+                if (Objects.nonNull(task1) && StrUtil.equalsIgnoreCase(loginUser.getUsername(), task1.getAssignee())) {
+                    taskInfoDTO.setWithdraw(false);
+                }
+            }
+        }
     }
 
     /**
