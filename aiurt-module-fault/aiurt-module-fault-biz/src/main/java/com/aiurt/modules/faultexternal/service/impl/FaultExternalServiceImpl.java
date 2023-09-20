@@ -355,6 +355,6 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
         fault.setIsFaultExternal(true);
         //故障现象
         fault.setSymptoms(dto.getSymptoms());
-        faultService.edit(fault);
+        faultService.updateById(fault);
     }
 }
