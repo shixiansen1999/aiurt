@@ -122,6 +122,8 @@ public class PoolThreadService implements Callable<RepairPool> {
             if(ObjectUtil.isNotEmpty(repairTask)){
                 repairPool.setTaskId(repairTask.getId());
             }
+            //该计划关联的设备名称
+            repairPool.setRelDeviceName(repairPoolMapper.queryDeviceNameByPoolCode(repairPool.getCode()));
         } catch (Exception e) {
             throw e;
         } finally {

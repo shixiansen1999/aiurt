@@ -235,4 +235,7 @@ public class RepairPool implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "检修人，多个使用英文‘;’连接")
     private String repairUserNameString;
+    @ApiModelProperty(value = "检修计划关联的设备名称，多个用‘,’拼接")
+    @TableField(exist = false)
+    private String relDeviceName;
 }
