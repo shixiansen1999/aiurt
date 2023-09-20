@@ -6,6 +6,7 @@ import com.aiurt.modules.modeler.entity.ActCustomModelExt;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import lombok.Getter;
 import lombok.Setter;
+import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
@@ -34,6 +35,8 @@ public class FlowDeduplicateContext extends AbstractFlowContext {
      * 当前任务
      */
     private Task task;
+
+    private Execution execution;
 
     /**
      * 历史任务

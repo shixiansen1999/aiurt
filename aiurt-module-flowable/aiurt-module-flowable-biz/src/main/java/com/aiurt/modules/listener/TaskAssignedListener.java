@@ -1,11 +1,22 @@
 package com.aiurt.modules.listener;
 
+import com.aiurt.modules.common.pipeline.selector.LocalListBasedHandlerSelector;
+import com.aiurt.modules.deduplicate.context.FlowDeduplicateContext;
+import com.aiurt.modules.deduplicate.handler.*;
 import com.aiurt.modules.deduplicate.service.IFlowDeduplicateService;
+import com.aiurt.modules.remind.context.FlowRemindContext;
+import com.aiurt.modules.remind.handlers.BuildContextHandler;
+import com.aiurt.modules.remind.handlers.RemindRecordUpdateHandler;
+import com.aiurt.modules.remind.handlers.RemindRuleVerifyHandler;
+import com.aiurt.modules.remind.handlers.RemindSendMessageHandler;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.common.engine.impl.event.FlowableEntityEventImpl;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.jeecg.common.util.SpringContextUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 任务设置办理人监听器
@@ -26,7 +37,7 @@ public class TaskAssignedListener implements FlowableEventListener {
         }
         TaskEntity taskEntity = (TaskEntity) entity;
         IFlowDeduplicateService deduplicateService = SpringContextUtils.getBean(IFlowDeduplicateService.class);
-        deduplicateService.handler(taskEntity.getProcessInstanceId(), taskEntity.getId());
+        deduplicateService.handler(taskEntity);
     }
 
     /**
