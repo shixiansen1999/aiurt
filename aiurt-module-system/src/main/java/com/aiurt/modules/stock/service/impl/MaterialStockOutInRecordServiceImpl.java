@@ -7,9 +7,11 @@ import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
 import com.aiurt.modules.stock.mapper.MaterialStockOutInRecordMapper;
 import com.aiurt.modules.stock.service.IMaterialStockOutInRecordService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -31,12 +33,13 @@ public class MaterialStockOutInRecordServiceImpl extends ServiceImpl<MaterialSto
         int pageNo = materialStockOutInRecordReqDTO.getPageNo();
         int pageSize = materialStockOutInRecordReqDTO.getPageSize();
         Page<MaterialStockOutInRecord> page = new Page<>(pageNo, pageSize);
-        LambdaQueryWrapper<MaterialStockOutInRecord> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(materialStockOutInRecordReqDTO.getMaterialRequisitionType() != null, MaterialStockOutInRecord::getMaterialRequisitionType, materialStockOutInRecordReqDTO.getMaterialRequisitionType());
-        queryWrapper.eq(materialStockOutInRecordReqDTO.getIsOutIn() != null, MaterialStockOutInRecord::getIsOutIn, materialStockOutInRecordReqDTO.getIsOutIn());
-        queryWrapper.eq(materialStockOutInRecordReqDTO.getOutInType() != null, MaterialStockOutInRecord::getOutInType, materialStockOutInRecordReqDTO.getOutInType());
-        queryWrapper.ge(materialStockOutInRecordReqDTO.getSearchBeginTime() != null, MaterialStockOutInRecord::getConfirmTime, materialStockOutInRecordReqDTO.getSearchBeginTime());
-        queryWrapper.le(materialStockOutInRecordReqDTO.getSearchEndTime() != null, MaterialStockOutInRecord::getConfirmTime, materialStockOutInRecordReqDTO.getSearchEndTime());
+
+        MaterialStockOutInRecord materialStockOutInRecord = new MaterialStockOutInRecord();
+        BeanUtils.copyProperties(materialStockOutInRecordReqDTO, materialStockOutInRecord);
+
+        QueryWrapper<MaterialStockOutInRecord> queryWrapper = QueryGenerator.initQueryWrapper(materialStockOutInRecord, null);
+        queryWrapper.lambda().ge(materialStockOutInRecordReqDTO.getSearchBeginTime() != null, MaterialStockOutInRecord::getConfirmTime, materialStockOutInRecordReqDTO.getSearchBeginTime());
+        queryWrapper.lambda().le(materialStockOutInRecordReqDTO.getSearchEndTime() != null, MaterialStockOutInRecord::getConfirmTime, materialStockOutInRecordReqDTO.getSearchEndTime());
 
         this.page(page, queryWrapper);
 

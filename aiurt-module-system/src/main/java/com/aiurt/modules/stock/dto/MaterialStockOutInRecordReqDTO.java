@@ -1,10 +1,12 @@
 package com.aiurt.modules.stock.dto;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.base.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -23,6 +25,14 @@ public class MaterialStockOutInRecordReqDTO extends BaseEntity implements Serial
     /**记录类型（3三级库出入库，2二级库出入库）*/
     @ApiModelProperty(value = "记录类型（3三级库出入库，2二级库出入库）")
     private java.lang.Integer materialRequisitionType;
+
+    /**物资编号*/
+    @ApiModelProperty(value = "物资编号")
+    private  String  materialCode;
+
+    /**存放仓库编号*/
+    @ApiModelProperty(value = "存放仓库编号")
+    private  String  warehouseCode;
 
     /**入库还是出库，1入库 2出库*/
     @ApiModelProperty(value = "入库还是出库，1入库 2出库")
