@@ -64,13 +64,13 @@ public class MaterialStockOutInRecord extends BaseEntity implements Serializable
     private java.lang.Integer materialRequisitionType;
     /**入库还是出库，1入库 2出库*/
     @ApiModelProperty(value = "入库还是出库，1入库 2出库")
+    private java.lang.Integer isOutIn;
+    /**出入库类型:普通出库、借出出库、归还入库等，具体看数据字典*/
+    @ApiModelProperty(value = "出入库类型:普通出库、借出出库、归还入库等，具体看数据字典")
     private java.lang.Integer outInType;
 	/**库存结余*/
     @ApiModelProperty(value = "库存结余")
     private java.lang.Integer balance;
-	/**出入库类型（待定）*/
-    @ApiModelProperty(value = "出入库类型（待定）")
-    private java.lang.Integer outType;
 	/**备注*/
     @ApiModelProperty(value = "备注")
     private java.lang.String remarks;
