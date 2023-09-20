@@ -2,9 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.faultexternal.mapper.FaultExternalMapper">
     <select id="selectFaultExternalPage" resultType="com.aiurt.modules.faultexternal.entity.FaultExternal">
-        SELECT f.*,s.line_code,s.station_code
+        SELECT f.*,s.line_code,s.station_code,f1.status as faultStatus
         FROM fault_external f
             LEFT JOIN fault_external_line_sta_rel s ON ( f.ipos = s.ipos AND f.iline = s.iline )
+            LEFT JOIN fault f1 ON f1.code = f.faultcode
         <where>
             <if test="faultExternal.startTime !=null and faultExternal.endTime !=null">
                 f.dhappen between #{faultExternal.startTime} and #{faultExternal.endTime}
