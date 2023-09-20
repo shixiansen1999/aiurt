@@ -1,6 +1,9 @@
 package com.aiurt.modules.stock.service;
 
+import com.aiurt.modules.stock.dto.MaterialStockOutInRecordReqDTO;
+import com.aiurt.modules.stock.dto.MaterialStockOutInRecordRespDTO;
 import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -11,4 +14,12 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IMaterialStockOutInRecordService extends IService<MaterialStockOutInRecord> {
 
+
+    /**
+     * 出入库记录分页列表查询
+     *
+     * @param materialStockOutInRecordReqDTO 出入库记录查询的请求DTO
+     * @return IPage<MaterialStockOutInRecordRespDTO> 返回出入库记录查询的响应DTO的Page对象
+     */
+    IPage<MaterialStockOutInRecordRespDTO> pageList(MaterialStockOutInRecordReqDTO materialStockOutInRecordReqDTO);
 }

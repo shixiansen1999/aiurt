@@ -17,7 +17,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.googlecode.aviator.utils.ArrayHashMap;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -116,15 +115,23 @@ public class StockLevel2ServiceImpl extends ServiceImpl<StockLevel2Mapper, Stock
         StockLevel2RespDTO stockLevel2RespDTO = new StockLevel2RespDTO();
         BeanUtils.copyProperties(stockLevel2, stockLevel2RespDTO);
 
+        // 查询库存信息对应的物资，并给响应DTO赋值
+        LambdaQueryWrapper<MaterialBase> materialBaseQueryWrapper = new LambdaQueryWrapper<>();
+        materialBaseQueryWrapper.in(MaterialBase::getCode, stockLevel2.getMaterialCode());
+        materialBaseQueryWrapper.eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0);
+        MaterialBase materialBase = materialBaseService.getOne(materialBaseQueryWrapper);
+        // 物资表里面的manufactorCode字段实际上是厂商表的id
+        stockLevel2RespDTO.setManufactorId(materialBase.getManufactorCode());
+        stockLevel2RespDTO.setTechnicalParameter(materialBase.getTechnicalParameter());
+
         // 计算总价
-        stockLevel2RespDTO.setPrice(stockLevel2.getPrice() != null ? new BigDecimal(stockLevel2.getPrice()): null);
+        stockLevel2RespDTO.setPrice(materialBase.getPrice() != null ? new BigDecimal(materialBase.getPrice()): null);
         if (stockLevel2RespDTO.getNum() != null && stockLevel2RespDTO.getPrice() != null){
             stockLevel2RespDTO.setTotalPrices(stockLevel2RespDTO.getPrice().multiply(BigDecimal.valueOf(stockLevel2RespDTO.getNum())));
         }else{
             stockLevel2RespDTO.setTotalPrices(BigDecimal.valueOf(0));
         }
-        // 物资表里面的manufactorCode字段实际上是厂商表的id
-        stockLevel2RespDTO.setManufactorId(stockLevel2.getManufactorCode());
+
         return stockLevel2RespDTO;
     }
 
