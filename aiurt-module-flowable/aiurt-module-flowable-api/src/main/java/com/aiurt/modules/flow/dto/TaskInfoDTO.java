@@ -94,7 +94,7 @@ public class TaskInfoDTO {
      * 表单字段权限配置列表
      */
     @ApiModelProperty(value = "表单字段权限配置列表")
-    private JSONArray fieldList = new JSONArray();
+    private JSONArray fieldList;
 
     @ApiModelProperty("流程模板key")
     private String processDefinitionKey;
