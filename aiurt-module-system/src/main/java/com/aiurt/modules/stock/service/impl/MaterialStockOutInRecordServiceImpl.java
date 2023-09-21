@@ -1,6 +1,8 @@
 package com.aiurt.modules.stock.service.impl;
 
 
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import com.aiurt.modules.stock.dto.req.MaterialStockOutInRecordReqDTO;
 import com.aiurt.modules.stock.dto.resp.MaterialStockOutInRecordRespDTO;
 import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
@@ -14,6 +16,7 @@ import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,8 +40,13 @@ public class MaterialStockOutInRecordServiceImpl extends ServiceImpl<MaterialSto
         BeanUtils.copyProperties(materialStockOutInRecordReqDTO, materialStockOutInRecord);
 
         QueryWrapper<MaterialStockOutInRecord> queryWrapper = QueryGenerator.initQueryWrapper(materialStockOutInRecord, null);
-        queryWrapper.lambda().ge(materialStockOutInRecordReqDTO.getSearchBeginTime() != null, MaterialStockOutInRecord::getConfirmTime, materialStockOutInRecordReqDTO.getSearchBeginTime());
-        queryWrapper.lambda().le(materialStockOutInRecordReqDTO.getSearchEndTime() != null, MaterialStockOutInRecord::getConfirmTime, materialStockOutInRecordReqDTO.getSearchEndTime());
+        // 时间范围搜索
+        Date searchBeginTime = materialStockOutInRecordReqDTO.getSearchBeginTime();
+        Date searchEndTime = materialStockOutInRecordReqDTO.getSearchEndTime();
+        DateTime beginTime = searchBeginTime != null ? DateUtil.beginOfDay(searchBeginTime) : null;
+        DateTime endTime = searchEndTime != null ? DateUtil.endOfDay(searchEndTime) : null;
+        queryWrapper.lambda().ge(searchBeginTime != null, MaterialStockOutInRecord::getConfirmTime, beginTime);
+        queryWrapper.lambda().le(searchEndTime != null, MaterialStockOutInRecord::getConfirmTime, endTime);
 
         this.page(page, queryWrapper);
 
