@@ -41,17 +41,22 @@ public class MaterialRequisition extends BaseEntity implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "领用时间")
     private java.util.Date applyTime;
+    /**计划领用时间*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "计划领用时间")
+    private java.util.Date planApplyTime;
+    /**领用线路编码*/
+    @ApiModelProperty(value = "领用线路编码")
+    private String applyLineCode;
     /**申领仓库编号*/
     @ApiModelProperty(value = "申领仓库编号")
     private java.lang.String applyWarehouseCode;
-    /**申领数量*/
-    @ApiModelProperty(value = "申领数量")
-    private java.lang.Integer applyNumber;
     /**保管仓库编号*/
     @ApiModelProperty(value = "保管仓库编号")
     private java.lang.String custodialWarehouseCode;
-    /**申领状态：1待提交、2待确认、3已确认*/
-    @ApiModelProperty(value = "申领状态：1待提交、2待确认、3已确认")
+    /**申领状态：1待提交、2待确认、3已确认、4审核中、5已通过、6已驳回、7已完成*/
+    @ApiModelProperty(value = "申领状态：1待提交、2待确认、3已确认、4审核中、5已通过、6已驳回、7已完成")
     private java.lang.Integer status;
     /**提交状态（0-未提交 1-已提交）*/
     @ApiModelProperty(value = "提交状态（0-未提交 1-已提交）")
