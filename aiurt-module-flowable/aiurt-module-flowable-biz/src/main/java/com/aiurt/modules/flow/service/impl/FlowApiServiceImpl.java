@@ -63,10 +63,8 @@ import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.repository.ProcessDefinition;
-import org.flowable.engine.runtime.ActivityInstance;
-import org.flowable.engine.runtime.ChangeActivityStateBuilder;
-import org.flowable.engine.runtime.Execution;
-import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.engine.repository.ProcessDefinitionQuery;
+import org.flowable.engine.runtime.*;
 import org.flowable.identitylink.api.IdentityLink;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskInfo;
@@ -686,6 +684,39 @@ public class FlowApiServiceImpl implements FlowApiService {
         //撤回按钮
         if (Objects.nonNull(customModelExt) && Optional.ofNullable(customModelExt.getIsRecall()).orElse(0) == 1) {
             taskInfoDTO.setWithdraw(true);
+            //获取正在运行的节点
+            List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId).active().list();
+            //获取流程配置中的节点集合
+            String recallNodeId = customModelExt.getRecallNodeId();
+            String[] split = recallNodeId.split(",");
+            //判断节点是否在撤回集合内，不在集合内则不显示撤回按钮
+            List<String> keyList = list.stream()
+                    .map(Task::getTaskDefinitionKey)
+                    .filter(s -> Arrays.asList(split).contains(s))
+                    .distinct()
+                    .collect(Collectors.toList());
+            if(CollUtil.isEmpty(keyList)){
+                taskInfoDTO.setWithdraw(false);
+            }
+            // 获取流程实例
+            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
+                    .processInstanceId(processInstanceId)
+                    .singleResult();
+            if (ObjectUtil.isNotEmpty(processInstance)) {
+                // 获取流程定义ID
+                String processDefinitionId = processInstance.getProcessDefinitionId();
+                if (CollUtil.isNotEmpty(list) && list.size() == 1) {
+                    UserTask userTask = flowElementUtil.getFirstUserTaskByDefinitionId(processDefinitionId);
+                    String taskId = userTask.getId();
+                    Task task = list.get(0);
+                    String taskDefinitionKey = task.getTaskDefinitionKey();
+                    // 比较当前节点与第一个用户节点是否一致，一致则不显示撤回按钮
+                    boolean isStartNode = taskId.equals(taskDefinitionKey);
+                    if (isStartNode) {
+                        taskInfoDTO.setWithdraw(false);
+                    }
+                }
+            }
         }
     }
 

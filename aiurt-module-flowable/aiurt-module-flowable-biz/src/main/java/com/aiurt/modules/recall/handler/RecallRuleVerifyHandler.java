@@ -73,6 +73,7 @@ public class RecallRuleVerifyHandler extends AbstractFlowHandler<FlowRecallConte
         //获取流程当前节点
         List<Task> taskList = taskService.createTaskQuery()
                 .processInstanceId(processInstanceId)
+                .active()
                 .list();
 
 // 获取所有流程定义key

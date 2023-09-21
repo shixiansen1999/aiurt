@@ -58,7 +58,7 @@ public class ChangeTaskStatusHandler extends AbstractFlowHandler<FlowRecallConte
         String processInstanceId = context.getProcessInstanceId();
         HistoricProcessInstance processInstance = context.getProcessInstance();
         String processDefinitionId = processInstance.getProcessDefinitionId();
-        //获取流程所有节点
+        //获取流程当前运行节点
         List<String> activityIdsToMove = new ArrayList<>();
         List<Task> list = taskService.createTaskQuery().active().processInstanceId(processInstanceId).list();
         for (Task task : list) {
