@@ -564,6 +564,8 @@ public class FlowApiServiceImpl implements FlowApiService {
             throw new AiurtBootException(AiurtErrorEnum.PROCESS_INSTANCE_NOT_FOUND.getCode(), AiurtErrorEnum.PROCESS_INSTANCE_NOT_FOUND.getMessage());
         }
 
+        taskInfoDTO.setBusinessKey(historicProcessInstance.getBusinessKey());
+
         // modelKey
         String processDefinitionKey = historicProcessInstance.getProcessDefinitionKey();
         // 查询流程模板信息
@@ -644,7 +646,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
 
         // 中间业务数据
-        ActCustomBusinessData actCustomBusinessData = businessDataService.queryByProcessInstanceId(processInstanceId, taskId);
+        ActCustomBusinessData actCustomBusinessData = businessDataService.queryOne(processInstanceId, taskId, taskDefinitionKey);
         if (Objects.nonNull(actCustomBusinessData)) {
             taskInfoDTO.setBusData(actCustomBusinessData.getData());
         }
@@ -1331,7 +1333,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
 
         if (StrUtil.isNotBlank(reqDTO.getProcessDefinitionName())) {
-            query.processDefinitionName("%" + reqDTO.getProcessDefinitionName() + "%");
+            query.processDefinitionName(reqDTO.getProcessDefinitionName());
         }
 
         if (CollectionUtil.isNotEmpty(processInstanceIdSet)) {
@@ -1394,7 +1396,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             throw new AiurtBootException("该流程实例不存在！");
         }
         Date endTime = historicProcessInstance.getEndTime();
-        if (Objects.isNull(endTime)) {
+        if (Objects.nonNull(endTime)) {
             throw new AiurtBootException("该流程实例结束！");
         }
 
@@ -1430,8 +1432,8 @@ public class FlowApiServiceImpl implements FlowApiService {
             //
             // 添加审批意见
             ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment(task);
-            actCustomTaskComment.setApprovalType(FlowApprovalType.CANCEL);
-            actCustomTaskComment.setCreateRealname(loginUser.getUsername());
+            actCustomTaskComment.setApprovalType(FlowApprovalType.STOP);
+            actCustomTaskComment.setCreateRealname(loginUser.getRealname());
             customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
 
             // 更新待办
@@ -1469,18 +1471,15 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         UserTask firstUserTask = flowElementUtil.getFirstUserTaskByDefinitionId(processInstance.getProcessDefinitionId());
 
-        Task task = taskService.createTaskQuery().taskId(instanceDTO.getTaskId()).singleResult();
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(instanceDTO.getProcessInstanceId()).list();
+
+        List<String> nodeIdList = taskList.stream().map(Task::getTaskDefinitionKey).collect(Collectors.toList());
 
         // 流程跳转, flowable 已提供
         runtimeService.createChangeActivityStateBuilder()
                 .processInstanceId(instanceDTO.getProcessInstanceId())
-                .moveActivityIdTo(task.getTaskDefinitionKey(), firstUserTask.getId())
+                .moveActivityIdsToSingleActivityId(nodeIdList, firstUserTask.getId())
                 .changeState();
-
-        ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment(task);
-        actCustomTaskComment.setApprovalType(FlowApprovalType.REJECT_FIRST_USER_TASK);
-        actCustomTaskComment.setCreateRealname(loginUser.getUsername());
-        customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
     }
 
     /**

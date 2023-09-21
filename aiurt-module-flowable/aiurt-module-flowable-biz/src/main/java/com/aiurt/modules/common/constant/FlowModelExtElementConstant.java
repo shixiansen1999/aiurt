@@ -114,4 +114,14 @@ public interface FlowModelExtElementConstant {
      * 撤回节点属性
      */
     String EXT_RECALL_NODE = "node";
+
+    /**
+     * 审批去重
+     */
+    String EXT_ASSIGN_DUPLICATE_RULE = "assignDuplicateRule";
+
+    /**
+     *
+     */
+    String EXT_RULE = "rule";
 }

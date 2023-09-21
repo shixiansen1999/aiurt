@@ -85,6 +85,10 @@ public final class FlowApprovalType {
      * 删除流程
      */
     public static final String DELETE = "delete";
+    /**
+     * 终止流程
+     */
+    public static final String STOP = "stop";
 
 
 
@@ -103,6 +107,7 @@ public final class FlowApprovalType {
         DICT_MAP.put(TRANSFER, "转办");
         DICT_MAP.put(CANCEL, "撤销");
         DICT_MAP.put(DELETE, "删除流程");
+        DICT_MAP.put(STOP, "终止流程");
     }
 
     /**

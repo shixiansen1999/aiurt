@@ -222,16 +222,16 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
 
         taskService.complete(currentTask.getId(), variableData);
 
-        // 如果任意会签， 则需要自动提交其他任务
+        // 如果任意会签， 则需要自动提交其他任务, 可能不需要我们手动伟华
         String multiApprovalRule = taskContext.getMultiApprovalRule();
         if (StrUtil.equalsIgnoreCase(multiApprovalRule, MultiApprovalRuleEnum.TASK_MULTI_INSTANCE_TYPE_1.getCode())) {
             //
             List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(nodeId).list();
 
-            taskList.stream().forEach(task -> {
+           /* taskList.stream().forEach(task -> {
                 task.setDescription("ANY_NODE");
                 taskService.complete(task.getId());
-            });
+            });*/
         }
 
     }

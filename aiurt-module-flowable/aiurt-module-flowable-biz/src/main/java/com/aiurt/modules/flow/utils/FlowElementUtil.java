@@ -141,7 +141,18 @@ public class FlowElementUtil {
             throw new AiurtBootException(AiurtErrorEnum.FLOW_DEFINITION_NOT_FOUND.getCode(), AiurtErrorEnum.FLOW_DEFINITION_NOT_FOUND.getMessage());
         }
 
-        BpmnModel model = repositoryService.getBpmnModel(customVersion.getProcessDefinitionId());
+        Collection<FlowElement> flowElements = this.getFlowElementsByProcessDefinitionId(customVersion.getProcessDefinitionId());
+
+        return flowElements;
+    }
+
+    /**
+     * 获取流程所有的元素
+     * @param processDefinitionId
+     * @return
+     */
+    public Collection<FlowElement> getFlowElementsByProcessDefinitionId(String processDefinitionId) {
+        BpmnModel model = repositoryService.getBpmnModel(processDefinitionId);
 
         Collection<FlowElement> flowElements = model.getMainProcess().getFlowElements();
 
@@ -222,7 +233,11 @@ public class FlowElementUtil {
         LambdaQueryWrapper<ActCustomVersion> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ActCustomVersion::getModelId, customModelInfo.getModelId())
                 .eq(ActCustomVersion::getMainVersion, FlowConstant.MAIN_VERSION_1).last("limit 1");
-        return actCustomVersionService.getOne(queryWrapper);
+        ActCustomVersion one = actCustomVersionService.getOne(queryWrapper);
+        if (Objects.isNull(one)) {
+            throw new AiurtBootException("该流程未发布！");
+        }
+        return one;
     }
 
     /**
@@ -606,6 +621,47 @@ public class FlowElementUtil {
                 String variableName = variable.getVariableName();
                 variableData.put(variableName, busData.get(variableName));
             });
+        }
+    }
+
+    /**
+     *
+     * @param processDefinitionId
+     * @return
+     */
+    public List<FlowElement> getPreFlowElement(String processDefinitionId, String nodeId) {
+        FlowElement flowElement = this.getFlowElement(processDefinitionId, nodeId);
+        List<FlowElement> list = new ArrayList<>();
+        // 循环
+        this.getSourceFlowElement(flowElement, list);
+        return list;
+    }
+
+    private void getSourceFlowElement(FlowElement flowElement, List<FlowElement> flowElementList) {
+        if (flowElement instanceof FlowNode) {
+            // 当前节点必须是FlowNode才做处理，比如UserTask或者GateWay
+            FlowNode thisFlowNode = (FlowNode) flowElement;
+            if (thisFlowNode.getIncomingFlows().size() == 1) {
+                //如果只有一条连接线，直接找这条连接线的出口节点，然后继续递归获得接下来的节点
+                SequenceFlow sequenceFlow = thisFlowNode.getIncomingFlows().get(0);
+                FlowElement sourceFlowElement = sequenceFlow.getSourceFlowElement();
+
+                if (sourceFlowElement instanceof UserTask) {
+                    flowElementList.add(sourceFlowElement);
+                }  else {
+                    getSourceFlowElement(sourceFlowElement, flowElementList);
+                }
+            } else if (thisFlowNode.getIncomingFlows().size() == 1) {
+                // 如果有多条连接线，遍历连接线，找出一个连接线条，获得它的入口节点
+                for (SequenceFlow sequenceFlow : thisFlowNode.getIncomingFlows()) {
+                    FlowElement sourceFlowElement = sequenceFlow.getSourceFlowElement();
+                    if (sourceFlowElement instanceof UserTask) {
+                        flowElementList.add(sourceFlowElement);
+                    } else {
+                        getSourceFlowElement(sourceFlowElement, flowElementList);
+                    }
+                }
+            }
         }
     }
 }

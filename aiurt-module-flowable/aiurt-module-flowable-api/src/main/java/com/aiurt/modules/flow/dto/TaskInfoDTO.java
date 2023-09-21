@@ -113,4 +113,6 @@ public class TaskInfoDTO {
 
     @ApiModelProperty(value = "催办")
     private Boolean isRemind = false;
+
+    private String businessKey;
 }
