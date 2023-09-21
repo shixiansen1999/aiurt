@@ -1475,10 +1475,13 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         List<String> nodeIdList = taskList.stream().map(Task::getTaskDefinitionKey).collect(Collectors.toList());
 
+        Map<String, Object> localVariableMap = new HashMap<>();
+        localVariableMap.put("reject_first_user_task", true);
         // 流程跳转, flowable 已提供
         runtimeService.createChangeActivityStateBuilder()
                 .processInstanceId(instanceDTO.getProcessInstanceId())
                 .moveActivityIdsToSingleActivityId(nodeIdList, firstUserTask.getId())
+                .localVariables(firstUserTask.getId(), localVariableMap)
                 .changeState();
     }
 
