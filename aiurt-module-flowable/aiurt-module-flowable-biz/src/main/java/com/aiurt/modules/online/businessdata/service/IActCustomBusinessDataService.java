@@ -19,6 +19,12 @@ public interface IActCustomBusinessDataService extends IService<ActCustomBusines
      */
     ActCustomBusinessData queryByProcessInstanceId(String processInstanceId, String taskId);
 
-
-
+    /**
+     * 根据节点id 或者任务id或者流程实例id查询保存的业务数据
+     * @param processInstanceId
+     * @param taskId
+     * @param nodeId
+     * @return
+     */
+    ActCustomBusinessData queryOne(String processInstanceId, String taskId, String nodeId);
 }
