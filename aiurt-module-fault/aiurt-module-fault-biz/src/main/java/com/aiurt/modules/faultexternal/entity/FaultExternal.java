@@ -111,6 +111,7 @@ public class FaultExternal extends DictEntity implements Serializable  {
 	/**紧急程度*/
 	@Excel(name = "紧急程度", width = 15)
     @ApiModelProperty(value = "紧急程度")
+    @Dict(dicCode = "surgency_level")
     private Integer surgencylevel;
 	/**处理建议*/
 	@Excel(name = "处理建议", width = 15)
