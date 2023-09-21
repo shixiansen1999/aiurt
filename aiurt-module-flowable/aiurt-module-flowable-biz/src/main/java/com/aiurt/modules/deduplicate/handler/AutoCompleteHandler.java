@@ -86,7 +86,7 @@ public class AutoCompleteHandler<T extends FlowDeduplicateContext> extends Abstr
         FlowTaskCompleteCommentDTO completeCommentDTO = new FlowTaskCompleteCommentDTO();
         if (Objects.nonNull(actCustomTaskExt)) {
             Integer isAutoSelect = Optional.ofNullable(actCustomTaskExt.getIsAutoSelect()).orElse(1);
-            if (isAutoSelect == 1) {
+            if (isAutoSelect == 0) {
                 Boolean completeTask = multiInTaskService.isCompleteTask(task);
                 if (completeTask) {
                     List<NextNodeUserDTO> nodeUserDTOList = targetFlowElement.stream().filter(element-> element instanceof UserTask).map(element -> {
@@ -101,10 +101,17 @@ public class AutoCompleteHandler<T extends FlowDeduplicateContext> extends Abstr
                 }
             }
         }
+
+        completeCommentDTO.setApprovalType("agree");
+        completeCommentDTO.setComment("审批去重");
         taskCompleteDTO.setTaskId(task.getId());
         taskCompleteDTO.setProcessInstanceId(task.getProcessInstanceId());
 
         taskCompleteDTO.setFlowTaskCompleteDTO(completeCommentDTO);
-        flowApiService.completeTask(taskCompleteDTO);
+        try {
+            flowApiService.completeTask(taskCompleteDTO);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 }

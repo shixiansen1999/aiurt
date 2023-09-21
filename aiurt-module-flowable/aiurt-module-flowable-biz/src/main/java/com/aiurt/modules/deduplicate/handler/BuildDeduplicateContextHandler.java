@@ -62,7 +62,7 @@ public class BuildDeduplicateContextHandler<T extends FlowDeduplicateContext> ex
         // 流程实例
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         // 任务扩展属性
-        ActCustomTaskExt actCustomTaskExt = taskExtService.getByProcessDefinitionIdAndTaskId(processInstanceId, taskDefinitionKey);
+        ActCustomTaskExt actCustomTaskExt = taskExtService.getByProcessDefinitionIdAndTaskId(definitionId, taskDefinitionKey);
         //
         ActCustomModelExt actCustomModelExt = modelExtService.getByProcessDefinitionId(definitionId);
         // 执行实行
