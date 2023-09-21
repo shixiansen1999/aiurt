@@ -110,6 +110,7 @@ public class AutoCompleteHandler<T extends FlowDeduplicateContext> extends Abstr
         taskCompleteDTO.setFlowTaskCompleteDTO(completeCommentDTO);
         try {
             flowApiService.completeTask(taskCompleteDTO);
+            log.info("审批去重成功，taskId:{}, 用户:{}", task.getId(), task.getAssignee());
         } catch (Exception e) {
             log.error(e.getMessage());
         }

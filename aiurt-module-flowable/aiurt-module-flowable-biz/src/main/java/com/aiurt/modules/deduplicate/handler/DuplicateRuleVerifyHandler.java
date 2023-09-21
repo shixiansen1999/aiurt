@@ -66,11 +66,11 @@ public class DuplicateRuleVerifyHandler<T extends FlowDeduplicateContext> extend
         ProcessInstance processInstance = context.getProcessInstance();
         String definitionId = processInstance.getProcessDefinitionId();
         List<String> list = StrUtil.split(duplicateRule, ',');
-        // 1, 连续， 2：重复
+        // 1, 重复， 2：连续
         AtomicBoolean flag = new AtomicBoolean(false);
         list.stream().forEach(rule->{
             switch (rule) {
-                case  "1" :
+                case  "2" :
                     // 获取连续节点
                     List<FlowElement> preFlowElementList = flowElementUtil.getPreFlowElement(definitionId, task.getTaskDefinitionKey());
                     preFlowElementList.forEach(flowElement->{
@@ -91,7 +91,6 @@ public class DuplicateRuleVerifyHandler<T extends FlowDeduplicateContext> extend
                     break;
             }
         });
-
         context.setContinueChain(flag.get());
     }
 }
