@@ -92,7 +92,7 @@ public class RecallRuleVerifyHandler extends AbstractFlowHandler<FlowRecallConte
                     .map(execution -> (ExecutionEntityImpl) execution)
                     .collect(Collectors.toList());
 
-            if (executions.stream().anyMatch(instance -> instance.getIsActive() && instance.getTaskCount() != 0)) {
+            if (executions.stream().anyMatch(instance -> instance.getIsActive() == false && instance.getTaskCount() != 0)) {
                 context.setContinueChain(false);
                 throw new AiurtBootException("已有审批人处理，无法撤回");
             }
