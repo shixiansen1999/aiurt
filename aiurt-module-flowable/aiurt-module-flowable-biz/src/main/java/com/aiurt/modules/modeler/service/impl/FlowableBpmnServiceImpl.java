@@ -506,6 +506,19 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                     flowTaskExt.setFormFieldConfig(JSONObject.parseArray(attributeValue));
                 }
             }
+
+            // 是否加减签
+            List<ExtensionElement> addMultiElements = extensionMap.get(FlowModelExtElementConstant.EXT_ADD_MULTI);
+            if (CollUtil.isNotEmpty(addMultiElements)) {
+                ExtensionElement extensionElement = addMultiElements.get(0);
+                String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_VALUE);
+                // 需要转换
+                if (StrUtil.equalsIgnoreCase(attributeValue, "true")) {
+                    flowTaskExt.setIsAddMulti(1);
+                } else {
+                    flowTaskExt.setIsAddMulti(0);
+                }
+            }
         }
 
         taskExtList.add(flowTaskExt);

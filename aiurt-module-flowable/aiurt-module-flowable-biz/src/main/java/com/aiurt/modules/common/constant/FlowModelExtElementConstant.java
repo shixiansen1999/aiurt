@@ -114,4 +114,9 @@ public interface FlowModelExtElementConstant {
      * 撤回节点属性
      */
     String EXT_RECALL_NODE = "node";
+
+    /**
+     * 加减签
+     */
+    String EXT_ADD_MULTI = "addMulti";
 }
