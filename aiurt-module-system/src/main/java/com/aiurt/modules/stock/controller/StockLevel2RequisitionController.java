@@ -2,7 +2,11 @@ package com.aiurt.modules.stock.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.stock.dto.req.StockLevel2RequisitionAddReqDTO;
+import com.aiurt.modules.stock.dto.req.StockLevel2RequisitionListReqDTO;
+import com.aiurt.modules.stock.dto.resp.StockLevel2RequisitionListRespDTO;
 import com.aiurt.modules.stock.service.StockLevel2RequisitionService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +30,20 @@ public class StockLevel2RequisitionController {
     private StockLevel2RequisitionService stockLevel2RequisitionService;
 
     /**
+     * 二级库管理-分页列表查询
+     *
+     * @param stockLevel2RequisitionListReqDTO 二级库申领分页列表查询的请求DTO
+     * @return Result<IPage<StockLevel2RequisitionListRespDTO>> 返回分页列表查询结果
+     */
+    @AutoLog(value = "二级库管理-二级库申领-分页列表查询")
+    @ApiOperation(value="二级库管理-二级库申领-分页列表查询", notes="二级库管理-二级库申领-分页列表查询")
+    @GetMapping(value = "/list")
+    public Result<IPage<StockLevel2RequisitionListRespDTO>> pageList(StockLevel2RequisitionListReqDTO stockLevel2RequisitionListReqDTO){
+        Page<StockLevel2RequisitionListRespDTO> pageList = stockLevel2RequisitionService.pageList(stockLevel2RequisitionListReqDTO);
+        return Result.ok(pageList);
+    }
+
+    /**
      * 二级库管理-添加
      *
      * @param stockLevel2RequisitionAddReqDTO 二级库申领的添加、编辑等请求DTO
@@ -37,5 +55,19 @@ public class StockLevel2RequisitionController {
     public Result<String> add(@RequestBody StockLevel2RequisitionAddReqDTO stockLevel2RequisitionAddReqDTO){
         stockLevel2RequisitionService.add(stockLevel2RequisitionAddReqDTO);
         return Result.ok("添加成功！");
+    }
+
+    /**
+     * 二级库管理-编辑
+     *
+     * @param stockLevel2RequisitionAddReqDTO 二级库申领的添加、编辑等请求DTO
+     * @return Result<String> 返回编辑成功提示
+     */
+    @AutoLog(value = "二级库管理-二级库申领-编辑")
+    @ApiOperation(value="二级库管理-二级库申领-编辑", notes="二级库管理-二级库申领-编辑")
+    @PostMapping(value = "/edit")
+    public Result<String> edit(@RequestBody StockLevel2RequisitionAddReqDTO stockLevel2RequisitionAddReqDTO){
+        stockLevel2RequisitionService.edit(stockLevel2RequisitionAddReqDTO);
+        return Result.ok("编辑成功！");
     }
 }
