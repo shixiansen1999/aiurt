@@ -1,12 +1,11 @@
 package com.aiurt.modules.stock.service.impl;
 
 
-import com.aiurt.modules.stock.dto.MaterialStockOutInRecordReqDTO;
-import com.aiurt.modules.stock.dto.MaterialStockOutInRecordRespDTO;
+import com.aiurt.modules.stock.dto.req.MaterialStockOutInRecordReqDTO;
+import com.aiurt.modules.stock.dto.resp.MaterialStockOutInRecordRespDTO;
 import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
 import com.aiurt.modules.stock.mapper.MaterialStockOutInRecordMapper;
 import com.aiurt.modules.stock.service.IMaterialStockOutInRecordService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

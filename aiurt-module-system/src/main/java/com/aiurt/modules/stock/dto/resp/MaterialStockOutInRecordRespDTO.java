@@ -1,4 +1,4 @@
-package com.aiurt.modules.stock.dto;
+package com.aiurt.modules.stock.dto.resp;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.fasterxml.jackson.annotation.JsonFormat;

@@ -2,7 +2,7 @@ package com.aiurt.modules.stock.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
-import com.aiurt.modules.stock.dto.StockLevel2RespDTO;
+import com.aiurt.modules.stock.dto.resp.StockLevel2RespDTO;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;

@@ -1,4 +1,4 @@
-package com.aiurt.modules.stock.dto;
+package com.aiurt.modules.stock.dto.req;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.base.BaseEntity;

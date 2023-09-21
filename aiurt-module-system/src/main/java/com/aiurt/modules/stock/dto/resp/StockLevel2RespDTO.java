@@ -1,4 +1,4 @@
-package com.aiurt.modules.stock.dto;
+package com.aiurt.modules.stock.dto.resp;
 
 import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;

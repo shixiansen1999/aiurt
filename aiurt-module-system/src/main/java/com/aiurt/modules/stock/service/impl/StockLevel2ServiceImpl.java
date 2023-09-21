@@ -8,7 +8,7 @@ import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.mapper.MaterialBaseTypeMapper;
 import com.aiurt.modules.material.service.IMaterialBaseService;
-import com.aiurt.modules.stock.dto.StockLevel2RespDTO;
+import com.aiurt.modules.stock.dto.resp.StockLevel2RespDTO;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.aiurt.modules.stock.mapper.StockLevel2Mapper;
 import com.aiurt.modules.stock.service.IStockLevel2Service;

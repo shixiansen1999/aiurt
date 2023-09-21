@@ -1,7 +1,7 @@
 package com.aiurt.modules.stock.service;
 
-import com.aiurt.modules.stock.dto.MaterialStockOutInRecordReqDTO;
-import com.aiurt.modules.stock.dto.MaterialStockOutInRecordRespDTO;
+import com.aiurt.modules.stock.dto.req.MaterialStockOutInRecordReqDTO;
+import com.aiurt.modules.stock.dto.resp.MaterialStockOutInRecordRespDTO;
 import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;

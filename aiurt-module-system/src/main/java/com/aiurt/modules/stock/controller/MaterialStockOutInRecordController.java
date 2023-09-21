@@ -1,9 +1,8 @@
 package com.aiurt.modules.stock.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.modules.stock.dto.MaterialStockOutInRecordReqDTO;
-import com.aiurt.modules.stock.dto.MaterialStockOutInRecordRespDTO;
-import com.aiurt.modules.stock.entity.StockIncomingMaterials;
+import com.aiurt.modules.stock.dto.req.MaterialStockOutInRecordReqDTO;
+import com.aiurt.modules.stock.dto.resp.MaterialStockOutInRecordRespDTO;
 import com.aiurt.modules.stock.service.IMaterialStockOutInRecordService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
@@ -13,10 +12,7 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * 出入库记录表的controller
