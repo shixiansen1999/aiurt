@@ -19,8 +19,12 @@ import com.aiurt.modules.recall.context.FlowRecallContext;
 import com.aiurt.modules.remind.context.FlowRemindContext;
 import com.aiurt.modules.remind.entity.ActCustomRemindRecord;
 import org.flowable.engine.HistoryService;
+import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.history.HistoricProcessInstance;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
+import org.flowable.engine.runtime.Execution;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.service.HistoricTaskService;
@@ -43,6 +47,8 @@ public class RecallRuleVerifyHandler extends AbstractFlowHandler<FlowRecallConte
     private TaskService taskService;
     @Resource
     private HistoryService historyService;
+    @Resource
+    private RuntimeService runtimeService;
     @Override
     public void handle(FlowRecallContext context) {
         String processInstanceId = context.getProcessInstanceId();
@@ -73,21 +79,26 @@ public class RecallRuleVerifyHandler extends AbstractFlowHandler<FlowRecallConte
         List<String> keyList = taskList.stream()
                 .map(Task::getTaskDefinitionKey)
                 .filter(s -> Arrays.asList(split).contains(s))
+                .distinct()
                 .collect(Collectors.toList());
 
         if (CollUtil.isNotEmpty(keyList)) {
-            List<HistoricTaskInstance> historicTaskInstances = historyService
-                    .createHistoricTaskInstanceQuery()
-                    .processInstanceId(processInstanceId)
-                    .taskDefinitionKeys(keyList)
-                    .list();
+            List<ExecutionEntityImpl> executions = keyList.stream()
+                    .flatMap(key -> runtimeService.createExecutionQuery()
+                            .processInstanceId(processInstanceId)
+                            .activityId(key)
+                            .list().stream()
+                    )
+                    .map(execution -> (ExecutionEntityImpl) execution)
+                    .collect(Collectors.toList());
 
-            if (historicTaskInstances.stream().anyMatch(instance -> instance.getEndTime() != null)) {
+            if (executions.stream().anyMatch(instance -> instance.getIsActive() && instance.getTaskCount() != 0)) {
                 context.setContinueChain(false);
                 throw new AiurtBootException("已有审批人处理，无法撤回");
             }
         } else {
             context.setContinueChain(false);
+            throw new AiurtBootException("当前流程不在可撤回范围内，无法撤回");
         }
     }
 }
