@@ -111,7 +111,6 @@ public class TaskInfoDTO {
 
     private Boolean isAutoSelect = true;
 
-
-    @ApiModelProperty("催办")
+    @ApiModelProperty(value = "催办")
     private Boolean isRemind = false;
 }
