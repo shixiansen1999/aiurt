@@ -3,6 +3,7 @@ package com.aiurt.modules.config;
 import com.aiurt.modules.editor.language.json.converter.CustomBpmnJsonConverter;
 import com.aiurt.modules.el.funtion.CustomVariableContainsAnyExpressionFunction;
 import com.aiurt.modules.listener.*;
+import com.aiurt.modules.remind.job.TimeOutRemindJobHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.common.engine.api.delegate.FlowableFunctionDelegate;
@@ -53,7 +54,7 @@ public class FlowBpmnConfig implements EngineConfigurationConfigurer<SpringProce
         processEngineConfiguration.initFunctionDelegates();
         List<FlowableFunctionDelegate> flowableFunctionDelegates = processEngineConfiguration.getFlowableFunctionDelegates();
         flowableFunctionDelegates.add(new CustomVariableContainsAnyExpressionFunction());
-
+        configuration.addCustomJobHandler(new TimeOutRemindJobHandler());
         //设置字体
         configuration.setActivityFontName("宋体");
         configuration.setLabelFontName("宋体");
