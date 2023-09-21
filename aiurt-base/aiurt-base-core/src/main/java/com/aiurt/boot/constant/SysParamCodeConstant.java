@@ -553,4 +553,8 @@ public interface SysParamCodeConstant {
      * 是否根据部门过滤习题
      */
     String IS_QUERY_QUESTION_BY_DEPT = "is_query_question_by_dept";
+    /**
+     * 故障下发和转派是否更新调度过来的数据
+     */
+    String IS_UPDATE_FAULT_EXTERNAL = "is_update_fault_external";
 }
