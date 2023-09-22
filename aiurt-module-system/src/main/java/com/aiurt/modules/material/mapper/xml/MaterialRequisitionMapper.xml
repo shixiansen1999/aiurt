@@ -6,13 +6,13 @@
             mrd.*,
             mb.specifications
         FROM
-            material_requisition mq
-            LEFT JOIN material_requisition_detail mrd ON mrd.material_requisition_id = mq.id
+            material_requisition mr
+            LEFT JOIN material_requisition_detail mrd ON mrd.material_requisition_id = mr.id
             LEFT JOIN material_base mb ON mb.`code` = mrd.materials_code
         WHERE
-            mq.del_flag = 0
+            mr.del_flag = 0
             AND mrd.del_flag = 0
-            AND mq.code = #{code}
-            AND mq.material_requisition_type = #{requisitionType}
+            AND mr.code = #{code}
+            AND mr.material_requisition_type = #{requisitionType}
     </select>
 </mapper>

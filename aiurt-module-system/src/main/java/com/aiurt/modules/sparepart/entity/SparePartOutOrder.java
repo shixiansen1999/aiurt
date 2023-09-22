@@ -114,7 +114,7 @@ public class SparePartOutOrder implements Serializable {
     @ApiModelProperty(value = "领料单表ID")
     private String materialRequisitionId;
     @ApiModelProperty(value = "备件出库类型")
-    @Dict(dicCode = "spare_out_type")
+    @Dict(dicCode = "stock_out_in_type")
     private Integer outType;
     @ApiModelProperty(value = "库存结余")
     private Integer balance;
