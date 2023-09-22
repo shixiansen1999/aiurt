@@ -80,6 +80,19 @@ public class CustomBpmnJsonConverter extends BpmnJsonConverter {
             objectNode.set(FlowModelExtElementConstant.EXT_RECALL_NODE, jsonNode);
             customPropertiesNode.putIfAbsent(FlowModelExtElementConstant.EXT_RECALL, objectNode);
         }
+
+        // 审批去重
+        List<ExtensionElement> duplicateRuleElementList = extensionElements.get(FlowModelExtElementConstant.EXT_ASSIGN_DUPLICATE_RULE);
+        if (CollUtil.isNotEmpty(duplicateRuleElementList)) {
+            ExtensionElement extensionElement = duplicateRuleElementList.get(0);
+            String value = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_VALUE);
+            String rule = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_RULE);
+            ObjectNode objectNode = objectMapper.createObjectNode();
+            objectNode.put(FlowModelExtElementConstant.EXT_VALUE, value);
+            objectNode.put(FlowModelExtElementConstant.EXT_RULE, rule);
+            customPropertiesNode.putIfAbsent(FlowModelExtElementConstant.EXT_ASSIGN_DUPLICATE_RULE, objectNode);
+        }
+
         modelNode.putIfAbsent(FlowModelExtElementConstant.EXT_CUSTOM_PROPERTIES, customPropertiesNode);
         return modelNode;
     }
@@ -100,6 +113,8 @@ public class CustomBpmnJsonConverter extends BpmnJsonConverter {
         JsonNode recallNode = extensionData.get(FlowModelExtElementConstant.EXT_RECALL);
         addExtensionElement(mainProcess, FlowModelExtElementConstant.EXT_RECALL, recallNode);
 
+        JsonNode duplicateNode = extensionData.get(FlowModelExtElementConstant.EXT_ASSIGN_DUPLICATE_RULE);
+        addExtensionElement(mainProcess, FlowModelExtElementConstant.EXT_ASSIGN_DUPLICATE_RULE, duplicateNode);
 
         //
         return bpmnModel;

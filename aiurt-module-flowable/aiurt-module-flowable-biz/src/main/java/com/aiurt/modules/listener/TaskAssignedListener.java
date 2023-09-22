@@ -3,7 +3,7 @@ package com.aiurt.modules.listener;
 import com.aiurt.modules.deduplicate.service.IFlowDeduplicateService;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
-import org.flowable.common.engine.impl.event.FlowableEntityEventImpl;
+import org.flowable.engine.delegate.event.impl.FlowableEntityEventImpl;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.jeecg.common.util.SpringContextUtils;
 
@@ -26,7 +26,7 @@ public class TaskAssignedListener implements FlowableEventListener {
         }
         TaskEntity taskEntity = (TaskEntity) entity;
         IFlowDeduplicateService deduplicateService = SpringContextUtils.getBean(IFlowDeduplicateService.class);
-        deduplicateService.handler(taskEntity.getProcessInstanceId(), taskEntity.getId());
+        deduplicateService.handler(taskEntity);
     }
 
     /**
