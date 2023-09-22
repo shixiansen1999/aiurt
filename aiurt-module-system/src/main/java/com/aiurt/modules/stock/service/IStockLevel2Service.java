@@ -1,5 +1,6 @@
 package com.aiurt.modules.stock.service;
 
+import com.aiurt.modules.stock.dto.req.StockLevel2ReqDTO;
 import com.aiurt.modules.stock.dto.resp.StockLevel2RespDTO;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -45,4 +46,10 @@ public interface IStockLevel2Service extends IService<StockLevel2> {
      * @return
      */
     List<StockLevel2> exportXls(StockLevel2 stockLevel2,String ids);
+
+    /**
+     * 二级库管理-二级库库存管理-添加/修改备注
+     * @param stockLevel2ReqDTO 二级库请求DTO
+     */
+    void addRemark(StockLevel2ReqDTO stockLevel2ReqDTO);
 }

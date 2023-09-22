@@ -2,6 +2,7 @@ package com.aiurt.modules.stock.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
+import com.aiurt.modules.stock.dto.req.StockLevel2ReqDTO;
 import com.aiurt.modules.stock.dto.resp.StockLevel2RespDTO;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
@@ -108,6 +109,20 @@ public class StockLevel2Controller {
         mv.addObject(NormalExcelConstants.PARAMS, exportParams);
         mv.addObject(NormalExcelConstants.DATA_LIST, exportList);
         return mv;
+    }
+
+
+    /**
+     * 二级库管理-二级库库存管理-添加/修改备注
+     * @param stockLevel2ReqDTO 二级库请求DTO
+     * @return Result<String> 返回添加结果
+     */
+    @AutoLog(value = "二级库管理-二级库库存管理-添加/修改备注")
+    @ApiOperation(value = "二级库管理-二级库库存管理-添加/修改备注", notes = "二级库管理-二级库库存管理-添加/修改备注")
+    @PostMapping(value = "/addRemark")
+    public Result<String> addRemark(@RequestBody StockLevel2ReqDTO stockLevel2ReqDTO){
+        iStockLevel2Service.addRemark(stockLevel2ReqDTO);
+        return Result.ok("修改备注成功");
     }
 
 }

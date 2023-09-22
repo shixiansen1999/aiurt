@@ -1,12 +1,10 @@
-package com.aiurt.modules.stock.dto.req;
+package com.aiurt.modules.sparepart.entity.dto.req;
 
-import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.base.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -19,12 +17,12 @@ import java.io.Serializable;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class MaterialStockOutInRecordReqDTO extends BaseEntity implements Serializable {
+public class MaterialSparePartOutInRecordReqDTO extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**记录类型（3三级库出入库，2二级库出入库）*/
     @ApiModelProperty(value = "记录类型（3三级库出入库，2二级库出入库）")
-    private java.lang.Integer materialRequisitionType;
+    private Integer materialRequisitionType;
 
     /**物资编号*/
     @ApiModelProperty(value = "物资编号")
@@ -36,21 +34,21 @@ public class MaterialStockOutInRecordReqDTO extends BaseEntity implements Serial
 
     /**入库还是出库，1入库 2出库*/
     @ApiModelProperty(value = "入库还是出库，1入库 2出库")
-    private java.lang.Integer isOutIn;
+    private Integer isOutIn;
 
     /**出入库类型:普通出库、借出出库、归还入库等，具体看数据字典*/
     @ApiModelProperty(value = "出入库类型:普通出库、借出出库、归还入库等，具体看数据字典")
-    private java.lang.Integer outInType;
+    private Integer outInType;
 
     /**搜索开始时间->确认时间大于等于的时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "搜索开始时间->确认时间大于等于的时间")
     private java.util.Date searchBeginTime;
 
     /**搜索结束时间->确认时间小于等于的时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "搜索开始时间->确认时间大于等于的时间")
     private java.util.Date searchEndTime;
 }
