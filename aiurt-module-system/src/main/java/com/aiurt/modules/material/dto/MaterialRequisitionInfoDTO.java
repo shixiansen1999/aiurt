@@ -1,0 +1,82 @@
+package com.aiurt.modules.material.dto;
+
+import com.aiurt.modules.basic.entity.DictEntity;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * @author : sbx
+ * @description : 班组库领料单信息
+ * @date : 2023/9/21 23:03
+ */
+@Data
+public class MaterialRequisitionInfoDTO extends DictEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    /**申领单号*/
+    @ApiModelProperty(value = "申领单号")
+    private String code;
+    /**领用单名称*/
+    @ApiModelProperty(value = "领用单名称")
+    private String name;
+    /**申领人ID*/
+    @ApiModelProperty(value = "申领人ID")
+    private String applyUserId;
+    /**组织机构编号*/
+    @ApiModelProperty(value = "组织机构编号")
+    private String sysOrgCode;
+    /**领用时间*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "领用时间")
+    private Date applyTime;
+    /**计划领用时间*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "计划领用时间")
+    private Date planApplyTime;
+    /**领用线路编码*/
+    @ApiModelProperty(value = "领用线路编码")
+    private String applyLineCode;
+    /**申领仓库编号*/
+    @ApiModelProperty(value = "申领仓库编号")
+    private String applyWarehouseCode;
+    /**保管仓库编号*/
+    @ApiModelProperty(value = "保管仓库编号")
+    private String custodialWarehouseCode;
+    /**申领状态：1待提交、2待确认、3已确认、4审核中、5已通过、6已驳回、7已完成*/
+    @ApiModelProperty(value = "申领状态：1待提交、2待确认、3已确认、4审核中、5已通过、6已驳回、7已完成")
+    private Integer status;
+    /**提交状态（0-未提交 1-已提交）*/
+    @ApiModelProperty(value = "提交状态（0-未提交 1-已提交）")
+    private Integer commitStatus;
+    /**申领单类型（1维修领用，3三级库领用，2二级库领用）*/
+    @ApiModelProperty(value = "申领单类型（1维修领用，3三级库领用，2二级库领用）")
+    private Integer materialRequisitionType;
+    /**领用类型（1特殊领用，2普通领用）*/
+    @ApiModelProperty(value = "领用类型（1特殊领用，2普通领用）")
+    private Integer applyType;
+    /**关联维修单*/
+    @ApiModelProperty(value = "关联维修单")
+    private String faultRepairRecordId;
+    /**用途*/
+    @ApiModelProperty(value = "用途")
+    private String useTo;
+    /**备注*/
+    @ApiModelProperty(value = "备注")
+    private String remarks;
+    /**删除状态(0.未删除 1.已删除)*/
+    @ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")
+    private Integer delFlag;
+    /**申领仓库名称*/
+    @ApiModelProperty(value = "申领仓库名称")
+    private String applyWarehouseName;
+    /**保管仓库名称*/
+    @ApiModelProperty(value = "保管仓库名称")
+    private String custodialWarehouseName;
+}
