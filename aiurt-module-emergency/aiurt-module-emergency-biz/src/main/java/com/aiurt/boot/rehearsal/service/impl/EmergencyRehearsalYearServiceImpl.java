@@ -349,8 +349,8 @@ public class EmergencyRehearsalYearServiceImpl extends ServiceImpl<EmergencyRehe
             }
         } catch (Exception e) {
             transactionManager.rollback(status);
+            throw new AiurtBootException(e.getMessage());
         }
-        return null;
     }
 
     @Override
