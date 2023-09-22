@@ -47,26 +47,9 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void add(StockLevel2RequisitionAddReqDTO stockLevel2RequisitionAddReqDTO) {
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (ObjectUtil.isEmpty(loginUser)) {
-            throw new AiurtBootException("检测到当前为未登录状态，请先登录！");
-        }
         // 二级库申领，添加一条数据到领料单
         MaterialRequisition materialRequisition = new MaterialRequisition();
         BeanUtils.copyProperties(stockLevel2RequisitionAddReqDTO, materialRequisition);
-        // 因为是二级库申领，所以有一些信息是写死的
-        materialRequisition.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL2);
-        materialRequisition.setApplyType(MaterialRequisitionConstant.APPLY_TYPE_SPECIAL);
-        materialRequisition.setStatus(MaterialRequisitionConstant.STATUS_TO_BE_SUBMITTED);
-        materialRequisition.setCommitStatus(MaterialRequisitionConstant.COMMIT_STATUS_NOT_SUBMITTED);
-        // 添加其他信息
-        Date applyTime = new Date();
-        materialRequisition.setApplyTime(applyTime);
-        materialRequisition.setApplyUserId(loginUser.getId());
-        String name = loginUser.getOrgName() + "-" + loginUser.getRealname() + "-" +
-                DateUtil.format(applyTime, "yyyy-MM-dd") + "-" + "领料单";
-        materialRequisition.setName(name);
-        materialRequisition.setCode(CodeGenerateUtils.generateSingleCode("EJKSL", 5));
         // 先保存领料单
         materialRequisitionService.save(materialRequisition);
         // 再保存物资清单
