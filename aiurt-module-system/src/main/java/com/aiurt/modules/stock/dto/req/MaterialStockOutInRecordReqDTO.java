@@ -43,14 +43,14 @@ public class MaterialStockOutInRecordReqDTO extends BaseEntity implements Serial
     private java.lang.Integer outInType;
 
     /**搜索开始时间->确认时间大于等于的时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "搜索开始时间->确认时间大于等于的时间")
     private java.util.Date searchBeginTime;
 
     /**搜索结束时间->确认时间小于等于的时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "搜索开始时间->确认时间大于等于的时间")
     private java.util.Date searchEndTime;
 }

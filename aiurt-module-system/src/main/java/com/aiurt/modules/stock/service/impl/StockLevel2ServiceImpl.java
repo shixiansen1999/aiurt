@@ -3,17 +3,20 @@ package com.aiurt.modules.stock.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.mapper.MaterialBaseTypeMapper;
 import com.aiurt.modules.material.service.IMaterialBaseService;
+import com.aiurt.modules.stock.dto.req.StockLevel2ReqDTO;
 import com.aiurt.modules.stock.dto.resp.StockLevel2RespDTO;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.aiurt.modules.stock.mapper.StockLevel2Mapper;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -133,6 +136,18 @@ public class StockLevel2ServiceImpl extends ServiceImpl<StockLevel2Mapper, Stock
         }
 
         return stockLevel2RespDTO;
+    }
+
+    @Override
+    public void addRemark(StockLevel2ReqDTO stockLevel2ReqDTO) {
+        String id = stockLevel2ReqDTO.getId();
+        if (StrUtil.isEmpty(id)) {
+            throw new AiurtBootException("修改备注的库存信息id不能为空");
+        }
+        LambdaUpdateWrapper<StockLevel2> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.set(StockLevel2::getRemark, stockLevel2ReqDTO.getRemark());
+        updateWrapper.eq(StockLevel2::getId, id);
+        this.update(updateWrapper);
     }
 
     @Override
