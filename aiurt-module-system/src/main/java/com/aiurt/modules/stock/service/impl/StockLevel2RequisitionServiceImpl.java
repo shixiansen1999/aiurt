@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.modules.material.constant.MaterialRequisitionConstant;
 import com.aiurt.modules.material.entity.MaterialRequisition;
 import com.aiurt.modules.material.entity.MaterialRequisitionDetail;
@@ -65,8 +66,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
         String name = loginUser.getOrgName() + "-" + loginUser.getRealname() + "-" +
                 DateUtil.format(applyTime, "yyyy-MM-dd") + "-" + "领料单";
         materialRequisition.setName(name);
-        // TODO: 申领单号后面修改
-        materialRequisition.setCode("LY001");
+        materialRequisition.setCode(CodeGenerateUtils.generateSingleCode("EJKSL", 5));
         // 先保存领料单
         materialRequisitionService.save(materialRequisition);
         // 再保存物资清单
