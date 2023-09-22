@@ -1,6 +1,10 @@
 package com.aiurt.modules.sparepart.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.modules.material.constant.MaterialRequisitionConstant;
+import com.aiurt.modules.material.dto.MaterialRequisitionDetailInfoDTO;
+import com.aiurt.modules.material.dto.MaterialRequisitionInfoDTO;
+import com.aiurt.modules.material.service.IMaterialRequisitionService;
 import com.aiurt.modules.sparepart.entity.dto.req.SparePartRequisitionAddReqDTO;
 import com.aiurt.modules.sparepart.entity.dto.req.SparePartRequisitionListReqDTO;
 import com.aiurt.modules.sparepart.entity.dto.resp.SparePartRequisitionListRespDTO;
@@ -28,6 +32,8 @@ public class SparePartRequisitionController {
 
     @Autowired
     private SparePartRequisitionService sparePartRequisitionService;
+    @Autowired
+    private IMaterialRequisitionService materialRequisitionService;
 
     /**
      * 三级库管理-分页列表查询
@@ -69,5 +75,28 @@ public class SparePartRequisitionController {
     public Result<String> edit(@RequestBody SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO){
         sparePartRequisitionService.edit(sparePartRequisitionAddReqDTO);
         return Result.ok("编辑成功！");
+    }
+
+    /**
+     * 三级库管理-三级库申领-根据申领单号查询详情
+     * @param code
+     * @return
+     */
+    @AutoLog(value = "三级库管理-三级库申领-根据申领单号查询详情")
+    @ApiOperation(value = "三级库管理-三级库申领-根据申领单号查询详情", notes = "三级库管理-三级库申领-根据申领单号查询详情")
+    @GetMapping(value = "/queryByCode")
+    public Result<MaterialRequisitionInfoDTO> queryByCode(String code) {
+        MaterialRequisitionInfoDTO sparePartRequisitionDTO = materialRequisitionService.queryByCode(code, MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3);
+        return Result.ok(sparePartRequisitionDTO);
+    }
+
+    @AutoLog(value = "三级库管理-三级库申领-根据申领单号查询领料单明细")
+    @ApiOperation(value = "三级库管理-三级库申领-根据申领单号查询领料单明细", notes = "三级库管理-三级库申领-根据申领单号查询领料单明细")
+    @GetMapping(value = "/queryPageDetail")
+    public Result<Page> queryPageDetail(String code, @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        Page<MaterialRequisitionDetailInfoDTO> page = new Page<>(pageNo, pageSize);
+        materialRequisitionService.queryDetailList(page, code, MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3);
+        return Result.ok(page);
     }
 }

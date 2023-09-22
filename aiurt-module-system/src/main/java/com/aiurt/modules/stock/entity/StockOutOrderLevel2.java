@@ -113,8 +113,11 @@ public class StockOutOrderLevel2 extends DictEntity {
 
 	@ApiModelProperty(value = "领料单表ID")
 	private String materialRequisitionId;
+	@ApiModelProperty(value = "申领单号")
+	@TableField(exist = false)
+	private String materialRequisitionCode;
 	@ApiModelProperty(value = "二级库出库类型")
-	@Dict(dicCode = "stock_out_type")
+	@Dict(dicCode = "stock_out_in_type")
 	private Integer outType;
 	@ApiModelProperty(value = "库存结余")
 	private Integer balance;
