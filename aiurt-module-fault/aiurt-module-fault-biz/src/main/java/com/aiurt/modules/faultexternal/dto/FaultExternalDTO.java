@@ -178,6 +178,10 @@ public class FaultExternalDTO{
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "通知时间")
     private Date noticeTime;
+
+    @ApiModelProperty(value = "故障表编号")
+    private String faultcode;
+
     /**创建人*/
     @ApiModelProperty(value = "创建人")
     private String createBy;

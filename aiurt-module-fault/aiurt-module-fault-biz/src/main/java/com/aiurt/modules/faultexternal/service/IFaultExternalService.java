@@ -31,4 +31,6 @@ public interface IFaultExternalService extends IService<FaultExternal> {
      * @return 返回状态
      */
     Result<FaultExternal> appendFault(JSONObject formData);
+
+    void reassign(FaultExternalDTO dto, HttpServletRequest req);
 }

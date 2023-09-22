@@ -17,6 +17,8 @@ import com.aiurt.modules.faultexternal.dto.FaultExternalDTO;
 import com.aiurt.modules.faultexternal.entity.FaultExternal;
 import com.aiurt.modules.faultexternal.mapper.FaultExternalMapper;
 import com.aiurt.modules.faultexternal.service.IFaultExternalService;
+import com.aiurt.modules.faultexternallinestarel.entity.FaultExternalLineStaRel;
+import com.aiurt.modules.faultexternallinestarel.service.IFaultExternalLineStaRelService;
 import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -73,6 +75,8 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
     private ISysBaseAPI sysBaseApi;
     @Autowired
     private ISysParamAPI sysParamApi;
+    @Autowired
+    private IFaultExternalLineStaRelService faultExternalLineStaRelService;
 
 
     @Override
@@ -159,9 +163,9 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
 
             //回调调度系统故障接口
             if (dto.getExternalIndocno() != null) {
-            callback(dto.getExternalIndocno(), code);
+            callback(dto, code);
             }
-            return Result.ok("新增成功");
+            return Result.ok("下发成功");
         }
 
     @Override
@@ -188,6 +192,8 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
                     }
                     if("1".equals(external.getTransportservice())){
                         external.setAffectPassengerService(1); }
+                    //已下发故障待指派可以转派
+                    external.setCanReassign(external.getFaultStatus() != null && external.getStatus() == 1 && external.getFaultStatus() <= 3);
                 }
             }
         }
@@ -195,14 +201,33 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
         return page;
     }
 
-    public void callback(Integer externalIndocno,String code){
+    public void callback(FaultExternalDTO dto,String code){
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         FaultExternal faultExternal = this.getOne(new LambdaQueryWrapper<FaultExternal>()
-                .eq(FaultExternal::getIndocno, externalIndocno)
+                .eq(FaultExternal::getIndocno, dto.getExternalIndocno())
                 .orderByDesc(FaultExternal::getId).last("limit 0,1"));
         if (faultExternal != null) {
             faultExternal.setFaultcode(code);
             faultExternal.setStatus(1);
+            //根据配置是否更新调度过来的数据
+            SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.IS_UPDATE_FAULT_EXTERNAL);
+            if (ObjectUtil.isNotEmpty(sysParamModel) && "1".equals(sysParamModel.getValue())) {
+                FaultExternalLineStaRel staRel = faultExternalLineStaRelService.getOne(new LambdaQueryWrapper<FaultExternalLineStaRel>()
+                        .eq(FaultExternalLineStaRel::getLineCode, dto.getLineCode())
+                        .eq(FaultExternalLineStaRel::getStationCode, dto.getStationCode()), false);
+                if (ObjectUtil.isNotNull(staRel)) {
+                    faultExternal.setIline(staRel.getIline());
+                    faultExternal.setSline(StrUtil.subBefore(staRel.getScc(), "/", false));
+                    faultExternal.setIpos(staRel.getIpos());
+                    faultExternal.setSpos(StrUtil.subAfter(staRel.getScc(), "/", true));
+                }
+                faultExternal.setDhappen(dto.getHappenTime());
+                faultExternal.setSpositiondetail(dto.getLocation());
+                faultExternal.setSproandway(dto.getSymptoms());
+                faultExternal.setCrane(dto.getAffectDrive() == 1 ? "1" : "2");
+                faultExternal.setTransportservice(dto.getAffectPassengerService() == 1 ? "1" : "2");
+                faultExternal.setStopservice(dto.getIsStopService() == 1 ? "1" : "2");
+            }
             faultExternalMapper.updateById(faultExternal);
         }
     }
@@ -295,6 +320,87 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return  Result.error("添加失败");
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void reassign(FaultExternalDTO dto, HttpServletRequest req) {
+        if (StrUtil.isBlank(dto.getFaultcode())) {
+            throw new AiurtBootException("故障未下发");
+        }
+        Fault fault = faultService.getOne(new LambdaQueryWrapper<Fault>().eq(Fault::getCode, dto.getFaultcode()), false);
+        if (ObjectUtil.isEmpty(fault)) {
+            throw new AiurtBootException("未找到该故障单：" + dto.getFaultcode());
+        }
+        fault.setLineCode(dto.getLineCode());
+        fault.setStationCode(dto.getStationCode());
+        fault.setStationPositionCode(dto.getStationPositionCode());
+        if (StringUtils.isNotBlank(dto.getDevicesIds())) {
+            fault.setDevicesIds(dto.getDevicesIds());
+        }
+        fault.setMajorCode(dto.getMajorCode());
+        fault.setFaultPhenomenon(dto.getFaultPhenomenon());
+        fault.setFaultTypeCode(dto.getFaultTypeCode());
+        fault.setFaultLevel(dto.getFaultLevel());
+        //报修人
+        fault.setFaultApplicant(dto.getFaultApplicant());
+        //紧急程度
+        fault.setUrgency(dto.getUrgency());
+        //是否委外
+        fault.setIsOutsource(dto.getIsOutsource());
+        //接报人
+        fault.setReceiveUserName(dto.getReceiveUserName());
+        //报修组织机构
+        fault.setFaultApplicantDept(dto.getFaultApplicantDept());
+        //报修方式
+        fault.setFaultModeCode(dto.getFaultModeCode());
+        //所属子系统
+        fault.setSubSystemCode(dto.getSubSystemCode());
+        //是否影响行车
+        fault.setAffectDrive(dto.getAffectDrive());
+        //是否影响客运服务
+        fault.setAffectPassengerService(dto.getAffectPassengerService());
+        //是否停止服务
+        fault.setIsStopService(dto.getIsStopService());
+        //抄送人
+        fault.setRemindUserName(dto.getRemindUserName());
+        //附件
+        fault.setPath(dto.getPath());
+        if (StringUtils.isNotBlank(dto.getLocation())) {
+            fault.setDetailLocation(dto.getLocation());
+        }
+        if (StringUtils.isNotBlank(dto.getScope())) {
+            fault.setScope(dto.getScope());
+        }
+        fault.setHappenTime(dto.getHappenTime());
+        fault.setFaultDeviceList(dto.getFaultDeviceList());
+        fault.setIsFaultExternal(true);
+        //故障现象
+        fault.setSymptoms(dto.getSymptoms());
+        faultService.updateById(fault);
+        //根据配置是否更新调度过来的数据
+        SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.IS_UPDATE_FAULT_EXTERNAL);
+        if (ObjectUtil.isNotEmpty(sysParamModel) && "1".equals(sysParamModel.getValue())) {
+            FaultExternal faultExternal = this.getById(dto.getId());
+            if (ObjectUtil.isNotNull(faultExternal)) {
+                FaultExternalLineStaRel staRel = faultExternalLineStaRelService.getOne(new LambdaQueryWrapper<FaultExternalLineStaRel>()
+                        .eq(FaultExternalLineStaRel::getLineCode, dto.getLineCode())
+                        .eq(FaultExternalLineStaRel::getStationCode, dto.getStationCode()), false);
+                if (ObjectUtil.isNotNull(staRel)) {
+                    faultExternal.setIline(staRel.getIline());
+                    faultExternal.setSline(StrUtil.subBefore(staRel.getScc(), "/", false));
+                    faultExternal.setIpos(staRel.getIpos());
+                    faultExternal.setSpos(StrUtil.subAfter(staRel.getScc(), "/", true));
+                }
+                faultExternal.setDhappen(dto.getHappenTime());
+                faultExternal.setSpositiondetail(dto.getLocation());
+                faultExternal.setSproandway(dto.getSymptoms());
+                faultExternal.setCrane(dto.getAffectDrive() == 1 ? "1" : "0");
+                faultExternal.setTransportservice(dto.getAffectPassengerService() == 1 ? "1" : "0");
+                faultExternal.setStopservice(dto.getIsStopService() == 1 ? "1" : "0");
+                this.updateById(faultExternal);
+            }
         }
     }
 }

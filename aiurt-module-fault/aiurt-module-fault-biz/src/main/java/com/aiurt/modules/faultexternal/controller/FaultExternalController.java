@@ -11,6 +11,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
@@ -149,6 +150,17 @@ public class FaultExternalController extends BaseController<FaultExternal, IFaul
 		if(faultExternal==null) {
 			return Result.error("未找到对应数据");
 		}
+		faultExternal.setAffectPassengerService(0);
+		faultExternal.setAffectDrive(0);
+		faultExternal.setIsStopService(0);
+		if("1".equals(faultExternal.getCrane())){
+			faultExternal.setAffectDrive(1);
+		}
+		if("1".equals(faultExternal.getStopservice())){
+			faultExternal.setIsStopService(1);
+		}
+		if("1".equals(faultExternal.getTransportservice())){
+			faultExternal.setAffectPassengerService(1); }
 		return Result.OK(faultExternal);
 	}
 
@@ -201,5 +213,19 @@ public class FaultExternalController extends BaseController<FaultExternal, IFaul
 		 byId.setStatus(2);
 		 faultExternalService.updateById(byId);
 		 return Result.OK("编辑成功!");
+	 }
+
+	 /**
+	  * 转派
+	  * @param dto
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "调度系统故障-转派")
+	 @ApiModelProperty(value = "调度系统故障-转派", notes = "调度系统故障-转派")
+	 @PostMapping(value = "/reassign")
+	 public Result<?> reassign(@RequestBody FaultExternalDTO dto, HttpServletRequest req) {
+		 faultExternalService.reassign(dto, req);
+		 return Result.OK("转派成功!");
 	 }
 }
