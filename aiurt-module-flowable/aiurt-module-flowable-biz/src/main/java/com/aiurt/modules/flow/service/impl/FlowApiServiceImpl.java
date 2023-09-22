@@ -631,6 +631,17 @@ public class FlowApiServiceImpl implements FlowApiService {
                 if(Objects.nonNull(formFieldConfig)){
                     taskInfoDTO.setFieldList(formFieldConfig);
                 }
+
+                // 加减签任务
+                int isAddMulti = Optional.ofNullable(flowTaskExt.getIsAddMulti()).orElse(0);
+                // 判断是否可以加签
+                if (isAddMulti == 1) {
+                    taskInfoDTO.setIsAddMulti(true);
+
+                    // 有加签记录才能减签
+
+                }
+
             }
         } else {
             String startUserId = historicProcessInstance.getStartUserId();
