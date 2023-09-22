@@ -94,7 +94,7 @@ public class TaskInfoDTO {
      * 表单字段权限配置列表
      */
     @ApiModelProperty(value = "表单字段权限配置列表")
-    private JSONArray fieldList = new JSONArray();
+    private JSONArray fieldList;
 
     @ApiModelProperty("流程模板key")
     private String processDefinitionKey;
@@ -106,9 +106,14 @@ public class TaskInfoDTO {
     @ApiModelProperty(value = "流程名称")
     private String processName;
 
+    @ApiModelProperty(value = "撤回按钮")
+    private Boolean withdraw = false;
+
     private Boolean isAutoSelect = true;
 
 
     @ApiModelProperty("催办")
     private Boolean isRemind = false;
+
+    private String businessKey;
 }

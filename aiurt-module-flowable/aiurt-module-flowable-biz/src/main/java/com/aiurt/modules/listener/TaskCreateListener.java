@@ -1,39 +1,28 @@
 package com.aiurt.modules.listener;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
-import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.util.HttpContextUtils;
-import com.aiurt.config.sign.util.HttpUtils;
 import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
-import com.aiurt.modules.common.enums.MultiApprovalRuleEnum;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
-import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
-import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.todo.dto.BpmnTodoDTO;
 import com.aiurt.modules.user.service.IFlowUserService;
 import com.aiurt.modules.utils.FlowableNodeActionUtils;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.common.engine.impl.event.FlowableEntityEventImpl;
 import org.flowable.engine.HistoryService;
-import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngines;
-import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
@@ -43,15 +32,10 @@ import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.jeecg.common.util.SpringContextUtils;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author fgw

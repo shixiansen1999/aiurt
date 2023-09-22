@@ -64,10 +64,8 @@ import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.repository.ProcessDefinition;
-import org.flowable.engine.runtime.ActivityInstance;
-import org.flowable.engine.runtime.ChangeActivityStateBuilder;
-import org.flowable.engine.runtime.Execution;
-import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.engine.repository.ProcessDefinitionQuery;
+import org.flowable.engine.runtime.*;
 import org.flowable.identitylink.api.IdentityLink;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskInfo;
@@ -564,6 +562,8 @@ public class FlowApiServiceImpl implements FlowApiService {
             throw new AiurtBootException(AiurtErrorEnum.PROCESS_INSTANCE_NOT_FOUND.getCode(), AiurtErrorEnum.PROCESS_INSTANCE_NOT_FOUND.getMessage());
         }
 
+        taskInfoDTO.setBusinessKey(historicProcessInstance.getBusinessKey());
+
         // modelKey
         String processDefinitionKey = historicProcessInstance.getProcessDefinitionKey();
         // 查询流程模板信息
@@ -644,7 +644,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
 
         // 中间业务数据
-        ActCustomBusinessData actCustomBusinessData = businessDataService.queryByProcessInstanceId(processInstanceId, taskId);
+        ActCustomBusinessData actCustomBusinessData = businessDataService.queryOne(processInstanceId, taskId, taskDefinitionKey);
         if (Objects.nonNull(actCustomBusinessData)) {
             taskInfoDTO.setBusData(actCustomBusinessData.getData());
         }
@@ -680,6 +680,43 @@ public class FlowApiServiceImpl implements FlowApiService {
                 Task task1 = list.get(0);
                 if (Objects.nonNull(task1) && StrUtil.equalsIgnoreCase(loginUser.getUsername(), task1.getAssignee())) {
                     taskInfoDTO.setIsRemind(false);
+                }
+            }
+        }
+        //撤回按钮
+        if (Objects.nonNull(customModelExt) && Optional.ofNullable(customModelExt.getIsRecall()).orElse(0) == 1) {
+            taskInfoDTO.setWithdraw(true);
+            //获取正在运行的节点
+            List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId).active().list();
+            //获取流程配置中的节点集合
+            String recallNodeId = customModelExt.getRecallNodeId();
+            String[] split = recallNodeId.split(",");
+            //判断节点是否在撤回集合内，不在集合内则不显示撤回按钮
+            List<String> keyList = list.stream()
+                    .map(Task::getTaskDefinitionKey)
+                    .filter(s -> Arrays.asList(split).contains(s))
+                    .distinct()
+                    .collect(Collectors.toList());
+            if(CollUtil.isEmpty(keyList)){
+                taskInfoDTO.setWithdraw(false);
+            }
+            // 获取流程实例
+            ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
+                    .processInstanceId(processInstanceId)
+                    .singleResult();
+            if (ObjectUtil.isNotEmpty(processInstance)) {
+                // 获取流程定义ID
+                String processDefinitionId = processInstance.getProcessDefinitionId();
+                if (CollUtil.isNotEmpty(list) && list.size() == 1) {
+                    UserTask userTask = flowElementUtil.getFirstUserTaskByDefinitionId(processDefinitionId);
+                    String taskId = userTask.getId();
+                    Task task = list.get(0);
+                    String taskDefinitionKey = task.getTaskDefinitionKey();
+                    // 比较当前节点与第一个用户节点是否一致，一致则不显示撤回按钮
+                    boolean isStartNode = taskId.equals(taskDefinitionKey);
+                    if (isStartNode) {
+                        taskInfoDTO.setWithdraw(false);
+                    }
                 }
             }
         }
@@ -1327,7 +1364,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
 
         if (StrUtil.isNotBlank(reqDTO.getProcessDefinitionName())) {
-            query.processDefinitionName("%" + reqDTO.getProcessDefinitionName() + "%");
+            query.processDefinitionName(reqDTO.getProcessDefinitionName());
         }
 
         if (CollectionUtil.isNotEmpty(processInstanceIdSet)) {
@@ -1469,10 +1506,13 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         List<String> nodeIdList = taskList.stream().map(Task::getTaskDefinitionKey).collect(Collectors.toList());
 
+        Map<String, Object> localVariableMap = new HashMap<>();
+        localVariableMap.put("reject_first_user_task", true);
         // 流程跳转, flowable 已提供
         runtimeService.createChangeActivityStateBuilder()
                 .processInstanceId(instanceDTO.getProcessInstanceId())
                 .moveActivityIdsToSingleActivityId(nodeIdList, firstUserTask.getId())
+                .localVariables(firstUserTask.getId(), localVariableMap)
                 .changeState();
     }
 

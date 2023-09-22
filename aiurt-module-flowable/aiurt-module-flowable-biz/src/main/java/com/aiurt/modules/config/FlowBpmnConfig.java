@@ -46,6 +46,7 @@ public class FlowBpmnConfig implements EngineConfigurationConfigurer<SpringProce
         typedEventListeners.put(FlowableEngineEventType.TASK_COMPLETED.name(), Arrays.asList(new TaskCompletedListener()));
         typedEventListeners.put(FlowableEngineEventType.PROCESS_STARTED.name(), Arrays.asList(new ProcessStartListener()));
         typedEventListeners.put(FlowableEngineEventType.PROCESS_COMPLETED.name(), Arrays.asList(new ProcessCompletedListener()));
+        typedEventListeners.put(FlowableEngineEventType.TASK_ASSIGNED.name(), Arrays.asList(new TaskAssignedListener()));
         configuration.setTypedEventListeners(typedEventListeners);
 
         // 自定义el表达式
