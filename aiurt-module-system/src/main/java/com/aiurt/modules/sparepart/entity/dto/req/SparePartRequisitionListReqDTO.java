@@ -11,7 +11,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 二级库申领分页列表查询的请求DTO
+ * 三级库申领分页列表查询的请求DTO
  *
  * @author 华宜威
  * @date 2023-09-21 14:50:46
@@ -33,8 +33,8 @@ public class SparePartRequisitionListReqDTO extends BaseEntity implements Serial
     @ApiModelProperty(value = "申领状态：1待提交、2待确认、3已确认、4审核中、5已通过、6已驳回、7已完成")
     private Integer status;
 
-    /**申领单类型（1维修领用，3三级库领用，2二级库领用）*/
-    @ApiModelProperty(value = "申领单类型（1维修领用，3三级库领用，2二级库领用）")
+    /**申领单类型（1维修领用，3三级库领用，2三级库领用）*/
+    @ApiModelProperty(value = "申领单类型（1维修领用，3三级库领用，2三级库领用）")
     private Integer materialRequisitionType;
 
     /**搜索开始时间->领用时间大于等于的时间*/

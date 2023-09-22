@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 二级库申领的添加、编辑等请求DTO
+ * 三级库申领的添加、编辑等请求DTO
  *
  * @author 华宜威
  * @date 2023-09-21 10:22:29

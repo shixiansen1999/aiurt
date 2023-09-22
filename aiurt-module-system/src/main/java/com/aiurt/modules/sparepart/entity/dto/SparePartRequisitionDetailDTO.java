@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 二级库申领领用物资明细的DTO
+ * 三级库申领领用物资明细的DTO
  * 
  * @author 华宜威
  * @date 2023-09-18 16:27:34

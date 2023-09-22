@@ -9,7 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.io.Serializable;
 
 /**
- * 二级库申领分页列表查询的响应DTO
+ * 三级库申领分页列表查询的响应DTO
  *
  * @author 华宜威
  * @date 2023-09-21 14:57:49

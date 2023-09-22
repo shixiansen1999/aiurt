@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 二级库申领的service的实现类，因为用到的实体类是领料单，因此不继承ServiceImpl
+ * 三级库申领的service的实现类，因为用到的实体类是领料单，因此不继承ServiceImpl
  *
  * @author 华宜威
  * @date 2023-09-21 09:52:12
@@ -50,10 +50,10 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
         if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("检测到当前为未登录状态，请先登录！");
         }
-        // 二级库申领，添加一条数据到领料单
+        // 三级库申领，添加一条数据到领料单
         MaterialRequisition materialRequisition = new MaterialRequisition();
         BeanUtils.copyProperties(sparePartRequisitionAddReqDTO, materialRequisition);
-        // 因为是二级库申领，所以有一些信息是写死的
+        // 因为是三级库申领，所以有一些信息是写死的
         materialRequisition.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL2);
         materialRequisition.setApplyType(MaterialRequisitionConstant.APPLY_TYPE_SPECIAL);
         materialRequisition.setStatus(MaterialRequisitionConstant.STATUS_TO_BE_SUBMITTED);
