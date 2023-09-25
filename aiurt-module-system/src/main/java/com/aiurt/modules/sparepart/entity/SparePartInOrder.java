@@ -37,6 +37,10 @@ public class SparePartInOrder implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
 	@ApiModelProperty(value = "主键ID")
 	private String id;
+	/**入库单号*/
+	@Excel(name = "入库单号", width = 15)
+	@ApiModelProperty(value = "入库单号")
+	private String orderCode;
 	/**序号*/
 	@Excel(name = "序号", width = 15)
 	@TableField(exist = false)

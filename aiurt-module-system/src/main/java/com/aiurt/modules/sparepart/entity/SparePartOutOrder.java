@@ -39,6 +39,10 @@ public class SparePartOutOrder implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
     private String id;
+    /**出库单号*/
+    @Excel(name = "出库单号", width = 15)
+    @ApiModelProperty(value = "出库单号")
+    private String orderCode;
 	/**物资编号*/
 	@Excel(name = "物资编号", width = 15)
     @ApiModelProperty(value = "物资编号")
