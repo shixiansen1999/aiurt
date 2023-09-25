@@ -472,7 +472,10 @@ public class CommonCtroller {
         }
         String ignoreUserId = null;
         if (StrUtil.isNotEmpty(username)) {
-            ignoreUserId = sysBaseApi.getUserByUserName(username);
+            List<String> userNameList = StrUtil.split(username, ',');
+            List<LoginUser> loginUserList = sysBaseApi.getLoginUserList(userNameList);
+
+            ignoreUserId = loginUserList.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
         }
 
         List<SelectTable> tables = commonService.queryDepartUserTree(list, ignoreUserId,majorId,null, values);

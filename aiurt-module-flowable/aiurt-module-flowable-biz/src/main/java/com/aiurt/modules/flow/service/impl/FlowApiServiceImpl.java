@@ -3,6 +3,7 @@ import java.util.Date;
 
 import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
 
+import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.modeler.entity.*;
 import com.aiurt.modules.modeler.service.IActCustomModelExtService;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
@@ -661,7 +662,11 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (Objects.nonNull(actCustomBusinessData)) {
             taskInfoDTO.setBusData(actCustomBusinessData.getData());
         }
-
+        String variableName = FlowVariableConstant.ASSIGNEE_LIST + task.getTaskDefinitionKey();
+        List userNameList = taskService.getVariable(taskId, variableName, List.class);
+        if (CollUtil.isNotEmpty(userNameList)) {
+            taskInfoDTO.setUserName(StrUtil.join(",", userNameList));
+        }
         taskInfoDTO.setTaskKey(taskDefinitionKey);
         taskInfoDTO.setProcessName(historicProcessInstance.getProcessDefinitionName());
         return taskInfoDTO;

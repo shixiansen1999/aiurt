@@ -198,7 +198,7 @@ public class CommonServiceImpl implements ICommonService {
                     "id in (select user_id from cs_user_major where 1=1 and major_id in (select id from cs_major where 1=1 and ( id = {0} or major_code = {0})))",
                     majorId);
             if (StrUtil.isNotBlank(ignoreUserId)) {
-                wrapper.notIn(SysUser::getId, Collections.singleton(ignoreUserId));
+                wrapper.notIn(SysUser::getId, StrUtil.split(ignoreUserId, ','));
             }
             List<SysUser> sysUserList = sysUserService.getBaseMapper().selectList(wrapper);
             List<SelectTable> tableList = sysUserList.stream().map(sysUser -> {

@@ -122,4 +122,7 @@ public class TaskInfoDTO {
 
     @ApiModelProperty("减签")
     private Boolean isReduceMulti = false;
+
+    @ApiModelProperty("当前节点参与人")
+    private String userName;
 }

@@ -4,8 +4,10 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.common.enums.MultiApprovalRuleEnum;
+import com.aiurt.modules.flow.dto.ProcessParticipantsInfoDTO;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
+import com.aiurt.modules.multideal.dto.AddReduceMultiInstanceDTO;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
 import com.aiurt.modules.multideal.service.IMultiInstanceUserService;
 import lombok.extern.slf4j.Slf4j;
@@ -149,6 +151,39 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
             flag = !areMultiInTask;
         }
         return flag;
+    }
+
+    /**
+     * 加签
+     *
+     * @param addReduceMultiInstanceDTO
+     */
+    @Override
+    public void addMultiInstance(AddReduceMultiInstanceDTO addReduceMultiInstanceDTO) {
+        // 修改变量
+        // 添加加签记录
+        // 执行
+    }
+
+    /**
+     * 减签
+     *
+     * @param addReduceMultiInstanceDTO
+     */
+    @Override
+    public void reduceMultiInstance(AddReduceMultiInstanceDTO addReduceMultiInstanceDTO) {
+
+    }
+
+    /**
+     * 查询减签的人员信息
+     *
+     * @param taskId
+     * @return
+     */
+    @Override
+    public List<ProcessParticipantsInfoDTO> getReduceMultiUser(String taskId) {
+        return null;
     }
 
     /**
