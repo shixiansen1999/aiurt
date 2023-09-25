@@ -155,6 +155,18 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	}
 
 	@Override
+	public void addCompleteOrderFromRequisition(String requisitionId) {
+		// TODO:
+		// 1、根据申领单id获取申领单详情
+
+		// 2、添加一条已完成的入库单
+		StockInOrderLevel2 stockInOrderLevel2 = new StockInOrderLevel2();
+		// 3、修改库存记录
+
+	}
+
+
+	@Override
 	public boolean edit(StockInOrderLevel2 stockInOrderLevel2) {
 		String code = stockInOrderLevel2.getOrderCode();
 		QueryWrapper<StockIncomingMaterials> queryWrapper = new QueryWrapper<StockIncomingMaterials>();

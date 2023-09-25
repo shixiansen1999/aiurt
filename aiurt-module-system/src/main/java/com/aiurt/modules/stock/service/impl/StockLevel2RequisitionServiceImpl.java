@@ -22,6 +22,7 @@ import com.aiurt.modules.stock.dto.req.StockLevel2RequisitionAddReqDTO;
 import com.aiurt.modules.stock.dto.req.StockLevel2RequisitionListReqDTO;
 import com.aiurt.modules.stock.dto.resp.StockLevel2RequisitionListRespDTO;
 import com.aiurt.modules.stock.mapper.StockLevel2RequisitionMapper;
+import com.aiurt.modules.stock.service.IStockInOrderLevel2Service;
 import com.aiurt.modules.stock.service.StockLevel2RequisitionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -56,6 +57,8 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
     private IMaterialRequisitionDetailService materialRequisitionDetailService;
     @Autowired
     private StockLevel2RequisitionMapper stockLevel2RequisitionMapper;
+    @Autowired
+    private IStockInOrderLevel2Service stockInOrderLevel2Service;
     @Autowired
     private FlowBaseApi flowBaseApi;
 
@@ -119,16 +122,20 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
             stockLevel2RequisitionAddReqDTO.setId(id);
         }
 
-        // 发起流程
-        StartBpmnDTO startBpmnDto  = new StartBpmnDTO();
-        startBpmnDto.setModelKey("stock_level2_requisition");
-        Map<String,Object> map = new HashMap<>();
-        map.put("id",id);
-        startBpmnDto.setBusData(map);
-        FlowTaskCompleteCommentDTO flowTaskCompleteCommentDTO = new FlowTaskCompleteCommentDTO();
-        startBpmnDto.setFlowTaskCompleteDTO(flowTaskCompleteCommentDTO);
-        flowTaskCompleteCommentDTO.setApprovalType(FlowApprovalType.SAVE);
-        flowBaseApi.startAndTakeFirst(startBpmnDto);
+        String processInstanceId = stockLevel2RequisitionAddReqDTO.getProcessInstanceId();
+        if(StrUtil.isEmpty(processInstanceId)){
+            // 还没有流程，则发起流程
+            StartBpmnDTO startBpmnDto  = new StartBpmnDTO();
+            startBpmnDto.setModelKey("stock_level2_requisition");
+            Map<String,Object> map = new HashMap<>();
+            map.put("id",id);
+            startBpmnDto.setBusData(map);
+            FlowTaskCompleteCommentDTO flowTaskCompleteCommentDTO = new FlowTaskCompleteCommentDTO();
+            startBpmnDto.setFlowTaskCompleteDTO(flowTaskCompleteCommentDTO);
+            flowTaskCompleteCommentDTO.setApprovalType(FlowApprovalType.SAVE);
+            flowBaseApi.startAndTakeFirst(startBpmnDto);
+        }
+
         // 将流程通过提交申领单阶段
         TaskCompleteDTO taskCompleteDTO = stockLevel2RequisitionMapper.getFlowDataById(id);
         Map<String,Object> detailMap = new HashMap<>(1);
@@ -149,6 +156,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
      * 此方法是给流程调用来改变状态值的
      * @param updateStateEntity 流程状态类
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateState(UpdateStateEntity updateStateEntity) {
         // businessKey就是申领单id
@@ -158,15 +166,20 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
         int states = updateStateEntity.getStates();
         switch (states){
             case 1:
+                // 申领单提交
                 updateWrapper.set(MaterialRequisition::getStatus, MaterialRequisitionConstant.STATUS_REVIEWING);
                 break;
             case 2:
+                // 主任审核通过
                 updateWrapper.set(MaterialRequisition::getStatus, MaterialRequisitionConstant.STATUS_PASSED);
                 break;
             case 3:
+                // 主任审核驳回
                 updateWrapper.set(MaterialRequisition::getStatus, MaterialRequisitionConstant.STATUS_REJECTED);
                 break;
             case 4:
+                // 审领人确认
+                stockInOrderLevel2Service.addCompleteOrderFromRequisition(id);
                 updateWrapper.set(MaterialRequisition::getStatus, MaterialRequisitionConstant.STATUS_COMPLETED);
                 break;
             default:
@@ -182,7 +195,12 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
      * @return
      */
     public String startProcess(StockLevel2RequisitionAddReqDTO stockLevel2RequisitionAddReqDTO) {
-        return stockLevel2RequisitionAddReqDTO.getId();
+        String id = stockLevel2RequisitionAddReqDTO.getId();
+        // 添加
+        if (StrUtil.isEmpty(id)){
+            id = this.add(stockLevel2RequisitionAddReqDTO);
+        }
+        return id;
     }
 
     @Override

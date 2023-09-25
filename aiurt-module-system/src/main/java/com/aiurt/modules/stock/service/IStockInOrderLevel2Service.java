@@ -35,6 +35,12 @@ public interface IStockInOrderLevel2Service extends IService<StockInOrderLevel2>
     void add(StockInOrderLevel2 stockInOrderLevel2);
 
     /**
+     * 从申领单那里添加一条已完成的入库记录
+     * @param requisitionId 申领单id
+     */
+    void addCompleteOrderFromRequisition(String requisitionId);
+
+    /**
      * 二级库入库管理-编辑
      * @param stockInOrderLevel2
      * @return

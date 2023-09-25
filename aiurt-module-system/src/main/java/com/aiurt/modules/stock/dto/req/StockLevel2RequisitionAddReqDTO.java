@@ -79,4 +79,10 @@ public class StockLevel2RequisitionAddReqDTO implements Serializable {
     @ApiModelProperty(value = "物资清单")
     List<StockLevel2RequisitionDetailDTO> stockLevel2RequisitionDetailDTOList;
 
+    @ApiModelProperty(value = "任务id")
+    private String taskId;
+
+    @ApiModelProperty(value = "流程实例id")
+    private String processInstanceId;
+
 }
