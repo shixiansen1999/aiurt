@@ -73,6 +73,19 @@ public class StockLevel2RequisitionController {
     }
 
     /**
+     * 二级库管理-二级库申领-提交  保存/编辑后提交并发起流程
+     * @param stockLevel2RequisitionAddReqDTO 二级库申领的添加、编辑等请求DTO
+     * @return Result<String> 返回提交成功的提示
+     */
+    @AutoLog(value = "二级库管理-二级库申领-提交")
+    @ApiOperation(value = "二级库管理-二级库申领-提交", notes = "二级库管理-二级库申领-提交")
+    @PostMapping(value = "/submit")
+    public Result<String> submit(@RequestBody StockLevel2RequisitionAddReqDTO stockLevel2RequisitionAddReqDTO){
+        stockLevel2RequisitionService.submit(stockLevel2RequisitionAddReqDTO);
+        return Result.ok("提交成功");
+    }
+
+    /**
      * 生成一个code
      * @param codePrefix 编码前缀
      * @param snSize 编码顺序号数量，即生成多少位数的顺序号，不能小于1，当已经是该位数的最大值时，只能返回9999这种类似的

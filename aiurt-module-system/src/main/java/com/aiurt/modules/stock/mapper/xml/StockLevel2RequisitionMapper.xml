@@ -3,4 +3,13 @@
 <mapper namespace="com.aiurt.modules.stock.mapper.StockLevel2RequisitionMapper">
 
 
+
+    <select id="getFlowDataById" resultType="com.aiurt.modules.flow.dto.TaskCompleteDTO">
+        select
+        ahp.PROC_INST_ID_ as process_instance_id,
+        ara.ID_           as task_id
+        from act_hi_procinst ahp
+        LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
+        where ahp.BUSINESS_KEY_ = #{id}
+    </select>
 </mapper>
