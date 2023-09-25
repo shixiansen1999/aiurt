@@ -12,4 +12,27 @@
         LEFT join act_ru_task ara ON ara.PROC_INST_ID_ = ahp.PROC_INST_ID_
         where ahp.BUSINESS_KEY_ = #{id}
     </select>
+
+    <select id="getFlowDataByIdsAndUsername"
+            resultType="com.aiurt.modules.stock.dto.resp.StockLevel2RequisitionListRespDTO">
+        select
+        ahp.BUSINESS_KEY_ as id,
+        ahp.PROC_INST_ID_ as processInstanceId,
+        art.ID_ as taskId
+        from act_hi_procinst ahp
+        inner join act_ru_task art on art.PROC_INST_ID_=ahp.PROC_INST_ID_
+        where ahp.BUSINESS_KEY_ in
+        <foreach collection="idList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and (art.ASSIGNEE_ = #{username}  OR art.ID_ in (
+        SELECT TASK_ID_
+        FROM act_ru_identitylink ari
+        WHERE
+        ari.TYPE_= 'candidate'
+        AND ari.USER_ID_= #{username}
+        AND ari.TASK_ID_ = art.ID_
+        AND (art.assignee_ = '' or art.assignee_ is null)
+        ))
+    </select>
 </mapper>

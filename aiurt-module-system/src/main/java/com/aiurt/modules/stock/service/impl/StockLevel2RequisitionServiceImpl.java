@@ -1,5 +1,6 @@
 package com.aiurt.modules.stock.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
@@ -26,7 +27,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -184,6 +187,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
 
     @Override
     public Page<StockLevel2RequisitionListRespDTO> pageList(StockLevel2RequisitionListReqDTO stockLevel2RequisitionListReqDTO) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         // 将请求DTO转化成实体类进行查询
         int pageNo = stockLevel2RequisitionListReqDTO.getPageNo();
         int pageSize = stockLevel2RequisitionListReqDTO.getPageSize();
@@ -206,9 +210,27 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
         // 将查询结果转化成响应DTO返回
         Page<StockLevel2RequisitionListRespDTO> pageList = new Page<>();
         BeanUtils.copyProperties(page, pageList);
+
+        // 空数据，直接返回
+        if (CollUtil.isEmpty(pageList.getRecords())) {
+            return pageList;
+        }
+
+        // 根据申领单id查询业务数据相关的流程信息，主要是实例id和任务id，并转成一个map, 以申领单Id为key
+        List<String> idList = page.getRecords().stream().map(MaterialRequisition::getId).collect(Collectors.toList());
+        Map<String, StockLevel2RequisitionListRespDTO> flowDataMap = stockLevel2RequisitionMapper.getFlowDataByIdsAndUsername(idList, sysUser.getUsername())
+                .stream().collect(Collectors.toMap(StockLevel2RequisitionListRespDTO::getId, v -> v));
+
+        // 将查询结果转化成响应DTO返回
         List<StockLevel2RequisitionListRespDTO> respRecords = page.getRecords().stream().map(record -> {
             StockLevel2RequisitionListRespDTO respDTO = new StockLevel2RequisitionListRespDTO();
             BeanUtils.copyProperties(record, respDTO);
+            // 设置流程相关的数据
+            StockLevel2RequisitionListRespDTO flowData = flowDataMap.get(respDTO.getId());
+            if (flowData != null){
+                respDTO.setProcessInstanceId(flowData.getProcessInstanceId());
+                respDTO.setTaskId(flowData.getTaskId());
+            }
             return respDTO;
         }).collect(Collectors.toList());
         pageList.setRecords(respRecords);
