@@ -234,6 +234,7 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
         userNameList.stream().forEach(userName->{
             // 设置局部变量, 并行实例必须采用该变量设置, 加签标识，否则去重
             executionVariables.put(elementVariable, userName);
+            executionVariables.put("is_multi_assign_task", true);
             // 执行
             runtimeService.addMultiInstanceExecution(taskDefinitionKey, task.getProcessInstanceId(), executionVariables);
             ActCustomMultiRecord build = ActCustomMultiRecord.builder()
