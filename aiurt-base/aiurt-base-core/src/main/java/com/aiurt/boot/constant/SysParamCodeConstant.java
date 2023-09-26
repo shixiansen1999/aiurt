@@ -558,4 +558,20 @@ public interface SysParamCodeConstant {
      * 当日15点整时有未完成巡视任务给予提醒的响铃时长
      */
     String PUDR_RING_DURATION = "pudr_ring_duration";
+    /**
+     * 维保任务执行中延时提醒
+     */
+    String REPAIR_IN_EXECUTION_REMIND = "repair_in_execution_remind";
+    /**
+     * 维保任务执行中延时提醒的初始延时时长，单位为秒
+     */
+    String RIE_DELAY = "rie_delay";
+    /**
+     * 维保任务执行中延时提醒的间隔时长，单位为秒
+     */
+    String RIE_PERIOD = "rie_period";
+    /**
+     * 维保任务执行中延时提醒的响铃时长，单位为秒
+     */
+    String RIE_RING_DURATION = "rie_ring_duration";
 }
