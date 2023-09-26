@@ -526,4 +526,20 @@ public interface SysParamCodeConstant {
      * 	巡视、检修标准是否关联多个设备分类
      */
     String MULTIPLE_DEVICE_TYPES = "multiple_device_types";
+    /**
+     * 维保任务执行中延时提醒
+     */
+    String REPAIR_IN_EXECUTION_REMIND = "repair_in_execution_remind";
+    /**
+     * 维保任务执行中延时提醒的初始延时时长，单位为秒
+     */
+    String RIE_DELAY = "rie_delay";
+    /**
+     * 维保任务执行中延时提醒的间隔时长，单位为秒
+     */
+    String RIE_PERIOD = "rie_period";
+    /**
+     * 维保任务执行中延时提醒的响铃时长，单位为秒
+     */
+    String RIE_RING_DURATION = "rie_ring_duration";
 }
