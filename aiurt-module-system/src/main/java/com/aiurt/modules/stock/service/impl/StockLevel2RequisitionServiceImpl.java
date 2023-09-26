@@ -15,6 +15,7 @@ import com.aiurt.modules.flow.dto.TaskCompleteDTO;
 import com.aiurt.modules.material.constant.MaterialRequisitionConstant;
 import com.aiurt.modules.material.entity.MaterialRequisition;
 import com.aiurt.modules.material.entity.MaterialRequisitionDetail;
+import com.aiurt.modules.material.mapper.MaterialRequisitionDetailMapper;
 import com.aiurt.modules.material.service.IMaterialRequisitionDetailService;
 import com.aiurt.modules.material.service.IMaterialRequisitionService;
 import com.aiurt.modules.stock.dto.StockLevel2RequisitionDetailDTO;
@@ -54,6 +55,8 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
 
     @Autowired
     private IMaterialRequisitionService materialRequisitionService;
+    @Autowired
+    private MaterialRequisitionDetailMapper materialRequisitionDetailMapper;
     @Autowired
     private IMaterialRequisitionDetailService materialRequisitionDetailService;
     @Autowired
@@ -181,6 +184,8 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
             case 4:
                 // 审领人确认
                 updateWrapper.set(MaterialRequisition::getStatus, MaterialRequisitionConstant.STATUS_COMPLETED);
+                // 将申领单的物资清单中，将已入库数量改成申请数量
+                materialRequisitionDetailMapper.updateActualNumByMaterialRequisitionId(id);
                 // 自动生成一条已确认的入库记录，并修改库存
                 try {
                     stockInOrderLevel2Service.addCompleteOrderFromRequisition(id);
