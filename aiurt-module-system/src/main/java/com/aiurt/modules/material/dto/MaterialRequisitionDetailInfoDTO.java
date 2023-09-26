@@ -39,6 +39,9 @@ public class MaterialRequisitionDetailInfoDTO extends DictEntity implements Seri
     @ApiModelProperty(value = "单位")
     @Dict(dicCode = "materian_unit")
     private String unit;
+    /**单位翻译*/
+    @ApiModelProperty(value = "单位翻译")
+    private String unitName;
     /**参考单价*/
     @ApiModelProperty(value = "参考单价")
     private BigDecimal price;
