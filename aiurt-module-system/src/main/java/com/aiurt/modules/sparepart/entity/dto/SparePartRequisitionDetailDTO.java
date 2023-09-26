@@ -45,5 +45,7 @@ public class SparePartRequisitionDetailDTO implements Serializable {
 	/**备注*/
     @ApiModelProperty(value = "备注")
     private String remarks;
-
+    /**可用量*/
+    @ApiModelProperty(value = "可使用数量")
+    private Integer availableNum;
 }

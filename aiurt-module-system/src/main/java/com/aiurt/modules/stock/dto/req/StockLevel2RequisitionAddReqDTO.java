@@ -85,4 +85,11 @@ public class StockLevel2RequisitionAddReqDTO implements Serializable {
     @ApiModelProperty(value = "流程实例id")
     private String processInstanceId;
 
+    /**关联维修单*/
+    @ApiModelProperty(value = "关联维修单")
+    private java.lang.String faultRepairRecordId;
+
+    /**领料单来源*/
+    @ApiModelProperty(value = "领料单来源")
+    private java.lang.String materialRequisitionPid;
 }

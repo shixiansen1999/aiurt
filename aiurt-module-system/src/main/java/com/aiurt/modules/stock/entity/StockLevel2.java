@@ -104,7 +104,10 @@ public class StockLevel2 extends DictEntity {
 	@Excel(name = "库存数量")
     @ApiModelProperty(value = "数量")
 	private  Integer  num;
-
+	/**可用量*/
+	@Excel(name = "可使用数量", width = 15)
+	@ApiModelProperty(value = "可使用数量")
+	private Integer availableNum;
 	/**专业编码*/
 	@ApiModelProperty(value = "专业编码")
 	@Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")

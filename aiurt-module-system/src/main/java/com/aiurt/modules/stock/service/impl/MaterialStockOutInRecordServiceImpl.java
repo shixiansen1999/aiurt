@@ -3,6 +3,7 @@ package com.aiurt.modules.stock.service.impl;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.material.entity.MaterialRequisition;
@@ -16,8 +17,6 @@ import com.aiurt.modules.stock.mapper.MaterialStockOutInRecordMapper;
 import com.aiurt.modules.stock.mapper.StockInOrderLevel2Mapper;
 import com.aiurt.modules.stock.mapper.StockIncomingMaterialsMapper;
 import com.aiurt.modules.stock.service.IMaterialStockOutInRecordService;
-import com.aiurt.modules.stock.service.IStockInOrderLevel2Service;
-import com.aiurt.modules.stock.service.IStockIncomingMaterialsService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -67,7 +66,13 @@ public class MaterialStockOutInRecordServiceImpl extends ServiceImpl<MaterialSto
         DateTime endTime = searchEndTime != null ? DateUtil.endOfDay(searchEndTime) : null;
         queryWrapper.lambda().ge(searchBeginTime != null, MaterialStockOutInRecord::getConfirmTime, beginTime);
         queryWrapper.lambda().le(searchEndTime != null, MaterialStockOutInRecord::getConfirmTime, endTime);
+        //出入库类型查询
+        Integer materialRequisitionType = materialStockOutInRecordReqDTO.getMaterialRequisitionType();
+        Integer isOutIn = materialStockOutInRecordReqDTO.getIsOutIn();
+        queryWrapper.lambda().eq(ObjectUtil.isNotNull(materialRequisitionType), MaterialStockOutInRecord::getMaterialRequisitionType, materialRequisitionType);
+        queryWrapper.lambda().eq(ObjectUtil.isNotNull(isOutIn), MaterialStockOutInRecord::getIsOutIn, isOutIn);
 
+        queryWrapper.lambda().eq(MaterialStockOutInRecord::getDelFlag, CommonConstant.DEL_FLAG_0);
         this.page(page, queryWrapper);
 
         // 将实体类查询结果转化成响应DTO

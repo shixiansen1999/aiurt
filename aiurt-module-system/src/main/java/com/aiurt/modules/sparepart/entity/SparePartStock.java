@@ -48,9 +48,9 @@ public class SparePartStock implements Serializable {
     @ApiModelProperty(value = "库存总量")
     private Integer num;
     /**可用量*/
-    @Excel(name = "可用量", width = 15)
-    @ApiModelProperty(value = "可用量")
-    private Integer usableNum;
+    @Excel(name = "可使用数量", width = 15)
+    @ApiModelProperty(value = "可使用数量")
+    private Integer availableNum;
 	/**库存中的全新数量*/
     @Excel(name = "库存中的全新数量", width = 15)
     @ApiModelProperty(value = "库存中的全新数量")
