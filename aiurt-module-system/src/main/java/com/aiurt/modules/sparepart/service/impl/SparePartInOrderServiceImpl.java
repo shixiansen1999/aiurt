@@ -7,6 +7,7 @@ import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -106,6 +107,9 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         if(!user.getRoleCodes().contains("admin")&&departModels.size()!=0){
             List<String> orgCodes = departModels.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
             sparePartInOrder.setOrgCodes(orgCodes);
+        }
+        if (ObjectUtil.isNotNull(sparePartInOrder.getEndTime())) {
+            sparePartInOrder.setEndTime(DateUtil.endOfDay(sparePartInOrder.getEndTime()));
         }
          return sparePartInOrderMapper.readAll(page,sparePartInOrder);
     }
