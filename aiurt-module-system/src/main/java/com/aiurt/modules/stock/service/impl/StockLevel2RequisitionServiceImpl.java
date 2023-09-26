@@ -235,7 +235,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
         queryWrapper.lambda().ge(searchBeginTime != null, MaterialRequisition::getApplyTime, beginTime);
         queryWrapper.lambda().le(searchEndTime != null, MaterialRequisition::getApplyTime, endTime);
         // 排序
-        queryWrapper.lambda().orderByDesc(MaterialRequisition::getPlanApplyTime).orderByDesc(MaterialRequisition::getId);
+        queryWrapper.lambda().orderByDesc(MaterialRequisition::getApplyTime).orderByDesc(MaterialRequisition::getId);
 
         materialRequisitionService.page(page, queryWrapper);
 

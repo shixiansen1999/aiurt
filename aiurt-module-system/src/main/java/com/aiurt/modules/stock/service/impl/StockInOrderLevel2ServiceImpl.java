@@ -220,8 +220,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		stockInOrderLevel2.setOrgCode(requisitionInfoDTO.getSysOrgCode());
 		stockInOrderLevel2.setEntryTime(new Date());
 		stockInOrderLevel2.setUserId(requisitionInfoDTO.getApplyUserId());
-		// 直接生成的已确认的入库单
-		stockInOrderLevel2.setStatus("3");
+		// 直接生成的已提交的入库单
+		stockInOrderLevel2.setStatus("2");
 		stockInOrderLevel2.setMaterialRequisitionId(requisitionInfoDTO.getId());
 		// 入库类型：普通入库
 		stockInOrderLevel2.setInType(3);
