@@ -115,4 +115,13 @@ public class TaskInfoDTO {
     private Boolean isRemind = false;
 
     private String businessKey;
+
+    @ApiModelProperty("加签")
+    private Boolean isAddMulti = false;
+
+    @ApiModelProperty("减签")
+    private Boolean isReduceMulti = false;
+
+    @ApiModelProperty("当前节点参与人")
+    private String userName;
 }

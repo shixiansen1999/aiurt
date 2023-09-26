@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.common.dto.DepartUserTreeDTO;
 import com.aiurt.modules.common.dto.DeviceDTO;
 import com.aiurt.modules.common.entity.SelectDeviceType;
 import com.aiurt.modules.common.entity.SelectTable;
@@ -458,24 +459,26 @@ public class CommonCtroller {
 
     @GetMapping("/sysuser/queryDepartUserTree")
     @ApiOperation("根据机构人员树")
-    public Result<List<SelectTable>> queryDepartUserTree(@RequestParam(value = "majorId",required = false) String majorId,
-                                                         @RequestParam(value = "mark",required = false) String mark,
-                                                         @RequestParam(value = "username", required = false) String username,
-                                                         @RequestParam(value = "values", required = false) List<String> values) {
+    public Result<List<SelectTable>> queryDepartUserTree(DepartUserTreeDTO departUserTreeDTO) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> list = new ArrayList<>();
-        if(StrUtil.isNotBlank(mark)){
+        if(StrUtil.isNotBlank(departUserTreeDTO.getMark())){
             String orgId = sysUser.getOrgId();
             if (StrUtil.isNotBlank(orgId)){
                 list.add(orgId);
             }
         }
         String ignoreUserId = null;
-        if (StrUtil.isNotEmpty(username)) {
-            ignoreUserId = sysBaseApi.getUserByUserName(username);
-        }
+        if (StrUtil.isNotEmpty(departUserTreeDTO.getUsername())) {
+            List<String> userNameList = StrUtil.split(departUserTreeDTO.getUsername(), ',');
+            List<LoginUser> loginUserList = sysBaseApi.getLoginUserList(userNameList);
 
-        List<SelectTable> tables = commonService.queryDepartUserTree(list, ignoreUserId,majorId,null, values);
+            ignoreUserId = loginUserList.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+        }
+        List<String> values = departUserTreeDTO.getValues();
+        String majorId = departUserTreeDTO.getMajorId();
+        Boolean isSelectOrg = departUserTreeDTO.getIsSelectOrg();
+        List<SelectTable> tables = commonService.queryDepartUserTree(list, ignoreUserId, majorId,null, values, isSelectOrg);
         return Result.OK(tables);
 
 
@@ -485,7 +488,7 @@ public class CommonCtroller {
     @ApiOperation("筛选机构人员树")
     public Result<List<SelectTable>> filterDepartUserTree(@RequestParam(value = "majorId",required = false) String majorId,
                                                           @RequestParam(value = "keys",required = false) List<String> keys) {
-        List<SelectTable> tables = commonService.queryDepartUserTree(null, null,majorId,keys, null);
+        List<SelectTable> tables = commonService.queryDepartUserTree(null, null,majorId,keys, null, false);
         return Result.OK(tables);
     }
 

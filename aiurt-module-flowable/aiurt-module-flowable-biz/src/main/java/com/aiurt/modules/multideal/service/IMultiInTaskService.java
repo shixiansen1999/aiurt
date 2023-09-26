@@ -1,6 +1,10 @@
 package com.aiurt.modules.multideal.service;
 
+import com.aiurt.modules.flow.dto.ProcessParticipantsInfoDTO;
+import com.aiurt.modules.multideal.dto.AddReduceMultiInstanceDTO;
 import org.flowable.task.api.Task;
+
+import java.util.List;
 
 /**
  * @author fgw
@@ -40,4 +44,23 @@ public interface IMultiInTaskService {
      * @return
      */
     Boolean isCompleteTask(Task task);
+
+    /**
+     * 加签
+     * @param addReduceMultiInstanceDTO
+     */
+    void addMultiInstance(AddReduceMultiInstanceDTO addReduceMultiInstanceDTO);
+
+    /**
+     * 减签
+     * @param addReduceMultiInstanceDTO
+     */
+    void reduceMultiInstance(AddReduceMultiInstanceDTO addReduceMultiInstanceDTO);
+
+    /**
+     * 查询减签的人员信息
+     * @param taskId
+     * @return
+     */
+    List<ProcessParticipantsInfoDTO> getReduceMultiUser(String taskId);
 }

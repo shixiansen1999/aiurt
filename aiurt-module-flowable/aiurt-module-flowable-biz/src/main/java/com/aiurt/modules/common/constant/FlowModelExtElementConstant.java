@@ -124,4 +124,9 @@ public interface FlowModelExtElementConstant {
      *
      */
     String EXT_RULE = "rule";
+
+    /**
+     * 加减签
+     */
+    String EXT_ADD_MULTI = "addMulti";
 }

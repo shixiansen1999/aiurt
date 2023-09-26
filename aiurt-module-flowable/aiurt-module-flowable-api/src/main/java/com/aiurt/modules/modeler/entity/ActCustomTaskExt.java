@@ -81,5 +81,8 @@ public class ActCustomTaskExt implements Serializable {
     @TableField(typeHandler = JacksonTypeHandler.class)
     private JSONArray formFieldConfig;
 
+    @ApiModelProperty(value = "是否允许加减签")
+    private Integer isAddMulti;
+
 
 }

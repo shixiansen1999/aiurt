@@ -3,6 +3,7 @@ import java.util.Date;
 
 import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
 
+import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.modeler.entity.*;
 import com.aiurt.modules.modeler.service.IActCustomModelExtService;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
@@ -585,23 +586,25 @@ public class FlowApiServiceImpl implements FlowApiService {
         boolean isOwnerTask = this.isAssigneeOrCandidate(task);
         // 本人任务未结束，不显示催办，提醒功能按钮
         if (Objects.isNull(endTime) && isOwnerTask) {
-            if (Objects.nonNull(flowTaskExt) && StrUtil.isNotBlank(flowTaskExt.getOperationListJson())) {
-                List<ActOperationEntity> objectList = JSON.parseArray(flowTaskExt.getOperationListJson(), ActOperationEntity.class);
-                // 过滤，只有驳回后才能取消
-                boolean back = flowElementUtil.isBackToFirstTask(processDefinitionId, taskDefinitionKey, processInstanceId);
-                if (!back) {
-                    objectList = objectList.stream().filter(entity -> !StrUtil.equalsIgnoreCase(entity.getType(), FlowApprovalType.CANCEL)).collect(Collectors.toList());
-                }
-
-                // 排序
-                objectList.stream().forEach(entity -> {
-                    Integer o = entity.getShowOrder();
-                    if (Objects.isNull(o)) {
-                        entity.setShowOrder(0);
+            if (Objects.nonNull(flowTaskExt)) {
+                if (StrUtil.isNotBlank(flowTaskExt.getOperationListJson())) {
+                    List<ActOperationEntity> objectList = JSON.parseArray(flowTaskExt.getOperationListJson(), ActOperationEntity.class);
+                    // 过滤，只有驳回后才能取消
+                    boolean back = flowElementUtil.isBackToFirstTask(processDefinitionId, taskDefinitionKey, processInstanceId);
+                    if (!back) {
+                        objectList = objectList.stream().filter(entity -> !StrUtil.equalsIgnoreCase(entity.getType(), FlowApprovalType.CANCEL)).collect(Collectors.toList());
                     }
-                });
-                objectList = objectList.stream().sorted(Comparator.comparing(ActOperationEntity::getShowOrder)).collect(Collectors.toList());
-                taskInfoDTO.setOperationList(objectList);
+
+                    // 排序
+                    objectList.stream().forEach(entity -> {
+                        Integer o = entity.getShowOrder();
+                        if (Objects.isNull(o)) {
+                            entity.setShowOrder(0);
+                        }
+                    });
+                    objectList = objectList.stream().sorted(Comparator.comparing(ActOperationEntity::getShowOrder)).collect(Collectors.toList());
+                    taskInfoDTO.setOperationList(objectList);
+                }
 
                 String formJson = flowTaskExt.getFormJson();
                 if (StrUtil.isNotBlank(formJson)) {
@@ -629,6 +632,17 @@ public class FlowApiServiceImpl implements FlowApiService {
                 if(Objects.nonNull(formFieldConfig)){
                     taskInfoDTO.setFieldList(formFieldConfig);
                 }
+
+                // 加减签任务
+                int isAddMulti = Optional.ofNullable(flowTaskExt.getIsAddMulti()).orElse(0);
+                // 判断是否可以加签
+                if (isAddMulti == 1) {
+                    taskInfoDTO.setIsAddMulti(true);
+                    List<String> addAssigneeVariables = taskService.getVariable(taskId, FlowVariableConstant.ADD_ASSIGNEE_LIST + taskDefinitionKey, List.class);
+                    if (CollUtil.isNotEmpty(addAssigneeVariables)) {
+                        taskInfoDTO.setIsReduceMulti(true);
+                    }
+                }
             }
         } else {
             String startUserId = historicProcessInstance.getStartUserId();
@@ -647,6 +661,13 @@ public class FlowApiServiceImpl implements FlowApiService {
         ActCustomBusinessData actCustomBusinessData = businessDataService.queryOne(processInstanceId, taskId, taskDefinitionKey);
         if (Objects.nonNull(actCustomBusinessData)) {
             taskInfoDTO.setBusData(actCustomBusinessData.getData());
+        }
+        if (Objects.isNull(task.getEndTime())) {
+            String variableName = FlowVariableConstant.ASSIGNEE_LIST + task.getTaskDefinitionKey();
+            List userNameList = taskService.getVariable(taskId, variableName, List.class);
+            if (CollUtil.isNotEmpty(userNameList)) {
+                taskInfoDTO.setUserName(StrUtil.join(",", userNameList));
+            }
         }
 
         taskInfoDTO.setTaskKey(taskDefinitionKey);

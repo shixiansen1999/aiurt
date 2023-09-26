@@ -1,25 +1,48 @@
 package com.aiurt.modules.multideal.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.common.enums.MultiApprovalRuleEnum;
+import com.aiurt.modules.flow.constants.FlowApprovalType;
+import com.aiurt.modules.flow.dto.ProcessParticipantsInfoDTO;
+import com.aiurt.modules.flow.entity.ActCustomTaskComment;
+import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
+import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
+import com.aiurt.modules.multideal.dto.AddReduceMultiInstanceDTO;
+import com.aiurt.modules.multideal.entity.ActCustomMultiRecord;
+import com.aiurt.modules.multideal.service.IActCustomMultiRecordService;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
 import com.aiurt.modules.multideal.service.IMultiInstanceUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
+import org.flowable.bpmn.model.FlowElement;
+import org.flowable.bpmn.model.MultiInstanceLoopCharacteristics;
+import org.flowable.bpmn.model.UserTask;
+import org.flowable.engine.HistoryService;
+import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.task.api.Task;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysUserModel;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author fgw
@@ -39,6 +62,21 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
 
     @Autowired
     private TaskService taskService;
+
+    @Autowired
+    private FlowElementUtil flowElementUtil;
+
+    @Autowired
+    private IActCustomMultiRecordService multiRecordService;
+
+    @Autowired
+    private IActCustomTaskCommentService taskCommentService;
+
+    @Autowired
+    private HistoryService historyService;
+
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
 
 
     /**
@@ -149,6 +187,245 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
             flag = !areMultiInTask;
         }
         return flag;
+    }
+
+    /**
+     * 加签
+     *
+     * @param addReduceMultiInstanceDTO
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void addMultiInstance(AddReduceMultiInstanceDTO addReduceMultiInstanceDTO) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String reason = addReduceMultiInstanceDTO.getReason();
+        String taskId = addReduceMultiInstanceDTO.getTaskId();
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (Objects.isNull(task)) {
+            throw new AiurtBootException(AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getCode(), AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getMessage());
+        }
+        String taskDefinitionKey = task.getTaskDefinitionKey();
+        UserTask userTaskModel = (UserTask) flowElementUtil.getFlowElement(task.getProcessDefinitionId(), taskDefinitionKey);
+
+        MultiInstanceLoopCharacteristics loopCharacteristics = userTaskModel.getLoopCharacteristics();
+        if (Objects.isNull(loopCharacteristics)) {
+            return;
+        }
+        String elementVariable = loopCharacteristics.getElementVariable();
+        if (StrUtil.isBlank(elementVariable)) {
+            return;
+        }
+        String variableName = FlowVariableConstant.ASSIGNEE_LIST + taskDefinitionKey;
+        List<String> list = taskService.getVariable(taskId, variableName, List.class);
+        List<String> addAssigneeVariables = taskService.getVariable(taskId, FlowVariableConstant.ADD_ASSIGNEE_LIST + taskDefinitionKey, List.class);
+
+        List<String> userNameList = addReduceMultiInstanceDTO.getUserNameList();
+        if (CollUtil.isNotEmpty(list)) {
+            list.addAll(userNameList);
+        }
+        if (Objects.isNull(addAssigneeVariables)) {
+            addAssigneeVariables = userNameList;
+        }else {
+            addAssigneeVariables.addAll(userNameList);
+        }
+        //
+        Map<String, Object> executionVariables = new HashMap<>(4);
+        List<ActCustomMultiRecord> recordList = new ArrayList<>();
+        userNameList.stream().forEach(userName->{
+            // 设置局部变量, 并行实例必须采用该变量设置, 加签标识，否则去重
+            executionVariables.put(elementVariable, userName);
+            executionVariables.put("is_multi_assign_task", true);
+            // 执行
+            runtimeService.addMultiInstanceExecution(taskDefinitionKey, task.getProcessInstanceId(), executionVariables);
+            ActCustomMultiRecord build = ActCustomMultiRecord.builder()
+                    .delFlag(0)
+                    .executionId(task.getExecutionId())
+                    .processInstanceId(task.getProcessInstanceId())
+                    .taskId(taskId)
+                    .userName(task.getAssignee())
+                    .mutilUserName(userName)
+                    .nodeId(taskDefinitionKey)
+                    .reason(reason).build();
+            recordList.add(build);
+        });
+        // 重新设置多实例人员集合变量的列表值
+        taskService.setVariable(taskId, variableName, list);
+
+        // 设置加签的数据
+        taskService.setVariable(taskId, FlowVariableConstant.ADD_ASSIGNEE_LIST + taskDefinitionKey, addAssigneeVariables);
+
+        // 添加加签记录
+        multiRecordService.saveBatch(recordList);
+
+        // 加签记录
+        ActCustomTaskComment flowTaskComment = new ActCustomTaskComment();
+        flowTaskComment.fillWith(task);
+        flowTaskComment.setApprovalType(FlowApprovalType.ADD_MULTI);
+        flowTaskComment.setComment(reason);
+        flowTaskComment.setCreateRealname(loginUser.getRealname());
+        taskCommentService.getBaseMapper().insert(flowTaskComment);
+
+    }
+
+    /**
+     * 减签
+     *
+     * @param addReduceMultiInstanceDTO
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void reduceMultiInstance(AddReduceMultiInstanceDTO addReduceMultiInstanceDTO) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String reason = addReduceMultiInstanceDTO.getReason();
+        String taskId = addReduceMultiInstanceDTO.getTaskId();
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (Objects.isNull(task)) {
+            throw new AiurtBootException(AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getCode(), AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getMessage());
+        }
+        String taskDefinitionKey = task.getTaskDefinitionKey();
+        UserTask userTaskModel = (UserTask) flowElementUtil.getFlowElement(task.getProcessDefinitionId(), taskDefinitionKey);
+
+        MultiInstanceLoopCharacteristics loopCharacteristics = userTaskModel.getLoopCharacteristics();
+        if (Objects.isNull(loopCharacteristics)) {
+            return;
+        }
+
+        String elementVariable = loopCharacteristics.getElementVariable();
+        if (StrUtil.isBlank(elementVariable)) {
+            return;
+        }
+
+        List<String> addAssigneeVariables = taskService.getVariable(taskId, FlowVariableConstant.ADD_ASSIGNEE_LIST + taskDefinitionKey, List.class);
+        if (CollUtil.isEmpty(addAssigneeVariables)) {
+            return;
+        }
+
+
+        List<String> userNameList = addReduceMultiInstanceDTO.getUserNameList();
+        //  代办的任务
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefinitionKey).active().list();
+        // 删除的任务
+        List<Task> deleteTaskList = taskList.stream().filter(t -> userNameList.contains(t.getAssignee())).collect(Collectors.toList());
+
+        // 修改变量
+        String variableName = FlowVariableConstant.ASSIGNEE_LIST + taskDefinitionKey;
+        List<String> assigneeVariables = taskService.getVariable(taskId, variableName, List.class);
+
+        if (CollUtil.isNotEmpty(assigneeVariables)) {
+            assigneeVariables.removeAll(userNameList);
+        }
+        addAssigneeVariables.removeAll(userNameList);
+        // 重新设置多实例人员集合变量的列表值
+        taskService.setVariable(taskId, variableName, assigneeVariables);
+        taskService.setVariable(taskId,  FlowVariableConstant.ADD_ASSIGNEE_LIST + taskDefinitionKey, addAssigneeVariables);
+        deleteTaskList.stream().forEach(t->{
+            runtimeService.deleteMultiInstanceExecution(t.getExecutionId(), true);
+        });
+        // 6.4.2 是存在其他问题的
+        // 如果是串行多实例减签操作，针对 Flowable6.4.2 有BUG问题，做如下处理
+        if (userTaskModel.getLoopCharacteristics().isSequential()) {
+            Set<String> taskIds =
+                    taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(task.getTaskDefinitionKey())
+                            .list().stream().map(Task::getId).collect(Collectors.toSet());
+            taskIds.remove(task.getId());
+
+            // 部分控制变量需要修改值
+            Execution execution = runtimeService.createExecutionQuery().executionId(
+                    task.getExecutionId()).singleResult();
+            if (execution != null && CollUtil.isNotEmpty(assigneeVariables)) {
+                Map<String, Object> executionVariables = new HashMap<>(2);
+                executionVariables.put("nrOfInstances", assigneeVariables.size());
+                runtimeService.setVariables(execution.getParentId(), executionVariables);
+
+                //deleteExecutionById(form.getDeleteExecutionId());
+            }
+        }
+    }
+
+    /**
+     * 查询减签的人员信息
+     *
+     * @param taskId
+     * @return
+     */
+    @Override
+    public List<ProcessParticipantsInfoDTO> getReduceMultiUser(String taskId) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        // 只能放在中间变量中了， 提交的是否删除
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (Objects.isNull(task)) {
+            log.error("该任务已结束或者不存在taskId->{}", taskId);
+            return Collections.emptyList();
+        }
+        String taskDefinitionKey = task.getTaskDefinitionKey();
+        String variableName = FlowVariableConstant.ADD_ASSIGNEE_LIST + taskDefinitionKey;
+        List<String> list = taskService.getVariable(taskId, variableName, List.class);
+        if (CollUtil.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+        // 查询待办任务，删除,
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefinitionKey).list();
+
+        List<String> userAssigneeList = taskList.stream().map(Task::getAssignee).collect(Collectors.toList());
+        list.retainAll(userAssigneeList);
+        list.remove(loginUser.getUsername());
+        if (CollUtil.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+        List<ProcessParticipantsInfoDTO> resultList = new ArrayList<>();
+        ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
+        processParticipantsInfoDTO.setTitle(task.getName());
+        processParticipantsInfoDTO.setNodeId(task.getId());
+        processParticipantsInfoDTO.setOptions(new ArrayList<>());
+        buildUserParticipantsInfo(list, processParticipantsInfoDTO.getOptions());
+        resultList.add(processParticipantsInfoDTO);
+        return resultList;
+    }
+
+    /**
+     * 构建用户维度的流程参与者信息
+     *
+     * @param userNameStr 用户字符创
+     * @param result     结果列表，用于存储构建的参与者信息对象
+     */
+    private void buildUserParticipantsInfo(List<String> userNameStr, List<ProcessParticipantsInfoDTO> result) {
+        if(CollUtil.isEmpty(userNameStr)){
+            return;
+        }
+
+        List<LoginUser> loginUsers = sysBaseAPI.getLoginUserList(userNameStr);
+        if (CollUtil.isEmpty(loginUsers)) {
+            return;
+        }
+
+        List<SysUserModel> data = CollUtil.newArrayList();
+        for (LoginUser loginUser : loginUsers) {
+            SysUserModel sysUserModel = buildSysUserModel(loginUser);
+            if (ObjectUtil.isNotEmpty(sysUserModel)) {
+                data.add(sysUserModel);
+            }
+        }
+
+        if (CollUtil.isNotEmpty(data)) {
+            ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
+            processParticipantsInfoDTO.setTitle("用户");
+            processParticipantsInfoDTO.setData(data);
+            result.add(processParticipantsInfoDTO);
+        }
+    }
+
+    @NotNull
+    private SysUserModel buildSysUserModel(LoginUser loginUser) {
+        SysUserModel sysUserModel = new SysUserModel();
+        sysUserModel.setId(loginUser.getId());
+        sysUserModel.setKey(loginUser.getId());
+        sysUserModel.setLabel(loginUser.getRealname());
+        sysUserModel.setValue(loginUser.getUsername());
+        sysUserModel.setAvatar(loginUser.getAvatar());
+        sysUserModel.setOrgName(loginUser.getOrgName());
+        sysUserModel.setPostName(loginUser.getPostNames());
+        sysUserModel.setRoleName(loginUser.getRoleNames());
+        return sysUserModel;
     }
 
     /**

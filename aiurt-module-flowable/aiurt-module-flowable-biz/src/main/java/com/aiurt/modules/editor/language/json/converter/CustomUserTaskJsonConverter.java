@@ -240,6 +240,15 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             List<ExtensionElement> formPermissionConfig = extensionElements.get(FlowModelExtElementConstant.EXT_FIELD_LIST);
             buildJsonElement(propertiesNode, formPermissionConfig, FlowModelExtElementConstant.EXT_FIELD_LIST);
 
+            // 加减签
+            List<ExtensionElement> multiElementList = extensionElements.get(FlowModelExtElementConstant.EXT_ADD_MULTI);
+            if (CollUtil.isNotEmpty(multiElementList)) {
+                ExtensionElement extensionElement = multiElementList.get(0);
+                String value = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_VALUE);
+                ObjectNode objectNode = objectMapper.createObjectNode();
+                objectNode.put(FlowModelExtElementConstant.EXT_VALUE, value);
+                propertiesNode.set(FlowModelExtElementConstant.EXT_ADD_MULTI, objectNode);
+            }
         }
     }
 
@@ -359,6 +368,8 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.FORM_TASK_VARIABLES);
             // 表单字段在节点上的配置
             addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.FORM_FIELD_CONFIG, JsonConverterUtil.getProperty(FlowModelExtElementConstant.FORM_FIELD_CONFIG, elementNode));
+            // 加减签
+            addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_ADD_MULTI, JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_ADD_MULTI, elementNode));
         }
     }
 
