@@ -260,6 +260,8 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                 respDTO.setProcessInstanceId(flowData.getProcessInstanceId());
                 respDTO.setTaskId(flowData.getTaskId());
             }
+            // 当前登录人是否是申领人
+            respDTO.setLoginUserIsApplyUser(sysUser.getId().equalsIgnoreCase(respDTO.getApplyUserId()));
             return respDTO;
         }).collect(Collectors.toList());
         pageList.setRecords(respRecords);
