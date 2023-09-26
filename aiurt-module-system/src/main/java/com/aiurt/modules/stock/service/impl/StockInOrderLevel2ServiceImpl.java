@@ -259,12 +259,15 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 				String materialCode = stockIncomingMaterials.getMaterialCode();
 				//数量
 				Integer number = stockIncomingMaterials.getNumber();
+				// 库存结余
+				Integer balance;
 				StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>().eq("material_code",materialCode).eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
 				if(stockLevel2 != null){
 					Integer num = stockLevel2.getNum();
 					stockLevel2.setNum(num + number);
 					stockLevel2.setStockInTime(stockInTime);
 					stockLevel2Service.updateById(stockLevel2);
+					balance = num + number;
 				}else{
 					StockLevel2Info stockLevel2Info = iStockLevel2InfoService.getOne(new QueryWrapper<StockLevel2Info>().eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
 					String organizationId = stockLevel2Info.getOrganizationId();
@@ -280,7 +283,11 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 					stockLevel2new.setSystemCode(materialBase.getSystemCode());
 					stockLevel2new.setStockInTime(stockInTime);
 					stockLevel2Service.save(stockLevel2new);
+					balance = number;
 				}
+				// 更新库存结余
+				stockIncomingMaterials.setBalance(balance);
+
 				if(stockLevel2CheckList != null && stockLevel2CheckList.size()>0){
 					for(StockLevel2Check stockLevel2Check : stockLevel2CheckList){
 						String stockCheckCode = stockLevel2Check.getStockCheckCode();
@@ -308,6 +315,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 			}
 		}
 		boolean ok = this.updateById(stockInOrderLevel2);
+		// 更新库存结余
+		stockIncomingMaterialsService.updateBatchById(stockIncomingMaterialsList);
 		return ok;
 	}
 
