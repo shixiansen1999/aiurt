@@ -36,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -179,8 +180,13 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                 break;
             case 4:
                 // 审领人确认
-                stockInOrderLevel2Service.addCompleteOrderFromRequisition(id);
                 updateWrapper.set(MaterialRequisition::getStatus, MaterialRequisitionConstant.STATUS_COMPLETED);
+                // 自动生成一条已确认的入库记录，并修改库存
+                try {
+                    stockInOrderLevel2Service.addCompleteOrderFromRequisition(id);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
                 break;
             default:
                 return;
