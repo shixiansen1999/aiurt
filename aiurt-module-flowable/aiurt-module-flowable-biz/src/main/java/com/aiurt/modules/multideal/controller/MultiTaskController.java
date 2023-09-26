@@ -3,6 +3,7 @@ package com.aiurt.modules.multideal.controller;
 import com.aiurt.modules.flow.dto.ProcessParticipantsInfoDTO;
 import com.aiurt.modules.multideal.dto.AddReduceMultiInstanceDTO;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import java.util.List;
 /**
  * @author fgw
  */
+@Api(tags="加减签")
 @RestController
 @RequestMapping("/multi")
 public class MultiTaskController {
@@ -28,7 +30,7 @@ public class MultiTaskController {
     @PostMapping("/addMultiInstance")
     public Result<?> addMultiInstance(@RequestBody AddReduceMultiInstanceDTO addReduceMultiInstanceDTO) {
         multiInTaskService.addMultiInstance(addReduceMultiInstanceDTO);
-        return Result.OK();
+        return Result.OK("加签成功");
     }
 
 
@@ -41,7 +43,7 @@ public class MultiTaskController {
     @PostMapping("/reduceMultiInstance")
     public Result<?> reduceMultiInstance(@RequestBody AddReduceMultiInstanceDTO addReduceMultiInstanceDTO) {
         multiInTaskService.reduceMultiInstance(addReduceMultiInstanceDTO);
-        return Result.OK();
+        return Result.OK("减签成功");
     }
 
 

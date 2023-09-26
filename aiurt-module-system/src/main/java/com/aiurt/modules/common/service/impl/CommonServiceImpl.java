@@ -83,7 +83,7 @@ public class CommonServiceImpl implements ICommonService {
      * @return
      */
     @Override
-    public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId,String majorId,List<String> keys, List<String> values) {
+    public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId,String majorId,List<String> keys, List<String> values, Boolean isSelectOrg) {
         LambdaQueryWrapper<SysDepart> queryWrapper = new LambdaQueryWrapper<>();
         if (CollectionUtil.isNotEmpty(orgIds)) {
             queryWrapper.in(SysDepart::getId, orgIds);
@@ -96,6 +96,7 @@ public class CommonServiceImpl implements ICommonService {
             table.setLabel(entity.getDepartName());
             table.setTitle(entity.getDepartName());
             table.setIsOrg(true);
+            table.setSelectable(isSelectOrg);
             table.setKey(entity.getOrgCode());
             table.setParentValue(StrUtil.isBlank(entity.getParentId()) ? "-9999" : entity.getParentId());
             return table;

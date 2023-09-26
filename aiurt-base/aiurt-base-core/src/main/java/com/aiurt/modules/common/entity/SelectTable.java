@@ -85,6 +85,8 @@ public class SelectTable {
 
     private Boolean isLeaf;
 
+    private Boolean selectable = true;
+
     public void addChildren(SelectTable child) {
         if (children == null) {
             children = new ArrayList<SelectTable>();
