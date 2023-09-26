@@ -207,9 +207,12 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
      */
     public String startProcess(StockLevel2RequisitionAddReqDTO stockLevel2RequisitionAddReqDTO) {
         String id = stockLevel2RequisitionAddReqDTO.getId();
-        // 添加
         if (StrUtil.isEmpty(id)){
+            // 添加
             id = this.add(stockLevel2RequisitionAddReqDTO);
+        }else {
+            // 编辑
+            this.edit(stockLevel2RequisitionAddReqDTO);
         }
         return id;
     }
