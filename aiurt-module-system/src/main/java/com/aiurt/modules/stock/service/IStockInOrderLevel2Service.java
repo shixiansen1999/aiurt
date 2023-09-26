@@ -37,6 +37,7 @@ public interface IStockInOrderLevel2Service extends IService<StockInOrderLevel2>
     /**
      * 从申领单那里添加一条已完成的入库记录
      * @param requisitionId 申领单id
+     * @throws ParseException
      */
     void addCompleteOrderFromRequisition(String requisitionId) throws ParseException;
 

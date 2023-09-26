@@ -119,6 +119,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	@Autowired
 	private IMaterialRequisitionService materialRequisitionService;
 	@Autowired
+	private IMaterialStockOutInRecordService materialStockOutInRecordService;
+	@Autowired
 	@Value("${jeecg.path.errorExcelUpload}")
 	private String errorExcelUpload;
 
@@ -174,10 +176,11 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 			String materialsCode = detailInfoDTO.getMaterialsCode();
 
 			// 入库物资清单
+			// 库存结余
+			Integer balance;
 			StockIncomingMaterials stockIncomingMaterials = new StockIncomingMaterials();
 			stockIncomingMaterials.setMaterialCode(materialsCode);
 			stockIncomingMaterials.setNumber(applyNum);
-			stockIncomingMaterialsList.add(stockIncomingMaterials);
 
 			// 修改库存信息
 			StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>()
@@ -189,6 +192,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 				stockLevel2.setNum(num + applyNum);
 				stockLevel2.setStockInTime(now);
 				stockLevel2Service.updateById(stockLevel2);
+				balance = num + applyNum;
 			}else{
 				StockLevel2Info stockLevel2Info = iStockLevel2InfoService.getOne(new QueryWrapper<StockLevel2Info>()
 						.eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
@@ -203,14 +207,17 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 				stockLevel2new.setSystemCode(materialBase.getSystemCode());
 				stockLevel2new.setStockInTime(now);
 				stockLevel2Service.save(stockLevel2new);
+				balance = applyNum;
 			}
+			stockIncomingMaterials.setBalance(balance);
+			stockIncomingMaterialsList.add(stockIncomingMaterials);
 		}
 
 		// 3、添加一条已完成的入库单
 		// 新建一个StockInOrderLevel2对象并赋值入库单
 		StockInOrderLevel2 stockInOrderLevel2 = this.getInOrderCode();
 		stockInOrderLevel2.setWarehouseCode(requisitionInfoDTO.getCustodialWarehouseCode());
-		stockInOrderLevel2.setOrderCode(requisitionInfoDTO.getSysOrgCode());
+		stockInOrderLevel2.setOrgCode(requisitionInfoDTO.getSysOrgCode());
 		stockInOrderLevel2.setEntryTime(new Date());
 		stockInOrderLevel2.setUserId(requisitionInfoDTO.getApplyUserId());
 		// 直接生成的已确认的入库单
@@ -223,8 +230,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		stockIncomingMaterialsList.forEach(m->m.setInOrderCode(stockInOrderLevel2.getOrderCode()));
 		stockIncomingMaterialsService.saveBatch(stockIncomingMaterialsList);
 
-		// todo: 需要添加到台账
-
+		// 4、添加入库记录到出入库记录表
+		materialStockOutInRecordService.addInRecordFormLevel2(stockInOrderLevel2, stockIncomingMaterialsList);
 	}
 
 
