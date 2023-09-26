@@ -211,4 +211,20 @@ public class SparePartOutOrder implements Serializable {
     @ApiModelProperty("管理部门")
     @TableField(exist = false)
     private List<String> orgCodes;
+    @ApiModelProperty(value = "申领单号")
+    @TableField(exist = false)
+    private String materialRequisitionCode;
+    @ApiModelProperty(value = "根据出库单号查询详情")
+    @TableField(exist = false)
+    private String queryOrderCode;
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "时间过滤：开始时间")
+    @TableField(exist = false)
+    private Date beginTime;
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "时间过滤：结束时间")
+    @TableField(exist = false)
+    private Date endTime;
 }

@@ -14,6 +14,7 @@ import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.sparepart.entity.*;
@@ -674,5 +675,16 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         }
         errorMap.put("maplist", listMap);
         return errorMap;
+    }
+
+    @Override
+    public SparePartInOrder queryByOrderCode(String orderCode) {
+        SparePartInOrder inOrder = new SparePartInOrder();
+        inOrder.setQueryOrderCode(orderCode);
+        List<SparePartInOrder> list = sparePartInOrderMapper.readAll(inOrder);
+        if (CollUtil.isEmpty(list)) {
+            throw new AiurtBootException("未找到对应数据");
+        }
+        return list.get(0);
     }
 }

@@ -11,6 +11,7 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
@@ -127,6 +128,8 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
    @PostMapping(value = "/add")
    public Result<String> add(@RequestBody SparePartOutOrder sparePartOutOrder) {
        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+       String orderCode = CodeGenerateUtils.generateSingleCode("3CK", 5);
+       sparePartOutOrder.setOrderCode(orderCode);
        sparePartOutOrder.setApplyUserId(user.getUsername());
        sparePartOutOrder.setSysOrgCode(user.getOrgCode());
        sparePartOutOrderService.save(sparePartOutOrder);
@@ -289,4 +292,11 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
         return Result.OK(list);
     }
 
+    @AutoLog(value = "三级库出库管理-根据出库单号查询详情")
+    @ApiOperation(value = "三级库出库管理-根据出库单号查询详情")
+    @GetMapping(value ="/queryByOrderCode")
+    public Result<SparePartOutOrder> queryByOrderCode(String orderCode) {
+        SparePartOutOrder sparePartOutOrder = sparePartOutOrderService.queryByOrderCode(orderCode);
+        return Result.ok(sparePartOutOrder);
+    }
 }
