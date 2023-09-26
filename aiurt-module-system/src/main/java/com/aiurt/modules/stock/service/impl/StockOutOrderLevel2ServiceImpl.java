@@ -3,6 +3,7 @@ package com.aiurt.modules.stock.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
 import com.aiurt.modules.sparepart.entity.SparePartApplyMaterial;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
@@ -19,6 +20,7 @@ import com.aiurt.modules.system.service.ICsUserDepartService;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -166,6 +168,7 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 				sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_0);
 				sparePartInOrder.setOutOrderCode(orderCode);
 				sparePartInOrder.setApplyCode(sparePartApply.getCode());
+				sparePartInOrder.setOrderCode(CodeGenerateUtils.generateSingleCode("3RK", 5));
 				//全新数量等于入库数量
 				sparePartInOrder.setNewNum(sparePartInOrder.getNum());
 				iSparePartInOrderService.save(sparePartInOrder);
@@ -173,7 +176,17 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
                 StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>().eq("material_code",materialCode).eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
                 if(stockLevel2 != null){
                     Integer num = stockLevel2.getNum();
-                    stockLevel2.setNum(num - (null!=sparePartApplyMaterial.getActualNum()?sparePartApplyMaterial.getActualNum():1));
+					int balance = num - (null != sparePartApplyMaterial.getActualNum() ? sparePartApplyMaterial.getActualNum() : 1);
+					stockLevel2.setNum(balance);
+					stockLevel2Service.updateById(stockLevel2);
+					// 6.5 更改出库出库物资表的库存结余
+					LambdaUpdateWrapper<StockOutboundMaterials> stockOutboundMaterialsUpdateWrapper = new LambdaUpdateWrapper<>();
+					stockOutboundMaterialsUpdateWrapper.eq(StockOutboundMaterials::getDelFlag, CommonConstant.DEL_FLAG_0);
+					stockOutboundMaterialsUpdateWrapper.eq(StockOutboundMaterials::getOutOrderCode, stockOutOrderLevel2.getOrderCode());
+					stockOutboundMaterialsUpdateWrapper.eq(StockOutboundMaterials::getMaterialCode, materialCode);
+					stockOutboundMaterialsUpdateWrapper.eq(StockOutboundMaterials::getWarehouseCode, warehouseCode);
+					stockOutboundMaterialsUpdateWrapper.set(StockOutboundMaterials::getBalance, balance);
+					iStockOutboundMaterialsService.update(stockOutboundMaterialsUpdateWrapper);
                 }
                 //7. 如果存在盘点单，对盘点物资修改
                 if(stockLevel2CheckList != null && stockLevel2CheckList.size()>0){
