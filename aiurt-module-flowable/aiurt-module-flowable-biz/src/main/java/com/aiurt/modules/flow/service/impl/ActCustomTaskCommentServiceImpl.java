@@ -2,6 +2,7 @@ package com.aiurt.modules.flow.service.impl;
 
 
 import cn.hutool.core.collection.CollUtil;
+import com.aiurt.modules.flow.constants.FlowApprovalType;
 import com.aiurt.modules.flow.dto.FlowTaskCommentDTO;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.aiurt.modules.flow.mapper.ActCustomTaskCommentMapper;
@@ -61,7 +62,7 @@ public class ActCustomTaskCommentServiceImpl extends ServiceImpl<ActCustomTaskCo
             flowTaskCommentDTO.setTaskKey(actCustomTaskComment.getTaskKey());
             flowTaskCommentDTO.setTaskName(actCustomTaskComment.getTaskName());
             flowTaskCommentDTO.setApprovalType(actCustomTaskComment.getApprovalType());
-            // todo 类型名称
+            flowTaskCommentDTO.setApprovalTypeName(FlowApprovalType.DICT_MAP.get(actCustomTaskComment.getApprovalType()));
             flowTaskCommentDTO.setComment(actCustomTaskComment.getComment());
             flowTaskCommentDTO.setDelegateAssginee(actCustomTaskComment.getDelegateAssignee());
             flowTaskCommentDTO.setCustomBusinessData(actCustomTaskComment.getCustomBusinessData());
