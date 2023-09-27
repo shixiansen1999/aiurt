@@ -189,8 +189,11 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 					.eq("del_flag", CommonConstant.DEL_FLAG_0));
 			if(stockLevel2 != null){
 				Integer num = stockLevel2.getNum();
+				Integer availableNum = stockLevel2.getAvailableNum();
 				stockLevel2.setNum(num + applyNum);
 				stockLevel2.setStockInTime(now);
+				// 更新可用量
+				stockLevel2.setAvailableNum(availableNum + applyNum);
 				stockLevel2Service.updateById(stockLevel2);
 				balance = num + applyNum;
 			}else{
@@ -202,6 +205,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 				stockLevel2new.setBaseTypeCode(materialBase.getBaseTypeCodeCc());
 				stockLevel2new.setWarehouseCode(warehouseCode);
 				stockLevel2new.setNum(applyNum);
+				// 更新可用量
+				stockLevel2new.setAvailableNum(applyNum);
 				stockLevel2new.setOrgCode(stockLevel2Info.getOrgCode());
 				stockLevel2new.setMajorCode(materialBase.getMajorCode());
 				stockLevel2new.setSystemCode(materialBase.getSystemCode());
@@ -271,8 +276,12 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 				StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>().eq("material_code",materialCode).eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
 				if(stockLevel2 != null){
 					Integer num = stockLevel2.getNum();
+					// 可用量
+					Integer availableNum = stockLevel2.getAvailableNum();
 					stockLevel2.setNum(num + number);
 					stockLevel2.setStockInTime(stockInTime);
+					// 更新可用量
+					stockLevel2.setAvailableNum(availableNum + number);
 					stockLevel2Service.updateById(stockLevel2);
 					balance = num + number;
 				}else{
@@ -285,6 +294,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 					stockLevel2new.setBaseTypeCode(materialBase.getBaseTypeCodeCc());
 					stockLevel2new.setWarehouseCode(warehouseCode);
 					stockLevel2new.setNum(number);
+					// 更新可用量
+					stockLevel2new.setAvailableNum(number);
 					stockLevel2new.setOrgCode(sysDepart.getOrgCode());
 					stockLevel2new.setMajorCode(materialBase.getMajorCode());
 					stockLevel2new.setSystemCode(materialBase.getSystemCode());

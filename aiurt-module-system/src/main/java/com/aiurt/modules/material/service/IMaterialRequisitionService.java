@@ -28,4 +28,10 @@ public interface IMaterialRequisitionService extends IService<MaterialRequisitio
      * @return MaterialRequisitionInfoDTO 领料单详情的响应DTO
      */
     MaterialRequisitionInfoDTO getDetailById(String id);
+
+    /**
+     * 申领单-根据id删除
+     * @param id 申领单id
+     */
+    void deleteById(String id);
 }

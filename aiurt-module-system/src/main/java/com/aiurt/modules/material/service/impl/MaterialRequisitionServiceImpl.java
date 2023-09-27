@@ -130,4 +130,12 @@ public class MaterialRequisitionServiceImpl extends ServiceImpl<MaterialRequisit
 
         return materialRequisitionInfoDTO;
     }
+
+    @Override
+    public void deleteById(String id) {
+        this.removeById(id);
+        LambdaQueryWrapper<MaterialRequisitionDetail> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(MaterialRequisitionDetail::getMaterialRequisitionId, id);
+        materialRequisitionDetailMapper.delete(queryWrapper);
+    }
 }

@@ -13,10 +13,7 @@ import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @author : sbx
@@ -67,8 +64,22 @@ public class MaterialRequisitionController extends BaseController<MaterialRequis
     @AutoLog(value = "根据申领单id查询详情")
     @ApiOperation(value = "根据申领单id查询详情", notes = "根据申领单id查询详情")
     @GetMapping(value = "/getDetailById")
-    public Result<MaterialRequisitionInfoDTO> getDetailById(@RequestParam(name = "id")String id){
+    public Result<MaterialRequisitionInfoDTO> getDetailById(@RequestParam(name = "id") String id){
         MaterialRequisitionInfoDTO materialRequisitionInfoDTO = materialRequisitionService.getDetailById(id);
         return Result.ok(materialRequisitionInfoDTO);
+    }
+
+
+    /**
+     * 申领单-根据id删除
+     * @param id 申领单id
+     * @return Result<String> 返回删除成功的提示
+     */
+    @AutoLog(value = "申领单-根据id删除")
+    @ApiOperation(value="申领单-根据id删除", notes="申领单-根据id删除")
+    @DeleteMapping("/deleteById")
+    public Result<String> deleteById(@RequestParam(name = "id") String id){
+        materialRequisitionService.deleteById(id);
+        return Result.ok("删除成功！");
     }
 }

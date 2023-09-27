@@ -33,9 +33,10 @@ public interface MaterialRequisitionConstant {
     Integer RETURN_IN = 1;
     Integer BORROW_IN = 2;
     Integer NORMAL_IN = 3;
-    Integer RETURN_OUT = 4;
-    Integer BORROW_OUT = 5;
-    Integer NORMAL_OUT = 6;
-    Integer RETURN_LIBRARY = 7;
+    Integer RETURN_LIBRARY = 4;
+    Integer RETURN_OUT = 5;
+    Integer BORROW_OUT = 6;
+    Integer NORMAL_OUT = 7;
+
 
 }
