@@ -324,6 +324,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		boolean ok = this.updateById(stockInOrderLevel2);
 		// 更新库存结余
 		stockIncomingMaterialsService.updateBatchById(stockIncomingMaterialsList);
+		// 添加入库单信息到出入库记录表
+		materialStockOutInRecordService.addInRecordOfLevel2(stockInOrderLevel2, stockIncomingMaterialsList);
 		return ok;
 	}
 

@@ -56,6 +56,8 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 	@Autowired
 	private IStockOutboundMaterialsService iStockOutboundMaterialsService;
 	@Autowired
+	private IMaterialStockOutInRecordService materialStockOutInRecordService;
+	@Autowired
 	private ISparePartApplyMaterialService iSparePartApplyMaterialService;
 	@Autowired
 	private ISparePartInOrderService iSparePartInOrderService;
@@ -208,6 +210,9 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 			}
 			iSparePartApplyMaterialService.updateBatchById(sparePartApplyMaterials);
 		}
+
+		// 添加二级库出库单信息到出入库记录表
+		materialStockOutInRecordService.addOutRecordOfLevel2(stockOutOrderLevel2.getId());
 	}
 
 

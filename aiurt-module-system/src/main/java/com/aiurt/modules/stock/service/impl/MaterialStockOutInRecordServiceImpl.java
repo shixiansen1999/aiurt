@@ -151,6 +151,7 @@ public class MaterialStockOutInRecordServiceImpl extends ServiceImpl<MaterialSto
         this.addOutRecordOfLevel2(stockOutOrderLevel2, stockOutboundMaterialsList);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void addOutRecordOfLevel2(StockOutOrderLevel2 stockOutOrderLevel2, List<StockOutboundMaterials> stockOutboundMaterialsList) {
         // 是否有申领单
