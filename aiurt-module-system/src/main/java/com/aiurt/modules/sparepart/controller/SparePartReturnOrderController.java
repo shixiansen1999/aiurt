@@ -3,21 +3,15 @@ package com.aiurt.modules.sparepart.controller;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
-import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
-import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
 import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
-import com.aiurt.modules.todo.dto.TodoDTO;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -41,7 +35,6 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,8 +52,6 @@ import java.util.stream.Collectors;
 public class SparePartReturnOrderController extends BaseController<SparePartReturnOrder, ISparePartReturnOrderService> {
 	@Autowired
 	private ISparePartReturnOrderService sparePartReturnOrderService;
-	@Autowired
-	private SparePartStockInfoMapper sparePartStockInfoMapper;
 	 @Autowired
 	 private ISysParamAPI iSysParamAPI;
 	 @Autowired
@@ -117,68 +108,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 	@ApiOperation(value="spare_part_return_order-添加", notes="spare_part_return_order-添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody SparePartReturnOrder sparePartReturnOrder) {
-		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(SparePartStockInfo::getWarehouseCode,sparePartReturnOrder.getMaterialCode());
-		wrapper.eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0);
-		SparePartStockInfo stockInfo = sparePartStockInfoMapper.selectOne(wrapper);
-		if(null!=stockInfo){
-			sparePartReturnOrder.setOrgId(stockInfo.getOrganizationId());
-		}
-		sparePartReturnOrder.setSysOrgCode(user.getOrgCode());
-		sparePartReturnOrder.setUserId(user.getUsername());
-		sparePartReturnOrderService.save(sparePartReturnOrder);
-
-
-		try {
-			//根据仓库编号获取仓库组织机构code
-			String orgCode = sysBaseApi.getDepartByWarehouseCode(sparePartReturnOrder.getWarehouseCode());
-			String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
-
-			//发送通知
-			MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件退库-确认" + DateUtil.today(), null);
-
-			//构建消息模板
-			HashMap<String, Object> map = new HashMap<>();
-			map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, sparePartReturnOrder.getId());
-			map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_BACK.getType());
-			map.put("materialCode",sparePartReturnOrder.getMaterialCode());
-			String materialName= sysBaseApi.getMaterialNameByCode(sparePartReturnOrder.getMaterialCode());
-			map.put("name",materialName);
-			map.put("num",sparePartReturnOrder.getNum());
-			String warehouseName= sysBaseApi.getWarehouseNameByCode(sparePartReturnOrder.getWarehouseCode());
-			map.put("warehouseName",warehouseName);
-			map.put("realName",user.getRealname());
-
-			messageDTO.setData(map);
-			//业务类型，消息类型，消息模板编码，摘要，发布内容
-			/*messageDTO.setTemplateCode(CommonConstant.SPAREPARTRETURN_SERVICE_NOTICE);
-			SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
-			messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-			messageDTO.setMsgAbstract("备件退库申请");
-			messageDTO.setPublishingContent("备件退库申请，请确认");
-			messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
-			sysBaseApi.sendTemplateMessage(messageDTO);*/
-			//发送待办
-			TodoDTO todoDTO = new TodoDTO();
-			todoDTO.setData(map);
-			SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
-			todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
-			todoDTO.setTitle("备件退库-确认" + DateUtil.today());
-			todoDTO.setMsgAbstract("备件退库申请");
-			todoDTO.setPublishingContent("备件退库申请，请确认");
-			todoDTO.setCurrentUserName(userName);
-			todoDTO.setBusinessKey(sparePartReturnOrder.getId());
-			todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_BACK.getType());
-			todoDTO.setCurrentUserName(userName);
-			todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_BACK.getType());
-			todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
-			todoDTO.setTemplateCode(CommonConstant.SPAREPARTRETURN_SERVICE_NOTICE);
-
-			isTodoBaseAPI.createTodoTask(todoDTO);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		sparePartReturnOrderService.add(sparePartReturnOrder);
 		return Result.OK("添加成功！");
 
 	}

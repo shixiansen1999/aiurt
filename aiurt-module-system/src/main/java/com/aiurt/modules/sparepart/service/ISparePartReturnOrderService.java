@@ -1,6 +1,5 @@
 package com.aiurt.modules.sparepart.service;
 
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -43,4 +42,11 @@ public interface ISparePartReturnOrderService extends IService<SparePartReturnOr
      * @param sparePartOutOrder
      */
     void updateOrder(SparePartOutOrder sparePartOutOrder);
+    /**
+     *   添加
+     *
+     * @param sparePartReturnOrder
+     * @return
+     */
+    void add(SparePartReturnOrder sparePartReturnOrder);
 }

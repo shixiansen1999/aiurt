@@ -59,4 +59,29 @@ public class MaterialRequisitionDetailInfoDTO extends DictEntity implements Seri
     /**规格&型号*/
     @ApiModelProperty(value = "规格&型号")
     private String specifications;
+    /**专业*/
+    @ApiModelProperty(value = "专业code")
+    private String majorCode;
+    /**专业名称*/
+    @ApiModelProperty(value = "专业名称")
+    private String majorName;
+    /**子系统*/
+    @ApiModelProperty(value = "子系统code")
+    private String systemCode;
+    /**子系统名称*/
+    @ApiModelProperty(value = "子系统名称")
+    private String systemName;
+    /**物资分类code*/
+    @ApiModelProperty(value = "物资分类code")
+    private String baseTypeCode;
+    /**物资分类名称*/
+    @ApiModelProperty(value = "物资分类名称")
+    private String baseTypeName;
+    /**物资类型*/
+    @ApiModelProperty(value = "物资类型")
+    private String type;
+    /**物资类型名称*/
+    @ApiModelProperty(value = "物资类型名称")
+    private String typeName;
+
 }

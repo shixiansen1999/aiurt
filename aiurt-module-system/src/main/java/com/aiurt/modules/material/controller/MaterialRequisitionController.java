@@ -38,9 +38,8 @@ public class MaterialRequisitionController extends BaseController<MaterialRequis
     @AutoLog(value = "根据申领单号查询详情")
     @ApiOperation(value = "根据申领单号查询详情", notes = "根据申领单号查询详情")
     @GetMapping(value = "/queryByCode")
-    public Result<MaterialRequisitionInfoDTO> queryByCode(@ApiParam(value = "申领单号", required = true) String code,
-                                                          @ApiParam("申领单类型：1维修领用，3三级库领用，2二级库领用") Integer requisitionType) {
-        MaterialRequisitionInfoDTO sparePartRequisitionDTO = materialRequisitionService.queryByCode(code, requisitionType);
+    public Result<MaterialRequisitionInfoDTO> queryByCode(@ApiParam(value = "申领单号", required = true) String code) {
+        MaterialRequisitionInfoDTO sparePartRequisitionDTO = materialRequisitionService.queryByCode(code);
         return Result.ok(sparePartRequisitionDTO);
     }
 
@@ -48,11 +47,10 @@ public class MaterialRequisitionController extends BaseController<MaterialRequis
     @ApiOperation(value = "根据申领单号查询领料单明细", notes = "根据申领单号查询领料单明细")
     @GetMapping(value = "/queryPageDetail")
     public Result<Page> queryPageDetail(@ApiParam(value = "申领单号", required = true) String code,
-                                        @ApiParam(value = "申领单类型：1维修领用，3三级库领用，2二级库领用", required = true) Integer requisitionType,
                                         @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
         Page<MaterialRequisitionDetailInfoDTO> page = new Page<>(pageNo, pageSize);
-        materialRequisitionService.queryDetailList(page, code, requisitionType);
+        materialRequisitionService.queryPageDetail(page, code);
         return Result.ok(page);
     }
 

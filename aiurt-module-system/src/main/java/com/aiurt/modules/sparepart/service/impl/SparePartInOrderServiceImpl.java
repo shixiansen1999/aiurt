@@ -17,8 +17,14 @@ import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.entity.MaterialRequisitionDetail;
 import com.aiurt.modules.material.service.IMaterialBaseService;
-import com.aiurt.modules.sparepart.entity.*;
+import com.aiurt.modules.material.service.IMaterialRequisitionDetailService;
+import com.aiurt.modules.material.service.IMaterialRequisitionService;
+import com.aiurt.modules.sparepart.entity.SparePartInOrder;
+import com.aiurt.modules.sparepart.entity.SparePartStock;
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
+import com.aiurt.modules.sparepart.entity.SparePartStockNum;
 import com.aiurt.modules.sparepart.entity.dto.SparePartInOrderImportExcelDTO;
 import com.aiurt.modules.sparepart.mapper.SparePartApplyMaterialMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartInOrderMapper;
@@ -90,6 +96,10 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
     private ISparePartStockInfoService sparePartStockInfoService;
     @Autowired
     private SparePartStockNumMapper sparePartStockNumMapper;
+    @Autowired
+    private IMaterialRequisitionService materialRequisitionService;
+    @Autowired
+    private IMaterialRequisitionDetailService materialRequisitionDetailService;
     /**
      * 查询列表
      * @param page
@@ -128,10 +138,12 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         partInOrder.setConfirmStatus(sparePartInOrder.getConfirmStatus());
         sparePartInOrderMapper.updateById(partInOrder);
         // 2.回填申领单
-        SparePartApplyMaterial material = sparePartApplyMaterialMapper.selectOne(new LambdaQueryWrapper<SparePartApplyMaterial>().eq(SparePartApplyMaterial::getMaterialCode,sparePartInOrder.getMaterialCode()).eq(SparePartApplyMaterial::getApplyCode,sparePartInOrder.getApplyCode()));
-        if(null!=material){
-            material.setActualNum(sparePartInOrder.getNum());
-            sparePartApplyMaterialMapper.updateById(material);
+        MaterialRequisitionDetail detail = materialRequisitionDetailService.getOne(new LambdaQueryWrapper<MaterialRequisitionDetail>()
+                .eq(MaterialRequisitionDetail::getMaterialsCode, sparePartInOrder.getMaterialCode())
+                .eq(MaterialRequisitionDetail::getMaterialRequisitionId, sparePartInOrder.getMaterialRequisitionId()));
+        if(null!=detail){
+            detail.setActualNum(sparePartInOrder.getNum());
+            materialRequisitionDetailService.updateById(detail);
         }
         // 3.更新备件库存数据（原库存数+入库的数量）
         //查询要入库的物资，备件库存中是否存在
