@@ -37,4 +37,12 @@ public interface StockLevel2Mapper extends BaseMapper<StockLevel2> {
      * @return
      */
     List<StockLevel2> exportXls(@Param("condition") StockLevel2 stockLevel2,@Param("ids") List<String> ids);
+
+    /**
+     * 获取指定二级库仓库的物资的可使用数量
+     * @param materialsCode  物资编码
+     * @param leve2WarehouseCode 二级库变密码
+     * @return
+     */
+    Integer getAvailableNum(@Param("materialsCode")String materialsCode, @Param("leve2WarehouseCode")String leve2WarehouseCode);
 }

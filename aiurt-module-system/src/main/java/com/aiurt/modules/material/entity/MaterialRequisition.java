@@ -52,6 +52,9 @@ public class MaterialRequisition extends BaseEntity implements Serializable {
     /**申领仓库编号*/
     @ApiModelProperty(value = "申领仓库编号")
     private java.lang.String applyWarehouseCode;
+    /**申领二级库仓库编号*/
+    @ApiModelProperty(value = "申领二级库仓库编号")
+    private java.lang.String leve2WarehouseCode;
     /**保管仓库编号*/
     @ApiModelProperty(value = "保管仓库编号")
     private java.lang.String custodialWarehouseCode;
@@ -70,6 +73,9 @@ public class MaterialRequisition extends BaseEntity implements Serializable {
     /**关联维修单*/
     @ApiModelProperty(value = "关联维修单")
     private java.lang.String faultRepairRecordId;
+    /**领料单来源*/
+    @ApiModelProperty(value = "领料单来源")
+    private java.lang.String materialRequisitionPid;
     /**用途*/
     @ApiModelProperty(value = "用途")
     private java.lang.String useTo;

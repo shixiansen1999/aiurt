@@ -9,6 +9,8 @@ import com.aiurt.modules.material.constant.MaterialRequisitionConstant;
 import com.aiurt.modules.material.dto.MaterialRequisitionDetailInfoDTO;
 import com.aiurt.modules.material.dto.MaterialRequisitionInfoDTO;
 import com.aiurt.modules.material.entity.MaterialRequisition;
+import com.aiurt.modules.material.entity.MaterialRequisitionDetail;
+import com.aiurt.modules.material.mapper.MaterialRequisitionDetailMapper;
 import com.aiurt.modules.material.mapper.MaterialRequisitionMapper;
 import com.aiurt.modules.material.service.IMaterialRequisitionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -16,6 +18,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +39,9 @@ public class MaterialRequisitionServiceImpl extends ServiceImpl<MaterialRequisit
     @Autowired
     private MaterialRequisitionMapper materialRequisitionMapper;
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
+    private MaterialRequisitionDetailMapper materialRequisitionDetailMapper;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
 
     @Override
     public MaterialRequisitionInfoDTO queryByCode(String code, Integer requisitionType) {
@@ -47,8 +52,8 @@ public class MaterialRequisitionServiceImpl extends ServiceImpl<MaterialRequisit
         if (ObjectUtil.isNull(materialRequisition)) {
             throw new AiurtBootException("未找到对应领料单");
         }
-        List<DictModel> stockLevel2InfoList = sysBaseAPI.queryTableDictItemsByCode("stock_level2_info", "warehouse_name", "warehouse_code");
-        List<DictModel> sparePartStockList = sysBaseAPI.queryTableDictItemsByCode("spare_part_stock_info", "warehouse_name", "warehouse_code");
+        List<DictModel> stockLevel2InfoList = sysBaseApi.queryTableDictItemsByCode("stock_level2_info", "warehouse_name", "warehouse_code");
+        List<DictModel> sparePartStockList = sysBaseApi.queryTableDictItemsByCode("spare_part_stock_info", "warehouse_name", "warehouse_code");
         Map<String, String> map2 = new HashMap<>(1);
         Map<String, String> map3 = new HashMap<>(1);
         if (CollUtil.isNotEmpty(stockLevel2InfoList)) {
@@ -79,5 +84,50 @@ public class MaterialRequisitionServiceImpl extends ServiceImpl<MaterialRequisit
     @Override
     public void queryDetailList(Page<MaterialRequisitionDetailInfoDTO> page, String code, Integer requisitionType) {
         materialRequisitionMapper.queryDetailByRequisitionId(page, code, requisitionType);
+    }
+
+    @Override
+    public MaterialRequisitionInfoDTO getDetailById(String id) {
+        MaterialRequisition materialRequisition = this.getById(id);
+        Integer requisitionType = materialRequisition.getMaterialRequisitionType();
+        // 二级库仓库
+        Map<String, String> level2Map = sysBaseApi.queryTableDictItemsByCode("stock_level2_info", "warehouse_name", "warehouse_code")
+                .stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        // 三级库仓库
+        Map<String, String> level3Map = sysBaseApi.queryTableDictItemsByCode("spare_part_stock_info", "warehouse_name", "warehouse_code")
+                .stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        MaterialRequisitionInfoDTO materialRequisitionInfoDTO = new MaterialRequisitionInfoDTO();
+        BeanUtil.copyProperties(materialRequisition, materialRequisitionInfoDTO);
+        //翻译仓库名称
+        if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(requisitionType)) {
+            //维修申领
+            materialRequisitionInfoDTO.setApplyWarehouseName(level3Map.get(materialRequisition.getApplyWarehouseCode()));
+        }else if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL2.equals(requisitionType)) {
+            //二级库领用
+            materialRequisitionInfoDTO.setCustodialWarehouseName(level2Map.get(materialRequisition.getCustodialWarehouseCode()));
+        } else if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3.equals(requisitionType)) {
+            //三级库领用
+            materialRequisitionInfoDTO.setApplyWarehouseName(level2Map.get(materialRequisition.getApplyWarehouseCode()));
+            materialRequisitionInfoDTO.setCustodialWarehouseName(level3Map.get(materialRequisition.getCustodialWarehouseCode()));
+        }
+
+        // 获取物资明细
+        // 物资明细需要单位翻译
+        Map<String, String> unitMap = sysBaseApi.queryDictItemsByCode("materian_unit").stream()
+                .collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        LambdaQueryWrapper<MaterialRequisitionDetail> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
+        queryWrapper.eq(MaterialRequisitionDetail::getMaterialRequisitionId, id);
+        List<MaterialRequisitionDetail> materialRequisitionDetailList = materialRequisitionDetailMapper.selectList(queryWrapper);
+        // 物资明细转化从对应DTO，并翻译单位
+        List<MaterialRequisitionDetailInfoDTO> detailInfoDTOList = materialRequisitionDetailList.stream().map(detail -> {
+            MaterialRequisitionDetailInfoDTO detailInfoDTO = new MaterialRequisitionDetailInfoDTO();
+            BeanUtils.copyProperties(detail, detailInfoDTO);
+            detailInfoDTO.setUnitName(unitMap.get(detailInfoDTO.getUnit()));
+            return detailInfoDTO;
+        }).collect(Collectors.toList());
+        materialRequisitionInfoDTO.setMaterialRequisitionDetailInfoDTOList(detailInfoDTOList);
+
+        return materialRequisitionInfoDTO;
     }
 }

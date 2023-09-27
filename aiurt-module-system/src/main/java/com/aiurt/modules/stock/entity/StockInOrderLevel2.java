@@ -96,8 +96,7 @@ public class StockInOrderLevel2 extends DictEntity {
 	@ApiModelProperty(value = "入库类型")
 	@Dict(dicCode = "stock_out_in_type")
 	private Integer inType;
-	@ApiModelProperty(value = "库存结余")
-	private Integer balance;
+
 	/**备注*/
 	@Excel(name = "备注")
 	@ApiModelProperty(value = "备注")
