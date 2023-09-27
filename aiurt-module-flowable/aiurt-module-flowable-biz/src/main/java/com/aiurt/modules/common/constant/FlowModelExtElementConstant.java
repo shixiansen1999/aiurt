@@ -114,4 +114,19 @@ public interface FlowModelExtElementConstant {
      * 撤回节点属性
      */
     String EXT_RECALL_NODE = "node";
+
+    /**
+     * 超时提醒
+     */
+    String EXT_TIMEOUT_REMINDER = "timeoutReminder";
+
+    /**
+     * 超时提醒配置
+     */
+    String EXT_LIST= "list";
+
+    /**
+     * 超时提醒配置
+     */
+    String EXT_TIMEOUT_REMIND_CONFIG = "formPermissionConfig";
 }

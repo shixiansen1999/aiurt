@@ -80,6 +80,19 @@ public class CustomBpmnJsonConverter extends BpmnJsonConverter {
             objectNode.set(FlowModelExtElementConstant.EXT_RECALL_NODE, jsonNode);
             customPropertiesNode.putIfAbsent(FlowModelExtElementConstant.EXT_RECALL, objectNode);
         }
+        //超时审批提醒
+        List<ExtensionElement> timeoutExtElementList = extensionElements.get(FlowModelExtElementConstant.EXT_TIMEOUT_REMINDER);
+        if (CollUtil.isNotEmpty(timeoutExtElementList)) {
+            ExtensionElement timeoutExtElement = timeoutExtElementList.get(0);
+            String value = timeoutExtElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_VALUE);
+            String timeoutRemindNode = timeoutExtElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_LIST);
+            JsonNode jsonNode = CustomJsonConverterUtil.parseJsonMode(timeoutRemindNode);
+            ObjectNode objectNode = objectMapper.createObjectNode();
+            objectNode.put(FlowModelExtElementConstant.EXT_VALUE, value);
+            objectNode.set(FlowModelExtElementConstant.EXT_LIST, jsonNode);
+            customPropertiesNode.putIfAbsent(FlowModelExtElementConstant.EXT_TIMEOUT_REMINDER, objectNode);
+        }
+
         modelNode.putIfAbsent(FlowModelExtElementConstant.EXT_CUSTOM_PROPERTIES, customPropertiesNode);
         return modelNode;
     }
@@ -99,6 +112,9 @@ public class CustomBpmnJsonConverter extends BpmnJsonConverter {
 
         JsonNode recallNode = extensionData.get(FlowModelExtElementConstant.EXT_RECALL);
         addExtensionElement(mainProcess, FlowModelExtElementConstant.EXT_RECALL, recallNode);
+
+        JsonNode timeoutRemindNode = extensionData.get(FlowModelExtElementConstant.EXT_TIMEOUT_REMINDER);
+        addExtensionElement(mainProcess, FlowModelExtElementConstant.EXT_TIMEOUT_REMINDER, timeoutRemindNode);
 
 
         //

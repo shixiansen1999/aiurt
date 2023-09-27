@@ -20,8 +20,10 @@ import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
+import com.aiurt.modules.remind.service.IFlowRemindService;
 import com.aiurt.modules.todo.dto.BpmnTodoDTO;
 import com.aiurt.modules.user.service.IFlowUserService;
+import com.aiurt.modules.user.service.impl.FlowUserServiceImpl;
 import com.aiurt.modules.utils.FlowableNodeActionUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -99,6 +101,10 @@ public class TaskCreateListener implements FlowableEventListener {
         // 查询配置项
         IActCustomTaskExtService taskExtService = SpringContextUtils.getBean(IActCustomTaskExtService.class);
         ActCustomTaskExt taskExt = taskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, taskDefinitionKey);
+
+        // 新增超时配置
+        IFlowRemindService flowRemindService = SpringContextUtils.getBean(IFlowRemindService.class);
+        flowRemindService.timeoutRemind(taskEntity);
 
         // 任务节点前附加操作
 
