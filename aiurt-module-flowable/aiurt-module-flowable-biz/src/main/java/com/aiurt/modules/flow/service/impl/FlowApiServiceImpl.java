@@ -1148,7 +1148,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         for (HistoricActivityInstance unfinishedActivity : unfinishedInstanceList) {
             unfinishedTaskSet.add(unfinishedActivity.getActivityId());
         }
-
+        // 获取的是当前运行的xml
         byte[] bpmnXml = modelService.getBpmnXML(bpmnModel);
         String modelXml = new String(bpmnXml, StandardCharsets.UTF_8);
         HighLightedNodeDTO highLightedNodeDTO = HighLightedNodeDTO.builder()

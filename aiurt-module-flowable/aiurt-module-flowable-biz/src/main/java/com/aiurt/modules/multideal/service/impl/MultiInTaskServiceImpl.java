@@ -33,6 +33,7 @@ import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.task.api.Task;
+import org.flowable.task.api.history.HistoricTaskInstance;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysUserModel;
@@ -336,10 +337,16 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
                 Map<String, Object> executionVariables = new HashMap<>(2);
                 executionVariables.put("nrOfInstances", assigneeVariables.size());
                 runtimeService.setVariables(execution.getParentId(), executionVariables);
-
-                //deleteExecutionById(form.getDeleteExecutionId());
             }
         }
+
+        // 加签记录
+        ActCustomTaskComment flowTaskComment = new ActCustomTaskComment();
+        flowTaskComment.fillWith(task);
+        flowTaskComment.setApprovalType(FlowApprovalType.REDUCE_MULTI);
+        flowTaskComment.setComment(reason);
+        flowTaskComment.setCreateRealname(loginUser.getRealname());
+        taskCommentService.getBaseMapper().insert(flowTaskComment);
     }
 
     /**
@@ -363,11 +370,32 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
         if (CollUtil.isEmpty(list)) {
             return Collections.emptyList();
         }
-        // 查询待办任务，删除,
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefinitionKey).list();
 
-        List<String> userAssigneeList = taskList.stream().map(Task::getAssignee).collect(Collectors.toList());
-        list.retainAll(userAssigneeList);
+        UserTask userTaskModel = (UserTask) flowElementUtil.getFlowElement(task.getProcessDefinitionId(), taskDefinitionKey);
+        MultiInstanceLoopCharacteristics loopCharacteristics = userTaskModel.getLoopCharacteristics();
+        if (Objects.isNull(loopCharacteristics)) {
+            return Collections.emptyList();
+        }
+
+        String elementVariable = loopCharacteristics.getElementVariable();
+        if (StrUtil.isBlank(elementVariable)) {
+            return Collections.emptyList();
+        }
+
+        // 串行
+        if (userTaskModel.getLoopCharacteristics().isSequential()) {
+            List<HistoricTaskInstance> taskInstanceList = historyService.createHistoricTaskInstanceQuery().processInstanceId(task.getProcessInstanceId()).executionId(task.getExecutionId()).finished().list();
+            List<String> userAssigneeList = taskInstanceList.stream().map(HistoricTaskInstance::getAssignee).collect(Collectors.toList());
+            list.removeAll(userAssigneeList);
+        } else {
+            // 并行
+            // 查询待办任务，删除
+            List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefinitionKey).list();
+            List<String> userAssigneeList = taskList.stream().map(Task::getAssignee).collect(Collectors.toList());
+            list.retainAll(userAssigneeList);
+        }
+
+        // 串行是存在问题的
         list.remove(loginUser.getUsername());
         if (CollUtil.isEmpty(list)) {
             return Collections.emptyList();

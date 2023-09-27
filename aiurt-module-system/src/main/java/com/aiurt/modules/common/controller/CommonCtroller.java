@@ -473,7 +473,7 @@ public class CommonCtroller {
             List<String> userNameList = StrUtil.split(departUserTreeDTO.getUsername(), ',');
             List<LoginUser> loginUserList = sysBaseApi.getLoginUserList(userNameList);
 
-            ignoreUserId = loginUserList.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
+            ignoreUserId = loginUserList.stream().map(LoginUser::getId).collect(Collectors.joining(","));
         }
         List<String> values = departUserTreeDTO.getValues();
         String majorId = departUserTreeDTO.getMajorId();
