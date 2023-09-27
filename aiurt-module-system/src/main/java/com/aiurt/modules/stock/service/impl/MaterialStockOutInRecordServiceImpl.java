@@ -172,7 +172,8 @@ public class MaterialStockOutInRecordServiceImpl extends ServiceImpl<MaterialSto
             MaterialStockOutInRecord record = new MaterialStockOutInRecord();
             record.setMaterialCode(stockOutboundMaterials.getMaterialCode());
             record.setWarehouseCode(stockOutboundMaterials.getWarehouseCode());
-            record.setNum(stockOutboundMaterials.getActualOutput());
+            // 出库时，数量应该是负数
+            record.setNum(-stockOutboundMaterials.getActualOutput());
             record.setConfirmTime(new Date());
             record.setConfirmUserId(stockOutOrderLevel2.getUserId());
             record.setOrderId(stockOutOrderLevel2.getId());
