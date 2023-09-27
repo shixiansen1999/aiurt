@@ -230,9 +230,10 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
             addAssigneeVariables.addAll(userNameList);
         }
         //
-        Map<String, Object> executionVariables = new HashMap<>(4);
+
         List<ActCustomMultiRecord> recordList = new ArrayList<>();
         userNameList.stream().forEach(userName->{
+            Map<String, Object> executionVariables = new HashMap<>(4);
             // 设置局部变量, 并行实例必须采用该变量设置, 加签标识，否则去重
             executionVariables.put(elementVariable, userName);
             executionVariables.put("is_multi_assign_task", true);
@@ -465,8 +466,13 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
         String nodeId = task.getTaskDefinitionKey();
         String pInstanceId = task.getProcessInstanceId();
         String executionId = task.getExecutionId();
-        List<Execution> executions = runtimeService.createExecutionQuery().processInstanceId(pInstanceId).
-                activityId(nodeId).list();
+        Execution executionTask = runtimeService.createExecutionQuery().executionId(executionId).singleResult();
+        if (Objects.isNull(executionTask)) {
+            return false;
+        }
+
+        List<Execution> executions = runtimeService.createExecutionQuery().processInstanceId(pInstanceId).parentId(executionTask.getParentId())
+                .activityId(nodeId).list();
         if (CollectionUtils.isEmpty(executions)){
             return false;
         }
