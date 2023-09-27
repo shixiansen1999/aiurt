@@ -1896,6 +1896,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 taskInfoDTO.setPageContentJson(customPage.getPageContentJson());
                 taskInfoDTO.setPageJSon(customPage.getPageJson());
             }
+
         }
         taskInfoDTO.setFormType(FlowModelAttConstant.DYNAMIC_FORM_TYPE);
     }
@@ -1974,6 +1975,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         finishList.stream().forEach(entity -> {
             HistoricTaskInfo historicTaskInfo = bulidHistorcTaskInfo(entity);
+            String executionId = entity.getExecutionId();
 
             LoginUser userByName = null;
             if (StrUtil.isNotBlank(entity.getAssignee())) {
@@ -2007,7 +2009,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         List<LoginUser> userListByName = sysBaseAPI.getLoginUserList(nameList);
 
         if (CollectionUtil.isNotEmpty(userListByName)) {
-            historicTaskInfo.setAssignName(StrUtil.join(",", nameList));
+            historicTaskInfo.setAssignName(StrUtil.join(",", userListByName.stream().map(LoginUser::getUsername).collect(Collectors.toList())));
             List<String> collect = userListByName.stream().map(user -> user.getRealname() + "(所属部门-" + user.getOrgName() + ")").collect(Collectors.toList());
             historicTaskInfo.setAssigne(StrUtil.join(",", collect));
         }

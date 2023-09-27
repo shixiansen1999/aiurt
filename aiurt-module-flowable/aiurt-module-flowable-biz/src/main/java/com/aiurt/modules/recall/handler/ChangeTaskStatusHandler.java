@@ -68,7 +68,7 @@ public class ChangeTaskStatusHandler extends AbstractFlowHandler<FlowRecallConte
             }
         }
         //获取流程发起节点
-        FlowElement startEvent = flowElementUtil.getStartFlowNodeByDefinitionId(processDefinitionId);
+        FlowElement startEvent = flowElementUtil.getFirstUserTaskByDefinitionId(processDefinitionId);
         String startElementId = null;
         if (ObjectUtil.isNotEmpty(startEvent)) {
              startElementId = startEvent.getId();
