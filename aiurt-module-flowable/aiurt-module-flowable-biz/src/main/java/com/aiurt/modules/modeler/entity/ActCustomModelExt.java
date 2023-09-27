@@ -1,17 +1,18 @@
 package com.aiurt.modules.modeler.entity;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
-import java.math.BigDecimal;
+
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.experimental.Accessors;
@@ -24,7 +25,7 @@ import lombok.experimental.Accessors;
  */
 @Data
 @Builder
-@TableName("act_custom_model_ext")
+@TableName(value = "act_custom_model_ext",autoResultMap = true)
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="act_custom_model_ext对象", description="流程属性扩展表")
@@ -84,4 +85,12 @@ public class ActCustomModelExt implements Serializable {
 	@Excel(name = "是否催办", width = 15)
     @ApiModelProperty(value = "是否催办")
     private Integer isRemind;
+    /**是否超时提醒*/
+    @Excel(name = "是否超时提醒", width = 15)
+    @ApiModelProperty(value = "是否超时提醒")
+    private Integer isTimeoutRemind;
+    /**超时提醒配置*/
+    @ApiModelProperty("超时提醒配置")
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private JSONArray timeoutRemindConfig;
 }

@@ -391,6 +391,25 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
             }
         }
 
+        //超时提醒设置
+        List<ExtensionElement> timeoutRemindElementList = extensionElements.get(FlowModelExtElementConstant.EXT_TIMEOUT_REMINDER);
+        if (CollUtil.isNotEmpty(timeoutRemindElementList)) {
+            ExtensionElement extensionElement = timeoutRemindElementList.get(0);
+            String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_LIST);
+            // 是否提醒
+            if (StrUtil.isNotBlank(attributeValue)) {
+                try {
+                    //保存超时提醒设置
+                    modelExt.setTimeoutRemindConfig(JSONObject.parseArray(attributeValue));
+                    modelExt.setIsTimeoutRemind(1);
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+            }else {
+                modelExt.setIsTimeoutRemind(1);
+            }
+        }
+
         return modelExt;
     }
 
