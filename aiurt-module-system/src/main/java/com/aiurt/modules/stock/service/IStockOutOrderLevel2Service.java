@@ -1,15 +1,11 @@
 package com.aiurt.modules.stock.service;
 
-import com.aiurt.modules.sparepart.entity.SparePartApply;
-import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
-import com.aiurt.modules.stock.entity.StockInOrderLevel2;
+import com.aiurt.modules.stock.dto.MaterialOutRequisitionDTO;
 import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.text.ParseException;
 import java.util.List;
 
@@ -43,13 +39,13 @@ public interface IStockOutOrderLevel2Service extends IService<StockOutOrderLevel
      * @param id
      * @return
      */
-    SparePartApply getList(String id);
+    MaterialOutRequisitionDTO getList(String id);
 
     /**
      * 确认出库
-     * @param sparePartApply
+     * @param materialOutRequisitionDTO
      * @param stockOutOrderLevel2
      * @throws ParseException
      */
-    void confirmOutOrder(SparePartApply sparePartApply, StockOutOrderLevel2 stockOutOrderLevel2) throws ParseException;
+    void confirmOutOrder(MaterialOutRequisitionDTO materialOutRequisitionDTO, StockOutOrderLevel2 stockOutOrderLevel2) throws ParseException;
 }

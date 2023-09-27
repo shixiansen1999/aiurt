@@ -18,7 +18,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,10 +43,9 @@ public class MaterialRequisitionServiceImpl extends ServiceImpl<MaterialRequisit
     private ISysBaseAPI sysBaseApi;
 
     @Override
-    public MaterialRequisitionInfoDTO queryByCode(String code, Integer requisitionType) {
+    public MaterialRequisitionInfoDTO queryByCode(String code) {
         MaterialRequisition materialRequisition = this.getOne(new LambdaQueryWrapper<MaterialRequisition>()
                 .eq(MaterialRequisition::getCode, code)
-                .eq(MaterialRequisition::getMaterialRequisitionType, requisitionType)
                 .eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0), false);
         if (ObjectUtil.isNull(materialRequisition)) {
             throw new AiurtBootException("未找到对应领料单");
@@ -63,6 +61,7 @@ public class MaterialRequisitionServiceImpl extends ServiceImpl<MaterialRequisit
             map3 = sparePartStockList.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
         }
         MaterialRequisitionInfoDTO sparePartRequisitionInfoDTO = new MaterialRequisitionInfoDTO();
+        Integer requisitionType = materialRequisition.getMaterialRequisitionType();
         BeanUtil.copyProperties(materialRequisition, sparePartRequisitionInfoDTO);
         //翻译仓库名称
         if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(requisitionType)) {
@@ -82,8 +81,8 @@ public class MaterialRequisitionServiceImpl extends ServiceImpl<MaterialRequisit
     }
 
     @Override
-    public void queryDetailList(Page<MaterialRequisitionDetailInfoDTO> page, String code, Integer requisitionType) {
-        materialRequisitionMapper.queryDetailByRequisitionId(page, code, requisitionType);
+    public void queryPageDetail(Page<MaterialRequisitionDetailInfoDTO> page, String code) {
+        materialRequisitionMapper.queryPageDetail(page, code);
     }
 
     @Override
@@ -115,18 +114,15 @@ public class MaterialRequisitionServiceImpl extends ServiceImpl<MaterialRequisit
         // 物资明细需要单位翻译
         Map<String, String> unitMap = sysBaseApi.queryDictItemsByCode("materian_unit").stream()
                 .collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
-        LambdaQueryWrapper<MaterialRequisitionDetail> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
-        queryWrapper.eq(MaterialRequisitionDetail::getMaterialRequisitionId, id);
-        List<MaterialRequisitionDetail> materialRequisitionDetailList = materialRequisitionDetailMapper.selectList(queryWrapper);
+        //物资类型字典
+        Map<String, String> typeMap = sysBaseApi.queryDictItemsByCode("material_type").stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        List<MaterialRequisitionDetailInfoDTO> materialRequisitionDetailInfoDTOList =  materialRequisitionMapper.queryDetailList(id);
         // 物资明细转化从对应DTO，并翻译单位
-        List<MaterialRequisitionDetailInfoDTO> detailInfoDTOList = materialRequisitionDetailList.stream().map(detail -> {
-            MaterialRequisitionDetailInfoDTO detailInfoDTO = new MaterialRequisitionDetailInfoDTO();
-            BeanUtils.copyProperties(detail, detailInfoDTO);
-            detailInfoDTO.setUnitName(unitMap.get(detailInfoDTO.getUnit()));
-            return detailInfoDTO;
-        }).collect(Collectors.toList());
-        materialRequisitionInfoDTO.setMaterialRequisitionDetailInfoDTOList(detailInfoDTOList);
+        materialRequisitionDetailInfoDTOList.forEach(detail -> {
+            detail.setUnitName(unitMap.get(detail.getUnit()));
+            detail.setTypeName(typeMap.get(detail.getType()));
+        });
+        materialRequisitionInfoDTO.setMaterialRequisitionDetailInfoDTOList(materialRequisitionDetailInfoDTOList);
 
         return materialRequisitionInfoDTO;
     }

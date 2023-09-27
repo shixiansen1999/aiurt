@@ -18,9 +18,9 @@ public interface IMaterialRequisitionService extends IService<MaterialRequisitio
      * @param code
      * @return
      */
-    MaterialRequisitionInfoDTO queryByCode(String code, Integer requisitionType);
+    MaterialRequisitionInfoDTO queryByCode(String code);
 
-    void queryDetailList(Page<MaterialRequisitionDetailInfoDTO> page, String code, Integer requisitionType);
+    void queryPageDetail(Page<MaterialRequisitionDetailInfoDTO> page, String code);
 
     /**
      * 根据申领单id获取详情

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.material.mapper.MaterialRequisitionMapper">
-    <select id="queryDetailByRequisitionId" resultType="com.aiurt.modules.material.dto.MaterialRequisitionDetailInfoDTO">
+    <select id="queryPageDetail" resultType="com.aiurt.modules.material.dto.MaterialRequisitionDetailInfoDTO">
         SELECT
             mrd.*,
             mb.specifications
@@ -13,6 +13,25 @@
             mr.del_flag = 0
             AND mrd.del_flag = 0
             AND mr.code = #{code}
-            AND mr.material_requisition_type = #{requisitionType}
+    </select>
+    <select id="queryDetailList" resultType="com.aiurt.modules.material.dto.MaterialRequisitionDetailInfoDTO">
+        SELECT
+            mrd.*,
+            mb.type,
+            mbt.base_type_code,
+            mbt.base_type_name,
+            cm.major_code,
+            cm.major_name,
+            cs.system_code,
+            cs.system_name
+        FROM
+            material_requisition_detail mrd
+                LEFT JOIN material_base mb ON mb.`code` = mrd.materials_code
+                LEFT JOIN material_base_type mbt ON mbt.base_type_code = mb.base_type_code
+                LEFT JOIN cs_major cm ON cm.major_code = mb.major_code
+                LEFT JOIN cs_subsystem cs ON cs.system_code = mb.system_code
+        WHERE
+            mrd.del_flag = 0
+          AND mrd.material_requisition_id = #{id}
     </select>
 </mapper>
