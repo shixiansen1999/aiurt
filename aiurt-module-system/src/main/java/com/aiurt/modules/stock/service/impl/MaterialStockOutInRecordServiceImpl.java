@@ -10,12 +10,8 @@ import com.aiurt.modules.material.entity.MaterialRequisition;
 import com.aiurt.modules.material.mapper.MaterialRequisitionMapper;
 import com.aiurt.modules.stock.dto.req.MaterialStockOutInRecordReqDTO;
 import com.aiurt.modules.stock.dto.resp.MaterialStockOutInRecordRespDTO;
-import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
-import com.aiurt.modules.stock.entity.StockInOrderLevel2;
-import com.aiurt.modules.stock.entity.StockIncomingMaterials;
-import com.aiurt.modules.stock.mapper.MaterialStockOutInRecordMapper;
-import com.aiurt.modules.stock.mapper.StockInOrderLevel2Mapper;
-import com.aiurt.modules.stock.mapper.StockIncomingMaterialsMapper;
+import com.aiurt.modules.stock.entity.*;
+import com.aiurt.modules.stock.mapper.*;
 import com.aiurt.modules.stock.service.IMaterialStockOutInRecordService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -45,6 +41,10 @@ public class MaterialStockOutInRecordServiceImpl extends ServiceImpl<MaterialSto
     private StockInOrderLevel2Mapper stockInOrderLevel2Mapper;
     @Autowired
     private StockIncomingMaterialsMapper stockIncomingMaterialsMapper;
+    @Autowired
+    private StockOutOrderLevel2Mapper stockOutOrderLevel2Mapper;
+    @Autowired
+    private StockOutboundMaterialsMapper stockOutboundMaterialsMapper;
     @Autowired
     private MaterialRequisitionMapper materialRequisitionMapper;
 
@@ -89,18 +89,18 @@ public class MaterialStockOutInRecordServiceImpl extends ServiceImpl<MaterialSto
 
 
     @Override
-    public void addInRecordFormLevel2(String id) {
+    public void addInRecordOfLevel2(String id) {
         StockInOrderLevel2 stockInOrderLevel2 = stockInOrderLevel2Mapper.selectById(id);
         LambdaQueryWrapper<StockIncomingMaterials> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(StockIncomingMaterials::getDelFlag, CommonConstant.DEL_FLAG_0);
         queryWrapper.eq(StockIncomingMaterials::getInOrderCode, stockInOrderLevel2.getOrderCode());
         List<StockIncomingMaterials> stockIncomingMaterialsList = stockIncomingMaterialsMapper.selectList(queryWrapper);
-        this.addInRecordFormLevel2(stockInOrderLevel2, stockIncomingMaterialsList);
+        this.addInRecordOfLevel2(stockInOrderLevel2, stockIncomingMaterialsList);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void addInRecordFormLevel2(StockInOrderLevel2 stockInOrderLevel2, List<StockIncomingMaterials> stockIncomingMaterialsList) {
+    public void addInRecordOfLevel2(StockInOrderLevel2 stockInOrderLevel2, List<StockIncomingMaterials> stockIncomingMaterialsList) {
         // 是否有申领单
         String materialRequisitionId = stockInOrderLevel2.getMaterialRequisitionId();
         String materialRequisitionCode = null;
@@ -134,6 +134,56 @@ public class MaterialStockOutInRecordServiceImpl extends ServiceImpl<MaterialSto
             record.setOutInType(stockInOrderLevel2.getInType());
             record.setBalance(stockIncomingMaterials.getBalance());
             record.setRemarks(stockInOrderLevel2.getNote());
+            return record;
+        }).collect(Collectors.toList());
+        this.saveBatch(recordList);
+    }
+
+    @Override
+    public void addOutRecordOfLevel2(String id) {
+        // 根据出库单id获取出库单信息以及出库单物资详情
+        StockOutOrderLevel2 stockOutOrderLevel2 = stockOutOrderLevel2Mapper.selectById(id);
+        LambdaQueryWrapper<StockOutboundMaterials> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(StockOutboundMaterials::getDelFlag, CommonConstant.DEL_FLAG_0);
+        queryWrapper.eq(StockOutboundMaterials::getOutOrderCode, stockOutOrderLevel2.getOrderCode());
+        List<StockOutboundMaterials> stockOutboundMaterialsList = stockOutboundMaterialsMapper.selectList(queryWrapper);
+        // 将出库信息保存到出入库信息表
+        this.addOutRecordOfLevel2(stockOutOrderLevel2, stockOutboundMaterialsList);
+    }
+
+    @Override
+    public void addOutRecordOfLevel2(StockOutOrderLevel2 stockOutOrderLevel2, List<StockOutboundMaterials> stockOutboundMaterialsList) {
+        // 是否有申领单
+        String materialRequisitionId = stockOutOrderLevel2.getMaterialRequisitionId();
+        String materialRequisitionCode = null;
+        Integer materialRequisitionType = null;
+        if (StrUtil.isNotEmpty(materialRequisitionId)) {
+            MaterialRequisition materialRequisition = materialRequisitionMapper.selectById(materialRequisitionId);
+            if (materialRequisition != null){
+                materialRequisitionCode = materialRequisition.getCode();
+                materialRequisitionType = materialRequisition.getMaterialRequisitionType();
+            }
+        }
+        // 根据二级库出库单，以及出库清单，生成对应的出入库记录表的实体类
+        String finalMaterialRequisitionCode = materialRequisitionCode;
+        Integer finalMaterialRequisitionType = materialRequisitionType;
+        List<MaterialStockOutInRecord> recordList = stockOutboundMaterialsList.stream().map(stockOutboundMaterials -> {
+            MaterialStockOutInRecord record = new MaterialStockOutInRecord();
+            record.setMaterialCode(stockOutboundMaterials.getMaterialCode());
+            record.setWarehouseCode(stockOutboundMaterials.getWarehouseCode());
+            record.setNum(stockOutboundMaterials.getActualOutput());
+            record.setConfirmTime(new Date());
+            record.setConfirmUserId(stockOutOrderLevel2.getUserId());
+            record.setOrderId(stockOutOrderLevel2.getId());
+            record.setOrderCode(stockOutOrderLevel2.getOrderCode());
+            // 已确认
+            record.setStatus(2);
+            record.setMaterialRequisitionId(materialRequisitionId);
+            record.setMaterialRequisitionCode(finalMaterialRequisitionCode);
+            record.setMaterialRequisitionType(finalMaterialRequisitionType);
+            record.setIsOutIn(2);
+            record.setOutInType(stockOutOrderLevel2.getOutType());
+            record.setBalance(stockOutboundMaterials.getBalance());
             return record;
         }).collect(Collectors.toList());
         this.saveBatch(recordList);

@@ -231,7 +231,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		stockIncomingMaterialsService.saveBatch(stockIncomingMaterialsList);
 
 		// 4、添加入库记录到出入库记录表
-		materialStockOutInRecordService.addInRecordFormLevel2(stockInOrderLevel2, stockIncomingMaterialsList);
+		materialStockOutInRecordService.addInRecordOfLevel2(stockInOrderLevel2, stockIncomingMaterialsList);
 	}
 
 
