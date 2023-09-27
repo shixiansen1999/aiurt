@@ -20,9 +20,12 @@ import com.aiurt.common.util.XlsUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
+import com.aiurt.modules.material.dto.MaterialRequisitionDetailInfoDTO;
+import com.aiurt.modules.material.dto.MaterialRequisitionInfoDTO;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.mapper.MaterialBaseMapper;
 import com.aiurt.modules.material.service.IMaterialBaseService;
+import com.aiurt.modules.material.service.IMaterialRequisitionService;
 import com.aiurt.modules.stock.dto.StockInOrderLevel2DTO;
 import com.aiurt.modules.stock.dto.StockInOrderLevel2ExportDTO;
 import com.aiurt.modules.stock.dto.StockIncomingMaterialsDTO;
@@ -114,6 +117,10 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	@Autowired
 	private ICsUserDepartService csUserDepartService;
 	@Autowired
+	private IMaterialRequisitionService materialRequisitionService;
+	@Autowired
+	private IMaterialStockOutInRecordService materialStockOutInRecordService;
+	@Autowired
 	@Value("${jeecg.path.errorExcelUpload}")
 	private String errorExcelUpload;
 
@@ -155,6 +162,80 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	}
 
 	@Override
+	public void addCompleteOrderFromRequisition(String requisitionId) throws ParseException {
+		Date now = new Date();
+		// 1、根据申领单id获取申领单详情
+		MaterialRequisitionInfoDTO requisitionInfoDTO = materialRequisitionService.getDetailById(requisitionId);
+		List<MaterialRequisitionDetailInfoDTO> detailInfoDTOList = requisitionInfoDTO.getMaterialRequisitionDetailInfoDTOList();
+		// 入库的仓库id
+		String warehouseCode = requisitionInfoDTO.getCustodialWarehouseCode();
+		// 2、修改库存记录，并顺带添加入库物资清单
+		List<StockIncomingMaterials> stockIncomingMaterialsList = new ArrayList<>();
+		for (MaterialRequisitionDetailInfoDTO detailInfoDTO : detailInfoDTOList) {
+			Integer applyNum = detailInfoDTO.getApplyNum();
+			String materialsCode = detailInfoDTO.getMaterialsCode();
+
+			// 入库物资清单
+			// 库存结余
+			Integer balance;
+			StockIncomingMaterials stockIncomingMaterials = new StockIncomingMaterials();
+			stockIncomingMaterials.setMaterialCode(materialsCode);
+			stockIncomingMaterials.setNumber(applyNum);
+
+			// 修改库存信息
+			StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>()
+					.eq("material_code",materialsCode)
+					.eq("warehouse_code",warehouseCode)
+					.eq("del_flag", CommonConstant.DEL_FLAG_0));
+			if(stockLevel2 != null){
+				Integer num = stockLevel2.getNum();
+				stockLevel2.setNum(num + applyNum);
+				stockLevel2.setStockInTime(now);
+				stockLevel2Service.updateById(stockLevel2);
+				balance = num + applyNum;
+			}else{
+				StockLevel2Info stockLevel2Info = iStockLevel2InfoService.getOne(new QueryWrapper<StockLevel2Info>()
+						.eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
+				MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code",materialsCode));
+				StockLevel2 stockLevel2new = new StockLevel2();
+				stockLevel2new.setMaterialCode(materialsCode);
+				stockLevel2new.setBaseTypeCode(materialBase.getBaseTypeCodeCc());
+				stockLevel2new.setWarehouseCode(warehouseCode);
+				stockLevel2new.setNum(applyNum);
+				stockLevel2new.setOrgCode(stockLevel2Info.getOrgCode());
+				stockLevel2new.setMajorCode(materialBase.getMajorCode());
+				stockLevel2new.setSystemCode(materialBase.getSystemCode());
+				stockLevel2new.setStockInTime(now);
+				stockLevel2Service.save(stockLevel2new);
+				balance = applyNum;
+			}
+			stockIncomingMaterials.setBalance(balance);
+			stockIncomingMaterialsList.add(stockIncomingMaterials);
+		}
+
+		// 3、添加一条已完成的入库单
+		// 新建一个StockInOrderLevel2对象并赋值入库单
+		StockInOrderLevel2 stockInOrderLevel2 = this.getInOrderCode();
+		stockInOrderLevel2.setWarehouseCode(requisitionInfoDTO.getCustodialWarehouseCode());
+		stockInOrderLevel2.setOrgCode(requisitionInfoDTO.getSysOrgCode());
+		stockInOrderLevel2.setEntryTime(new Date());
+		stockInOrderLevel2.setUserId(requisitionInfoDTO.getApplyUserId());
+		// 直接生成的已提交的入库单
+		stockInOrderLevel2.setStatus("2");
+		stockInOrderLevel2.setMaterialRequisitionId(requisitionInfoDTO.getId());
+		// 入库类型：普通入库
+		stockInOrderLevel2.setInType(3);
+		stockInOrderLevel2Mapper.insert(stockInOrderLevel2);
+		// 清单入库
+		stockIncomingMaterialsList.forEach(m->m.setInOrderCode(stockInOrderLevel2.getOrderCode()));
+		stockIncomingMaterialsService.saveBatch(stockIncomingMaterialsList);
+
+		// 4、添加入库记录到出入库记录表
+		materialStockOutInRecordService.addInRecordOfLevel2(stockInOrderLevel2, stockIncomingMaterialsList);
+	}
+
+
+	@Override
 	public boolean edit(StockInOrderLevel2 stockInOrderLevel2) {
 		String code = stockInOrderLevel2.getOrderCode();
 		QueryWrapper<StockIncomingMaterials> queryWrapper = new QueryWrapper<StockIncomingMaterials>();
@@ -185,12 +266,15 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 				String materialCode = stockIncomingMaterials.getMaterialCode();
 				//数量
 				Integer number = stockIncomingMaterials.getNumber();
+				// 库存结余
+				Integer balance;
 				StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>().eq("material_code",materialCode).eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
 				if(stockLevel2 != null){
 					Integer num = stockLevel2.getNum();
 					stockLevel2.setNum(num + number);
 					stockLevel2.setStockInTime(stockInTime);
 					stockLevel2Service.updateById(stockLevel2);
+					balance = num + number;
 				}else{
 					StockLevel2Info stockLevel2Info = iStockLevel2InfoService.getOne(new QueryWrapper<StockLevel2Info>().eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
 					String organizationId = stockLevel2Info.getOrganizationId();
@@ -206,7 +290,11 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 					stockLevel2new.setSystemCode(materialBase.getSystemCode());
 					stockLevel2new.setStockInTime(stockInTime);
 					stockLevel2Service.save(stockLevel2new);
+					balance = number;
 				}
+				// 更新库存结余
+				stockIncomingMaterials.setBalance(balance);
+
 				if(stockLevel2CheckList != null && stockLevel2CheckList.size()>0){
 					for(StockLevel2Check stockLevel2Check : stockLevel2CheckList){
 						String stockCheckCode = stockLevel2Check.getStockCheckCode();
@@ -234,6 +322,10 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 			}
 		}
 		boolean ok = this.updateById(stockInOrderLevel2);
+		// 更新库存结余
+		stockIncomingMaterialsService.updateBatchById(stockIncomingMaterialsList);
+		// 添加入库单信息到出入库记录表
+		materialStockOutInRecordService.addInRecordOfLevel2(stockInOrderLevel2, stockIncomingMaterialsList);
 		return ok;
 	}
 

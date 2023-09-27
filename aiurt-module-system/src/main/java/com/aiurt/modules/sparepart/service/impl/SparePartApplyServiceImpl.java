@@ -222,6 +222,8 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
         stockOutOrderLevel.setCustodialWarehouseCode(partApply.getCustodialWarehouseCode());
         stockOutOrderLevel.setOrgCode(null!=sysDepart?sysDepart.getOrgCode():null);
         stockOutOrderLevel.setApplyCode(partApply.getCode());
+        // 从备件库申领生成的二级库出库单，其出库类型为普通出库
+        stockOutOrderLevel.setOutType(7);
         stockOutOrderLevel2Mapper.insert(stockOutOrderLevel);
         //3.插入出库物资
         List<SparePartApplyMaterial> list = sparePartApplyMaterialService.list(new LambdaQueryWrapper<SparePartApplyMaterial>().eq(SparePartApplyMaterial::getApplyId,sparePartApply.getId()));

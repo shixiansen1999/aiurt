@@ -58,4 +58,17 @@ public class MaterialRequisitionController extends BaseController<MaterialRequis
         materialRequisitionService.queryDetailList(page, code, requisitionType);
         return Result.ok(page);
     }
+
+    /**
+     * 根据申领单id查询详情
+     * @param id 申领单id
+     * @return Result<MaterialRequisitionInfoDTO> 返回申领单详情DTO
+     */
+    @AutoLog(value = "根据申领单id查询详情")
+    @ApiOperation(value = "根据申领单id查询详情", notes = "根据申领单id查询详情")
+    @GetMapping(value = "/getDetailById")
+    public Result<MaterialRequisitionInfoDTO> getDetailById(@RequestParam(name = "id")String id){
+        MaterialRequisitionInfoDTO materialRequisitionInfoDTO = materialRequisitionService.getDetailById(id);
+        return Result.ok(materialRequisitionInfoDTO);
+    }
 }

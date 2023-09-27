@@ -24,6 +24,8 @@ public class StockLevel2RequisitionDetailDTO implements Serializable {
 	/**申领单表ID*/
     @ApiModelProperty(value = "申领单表ID")
     private String materialRequisitionId;
+    /**物资id,关联material_base.id*/
+    private String materialsId;
 	/**物资编号*/
     @ApiModelProperty(value = "物资编号")
     private String materialsCode;

@@ -18,14 +18,16 @@ public interface StockLevel2RequisitionService {
     /**
      * 二级库申领-添加一条申领数据
      * @param stockLevel2RequisitionAddReqDTO 二级库申领的添加、编辑等请求DTO
+     * @return 返回添加的申领单的id
      */
-    void add(StockLevel2RequisitionAddReqDTO stockLevel2RequisitionAddReqDTO);
+    String add(StockLevel2RequisitionAddReqDTO stockLevel2RequisitionAddReqDTO);
 
     /**
      * 二级库申领-编辑
      * @param stockLevel2RequisitionAddReqDTO 二级库申领的添加、编辑等请求DTO
+     * @return 返回编辑的申领单的id
      */
-    void edit(StockLevel2RequisitionAddReqDTO stockLevel2RequisitionAddReqDTO);
+    String edit(StockLevel2RequisitionAddReqDTO stockLevel2RequisitionAddReqDTO);
 
     /**
      * 二级库管理-分页列表查询
@@ -33,4 +35,10 @@ public interface StockLevel2RequisitionService {
      * @return Page<StockLevel2RequisitionListRespDTO> 返回分页列表查询结果
      */
     Page<StockLevel2RequisitionListRespDTO> pageList(StockLevel2RequisitionListReqDTO stockLevel2RequisitionListReqDTO);
+
+    /**
+     * 二级库管理-二级库申领-提交  保存/编辑后提交并发起流程
+     * @param stockLevel2RequisitionAddReqDTO 二级库申领的添加、编辑等请求DTO
+     */
+    void submit(StockLevel2RequisitionAddReqDTO stockLevel2RequisitionAddReqDTO);
 }

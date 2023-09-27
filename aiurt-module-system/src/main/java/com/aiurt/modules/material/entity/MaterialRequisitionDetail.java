@@ -1,6 +1,7 @@
 package com.aiurt.modules.material.entity;
 
 import com.aiurt.common.system.base.entity.BaseEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -26,6 +27,8 @@ public class MaterialRequisitionDetail extends BaseEntity implements Serializabl
 	/**备件申领单表ID*/
     @ApiModelProperty(value = "备件申领单表ID")
     private String materialRequisitionId;
+    /**物资id,关联material_base.id*/
+    private String materialsId;
 	/**物资编号*/
     @ApiModelProperty(value = "物资编号")
     private String materialsCode;
@@ -53,5 +56,8 @@ public class MaterialRequisitionDetail extends BaseEntity implements Serializabl
 	/**删除状态(0.未删除 1.已删除)*/
     @ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")
     private Integer delFlag;
-
+    /**可使用数量*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "可使用数量")
+    private Integer availableNum;
 }

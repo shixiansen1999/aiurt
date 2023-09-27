@@ -92,6 +92,9 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
             List<String> orgCodes = departModels.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
             sparePartOutOrder.setOrgCodes(orgCodes);
         }
+        if (ObjectUtil.isNotNull(sparePartOutOrder.getEndTime())) {
+            sparePartOutOrder.setEndTime(DateUtil.endOfDay(sparePartOutOrder.getEndTime()));
+        }
         return sparePartOutOrderMapper.readAll(page,sparePartOutOrder);
     }
 

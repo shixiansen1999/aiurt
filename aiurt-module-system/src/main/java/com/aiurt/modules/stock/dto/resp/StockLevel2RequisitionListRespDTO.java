@@ -35,6 +35,10 @@ public class StockLevel2RequisitionListRespDTO implements Serializable {
     @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     private java.lang.String applyUserId;
 
+    /**当前登录人是否是申领人，true是，false否*/
+    @ApiModelProperty(value = "当前登录人是否是申领人，true是，false否")
+    private Boolean loginUserIsApplyUser;
+
     /**组织机构编号*/
     @ApiModelProperty(value = "组织机构编号")
     @Dict(dictTable = "sys_depart", dicText = "depart_name", dicCode = "org_code")
@@ -55,5 +59,11 @@ public class StockLevel2RequisitionListRespDTO implements Serializable {
     @ApiModelProperty(value = "领用类型（1特殊领用，2普通领用）")
     @Dict(dicCode = "material_requisition_apply_type")
     private java.lang.Integer applyType;
+
+    @ApiModelProperty(value = "任务id")
+    private String taskId;
+
+    @ApiModelProperty(value = "流程实例id")
+    private String processInstanceId;
 
 }

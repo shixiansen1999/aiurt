@@ -59,6 +59,9 @@ public class StockOutboundMaterials extends DictEntity {
 	@ApiModelProperty(value = "仓库现有库存")
 	private  Integer  inventory;
 
+	@ApiModelProperty(value = "库存结余")
+	private Integer balance;
+
 	/**申请出库数量*/
 	@Excel(name = "申请出库数量")
 	@ApiModelProperty(value = "申请出库数量")

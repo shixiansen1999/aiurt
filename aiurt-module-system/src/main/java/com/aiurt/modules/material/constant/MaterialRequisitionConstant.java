@@ -8,10 +8,9 @@ package com.aiurt.modules.material.constant;
  */
 public interface MaterialRequisitionConstant {
 
-    /**申领状态：1待提交、2待确认、3已确认、4审核中、5已通过、6已驳回、7已完成*/
+    /**申领状态：1待提交、2待完成、4审核中、5已通过、6已驳回、7已完成*/
     Integer STATUS_TO_BE_SUBMITTED = 1;
     Integer STATUS_TO_BE_CONFIRMED = 2;
-    Integer STATUS_CONFIRMED = 3;
     Integer STATUS_REVIEWING = 4;
     Integer STATUS_PASSED = 5;
     Integer STATUS_REJECTED = 6;
@@ -29,4 +28,14 @@ public interface MaterialRequisitionConstant {
     /**领用类型（1特殊领用，2普通领用）*/
     Integer APPLY_TYPE_SPECIAL = 1;
     Integer APPLY_TYPE_NORMAL = 2;
+
+    /**出入库类型 1归还入库,2借入入库,3普通入库,4退库入库,5归还出库,6借出出库,7普通出库*/
+    Integer RETURN_IN = 1;
+    Integer BORROW_IN = 2;
+    Integer NORMAL_IN = 3;
+    Integer RETURN_OUT = 4;
+    Integer BORROW_OUT = 5;
+    Integer NORMAL_OUT = 6;
+    Integer RETURN_LIBRARY = 7;
+
 }
