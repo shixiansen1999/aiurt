@@ -70,6 +70,9 @@ public class MaterialRequisition extends BaseEntity implements Serializable {
     /**领用类型（1特殊领用，2普通领用）*/
     @ApiModelProperty(value = "领用类型（1特殊领用，2普通领用）")
     private java.lang.Integer applyType;
+    /**是否已被使用(0未使用，1已使用)*/
+    @ApiModelProperty(value = "是否已被使用(0未使用，1已使用)")
+    private java.lang.Integer isUsed;
     /**关联维修单*/
     @ApiModelProperty(value = "关联维修单")
     private java.lang.String faultRepairRecordId;
@@ -85,6 +88,4 @@ public class MaterialRequisition extends BaseEntity implements Serializable {
     /**删除状态(0.未删除 1.已删除)*/
     @ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")
     private java.lang.Integer delFlag;
-
-
 }

@@ -35,6 +35,10 @@ public class SparePartRequisitionAddReqDTO implements Serializable {
     @ApiModelProperty(value = "申领人ID")
     private java.lang.String applyUserId;
 
+    /**组织机构编号*/
+    @ApiModelProperty(value = "组织机构编号")
+    private java.lang.String sysOrgCode;
+
     /**领用时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
@@ -77,7 +81,11 @@ public class SparePartRequisitionAddReqDTO implements Serializable {
 
     /**提交状态（0-未提交 1-已提交）*/
     @ApiModelProperty(value = "提交状态（0-未提交 1-已提交）")
+
     private java.lang.Integer commitStatus;
+    /**是否已被使用(0未使用，1已使用)*/
+    @ApiModelProperty(value = "是否已被使用(0未使用，1已使用)")
+    private java.lang.Integer isUsed;
 
     /**用途*/
     @ApiModelProperty(value = "用途")

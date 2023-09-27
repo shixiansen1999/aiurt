@@ -40,6 +40,14 @@ public class SparePartRequisitionListRespDTO implements Serializable {
     @Dict(dictTable = "sys_depart", dicText = "depart_name", dicCode = "org_code")
     private String sysOrgCode;
 
+    /**申领仓库编号*/
+    @ApiModelProperty(value = "申领仓库编号")
+    private String applyWarehouseCode;
+
+    /**保管仓库编号*/
+    @ApiModelProperty(value = "保管仓库编号")
+    private String custodialWarehouseCode;
+
     /**领用时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
