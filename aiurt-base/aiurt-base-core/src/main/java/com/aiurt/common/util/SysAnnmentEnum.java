@@ -50,7 +50,7 @@ public enum SysAnnmentEnum {
     /**
      * 巡视指派
      */
-    PATROL("patrol", "component","","巡视业务消息", Arrays.asList("patrol_assign", "patrol_audit")),
+    PATROL("patrol", "component","","巡视业务消息", Arrays.asList("patrol_assign", "patrol_audit", "patrol_un_done_remind")),
 
     /**
      *备件归还

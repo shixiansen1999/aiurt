@@ -554,4 +554,8 @@ public interface SysParamCodeConstant {
      * 故障下发和转派是否更新调度过来的数据
      */
     String IS_UPDATE_FAULT_EXTERNAL = "is_update_fault_external";
+    /**
+     * 当日15点整时有未完成巡视任务给予提醒的响铃时长
+     */
+    String PUDR_RING_DURATION = "pudr_ring_duration";
 }
