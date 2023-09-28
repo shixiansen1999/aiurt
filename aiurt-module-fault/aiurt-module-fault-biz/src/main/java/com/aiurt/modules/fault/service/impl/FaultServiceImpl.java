@@ -3524,6 +3524,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
+        //查询最新故障维修单id
+        List<String> codeList = records.stream().map(Fault::getCode).collect(Collectors.toList());
+        Map<String, String> recordMap = faultRepairRecordService.list(new LambdaQueryWrapper<FaultRepairRecord>()
+                .select(FaultRepairRecord::getId, FaultRepairRecord::getFaultCode)
+                .in(FaultRepairRecord::getFaultCode, codeList)
+                .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0))
+                .stream().collect(Collectors.toMap(FaultRepairRecord::getFaultCode, FaultRepairRecord::getId));
         // 查询故障设备列表
         Map<String, List<FaultDevice>> faultDeviceMap = faultDeviceService.queryListByFaultCodeList(records.stream().map(Fault::getCode).collect(Collectors.toList()))
                 .stream().collect(Collectors.groupingBy(FaultDevice::getFaultCode));
@@ -3563,6 +3570,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         boolean faultCenterWrite = "1".equals(iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_WRITE).getValue());
 
         records.parallelStream().forEach(fault1 -> {
+            //设置维修单id
+            fault1.setFaultRepairRecordId(recordMap.get(fault1.getCode()));
             //信号二期调度中心下发的故障审核，判断决定是工班长审核还是控制中心审核
             SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
             if ("1".equals(paramModel.getValue()) && "1".equals(fault1.getFaultModeCode())) {

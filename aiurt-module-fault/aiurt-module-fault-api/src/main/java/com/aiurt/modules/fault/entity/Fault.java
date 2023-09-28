@@ -486,6 +486,9 @@ public class Fault extends DictEntity implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "能否审核")
     private Boolean reviewFlag;
-
+    /**故障维修单id*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "故障维修单id")
+    private String faultRepairRecordId;
 }
 
