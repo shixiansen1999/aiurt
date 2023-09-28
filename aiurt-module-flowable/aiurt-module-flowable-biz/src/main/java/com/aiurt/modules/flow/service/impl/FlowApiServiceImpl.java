@@ -639,10 +639,16 @@ public class FlowApiServiceImpl implements FlowApiService {
                 int isAddMulti = Optional.ofNullable(flowTaskExt.getIsAddMulti()).orElse(0);
                 // 判断是否可以加签
                 if (isAddMulti == 1) {
-                    taskInfoDTO.setIsAddMulti(true);
+                    // 加签人员
                     List<String> addAssigneeVariables = taskService.getVariable(taskId, FlowVariableConstant.ADD_ASSIGNEE_LIST + taskDefinitionKey, List.class);
+                    // 被加签的人员不能加签
                     if (CollUtil.isNotEmpty(addAssigneeVariables)) {
-                        taskInfoDTO.setIsReduceMulti(true);
+                        if (!addAssigneeVariables.contains(checkLogin().getUsername())) {
+                            taskInfoDTO.setIsAddMulti(true);
+                            taskInfoDTO.setIsReduceMulti(true);
+                        }
+                    } else {
+                        taskInfoDTO.setIsAddMulti(true);
                     }
                 }
             }
