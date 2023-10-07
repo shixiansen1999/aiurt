@@ -526,4 +526,8 @@ public interface SysParamCodeConstant {
      * 	巡视、检修标准是否关联多个设备分类
      */
     String MULTIPLE_DEVICE_TYPES = "multiple_device_types";
+    /**
+     * 当日15点整时有未完成巡视任务给予提醒的响铃时长
+     */
+    String PUDR_RING_DURATION = "pudr_ring_duration";
 }

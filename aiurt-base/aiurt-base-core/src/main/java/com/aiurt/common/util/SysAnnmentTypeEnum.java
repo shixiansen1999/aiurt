@@ -78,6 +78,10 @@ public enum SysAnnmentTypeEnum {
      */
     PATROL_AUDIT("patrol_audit", "component","","巡视业务消息"),
     /**
+     * 当日15点整时有未完成巡视任务给予提醒
+     */
+    PATROL_UN_DONE_REMIND("patrol_un_done_remind", "component", "", "巡视业务消息"),
+    /**
      *备件归还
      */
     SPAREPART_RETURN("sparepart_return", "component","","物资出入库消息"),
