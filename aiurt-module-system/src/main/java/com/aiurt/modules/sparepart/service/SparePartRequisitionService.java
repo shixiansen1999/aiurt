@@ -6,7 +6,6 @@ import com.aiurt.modules.sparepart.entity.dto.resp.SparePartRequisitionListRespD
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import java.text.ParseException;
-import java.util.List;
 
 /**
  * 三级库申领的service，因为用到的实体类是领料单，因此不继承IService
@@ -20,16 +19,14 @@ public interface SparePartRequisitionService {
     /**
      * 三级库申领-添加一条申领数据
      * @param sparePartRequisitionAddReqDTO 三级库申领的添加、编辑等请求DTO
-     * @param applyType 领用类型
      */
-    void add(SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO,Integer applyType) throws ParseException;
+    void add(SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO) throws ParseException;
 
     /**
      * 三级库申领-编辑
-     * @param sparePartRequisitionAddReqDTOs 三级库申领的添加、编辑等请求DTO
-     * @param applyType 领用类型
+     * @param sparePartRequisitionAddReqDTO 三级库申领的添加、编辑等请求DTO
      */
-    void edit(List<SparePartRequisitionAddReqDTO> sparePartRequisitionAddReqDTOs,Integer applyType);
+    void edit(SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO);
 
     /**
      * 三级库管理-分页列表查询
@@ -37,4 +34,12 @@ public interface SparePartRequisitionService {
      * @return Page<SparePartRequisitionListRespDTO> 返回分页列表查询结果
      */
     Page<SparePartRequisitionListRespDTO> pageList(SparePartRequisitionListReqDTO sparePartRequisitionListReqDTO);
+
+    /**
+     * 三级库管理-提交
+     *
+     * @param id 领料单id
+     * @return Result<String> 返回编辑成功提示
+     */
+    void submit(String id);
 }

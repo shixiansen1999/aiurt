@@ -81,6 +81,7 @@ public class MaterialRequisitionInfoDTO extends DictEntity implements Serializab
     private java.lang.Integer applyType;
     /**关联维修单*/
     @ApiModelProperty(value = "关联维修单")
+    @Dict(dictTable = "fault_repair_record", dicCode = "id", dicText = "fault_code")
     private java.lang.String faultRepairRecordId;
     /**用途*/
     @ApiModelProperty(value = "用途")
