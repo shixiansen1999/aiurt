@@ -45,7 +45,7 @@ public enum SysAnnmentEnum {
     /**
      * 检修
      */
-    INSPECTION("inspection", "component","","检修业务消息", Arrays.asList("inspection", "inspection_return", "inspection_assign")),
+    INSPECTION("inspection", "component","","检修业务消息", Arrays.asList("inspection", "inspection_return", "inspection_assign", "repair_in_execution_remind")),
 
     /**
      * 巡视指派
