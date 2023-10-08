@@ -13,6 +13,10 @@ import com.aiurt.modules.material.entity.MaterialRequisitionDetail;
 import com.aiurt.modules.material.mapper.MaterialRequisitionDetailMapper;
 import com.aiurt.modules.material.mapper.MaterialRequisitionMapper;
 import com.aiurt.modules.material.service.IMaterialRequisitionService;
+import com.aiurt.modules.sparepart.entity.SparePartStock;
+import com.aiurt.modules.sparepart.service.ISparePartStockService;
+import com.aiurt.modules.stock.entity.StockLevel2;
+import com.aiurt.modules.stock.service.IStockLevel2Service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -41,6 +45,10 @@ public class MaterialRequisitionServiceImpl extends ServiceImpl<MaterialRequisit
     private MaterialRequisitionDetailMapper materialRequisitionDetailMapper;
     @Autowired
     private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private IStockLevel2Service stockLevel2Service;
+    @Autowired
+    private ISparePartStockService sparePartStockService;
 
     @Override
     public MaterialRequisitionInfoDTO queryByCode(String code) {
@@ -122,6 +130,22 @@ public class MaterialRequisitionServiceImpl extends ServiceImpl<MaterialRequisit
         materialRequisitionDetailInfoDTOList.forEach(detail -> {
             detail.setUnitName(unitMap.get(detail.getUnit()));
             detail.setTypeName(typeMap.get(detail.getType()));
+            //查询实时可用量
+            if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(requisitionType)) {
+                //维修申领
+                SparePartStock sparePartStock = sparePartStockService.getOne(new LambdaQueryWrapper<SparePartStock>()
+                        .eq(SparePartStock::getWarehouseCode, materialRequisition.getApplyWarehouseCode())
+                        .eq(SparePartStock::getMaterialCode, detail.getMaterialsCode())
+                        .eq(SparePartStock::getDelFlag, CommonConstant.DEL_FLAG_0), false);
+                detail.setAvailableNum(ObjectUtil.isNotNull(sparePartStock) ? sparePartStock.getAvailableNum() : 0);
+            } else if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3.equals(requisitionType)) {
+                //三级库领用
+                StockLevel2 stockLevel2 = stockLevel2Service.getOne(new LambdaQueryWrapper<StockLevel2>()
+                        .eq(StockLevel2::getWarehouseCode, materialRequisition.getApplyWarehouseCode())
+                        .eq(StockLevel2::getMaterialCode, detail.getMaterialsCode())
+                        .eq(StockLevel2::getDelFlag, CommonConstant.DEL_FLAG_0), false);
+                detail.setAvailableNum(ObjectUtil.isNotNull(stockLevel2) ? stockLevel2.getAvailableNum() : 0);
+            }
         });
         materialRequisitionInfoDTO.setMaterialRequisitionDetailInfoDTOList(materialRequisitionDetailInfoDTOList);
 

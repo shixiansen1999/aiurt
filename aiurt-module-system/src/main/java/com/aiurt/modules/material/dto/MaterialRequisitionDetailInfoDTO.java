@@ -31,6 +31,9 @@ public class MaterialRequisitionDetailInfoDTO extends DictEntity implements Seri
     /**物资名称*/
     @ApiModelProperty(value = "物资名称")
     private String materialsName;
+    /**可用量*/
+    @ApiModelProperty(value = "可用量")
+    private Integer availableNum;
     /**申请出库数量*/
     @ApiModelProperty(value = "申请出库数量")
     private Integer applyNum;
