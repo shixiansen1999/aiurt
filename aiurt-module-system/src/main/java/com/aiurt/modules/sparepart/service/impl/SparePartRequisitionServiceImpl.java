@@ -588,6 +588,11 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             //申领人查询
             queryWrapper.or().apply("(apply_user_id in (select id from sys_user where (realname like concat('%', {0}, '%'))))", sparePartRequisitionListReqDTO.getSearch());
         }
+        String materialRequisitionTypes = sparePartRequisitionListReqDTO.getMaterialRequisitionTypes();
+        if (StrUtil.isNotBlank(materialRequisitionTypes)) {
+            queryWrapper.in("material_requisition_type", StrUtil.split(materialRequisitionTypes, ','));
+        }
+
         //申领单类型查询
         String materialRequisitionType = sparePartRequisitionListReqDTO.getMaterialRequisitionType();
         queryWrapper.lambda().eq(ObjectUtil.isNotNull(materialRequisitionType), MaterialRequisition::getMaterialRequisitionType, materialRequisitionType);

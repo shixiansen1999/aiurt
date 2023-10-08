@@ -1,12 +1,8 @@
 package com.aiurt.modules.stock.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.common.system.base.entity.BaseEntity;
-import com.baomidou.mybatisplus.annotation.TableName;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
