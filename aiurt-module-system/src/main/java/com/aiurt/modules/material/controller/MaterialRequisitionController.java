@@ -102,17 +102,18 @@ public class MaterialRequisitionController extends BaseController<MaterialRequis
         LambdaQueryWrapper<MaterialRequisition> wrapper = new LambdaQueryWrapper<>();
         List<MaterialRequisition> materialRequisitions = materialRequisitionService.getBaseMapper().selectList(wrapper.eq(MaterialRequisition::getFaultRepairRecordId, faultRepairRecordId)
                 .eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0)
-                .eq(MaterialRequisition::getMaterialRequisitionType, MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR));
+                .eq(MaterialRequisition::getMaterialRequisitionType, MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR)
+                .eq(MaterialRequisition::getIsUsed, MaterialRequisitionConstant.UNUSED));
         if (CollUtil.isNotEmpty(materialRequisitions)) {
             for (MaterialRequisition materialRequisition : materialRequisitions) {
                 if (MaterialRequisitionConstant.STATUS_COMPLETED.equals(materialRequisition.getStatus())) {
                     LambdaQueryWrapper<MaterialRequisitionDetail> queryWrapper = new LambdaQueryWrapper<>();
                     List<MaterialRequisitionDetail> materialRequisitionDetails = materialRequisitionDetailMapper.selectList(queryWrapper.eq(MaterialRequisitionDetail::getMaterialRequisitionId, materialRequisition.getId()));
+                    materialRequisitionDetails.forEach(l->l.setWarehouseCode(materialRequisition.getApplyWarehouseCode()));
                     materialRequisition.setMaterialRequisitionDetails(materialRequisitionDetails);
                 }
             }
         }
-
         return Result.ok(materialRequisitions);
     }
 }

@@ -15,6 +15,7 @@
         left join material_requisition mr on mrd.material_requisition_id = mr.id
         where mrd.del_flag = 0
         and mr.del_flag = 0
+        and mr.is_used = 0
         and mr.fault_repair_record_id = #{faultRepairRecordId}
         group by mr.apply_warehouse_code,mrd.materials_code
     </select>

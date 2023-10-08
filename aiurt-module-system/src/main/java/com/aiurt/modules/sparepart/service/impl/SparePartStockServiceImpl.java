@@ -656,6 +656,7 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
             WareHouseDTO dto = new WareHouseDTO();
             dto.setWarehouseCode(stock.getWarehouseCode());
             dto.setName(stock.getWarehouseName());
+            dto.setMaterialRequisitionType("1");
             if (ObjectUtil.isNotEmpty(stockInfo)) {
                 dto.setIsMyself(stockInfo.getOrganizationId().equals(stock.getOrgId()));
             } else {

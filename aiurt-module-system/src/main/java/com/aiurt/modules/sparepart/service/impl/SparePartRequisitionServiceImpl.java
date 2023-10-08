@@ -225,6 +225,10 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     stockLevel2RequisitionAddReqDTO.setCode(code);
                     stockLevel2RequisitionAddReqDTO.setIsUsed(MaterialRequisitionConstant.UNUSED);
                     stockLevel2RequisitionAddReqDTO.setStockLevel2RequisitionDetailDTOList(level2RequisitionDetailDTOS);
+                    String name = loginUser.getOrgName() + "-" + loginUser.getRealname() + "-" +
+                            DateUtil.format(materialRequisition.getApplyTime(), "yyyy-MM-dd") + "-" + "领料单";
+                    stockLevel2RequisitionAddReqDTO.setName(name);
+                    stockLevel2RequisitionAddReqDTO.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL2);
                     stockLevel2RequisitionService.submit(stockLevel2RequisitionAddReqDTO);
                     return;
                 }
@@ -569,6 +573,14 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
         DateTime endTime = searchEndTime != null ? DateUtil.endOfDay(searchEndTime) : null;
         queryWrapper.lambda().ge(searchBeginTime != null, MaterialRequisition::getApplyTime, beginTime);
         queryWrapper.lambda().le(searchEndTime != null, MaterialRequisition::getApplyTime, endTime);
+
+        String search = sparePartRequisitionListReqDTO.getSearch();
+        if (StrUtil.isNotBlank(search)) {
+            //申领单编号查询
+            queryWrapper.lambda().like( MaterialRequisition::getCode, sparePartRequisitionListReqDTO.getSearch());
+            //申领人查询
+            queryWrapper.or().apply("(apply_user_id in (select id from sys_user where (realname like concat('%', {0}, '%'))))", sparePartRequisitionListReqDTO.getSearch());
+        }
         //申领单类型查询
         String materialRequisitionType = sparePartRequisitionListReqDTO.getMaterialRequisitionType();
         queryWrapper.lambda().eq(ObjectUtil.isNotNull(materialRequisitionType), MaterialRequisition::getMaterialRequisitionType, materialRequisitionType);
@@ -624,7 +636,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             //更新申领单为已使用
             materialRequisitionDetailMapper.updateIsUsed(faultRepairRecordId,MaterialRequisitionConstant.IS_USED);
             for (MaterialRequisitionDetail materialRequisition : materialRequisitions) {
-                int newSparePartNum = dtoList.stream().filter(s -> s.getWarehouseCode().equals(materialRequisition.getWarehouseCode()) && s.getMaterialCode().equals(materialRequisition.getMaterialsCode()))
+                int newSparePartNum = dtoList.stream().filter(s -> s.getWarehouseCode().equals(materialRequisition.getWarehouseCode()) && s.getNewSparePartCode().equals(materialRequisition.getMaterialsCode()))
                         .mapToInt(SparePartStockDTO::getNewSparePartNum).sum();
                 //剩余数量
                 int remainingQuantity = materialRequisition.getApplyNum() - newSparePartNum;

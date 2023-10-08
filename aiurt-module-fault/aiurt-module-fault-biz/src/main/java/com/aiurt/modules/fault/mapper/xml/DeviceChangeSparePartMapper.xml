@@ -50,13 +50,15 @@
         a.old_spare_part_code,
         a.old_spare_part_num,
         a.new_spare_part_num,
+        a.consumables,
         mrd.materials_code as newSparePartCode,
         sum(mrd.apply_num) as applyNum,
         b.name as new_spare_part_name,
         b.specifications,
         c.name as device_name,
         da.material_name as old_spare_part_name,
-        b.specifications
+        b.specifications,
+        mr.apply_warehouse_code as warehouseCode
         from material_requisition_detail mrd
         left join material_requisition mr on mrd.material_requisition_id = mr.id
         LEFT JOIN device_change_spare_part a on (a.material_base_code = mrd.materials_code and a.repair_record_id = mr.fault_repair_record_id)
