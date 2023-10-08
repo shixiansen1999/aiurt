@@ -150,7 +150,7 @@
     </select>
 
     <select id="getAvailableNum" resultType="java.lang.Integer">
-        select available_num
+        select ifnull(available_num,0)
         from stock_level2
         where del_flag = 0
         and warehouse_code = #{leve2WarehouseCode}

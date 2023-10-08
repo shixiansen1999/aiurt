@@ -42,4 +42,35 @@
         and a.del_flag = 0
         GROUP BY c.material_name
     </select>
+
+    <select id="getAllDeviceChange" resultType="com.aiurt.modules.fault.entity.DeviceChangeSparePart">
+        select
+        a.device_code,
+        a.old_org_code,
+        a.old_spare_part_code,
+        a.old_spare_part_num,
+        a.new_spare_part_num,
+        a.consumables,
+        mrd.materials_code as newSparePartCode,
+        sum(mrd.apply_num) as applyNum,
+        b.name as new_spare_part_name,
+        b.specifications,
+        c.name as device_name,
+        da.material_name as old_spare_part_name,
+        b.specifications,
+        mr.apply_warehouse_code as warehouseCode
+        from material_requisition_detail mrd
+        left join material_requisition mr on mrd.material_requisition_id = mr.id
+        LEFT JOIN device_change_spare_part a on (a.material_base_code = mrd.materials_code and a.repair_record_id = mr.fault_repair_record_id)
+        LEFT JOIN material_base b ON  (a.material_base_code = b.`code` and b.del_flag = 0)
+        LEFT JOIN device c on c.code = a.device_code
+        LEFT join device_assembly da on (a.old_spare_part_code = da.`code` AND a.del_flag = 0 AND da.device_code = c.`code`)
+        where
+        a.code = #{faultCode}
+        and a.repair_record_id = #{recordId}
+        and mr.fault_repair_record_id = #{recordId}
+        and a.del_flag = 0
+        and mrd.del_flag = 0
+        group by mr.apply_warehouse_code,mrd.materials_code
+    </select>
 </mapper>

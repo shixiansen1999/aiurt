@@ -53,4 +53,7 @@ public class SparePartRequisitionListReqDTO extends BaseEntity implements Serial
     @ApiModelProperty(value = "搜索结束时间->领用时间小于等于的时间")
     private Date searchEndTime;
 
+    /**app搜索框*/
+    @ApiModelProperty(value = "app搜索框")
+    private java.lang.String search;
 }

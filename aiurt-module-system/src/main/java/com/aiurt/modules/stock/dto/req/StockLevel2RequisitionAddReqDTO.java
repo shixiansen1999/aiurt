@@ -92,4 +92,7 @@ public class StockLevel2RequisitionAddReqDTO implements Serializable {
     /**领料单来源*/
     @ApiModelProperty(value = "领料单来源")
     private java.lang.String materialRequisitionPid;
+
+    @ApiModelProperty(value = "是否已被使用(0未使用，1已使用)")
+    private java.lang.Integer isUsed;
 }
