@@ -203,6 +203,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                             //如果二级库申领数量大于二级库库存，则需要向一级库申领，只要有一条要向一级库申领则所有出入库单需要等这个申领审核完成才能生成且确认
                             StockLevel2RequisitionDetailDTO stockLevel2RequisitionDetailDTO = new StockLevel2RequisitionDetailDTO();
                             BeanUtils.copyProperties(materialRequisitionDetail, stockLevel2RequisitionDetailDTO);
+                            stockLevel2RequisitionDetailDTO.setApplyNum(applyNumber);
                             level2RequisitionDetailDTOS.add(stockLevel2RequisitionDetailDTO);
                         }
                     } else if (i > 0 && MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL2.equals(sparePartRequisitionAddReqDTO.getMaterialRequisitionType())) {
@@ -210,6 +211,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                         //如果二级库申领数量大于二级库库存，则需要向一级库申领，只要有一条要向一级库申领则所有出入库单需要等这个申领审核完成才能生成且确认
                         StockLevel2RequisitionDetailDTO stockLevel2RequisitionDetailDTO = new StockLevel2RequisitionDetailDTO();
                         BeanUtils.copyProperties(materialRequisitionDetail, stockLevel2RequisitionDetailDTO);
+                        stockLevel2RequisitionDetailDTO.setApplyNum(i);
                         level2RequisitionDetailDTOS.add(stockLevel2RequisitionDetailDTO);
                     }
                 }
