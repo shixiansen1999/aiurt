@@ -739,7 +739,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
 
 
             //借入集合
-            List<SparePartStockDTO> lend = new ArrayList<>(dtoList.stream().filter(s -> ObjectUtil.isNull(s.getMaterialRequisitionType())).collect(Collectors.toList()));
+            List<SparePartStockDTO> lend = new ArrayList<>(dtoList.stream().filter(s ->  MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(s.getMaterialRequisitionType())&& !s.getWarehouseCode().equals(stockInfo.getWarehouseCode())).collect(Collectors.toList()));
 
             //借入处理
             if (CollUtil.isNotEmpty(lend)) {
