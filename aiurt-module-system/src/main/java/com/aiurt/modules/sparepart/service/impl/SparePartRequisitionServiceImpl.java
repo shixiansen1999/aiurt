@@ -314,8 +314,9 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
         stockOutOrderLevel.setOrderCode(code);
         //出库仓库为申领仓库
         stockOutOrderLevel.setWarehouseCode(materialRequisition.getApplyWarehouseCode());
-        //出库人为出库确认人，保管人为备件申领人
-        stockOutOrderLevel.setCustodialId(materialRequisition.getApplyUserId());
+        //出库人为出库确认人，保管人为备件申领人(保管人实际存的是username)
+        LoginUser keepingUser = sysBaseApi.getUserById(materialRequisition.getApplyUserId());
+        stockOutOrderLevel.setCustodialId(keepingUser != null ? keepingUser.getUsername(): materialRequisition.getApplyUserId());
         stockOutOrderLevel.setCustodialWarehouseCode(materialRequisition.getCustodialWarehouseCode());
         stockOutOrderLevel.setOrgCode(null != sysDepart ? sysDepart.getOrgCode() : null);
         stockOutOrderLevel.setApplyCode(materialRequisition.getCode());
