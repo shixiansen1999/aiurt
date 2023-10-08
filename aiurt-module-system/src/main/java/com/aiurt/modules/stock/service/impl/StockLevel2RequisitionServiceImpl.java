@@ -210,10 +210,13 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
 
                 //获取维修领用单
                 QueryWrapper<MaterialRequisition>  queryWrapper = new QueryWrapper<>();
-                MaterialRequisition one = materialRequisitionService.getOne(queryWrapper.lambda().eq(MaterialRequisition::getFaultRepairRecordId, byId.getFaultRepairRecordId())
-                        .eq(MaterialRequisition::getMaterialRequisitionType, MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR).eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0.doubleValue()));
+                MaterialRequisition one = materialRequisitionService.getOne(queryWrapper.lambda()
+                        .eq(MaterialRequisition::getFaultRepairRecordId, byId.getFaultRepairRecordId())
+                        .eq(MaterialRequisition::getMaterialRequisitionType, MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR)
+                        .eq(MaterialRequisition::getIsUsed, MaterialRequisitionConstant.UNUSED)
+                        .eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0));
                 SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO = new SparePartRequisitionAddReqDTO();
-                BeanUtils.copyProperties(sparePartRequisitionAddReqDTO, one);
+                BeanUtils.copyProperties(one, sparePartRequisitionAddReqDTO);
                 //三级库申领
                 sparePartRequisitionService.addLevel3Requisition(materialRequisitionDetails, sparePartRequisitionAddReqDTO, one);
 
@@ -223,6 +226,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                 List<MaterialRequisitionDetail> requisitionDetails = materialRequisitionDetailService.getBaseMapper().selectList(wrapper2);
                 sparePartRequisitionService.addSparePartOutOrder(requisitionDetails, loginUser, one);
                 //维修申领单变更为已完成,
+                one.setIsUsed(MaterialRequisitionConstant.IS_USED);
                 one.setStatus(MaterialRequisitionConstant.STATUS_COMPLETED);
                 materialRequisitionService.updateById(one);
                 // 再保存物资清单
