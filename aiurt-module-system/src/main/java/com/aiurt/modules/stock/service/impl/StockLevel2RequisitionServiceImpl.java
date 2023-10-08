@@ -1,8 +1,10 @@
 package com.aiurt.modules.stock.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
@@ -137,8 +139,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
             // 还没有流程，则发起流程
             StartBpmnDTO startBpmnDto  = new StartBpmnDTO();
             startBpmnDto.setModelKey("stock_level2_requisition");
-            Map<String,Object> map = new HashMap<>();
-            map.put("id",id);
+            Map<String, Object> map = BeanUtil.beanToMap(stockLevel2RequisitionAddReqDTO);
             startBpmnDto.setBusData(map);
             FlowTaskCompleteCommentDTO flowTaskCompleteCommentDTO = new FlowTaskCompleteCommentDTO();
             startBpmnDto.setFlowTaskCompleteDTO(flowTaskCompleteCommentDTO);
@@ -148,9 +149,10 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
 
         // 将流程通过提交申领单阶段
         TaskCompleteDTO taskCompleteDTO = stockLevel2RequisitionMapper.getFlowDataById(id);
-        Map<String,Object> detailMap = new HashMap<>(1);
-        detailMap.put("id",id);
-        taskCompleteDTO.setBusData(detailMap);
+        // 因为是提交，且上面以及有保存/提交了，就不用再保存/编辑业务数据了
+        // Map<String,Object> detailMap = new HashMap<>(1);
+        // detailMap.put("id",id);
+        // taskCompleteDTO.setBusData(detailMap);
         FlowTaskCompleteCommentDTO commentDTO = new FlowTaskCompleteCommentDTO();
         commentDTO.setApprovalType(FlowApprovalType.AGREE);
         taskCompleteDTO.setFlowTaskCompleteDTO(commentDTO);
