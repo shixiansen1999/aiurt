@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
@@ -44,7 +43,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -204,6 +202,10 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                 //如果该二级库申领是由三级库产生，则补充完整二级库出库，三级库入出库
                 //获取二级库领用单
                 MaterialRequisition byId = materialRequisitionService.getById(id);
+                // 如果没有关联维修单，就是直接从二级库申领模块新增的，就不用补充二级库出库和三级库入库
+                if (byId.getFaultRepairRecordId() == null) {
+                    break;
+                }
                 QueryWrapper<MaterialRequisitionDetail> wrapper = new QueryWrapper<>();
                 wrapper.lambda().eq(MaterialRequisitionDetail::getMaterialRequisitionId, id).eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
                 List<MaterialRequisitionDetail> materialRequisitionDetails = materialRequisitionDetailService.getBaseMapper().selectList(wrapper);
@@ -214,6 +216,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                         .eq(MaterialRequisition::getFaultRepairRecordId, byId.getFaultRepairRecordId())
                         .eq(MaterialRequisition::getMaterialRequisitionType, MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR)
                         .eq(MaterialRequisition::getIsUsed, MaterialRequisitionConstant.UNUSED)
+                        .eq(MaterialRequisition::getId,byId.getMaterialRequisitionPid())
                         .eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0));
                 SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO = new SparePartRequisitionAddReqDTO();
                 BeanUtils.copyProperties(one, sparePartRequisitionAddReqDTO);

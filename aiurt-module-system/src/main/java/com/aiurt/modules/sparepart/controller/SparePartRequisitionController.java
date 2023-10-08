@@ -85,7 +85,7 @@ public class SparePartRequisitionController {
      */
     @AutoLog(value = "三级库管理-三级库申领-提交")
     @ApiOperation(value="三级库管理-三级库申领-提交", notes="三级库管理-三级库申领-提交")
-    @PostMapping(value = "/submit")
+    @GetMapping(value = "/submit")
     public Result<String> submit(@RequestParam(name ="id") String id ){
         sparePartRequisitionService.submit(id);
         return Result.ok("提交成功！");

@@ -203,6 +203,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                             //如果二级库申领数量大于二级库库存，则需要向一级库申领，只要有一条要向一级库申领则所有出入库单需要等这个申领审核完成才能生成且确认
                             StockLevel2RequisitionDetailDTO stockLevel2RequisitionDetailDTO = new StockLevel2RequisitionDetailDTO();
                             BeanUtils.copyProperties(materialRequisitionDetail, stockLevel2RequisitionDetailDTO);
+                            stockLevel2RequisitionDetailDTO.setApplyNum(applyNumber);
                             level2RequisitionDetailDTOS.add(stockLevel2RequisitionDetailDTO);
                         }
                     } else if (i > 0 && MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL2.equals(sparePartRequisitionAddReqDTO.getMaterialRequisitionType())) {
@@ -210,6 +211,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                         //如果二级库申领数量大于二级库库存，则需要向一级库申领，只要有一条要向一级库申领则所有出入库单需要等这个申领审核完成才能生成且确认
                         StockLevel2RequisitionDetailDTO stockLevel2RequisitionDetailDTO = new StockLevel2RequisitionDetailDTO();
                         BeanUtils.copyProperties(materialRequisitionDetail, stockLevel2RequisitionDetailDTO);
+                        stockLevel2RequisitionDetailDTO.setApplyNum(i);
                         level2RequisitionDetailDTOS.add(stockLevel2RequisitionDetailDTO);
                     }
                 }
@@ -314,8 +316,9 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
         stockOutOrderLevel.setOrderCode(code);
         //出库仓库为申领仓库
         stockOutOrderLevel.setWarehouseCode(materialRequisition.getApplyWarehouseCode());
-        //出库人为出库确认人，保管人为备件申领人
-        stockOutOrderLevel.setCustodialId(materialRequisition.getApplyUserId());
+        //出库人为出库确认人，保管人为备件申领人(保管人实际存的是username)
+        LoginUser keepingUser = sysBaseApi.getUserById(materialRequisition.getApplyUserId());
+        stockOutOrderLevel.setCustodialId(keepingUser != null ? keepingUser.getUsername(): materialRequisition.getApplyUserId());
         stockOutOrderLevel.setCustodialWarehouseCode(materialRequisition.getCustodialWarehouseCode());
         stockOutOrderLevel.setOrgCode(null != sysDepart ? sysDepart.getOrgCode() : null);
         stockOutOrderLevel.setApplyCode(materialRequisition.getCode());
@@ -588,6 +591,11 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             //申领人查询
             queryWrapper.or().apply("(apply_user_id in (select id from sys_user where (realname like concat('%', {0}, '%'))))", sparePartRequisitionListReqDTO.getSearch());
         }
+        String materialRequisitionTypes = sparePartRequisitionListReqDTO.getMaterialRequisitionTypes();
+        if (StrUtil.isNotBlank(materialRequisitionTypes)) {
+            queryWrapper.in("material_requisition_type", StrUtil.split(materialRequisitionTypes, ','));
+        }
+
         //申领单类型查询
         String materialRequisitionType = sparePartRequisitionListReqDTO.getMaterialRequisitionType();
         queryWrapper.lambda().eq(ObjectUtil.isNotNull(materialRequisitionType), MaterialRequisition::getMaterialRequisitionType, materialRequisitionType);
