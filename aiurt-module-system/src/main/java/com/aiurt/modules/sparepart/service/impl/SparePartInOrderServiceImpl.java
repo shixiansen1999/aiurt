@@ -7,6 +7,7 @@ import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -14,9 +15,16 @@ import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.entity.MaterialRequisitionDetail;
 import com.aiurt.modules.material.service.IMaterialBaseService;
-import com.aiurt.modules.sparepart.entity.*;
+import com.aiurt.modules.material.service.IMaterialRequisitionDetailService;
+import com.aiurt.modules.material.service.IMaterialRequisitionService;
+import com.aiurt.modules.sparepart.entity.SparePartInOrder;
+import com.aiurt.modules.sparepart.entity.SparePartStock;
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
+import com.aiurt.modules.sparepart.entity.SparePartStockNum;
 import com.aiurt.modules.sparepart.entity.dto.SparePartInOrderImportExcelDTO;
 import com.aiurt.modules.sparepart.mapper.SparePartApplyMaterialMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartInOrderMapper;
@@ -24,6 +32,8 @@ import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockNumMapper;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
+import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
+import com.aiurt.modules.stock.service.impl.MaterialStockOutInRecordServiceImpl;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -42,6 +52,7 @@ import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.*;
 import org.jeecg.common.util.SpringContextUtils;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -88,6 +99,12 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
     private ISparePartStockInfoService sparePartStockInfoService;
     @Autowired
     private SparePartStockNumMapper sparePartStockNumMapper;
+    @Autowired
+    private IMaterialRequisitionService materialRequisitionService;
+    @Autowired
+    private IMaterialRequisitionDetailService materialRequisitionDetailService;
+    @Autowired
+    private MaterialStockOutInRecordServiceImpl materialStockOutInRecordService;
     /**
      * 查询列表
      * @param page
@@ -106,6 +123,9 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
             List<String> orgCodes = departModels.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
             sparePartInOrder.setOrgCodes(orgCodes);
         }
+        if (ObjectUtil.isNotNull(sparePartInOrder.getEndTime())) {
+            sparePartInOrder.setEndTime(DateUtil.endOfDay(sparePartInOrder.getEndTime()));
+        }
          return sparePartInOrderMapper.readAll(page,sparePartInOrder);
     }
 
@@ -122,17 +142,25 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         partInOrder.setConfirmTime(new Date());
         partInOrder.setConfirmStatus(sparePartInOrder.getConfirmStatus());
         sparePartInOrderMapper.updateById(partInOrder);
+        //同步出库记录到出入库记录表
+        LambdaQueryWrapper<MaterialStockOutInRecord> queryWrapper = new LambdaQueryWrapper<>();
+        MaterialStockOutInRecord record = materialStockOutInRecordService.getOne(queryWrapper.eq(MaterialStockOutInRecord::getOrderId, partInOrder.getId()));
+        BeanUtils.copyProperties(partInOrder, record);
+        materialStockOutInRecordService.updateById(record);
         // 2.回填申领单
-        SparePartApplyMaterial material = sparePartApplyMaterialMapper.selectOne(new LambdaQueryWrapper<SparePartApplyMaterial>().eq(SparePartApplyMaterial::getMaterialCode,sparePartInOrder.getMaterialCode()).eq(SparePartApplyMaterial::getApplyCode,sparePartInOrder.getApplyCode()));
-        if(null!=material){
-            material.setActualNum(sparePartInOrder.getNum());
-            sparePartApplyMaterialMapper.updateById(material);
+        MaterialRequisitionDetail detail = materialRequisitionDetailService.getOne(new LambdaQueryWrapper<MaterialRequisitionDetail>()
+                .eq(MaterialRequisitionDetail::getMaterialsCode, sparePartInOrder.getMaterialCode())
+                .eq(MaterialRequisitionDetail::getMaterialRequisitionId, sparePartInOrder.getMaterialRequisitionId()));
+        if(null!=detail){
+            detail.setActualNum(sparePartInOrder.getNum());
+            materialRequisitionDetailService.updateById(detail);
         }
         // 3.更新备件库存数据（原库存数+入库的数量）
         //查询要入库的物资，备件库存中是否存在
         SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partInOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partInOrder.getWarehouseCode()));
         if(null!=sparePartStock){
             sparePartStock.setNum(sparePartStock.getNum()+partInOrder.getNum());
+            sparePartStock.setAvailableNum(sparePartStock.getAvailableNum()+partInOrder.getNum());
             sparePartStockMapper.updateById(sparePartStock);
         }else{
             SparePartStock stock = new SparePartStock();
@@ -674,5 +702,16 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         }
         errorMap.put("maplist", listMap);
         return errorMap;
+    }
+
+    @Override
+    public SparePartInOrder queryByOrderCode(String orderCode) {
+        SparePartInOrder inOrder = new SparePartInOrder();
+        inOrder.setQueryOrderCode(orderCode);
+        List<SparePartInOrder> list = sparePartInOrderMapper.readAll(inOrder);
+        if (CollUtil.isEmpty(list)) {
+            throw new AiurtBootException("未找到对应数据");
+        }
+        return list.get(0);
     }
 }

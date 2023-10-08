@@ -251,4 +251,17 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 	 public ModelAndView reportExport(HttpServletRequest request, SparePartStatistics sparePartStatistics) {
 		 return sparePartStockService.reportExport(request,sparePartStatistics);
 	 }
+
+	 /**
+	  * 二级库管理-二级库库存管理-添加/修改备注
+	  * @param SparePartStock 请求实体
+	  * @return Result<String> 返回添加结果
+	  */
+	 @AutoLog(value = "三级库管理-三级库库存管理-添加/修改备注")
+	 @ApiOperation(value = "三级库管理-三级库库存管理-添加/修改备注", notes = "三级库管理-三级库库存管理-添加/修改备注")
+	 @PostMapping(value = "/addRemark")
+	 public Result<String> addRemark(@RequestBody SparePartStock SparePartStock){
+		 sparePartStockService.addRemark(SparePartStock);
+		 return Result.ok("修改备注成功");
+	 }
 }

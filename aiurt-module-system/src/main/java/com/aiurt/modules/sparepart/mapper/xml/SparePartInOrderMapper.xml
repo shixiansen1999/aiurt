@@ -5,6 +5,7 @@
         SELECT
             distinct
             spare_part_in_order.id,
+            spare_part_in_order.order_code,
             spare_part_in_order.confirm_status,
             spare_part_in_order.apply_code,
             d1.item_text confirmStatusName,
@@ -48,6 +49,18 @@
 
         WHERE
             spare_part_in_order.del_flag =0
+            <if test="order.orderCode != null and order.orderCode != ''">
+                and spare_part_in_order.order_code like concat('%', #{order.orderCode}, '%')
+            </if>
+            <if test="order.queryOrderCode != null and order.queryOrderCode !=''">
+                and spare_part_in_order.order_code = #{order.queryOrderCode}
+            </if>
+            <if test="order.beginTIme != null">
+                and spare_part_in_order.confirm_time <![CDATA[ >= ]]> #{order.beginTime}
+            </if>
+            <if test="order.endTime != null">
+                and spare_part_in_order.confirm_time <![CDATA[ <= ]]> #{order.endTime}
+            </if>
             <if test="order.materialCode!=null and order.materialCode!=''">
                 and t1.`code` like   concat('%', #{order.materialCode}, '%')
             </if>

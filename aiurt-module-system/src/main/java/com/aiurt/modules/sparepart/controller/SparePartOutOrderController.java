@@ -11,10 +11,13 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
+import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
+import com.aiurt.modules.stock.service.impl.MaterialStockOutInRecordServiceImpl;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -31,6 +34,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -60,6 +64,8 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
     private ISysBaseAPI sysBaseApi;
     @Autowired
     private ISTodoBaseAPI isTodoBaseAPI;
+    @Autowired
+    private MaterialStockOutInRecordServiceImpl materialStockOutInRecordService;
    /**
     * 分页列表查询
     *
@@ -127,6 +133,8 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
    @PostMapping(value = "/add")
    public Result<String> add(@RequestBody SparePartOutOrder sparePartOutOrder) {
        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+       String orderCode = CodeGenerateUtils.generateSingleCode("3CK", 5);
+       sparePartOutOrder.setOrderCode(orderCode);
        sparePartOutOrder.setApplyUserId(user.getUsername());
        sparePartOutOrder.setSysOrgCode(user.getOrgCode());
        sparePartOutOrderService.save(sparePartOutOrder);
@@ -145,9 +153,6 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
            String orgCode = sysBaseApi.getDepartByWarehouseCode(sparePartOutOrder.getWarehouseCode());
            String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
 
-           //发送通知
-           MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件出库-确认" + DateUtil.today(), null);
-
            //构建消息模板
            HashMap<String, Object> map = new HashMap<>();
            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, sparePartOutOrder.getId());
@@ -160,15 +165,6 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
            map.put("warehouseName",warehouseName);
            map.put("realName",user.getRealname());
 
-           /*messageDTO.setData(map);
-           //业务类型，消息类型，消息模板编码，摘要，发布内容
-           messageDTO.setTemplateCode(CommonConstant.SPAREPARTOUTORDER_SERVICE_NOTICE);
-           SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
-           messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-           messageDTO.setMsgAbstract("备件库出库申请");
-           messageDTO.setPublishingContent("备件出库申请，请确认");
-           messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
-           sysBaseApi.sendTemplateMessage(messageDTO);*/
            //发送待办
            TodoDTO todoDTO = new TodoDTO();
            todoDTO.setData(map);
@@ -236,6 +232,12 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
            e.printStackTrace();
        }
        sparePartOutOrder.setConfirmTime(new Date());
+       //同步出库记录到出入库记录表
+       LambdaQueryWrapper<MaterialStockOutInRecord> queryWrapper = new LambdaQueryWrapper<>();
+       MaterialStockOutInRecord record = materialStockOutInRecordService.getOne(queryWrapper.eq(MaterialStockOutInRecord::getOrderId, sparePartOutOrder.getId()));
+       BeanUtils.copyProperties(sparePartOutOrder, record);
+       materialStockOutInRecordService.updateById(record);
+
        return sparePartOutOrderService.update(sparePartOutOrder);
    }
 
@@ -289,4 +291,11 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
         return Result.OK(list);
     }
 
+    @AutoLog(value = "三级库出库管理-根据出库单号查询详情")
+    @ApiOperation(value = "三级库出库管理-根据出库单号查询详情")
+    @GetMapping(value ="/queryByOrderCode")
+    public Result<SparePartOutOrder> queryByOrderCode(String orderCode) {
+        SparePartOutOrder sparePartOutOrder = sparePartOutOrderService.queryByOrderCode(orderCode);
+        return Result.ok(sparePartOutOrder);
+    }
 }

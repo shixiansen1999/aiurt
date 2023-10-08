@@ -12,6 +12,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.CommonAPI;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
@@ -642,29 +643,41 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
         list = list.stream().filter(l->l.getWarehouseCode()!=null).collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<SparePartStock>(Comparator.comparing(SparePartStock::getWarehouseName))), ArrayList::new));
         List<WareHouseDTO> wareHouseDTOList = new ArrayList<>();
         SparePartStockInfo stockInfo = new SparePartStockInfo();
-            // 获取当前登录人所属机构， 根据所属机构擦查询管理二级管理仓库
-            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            // 查询仓库
-            LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
-            if(ObjectUtil.isNotEmpty(loginUser.getOrgId())){
-                //一个班组管理一个仓库，用selectOne,防止有人多配，只取一条
-                wrapper.eq(SparePartStockInfo::getOrganizationId, loginUser.getOrgId()).last("limit 1");
-                stockInfo = sparePartStockInfoService.getBaseMapper().selectOne(wrapper);
-            }
-            for (SparePartStock stock : list) {
-                WareHouseDTO dto = new WareHouseDTO();
-                dto.setName(stock.getWarehouseName());
-                if(ObjectUtil.isNotEmpty(stockInfo)){
-                    if(stockInfo.getOrganizationId().equals(stock.getOrgId())){
-                        dto.setMyself(true);
-                    }else {
-                        dto.setMyself(false);
-                    }
-                }else {
-                    dto.setMyself(false);
-                }
-                wareHouseDTOList.add(dto);
-            }
-            return  wareHouseDTOList;
+        // 获取当前登录人所属机构， 根据所属机构擦查询管理二级管理仓库
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        // 查询仓库
+        LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
+        if (ObjectUtil.isNotEmpty(loginUser.getOrgId())) {
+            //一个班组管理一个仓库，用selectOne,防止有人多配，只取一条
+            wrapper.eq(SparePartStockInfo::getOrganizationId, loginUser.getOrgId()).last("limit 1");
+            stockInfo = sparePartStockInfoService.getBaseMapper().selectOne(wrapper);
         }
+        for (SparePartStock stock : list) {
+            WareHouseDTO dto = new WareHouseDTO();
+            dto.setWarehouseCode(stock.getWarehouseCode());
+            dto.setName(stock.getWarehouseName());
+            dto.setMaterialRequisitionType("1");
+            if (ObjectUtil.isNotEmpty(stockInfo)) {
+                dto.setIsMyself(stockInfo.getOrganizationId().equals(stock.getOrgId()));
+            } else {
+                dto.setIsMyself(false);
+            }
+            wareHouseDTOList.add(dto);
+        }
+        return wareHouseDTOList;
+    }
+
+    @Override
+    public void addRemark(SparePartStock stock) {
+        String id = stock.getId();
+        if (StrUtil.isBlank(id)) {
+            throw new AiurtBootException("id不能为空");
+        }
+        SparePartStock sparePartStock = this.getById(id);
+        if (ObjectUtil.isNull(sparePartStock)) {
+            throw new AiurtBootException("未找到对应数据");
+        }
+        sparePartStock.setRemark(stock.getRemark());
+        this.updateById(sparePartStock);
+    }
 }

@@ -3,6 +3,7 @@ package com.aiurt.modules.modeler.entity;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import io.swagger.annotations.ApiModel;
@@ -39,11 +40,24 @@ public class ActCustomTaskExt implements Serializable {
     @ApiModelProperty(value = "操作列表JSON")
     private String operationListJson;
 
+	/**变量列表JSON*/
+    @ApiModelProperty(value = "变量列表JSON")
+    @TableField(exist = false)
+    private String variableListJson;
 
+	/**存储多实例的assigneeList的JSON*/
+    @ApiModelProperty(value = "存储多实例的assigneeList的JSON")
+    @TableField(exist = false)
+    private String assigneeListJson;
 
 	/**分组类型*/
     @ApiModelProperty(value = "分组类型")
     private String groupType;
+
+	/**保存岗位相关的数据*/
+    @ApiModelProperty(value = "保存岗位相关的数据")
+    @TableField(exist = false)
+    private String deptPostListJson;
 
 	/**保存角色Id数据*/
     @ApiModelProperty(value = "保存角色Id数据")
@@ -57,7 +71,13 @@ public class ActCustomTaskExt implements Serializable {
     @ApiModelProperty(value = "保存候选组用户名数据")
     private String candidateUsernames;
 
-    private String dynamicVariable;
+    @ApiModelProperty(value = "条件表单式")
+    @TableField(exist = false)
+    private String conditionExpression;
+
+	/**抄送相关的数据*/
+    @ApiModelProperty(value = "抄送相关的数据")
+    private String copyListJson;
 
     /**表单数据*/
     @ApiModelProperty(value = "表单数据")
@@ -80,6 +100,10 @@ public class ActCustomTaskExt implements Serializable {
     @ApiModelProperty("表单字段配置")
     @TableField(typeHandler = JacksonTypeHandler.class)
     private JSONArray formFieldConfig;
+
+    @ApiModelProperty(value = "动态选人(流程变量)")
+    private String dynamicVariable;
+
 
 
 }

@@ -10,6 +10,7 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
@@ -91,6 +92,9 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
             List<String> orgCodes = departModels.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
             sparePartOutOrder.setOrgCodes(orgCodes);
         }
+        if (ObjectUtil.isNotNull(sparePartOutOrder.getEndTime())) {
+            sparePartOutOrder.setEndTime(DateUtil.endOfDay(sparePartOutOrder.getEndTime()));
+        }
         return sparePartOutOrderMapper.readAll(page,sparePartOutOrder);
     }
 
@@ -129,6 +133,7 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,outOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,outOrder.getWarehouseCode()));
         if(null!=sparePartStock && sparePartStock.getNum()>=outOrder.getNum()){
             sparePartStock.setNum(sparePartStock.getNum()-outOrder.getNum());
+            sparePartStock.setAvailableNum(sparePartStock.getAvailableNum()-outOrder.getNum());
             sparePartStockMapper.updateById(sparePartStock);
             //先获取该备件的数量记录,更新全新数量
             LambdaQueryWrapper<SparePartStockNum> numLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -241,6 +246,8 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         //改为出库已确认
         SparePartOutOrder sparePartOutOrder = new SparePartOutOrder();
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String orderCode = CodeGenerateUtils.generateSingleCode("3CK", 5);
+        sparePartOutOrder.setOrderCode(orderCode);
         sparePartOutOrder.setMaterialCode(sparePartStock.getMaterialCode());
         sparePartOutOrder.setWarehouseCode(sparePartStock.getWarehouseCode());
         sparePartOutOrder.setNum(sparePartStock.getNum());
@@ -300,5 +307,16 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         }else{
             throw new AiurtBootException("库存数量不足!");
         }
+    }
+
+    @Override
+    public SparePartOutOrder queryByOrderCode(String orderCode) {
+        SparePartOutOrder out = new SparePartOutOrder();
+        out.setQueryOrderCode(orderCode);
+        List<SparePartOutOrder> list = sparePartOutOrderMapper.readAll(out);
+        if (CollUtil.isEmpty(list)) {
+            throw new AiurtBootException("未找到对应数据");
+        }
+        return list.get(0);
     }
 }
