@@ -53,11 +53,13 @@ public class PatrolUnDoneRemindJob implements Job {
         unDone.forEach(t -> {
             List<SysUserTeamDTO> userList = baseApi.getTodayOndutyDetailNoPage(CollUtil.newArrayList(t.getOrgCode()), now);
             List<String> collect = userList.stream().map(SysUserTeamDTO::getUsername).distinct().collect(Collectors.toList());
-            String msg = "今日有未完成巡视任务" + t.getCode();
+            String msg = "今日有未完成巡视任务";
+            String codeStr = String.join("<br/>", StrUtil.splitTrim(t.getCode(), ","));
+            String content = "<p>" + "任务编号:" + "<br/>" + codeStr + "<br/>" + "</p>";
             if (CollUtil.isNotEmpty(collect)) {
-                sendReminderMessage(now, CollUtil.join(collect, StrUtil.COMMA), msg, null);
+                sendReminderMessage(now, CollUtil.join(collect, StrUtil.COMMA), msg, content);
             }
-            log.info(DateUtil.formatDateTime(now) + "," + t.getOrgCode() + msg);
+            log.info(DateUtil.formatDateTime(now) + "," + t.getOrgCode() + msg + ":" + content);
         });
     }
 
@@ -71,7 +73,7 @@ public class PatrolUnDoneRemindJob implements Job {
     private void sendReminderMessage(Date date, String toUser, String msg, String content) {
         MessageDTO messageDTO = new MessageDTO();
         messageDTO.setToUser(toUser);
-        messageDTO.setTitle(DateUtil.format(date, "yyyy-MM-dd") + msg);
+        messageDTO.setTitle(msg + DateUtil.format(date, "yyyy-MM-dd"));
         messageDTO.setContent(content);
         HashMap<String, Object> map = new HashMap<>(10);
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.PATROL_UN_DONE_REMIND.getType());
