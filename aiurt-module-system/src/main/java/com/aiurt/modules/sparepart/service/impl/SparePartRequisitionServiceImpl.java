@@ -739,7 +739,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
 
 
             //借入集合
-            List<SparePartStockDTO> lend = new ArrayList<>(dtoList.stream().filter(s ->  MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(s.getMaterialRequisitionType())&& !s.getWarehouseCode().equals(stockInfo.getWarehouseCode())).collect(Collectors.toList()));
+            List<SparePartStockDTO> lend = dtoList.stream().filter(s -> MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(s.getMaterialRequisitionType())).filter(s -> !s.getWarehouseCode().equals(stockInfo.getWarehouseCode())).collect(Collectors.toList());
 
             //借入处理
             if (CollUtil.isNotEmpty(lend)) {
@@ -751,14 +751,13 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
 
             //三级库申领处理
             if (CollUtil.isNotEmpty(level3RequisitionList)) {
-                Map<String, List<SparePartStockDTO>> level3Map = dtoList.stream().collect(Collectors.groupingBy(SparePartStockDTO::getWarehouseCode));
+                Map<String, List<SparePartStockDTO>> level3Map = level3RequisitionList.stream().collect(Collectors.groupingBy(SparePartStockDTO::getWarehouseCode));
                 for (Map.Entry<String, List<SparePartStockDTO>> entry : level3Map.entrySet()) {
                     String warehouseCode = entry.getKey();
                     List<SparePartStockDTO> sparePartStockDTOS = entry.getValue();
                     MaterialRequisition level3MaterialRequisition = new MaterialRequisition();
-                    //materialRequisition.setCode();
-                    level3MaterialRequisition.setApplyWarehouseCode(stockInfo.getWarehouseCode());
-                    level3MaterialRequisition.setCustodialWarehouseCode(warehouseCode);
+                    level3MaterialRequisition.setApplyWarehouseCode(warehouseCode);
+                    level3MaterialRequisition.setCustodialWarehouseCode(stockInfo.getWarehouseCode());
                     level3MaterialRequisition.setApplyUserId(loginUser.getId());
                     level3MaterialRequisition.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL2);
                     level3MaterialRequisition.setApplyType(MaterialRequisitionConstant.APPLY_TYPE_SPECIAL);
@@ -788,9 +787,9 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     materialRequisitionDetailService.saveBatch(requisitionDetails);
 
                     //二级库出库
-                    String outOrderCode = addStockOutOrderLevel2(materialRequisition, requisitionDetailList);
+                    String outOrderCode = addStockOutOrderLevel2(level3MaterialRequisition, requisitionDetails);
                     //三级库入库
-                    addSparePartInOrder(requisitionDetailList, materialRequisition, outOrderCode,loginUser);
+                    addSparePartInOrder(requisitionDetails, level3MaterialRequisition, outOrderCode,loginUser);
                 }
             }
 
