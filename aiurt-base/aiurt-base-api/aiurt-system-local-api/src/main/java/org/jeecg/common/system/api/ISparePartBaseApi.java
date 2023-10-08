@@ -32,8 +32,9 @@ public interface ISparePartBaseApi {
      * 故障：备件更换（组件、易耗品）
      * @param nonConsumablesList
      * @param faultCode
+     * @param faultRepairRecordId
      */
-    void addSparePartOutOrder(List<SparePartStockDTO> nonConsumablesList,String faultCode);
+    void addSpareChange(List<SparePartStockDTO> nonConsumablesList,String faultCode,String faultRepairRecordId);
 
 
     /**

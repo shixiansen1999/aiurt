@@ -101,6 +101,7 @@ public class MaterialRequisitionServiceImpl extends ServiceImpl<MaterialRequisit
         if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(requisitionType)) {
             //维修申领
             materialRequisitionInfoDTO.setApplyWarehouseName(level3Map.get(materialRequisition.getApplyWarehouseCode()));
+            materialRequisitionInfoDTO.setLeve2WarehouseName(level2Map.get(materialRequisition.getLeve2WarehouseCode()));
         }else if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL2.equals(requisitionType)) {
             //二级库领用
             materialRequisitionInfoDTO.setCustodialWarehouseName(level2Map.get(materialRequisition.getCustodialWarehouseCode()));

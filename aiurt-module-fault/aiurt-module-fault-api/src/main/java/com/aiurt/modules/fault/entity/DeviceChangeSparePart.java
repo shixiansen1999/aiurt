@@ -85,7 +85,10 @@ public class DeviceChangeSparePart implements Serializable {
 	/**新组件数量*/
     @ApiModelProperty(value = "新组件数量")
     private Integer newSparePartNum;
-
+    /**申请出库数量*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "申请出库数量")
+    private Integer applyNum;
 	/**新组件所在班组*/
     private String newOrgCode;
 

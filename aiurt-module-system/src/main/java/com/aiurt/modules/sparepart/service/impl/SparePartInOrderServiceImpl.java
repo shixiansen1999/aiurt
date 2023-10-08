@@ -32,6 +32,8 @@ import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockNumMapper;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
+import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
+import com.aiurt.modules.stock.service.impl.MaterialStockOutInRecordServiceImpl;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -50,6 +52,7 @@ import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.*;
 import org.jeecg.common.util.SpringContextUtils;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -100,6 +103,8 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
     private IMaterialRequisitionService materialRequisitionService;
     @Autowired
     private IMaterialRequisitionDetailService materialRequisitionDetailService;
+    @Autowired
+    private MaterialStockOutInRecordServiceImpl materialStockOutInRecordService;
     /**
      * 查询列表
      * @param page
@@ -137,6 +142,11 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         partInOrder.setConfirmTime(new Date());
         partInOrder.setConfirmStatus(sparePartInOrder.getConfirmStatus());
         sparePartInOrderMapper.updateById(partInOrder);
+        //同步出库记录到出入库记录表
+        LambdaQueryWrapper<MaterialStockOutInRecord> queryWrapper = new LambdaQueryWrapper<>();
+        MaterialStockOutInRecord record = materialStockOutInRecordService.getOne(queryWrapper.eq(MaterialStockOutInRecord::getOrderId, partInOrder.getId()));
+        BeanUtils.copyProperties(partInOrder, record);
+        materialStockOutInRecordService.updateById(record);
         // 2.回填申领单
         MaterialRequisitionDetail detail = materialRequisitionDetailService.getOne(new LambdaQueryWrapper<MaterialRequisitionDetail>()
                 .eq(MaterialRequisitionDetail::getMaterialsCode, sparePartInOrder.getMaterialCode())
@@ -150,6 +160,7 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partInOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partInOrder.getWarehouseCode()));
         if(null!=sparePartStock){
             sparePartStock.setNum(sparePartStock.getNum()+partInOrder.getNum());
+            sparePartStock.setAvailableNum(sparePartStock.getAvailableNum()+partInOrder.getNum());
             sparePartStockMapper.updateById(sparePartStock);
         }else{
             SparePartStock stock = new SparePartStock();

@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
@@ -18,6 +19,8 @@ import com.aiurt.modules.material.entity.MaterialRequisitionDetail;
 import com.aiurt.modules.material.mapper.MaterialRequisitionDetailMapper;
 import com.aiurt.modules.material.service.IMaterialRequisitionDetailService;
 import com.aiurt.modules.material.service.IMaterialRequisitionService;
+import com.aiurt.modules.sparepart.entity.dto.req.SparePartRequisitionAddReqDTO;
+import com.aiurt.modules.sparepart.service.impl.SparePartRequisitionServiceImpl;
 import com.aiurt.modules.stock.dto.StockLevel2RequisitionDetailDTO;
 import com.aiurt.modules.stock.dto.req.StockLevel2RequisitionAddReqDTO;
 import com.aiurt.modules.stock.dto.req.StockLevel2RequisitionListReqDTO;
@@ -34,10 +37,10 @@ import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -65,6 +68,9 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
     private IStockInOrderLevel2Service stockInOrderLevel2Service;
     @Autowired
     private FlowBaseApi flowBaseApi;
+    @Autowired
+    @Lazy
+    private SparePartRequisitionServiceImpl sparePartRequisitionService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -192,6 +198,36 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                 }catch (Exception e){
                     e.printStackTrace();
                 }
+                LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                //如果该二级库申领是由三级库产生，则补充完整二级库出库，三级库入出库
+                //获取二级库领用单
+                MaterialRequisition byId = materialRequisitionService.getById(id);
+                QueryWrapper<MaterialRequisitionDetail> wrapper = new QueryWrapper<>();
+                wrapper.lambda().eq(MaterialRequisitionDetail::getMaterialRequisitionId, id).eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
+                List<MaterialRequisitionDetail> materialRequisitionDetails = materialRequisitionDetailService.getBaseMapper().selectList(wrapper);
+
+                //获取维修领用单
+                QueryWrapper<MaterialRequisition>  queryWrapper = new QueryWrapper<>();
+                MaterialRequisition one = materialRequisitionService.getOne(queryWrapper.lambda().eq(MaterialRequisition::getFaultRepairRecordId, byId.getFaultRepairRecordId())
+                        .eq(MaterialRequisition::getMaterialRequisitionType, MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR).eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0.doubleValue()));
+                SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO = new SparePartRequisitionAddReqDTO();
+                BeanUtils.copyProperties(sparePartRequisitionAddReqDTO, one);
+                //三级库申领
+                sparePartRequisitionService.addLevel3Requisition(materialRequisitionDetails, sparePartRequisitionAddReqDTO, one);
+
+                //生成三级库出库
+                QueryWrapper<MaterialRequisitionDetail> wrapper2 = new QueryWrapper<>();
+                wrapper2.lambda().eq(MaterialRequisitionDetail::getMaterialRequisitionId, one.getId()).eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
+                List<MaterialRequisitionDetail> requisitionDetails = materialRequisitionDetailService.getBaseMapper().selectList(wrapper2);
+                sparePartRequisitionService.addSparePartOutOrder(requisitionDetails, loginUser, one);
+                //维修申领单变更为已完成,
+                one.setStatus(MaterialRequisitionConstant.STATUS_COMPLETED);
+                materialRequisitionService.updateById(one);
+                // 再保存物资清单
+                for (MaterialRequisitionDetail materialRequisitionDetail : requisitionDetails) {
+                    materialRequisitionDetail.setActualNum(materialRequisitionDetail.getApplyNum());
+                }
+                materialRequisitionDetailService.updateBatchById(requisitionDetails);
                 break;
             default:
                 return;

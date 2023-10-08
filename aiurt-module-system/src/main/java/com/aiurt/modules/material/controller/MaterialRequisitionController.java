@@ -1,11 +1,17 @@
 package com.aiurt.modules.material.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.material.constant.MaterialRequisitionConstant;
 import com.aiurt.modules.material.dto.MaterialRequisitionDetailInfoDTO;
 import com.aiurt.modules.material.dto.MaterialRequisitionInfoDTO;
 import com.aiurt.modules.material.entity.MaterialRequisition;
+import com.aiurt.modules.material.entity.MaterialRequisitionDetail;
+import com.aiurt.modules.material.mapper.MaterialRequisitionDetailMapper;
 import com.aiurt.modules.material.service.IMaterialRequisitionService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -14,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author : sbx
@@ -26,7 +34,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/materialRequisition")
 public class MaterialRequisitionController extends BaseController<MaterialRequisition, IMaterialRequisitionService> {
-
+    @Autowired
+    private MaterialRequisitionDetailMapper materialRequisitionDetailMapper;
     @Autowired
     private IMaterialRequisitionService materialRequisitionService;
 
@@ -79,5 +88,31 @@ public class MaterialRequisitionController extends BaseController<MaterialRequis
     public Result<String> deleteById(@RequestParam(name = "id") String id){
         materialRequisitionService.deleteById(id);
         return Result.ok("删除成功！");
+    }
+
+    /**
+     * 根据故障维修单查询管理
+     * @param faultRepairRecordId 故障维修单id
+     * @return Result<MaterialRequisitionInfoDTO> 返回申领单详情DTO
+     */
+    @AutoLog(value = "根据故障维修单查询管理")
+    @ApiOperation(value = "根据故障维修单查询管理", notes = "根据故障维修单查询管理")
+    @GetMapping(value = "/getMaterialRequisitions")
+    public Result<List<MaterialRequisition>> getMaterialRequisitions(@RequestParam(name = "faultRepairRecordId") String faultRepairRecordId){
+        LambdaQueryWrapper<MaterialRequisition> wrapper = new LambdaQueryWrapper<>();
+        List<MaterialRequisition> materialRequisitions = materialRequisitionService.getBaseMapper().selectList(wrapper.eq(MaterialRequisition::getFaultRepairRecordId, faultRepairRecordId)
+                .eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(MaterialRequisition::getMaterialRequisitionType, MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR));
+        if (CollUtil.isNotEmpty(materialRequisitions)) {
+            for (MaterialRequisition materialRequisition : materialRequisitions) {
+                if (MaterialRequisitionConstant.STATUS_COMPLETED.equals(materialRequisition.getStatus())) {
+                    LambdaQueryWrapper<MaterialRequisitionDetail> queryWrapper = new LambdaQueryWrapper<>();
+                    List<MaterialRequisitionDetail> materialRequisitionDetails = materialRequisitionDetailMapper.selectList(queryWrapper.eq(MaterialRequisitionDetail::getMaterialRequisitionId, materialRequisition.getId()));
+                    materialRequisition.setMaterialRequisitionDetails(materialRequisitionDetails);
+                }
+            }
+        }
+
+        return Result.ok(materialRequisitions);
     }
 }

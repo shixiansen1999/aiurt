@@ -1,6 +1,7 @@
 package com.aiurt.modules.material.entity;
 
 import com.aiurt.common.system.base.entity.BaseEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -10,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 领料单
@@ -88,4 +90,11 @@ public class MaterialRequisition extends BaseEntity implements Serializable {
     /**删除状态(0.未删除 1.已删除)*/
     @ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")
     private java.lang.Integer delFlag;
+
+    /**
+     * 申领物资信息
+     */
+    @ApiModelProperty(value = "申领物资信息")
+    @TableField(exist = false)
+    private List<MaterialRequisitionDetail> materialRequisitionDetails;
 }

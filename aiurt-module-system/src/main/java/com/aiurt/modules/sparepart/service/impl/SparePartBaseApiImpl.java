@@ -12,7 +12,6 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
-import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
@@ -28,16 +27,13 @@ import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.mapper.*;
 import com.aiurt.modules.sparepart.service.*;
-import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.system.service.ISysUserService;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISparePartBaseApi;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -112,6 +108,8 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
     private SparePartStockNumMapper sparePartStockNumMapper;
     @Autowired
     private ISysUserService userService;
+    @Autowired
+    private SparePartRequisitionServiceImpl sparePartRequisitionService;
 
 
 
@@ -306,332 +304,11 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
 
     }
 
+
     @Override
-    public void addSparePartOutOrder(List<SparePartStockDTO> dtoList, String faultCode) {
-        if (CollUtil.isNotEmpty(dtoList)) {
-            //id为空即为新增的，不为空即旧数据
-            List<SparePartStockDTO> exitFaultSparePartList = dtoList.stream().filter(d -> ObjectUtil.isNotEmpty(d.getId())).collect(Collectors.toList());
-            List<SparePartStockDTO> unExitFaultSparePartList = dtoList.stream().filter(d -> ObjectUtil.isEmpty(d.getId())).collect(Collectors.toList());
-            LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            SparePartStockInfo stockInfo = new SparePartStockInfo();
-            // 获取当前登录人所属机构， 根据所属机构擦查询管理二级管理仓库
-            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            // 查询仓库
-            LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
-            if (ObjectUtil.isNotEmpty(loginUser.getOrgId())) {
-                //一个班组管理一个仓库，用selectOne,防止有人多配，只取一条
-                wrapper.eq(SparePartStockInfo::getOrganizationId, loginUser.getOrgId()).last("limit 1");
-                stockInfo = sparePartStockInfoService.getOne(wrapper);
-            } else {
-                throw new AiurtBootException(" 该用户没绑定机构,无法进行组件或易耗品更换");
-            }
-            if (ObjectUtil.isEmpty(stockInfo)) {
-                throw new AiurtBootException(" 该用户所在的班组无备件仓库,无法进行组件或易耗品更换");
-            }
-            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPARE_PART_EXTRA);
-            String value = sysParamModel.getValue();
-            //判断是否删除备件更换记录,只看组件
-            if("1".equals(value)){
-                deleteDeviceSpare(dtoList,faultCode);
-            }
-            //旧数据进行判断，是否有移除的,有的话找到出来，然后恢复之前的
-            if (CollUtil.isNotEmpty(exitFaultSparePartList)) {
-                LambdaQueryWrapper<DeviceChangeSparePart> queryWrapper = new LambdaQueryWrapper<>();
-                queryWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
-                if("1".equals(value)){
-                    queryWrapper.eq(DeviceChangeSparePart::getConsumables,1);
-                }
-                List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(queryWrapper);
-                List<String> deviceFaultIdList = exitFaultSparePartList.stream().map(SparePartStockDTO::getId).collect(Collectors.toList());
-                deviceChangeSparePartList = deviceChangeSparePartList.stream().filter(d ->!deviceFaultIdList.contains(d.getId())).collect(Collectors.toList());
-                recoverSparePart(deviceChangeSparePartList);
-            }
-            //新数据进行判断，是否是自己的仓库
-            if (CollUtil.isNotEmpty(unExitFaultSparePartList)) {
-                if (CollUtil.isEmpty(exitFaultSparePartList)){
-                //旧数据进行判断，是否有移除的,有的话找到出来，然后恢复之前的
-                    LambdaQueryWrapper<DeviceChangeSparePart> queryWrapper = new LambdaQueryWrapper<>();
-                    queryWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
-                    if("1".equals(value)){
-                        queryWrapper.eq(DeviceChangeSparePart::getConsumables,1);
-                    }
-                    List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(queryWrapper);
-                    recoverSparePart(deviceChangeSparePartList);
-                }
-                for (SparePartStockDTO lendStockDTO : unExitFaultSparePartList) {
-                    //判断新组件的数量是否大于备件库存
-                    SparePartStock sparePartStock = sparePartStockService.getOne(new LambdaQueryWrapper<SparePartStock>()
-                            .eq(SparePartStock::getDelFlag, CommonConstant.DEL_FLAG_0)
-                            .eq(SparePartStock::getWarehouseCode, lendStockDTO.getWarehouseCode())
-                            .eq(SparePartStock::getMaterialCode, lendStockDTO.getMaterialCode()));
-                    if(lendStockDTO.getNewSparePartNum()>sparePartStock.getNum()){
-                        throw new AiurtBootException("更换的数量大于库存数量！");
-                    }
-                    DeviceChangeSparePart sparePart = new DeviceChangeSparePart();
-                    sparePart.setCode(faultCode);
-                    //原组件数量默认1
-                    sparePart.setOldSparePartNum(1);
-                    sparePart.setNewOrgCode(user.getOrgCode());
-                    sparePart.setOldSparePartCode(lendStockDTO.getOldSparePartCode());
-                    sparePart.setMaterialBaseCode(lendStockDTO.getMaterialCode());
-                    sparePart.setConsumables(lendStockDTO.getConsumablesType());
-                    sparePart.setWarehouseCode(lendStockDTO.getWarehouseCode());
-                    if ("0".equals(lendStockDTO.getConsumablesType())) {
-                        if("1".equals(value)){
-                            //先获取该备件的数量记录,更新全新数量
-                            LambdaQueryWrapper<SparePartStockNum> numLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                            numLambdaQueryWrapper.eq(SparePartStockNum::getMaterialCode, lendStockDTO.getMaterialCode())
-                                    .eq(SparePartStockNum::getWarehouseCode, lendStockDTO.getWarehouseCode())
-                                    .eq(SparePartStockNum::getDelFlag, CommonConstant.DEL_FLAG_0);
-                            SparePartStockNum stockNum = sparePartStockNumMapper.selectOne(numLambdaQueryWrapper);
-                            if (ObjectUtil.isNotNull(stockNum)) {
-                                Integer newNum = stockNum.getNewNum();
-                                //如果全新数量小于新组件数量，则从已使用数量中扣除
-                                if (newNum < lendStockDTO.getNewSparePartNum()) {
-                                    stockNum.setNewNum(0);
-                                    stockNum.setUsedNum(stockNum.getUsedNum() - (lendStockDTO.getNewSparePartNum() - newNum));
-                                } else {
-                                    stockNum.setNewNum(newNum - lendStockDTO.getNewSparePartNum());
-                                }
-                                sparePartStockNumMapper.updateById(stockNum);
-                            }
-                        }
-                        SparePartScrap scrap = new SparePartScrap();
-                        scrap.setStatus(1);
-                        scrap.setSysOrgCode(user.getOrgCode());
-                        scrap.setMaterialCode(lendStockDTO.getOldMaterialCode());
-                        scrap.setWarehouseCode(stockInfo.getWarehouseCode());
-                        scrap.setNum(1);
-                        scrap.setFaultCode(faultCode);
-                        scrap.setScrapTime(new Date());
-                        scrap.setCreateBy(user.getUsername());
-                        sparePartScrapService.save(scrap);
-                        try {
-                            String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
-                            //发送通知
-                            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件报废申请-确认" + DateUtil.today(), null);
-                            //构建消息模板
-                            HashMap<String, Object> map = new HashMap<>();
-                            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, scrap.getId());
-                            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_LEND.getType());
-                            map.put("materialCode",scrap.getMaterialCode());
-                            String materialName= sysBaseApi.getMaterialNameByCode(scrap.getMaterialCode());
-                            map.put("name",materialName);
-                            map.put("num",scrap.getNum());
-                            LoginUser userByName = sysBaseApi.getUserByName(scrap.getCreateBy());
-                            map.put("realName",userByName.getRealname());
-                            map.put("scrapTime", DateUtil.format(scrap.getScrapTime(),"yyyy-MM-dd HH:mm:ss"));
-                            messageDTO.setData(map);
-                            //发送待办
-                            TodoDTO todoDTO = new TodoDTO();
-                            todoDTO.setData(map);
-                            SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
-                            todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
-                            todoDTO.setTitle("备件报废申请-确认" + DateUtil.today());
-                            todoDTO.setMsgAbstract("备件报废申请");
-                            todoDTO.setPublishingContent("备件报废申请，请确认");
-                            todoDTO.setCurrentUserName(userName);
-                            todoDTO.setBusinessKey(scrap.getId());
-                            todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_SCRAP.getType());
-                            todoDTO.setCurrentUserName(userName);
-                            todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_SCRAP.getType());
-                            todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
-                            todoDTO.setTemplateCode(CommonConstant.SPAREPARTSCRAP_SERVICE_NOTICE);
-                            isTodoBaseAPI.createTodoTask(todoDTO);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        sparePart.setScrapId(scrap.getId());
-                        QueryWrapper<DeviceAssembly> queryWrapper = new QueryWrapper();
-                        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
-                        List<DeviceAssembly> deviceAssemblyList = deviceAssemblyService.list(queryWrapper);
-                        Set<String> assemblyCodeSet = deviceAssemblyList.stream().map(DeviceAssembly::getCode).collect(Collectors.toSet());
-                        List<String> strings = new ArrayList<>();
-                        Integer newSparePartNum = lendStockDTO.getNewSparePartNum();
-                        Integer num = 1;
-                        for (Integer i = 0; i < newSparePartNum; i++) {
-                            String format = "";
-                             do {
-                                 String number = String.format("%04d", num);
-                                 format = lendStockDTO.getMaterialCode() + number;
-                                 num = num + 1;
-                            } while (assemblyCodeSet.contains(format));
-                            strings.add(format);
-                        }
-                        String codes = strings.stream().collect(Collectors.joining(","));
-                        sparePart.setDeviceCode(lendStockDTO.getDeviceCode());
-                         sparePart.setNewSparePartSplitCode(codes);
-                         sparePart.setNewSparePartCode(codes);
-                    }
-                    sparePart.setNewSparePartNum(lendStockDTO.getNewSparePartNum());
-                    sparePart.setNewOrgCode(user.getOrgCode());
-                    //自己仓库：生成出库单（已确认）
-                    if (lendStockDTO.getWarehouseCode().equals(stockInfo.getWarehouseCode())) {
-                        SparePartOutOrder lendOutOrder = new SparePartOutOrder();
-                        lendOutOrder.setNum(lendStockDTO.getNewSparePartNum());
-                        lendOutOrder.setWarehouseCode(lendStockDTO.getWarehouseCode());
-                        lendOutOrder.setApplyOutTime(new Date());
-                        lendOutOrder.setConfirmTime(new Date());
-                        lendOutOrder.setConfirmUserId(user.getId());
-                        lendOutOrder.setStatus(2);
-                        lendOutOrder.setApplyUserId(user.getUsername());
-                        lendOutOrder.setMaterialCode(lendStockDTO.getMaterialCode());
-                        List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>()
-                                .eq(SparePartOutOrder::getStatus,2)
-                                .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
-                                .eq(SparePartOutOrder::getMaterialCode,lendOutOrder.getMaterialCode())
-                                .eq(SparePartOutOrder::getWarehouseCode,lendOutOrder.getWarehouseCode()));
-                        if(!orderList.isEmpty()){
-                            lendOutOrder.setUnused(orderList.get(0).getUnused());
-                        }
-                        sparePartOutOrderMapper.insert(lendOutOrder);
-                        sparePart.setLendOutOrderId(lendOutOrder.getId());
-
-                        //库存扣减
-                        // new 自己的仓库扣减
-                        SparePartStock lendStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode, lendOutOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode, lendOutOrder.getWarehouseCode()));
-                        lendStock.setNum(lendStock.getNum() - lendOutOrder.getNum());
-                        sparePartStockMapper.updateById(lendStock);
-                        sparePart.setBorrowingInventoryOrderId(lendStock.getId());
-                        //2023-03-30 测试说不发消息
-                        //sendOutboundMessages(lendOutOrder,user);
-                    } else {
-                        //1.生成借出单（已借出）
-                        SparePartLend sparePartLend = new SparePartLend();
-                        sparePartLend.setMaterialCode(lendStockDTO.getMaterialCode());
-                        sparePartLend.setLendWarehouseCode(lendStockDTO.getWarehouseCode());
-                        sparePartLend.setBackWarehouseCode(stockInfo.getWarehouseCode());
-                        sparePartLend.setEntryOrgCode(user.getOrgCode());
-                        SysDepart sysDepart = sysDepartService.getOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag, 0).eq(SysDepart::getId, lendStockDTO.getOrgId()));
-                        sparePartLend.setExitOrgCode(sysDepart.getOrgCode());
-                        sparePartLend.setOutTime(new Date());
-                        sparePartLend.setLendPerson(user.getUsername());
-                        sparePartLend.setLendNum(lendStockDTO.getNewSparePartNum());
-                        sparePartLend.setBorrowNum(lendStockDTO.getNewSparePartNum());
-                        sparePartLend.setStatus(2);
-                        sparePartLend.setCreateOrgCode(user.getOrgCode());
-                        sparePartLendMapper.insert(sparePartLend);
-                        sparePart.setLendOrderId(sparePartLend.getId());
-                        //2.借出仓库库存数做减法
-                        SparePartStock lendStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode, sparePartLend.getMaterialCode()).eq(SparePartStock::getWarehouseCode, sparePartLend.getLendWarehouseCode()));
-                        lendStock.setNum(lendStock.getNum() - sparePartLend.getLendNum());
-                        sparePartStockMapper.updateById(lendStock);
-                        sparePart.setLendInventoryOrderId(lendStock.getId());
-                        //3.发消息（借出单的消息）
-                        try {
-
-                            sendMeessage(user, sparePartLend);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        //4.借出仓库生成出库单
-                        SparePartOutOrder lendOutOrder = new SparePartOutOrder();
-                        lendOutOrder.setMaterialCode(sparePartLend.getMaterialCode());
-                        lendOutOrder.setWarehouseCode(sparePartLend.getLendWarehouseCode());
-                        lendOutOrder.setSysOrgCode(user.getOrgCode());
-                        lendOutOrder.setNum(sparePartLend.getLendNum());
-                        lendOutOrder.setConfirmTime(new Date());
-                        lendOutOrder.setConfirmUserId(user.getUsername());
-                        lendOutOrder.setApplyOutTime(new Date());
-                        lendOutOrder.setApplyUserId(sparePartLend.getLendPerson());
-                        lendOutOrder.setStatus(CommonConstant.SPARE_PART_OUT_ORDER_STATUS_2);
-                        List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>()
-                                .eq(SparePartOutOrder::getStatus,2)
-                                .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
-                                .eq(SparePartOutOrder::getMaterialCode,lendOutOrder.getMaterialCode())
-                                .eq(SparePartOutOrder::getWarehouseCode,lendOutOrder.getWarehouseCode()));
-                        if(!orderList.isEmpty()){
-                            lendOutOrder.setUnused(orderList.get(0).getUnused());
-                        }
-                        sparePartOutOrderMapper.insert(lendOutOrder);
-                        sparePart.setLendOutOrderId(lendOutOrder.getId());
-
-                        //5.借入仓库库存数做加法
-
-                        SparePartStock  borrowingStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>()
-                                .eq(SparePartStock::getMaterialCode, lendOutOrder.getMaterialCode())
-                                .eq(SparePartStock::getWarehouseCode, stockInfo.getWarehouseCode()));
-                        SparePartStock partStock = new SparePartStock();
-                        if (null != borrowingStock) {
-                            borrowingStock.setNum(borrowingStock.getNum() + sparePartLend.getLendNum());
-                            sparePartStockMapper.updateById(borrowingStock);
-                            sparePart.setBorrowingInventoryOrderId(borrowingStock.getId());
-                        } else {
-                            //插入库存
-                            partStock.setMaterialCode(lendOutOrder.getMaterialCode());
-                            partStock.setNum(lendOutOrder.getNum());
-                            partStock.setWarehouseCode(stockInfo.getWarehouseCode());
-                            partStock.setOrgId(user.getOrgId());
-                            partStock.setSysOrgCode(user.getOrgCode());
-                            sparePartStockMapper.insert(partStock);
-                            sparePart.setBorrowingInventoryOrderId(partStock.getId());
-                        }
-                        //6.借入仓库生成入库记录
-                        SparePartInOrder sparePartInOrder = new SparePartInOrder();
-                        sparePartInOrder.setMaterialCode(lendOutOrder.getMaterialCode());
-                        sparePartInOrder.setWarehouseCode(stockInfo.getWarehouseCode());
-                        sparePartInOrder.setNum(lendOutOrder.getNum());
-                        sparePartInOrder.setOrgId(user.getOrgId());
-                        sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_STATUS_1);
-                        sparePartInOrder.setConfirmId(user.getUsername());
-                        sparePartInOrder.setConfirmTime(new Date());
-                        sparePartInOrder.setSysOrgCode(user.getOrgCode());
-                        sparePartInOrderMapper.insert(sparePartInOrder);
-                        sparePart.setIntOrderId(sparePartInOrder.getId());
-                        //7.生成借入仓库的出库记录（已确认）
-                        SparePartOutOrder borrowingOutOrder = new SparePartOutOrder();
-                        borrowingOutOrder.setMaterialCode(sparePartInOrder.getMaterialCode());
-                        borrowingOutOrder.setWarehouseCode(sparePartInOrder.getWarehouseCode());
-                        borrowingOutOrder.setSysOrgCode(user.getOrgCode());
-                        borrowingOutOrder.setNum(sparePartInOrder.getNum());
-                        borrowingOutOrder.setApplyOutTime(new Date());
-                        borrowingOutOrder.setApplyUserId(user.getUsername());
-                        borrowingOutOrder.setConfirmTime(new Date());
-                        borrowingOutOrder.setConfirmUserId(user.getId());
-                        borrowingOutOrder.setStatus(2);
-                        List<SparePartOutOrder> outOrders = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>()
-                                .eq(SparePartOutOrder::getStatus,2)
-                                .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
-                                .eq(SparePartOutOrder::getMaterialCode,borrowingOutOrder.getMaterialCode())
-                                .eq(SparePartOutOrder::getWarehouseCode,borrowingOutOrder.getWarehouseCode()));
-                        if(!outOrders.isEmpty()){
-                            borrowingOutOrder.setUnused(outOrders.get(0).getUnused());
-                        }
-                        sparePartOutOrderMapper.insert(borrowingOutOrder);
-                        sparePart.setBorrowingOutOrderId(borrowingOutOrder.getId());
-                        //8.借入仓库的库存扣减（已确认）
-                        //库存扣减
-                        // new 自己的仓库再扣减
-                        if(ObjectUtil.isNotEmpty(borrowingStock)){
-                            borrowingStock.setNum(borrowingStock.getNum() - borrowingOutOrder.getNum());
-                            sparePartStockMapper.updateById(borrowingStock);
-                        }else {
-                            partStock.setNum(partStock.getNum() - borrowingOutOrder.getNum());
-                            sparePartStockMapper.updateById(partStock);
-                        }
-                        //2023-03-30 测试说不发消息
-                        //sendOutboundMessages(borrowingOutOrder,user);
-                    }
-//                    sparePart.setNewSparePartCode(lendStockDTO.getNewSparePartCode());
-                    sparePartService.getBaseMapper().insert(sparePart);
-                    if("1".equals(value)){
-                        if("0".equals(sparePart.getConsumables())){
-                            List<DeviceChangeSparePartDTO> dataList = new ArrayList<>();
-                            DeviceChangeSparePartDTO sparePartDTO = new DeviceChangeSparePartDTO();
-                            BeanUtils.copyProperties(sparePart,sparePartDTO);
-                            dataList.add(sparePartDTO);
-                            dealChangeSparePart(dataList);
-                        }
-                    }
-                }
-            }
-        } else {
-            List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.list(new LambdaQueryWrapper<DeviceChangeSparePart>().eq(DeviceChangeSparePart::getCode, faultCode));
-            recoverSparePart(deviceChangeSparePartList);
-        }
-
+    public void addSpareChange(List<SparePartStockDTO> dtoList, String faultCode,String faultRepairRecordId) {
+        sparePartRequisitionService.addSpareChange(dtoList, faultCode,faultRepairRecordId);
     }
-
     private void deleteDeviceSpare(List<SparePartStockDTO> dtoList,String faultCode) {
         List<String> deviceFaultIdList = dtoList.stream().filter(d -> "0".equals(d.getConsumablesType()) && ObjectUtil.isNotEmpty(d.getId())).map(SparePartStockDTO::getId).collect(Collectors.toList());
         LambdaQueryWrapper<DeviceChangeSparePart> queryWrapper = new LambdaQueryWrapper<>();
