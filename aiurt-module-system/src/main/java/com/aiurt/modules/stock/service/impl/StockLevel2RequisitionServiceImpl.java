@@ -202,6 +202,10 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                 //如果该二级库申领是由三级库产生，则补充完整二级库出库，三级库入出库
                 //获取二级库领用单
                 MaterialRequisition byId = materialRequisitionService.getById(id);
+                // 如果没有关联维修单，就是直接从二级库申领模块新增的，就不用补充二级库出库和三级库入库
+                if (byId.getFaultRepairRecordId() == null) {
+                    break;
+                }
                 QueryWrapper<MaterialRequisitionDetail> wrapper = new QueryWrapper<>();
                 wrapper.lambda().eq(MaterialRequisitionDetail::getMaterialRequisitionId, id).eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
                 List<MaterialRequisitionDetail> materialRequisitionDetails = materialRequisitionDetailService.getBaseMapper().selectList(wrapper);
