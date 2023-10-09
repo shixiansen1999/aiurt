@@ -52,6 +52,9 @@ public class FlowTaskCommentDTO {
     @ApiModelProperty(value = "审批类型")
     private String approvalType;
 
+    @ApiModelProperty(value = "审批类型名称")
+    private String approvalTypeName;
+
     /**
      * 批注内容。
      */

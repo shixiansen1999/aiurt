@@ -3,7 +3,6 @@ package com.aiurt.modules.modeler.entity;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import io.swagger.annotations.ApiModel;
@@ -104,6 +103,9 @@ public class ActCustomTaskExt implements Serializable {
     @ApiModelProperty(value = "动态选人(流程变量)")
     private String dynamicVariable;
 
+
+    @ApiModelProperty(value = "是否允许加减签")
+    private Integer isAddMulti;
 
 
 }

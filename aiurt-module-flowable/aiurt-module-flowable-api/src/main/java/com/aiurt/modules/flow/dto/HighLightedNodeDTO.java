@@ -45,11 +45,23 @@ public class HighLightedNodeDTO implements Serializable {
      */
     @ApiModelProperty("model的xml文件")
     private String modelXml;
+
+
     /**
      * model的名称
      */
     @ApiModelProperty("model的名称")
     private String modelName;
+
+
+    @ApiModelProperty("可能会经过的节点")
+    private String featureTaskSet;
+
+    @ApiModelProperty("可能会经过的连线")
+    private String featureSequenceFlowSet;
+
+    @ApiModelProperty("节点办理用户")
+    private HighLightedUserInfoDTO highLightedUserInfoDTO;
 
 
 }

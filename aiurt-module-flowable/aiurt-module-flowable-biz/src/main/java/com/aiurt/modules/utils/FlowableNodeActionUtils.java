@@ -10,6 +10,7 @@ import com.aiurt.common.util.SpringContextHolder;
 import com.aiurt.common.util.TokenUtils;
 import com.aiurt.config.sign.util.HttpUtils;
 import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
+import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
@@ -31,6 +32,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -86,6 +88,9 @@ public class FlowableNodeActionUtils {
 
                 // 提交则需要删除变量， 否则回退时不执行
                 taskService.removeVariable(taskId, FlowModelExtElementConstant.EXT_PRE_NODE_ACTION + "_" + taskDefinitionKey);
+
+                // 删除加签的变量
+                taskService.removeVariable(taskId, FlowVariableConstant.ADD_ASSIGNEE_LIST + taskDefinitionKey);
             }
         } else {
             // 判断是否已经执行

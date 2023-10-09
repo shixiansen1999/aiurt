@@ -27,6 +27,7 @@ import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
+import org.flowable.engine.runtime.Execution;
 import org.flowable.task.api.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 功能描述
@@ -58,25 +60,21 @@ public class ChangeTaskStatusHandler extends AbstractFlowHandler<FlowRecallConte
         String processInstanceId = context.getProcessInstanceId();
         HistoricProcessInstance processInstance = context.getProcessInstance();
         String processDefinitionId = processInstance.getProcessDefinitionId();
-        //获取流程当前运行节点
-        List<String> activityIdsToMove = new ArrayList<>();
-        List<Task> list = taskService.createTaskQuery().active().processInstanceId(processInstanceId).list();
-        for (Task task : list) {
-            //去重
-            if (!activityIdsToMove.contains(task.getTaskDefinitionKey())) {
-                activityIdsToMove.add(task.getTaskDefinitionKey());
-            }
-        }
+        //获取流程所有节点
+
+        // fixby fugaowei 在并行网关，多实例中撤回有条数据的问题或者 原因分析（https://blog.csdn.net/weixin_44663675/article/details/125839004）
+        List<Execution> executions = runtimeService.createExecutionQuery().parentId(processInstanceId).list();
+        List<String> exctutionIds = executions.stream().map(Execution::getId).collect(Collectors.toList());
+
+
         //获取流程发起节点
-        FlowElement startEvent = flowElementUtil.getStartFlowNodeByDefinitionId(processDefinitionId);
+        FlowElement startEvent = flowElementUtil.getFirstUserTaskByDefinitionId(processDefinitionId);
         String startElementId = null;
         if (ObjectUtil.isNotEmpty(startEvent)) {
              startElementId = startEvent.getId();
         }
         //将所有节点撤回到开始节点
-        runtimeService.createChangeActivityStateBuilder()
-                .processInstanceId(processInstanceId)
-                .moveActivityIdsToSingleActivityId(activityIdsToMove,startElementId)
-                .changeState();
+        runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
+                .moveExecutionsToSingleActivityId(exctutionIds, startElementId).changeState();
     }
 }
