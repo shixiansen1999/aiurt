@@ -485,6 +485,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                 sysDepart = iSysDepartService.getById(sparePartStockInfo.getOrganizationId());
             }
             sparePartInOrder.setConfirmId(loginUser.getUsername());
+            sparePartInOrder.setConfirmTime(new Date());
             sparePartInOrder.setOrgId(null!=sysDepart?sysDepart.getId():null);
             sparePartInOrder.setSysOrgCode(null!=sysDepart?sysDepart.getOrgCode():null);
             sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_1);
