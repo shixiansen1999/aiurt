@@ -15,5 +15,4 @@ public class WareHouseDTO {
     private Boolean isMyself;
     @ApiModelProperty(value = "仓库编号")
     private String warehouseCode;
-    private String materialRequisitionType;
 }

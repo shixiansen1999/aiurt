@@ -1,6 +1,5 @@
 package com.aiurt.modules.stock.controller;
 
-import cn.hutool.core.collection.CollUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
@@ -103,9 +102,6 @@ public class StockLevel2InfoController extends BaseController<StockLevel2Info,IS
         queryWrapper.eq("status", CommonConstant.STOCK_LEVEL2_STATUS_1);
         queryWrapper.orderByDesc("create_time");
         List<StockLevel2Info> stockLevel2Infos = iStockLevel2InfoService.list(queryWrapper);
-        if (CollUtil.isNotEmpty(stockLevel2Infos)) {
-            stockLevel2Infos.forEach(l->l.setMaterialRequisitionType("3"));
-        }
         result.setSuccess(true);
         result.setResult(stockLevel2Infos);
         return result;

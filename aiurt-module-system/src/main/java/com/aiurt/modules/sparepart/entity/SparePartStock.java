@@ -200,4 +200,8 @@ public class SparePartStock implements Serializable {
     @ApiModelProperty(value = "备件库存信息是否查库存为零的数据：1是，0不是")
     @TableField(exist = false)
     private String sparePartZero;
+
+    @ApiModelProperty(value = "申领类型")
+    @TableField(exist = false)
+    private  String  materialRequisitionType;
 }
