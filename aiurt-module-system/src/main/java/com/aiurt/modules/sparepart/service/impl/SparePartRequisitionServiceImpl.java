@@ -341,7 +341,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
         //2.插入二级库出库表
         StockOutOrderLevel2 stockOutOrderLevel = new StockOutOrderLevel2();
         //生成出库单号
-        String code = CodeGenerateUtils.generateSingleCode("3CK", 5);
+        String code = CodeGenerateUtils.generateSingleCode("EJCK", 5);
         //EJCK+日期+自增3位
         stockOutOrderLevel.setOrderCode(code);
         //出库仓库为申领仓库
