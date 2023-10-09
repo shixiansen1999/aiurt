@@ -174,12 +174,12 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
     private void submitRequisition(MaterialRequisition materialRequisition, List<MaterialRequisitionDetail> requisitionDetailList, SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         if (MaterialRequisitionConstant.APPLY_TYPE_NORMAL.equals(sparePartRequisitionAddReqDTO.getApplyType())) {
-            //三级库申领
+            //普通三级库申领
             //1.修改状态为“待确认”
             materialRequisition.setStatus(MaterialRequisitionConstant.STATUS_TO_BE_CONFIRMED);
             addStockOutOrderLevel2(materialRequisition, requisitionDetailList);
         }else {
-            //维修申领
+            //维修申领和特殊三级库申领
             if (MaterialRequisitionConstant.COMMIT_STATUS_SUBMITTED.equals(materialRequisition.getCommitStatus())) {
                 //判断是否需要三级库申领，二级库申领
                 List<StockLevel2RequisitionDetailDTO> level2RequisitionDetailDTOS = new ArrayList<StockLevel2RequisitionDetailDTO>();
@@ -273,7 +273,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             requisition.setLeve2WarehouseCode(null);
             requisition.setStatus(MaterialRequisitionConstant.STATUS_COMPLETED);
             requisition.setMaterialRequisitionPid(materialRequisition.getId());
-            String code = CodeGenerateUtils.generateSingleCode("wxsl", 5);
+            String code = CodeGenerateUtils.generateSingleCode("WXSL", 5);
             requisition.setCode(code);
             requisition.setIsUsed(MaterialRequisitionConstant.UNUSED);
             requisition.setApplyTime(new Date());
@@ -676,7 +676,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             //事后申领
             //总维修申领
             MaterialRequisition materialRequisition = new MaterialRequisition();
-            materialRequisition.setCode(CodeGenerateUtils.generateSingleCode("wxsl", 5));
+            materialRequisition.setCode(CodeGenerateUtils.generateSingleCode("WXSL", 5));
             materialRequisition.setApplyWarehouseCode(stockInfo.getWarehouseCode());
             materialRequisition.setApplyUserId(loginUser.getId());
             materialRequisition.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR);

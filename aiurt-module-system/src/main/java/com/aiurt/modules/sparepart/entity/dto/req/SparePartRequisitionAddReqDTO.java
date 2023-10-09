@@ -95,6 +95,10 @@ public class SparePartRequisitionAddReqDTO implements Serializable {
     @ApiModelProperty(value = "关联维修单")
     private java.lang.String faultRepairRecordId;
 
+    /**备注*/
+    @ApiModelProperty(value = "备注")
+    private java.lang.String remarks;
+
     /**物资清单*/
     @ApiModelProperty(value = "物资清单")
     List<SparePartRequisitionDetailDTO> sparePartRequisitionDetailDTOS;
