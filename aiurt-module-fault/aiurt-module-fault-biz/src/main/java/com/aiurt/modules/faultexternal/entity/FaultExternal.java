@@ -2,6 +2,7 @@ package com.aiurt.modules.faultexternal.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
+import com.aiurt.modules.faultattachments.entity.FaultAttachments;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -236,4 +237,10 @@ public class FaultExternal extends DictEntity implements Serializable  {
     @TableField(exist = false)
     @ApiModelProperty(value = "故障现象或者编码")
     private String faultPhenomenonOrCode;
+
+    /**附件*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "附件")
+    private List<FaultAttachments> attachments;
+
 }

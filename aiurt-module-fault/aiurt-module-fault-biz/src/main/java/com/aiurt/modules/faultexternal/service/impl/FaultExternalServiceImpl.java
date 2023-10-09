@@ -13,6 +13,8 @@ import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.fault.service.IFaultService;
+import com.aiurt.modules.faultattachments.entity.FaultAttachments;
+import com.aiurt.modules.faultattachments.mapper.FaultAttachmentsMapper;
 import com.aiurt.modules.faultexternal.dto.FaultExternalDTO;
 import com.aiurt.modules.faultexternal.entity.FaultExternal;
 import com.aiurt.modules.faultexternal.mapper.FaultExternalMapper;
@@ -66,6 +68,9 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
 
     @Autowired
     private FaultRepairRecordMapper recordMapper;
+
+    @Autowired
+    private FaultAttachmentsMapper faultAttachmentsMapper;
 
     @Autowired
     private FaultExternalMapper faultExternalMapper;
@@ -281,6 +286,16 @@ public class FaultExternalServiceImpl extends ServiceImpl<FaultExternalMapper, F
                 sysBaseApi.sendAllMessage();
             } else {
                 faultExternalMapper.update(faultExternal, new LambdaQueryWrapper<FaultExternal>().eq(FaultExternal::getIndocno, faultExternal.getIndocno()));
+                faultAttachmentsMapper.delete(new LambdaQueryWrapper<FaultAttachments>().eq(FaultAttachments::getFaultExternalId, external.getId()));
+            }
+            Integer faultExternalId = external == null ? faultExternal.getId() : external.getId();
+            List<FaultAttachments> attachments = faultExternal.getAttachments();
+            if (CollUtil.isNotEmpty(attachments)) {
+                for (FaultAttachments attachment : attachments) {
+                    attachment.setFaultExternalId(faultExternalId);
+                    attachment.setDelFlag(CommonConstant.DEL_FLAG_0);
+                    faultAttachmentsMapper.insert(attachment);
+                }
             }
             return  Result.OK("添加成功！");
         } catch (Exception e) {
