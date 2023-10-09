@@ -6,7 +6,7 @@ import lombok.Data;
  * @author fgw
  */
 @Data
-public class FlowElementPojo {
+public class FlowElementDTO {
     /**
      * 流转线id
      */

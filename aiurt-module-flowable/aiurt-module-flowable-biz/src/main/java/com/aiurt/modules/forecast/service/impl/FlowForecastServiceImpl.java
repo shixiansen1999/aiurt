@@ -6,7 +6,7 @@ import com.aiurt.modules.cmd.ConditionExpressionV2Cmd;
 import com.aiurt.modules.flow.dto.HighLightedNodeDTO;
 import com.aiurt.modules.flow.dto.HighLightedUserInfoDTO;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
-import com.aiurt.modules.forecast.dto.FlowElementPojo;
+import com.aiurt.modules.forecast.dto.FlowElementDTO;
 import com.aiurt.modules.forecast.dto.HistoricTaskInfo;
 import com.aiurt.modules.forecast.service.IFlowForecastService;
 import com.aiurt.modules.user.entity.ActCustomUser;
@@ -122,7 +122,7 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
         elementList.stream().forEach(item -> process.addFlowElement(item));
 
         // 查询各个节点的关系信息,并添加进流程
-        List<FlowElementPojo> flowElementPojoList = new ArrayList<>();
+        List<FlowElementDTO> flowElementPojoList = new ArrayList<>();
 
 
         Set<String> collect = resultMap.values().stream().map(HistoricTaskInfo::getUserNameList).flatMap(List::stream).collect(Collectors.toSet());
@@ -136,9 +136,9 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
         Set<String> featureTaskSet = new HashSet<>();
         Set<String> featureSequenceFlowSet = new HashSet<>();
         List<HighLightedUserInfoDTO> highLightedUserInfoDTOList = new ArrayList<>();
-        setHightedNodeInfo(resultMap, flowElementPojoList, userMap, finishedTaskSet, finishedSequenceFlowSet, unfinishedTaskSet, featureTaskSet, featureSequenceFlowSet, highLightedUserInfoDTOList);
+        setSightedNodeInfo(resultMap, flowElementPojoList, userMap, finishedTaskSet, finishedSequenceFlowSet, unfinishedTaskSet, featureTaskSet, featureSequenceFlowSet, highLightedUserInfoDTOList);
 
-        for (FlowElementPojo flowElementPojo:flowElementPojoList){
+        for (FlowElementDTO flowElementPojo:flowElementPojoList){
             SequenceFlow sequenceFlow= HistoricTaskInfo.createSequenceFlow(flowElementPojo.getId(),"",flowElementPojo.getResourceFlowElementId(),
                     flowElementPojo.getTargetFlowElementId(),"");
             process.addFlowElement(sequenceFlow);
@@ -172,7 +172,7 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
      * @param featureSequenceFlowSet
      * @param highLightedUserInfoDTOList
      */
-    private void setHightedNodeInfo(LinkedHashMap<String, HistoricTaskInfo> resultMap, List<FlowElementPojo> flowElementPojoList, Map<String, String> userMap, Set<String> finishedTaskSet, Set<String> finishedSequenceFlowSet, Set<String> unfinishedTaskSet, Set<String> featureTaskSet, Set<String> featureSequenceFlowSet, List<HighLightedUserInfoDTO> highLightedUserInfoDTOList) {
+    private void setSightedNodeInfo(LinkedHashMap<String, HistoricTaskInfo> resultMap, List<FlowElementDTO> flowElementPojoList, Map<String, String> userMap, Set<String> finishedTaskSet, Set<String> finishedSequenceFlowSet, Set<String> unfinishedTaskSet, Set<String> featureTaskSet, Set<String> featureSequenceFlowSet, List<HighLightedUserInfoDTO> highLightedUserInfoDTOList) {
         AtomicReference<Integer> t = new AtomicReference<>(0);
         resultMap.keySet().stream().forEach(nodeId->{
             HistoricTaskInfo historicTaskInfo = resultMap.get(nodeId);
@@ -199,7 +199,7 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
             //
             historicTaskInfo.getNextNodeSet().forEach(nextNodeId->{
                 String flowId = "sequence_" + t.get();
-                FlowElementPojo flowElementPojo = new FlowElementPojo();
+                FlowElementDTO flowElementPojo = new FlowElementDTO();
                 flowElementPojo.setId(flowId);
                 flowElementPojo.setTargetFlowElementId(nextNodeId);
                 flowElementPojo.setResourceFlowElementId(nodeId);
