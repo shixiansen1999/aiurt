@@ -448,10 +448,6 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             //更新库存数量
             sparePartStockMapper.updateById(sparePartStock);
 
-            //计算库存结余
-            sparePartOutOrder.setBalance(0);
-            sparePartOutOrderMapper.insert(sparePartOutOrder);
-
 
             //同步出库记录到出入库记录表
             MaterialStockOutInRecord record = new MaterialStockOutInRecord();
