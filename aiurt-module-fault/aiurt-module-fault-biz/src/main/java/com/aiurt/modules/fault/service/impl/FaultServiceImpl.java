@@ -260,11 +260,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
                 fault.setApprovalPassTime(new Date());
             } else {
+                Date date = new Date();
                 fault.setAppointUserName(user.getUsername());
                 fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
                 // 方便统计
                 //fault.setApprovalPassTime(fault.getReceiveTime());
-                Date date = new Date();
+
                 fault.setApprovalPassTime(date);
                 //响应时长为0
                 fault.setResponseDuration(0);

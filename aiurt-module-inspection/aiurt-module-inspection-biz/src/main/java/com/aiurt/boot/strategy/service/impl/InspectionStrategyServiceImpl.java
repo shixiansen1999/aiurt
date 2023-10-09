@@ -28,8 +28,10 @@ import com.aiurt.boot.strategy.entity.*;
 import com.aiurt.boot.strategy.mapper.*;
 import com.aiurt.boot.strategy.service.IInspectionStrategyService;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
+
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.redisson.client.RedissonLockClient;
 import com.aiurt.common.util.UpdateHelperUtils;
 import com.aiurt.modules.device.entity.Device;
 import com.alibaba.fastjson.JSONObject;
@@ -48,6 +50,11 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.*;
+import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.SpringContextUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -496,37 +503,44 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
      */
     @Override
     public Result addAnnualPlan(String id) {
-        // 校验
-        InspectionStrategy ins = checkInspectionStrategy(id);
+        RedissonLockClient redissonLock = (RedissonLockClient) SpringContextUtils.getBean("redissonLockClient");
 
-        // 检修标准
-        List<InspectionCode> inspectionCodes = new ArrayList<>();
-        List<InspectionStrRel> inspectionStrRels = inspectionStrRelMapper.selectList(new LambdaQueryWrapper<InspectionStrRel>().eq(InspectionStrRel::getInspectionStrCode, ins.getCode()).eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-        if (CollUtil.isNotEmpty(inspectionStrRels)) {
-            List<String> collect = inspectionStrRels.stream().map(InspectionStrRel::getInspectionStaCode).collect(Collectors.toList());
-            inspectionCodes = inspectionCodeMapper.selectList(new LambdaQueryWrapper<InspectionCode>().in(InspectionCode::getCode, collect).eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if(redissonLock.tryLock(id, -1, 10000)) {
+            // 校验
+            InspectionStrategy ins = checkInspectionStrategy(id);
+
+            // 检修标准
+            List<InspectionCode> inspectionCodes = new ArrayList<>();
+            List<InspectionStrRel> inspectionStrRels = inspectionStrRelMapper.selectList(new LambdaQueryWrapper<InspectionStrRel>().eq(InspectionStrRel::getInspectionStrCode, ins.getCode()).eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+            if (CollUtil.isNotEmpty(inspectionStrRels)) {
+                List<String> collect = inspectionStrRels.stream().map(InspectionStrRel::getInspectionStaCode).collect(Collectors.toList());
+                inspectionCodes = inspectionCodeMapper.selectList(new LambdaQueryWrapper<InspectionCode>().in(InspectionCode::getCode, collect).eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+            }
+
+            // 组织结构
+            List<InspectionStrOrgRel> orgList = strategyService.getInspectionStrOrgRels(ins.getCode());
+
+            // 站点
+            List<InspectionStrStaRel> stationList = strategyService.getInspectionStrStaRels(ins.getCode());
+
+            // 保存检修标准与检修项目
+            List<RepairPoolCode> newStaIds = strategyService.saveInspection(inspectionCodes);
+
+            // 根据检修类型查询调用不同的方法
+            Integer type = ins.getType();
+
+            // 根据类型生成计划
+            strategyService.macth(type, ins, newStaIds, orgList, stationList);
+
+            // 更新是否生成年计划状态
+            ins.setGenerateStatus(InspectionConstant.GENERATED);
+            this.baseMapper.updateById(ins);
+
+            redissonLock.unlock(id);
+            return Result.OK("年计划生成成功");
+        }else{
+            return Result.OK("年计划生成失败");
         }
-
-        // 组织结构
-        List<InspectionStrOrgRel> orgList = strategyService.getInspectionStrOrgRels(ins.getCode());
-
-        // 站点
-        List<InspectionStrStaRel> stationList = strategyService.getInspectionStrStaRels(ins.getCode());
-
-        // 保存检修标准与检修项目
-        List<RepairPoolCode> newStaIds = strategyService.saveInspection(inspectionCodes);
-
-        // 根据检修类型查询调用不同的方法
-        Integer type = ins.getType();
-
-        // 根据类型生成计划
-        strategyService.macth(type, ins, newStaIds, orgList, stationList);
-
-        // 更新是否生成年计划状态
-        ins.setGenerateStatus(InspectionConstant.GENERATED);
-        this.baseMapper.updateById(ins);
-
-        return Result.OK("年计划生成成功");
     }
 
     /**
@@ -595,16 +609,23 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
      */
     @Override
     public Result addAnnualNewPlan(String id) {
-        InspectionStrategy ins = checkInspectionStrategy(id);
-        QueryWrapper<RepairPool> wrapper = new QueryWrapper<>();
-        // 当前策略生成的计划、当前结束时间往后的，并且待指派的的检修计划将会删除
-        wrapper.eq("inspection_str_code", ins.getCode()).eq("del_flag", CommonConstant.DEL_FLAG_0).eq("status", InspectionConstant.TO_BE_ASSIGNED).ge("end_time", DateUtil.now());
-        List<RepairPool> list = repairPoolMapper.selectList(wrapper);
-        if (CollUtil.isNotEmpty(list)) {
-            repairPoolMapper.deleteBatchIds(list.stream().map(RepairPool::getId).collect(Collectors.toList()));
+        RedissonLockClient redissonLock = (RedissonLockClient) SpringContextUtils.getBean("redissonLockClient");
+
+        if (redissonLock.tryLock(id, -1, 10000)) {
+            InspectionStrategy ins = checkInspectionStrategy(id);
+            QueryWrapper<RepairPool> wrapper = new QueryWrapper<>();
+            // 当前策略生成的计划、当前结束时间往后的，并且待指派的的检修计划将会删除
+            wrapper.eq("inspection_str_code", ins.getCode()).eq("del_flag", CommonConstant.DEL_FLAG_0).eq("status", InspectionConstant.TO_BE_ASSIGNED).ge("end_time", DateUtil.now());
+            List<RepairPool> list = repairPoolMapper.selectList(wrapper);
+            if (CollUtil.isNotEmpty(list)) {
+                repairPoolMapper.deleteBatchIds(list.stream().map(RepairPool::getId).collect(Collectors.toList()));
+            }
+            this.addAnnualPlan(id);
+            redissonLock.unlock(id);
+            return Result.OK("重新生成年计划成功");
+        }else{
+            return Result.OK("重新生成年计划失败");
         }
-        this.addAnnualPlan(id);
-        return Result.OK("重新生成年计划成功");
     }
 
 

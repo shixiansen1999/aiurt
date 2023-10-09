@@ -1334,6 +1334,7 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return 返回部门信息codeList
      */
     List<String> getSysDepartList(String code);
+
     /**
      * 根据用户工号 查询用户信息
      *
