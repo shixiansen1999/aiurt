@@ -16,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 二级库库存信息查询的返回DTO
@@ -85,6 +86,10 @@ public class StockLevel2RespDTO extends DictEntity implements Serializable {
     @ApiModelProperty(value = "数量")
     private  Integer  num;
 
+    /**可使用数量*/
+    @ApiModelProperty(value = "可使用数量")
+    private Integer availableNum;
+
     /**专业编码*/
     @ApiModelProperty(value = "专业编码")
     @Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
@@ -142,9 +147,21 @@ public class StockLevel2RespDTO extends DictEntity implements Serializable {
     @Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
     private  String  createBy;
 
+    /**创建时间 CURRENT_TIMESTAMP*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "创建时间 CURRENT_TIMESTAMP")
+    private  java.util.Date  createTime;
+
     /**修改人*/
     @ApiModelProperty(value = "修改人")
     private  String  updateBy;
+
+    /**修改时间 根据当前时间戳更新*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "修改时间 根据当前时间戳更新")
+    private Date updateTime;
 
     /**支持专业、子系统、物资三种一起模糊查询的物资分类条件*/
     @ApiModelProperty(value = "支持专业、子系统、物资三种一起模糊查询的物资分类条件")
@@ -181,6 +198,5 @@ public class StockLevel2RespDTO extends DictEntity implements Serializable {
     private Integer minimumStock;
 
     @ApiModelProperty(value = "申领类型")
-    @TableField(exist = false)
     private  String  materialRequisitionType;
 }

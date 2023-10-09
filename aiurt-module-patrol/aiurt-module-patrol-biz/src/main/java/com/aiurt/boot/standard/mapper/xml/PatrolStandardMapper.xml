@@ -115,7 +115,7 @@
             </foreach>
                  )
         </if>
-        order by ta.createTime desc
+        order by ta.createTime desc, ta.id desc
     </select>
     <select id="list" resultType="com.aiurt.boot.standard.dto.InspectionStandardDto">
             SELECT d.name as deviceTypeName ,d.code as deviceTypeCode

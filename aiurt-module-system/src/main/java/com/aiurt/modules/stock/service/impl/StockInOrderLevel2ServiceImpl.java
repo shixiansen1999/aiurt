@@ -15,6 +15,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.common.util.XlsExport;
 import com.aiurt.common.util.XlsUtil;
 import com.aiurt.common.util.oConvertUtils;
@@ -220,7 +221,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 
 		// 3、添加一条已完成的入库单
 		// 新建一个StockInOrderLevel2对象并赋值入库单
-		StockInOrderLevel2 stockInOrderLevel2 = this.getInOrderCode();
+		StockInOrderLevel2 stockInOrderLevel2 = new StockInOrderLevel2();
+		stockInOrderLevel2.setOrderCode(CodeGenerateUtils.generateSingleCode("RK", 5));
 		stockInOrderLevel2.setWarehouseCode(requisitionInfoDTO.getCustodialWarehouseCode());
 		stockInOrderLevel2.setOrgCode(requisitionInfoDTO.getSysOrgCode());
 		stockInOrderLevel2.setEntryTime(new Date());
