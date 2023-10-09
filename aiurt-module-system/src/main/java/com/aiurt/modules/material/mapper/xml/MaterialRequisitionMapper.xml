@@ -32,6 +32,10 @@
                 LEFT JOIN cs_subsystem cs ON cs.system_code = mb.system_code
         WHERE
             mrd.del_flag = 0
-          AND mrd.material_requisition_id = #{id}
+            AND mb.del_flag = 0
+            AND mbt.del_flag = 0
+            AND cm.del_flag = 0
+            AND cs.del_flag = 0
+            AND mrd.material_requisition_id = #{id}
     </select>
 </mapper>
