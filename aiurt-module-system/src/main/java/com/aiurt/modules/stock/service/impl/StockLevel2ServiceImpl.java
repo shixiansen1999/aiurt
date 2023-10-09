@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
+import com.aiurt.modules.material.constant.MaterialRequisitionConstant;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.mapper.MaterialBaseTypeMapper;
@@ -84,6 +85,7 @@ public class StockLevel2ServiceImpl extends ServiceImpl<StockLevel2Mapper, Stock
         List<StockLevel2RespDTO> collect = baseList.stream().map(s -> {
             StockLevel2RespDTO stockLevel2RespDTO = new StockLevel2RespDTO();
             BeanUtils.copyProperties(s, stockLevel2RespDTO);
+            stockLevel2RespDTO.setMaterialRequisitionType(String.valueOf(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL2));
             MaterialBase materialBase = finalMaterialBaseMap.get(s.getMaterialCode());
 
             Optional.ofNullable(materialBase).ifPresent((m)->{

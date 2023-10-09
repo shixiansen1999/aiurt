@@ -112,7 +112,4 @@ public class StockLevel2Info extends DictEntity {
 	@ApiModelProperty(value = "入库时间结束")
 	@TableField(exist = false)
 	private  java.util.Date  endTime;
-
-	@TableField(exist = false)
-	private String materialRequisitionType;
 }
