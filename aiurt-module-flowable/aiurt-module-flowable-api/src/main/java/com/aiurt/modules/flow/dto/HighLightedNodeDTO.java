@@ -60,5 +60,8 @@ public class HighLightedNodeDTO implements Serializable {
     @ApiModelProperty("可能会经过的连线")
     private String featureSequenceFlowSet;
 
+    @ApiModelProperty("节点办理用户")
+    private HighLightedUserInfoDTO highLightedUserInfoDTO;
+
 
 }

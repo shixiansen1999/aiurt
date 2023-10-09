@@ -99,7 +99,7 @@ public class FlowForecastServiceImpl {
                 }
             }
 
-            // 没有
+            // 没有回退
             if (time == 0) {
                 HistoricTaskInfo historicTaskInfo = resultMap.get(taskDefinitionKey);
                 if (Objects.isNull(historicTaskInfo)) {
@@ -112,8 +112,8 @@ public class FlowForecastServiceImpl {
                 historicTaskInfo.setNodeTime(time);
                 historicTaskInfo.setName(historicTaskInstance.getName());
 
+                // 存在回退的情况
             } else {
-
                 HistoricTaskInfo historicTaskInfo = resultMap.get(taskDefinitionKey + "_" + time);
                 if (Objects.isNull(historicTaskInfo)) {
                     historicTaskInfo = new HistoricTaskInfo();
@@ -122,14 +122,13 @@ public class FlowForecastServiceImpl {
                 if (historicTaskInfo.getAddFlag()) {
                     historicTaskInfo.addTaskInstance(historicTaskInstance);
                 }
-                // 设置下一个节点的数据
+                // 设置节点信息
                 historicTaskInfo.setNodeTime(time);
                 historicTaskInfo.setName(historicTaskInstance.getName());
             }
         });
 
-        // 处理流程节点
-
+        // 处理流程节点，构建下一个节点数据
         List<String> runList = new ArrayList<>();
         Map<String, Integer> nodeTimeMap = new HashMap<>();
         resultMap.keySet().stream().forEach(nodeId->{
@@ -155,7 +154,6 @@ public class FlowForecastServiceImpl {
                 });
             } else {
                 // 判断, 是否要加一
-                int nodeTime = historicTaskInfo.getNodeTime();
                 List<String> nextNodeIdList = userTaskModelMap.get(taskDefinitionKey);
                 if (CollUtil.isNotEmpty(nextNodeIdList)) {
                     nextNodeIdList.stream().forEach(id->{
@@ -197,7 +195,6 @@ public class FlowForecastServiceImpl {
         }
 
         // 补充信息，办理人
-
         BpmnModel bpmnModel1 = new BpmnModel();
         // 设置流程信息
         // 此信息都可以通过前期自定义数据,使用时再查询
