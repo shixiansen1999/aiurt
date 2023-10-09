@@ -150,7 +150,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
         materialRequisition.setApplyTime(new Date());
         materialRequisition.setIsUsed(MaterialRequisitionConstant.UNUSED);
         String name = loginUser.getOrgName() + "-" + loginUser.getRealname() + "-" +
-                DateUtil.format(materialRequisition.getApplyTime(), "yyyy-MM-dd") + "-" + "领料单";
+                DateUtil.format(materialRequisition.getApplyTime(), "yyyyMMdd") + "-" + "领料单";
         materialRequisition.setName(name);
         materialRequisitionService.save(materialRequisition);
         // 再保存物资清单
@@ -253,7 +253,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     stockLevel2RequisitionAddReqDTO.setIsUsed(MaterialRequisitionConstant.UNUSED);
                     stockLevel2RequisitionAddReqDTO.setStockLevel2RequisitionDetailDTOList(level2RequisitionDetailDTOS);
                     String name = loginUser.getOrgName() + "-" + loginUser.getRealname() + "-" +
-                            DateUtil.format(materialRequisition.getApplyTime(), "yyyy-MM-dd") + "-" + "领料单";
+                            DateUtil.format(materialRequisition.getApplyTime(), "yyyyMMdd") + "-" + "领料单";
                     stockLevel2RequisitionAddReqDTO.setName(name);
                     stockLevel2RequisitionAddReqDTO.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL2);
                     stockLevel2RequisitionService.submit(stockLevel2RequisitionAddReqDTO);
@@ -304,7 +304,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             requisition.setApplyTime(new Date());
             LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             String name = loginUser.getOrgName() + "-" + loginUser.getRealname() + "-" +
-                    DateUtil.format(requisition.getApplyTime(), "yyyy-MM-dd") + "-" + "领料单";
+                    DateUtil.format(requisition.getApplyTime(), "yyyyMMdd") + "-" + "领料单";
             requisition.setName(name);
             requisition.setId(null);
             materialRequisitionService.save(requisition);
@@ -717,7 +717,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             Date applyTime = new Date();
             materialRequisition.setApplyTime(applyTime);
             String name = loginUser.getOrgName() + "-" + loginUser.getRealname() + "-" +
-                    DateUtil.format(applyTime, "yyyy-MM-dd") + "-" + "领料单";
+                    DateUtil.format(applyTime, "yyyyMMdd") + "-" + "领料单";
             materialRequisition.setName(name);
             materialRequisition.setFaultRepairRecordId(faultRepairRecordId);
             materialRequisitionService.save(materialRequisition);
@@ -785,10 +785,11 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     String warehouseCode = entry.getKey();
                     List<SparePartStockDTO> sparePartStockDTOS = entry.getValue();
                     MaterialRequisition level3MaterialRequisition = new MaterialRequisition();
+                    level3MaterialRequisition.setCode(CodeGenerateUtils.generateSingleCode("WXSL", 5));
                     level3MaterialRequisition.setApplyWarehouseCode(warehouseCode);
                     level3MaterialRequisition.setCustodialWarehouseCode(stockInfo.getWarehouseCode());
                     level3MaterialRequisition.setApplyUserId(loginUser.getId());
-                    level3MaterialRequisition.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL2);
+                    level3MaterialRequisition.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3);
                     level3MaterialRequisition.setApplyType(MaterialRequisitionConstant.APPLY_TYPE_SPECIAL);
                     level3MaterialRequisition.setStatus(MaterialRequisitionConstant.STATUS_COMPLETED);
                     level3MaterialRequisition.setCommitStatus(MaterialRequisitionConstant.COMMIT_STATUS_SUBMITTED);
@@ -798,19 +799,18 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     level3MaterialRequisition.setName(name);
                     level3MaterialRequisition.setFaultRepairRecordId(faultRepairRecordId);
                     String name2 = loginUser.getOrgName() + "-" + loginUser.getRealname() + "-" +
-                            DateUtil.format(level3MaterialRequisition.getApplyTime(), "yyyy-MM-dd") + "-" + "领料单";
+                            DateUtil.format(level3MaterialRequisition.getApplyTime(), "yyyyMMdd") + "-" + "领料单";
                     level3MaterialRequisition.setName(name2);
                     materialRequisitionService.save(level3MaterialRequisition);
 
                     // 再保存物资清单
                     List<MaterialRequisitionDetail> requisitionDetails = sparePartStockDTOS.stream().map(detailDTO -> {
                         MaterialRequisitionDetail requisitionDetail = new MaterialRequisitionDetail();
-                        requisitionDetail.setMaterialRequisitionId(materialRequisition.getId());
+                        requisitionDetail.setMaterialRequisitionId(level3MaterialRequisition.getId());
                         requisitionDetail.setApplyNum(detailDTO.getApplyNum());
                         requisitionDetail.setActualNum(detailDTO.getApplyNum());
                         requisitionDetail.setMaterialsCode(detailDTO.getMaterialCode());
                         requisitionDetail.setMaterialsName(detailDTO.getName());
-                        requisitionDetail.setMaterialRequisitionId(materialRequisition.getId());
                         return requisitionDetail;
                     }).collect(Collectors.toList());
                     materialRequisitionDetailService.saveBatch(requisitionDetails);
