@@ -262,6 +262,8 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     return;
                 }
 
+                //维修申领单变更为已完成,
+                materialRequisition.setStatus(MaterialRequisitionConstant.STATUS_COMPLETED);
 
                 if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(sparePartRequisitionAddReqDTO.getMaterialRequisitionType())) {
                     //三级库申领
@@ -276,8 +278,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     addSparePartInOrder(requisitionDetailList, materialRequisition, outOrderCode,loginUser);
                 }
 
-                //维修申领单变更为已完成,
-                materialRequisition.setStatus(MaterialRequisitionConstant.STATUS_COMPLETED);
+
                 materialRequisitionService.updateById(materialRequisition);
                 // 再保存物资清单
                 for (MaterialRequisitionDetail materialRequisitionDetail : requisitionDetailList) {
@@ -387,7 +388,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                 //更新二级库库存信息
                 stockOutboundMaterials.setActualOutput(applyMaterial.getApplyNum());
                 stockLevel2.setNum(stockLevel2.getNum() - (null!=applyMaterial.getActualNum()?applyMaterial.getActualNum():1));
-                int i = applyMaterial.getApplyNum() - applyMaterial.getActualNum();
+                int i = applyMaterial.getApplyNum() - (applyMaterial.getActualNum()!=null?applyMaterial.getActualNum():applyMaterial.getApplyNum());
                 if (i > 0) {
                     stockLevel2.setAvailableNum(stockLevel2.getAvailableNum() + i);
                 }
