@@ -396,8 +396,11 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             stockOutboundMaterialsMapper.insert(stockOutboundMaterials);
             stockOutboundMaterialsList.add(stockOutboundMaterials);
         });
-        //同步出库记录到出入库记录表
-        materialStockOutInRecordService.addOutRecordOfLevel2(stockOutOrderLevel, stockOutboundMaterialsList);
+        //同步出库记录到出入库记录表, 只有已完成的申领单才生成出入库记录，因为不是已完成的话，会在二级库出库确认时生成出入库记录
+        if (equals){
+            materialStockOutInRecordService.addOutRecordOfLevel2(stockOutOrderLevel, stockOutboundMaterialsList);
+        }
+
         return stockOutOrderLevel.getOrderCode();
     }
 
