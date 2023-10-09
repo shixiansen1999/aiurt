@@ -32,4 +32,9 @@ public interface FlowVariableConstant {
      */
     String ASSIGNEE_LIST = "assigneeList_userTask_";
 
+    /**
+     * 加签的用户数据
+     */
+    String ADD_ASSIGNEE_LIST = "add_assignee_list_";
+
 }

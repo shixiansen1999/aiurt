@@ -90,6 +90,18 @@ public final class FlowApprovalType {
      */
     public static final String STOP = "stop";
 
+    /**
+     * 加签
+     */
+    public static final String ADD_MULTI = "addMulti";
+
+    /**
+     *
+     */
+    public static final String REDUCE_MULTI = "reduceMulti";
+
+    public static final String RECALL = "recall";
+
 
 
     public static final Map<Object, String> DICT_MAP = new HashMap<>(16);
@@ -108,6 +120,9 @@ public final class FlowApprovalType {
         DICT_MAP.put(CANCEL, "撤销");
         DICT_MAP.put(DELETE, "删除流程");
         DICT_MAP.put(STOP, "终止流程");
+        DICT_MAP.put(ADD_MULTI, "加签");
+        DICT_MAP.put(REDUCE_MULTI, "减签");
+        DICT_MAP.put(RECALL, "撤回");
     }
 
     /**

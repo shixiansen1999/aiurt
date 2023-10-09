@@ -83,7 +83,7 @@ public class CommonServiceImpl implements ICommonService {
      * @return
      */
     @Override
-    public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId,String majorId,List<String> keys, List<String> values) {
+    public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId,String majorId,List<String> keys, List<String> values, Boolean isSelectOrg) {
         LambdaQueryWrapper<SysDepart> queryWrapper = new LambdaQueryWrapper<>();
         if (CollectionUtil.isNotEmpty(orgIds)) {
             queryWrapper.in(SysDepart::getId, orgIds);
@@ -96,6 +96,7 @@ public class CommonServiceImpl implements ICommonService {
             table.setLabel(entity.getDepartName());
             table.setTitle(entity.getDepartName());
             table.setIsOrg(true);
+            table.setSelectable(isSelectOrg);
             table.setKey(entity.getOrgCode());
             table.setParentValue(StrUtil.isBlank(entity.getParentId()) ? "-9999" : entity.getParentId());
             return table;
@@ -198,7 +199,7 @@ public class CommonServiceImpl implements ICommonService {
                     "id in (select user_id from cs_user_major where 1=1 and major_id in (select id from cs_major where 1=1 and ( id = {0} or major_code = {0})))",
                     majorId);
             if (StrUtil.isNotBlank(ignoreUserId)) {
-                wrapper.notIn(SysUser::getId, Collections.singleton(ignoreUserId));
+                wrapper.notIn(SysUser::getId, StrUtil.split(ignoreUserId, ','));
             }
             List<SysUser> sysUserList = sysUserService.getBaseMapper().selectList(wrapper);
             List<SelectTable> tableList = sysUserList.stream().map(sysUser -> {

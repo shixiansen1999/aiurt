@@ -452,10 +452,10 @@ public class FlowElementUtil {
                     getTargetFlowElement(execution, targetFlowElement, flowElementList, variables);
                 }
             } else if (thisFlowNode.getOutgoingFlows().size() > 1) {
-                //如果有多条连接线，遍历连接线，找出一个连接线条件执行为True的，获得它的出口节点
+                //如果有多条连接线，遍历连接线，找出一个连接线条件执行为True的，获得它的出口节点, 并行网关不计算条件
                 for (SequenceFlow sequenceFlow : thisFlowNode.getOutgoingFlows()) {
                     boolean result = true;
-                    if (StrUtil.isNotBlank(sequenceFlow.getConditionExpression())) {
+                    if (!(thisFlowNode instanceof ParallelGateway) && StrUtil.isNotBlank(sequenceFlow.getConditionExpression())) {
                         //计算连接线上的表达式
                         CommandExecutor commandExecutor = ProcessEngines.getDefaultProcessEngine().getProcessEngineConfiguration().getCommandExecutor();
 
@@ -505,7 +505,7 @@ public class FlowElementUtil {
                 //如果有多条连接线，遍历连接线，找出一个连接线条件执行为True的，获得它的出口节点
                 for (SequenceFlow sequenceFlow : thisFlowNode.getOutgoingFlows()) {
                     boolean result = true;
-                    if (StrUtil.isNotBlank(sequenceFlow.getConditionExpression())) {
+                    if (!(thisFlowNode instanceof ParallelGateway) && StrUtil.isNotBlank(sequenceFlow.getConditionExpression())) {
                         //计算连接线上的表达式
                         result = managementService.executeCommand(new ConditionExpressionV2Cmd(sequenceFlow.getConditionExpression(), variables));
                     }
