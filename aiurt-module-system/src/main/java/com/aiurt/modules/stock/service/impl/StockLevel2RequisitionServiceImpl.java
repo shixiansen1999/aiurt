@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
@@ -247,7 +248,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                 try {
                     stockInOrderLevel2Service.addCompleteOrderFromRequisition(id);
                 }catch (Exception e){
-                    e.printStackTrace();
+                    throw new AiurtBootException("申领人确认失败，无法自动生成一条已确认的入库记录");
                 }
                 LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
                 //如果该二级库申领是由三级库产生，则补充完整二级库出库，三级库入出库
