@@ -208,7 +208,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                             StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>().eq("warehouse_code", sparePartRequisitionAddReqDTO.getLeve2WarehouseCode()).eq("material_code", materialRequisitionDetail.getMaterialsCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
                             int availableNum = ObjectUtil.isNotNull(stockLevel2) ? stockLevel2.getAvailableNum() : 0;
                             MaterialRequisitionDetail requisitionDetailDTO = new MaterialRequisitionDetail();
-                            BeanUtils.copyProperties(materialRequisitionDetail, requisitionDetailDTO);
+                            BeanUtils.copyProperties(materialRequisitionDetail, requisitionDetailDTO, "id");
                             requisitionDetailDTO.setApplyNum(i);
                             requisitionDetailDTO.setAvailableNum(availableNum);
                             materialRequisitionDetails.add(requisitionDetailDTO);
@@ -222,7 +222,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                             if (applyNumber > 0) {
                                 //如果二级库申领数量大于二级库库存，则需要向一级库申领，只要有一条要向一级库申领则所有出入库单需要等这个申领审核完成才能生成且确认
                                 StockLevel2RequisitionDetailDTO stockLevel2RequisitionDetailDTO = new StockLevel2RequisitionDetailDTO();
-                                BeanUtils.copyProperties(materialRequisitionDetail, stockLevel2RequisitionDetailDTO);
+                                BeanUtils.copyProperties(materialRequisitionDetail, stockLevel2RequisitionDetailDTO, "id");
                                 stockLevel2RequisitionDetailDTO.setApplyNum(applyNumber);
                                 level2RequisitionDetailDTOS.add(stockLevel2RequisitionDetailDTO);
                             }
@@ -238,7 +238,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                             //三级库申领产生二级库申领
                             //如果二级库申领数量大于二级库库存，则需要向一级库申领，只要有一条要向一级库申领则所有出入库单需要等这个申领审核完成才能生成且确认
                             StockLevel2RequisitionDetailDTO stockLevel2RequisitionDetailDTO = new StockLevel2RequisitionDetailDTO();
-                            BeanUtils.copyProperties(materialRequisitionDetail, stockLevel2RequisitionDetailDTO);
+                            BeanUtils.copyProperties(materialRequisitionDetail, stockLevel2RequisitionDetailDTO, "id");
                             stockLevel2RequisitionDetailDTO.setApplyNum(i);
                             level2RequisitionDetailDTOS.add(stockLevel2RequisitionDetailDTO);
                         }
@@ -248,7 +248,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                 //二级库申领
                 if (CollUtil.isNotEmpty(level2RequisitionDetailDTOS)) {
                     StockLevel2RequisitionAddReqDTO stockLevel2RequisitionAddReqDTO = new StockLevel2RequisitionAddReqDTO();
-                    BeanUtils.copyProperties(sparePartRequisitionAddReqDTO, stockLevel2RequisitionAddReqDTO);
+                    BeanUtils.copyProperties(sparePartRequisitionAddReqDTO, stockLevel2RequisitionAddReqDTO, "id");
                     stockLevel2RequisitionAddReqDTO.setMaterialRequisitionPid(materialRequisition.getId());
                     //保管仓库为二级库
                     stockLevel2RequisitionAddReqDTO.setCustodialWarehouseCode(sparePartRequisitionAddReqDTO.getLeve2WarehouseCode());
@@ -261,6 +261,9 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     stockLevel2RequisitionAddReqDTO.setName(name);
                     stockLevel2RequisitionAddReqDTO.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL2);
                     stockLevel2RequisitionService.submit(stockLevel2RequisitionAddReqDTO);
+                    // 更改消耗物资申领单状态为待确认
+                    materialRequisition.setStatus(MaterialRequisitionConstant.STATUS_TO_BE_CONFIRMED);
+                    materialRequisitionService.updateById(materialRequisition);
                     return;
                 }
 
@@ -297,7 +300,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
     public void addLevel3Requisition(List<MaterialRequisitionDetail> materialRequisitionDetails, SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO, MaterialRequisition materialRequisition) {
         if (CollUtil.isNotEmpty(materialRequisitionDetails)) {
             MaterialRequisition requisition = new MaterialRequisition();
-            BeanUtils.copyProperties(sparePartRequisitionAddReqDTO, requisition);
+            BeanUtils.copyProperties(sparePartRequisitionAddReqDTO, requisition, "id");
             requisition.setApplyWarehouseCode(sparePartRequisitionAddReqDTO.getLeve2WarehouseCode());
             requisition.setCustodialWarehouseCode(sparePartRequisitionAddReqDTO.getApplyWarehouseCode());
             requisition.setLeve2WarehouseCode(null);
@@ -698,7 +701,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
         wrapper.lambda().eq(MaterialRequisitionDetail::getMaterialRequisitionId, id).eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<MaterialRequisitionDetail> requisitionDetailList = materialRequisitionDetailService.getBaseMapper().selectList(wrapper);
         SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO = new SparePartRequisitionAddReqDTO();
-        BeanUtils.copyProperties(materialRequisition, sparePartRequisitionAddReqDTO);
+        BeanUtils.copyProperties(materialRequisition, sparePartRequisitionAddReqDTO, "id");
         materialRequisition.setCommitStatus(MaterialRequisitionConstant.COMMIT_STATUS_SUBMITTED);
         requisitionDetailList.forEach(detail -> {
             //查询实时可用量
