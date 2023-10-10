@@ -13,7 +13,6 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.material.entity.MaterialBase;
-import com.aiurt.modules.material.entity.MaterialRequisition;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.material.service.IMaterialRequisitionService;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
@@ -186,7 +185,7 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     }
     public void updateOrder(SparePartOutOrder sparePartOutOrder){
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        sparePartOutOrder.setConfirmUserId(user.getUsername());
+        sparePartOutOrder.setConfirmUserId(user.getId());
         //sparePartOutOrder.setConfirmTime(new Date());不能把其他的提交时间也修改
         sparePartOutOrder.setSysOrgCode(user.getOrgCode());
         updateById(sparePartOutOrder);
@@ -260,8 +259,8 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         sparePartOutOrder.setMaterialCode(sparePartStock.getMaterialCode());
         sparePartOutOrder.setWarehouseCode(sparePartStock.getWarehouseCode());
         sparePartOutOrder.setNum(sparePartStock.getNum());
-        sparePartOutOrder.setApplyUserId(user.getUsername());
-        sparePartOutOrder.setConfirmUserId(user.getUsername());
+        sparePartOutOrder.setApplyUserId(user.getId());
+        sparePartOutOrder.setConfirmUserId(user.getId());
         sparePartOutOrder.setConfirmTime(new Date());
         sparePartOutOrder.setApplyOutTime(new Date());
         sparePartOutOrder.setSysOrgCode(user.getOrgCode());
@@ -278,7 +277,7 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         sparePartOutOrderMapper.updateById(sparePartOutOrder);
         //发一条出库消息
         try {
-            LoginUser userById = sysBaseApi.getUserByName(sparePartOutOrder.getApplyUserId());
+            LoginUser userById = sysBaseApi.getUserById(sparePartOutOrder.getApplyUserId());
             //发送通知
             MessageDTO messageDTO = new MessageDTO(user.getUsername(), userById.getUsername(), "备件出库成功" + DateUtil.today(), null);
 
@@ -335,7 +334,7 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         SparePartOutOrder one = this.getById(sparePartOutOrder.getId());
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         try {
-            LoginUser userById = sysBaseApi.getUserByName(one.getApplyUserId());
+            LoginUser userById = sysBaseApi.getUserById(one.getApplyUserId());
             //发送通知
             MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件出库成功" + DateUtil.today(), null);
 
@@ -367,14 +366,9 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         }
         sparePartOutOrder.setConfirmTime(new Date());
         //同步出库记录到出入库记录表
-        MaterialRequisition requisition = materialRequisitionService.getOne(new LambdaQueryWrapper<MaterialRequisition>()
-                .eq(MaterialRequisition::getId, sparePartOutOrder.getMaterialRequisitionId())
-                .eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0));
         MaterialStockOutInRecord record = new MaterialStockOutInRecord();
         BeanUtils.copyProperties(sparePartOutOrder, record);
-        if (ObjectUtil.isNotNull(requisition)) {
-            record.setMaterialRequisitionType(requisition.getMaterialRequisitionType());
-        }
+        record.setMaterialRequisitionType(3);
         record.setIsOutIn(2);
         record.setOutInType(sparePartOutOrder.getOutType());
         materialStockOutInRecordService.save(record);

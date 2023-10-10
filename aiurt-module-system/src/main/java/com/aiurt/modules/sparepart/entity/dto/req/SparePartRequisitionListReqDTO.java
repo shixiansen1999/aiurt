@@ -34,6 +34,10 @@ public class SparePartRequisitionListReqDTO extends BaseEntity implements Serial
     @ApiModelProperty(value = "申领仓库编号")
     private String applyWarehouseCode;
 
+    /**保管仓库编号*/
+    @ApiModelProperty(value = "保管仓库编号")
+    private String custodialWarehouseCode;
+
     /**申领状态：1待提交、2待确认、3已确认、4审核中、5已通过、6已驳回、7已完成*/
     @ApiModelProperty(value = "申领状态：1待提交、2待确认、3已确认、4审核中、5已通过、6已驳回、7已完成")
     private String status;

@@ -74,7 +74,7 @@ public class SparePartOutOrder implements Serializable {
 	/**确认人ID*/
 	@Excel(name = "确认人ID", width = 15)
     @ApiModelProperty(value = "确认人ID")
-    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "username")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     private String confirmUserId;
     /**确认人*/
     @Excel(name = "确认人", width = 15)
@@ -90,7 +90,7 @@ public class SparePartOutOrder implements Serializable {
 	/**申请出库人ID*/
 	@Excel(name = "申请出库人ID", width = 15)
     @ApiModelProperty(value = "申请出库人ID")
-    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "username")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     private String applyUserId;
     /**申请出库人*/
     @Excel(name = "申请出库人", width = 15)

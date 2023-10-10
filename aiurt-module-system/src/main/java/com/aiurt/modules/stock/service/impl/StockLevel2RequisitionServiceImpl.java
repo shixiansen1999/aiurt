@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.common.api.IFlowableBaseUpdateStatusService;
 import com.aiurt.modules.common.entity.RejectFirstUserTaskEntity;
 import com.aiurt.modules.common.entity.UpdateStateEntity;
@@ -15,9 +16,11 @@ import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
 import com.aiurt.modules.flow.dto.StartBpmnDTO;
 import com.aiurt.modules.flow.dto.TaskCompleteDTO;
 import com.aiurt.modules.material.constant.MaterialRequisitionConstant;
+import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.entity.MaterialRequisition;
 import com.aiurt.modules.material.entity.MaterialRequisitionDetail;
 import com.aiurt.modules.material.mapper.MaterialRequisitionDetailMapper;
+import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.material.service.IMaterialRequisitionDetailService;
 import com.aiurt.modules.material.service.IMaterialRequisitionService;
 import com.aiurt.modules.sparepart.entity.dto.req.SparePartRequisitionAddReqDTO;
@@ -42,6 +45,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +74,8 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
     @Autowired
     private FlowBaseApi flowBaseApi;
     @Autowired
+    private IMaterialBaseService materialBaseService;
+    @Autowired
     @Lazy
     private SparePartRequisitionServiceImpl sparePartRequisitionService;
 
@@ -82,12 +89,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
         materialRequisitionService.save(materialRequisition);
         // 再保存物资清单
         List<StockLevel2RequisitionDetailDTO> requisitionDetailDTOList = stockLevel2RequisitionAddReqDTO.getStockLevel2RequisitionDetailDTOList();
-        List<MaterialRequisitionDetail> requisitionDetailList = requisitionDetailDTOList.stream().map(detailDTO -> {
-            MaterialRequisitionDetail requisitionDetail = new MaterialRequisitionDetail();
-            BeanUtils.copyProperties(detailDTO, requisitionDetail);
-            requisitionDetail.setMaterialRequisitionId(materialRequisition.getId());
-            return requisitionDetail;
-        }).collect(Collectors.toList());
+        List<MaterialRequisitionDetail> requisitionDetailList = this.dealRequisitionDetail(requisitionDetailDTOList, materialRequisition.getId());
         materialRequisitionDetailService.saveBatch(requisitionDetailList);
         return materialRequisition.getId();
     }
@@ -105,14 +107,65 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
         materialRequisitionDetailService.remove(queryWrapper);
         // 再保存物资清单
         List<StockLevel2RequisitionDetailDTO> requisitionDetailDTOList = stockLevel2RequisitionAddReqDTO.getStockLevel2RequisitionDetailDTOList();
-        List<MaterialRequisitionDetail> requisitionDetailList = requisitionDetailDTOList.stream().map(detailDTO -> {
-            MaterialRequisitionDetail requisitionDetail = new MaterialRequisitionDetail();
-            BeanUtils.copyProperties(detailDTO, requisitionDetail);
-            requisitionDetail.setMaterialRequisitionId(materialRequisition.getId());
-            return requisitionDetail;
-        }).collect(Collectors.toList());
+        List<MaterialRequisitionDetail> requisitionDetailList = this.dealRequisitionDetail(requisitionDetailDTOList, materialRequisition.getId());
         materialRequisitionDetailService.saveBatch(requisitionDetailList);
         return materialRequisition.getId();
+    }
+
+    /**
+     * 将申领单物资清单的DTO列表转换成申领单物资清单实体类对象的列表，主要是为了填充一些必要字段
+     * 主要在添加和编辑方法上使用
+     * @param requisitionDetailDTOList 申领单物资清单的DTO列表，其中每个DTO列表必须要有物资的编码code或者物资的id(物资主数据的id)
+     * @param materialRequisitionId 申领单物资清单所关联的申领单id
+     * @return List<MaterialRequisitionDetail> 返回申领单物资清单实体类对象的列表
+     */
+    public List<MaterialRequisitionDetail> dealRequisitionDetail(List<StockLevel2RequisitionDetailDTO> requisitionDetailDTOList, String materialRequisitionId){
+        // 要考虑到有些申领单物资清单的DTO列表只传物资code，没传物资id以及其他必要参数的情况
+        // 必要参数包括：物资id、物资编号、物资名称、单位、参考单价、参考总价
+        List<String> materialsIdList = requisitionDetailDTOList.stream()
+                .map(StockLevel2RequisitionDetailDTO::getMaterialsId).collect(Collectors.toList());
+        List<String> materialsCodeList = requisitionDetailDTOList.stream()
+                .filter(m -> !materialsIdList.contains(m.getMaterialsId()))
+                .map(StockLevel2RequisitionDetailDTO::getMaterialsCode).collect(Collectors.toList());
+        // 如物资清单的code和id都没有,保存的清单只有DTO获取的数据
+        if (CollUtil.isEmpty(materialsIdList) && CollUtil.isEmpty(materialsCodeList)) {
+            return requisitionDetailDTOList.stream().map(detailDTO -> {
+                MaterialRequisitionDetail requisitionDetail = new MaterialRequisitionDetail();
+                BeanUtils.copyProperties(detailDTO, requisitionDetail);
+                requisitionDetail.setMaterialRequisitionId(materialRequisitionId);
+                return requisitionDetail;
+            }).collect(Collectors.toList());
+        }
+        // 只有物资的id列表或者code列表不全为空时，才查询
+        LambdaQueryWrapper<MaterialBase> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(CollUtil.isNotEmpty(materialsIdList),MaterialBase::getId, materialsIdList);
+        queryWrapper.in(CollUtil.isNotEmpty(materialsCodeList),MaterialBase::getCode, materialsCodeList);
+        queryWrapper.eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0);
+        List<MaterialBase> materialBaseList = materialBaseService.list(queryWrapper);
+        // 将查询到的materialBaseList做成一个id为key的map和一个根据code为key的map
+        Map<String, MaterialBase> materialBaseIdMap = materialBaseList.stream().collect(Collectors.toMap(MaterialBase::getId, v -> v));
+        Map<String, MaterialBase> materialBaseCodeMap = materialBaseList.stream().collect(Collectors.toMap(MaterialBase::getCode, v -> v));
+        // 保存的物资清单
+        return requisitionDetailDTOList.stream().map(detailDTO -> {
+            // 每个物资清单的物资主数据
+            String materialsId = detailDTO.getMaterialsId();
+            String materialsCode = detailDTO.getMaterialsCode();
+            MaterialBase materialBase = materialsId != null ? materialBaseIdMap.get(materialsId) : materialBaseCodeMap.get(materialsCode);
+
+            MaterialRequisitionDetail requisitionDetail = new MaterialRequisitionDetail();
+            BeanUtils.copyProperties(detailDTO, requisitionDetail);
+            requisitionDetail.setMaterialRequisitionId(materialRequisitionId);
+
+            if (materialBase != null) {
+                requisitionDetail.setMaterialsId(materialBase.getId());
+                requisitionDetail.setMaterialsCode(materialBase.getCode());
+                requisitionDetail.setMaterialsName(materialBase.getName());
+                requisitionDetail.setUnit(materialBase.getUnit());
+                requisitionDetail.setPrice(new BigDecimal(materialBase.getPrice()));
+                requisitionDetail.setTotalPrices(requisitionDetail.getPrice().multiply(BigDecimal.valueOf(detailDTO.getApplyNum())));
+            }
+            return requisitionDetail;
+        }).collect(Collectors.toList());
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -196,47 +249,69 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                 try {
                     stockInOrderLevel2Service.addCompleteOrderFromRequisition(id);
                 }catch (Exception e){
-                    e.printStackTrace();
+                    throw new AiurtBootException("申领人确认失败，无法自动生成一条已确认的入库记录");
                 }
                 LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
                 //如果该二级库申领是由三级库产生，则补充完整二级库出库，三级库入出库
                 //获取二级库领用单
                 MaterialRequisition byId = materialRequisitionService.getById(id);
-                // 如果没有关联维修单，就是直接从二级库申领模块新增的，就不用补充二级库出库和三级库入库
-                if (byId.getFaultRepairRecordId() == null) {
-                    break;
-                }
-                QueryWrapper<MaterialRequisitionDetail> wrapper = new QueryWrapper<>();
-                wrapper.lambda().eq(MaterialRequisitionDetail::getMaterialRequisitionId, id).eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
-                List<MaterialRequisitionDetail> materialRequisitionDetails = materialRequisitionDetailService.getBaseMapper().selectList(wrapper);
+                QueryWrapper<MaterialRequisitionDetail> leve2Wrapper = new QueryWrapper<>();
+                leve2Wrapper.lambda().eq(MaterialRequisitionDetail::getMaterialRequisitionId, byId.getId()).eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
+                List<MaterialRequisitionDetail> level2MaterialRequisitionDetails = materialRequisitionDetailService.getBaseMapper().selectList(leve2Wrapper);
 
-                //获取维修领用单
+                //根据不同申领单补充出入库记录
+                //获取顶层领用单
                 QueryWrapper<MaterialRequisition>  queryWrapper = new QueryWrapper<>();
                 MaterialRequisition one = materialRequisitionService.getOne(queryWrapper.lambda()
-                        .eq(MaterialRequisition::getFaultRepairRecordId, byId.getFaultRepairRecordId())
-                        .eq(MaterialRequisition::getMaterialRequisitionType, MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR)
                         .eq(MaterialRequisition::getIsUsed, MaterialRequisitionConstant.UNUSED)
                         .eq(MaterialRequisition::getId,byId.getMaterialRequisitionPid())
                         .eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0));
-                SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO = new SparePartRequisitionAddReqDTO();
-                BeanUtils.copyProperties(one, sparePartRequisitionAddReqDTO);
-                //三级库申领
-                sparePartRequisitionService.addLevel3Requisition(materialRequisitionDetails, sparePartRequisitionAddReqDTO, one);
 
-                //生成三级库出库
-                QueryWrapper<MaterialRequisitionDetail> wrapper2 = new QueryWrapper<>();
-                wrapper2.lambda().eq(MaterialRequisitionDetail::getMaterialRequisitionId, one.getId()).eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
-                List<MaterialRequisitionDetail> requisitionDetails = materialRequisitionDetailService.getBaseMapper().selectList(wrapper2);
-                sparePartRequisitionService.addSparePartOutOrder(requisitionDetails, loginUser, one,false);
-                //维修申领单变更为已完成,
+                QueryWrapper<MaterialRequisitionDetail> wrapper = new QueryWrapper<>();
+                wrapper.lambda().eq(MaterialRequisitionDetail::getMaterialRequisitionId, one.getId()).eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
+                List<MaterialRequisitionDetail> materialRequisitionDetails = materialRequisitionDetailService.getBaseMapper().selectList(wrapper);
+
+                //申领单变更为已完成,
                 one.setIsUsed(MaterialRequisitionConstant.IS_USED);
                 one.setStatus(MaterialRequisitionConstant.STATUS_COMPLETED);
                 materialRequisitionService.updateById(one);
                 // 再保存物资清单
-                for (MaterialRequisitionDetail materialRequisitionDetail : requisitionDetails) {
+                for (MaterialRequisitionDetail materialRequisitionDetail : materialRequisitionDetails) {
                     materialRequisitionDetail.setActualNum(materialRequisitionDetail.getApplyNum());
                 }
-                materialRequisitionDetailService.updateBatchById(requisitionDetails);
+                materialRequisitionDetailService.updateBatchById(materialRequisitionDetails);
+
+                if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(one.getMaterialRequisitionType())) {
+                    SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO = new SparePartRequisitionAddReqDTO();
+                    BeanUtils.copyProperties(one, sparePartRequisitionAddReqDTO);
+                    //三级库申领
+                    //构建三级库获取物资清单
+                    List<MaterialRequisitionDetail> requisitionDetails = new ArrayList<MaterialRequisitionDetail>();
+
+                    for (MaterialRequisitionDetail materialRequisitionDetail : materialRequisitionDetails) {
+                        int i = materialRequisitionDetail.getApplyNum() - materialRequisitionDetail.getAvailableNum();
+                        int applyNumber = level2MaterialRequisitionDetails.stream().filter(s -> s.getMaterialsCode().equals(materialRequisitionDetail.getMaterialsCode())).mapToInt(MaterialRequisitionDetail::getApplyNum).sum();
+                        MaterialRequisitionDetail requisitionDetailDTO = new MaterialRequisitionDetail();
+                        BeanUtils.copyProperties(materialRequisitionDetail, requisitionDetailDTO, "id");
+                        requisitionDetailDTO.setApplyNum(i);
+                        requisitionDetailDTO.setAvailableNum(i - applyNumber);
+                        requisitionDetails.add(requisitionDetailDTO);
+                    }
+                    sparePartRequisitionService.addLevel3Requisition(requisitionDetails, sparePartRequisitionAddReqDTO, one);
+
+                    //生成三级库出库
+                    sparePartRequisitionService.addSparePartOutOrder(materialRequisitionDetails, loginUser, one,false);
+
+                } else if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3.equals(one.getMaterialRequisitionType())) {
+                    for (MaterialRequisitionDetail materialRequisitionDetail : materialRequisitionDetails) {
+                        materialRequisitionDetail.setActualNum(materialRequisitionDetail.getActualNum());
+                    }
+                    //二级库出库
+                    String outOrderCode = sparePartRequisitionService.addStockOutOrderLevel2(one, materialRequisitionDetails,false);
+                    //三级库入库
+                    sparePartRequisitionService.addSparePartInOrder(materialRequisitionDetails, one, outOrderCode,loginUser);
+                }
+
                 break;
             default:
                 return;

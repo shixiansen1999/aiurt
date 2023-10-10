@@ -159,7 +159,7 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         sparePartInOrder.setNum(returnOrder.getNum());
         sparePartInOrder.setOrgId(user.getOrgId());
         sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_1);
-        sparePartInOrder.setConfirmId(user.getUsername());
+        sparePartInOrder.setConfirmId(user.getId());
         sparePartInOrder.setConfirmTime(date);
         sparePartInOrder.setUsedNum(returnOrder.getNum());
         sparePartInOrderService.save(sparePartInOrder);
@@ -171,7 +171,7 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
     @Override
     public void updateOrder(SparePartOutOrder sparePartOutOrder){
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        sparePartOutOrder.setConfirmUserId(user.getUsername());
+        sparePartOutOrder.setConfirmUserId(user.getId());
         sparePartOutOrder.setConfirmTime(new Date());
         sparePartOutOrder.setSysOrgCode(user.getOrgCode());
         sparePartOutOrderService.updateById(sparePartOutOrder);

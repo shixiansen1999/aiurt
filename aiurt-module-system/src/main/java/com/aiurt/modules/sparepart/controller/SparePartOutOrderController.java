@@ -131,7 +131,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
        String orderCode = CodeGenerateUtils.generateSingleCode("3CK", 5);
        sparePartOutOrder.setOrderCode(orderCode);
-       sparePartOutOrder.setApplyUserId(user.getUsername());
+       sparePartOutOrder.setApplyUserId(user.getId());
        sparePartOutOrder.setSysOrgCode(user.getOrgCode());
        sparePartOutOrderService.save(sparePartOutOrder);
        List<SparePartOutOrder> orderList = sparePartOutOrderService.list(new LambdaQueryWrapper<SparePartOutOrder>()

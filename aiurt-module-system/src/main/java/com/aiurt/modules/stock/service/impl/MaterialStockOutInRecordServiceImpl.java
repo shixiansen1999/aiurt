@@ -73,10 +73,11 @@ public class MaterialStockOutInRecordServiceImpl extends ServiceImpl<MaterialSto
         queryWrapper.lambda().eq(ObjectUtil.isNotNull(isOutIn), MaterialStockOutInRecord::getIsOutIn, isOutIn);
         String materialRequisitionTypes = materialStockOutInRecordReqDTO.getMaterialRequisitionTypes();
         if (StrUtil.isNotBlank(materialRequisitionTypes)) {
-            queryWrapper.lambda().and(wrapper -> wrapper.in(MaterialStockOutInRecord::getMaterialRequisitionType, StrUtil.split(materialRequisitionTypes, ','))
-                    .or().isNull(MaterialStockOutInRecord::getMaterialRequisitionType));
+            queryWrapper.lambda().in(MaterialStockOutInRecord::getMaterialRequisitionType, StrUtil.split(materialRequisitionTypes, ','));
         }
         queryWrapper.lambda().eq(MaterialStockOutInRecord::getDelFlag, CommonConstant.DEL_FLAG_0);
+        // 按照出入库时间降序
+        queryWrapper.lambda().orderByDesc(MaterialStockOutInRecord::getConfirmTime);
         this.page(page, queryWrapper);
 
         // 将实体类查询结果转化成响应DTO
@@ -91,7 +92,7 @@ public class MaterialStockOutInRecordServiceImpl extends ServiceImpl<MaterialSto
         return pageList;
     }
 
-
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void addInRecordOfLevel2(String id) {
         StockInOrderLevel2 stockInOrderLevel2 = stockInOrderLevel2Mapper.selectById(id);
@@ -143,6 +144,7 @@ public class MaterialStockOutInRecordServiceImpl extends ServiceImpl<MaterialSto
         this.saveBatch(recordList);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void addOutRecordOfLevel2(String id) {
         // 根据出库单id获取出库单信息以及出库单物资详情
