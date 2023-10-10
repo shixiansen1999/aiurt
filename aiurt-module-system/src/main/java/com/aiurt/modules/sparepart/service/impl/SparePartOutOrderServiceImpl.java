@@ -13,7 +13,9 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.entity.MaterialRequisition;
 import com.aiurt.modules.material.service.IMaterialBaseService;
+import com.aiurt.modules.material.service.IMaterialRequisitionService;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
@@ -23,6 +25,8 @@ import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockNumMapper;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
+import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
+import com.aiurt.modules.stock.service.impl.MaterialStockOutInRecordServiceImpl;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -37,6 +41,7 @@ import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,6 +79,10 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     private ISTodoBaseAPI isTodoBaseAPI;
     @Autowired
     private SparePartStockNumMapper sparePartStockNumMapper;
+    @Autowired
+    private IMaterialRequisitionService materialRequisitionService;
+    @Autowired
+    private MaterialStockOutInRecordServiceImpl materialStockOutInRecordService;
     /**
      * 查询列表
      * @param page
@@ -318,5 +327,58 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
             throw new AiurtBootException("未找到对应数据");
         }
         return list.get(0);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<?> edit(SparePartOutOrder sparePartOutOrder) {
+        SparePartOutOrder one = this.getById(sparePartOutOrder.getId());
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        try {
+            LoginUser userById = sysBaseApi.getUserByName(one.getApplyUserId());
+            //发送通知
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件出库成功" + DateUtil.today(), null);
+
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, one.getId());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_OUT.getType());
+            map.put("materialCode",one.getMaterialCode());
+            String materialName= sysBaseApi.getMaterialNameByCode(one.getMaterialCode());
+            map.put("name",materialName);
+            map.put("num",one.getNum());
+            String warehouseName= sysBaseApi.getWarehouseNameByCode(one.getWarehouseCode());
+            map.put("warehouseName",warehouseName);
+            map.put("realName",userById.getRealname());
+
+            messageDTO.setData(map);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            messageDTO.setTemplateCode(CommonConstant.SPAREPARTOUTORDER_SERVICE_NOTICE);
+            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
+            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+            messageDTO.setMsgAbstract("备件出库申请通过");
+            messageDTO.setPublishingContent("备件出库申请通过");
+            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
+            sysBaseApi.sendTemplateMessage(messageDTO);
+            // 更新待办
+            isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.SPAREPART_OUT.getType(), one.getId(), user.getUsername(), "1");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        sparePartOutOrder.setConfirmTime(new Date());
+        //同步出库记录到出入库记录表
+        MaterialRequisition requisition = materialRequisitionService.getOne(new LambdaQueryWrapper<MaterialRequisition>()
+                .eq(MaterialRequisition::getId, sparePartOutOrder.getMaterialRequisitionId())
+                .eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0));
+        MaterialStockOutInRecord record = new MaterialStockOutInRecord();
+        BeanUtils.copyProperties(sparePartOutOrder, record);
+        if (ObjectUtil.isNotNull(requisition)) {
+            record.setMaterialRequisitionType(requisition.getMaterialRequisitionType());
+        }
+        record.setIsOutIn(2);
+        record.setOutInType(sparePartOutOrder.getOutType());
+        materialStockOutInRecordService.save(record);
+
+        return this.update(sparePartOutOrder);
     }
 }

@@ -8,6 +8,7 @@
             spare_part_in_order.order_code,
             spare_part_in_order.confirm_status,
             spare_part_in_order.apply_code,
+            spare_part_in_order.material_requisition_id,
             d1.item_text confirmStatusName,
             cs_major.major_name majorName,
             cs_subsystem.system_name systemName,

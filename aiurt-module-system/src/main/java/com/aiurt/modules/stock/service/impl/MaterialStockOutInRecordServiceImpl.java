@@ -73,7 +73,8 @@ public class MaterialStockOutInRecordServiceImpl extends ServiceImpl<MaterialSto
         queryWrapper.lambda().eq(ObjectUtil.isNotNull(isOutIn), MaterialStockOutInRecord::getIsOutIn, isOutIn);
         String materialRequisitionTypes = materialStockOutInRecordReqDTO.getMaterialRequisitionTypes();
         if (StrUtil.isNotBlank(materialRequisitionTypes)) {
-            queryWrapper.in("material_requisition_type", StrUtil.split(materialRequisitionTypes, ','));
+            queryWrapper.lambda().and(wrapper -> wrapper.in(MaterialStockOutInRecord::getMaterialRequisitionType, StrUtil.split(materialRequisitionTypes, ','))
+                    .or().isNull(MaterialStockOutInRecord::getMaterialRequisitionType));
         }
         queryWrapper.lambda().eq(MaterialStockOutInRecord::getDelFlag, CommonConstant.DEL_FLAG_0);
         this.page(page, queryWrapper);
