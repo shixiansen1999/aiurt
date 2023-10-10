@@ -402,7 +402,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             }
             stockLevel2Service.updateById(stockLevel2);
             //计算库存结余
-            stockOutboundMaterials.setBalance(stockLevel2.getNum() - applyMaterial.getApplyNum());
+            stockOutboundMaterials.setBalance(stockLevel2.getNum());
             stockOutboundMaterials.setApplyOutput(applyMaterial.getApplyNum());
             stockOutboundMaterialsMapper.insert(stockOutboundMaterials);
             stockOutboundMaterialsList.add(stockOutboundMaterials);
@@ -452,16 +452,23 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     .eq(SparePartStock::getWarehouseCode, sparePartOutOrder.getWarehouseCode())
                     .eq(SparePartStock::getDelFlag, CommonConstant.DEL_FLAG_0));
 
-            sparePartStock.setNum(sparePartStock.getNum() - sparePartOutOrder.getNum());
-            //计算库存结余
-            sparePartOutOrder.setBalance(sparePartStock.getNum());
-            if (flag) {
-                sparePartStock.setAvailableNum(sparePartStock.getAvailableNum() - sparePartOutOrder.getNum());
-            }
-            sparePartOutOrderMapper.insert(sparePartOutOrder);
 
-            //更新库存数量
-            sparePartStockMapper.updateById(sparePartStock);
+            if (ObjectUtil.isNotNull(sparePartStock)) {
+                sparePartStock.setNum(sparePartStock.getNum() - sparePartOutOrder.getNum());
+                //计算库存结余
+                sparePartOutOrder.setBalance(sparePartStock.getNum());
+                if (flag) {
+                    sparePartStock.setAvailableNum(sparePartStock.getAvailableNum() - sparePartOutOrder.getNum());
+                }
+                sparePartOutOrderMapper.insert(sparePartOutOrder);
+
+                //更新库存数量
+                sparePartStockMapper.updateById(sparePartStock);
+            } else {
+                //计算库存结余
+                sparePartOutOrder.setBalance(0);
+                sparePartOutOrderMapper.insert(sparePartOutOrder);
+            }
 
 
             //同步出库记录到出入库记录表
@@ -706,24 +713,17 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
         materialRequisition.setCommitStatus(MaterialRequisitionConstant.COMMIT_STATUS_SUBMITTED);
         requisitionDetailList.forEach(detail -> {
             //查询实时可用量
-            if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(materialRequisition.getMaterialRequisitionType())) {
-                //维修申领
-                SparePartStock sparePartStock = sparePartStockService.getOne(new LambdaQueryWrapper<SparePartStock>()
-                        .eq(SparePartStock::getWarehouseCode, materialRequisition.getApplyWarehouseCode())
-                        .eq(SparePartStock::getMaterialCode, detail.getMaterialsCode())
-                        .eq(SparePartStock::getDelFlag, CommonConstant.DEL_FLAG_0), false);
-                detail.setAvailableNum(ObjectUtil.isNotNull(sparePartStock) ? sparePartStock.getAvailableNum() : 0);
-            } else if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3.equals(materialRequisition.getMaterialRequisitionType())) {
+            if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3.equals(materialRequisition.getMaterialRequisitionType())) {
                 //三级库领用
                 StockLevel2 stockLevel2 = stockLevel2Service.getOne(new LambdaQueryWrapper<StockLevel2>()
                         .eq(StockLevel2::getWarehouseCode, materialRequisition.getApplyWarehouseCode())
                         .eq(StockLevel2::getMaterialCode, detail.getMaterialsCode())
                         .eq(StockLevel2::getDelFlag, CommonConstant.DEL_FLAG_0), false);
                 detail.setAvailableNum(ObjectUtil.isNotNull(stockLevel2) ? stockLevel2.getAvailableNum() : 0);
-            }
-
-            if (detail.getAvailableNum() < detail.getApplyNum()) {
-                throw new AiurtBootException("可使用数量已变更，不足申领数量，请修改申领数量");
+                //只有三级库普通领用的时候需要再次检查可以使用数量
+                if ((MaterialRequisitionConstant.APPLY_TYPE_NORMAL.equals(materialRequisition.getApplyType())) && detail.getAvailableNum() < detail.getApplyNum()) {
+                    throw new AiurtBootException("可使用数量已变更，不足申领数量，请修改申领数量");
+                }
             }
         });
         submitRequisition(materialRequisition, requisitionDetailList,sparePartRequisitionAddReqDTO);
