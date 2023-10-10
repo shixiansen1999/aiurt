@@ -421,7 +421,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             sparePartOutOrder.setMaterialCode(materialRequisitionDetail.getMaterialsCode());
             sparePartOutOrder.setWarehouseCode(materialRequisition.getApplyWarehouseCode());
             sparePartOutOrder.setSysOrgCode(loginUser.getOrgCode());
-            sparePartOutOrder.setNum(-materialRequisitionDetail.getApplyNum());
+            sparePartOutOrder.setNum(materialRequisitionDetail.getApplyNum());
             sparePartOutOrder.setApplyOutTime(new Date());
             sparePartOutOrder.setApplyUserId(loginUser.getUsername());
             sparePartOutOrder.setConfirmTime(new Date());
@@ -465,6 +465,8 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             BeanUtils.copyProperties(sparePartOutOrder, record);
             record.setMaterialRequisitionType(materialRequisition.getMaterialRequisitionType());
             record.setIsOutIn(2);
+            //带负号表示出库
+            record.setNum(-record.getNum());
             record.setOutInType(sparePartOutOrder.getOutType());
             materialStockOutInRecordService.save(record);
         }
@@ -649,6 +651,8 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
         queryWrapper.lambda().eq(ObjectUtil.isNotNull(materialRequisitionType), MaterialRequisition::getMaterialRequisitionType, materialRequisitionType);
         //申领仓库查询
         queryWrapper.lambda().eq(ObjectUtil.isNotNull(sparePartRequisitionListReqDTO.getApplyWarehouseCode()), MaterialRequisition::getApplyWarehouseCode, sparePartRequisitionListReqDTO.getApplyWarehouseCode());
+        //申领状态查询
+        queryWrapper.lambda().eq(ObjectUtil.isNotNull(sparePartRequisitionListReqDTO.getStatus()), MaterialRequisition::getStatus, sparePartRequisitionListReqDTO.getStatus());
 
         queryWrapper.lambda().eq( MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0);
         // 排序
