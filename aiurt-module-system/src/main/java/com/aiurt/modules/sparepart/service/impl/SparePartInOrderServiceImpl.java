@@ -139,7 +139,7 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         SparePartInOrder partInOrder = getById(sparePartInOrder.getId());
         // 1.更新当前表状态为已确认
-        partInOrder.setConfirmId(user.getUsername());
+        partInOrder.setConfirmId(user.getId());
         partInOrder.setConfirmTime(new Date());
         partInOrder.setConfirmStatus(sparePartInOrder.getConfirmStatus());
         sparePartInOrderMapper.updateById(partInOrder);
@@ -149,6 +149,7 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
                 .eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0));
         MaterialStockOutInRecord record = new MaterialStockOutInRecord();
         BeanUtils.copyProperties(sparePartInOrder, record);
+        record.setConfirmUserId(user.getId());
         if (ObjectUtil.isNotNull(requisition)) {
             record.setMaterialRequisitionType(requisition.getMaterialRequisitionType());
         }

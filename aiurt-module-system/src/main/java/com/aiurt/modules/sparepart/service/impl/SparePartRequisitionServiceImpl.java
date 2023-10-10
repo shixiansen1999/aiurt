@@ -54,10 +54,7 @@ import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecg.common.system.vo.DictModel;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
-import org.jeecg.common.system.vo.SysParamModel;
+import org.jeecg.common.system.vo.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -427,9 +424,9 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             sparePartOutOrder.setSysOrgCode(loginUser.getOrgCode());
             sparePartOutOrder.setNum(materialRequisitionDetail.getApplyNum());
             sparePartOutOrder.setApplyOutTime(new Date());
-            sparePartOutOrder.setApplyUserId(loginUser.getUsername());
+            sparePartOutOrder.setApplyUserId(loginUser.getId());
             sparePartOutOrder.setConfirmTime(new Date());
-            sparePartOutOrder.setConfirmUserId(loginUser.getUsername());
+            sparePartOutOrder.setConfirmUserId(loginUser.getId());
             sparePartOutOrder.setMaterialRequisitionId(materialRequisition.getId());
             String code = CodeGenerateUtils.generateSingleCode("3CK", 5);
             sparePartOutOrder.setOrderCode(code);
@@ -501,7 +498,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             if (ObjectUtils.isNotEmpty(sparePartStockInfo)){
                 sysDepart = iSysDepartService.getById(sparePartStockInfo.getOrganizationId());
             }
-            sparePartInOrder.setConfirmId(loginUser.getUsername());
+            sparePartInOrder.setConfirmId(loginUser.getId());
             sparePartInOrder.setConfirmTime(new Date());
             sparePartInOrder.setOrgId(null!=sysDepart?sysDepart.getId():null);
             sparePartInOrder.setSysOrgCode(null!=sysDepart?sysDepart.getOrgCode():null);
@@ -548,6 +545,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             //同步入库记录到出入库记录表
             MaterialStockOutInRecord record = new MaterialStockOutInRecord();
             BeanUtils.copyProperties(sparePartInOrder, record);
+            record.setConfirmUserId(loginUser.getId());
             record.setMaterialRequisitionType(requisition.getMaterialRequisitionType());
             record.setIsOutIn(1);
             record.setOutInType(sparePartInOrder.getInType());
@@ -662,6 +660,8 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
         queryWrapper.lambda().eq(ObjectUtil.isNotNull(materialRequisitionType), MaterialRequisition::getMaterialRequisitionType, materialRequisitionType);
         //申领仓库查询
         queryWrapper.lambda().eq(ObjectUtil.isNotNull(sparePartRequisitionListReqDTO.getApplyWarehouseCode()), MaterialRequisition::getApplyWarehouseCode, sparePartRequisitionListReqDTO.getApplyWarehouseCode());
+        //保管仓库查询
+        queryWrapper.lambda().eq(ObjectUtil.isNotNull(sparePartRequisitionListReqDTO.getCustodialWarehouseCode()), MaterialRequisition::getCustodialWarehouseCode, sparePartRequisitionListReqDTO.getCustodialWarehouseCode());
         //申领状态查询
         queryWrapper.lambda().eq(ObjectUtil.isNotNull(sparePartRequisitionListReqDTO.getStatus()), MaterialRequisition::getStatus, sparePartRequisitionListReqDTO.getStatus());
 
@@ -910,7 +910,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             SparePartStockInfo lendStockInfo = sparePartStockInfoMapper.selectOne(new LambdaQueryWrapper<SparePartStockInfo>().eq(SparePartStockInfo::getWarehouseCode,sparePartLend.getLendWarehouseCode()).eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0));
             sparePartLend.setExitOrgCode(sysDepartService.getById(lendStockInfo.getOrganizationId()).getOrgCode());
             sparePartLend.setOutTime(new Date());
-            sparePartLend.setLendPerson(loginUser.getUsername());
+            sparePartLend.setLendPerson(loginUser.getId());
             sparePartLend.setLendNum(sparePartStockDTO.getNewSparePartNum());
             sparePartLend.setBorrowNum(sparePartStockDTO.getNewSparePartNum());
             sparePartLend.setStatus(2);
@@ -934,7 +934,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             lendOutOrder.setSysOrgCode(loginUser.getOrgCode());
             lendOutOrder.setNum(sparePartLend.getLendNum());
             lendOutOrder.setConfirmTime(new Date());
-            lendOutOrder.setConfirmUserId(loginUser.getUsername());
+            lendOutOrder.setConfirmUserId(loginUser.getId());
             lendOutOrder.setApplyOutTime(new Date());
             lendOutOrder.setApplyUserId(sparePartLend.getLendPerson());
             lendOutOrder.setStatus(CommonConstant.SPARE_PART_OUT_ORDER_STATUS_2);
@@ -970,7 +970,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             sparePartInOrder.setNewNum(lendOutOrder.getNum());
             sparePartInOrder.setOrgId(loginUser.getOrgId());
             sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_STATUS_1);
-            sparePartInOrder.setConfirmId(loginUser.getUsername());
+            sparePartInOrder.setConfirmId(loginUser.getId());
             sparePartInOrder.setConfirmTime(new Date());
             sparePartInOrder.setSysOrgCode(loginUser.getOrgCode());
             //计算库存结余
@@ -1068,5 +1068,20 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
         sparePart.setLendOutOrderId(sparePartStockDTO.getLendOutOrderId());
         sparePart.setIntOrderId(sparePartStockDTO.getIntOrderId());
         sparePartService.getBaseMapper().insert(sparePart);
+    }
+
+    @Override
+    public List<SparePartStockInfo> getCustodialStock() {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> departModels = sysBaseApi.getDepartByUserId(user.getId());
+        List<String> orgCodes = null;
+        if(!user.getRoleCodes().contains("admin")&&departModels.size()!=0){
+            orgCodes = departModels.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+        }
+        //获取有权限的班组库信息
+        List<SparePartStockInfo> stockInfoList = sparePartStockInfoMapper.selectList(new LambdaQueryWrapper<SparePartStockInfo>()
+                .in(CollUtil.isNotEmpty(orgCodes), SparePartStockInfo::getOrgCode, orgCodes)
+                .eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0));
+        return stockInfoList;
     }
 }

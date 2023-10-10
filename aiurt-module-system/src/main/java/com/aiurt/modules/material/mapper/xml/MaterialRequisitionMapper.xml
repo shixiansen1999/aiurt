@@ -19,6 +19,7 @@
             mrd.*,
             mb.specifications,
             mb.type,
+            mb.specifications,
             mbt.base_type_code,
             mbt.base_type_name,
             cm.major_code,

@@ -186,7 +186,7 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     }
     public void updateOrder(SparePartOutOrder sparePartOutOrder){
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        sparePartOutOrder.setConfirmUserId(user.getUsername());
+        sparePartOutOrder.setConfirmUserId(user.getId());
         //sparePartOutOrder.setConfirmTime(new Date());不能把其他的提交时间也修改
         sparePartOutOrder.setSysOrgCode(user.getOrgCode());
         updateById(sparePartOutOrder);
@@ -260,8 +260,8 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         sparePartOutOrder.setMaterialCode(sparePartStock.getMaterialCode());
         sparePartOutOrder.setWarehouseCode(sparePartStock.getWarehouseCode());
         sparePartOutOrder.setNum(sparePartStock.getNum());
-        sparePartOutOrder.setApplyUserId(user.getUsername());
-        sparePartOutOrder.setConfirmUserId(user.getUsername());
+        sparePartOutOrder.setApplyUserId(user.getId());
+        sparePartOutOrder.setConfirmUserId(user.getId());
         sparePartOutOrder.setConfirmTime(new Date());
         sparePartOutOrder.setApplyOutTime(new Date());
         sparePartOutOrder.setSysOrgCode(user.getOrgCode());
@@ -278,7 +278,7 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         sparePartOutOrderMapper.updateById(sparePartOutOrder);
         //发一条出库消息
         try {
-            LoginUser userById = sysBaseApi.getUserByName(sparePartOutOrder.getApplyUserId());
+            LoginUser userById = sysBaseApi.getUserById(sparePartOutOrder.getApplyUserId());
             //发送通知
             MessageDTO messageDTO = new MessageDTO(user.getUsername(), userById.getUsername(), "备件出库成功" + DateUtil.today(), null);
 
@@ -335,7 +335,7 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         SparePartOutOrder one = this.getById(sparePartOutOrder.getId());
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         try {
-            LoginUser userById = sysBaseApi.getUserByName(one.getApplyUserId());
+            LoginUser userById = sysBaseApi.getUserById(one.getApplyUserId());
             //发送通知
             MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件出库成功" + DateUtil.today(), null);
 

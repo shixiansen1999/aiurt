@@ -3,6 +3,7 @@ package com.aiurt.modules.sparepart.controller;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.modules.material.service.IMaterialRequisitionService;
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.sparepart.entity.dto.req.SparePartRequisitionAddReqDTO;
 import com.aiurt.modules.sparepart.entity.dto.req.SparePartRequisitionListReqDTO;
 import com.aiurt.modules.sparepart.entity.dto.resp.SparePartRequisitionListRespDTO;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
+import java.util.List;
 
 /**
  * 三级库申领的controller
@@ -104,4 +106,15 @@ public class SparePartRequisitionController {
         return Result.ok(code);
     }
 
+    /**
+     * 保管仓库名称集合
+     * @return List<String> 保管仓库名称集合
+     */
+    @AutoLog(value = "查询")
+    @ApiOperation(value="班组库申领-获取保管仓库名称", notes="班组库申领-获取保管仓库名称")
+    @GetMapping(value = "/getCustodialStock")
+    public Result<List<SparePartStockInfo>> getCustodialStock() {
+        List<SparePartStockInfo> custodialStock = sparePartRequisitionService.getCustodialStock();
+        return Result.ok(custodialStock);
+    }
 }

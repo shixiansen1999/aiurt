@@ -147,7 +147,7 @@ public class SparePartInOrder implements Serializable {
 	private Date confirmTime;
 	/**确认人ID*/
 	@ApiModelProperty(value = "确认人ID")
-	@Dict(dictTable = "sys_user", dicText = "realname", dicCode = "username")
+	@Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
 	private String confirmId;
 	/**确认人*/
 	@Excel(name = "确认人", width = 15)
