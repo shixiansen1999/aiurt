@@ -98,6 +98,9 @@ public class MaterialOutRequisitionDTO extends DictEntity implements Serializabl
     private Date outTime;
     @ApiModelProperty(value = "出库单备注")
     private  String  outOrderRemark;
+    /**物资申领数量合计*/
+    @ApiModelProperty(value = "物资出库合计")
+    private Integer applyTotalCount;
     /**出库合计*/
     @ApiModelProperty(value = "物资出库合计")
     private Integer totalCount;

@@ -60,7 +60,7 @@ public class StockOutOrderLevel2 extends DictEntity {
 	/**状态*/
 	@ApiModelProperty(value = "状态")
 	@TableField(exist = false)
-	@Dict(dicCode = "spare_apply_status")
+	@Dict(dicCode = "material_requisition_status")
 	private  String  status;
 
 	/**年份*/

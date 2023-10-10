@@ -44,9 +44,22 @@ public class SparePartRequisitionListRespDTO implements Serializable {
     @ApiModelProperty(value = "申领仓库编号")
     private String applyWarehouseCode;
 
+    /**申领仓库名称*/
+    @ApiModelProperty(value = "申领仓库名称")
+    private String applyWarehouseName;
+
     /**保管仓库编号*/
     @ApiModelProperty(value = "保管仓库编号")
     private String custodialWarehouseCode;
+
+    @ApiModelProperty(value = "申领二级库仓库编号")
+    private java.lang.String leve2WarehouseCode;
+    /**申领二级库仓库名称*/
+    @ApiModelProperty(value = "申领二级库仓库名称")
+    private java.lang.String leve2WarehouseName;
+    /**保管仓库名称*/
+    @ApiModelProperty(value = "保管仓库名称")
+    private String custodialWarehouseName;
 
     /**领用时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
@@ -64,4 +77,7 @@ public class SparePartRequisitionListRespDTO implements Serializable {
     @Dict(dicCode = "material_requisition_apply_type")
     private Integer applyType;
 
+    /**备注*/
+    @ApiModelProperty(value = "备注")
+    private java.lang.String remarks;
 }

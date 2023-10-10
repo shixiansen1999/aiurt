@@ -227,7 +227,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                 QueryWrapper<MaterialRequisitionDetail> wrapper2 = new QueryWrapper<>();
                 wrapper2.lambda().eq(MaterialRequisitionDetail::getMaterialRequisitionId, one.getId()).eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
                 List<MaterialRequisitionDetail> requisitionDetails = materialRequisitionDetailService.getBaseMapper().selectList(wrapper2);
-                sparePartRequisitionService.addSparePartOutOrder(requisitionDetails, loginUser, one);
+                sparePartRequisitionService.addSparePartOutOrder(requisitionDetails, loginUser, one,false);
                 //维修申领单变更为已完成,
                 one.setIsUsed(MaterialRequisitionConstant.IS_USED);
                 one.setStatus(MaterialRequisitionConstant.STATUS_COMPLETED);
