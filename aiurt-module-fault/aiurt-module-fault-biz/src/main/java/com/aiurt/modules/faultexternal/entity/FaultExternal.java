@@ -2,6 +2,7 @@ package com.aiurt.modules.faultexternal.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
+import com.aiurt.modules.faultattachments.entity.FaultAttachments;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -209,6 +210,17 @@ public class FaultExternal extends DictEntity implements Serializable  {
     @ApiModelProperty(value = "故障表编号")
     private String faultcode;
 
+    /**记录人*/
+    @Excel(name = "记录人", width = 15)
+    @ApiModelProperty(value = "记录人")
+    private String sreporter;
+
+    /**记录人所属部门*/
+    @Excel(name = "记录人所属部门", width = 15)
+    @ApiModelProperty(value = "记录人所属部门")
+    private String sdepartmentreport;
+
+
     @TableField(exist = false)
     private List<String> urlList;
 
@@ -237,6 +249,12 @@ public class FaultExternal extends DictEntity implements Serializable  {
     @TableField(exist = false)
     @ApiModelProperty(value = "故障现象或者编码")
     private String faultPhenomenonOrCode;
+
+    /**附件*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "附件")
+    private List<FaultAttachments> attachments;
+
     @TableField(exist = false)
     @ApiModelProperty(value = "故障单状态")
     private Integer faultStatus;
