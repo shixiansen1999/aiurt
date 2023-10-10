@@ -13,7 +13,6 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.material.entity.MaterialBase;
-import com.aiurt.modules.material.entity.MaterialRequisition;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.material.service.IMaterialRequisitionService;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
@@ -367,14 +366,9 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         }
         sparePartOutOrder.setConfirmTime(new Date());
         //同步出库记录到出入库记录表
-        MaterialRequisition requisition = materialRequisitionService.getOne(new LambdaQueryWrapper<MaterialRequisition>()
-                .eq(MaterialRequisition::getId, sparePartOutOrder.getMaterialRequisitionId())
-                .eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0));
         MaterialStockOutInRecord record = new MaterialStockOutInRecord();
         BeanUtils.copyProperties(sparePartOutOrder, record);
-        if (ObjectUtil.isNotNull(requisition)) {
-            record.setMaterialRequisitionType(requisition.getMaterialRequisitionType());
-        }
+        record.setMaterialRequisitionType(3);
         record.setIsOutIn(2);
         record.setOutInType(sparePartOutOrder.getOutType());
         materialStockOutInRecordService.save(record);

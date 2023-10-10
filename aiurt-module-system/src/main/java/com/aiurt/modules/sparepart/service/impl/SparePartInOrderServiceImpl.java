@@ -152,6 +152,8 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         record.setConfirmUserId(user.getId());
         if (ObjectUtil.isNotNull(requisition)) {
             record.setMaterialRequisitionType(requisition.getMaterialRequisitionType());
+        } else {
+            record.setMaterialRequisitionType(3);
         }
         record.setIsOutIn(1);
         record.setOutInType(sparePartInOrder.getInType());
