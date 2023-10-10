@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
@@ -268,6 +269,11 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                         .eq(MaterialRequisition::getIsUsed, MaterialRequisitionConstant.UNUSED)
                         .eq(MaterialRequisition::getId,byId.getMaterialRequisitionPid())
                         .eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0));
+
+                // 如果是从二级库申领单直接新增的，就直接返回
+                if (one == null) {
+                    break;
+                }
 
                 QueryWrapper<MaterialRequisitionDetail> wrapper = new QueryWrapper<>();
                 wrapper.lambda().eq(MaterialRequisitionDetail::getMaterialRequisitionId, one.getId()).eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
