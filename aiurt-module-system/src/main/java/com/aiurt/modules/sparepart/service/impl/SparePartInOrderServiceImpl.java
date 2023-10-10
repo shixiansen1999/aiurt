@@ -17,6 +17,7 @@ import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.entity.MaterialRequisition;
 import com.aiurt.modules.material.entity.MaterialRequisitionDetail;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.material.service.IMaterialRequisitionDetailService;
@@ -142,11 +143,18 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         partInOrder.setConfirmTime(new Date());
         partInOrder.setConfirmStatus(sparePartInOrder.getConfirmStatus());
         sparePartInOrderMapper.updateById(partInOrder);
-        //同步出库记录到出入库记录表
-        LambdaQueryWrapper<MaterialStockOutInRecord> queryWrapper = new LambdaQueryWrapper<>();
-        MaterialStockOutInRecord record = materialStockOutInRecordService.getOne(queryWrapper.eq(MaterialStockOutInRecord::getOrderId, partInOrder.getId()));
-        BeanUtils.copyProperties(partInOrder, record);
-        materialStockOutInRecordService.updateById(record);
+        //同步入库记录到出入库记录表
+        MaterialRequisition requisition = materialRequisitionService.getOne(new LambdaQueryWrapper<MaterialRequisition>()
+                .eq(MaterialRequisition::getId, sparePartInOrder.getMaterialRequisitionId())
+                .eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0));
+        MaterialStockOutInRecord record = new MaterialStockOutInRecord();
+        BeanUtils.copyProperties(sparePartInOrder, record);
+        if (ObjectUtil.isNotNull(requisition)) {
+            record.setMaterialRequisitionType(requisition.getMaterialRequisitionType());
+        }
+        record.setIsOutIn(1);
+        record.setOutInType(sparePartInOrder.getInType());
+        materialStockOutInRecordService.save(record);
         // 2.回填申领单
         MaterialRequisitionDetail detail = materialRequisitionDetailService.getOne(new LambdaQueryWrapper<MaterialRequisitionDetail>()
                 .eq(MaterialRequisitionDetail::getMaterialsCode, sparePartInOrder.getMaterialCode())

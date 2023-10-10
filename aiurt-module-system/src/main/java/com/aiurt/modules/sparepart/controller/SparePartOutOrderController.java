@@ -5,7 +5,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
-import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
@@ -16,7 +15,6 @@ import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
-import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
 import com.aiurt.modules.stock.service.impl.MaterialStockOutInRecordServiceImpl;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -34,13 +32,11 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -198,47 +194,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
    @ApiOperation(value="spare_part_out_order-确认", notes="spare_part_out_order-确认")
    @RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
    public Result<?> edit(@RequestBody SparePartOutOrder sparePartOutOrder) {
-       SparePartOutOrder one = sparePartOutOrderService.getById(sparePartOutOrder.getId());
-       LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-       try {
-           LoginUser userById = sysBaseApi.getUserByName(one.getApplyUserId());
-           //发送通知
-           MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件出库成功" + DateUtil.today(), null);
-
-           //构建消息模板
-           HashMap<String, Object> map = new HashMap<>();
-           map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, one.getId());
-           map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_OUT.getType());
-           map.put("materialCode",one.getMaterialCode());
-           String materialName= sysBaseApi.getMaterialNameByCode(one.getMaterialCode());
-           map.put("name",materialName);
-           map.put("num",one.getNum());
-           String warehouseName= sysBaseApi.getWarehouseNameByCode(one.getWarehouseCode());
-           map.put("warehouseName",warehouseName);
-           map.put("realName",userById.getRealname());
-
-           messageDTO.setData(map);
-           //业务类型，消息类型，消息模板编码，摘要，发布内容
-           messageDTO.setTemplateCode(CommonConstant.SPAREPARTOUTORDER_SERVICE_NOTICE);
-           SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
-           messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-           messageDTO.setMsgAbstract("备件出库申请通过");
-           messageDTO.setPublishingContent("备件出库申请通过");
-           messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
-           sysBaseApi.sendTemplateMessage(messageDTO);
-           // 更新待办
-           isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.SPAREPART_OUT.getType(), one.getId(), user.getUsername(), "1");
-       } catch (Exception e) {
-           e.printStackTrace();
-       }
-       sparePartOutOrder.setConfirmTime(new Date());
-       //同步出库记录到出入库记录表
-       LambdaQueryWrapper<MaterialStockOutInRecord> queryWrapper = new LambdaQueryWrapper<>();
-       MaterialStockOutInRecord record = materialStockOutInRecordService.getOne(queryWrapper.eq(MaterialStockOutInRecord::getOrderId, sparePartOutOrder.getId()));
-       BeanUtils.copyProperties(sparePartOutOrder, record);
-       materialStockOutInRecordService.updateById(record);
-
-       return sparePartOutOrderService.update(sparePartOutOrder);
+       return sparePartOutOrderService.edit(sparePartOutOrder);
    }
 
     /**
