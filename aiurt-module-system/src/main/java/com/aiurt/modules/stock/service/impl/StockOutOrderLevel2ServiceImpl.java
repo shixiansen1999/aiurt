@@ -123,9 +123,11 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 				.eq(StockOutboundMaterials::getOutOrderCode, orderCode)
 				.eq(StockOutboundMaterials::getDelFlag, CommonConstant.DEL_FLAG_0));
 		int count = 0;
+		int applyTotalCount = 0;
 		for (StockOutboundMaterials materials : stockOutboundMaterials) {
 			materials = iStockOutboundMaterialsService.translate(materials);
 			count += materials.getActualOutput() == null ? 0 : materials.getActualOutput();
+			applyTotalCount += materials.getApplyOutput() == null ? 0 : materials.getApplyOutput();
 		}
 		// 二级库出库单对应的物资的出库仓库翻译，先将所有仓库的字典值转成key是仓库code,value的仓库名称的Map
 		Set<String> warehouseCodeSet = stockOutboundMaterials.stream().map(StockOutboundMaterials::getWarehouseCode)
@@ -140,6 +142,7 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 		materialOutRequisitionDTO.setUserId(stockOutOrderLevel2.getUserId());
 		materialOutRequisitionDTO.setOutTime(stockOutOrderLevel2.getOutTime());
 		materialOutRequisitionDTO.setOutOrderRemark(stockOutOrderLevel2.getRemark());
+		materialOutRequisitionDTO.setApplyTotalCount(applyTotalCount);
 		materialOutRequisitionDTO.setTotalCount(count);
 		materialOutRequisitionDTO.setOrderCode(orderCode);
 		materialOutRequisitionDTO.setStockOutboundMaterialsList(stockOutboundMaterials);
