@@ -3669,17 +3669,22 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             // 时长计算，有值就是已提交
             Long duration = fault1.getDuration();
             if (Objects.isNull(duration)) {
-                //
                 Integer status = fault1.getStatus();
                 if (FaultStatusEnum.NEW_FAULT.getStatus().equals(status) || FaultStatusEnum.CANCEL.getStatus().equals(status) || FaultStatusEnum.APPROVAL_REJECT.getStatus().equals(status)) {
                     fault1.setDuration(0L);
+                    fault1.setDurationConversion("0秒");
                 } else {
                     fault1.setDuration(DateUtil.between(new Date(), fault1.getHappenTime(), DateUnit.MINUTE));
+                    long between = DateUtil.between(new Date(), fault1.getHappenTime(), DateUnit.SECOND);
+                    fault1.setDurationConversion(DateUtil.formatBetween(ObjectUtil.isNotNull(between) ? between * 1000 : 0, BetweenFormater.Level.SECOND));
+
                 }
             }else {
                 // 转为分钟
                 long minDuration = duration/60L;
                 fault1.setDuration(minDuration > 0 ? minDuration : 1L);
+
+                fault1.setDurationConversion(DateUtil.formatBetween(ObjectUtil.isNotNull(duration) ? duration * 1000 : 0, BetweenFormater.Level.SECOND));
             }
             //
         });
