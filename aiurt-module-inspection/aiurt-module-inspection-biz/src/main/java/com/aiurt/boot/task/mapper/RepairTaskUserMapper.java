@@ -43,4 +43,11 @@ public interface RepairTaskUserMapper extends BaseMapper<RepairTaskUser> {
                                                 @Param("fiveYearsAgo") int fiveYearsAgo,
                                                 @Param("thisYear") int thisYear,
                                                 @Param("completed") Integer completed);
+
+    /**
+     * 通过检修单code获取检修人username，用逗号拼接
+     * @param repairTaskCode
+     * @return
+     */
+    String selectUserNameByRepairTaskCode(String repairTaskCode);
 }
