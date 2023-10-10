@@ -11,6 +11,7 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.device.entity.DeviceAssembly;
@@ -398,8 +399,8 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                 if (i > 0) {
                     stockLevel2.setAvailableNum(stockLevel2.getAvailableNum() + i);
                 }
-                stockLevel2Service.updateById(stockLevel2);
             }
+            stockLevel2Service.updateById(stockLevel2);
             //计算库存结余
             stockOutboundMaterials.setBalance(stockLevel2.getNum() - applyMaterial.getApplyNum());
             stockOutboundMaterials.setApplyOutput(applyMaterial.getApplyNum());
@@ -719,6 +720,10 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                         .eq(StockLevel2::getMaterialCode, detail.getMaterialsCode())
                         .eq(StockLevel2::getDelFlag, CommonConstant.DEL_FLAG_0), false);
                 detail.setAvailableNum(ObjectUtil.isNotNull(stockLevel2) ? stockLevel2.getAvailableNum() : 0);
+            }
+
+            if (detail.getAvailableNum() < detail.getApplyNum()) {
+                throw new AiurtBootException("可使用数量已变更，不足申领数量，请修改申领数量");
             }
         });
         submitRequisition(materialRequisition, requisitionDetailList,sparePartRequisitionAddReqDTO);
