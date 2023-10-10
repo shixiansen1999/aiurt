@@ -144,4 +144,9 @@ public interface FlowModelExtElementConstant {
      * 加减签
      */
     String EXT_ADD_MULTI = "addMulti";
+
+    /**
+     * 审批人为空
+     */
+    String EX_EMPTY_APPROVE = "emtptyApprover";
 }
