@@ -190,6 +190,8 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                 for (MaterialRequisitionDetail materialRequisitionDetail : requisitionDetailList) {
                     //如果申请数量大于可使用数量，则证明需要向上一级库申领，
                     int i = materialRequisitionDetail.getApplyNum() - materialRequisitionDetail.getAvailableNum();
+                    //特殊领用所有的实际出库数量等于申请数量
+                    materialRequisitionDetail.setActualNum(materialRequisitionDetail.getApplyNum());
 
                     //维修申领产生三级库申领，三级库申领产生二级库申领
                     if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(sparePartRequisitionAddReqDTO.getMaterialRequisitionType())) {
@@ -351,6 +353,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
         LoginUser keepingUser = sysBaseApi.getUserById(materialRequisition.getApplyUserId());
         stockOutOrderLevel.setCustodialId(keepingUser != null ? keepingUser.getUsername(): materialRequisition.getApplyUserId());
         stockOutOrderLevel.setCustodialWarehouseCode(materialRequisition.getCustodialWarehouseCode());
+        stockOutOrderLevel.setWarehouseCode(materialRequisition.getApplyWarehouseCode());
         stockOutOrderLevel.setOrgCode(null != sysDepart ? sysDepart.getOrgCode() : null);
         stockOutOrderLevel.setApplyCode(materialRequisition.getCode());
         stockOutOrderLevel.setMaterialRequisitionId(materialRequisition.getId());
@@ -387,8 +390,8 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             if (equals) {
                 //更新二级库库存信息
                 stockOutboundMaterials.setActualOutput(applyMaterial.getApplyNum());
-                stockLevel2.setNum(stockLevel2.getNum() - (null!=applyMaterial.getActualNum()?applyMaterial.getActualNum():1));
-                int i = applyMaterial.getApplyNum() - (applyMaterial.getActualNum()!=null?applyMaterial.getActualNum():applyMaterial.getApplyNum());
+                stockLevel2.setNum(stockLevel2.getNum() - applyMaterial.getActualNum());
+                int i = applyMaterial.getApplyNum() - applyMaterial.getActualNum();
                 if (i > 0) {
                     stockLevel2.setAvailableNum(stockLevel2.getAvailableNum() + i);
                 }
@@ -460,7 +463,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             //同步出库记录到出入库记录表
             MaterialStockOutInRecord record = new MaterialStockOutInRecord();
             BeanUtils.copyProperties(sparePartOutOrder, record);
-            record.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3);
+            record.setMaterialRequisitionType(materialRequisition.getMaterialRequisitionType());
             record.setIsOutIn(2);
             record.setOutInType(sparePartOutOrder.getOutType());
             materialStockOutInRecordService.save(record);
@@ -532,7 +535,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             //同步入库记录到出入库记录表
             MaterialStockOutInRecord record = new MaterialStockOutInRecord();
             BeanUtils.copyProperties(sparePartInOrder, record);
-            record.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3);
+            record.setMaterialRequisitionType(requisition.getMaterialRequisitionType());
             record.setIsOutIn(1);
             record.setOutInType(sparePartInOrder.getInType());
             materialStockOutInRecordService.save(record);
