@@ -96,6 +96,19 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
         // 处理历史任务，以及查找每个节点的出现的次数，正在运行的任务
         processHistoricTask(userTaskModelMap, resultMap, runList, nodeTimeMap);
 
+        UserTask userTask = flowElementUtil.getFirstUserTaskByDefinitionId(definitionId);
+        HistoricTaskInfo historicTaskInfo1 = resultMap.get(userTask.getId());
+        Set<String> nextNodeSet = historicTaskInfo1.getNextNodeSet();
+        if (CollUtil.isNotEmpty(nextNodeSet)) {
+            nextNodeSet.stream().forEach(nextNodeId->{
+                HistoricTaskInfo nextNodeTaskInfo = resultMap.get(nextNodeId);
+                List<HistoricTaskInstance> collect = nextNodeTaskInfo.getList().stream().filter(historicTaskInstance -> Objects.isNull(historicTaskInstance.getClaimTime())).collect(Collectors.toList());
+                // 为空，删除还节点数据
+               // if ()
+            });
+        }
+
+
         Map<String, Object> variables = runtimeService.getVariables(processInstanceId);
 
         // 预测未来的节点
@@ -198,22 +211,24 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
 
             //
             historicTaskInfo.getNextNodeSet().forEach(nextNodeId->{
-                String flowId = "sequence_" + t.get();
-                FlowElementDTO flowElementPojo = new FlowElementDTO();
-                flowElementPojo.setId(flowId);
-                flowElementPojo.setTargetFlowElementId(nextNodeId);
-                flowElementPojo.setResourceFlowElementId(nodeId);
-                flowElementPojo.setFlowElementType("sequence");
-                t.set(t.get() + 1);
                 HistoricTaskInfo taskInfo = resultMap.get(nextNodeId);
                 if (Objects.nonNull(taskInfo)) {
+                    String flowId = "sequence_" + t.get();
+                    FlowElementDTO flowElementPojo = new FlowElementDTO();
+                    flowElementPojo.setId(flowId);
+                    flowElementPojo.setTargetFlowElementId(nextNodeId);
+                    flowElementPojo.setResourceFlowElementId(nodeId);
+                    flowElementPojo.setFlowElementType("sequence");
+                    t.set(t.get() + 1);
+
                     if (taskInfo.getIsFeature()) {
                         featureSequenceFlowSet.add(flowId);
                     }else {
                         finishedSequenceFlowSet.add(flowId);
                     }
+
+                    flowElementPojoList.add(flowElementPojo);
                 }
-                flowElementPojoList.add(flowElementPojo);
             });
         });
     }
@@ -461,8 +476,8 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
                         if (targetFlowElement instanceof UserTask) {
                             HistoricTaskInfo historicTaskInfo = new HistoricTaskInfo();
                             historicTaskInfo.setName(targetFlowElement.getName());
-                            historicTaskInfo.setIsActive(true);
-                            historicTaskInfo.setIsFeature(false);
+                            historicTaskInfo.setIsActive(false);
+                            historicTaskInfo.setIsFeature(true);
                             resultMap.put(targetFlowElement.getId(), historicTaskInfo);
                             getTargetFlowElement(targetFlowElement, resultMap, variables);
                         } else {
