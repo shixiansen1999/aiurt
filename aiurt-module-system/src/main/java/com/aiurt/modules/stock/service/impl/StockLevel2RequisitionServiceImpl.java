@@ -123,8 +123,10 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
         // 要考虑到有些申领单物资清单的DTO列表只传物资code，没传物资id以及其他必要参数的情况
         // 必要参数包括：物资id、物资编号、物资名称、单位、参考单价、参考总价
         List<String> materialsIdList = requisitionDetailDTOList.stream()
+                .filter(m->StrUtil.isNotEmpty(m.getMaterialsId()))
                 .map(StockLevel2RequisitionDetailDTO::getMaterialsId).collect(Collectors.toList());
         List<String> materialsCodeList = requisitionDetailDTOList.stream()
+                .filter(m->StrUtil.isNotEmpty(m.getMaterialsCode()))
                 .filter(m -> !materialsIdList.contains(m.getMaterialsId()))
                 .map(StockLevel2RequisitionDetailDTO::getMaterialsCode).collect(Collectors.toList());
         // 如物资清单的code和id都没有,保存的清单只有DTO获取的数据
