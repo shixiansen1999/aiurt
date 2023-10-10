@@ -33,7 +33,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,9 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -76,6 +76,8 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
     private SparePartStockInfoMapper sparePartStockInfoMapper;
 	@Autowired
 	private ISysDepartService iSysDepartService;
+	@Autowired
+	private ISysBaseAPI sysBaseApi;
 	@Autowired
 	private ICsUserDepartService csUserDepartService;
 	@Autowired
@@ -125,6 +127,16 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 			materials = iStockOutboundMaterialsService.translate(materials);
 			count += materials.getActualOutput() == null ? 0 : materials.getActualOutput();
 		}
+		// 二级库出库单对应的物资的出库仓库翻译，先将所有仓库的字典值转成key是仓库code,value的仓库名称的Map
+		Set<String> warehouseCodeSet = stockOutboundMaterials.stream().map(StockOutboundMaterials::getWarehouseCode)
+				.collect(Collectors.toSet());
+		if (CollUtil.isNotEmpty(warehouseCodeSet)) {
+			Map<String, String> warehouseMap = sysBaseApi.translateDictFromTableByKeys("stock_level2_info",
+					"warehouse_name", "warehouse_code", String.join(",", warehouseCodeSet))
+					.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+			stockOutboundMaterials.forEach(m->m.setWarehouseName(warehouseMap.get(m.getWarehouseCode())));
+		}
+
 		materialOutRequisitionDTO.setUserId(stockOutOrderLevel2.getUserId());
 		materialOutRequisitionDTO.setOutTime(stockOutOrderLevel2.getOutTime());
 		materialOutRequisitionDTO.setOutOrderRemark(stockOutOrderLevel2.getRemark());
