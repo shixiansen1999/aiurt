@@ -253,41 +253,42 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                 //如果该二级库申领是由三级库产生，则补充完整二级库出库，三级库入出库
                 //获取二级库领用单
                 MaterialRequisition byId = materialRequisitionService.getById(id);
-                // 如果没有关联维修单，就是直接从二级库申领模块新增的，就不用补充二级库出库和三级库入库
-                if (byId.getFaultRepairRecordId() == null) {
-                    break;
-                }
                 QueryWrapper<MaterialRequisitionDetail> wrapper = new QueryWrapper<>();
                 wrapper.lambda().eq(MaterialRequisitionDetail::getMaterialRequisitionId, id).eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
                 List<MaterialRequisitionDetail> materialRequisitionDetails = materialRequisitionDetailService.getBaseMapper().selectList(wrapper);
-
-                //获取维修领用单
-                QueryWrapper<MaterialRequisition>  queryWrapper = new QueryWrapper<>();
-                MaterialRequisition one = materialRequisitionService.getOne(queryWrapper.lambda()
-                        .eq(MaterialRequisition::getFaultRepairRecordId, byId.getFaultRepairRecordId())
-                        .eq(MaterialRequisition::getMaterialRequisitionType, MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR)
-                        .eq(MaterialRequisition::getIsUsed, MaterialRequisitionConstant.UNUSED)
-                        .eq(MaterialRequisition::getId,byId.getMaterialRequisitionPid())
-                        .eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0));
-                SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO = new SparePartRequisitionAddReqDTO();
-                BeanUtils.copyProperties(one, sparePartRequisitionAddReqDTO);
-                //三级库申领
-                sparePartRequisitionService.addLevel3Requisition(materialRequisitionDetails, sparePartRequisitionAddReqDTO, one);
-
-                //生成三级库出库
-                QueryWrapper<MaterialRequisitionDetail> wrapper2 = new QueryWrapper<>();
-                wrapper2.lambda().eq(MaterialRequisitionDetail::getMaterialRequisitionId, one.getId()).eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
-                List<MaterialRequisitionDetail> requisitionDetails = materialRequisitionDetailService.getBaseMapper().selectList(wrapper2);
-                sparePartRequisitionService.addSparePartOutOrder(requisitionDetails, loginUser, one,false);
-                //维修申领单变更为已完成,
-                one.setIsUsed(MaterialRequisitionConstant.IS_USED);
-                one.setStatus(MaterialRequisitionConstant.STATUS_COMPLETED);
-                materialRequisitionService.updateById(one);
-                // 再保存物资清单
-                for (MaterialRequisitionDetail materialRequisitionDetail : requisitionDetails) {
-                    materialRequisitionDetail.setActualNum(materialRequisitionDetail.getApplyNum());
+                //根据不同申领单补充出入库记录
+                if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(byId.getMaterialRequisitionType())) {
+                    //获取维修领用单
+                    QueryWrapper<MaterialRequisition>  queryWrapper = new QueryWrapper<>();
+                    MaterialRequisition one = materialRequisitionService.getOne(queryWrapper.lambda()
+                            .eq(MaterialRequisition::getIsUsed, MaterialRequisitionConstant.UNUSED)
+                            .eq(MaterialRequisition::getId,byId.getMaterialRequisitionPid())
+                            .eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0));
+                    SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO = new SparePartRequisitionAddReqDTO();
+                    BeanUtils.copyProperties(one, sparePartRequisitionAddReqDTO);
+                    //三级库申领
+                    sparePartRequisitionService.addLevel3Requisition(materialRequisitionDetails, sparePartRequisitionAddReqDTO, one);
+                    //生成三级库出库
+                    QueryWrapper<MaterialRequisitionDetail> wrapper2 = new QueryWrapper<>();
+                    wrapper2.lambda().eq(MaterialRequisitionDetail::getMaterialRequisitionId, one.getId()).eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
+                    List<MaterialRequisitionDetail> requisitionDetails = materialRequisitionDetailService.getBaseMapper().selectList(wrapper2);
+                    sparePartRequisitionService.addSparePartOutOrder(requisitionDetails, loginUser, one,false);
+                    //维修申领单变更为已完成,
+                    one.setIsUsed(MaterialRequisitionConstant.IS_USED);
+                    one.setStatus(MaterialRequisitionConstant.STATUS_COMPLETED);
+                    materialRequisitionService.updateById(one);
+                    // 再保存物资清单
+                    for (MaterialRequisitionDetail materialRequisitionDetail : requisitionDetails) {
+                        materialRequisitionDetail.setActualNum(materialRequisitionDetail.getApplyNum());
+                    }
+                    materialRequisitionDetailService.updateBatchById(requisitionDetails);
+                } else if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3.equals(byId.getMaterialRequisitionType())) {
+                    //二级库出库
+                    String outOrderCode = sparePartRequisitionService.addStockOutOrderLevel2(byId, materialRequisitionDetails,false);
+                    //三级库入库
+                    sparePartRequisitionService.addSparePartInOrder(materialRequisitionDetails, byId, outOrderCode,loginUser);
                 }
-                materialRequisitionDetailService.updateBatchById(requisitionDetails);
+
                 break;
             default:
                 return;

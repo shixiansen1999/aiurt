@@ -188,8 +188,6 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                 for (MaterialRequisitionDetail materialRequisitionDetail : requisitionDetailList) {
                     //如果申请数量大于可使用数量，则证明需要向上一级库申领，
                     int i = materialRequisitionDetail.getApplyNum() - materialRequisitionDetail.getAvailableNum();
-                    //特殊领用所有的实际出库数量等于申请数量
-                    materialRequisitionDetail.setActualNum(materialRequisitionDetail.getApplyNum());
 
                     //维修申领产生三级库申领，三级库申领产生二级库申领
                     if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(sparePartRequisitionAddReqDTO.getMaterialRequisitionType())) {
@@ -249,7 +247,11 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     BeanUtils.copyProperties(sparePartRequisitionAddReqDTO, stockLevel2RequisitionAddReqDTO, "id");
                     stockLevel2RequisitionAddReqDTO.setMaterialRequisitionPid(materialRequisition.getId());
                     //保管仓库为二级库
-                    stockLevel2RequisitionAddReqDTO.setCustodialWarehouseCode(sparePartRequisitionAddReqDTO.getLeve2WarehouseCode());
+                    if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(sparePartRequisitionAddReqDTO.getMaterialRequisitionType())) {
+                        stockLevel2RequisitionAddReqDTO.setCustodialWarehouseCode(sparePartRequisitionAddReqDTO.getLeve2WarehouseCode());
+                    }else {
+                        stockLevel2RequisitionAddReqDTO.setCustodialWarehouseCode(sparePartRequisitionAddReqDTO.getApplyWarehouseCode());
+                    }
                     String code = CodeGenerateUtils.generateSingleCode("EJKSL", 5);
                     stockLevel2RequisitionAddReqDTO.setCode(code);
                     stockLevel2RequisitionAddReqDTO.setIsUsed(MaterialRequisitionConstant.UNUSED);
