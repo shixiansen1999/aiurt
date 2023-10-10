@@ -37,6 +37,8 @@ public interface MaterialRequisitionConstant {
     Integer RETURN_OUT = 5;
     Integer BORROW_OUT = 6;
     Integer NORMAL_OUT = 7;
-
+    /**是否已被使用(0未使用，1已使用)*/
+    Integer UNUSED = 0;
+    Integer  IS_USED= 1;
 
 }

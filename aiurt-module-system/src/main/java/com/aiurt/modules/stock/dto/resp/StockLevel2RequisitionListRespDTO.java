@@ -55,6 +55,10 @@ public class StockLevel2RequisitionListRespDTO implements Serializable {
     @Dict(dicCode = "material_requisition_status")
     private java.lang.Integer status;
 
+    /**申领单类型（1维修领用，3三级库领用，2二级库领用）*/
+    @ApiModelProperty(value = "申领单类型（1维修领用，3三级库领用，2二级库领用）")
+    private java.lang.Integer materialRequisitionType;
+
     /**领用类型（1特殊领用，2普通领用）*/
     @ApiModelProperty(value = "领用类型（1特殊领用，2普通领用）")
     @Dict(dicCode = "material_requisition_apply_type")

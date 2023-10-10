@@ -1,6 +1,7 @@
 package com.aiurt.modules.sparepart.entity.dto.req;
 
 import com.aiurt.modules.base.BaseEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -41,6 +42,11 @@ public class SparePartRequisitionListReqDTO extends BaseEntity implements Serial
     @ApiModelProperty(value = "申领单类型（1维修领用，3三级库领用，2二级库领用）")
     private String materialRequisitionType;
 
+    /**申领单类型（1维修领用，3三级库领用，2二级库领用）*/
+    @ApiModelProperty(value = "多申领单类型查询,逗号隔开")
+    @TableField(exist = false)
+    private String materialRequisitionTypes;
+
     /**搜索开始时间->领用时间大于等于的时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
@@ -53,4 +59,7 @@ public class SparePartRequisitionListReqDTO extends BaseEntity implements Serial
     @ApiModelProperty(value = "搜索结束时间->领用时间小于等于的时间")
     private Date searchEndTime;
 
+    /**app搜索框*/
+    @ApiModelProperty(value = "app搜索框")
+    private java.lang.String search;
 }

@@ -3754,7 +3754,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         SysUserPositionCurrent sysUserPositionCurrent;
         try {
             sysUserPositionCurrent = sysUserPositionCurrentService.getOne(queryWrapper);
-        } catch (Exception e) {
+        }catch (Exception e){
             throw new AiurtBootException(username + " 在用户实时位置表中有多条数据，请联系相关人员处理！");
         }
         if (ObjectUtil.isNull(sysUserPositionCurrent)) {
@@ -3786,6 +3786,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public String getStationCodeByMac(String mac) {
         return mac == null ? null : csPositionWifiMapper.getStationCodeByMac(mac);
     }
+
 
     @Override
     public JSONObject queryPageUserList(LoginUser loginUser, List<String> excludeUserIds, String isBelongOrg,

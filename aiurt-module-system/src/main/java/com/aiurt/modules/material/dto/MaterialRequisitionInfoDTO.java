@@ -61,6 +61,11 @@ public class MaterialRequisitionInfoDTO extends DictEntity implements Serializab
     /**申领仓库名称*/
     @ApiModelProperty(value = "申领仓库名称")
     private String applyWarehouseName;
+    @ApiModelProperty(value = "申领二级库仓库编号")
+    private java.lang.String leve2WarehouseCode;
+    /**申领二级库仓库名称*/
+    @ApiModelProperty(value = "申领二级库仓库名称")
+    private java.lang.String leve2WarehouseName;
     /**保管仓库名称*/
     @ApiModelProperty(value = "保管仓库名称")
     private String custodialWarehouseName;

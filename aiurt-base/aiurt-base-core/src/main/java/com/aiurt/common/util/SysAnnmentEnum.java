@@ -45,12 +45,12 @@ public enum SysAnnmentEnum {
     /**
      * 检修
      */
-    INSPECTION("inspection", "component","","检修业务消息", Arrays.asList("inspection", "inspection_return", "inspection_assign")),
+    INSPECTION("inspection", "component","","检修业务消息", Arrays.asList("inspection", "inspection_return", "inspection_assign", "repair_in_execution_remind")),
 
     /**
      * 巡视指派
      */
-    PATROL("patrol", "component","","巡视业务消息", Arrays.asList("patrol_assign", "patrol_audit")),
+    PATROL("patrol", "component","","巡视业务消息", Arrays.asList("patrol_assign", "patrol_audit", "patrol_un_done_remind")),
 
     /**
      *备件归还

@@ -260,11 +260,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
                 fault.setApprovalPassTime(new Date());
             } else {
+                Date date = new Date();
                 fault.setAppointUserName(user.getUsername());
                 fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
                 // 方便统计
                 //fault.setApprovalPassTime(fault.getReceiveTime());
-                Date date = new Date();
+
                 fault.setApprovalPassTime(date);
                 //响应时长为0
                 fault.setResponseDuration(0);
@@ -1543,7 +1544,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<String> userNameList = participantsList.stream().map(FaultRepairParticipants::getRealName).collect(Collectors.toList());
         repairRecordDTO.setUsers(StrUtil.join(",", list));
         repairRecordDTO.setUserNames(StrUtil.join(",", userNameList));
-        List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, repairRecord.getId());
+        List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.getAllDeviceChange(faultCode, repairRecord.getId());
         // 易耗品 1是易耗
         List<SparePartStockDTO> consumableList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("1", sparepart.getConsumables()))
                 .map(sparepart -> {
@@ -1707,7 +1708,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<SparePartStockDTO> list = repairRecordDTO.getConsumableList();
         deviceChangeList.addAll(list);
         try {
-            sparePartBaseApi.addSparePartOutOrder(deviceChangeList, faultCode);
+            sparePartBaseApi.addSpareChange(deviceChangeList, faultCode,repairRecordDTO.getId());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw  new AiurtBootException(e.getMessage());

@@ -60,4 +60,8 @@ public class MaterialRequisitionDetail extends BaseEntity implements Serializabl
     @TableField(exist = false)
     @ApiModelProperty(value = "可使用数量")
     private Integer availableNum;
+    /**仓库编号*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "仓库编号")
+    private String warehouseCode;
 }

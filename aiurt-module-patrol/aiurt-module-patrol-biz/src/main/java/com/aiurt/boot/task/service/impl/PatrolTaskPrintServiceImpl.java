@@ -1,12 +1,6 @@
 package com.aiurt.boot.task.service.impl;
 
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -17,7 +11,7 @@ import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.CustomCellMergeHandler;
-import com.aiurt.boot.task.service.*;
+import com.aiurt.boot.task.service.IPatrolTaskPrintService;
 import com.aiurt.common.util.FilePrintUtils;
 import com.aiurt.common.util.MinioUtil;
 import com.aiurt.modules.basic.entity.SysAttachment;
@@ -29,8 +23,6 @@ import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.alibaba.excel.write.metadata.fill.FillWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.spire.xls.FileFormat;
-import com.xkcoding.http.support.Http;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -40,13 +32,16 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jetbrains.annotations.NotNull;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @Description: patrol_task print
@@ -1118,5 +1113,44 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             stationList.add(station);
         }
         return stationList;
+    }
+
+    public PrintForBasicDTO printForBasic(String id, String standardId) {
+        PatrolTask patrolTask = patrolTaskMapper.selectById(id);
+        Assert.notNull(patrolTask, "未找到对应记录！");
+        PrintForBasicDTO printForBasicDTO = new PrintForBasicDTO();
+        List<PatrolTaskStationDTO> stationInfo = patrolTaskStationMapper.selectStationByTaskCode(patrolTask.getCode());
+        printForBasicDTO.setPatrolStation(stationInfo.stream().map(PatrolTaskStationDTO::getStationName).collect(Collectors.joining()));
+        if (StrUtil.isNotEmpty(patrolTask.getEndUserId())) {
+            printForBasicDTO.setPatrolPerson(patrolTaskMapper.getUsername(patrolTask.getEndUserId()));
+        }
+        if (StrUtil.isNotEmpty(patrolTask.getSpotCheckUserId())) {
+            printForBasicDTO.setCheckUserName(patrolTaskMapper.getUsername(patrolTask.getSpotCheckUserId()));
+        }
+        printForBasicDTO.setPatrolDate( DateUtil.format(patrolTask.getSubmitTime(),"yyyy-MM-dd"));
+        printForBasicDTO.setPatrolTime(DateUtil.format(patrolTask.getSubmitTime(),"HH:mm"));
+        printForBasicDTO.setYear(DateUtil.format(patrolTask.getSubmitTime(),"yyyy"));
+        printForBasicDTO.setMonth(DateUtil.format(patrolTask.getSubmitTime(),"MM"));
+        printForBasicDTO.setDay(DateUtil.format(patrolTask.getSubmitTime(),"dd"));
+        if (ObjectUtil.isNotEmpty(patrolTask.getSpotCheckTime())) {
+            printForBasicDTO.setYearSpot(DateUtil.format(patrolTask.getSpotCheckTime(),"yyyy"));
+            printForBasicDTO.setMonthSpot(DateUtil.format(patrolTask.getSpotCheckTime(),"MM"));
+            printForBasicDTO.setDaySpot(DateUtil.format(patrolTask.getSpotCheckTime(),"dd"));
+        }
+        if(StrUtil.isNotEmpty(patrolTask.getSignUrl())&& patrolTask.getSignUrl().indexOf("?")!=-1){
+            int index =  patrolTask.getSignUrl().indexOf("?");
+            SysAttachment sysAttachment = sysBaseApi.getFilePath(patrolTask.getSignUrl().substring(0, index));
+            InputStream inputStream = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
+            if(ObjectUtil.isEmpty(inputStream)){
+               printForBasicDTO.setInputStream(null);
+            } else {
+                //存的obj
+                printForBasicDTO.setInputStream(inputStream);
+            }
+        }else{
+            printForBasicDTO.setInputStream(null);
+        }
+        printForBasicDTO.setPrintDTOList(print(id,standardId));
+        return printForBasicDTO;
     }
 }

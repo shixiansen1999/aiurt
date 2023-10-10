@@ -1,8 +1,9 @@
 package com.aiurt.modules.fault.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.modules.basic.entity.DictEntity;
+import com.aiurt.modules.fault.util.DoubleToIntSerializer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -82,6 +83,7 @@ public class RecPersonListDTO implements Serializable {
     @ApiModelProperty(value = "列表：工龄（单位为年）", position = 23)
     private Double tenure;
     @ApiModelProperty(value = "列表：绩效", position = 24)
+    @JsonSerialize(using = DoubleToIntSerializer.class)
     private Double performance;
     @ApiModelProperty(value = "列表：资质", position = 25)
     private List<String> qualification;
@@ -96,4 +98,3 @@ public class RecPersonListDTO implements Serializable {
     @JsonIgnore
     private Integer totalFaultHandlingCount;
 }
-

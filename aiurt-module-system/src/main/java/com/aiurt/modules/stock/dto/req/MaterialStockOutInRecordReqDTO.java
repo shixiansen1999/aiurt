@@ -1,12 +1,11 @@
 package com.aiurt.modules.stock.dto.req;
 
-import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.base.BaseEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -53,4 +52,9 @@ public class MaterialStockOutInRecordReqDTO extends BaseEntity implements Serial
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "搜索开始时间->确认时间大于等于的时间")
     private java.util.Date searchEndTime;
+
+    /**申领单类型（1维修领用，3三级库领用，2二级库领用）*/
+    @ApiModelProperty(value = "多申领单类型查询,逗号隔开")
+    @TableField(exist = false)
+    private String materialRequisitionTypes;
 }

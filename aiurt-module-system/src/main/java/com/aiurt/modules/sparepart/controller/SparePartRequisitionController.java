@@ -1,6 +1,7 @@
 package com.aiurt.modules.sparepart.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.modules.material.service.IMaterialRequisitionService;
 import com.aiurt.modules.sparepart.entity.dto.req.SparePartRequisitionAddReqDTO;
 import com.aiurt.modules.sparepart.entity.dto.req.SparePartRequisitionListReqDTO;
@@ -84,10 +85,23 @@ public class SparePartRequisitionController {
      */
     @AutoLog(value = "三级库管理-三级库申领-提交")
     @ApiOperation(value="三级库管理-三级库申领-提交", notes="三级库管理-三级库申领-提交")
-    @PostMapping(value = "/submit")
+    @GetMapping(value = "/submit")
     public Result<String> submit(@RequestParam(name ="id") String id ){
         sparePartRequisitionService.submit(id);
         return Result.ok("提交成功！");
+    }
+    /**
+     * 生成一个单号
+     * @param codePrefix 编码前缀
+     * @param snSize 编码顺序号数量，即生成多少位数的顺序号，不能小于1，当已经是该位数的最大值时，只能返回9999这种类似的
+     * @return String 返回一个编码
+     */
+    @AutoLog(value = "三级库管理-生成一个单号")
+    @ApiOperation(value="三级库管理-二生成一个code", notes="二级库管理-生成一个单号")
+    @GetMapping("/getCode")
+    public Result<String> getCode(String codePrefix, Integer snSize){
+        String code = CodeGenerateUtils.generateSingleCode(codePrefix, snSize);
+        return Result.ok(code);
     }
 
 }

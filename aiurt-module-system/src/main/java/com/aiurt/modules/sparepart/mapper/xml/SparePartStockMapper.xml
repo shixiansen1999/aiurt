@@ -20,7 +20,8 @@
         spsn.new_num,
         spsn.used_num,
         spsn.scrap_num,
-        spsn.outsource_repair_num
+        spsn.outsource_repair_num,
+        1 as materialRequisitionType
         FROM
         spare_part_stock spare_part_stock
         Left Join spare_part_stock_num spsn on (spsn.material_code = spare_part_stock.material_code and spsn.warehouse_code = spare_part_stock.warehouse_code and  spsn.del_flag = 0)

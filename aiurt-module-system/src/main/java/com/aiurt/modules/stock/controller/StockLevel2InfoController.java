@@ -1,19 +1,14 @@
 package com.aiurt.modules.stock.controller;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.common.util.ImportExcelUtil;
-import com.aiurt.modules.major.entity.CsMajor;
-import com.aiurt.modules.major.entity.vo.CsMajorImportVO;
 import com.aiurt.modules.stock.entity.StockInOrderLevel2;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.aiurt.modules.stock.entity.StockLevel2Info;
-import com.aiurt.modules.stock.entity.StockLevel2InfoVo;
 import com.aiurt.modules.stock.service.IStockInOrderLevel2Service;
 import com.aiurt.modules.stock.service.IStockLevel2InfoService;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
@@ -28,23 +23,14 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @Description: 二级库

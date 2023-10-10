@@ -38,4 +38,14 @@
           and rtu.user_id = #{userId}
         group by rt.year;
     </select>
+    <select id="selectUserNameByRepairTaskCode" resultType="java.lang.String">
+        SELECT
+            GROUP_CONCAT(su.username)
+        FROM
+            repair_task_user rtu
+                INNER JOIN sys_user su ON su.id = rtu.user_id
+        WHERE
+            rtu.del_flag = 0
+            AND rtu.repair_task_code = #{repairTaskCode}
+    </select>
 </mapper>
