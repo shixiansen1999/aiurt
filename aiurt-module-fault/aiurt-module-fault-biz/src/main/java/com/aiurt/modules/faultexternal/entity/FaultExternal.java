@@ -209,6 +209,17 @@ public class FaultExternal extends DictEntity implements Serializable  {
     @ApiModelProperty(value = "故障表编号")
     private String faultcode;
 
+    /**记录人*/
+    @Excel(name = "记录人", width = 15)
+    @ApiModelProperty(value = "记录人")
+    private String sreporter;
+
+    /**记录人所属部门*/
+    @Excel(name = "记录人所属部门", width = 15)
+    @ApiModelProperty(value = "记录人所属部门")
+    private String sdepartmentreport;
+
+
     @TableField(exist = false)
     private List<String> urlList;
 
