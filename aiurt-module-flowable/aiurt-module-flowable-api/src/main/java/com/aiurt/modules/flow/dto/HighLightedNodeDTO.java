@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 
@@ -45,11 +46,23 @@ public class HighLightedNodeDTO implements Serializable {
      */
     @ApiModelProperty("model的xml文件")
     private String modelXml;
+
+
     /**
      * model的名称
      */
     @ApiModelProperty("model的名称")
     private String modelName;
+
+
+    @ApiModelProperty("可能会经过的节点")
+    private Set<String> featureTaskSet;
+
+    @ApiModelProperty("可能会经过的连线")
+    private Set<String> featureSequenceFlowSet;
+
+    @ApiModelProperty("节点办理用户")
+    private List<HighLightedUserInfoDTO> highLightedUserInfoDTOs;
 
 
 }
