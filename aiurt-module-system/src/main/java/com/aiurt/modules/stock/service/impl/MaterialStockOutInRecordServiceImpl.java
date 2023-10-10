@@ -92,7 +92,7 @@ public class MaterialStockOutInRecordServiceImpl extends ServiceImpl<MaterialSto
         return pageList;
     }
 
-
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void addInRecordOfLevel2(String id) {
         StockInOrderLevel2 stockInOrderLevel2 = stockInOrderLevel2Mapper.selectById(id);
@@ -144,6 +144,7 @@ public class MaterialStockOutInRecordServiceImpl extends ServiceImpl<MaterialSto
         this.saveBatch(recordList);
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void addOutRecordOfLevel2(String id) {
         // 根据出库单id获取出库单信息以及出库单物资详情
