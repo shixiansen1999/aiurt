@@ -963,18 +963,33 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             BeanUtils.copyProperties(lendOutOrder, record);
             record.setMaterialRequisitionType(materialRequisition.getMaterialRequisitionType());
             record.setIsOutIn(2);
+            record.setOrderId(lendOutOrder.getId());
             //带负号表示出库
             record.setNum(-record.getNum());
             record.setOutInType(lendOutOrder.getOutType());
             materialStockOutInRecordService.save(record);
 
 
-            //5.因为直接借入然后出库，所以借入仓库库存数做不变,可使用数量不变
+            //5.因为直接借入然后出库，所以借入仓库库存数0,可使用数量0
             //但有可能之前不存在该物资的库存记录，需要新增备件库存数量记录表，所有数量为0
             updateSparePartStockNum(sparePartLend.getMaterialCode(), stockInfo.getWarehouseCode(), sparePartLend.getLendNum());
             SparePartStock  borrowingStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>()
                     .eq(SparePartStock::getMaterialCode, lendOutOrder.getMaterialCode())
                     .eq(SparePartStock::getWarehouseCode, stockInfo.getWarehouseCode()));
+            if(ObjectUtil.isNull(borrowingStock)){
+                SparePartStock stock = new SparePartStock();
+                stock.setMaterialCode(lendOutOrder.getMaterialCode());
+                stock.setNum(0);
+                stock.setAvailableNum(0);
+                stock.setWarehouseCode(lendOutOrder.getWarehouseCode());
+                //存仓库组织机构的关联班组
+                String orgCode = sysBaseApi.getDepartByWarehouseCode(lendOutOrder.getWarehouseCode());
+                SysDepartModel departByOrgCode = sysBaseApi.getDepartByOrgCode(orgCode);
+                stock.setOrgId(departByOrgCode.getId());
+                stock.setSysOrgCode(departByOrgCode.getOrgCode());
+                sparePartStockMapper.insert(stock);
+            }
+
             int num = null != borrowingStock ? borrowingStock.getNum() : 0;
             //6.借入仓库生成入库记录
             SparePartInOrder sparePartInOrder = new SparePartInOrder();
@@ -999,7 +1014,9 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             BeanUtils.copyProperties(sparePartInOrder, record2);
             record2.setConfirmUserId(loginUser.getId());
             record2.setMaterialRequisitionType(materialRequisition.getMaterialRequisitionType());
+            record2.setOrderId(sparePartInOrder.getId());
             record2.setIsOutIn(1);
+            record2.setStatus(2);
             record2.setOutInType(sparePartInOrder.getInType());
             materialStockOutInRecordService.save(record2);
         }
