@@ -139,6 +139,7 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,returnOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,returnOrder.getWarehouseCode()));
         if(null!=sparePartStock){
             sparePartStock.setNum(sparePartStock.getNum()+returnOrder.getNum());
+            sparePartStock.setAvailableNum(sparePartStock.getAvailableNum()+returnOrder.getNum());
             sparePartStockMapper.updateById(sparePartStock);
 
             //先获取该备件的数量记录,更新已使用数量

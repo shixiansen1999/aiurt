@@ -57,7 +57,6 @@ public class MaterialRequisitionDetail extends BaseEntity implements Serializabl
     @ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")
     private Integer delFlag;
     /**可使用数量*/
-    @TableField(exist = false)
     @ApiModelProperty(value = "可使用数量")
     private Integer availableNum;
     /**仓库编号*/

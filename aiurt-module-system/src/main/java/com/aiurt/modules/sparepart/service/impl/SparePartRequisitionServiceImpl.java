@@ -212,8 +212,10 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                             int applyNumber = i - availableNum;
 
                             //二级库更新可使用数量
-                            stockLevel2.setAvailableNum(applyNumber < 0 ? -applyNumber : 0);
-                            stockLevel2Service.updateById(stockLevel2);
+                            if (ObjectUtil.isNotNull(stockLevel2)) {
+                                stockLevel2.setAvailableNum(applyNumber < 0 ? -applyNumber : 0);
+                                stockLevel2Service.updateById(stockLevel2);
+                            }
 
                             if (applyNumber > 0) {
                                 //如果二级库申领数量大于二级库库存，则需要向一级库申领，只要有一条要向一级库申领则所有出入库单需要等这个申领审核完成才能生成且确认
@@ -458,6 +460,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
 
             if (ObjectUtil.isNotNull(sparePartStock)) {
                 sparePartStock.setNum(sparePartStock.getNum() - sparePartOutOrder.getNum());
+                sparePartStock.setAvailableNum(sparePartStock.getAvailableNum() - sparePartOutOrder.getNum());
                 //计算库存结余
                 sparePartOutOrder.setBalance(sparePartStock.getNum());
                 if (flag) {
@@ -980,15 +983,20 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             if(ObjectUtil.isNull(borrowingStock)){
                 SparePartStock stock = new SparePartStock();
                 stock.setMaterialCode(lendOutOrder.getMaterialCode());
-                stock.setNum(0);
-                stock.setAvailableNum(0);
-                stock.setWarehouseCode(lendOutOrder.getWarehouseCode());
+                stock.setNum(lendOutOrder.getNum());
+                stock.setAvailableNum(lendOutOrder.getNum());
+                stock.setWarehouseCode(stockInfo.getWarehouseCode());
                 //存仓库组织机构的关联班组
-                String orgCode = sysBaseApi.getDepartByWarehouseCode(lendOutOrder.getWarehouseCode());
+                String orgCode = sysBaseApi.getDepartByWarehouseCode(stockInfo.getWarehouseCode());
                 SysDepartModel departByOrgCode = sysBaseApi.getDepartByOrgCode(orgCode);
                 stock.setOrgId(departByOrgCode.getId());
                 stock.setSysOrgCode(departByOrgCode.getOrgCode());
                 sparePartStockMapper.insert(stock);
+            }else {
+                borrowingStock.setNum(borrowingStock.getNum()+lendOutOrder.getNum());
+                borrowingStock.setAvailableNum(borrowingStock.getAvailableNum()+lendOutOrder.getNum());
+                //更新库存数量
+                sparePartStockMapper.updateById(borrowingStock);
             }
 
             int num = null != borrowingStock ? borrowingStock.getNum() : 0;
