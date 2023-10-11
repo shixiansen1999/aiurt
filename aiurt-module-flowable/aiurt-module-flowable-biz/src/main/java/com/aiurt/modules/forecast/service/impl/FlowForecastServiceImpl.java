@@ -96,10 +96,10 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
         // 处理历史任务，以及查找每个节点的出现的次数，正在运行的任务
         processHistoricTask(userTaskModelMap, resultMap, runList, nodeTimeMap);
 
-        Map<String, Object> variables = runtimeService.getVariables(processInstanceId);
+
 
         // 预测未来的节点
-        buildFeatureTask(processInstanceId, historicProcessInstance, definitionId, userTaskModelMap, resultMap, runList, nodeTimeMap, variables);
+        buildFeatureTask(processInstanceId, historicProcessInstance, definitionId, userTaskModelMap, resultMap, runList, nodeTimeMap);
 
 
         // 补充信息，办理人
@@ -227,10 +227,10 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
      * @param resultMap
      * @param runList
      * @param nodeTimeMap
-     * @param variables
      */
-    private void buildFeatureTask(String processInstanceId, HistoricProcessInstance historicProcessInstance, String definitionId, Map<String, List<String>> userTaskModelMap, LinkedHashMap<String, HistoricTaskInfo> resultMap, List<String> runList, Map<String, Integer> nodeTimeMap, Map<String, Object> variables) {
+    private void buildFeatureTask(String processInstanceId, HistoricProcessInstance historicProcessInstance, String definitionId, Map<String, List<String>> userTaskModelMap, LinkedHashMap<String, HistoricTaskInfo> resultMap, List<String> runList, Map<String, Integer> nodeTimeMap) {
         if (Objects.isNull(historicProcessInstance.getEndTime()) && CollUtil.isNotEmpty(runList)) {
+            Map<String, Object> variables = runtimeService.getVariables(processInstanceId);
             LinkedHashMap<String, HistoricTaskInfo> featureMap = new LinkedHashMap<>(16);
             for (String s : runList) {
                 // 节点信息
