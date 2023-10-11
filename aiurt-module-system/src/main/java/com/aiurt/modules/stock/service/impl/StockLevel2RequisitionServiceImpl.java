@@ -325,6 +325,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
             default:
                 return;
         }
+        // 更新申领单状态
         materialRequisitionService.update(updateWrapper);
     }
 
