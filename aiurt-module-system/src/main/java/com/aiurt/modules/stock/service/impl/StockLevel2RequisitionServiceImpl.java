@@ -29,8 +29,10 @@ import com.aiurt.modules.stock.dto.StockLevel2RequisitionDetailDTO;
 import com.aiurt.modules.stock.dto.req.StockLevel2RequisitionAddReqDTO;
 import com.aiurt.modules.stock.dto.req.StockLevel2RequisitionListReqDTO;
 import com.aiurt.modules.stock.dto.resp.StockLevel2RequisitionListRespDTO;
+import com.aiurt.modules.stock.entity.StockLevel2;
 import com.aiurt.modules.stock.mapper.StockLevel2RequisitionMapper;
 import com.aiurt.modules.stock.service.IStockInOrderLevel2Service;
+import com.aiurt.modules.stock.service.IStockLevel2Service;
 import com.aiurt.modules.stock.service.StockLevel2RequisitionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -78,7 +80,8 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
     @Autowired
     @Lazy
     private SparePartRequisitionServiceImpl sparePartRequisitionService;
-
+    @Autowired
+    private IStockLevel2Service stockLevel2Service;
     @Transactional(rollbackFor = Exception.class)
     @Override
     public String add(StockLevel2RequisitionAddReqDTO stockLevel2RequisitionAddReqDTO) {
@@ -257,9 +260,6 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                 //如果该二级库申领是由三级库产生，则补充完整二级库出库，三级库入出库
                 //获取二级库领用单
                 MaterialRequisition byId = materialRequisitionService.getById(id);
-                QueryWrapper<MaterialRequisitionDetail> leve2Wrapper = new QueryWrapper<>();
-                leve2Wrapper.lambda().eq(MaterialRequisitionDetail::getMaterialRequisitionId, byId.getId()).eq(MaterialRequisitionDetail::getDelFlag, CommonConstant.DEL_FLAG_0);
-                List<MaterialRequisitionDetail> level2MaterialRequisitionDetails = materialRequisitionDetailService.getBaseMapper().selectList(leve2Wrapper);
 
                 //根据不同申领单补充出入库记录
                 //获取顶层领用单
@@ -296,16 +296,23 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                     List<MaterialRequisitionDetail> requisitionDetails = new ArrayList<MaterialRequisitionDetail>();
 
                     for (MaterialRequisitionDetail materialRequisitionDetail : materialRequisitionDetails) {
-                        int i = materialRequisitionDetail.getApplyNum() - materialRequisitionDetail.getAvailableNum();
+                        StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>()
+                                .eq("material_code",materialRequisitionDetail.getMaterialsCode())
+                                .eq("warehouse_code",one.getLeve2WarehouseCode())
+                                .eq("del_flag", CommonConstant.DEL_FLAG_0));
+
+                        int availableNum = materialRequisitionDetails.stream().filter(s -> s.getMaterialsCode().equals(materialRequisitionDetail.getMaterialsCode())).mapToInt(MaterialRequisitionDetail::getAvailableNum).sum();
+
+                        int i = materialRequisitionDetail.getApplyNum()- availableNum;
                         if (i > 0) {
-                            int applyNumber = level2MaterialRequisitionDetails.stream().filter(s -> s.getMaterialsCode().equals(materialRequisitionDetail.getMaterialsCode())).mapToInt(MaterialRequisitionDetail::getApplyNum).sum();
                             MaterialRequisitionDetail requisitionDetailDTO = new MaterialRequisitionDetail();
                             BeanUtils.copyProperties(materialRequisitionDetail, requisitionDetailDTO, "id");
                             requisitionDetailDTO.setApplyNum(i);
-                            requisitionDetailDTO.setAvailableNum(i - applyNumber);
+                            requisitionDetailDTO.setAvailableNum(i);
                             requisitionDetails.add(requisitionDetailDTO);
                         }
                     }
+                    sparePartRequisitionAddReqDTO.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3);
                     sparePartRequisitionService.addLevel3Requisition(requisitionDetails, sparePartRequisitionAddReqDTO, one,true);
 
                     //生成三级库出库

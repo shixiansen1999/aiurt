@@ -5,7 +5,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
-import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
@@ -164,9 +163,6 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 			 String orgCode = sysBaseApi.getDepartByWarehouseCode(one.getLendWarehouseCode());
 			 String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
 
-			 //发送通知
-			 MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件归还-确认" + DateUtil.today(), null);
-
 			 //构建消息模板
 			 HashMap<String, Object> map = new HashMap<>();
 			 map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, one.getId());
@@ -178,15 +174,6 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 			 String warehouseName= sysBaseApi.getWarehouseNameByCode(one.getLendWarehouseCode());
 			 map.put("warehouseName",warehouseName);
 
-			 /*messageDTO.setData(map);
-			 //业务类型，消息类型，消息模板编码，摘要，发布内容
-			 messageDTO.setTemplateCode(CommonConstant.SPAREPARTBACK_SERVICE_NOTICE);
-			 SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
-			 messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-			 messageDTO.setMsgAbstract("备件归还申请");
-			 messageDTO.setPublishingContent("备件归还申请，请确认");
-			 messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
-			 sysBaseApi.sendTemplateMessage(messageDTO);*/
 			 //发送待办
 			 TodoDTO todoDTO = new TodoDTO();
 			 todoDTO.setData(map);
