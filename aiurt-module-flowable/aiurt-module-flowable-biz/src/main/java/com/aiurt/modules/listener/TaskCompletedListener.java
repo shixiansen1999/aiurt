@@ -6,7 +6,12 @@ import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.common.engine.impl.event.FlowableEntityEventImpl;
 import org.flowable.engine.delegate.DelegateExecution;
+import org.flowable.common.engine.impl.interceptor.CommandContext;
+import org.flowable.engine.ProcessEngine;
+import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.delegate.event.impl.FlowableEntityWithVariablesEventImpl;
+import org.flowable.engine.impl.util.CommandContextUtil;
+import org.flowable.job.service.TimerJobService;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.util.SpringContextUtils;
@@ -57,6 +62,10 @@ public class TaskCompletedListener implements FlowableEventListener {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
+        //删除定时任务
+        String executionId = taskEntity.getExecutionId();
+        TimerJobService timerJobService = CommandContextUtil.getTimerJobService();
+        timerJobService.deleteTimerJobsByExecutionId(executionId);
     }
 
     /**

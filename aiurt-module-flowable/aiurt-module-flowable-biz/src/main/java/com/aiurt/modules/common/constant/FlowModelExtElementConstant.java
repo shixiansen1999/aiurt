@@ -129,4 +129,19 @@ public interface FlowModelExtElementConstant {
      * 加减签
      */
     String EXT_ADD_MULTI = "addMulti";
+
+    /**
+     * 超时提醒
+     */
+    String EXT_TIMEOUT_REMINDER = "timeoutReminder";
+
+    /**
+     * 超时提醒配置
+     */
+    String EXT_LIST= "list";
+
+    /**
+     * 超时提醒配置
+     */
+    String EXT_TIMEOUT_REMIND_CONFIG = "formPermissionConfig";
 }
