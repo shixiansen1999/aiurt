@@ -17,6 +17,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -89,7 +90,7 @@ public class SparePartStock implements Serializable {
     private String price;
     @ApiModelProperty(value = "总价")
     @TableField(exist = false)
-    private String totalPrices;
+    private BigDecimal totalPrices;
     @ApiModelProperty(value = "技术参数")
     @TableField(exist = false)
     private String technicalParameter;

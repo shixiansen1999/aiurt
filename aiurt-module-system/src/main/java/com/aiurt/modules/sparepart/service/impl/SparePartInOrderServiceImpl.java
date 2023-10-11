@@ -164,6 +164,7 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
             balance = partInOrder.getNum();
             SparePartStock stock = new SparePartStock();
             stock.setMaterialCode(partInOrder.getMaterialCode());
+            stock.setAvailableNum(partInOrder.getNum());
             stock.setNum(partInOrder.getNum());
             stock.setWarehouseCode(partInOrder.getWarehouseCode());
             //存仓库组织机构的关联班组
