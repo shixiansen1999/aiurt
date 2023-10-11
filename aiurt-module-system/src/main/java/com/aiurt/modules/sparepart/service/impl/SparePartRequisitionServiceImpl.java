@@ -944,7 +944,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             //计算库存结余
             lendOutOrder.setBalance(lendStock.getNum());
             lendOutOrder.setMaterialRequisitionId(materialRequisition.getId());
-
+            lendOutOrder.setOutType(MaterialRequisitionConstant.BORROW_OUT);
 
             List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>()
                     .eq(SparePartOutOrder::getStatus,2)
@@ -955,6 +955,15 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                 lendOutOrder.setUnused(orderList.get(0).getUnused());
             }
             sparePartOutOrderMapper.insert(lendOutOrder);
+            //同步出库记录到出入库记录表
+            MaterialStockOutInRecord record = new MaterialStockOutInRecord();
+            BeanUtils.copyProperties(lendOutOrder, record);
+            record.setMaterialRequisitionType(materialRequisition.getMaterialRequisitionType());
+            record.setIsOutIn(2);
+            //带负号表示出库
+            record.setNum(-record.getNum());
+            record.setOutInType(lendOutOrder.getOutType());
+            materialStockOutInRecordService.save(record);
 
 
             //5.因为直接借入然后出库，所以借入仓库库存数做不变,可使用数量不变
@@ -979,7 +988,17 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             //计算库存结余
             sparePartInOrder.setBalance(num + lendOutOrder.getNum());
             sparePartInOrder.setMaterialRequisitionId(materialRequisition.getId());
+            sparePartInOrder.setInType(MaterialRequisitionConstant.BORROW_IN);
             sparePartInOrderMapper.insert(sparePartInOrder);
+
+            //同步入库记录到出入库记录表
+            MaterialStockOutInRecord record2 = new MaterialStockOutInRecord();
+            BeanUtils.copyProperties(sparePartInOrder, record2);
+            record2.setConfirmUserId(loginUser.getId());
+            record2.setMaterialRequisitionType(materialRequisition.getMaterialRequisitionType());
+            record2.setIsOutIn(1);
+            record2.setOutInType(sparePartInOrder.getInType());
+            materialStockOutInRecordService.save(record2);
         }
 
     }
