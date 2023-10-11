@@ -883,6 +883,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                         requisitionDetail.setMaterialRequisitionId(level3MaterialRequisition.getId());
                         requisitionDetail.setApplyNum(detailDTO.getApplyNum());
                         requisitionDetail.setActualNum(detailDTO.getApplyNum());
+                        requisitionDetail.setAvailableNum(detailDTO.getAvailableNum());
                         requisitionDetail.setMaterialsCode(detailDTO.getMaterialCode());
                         requisitionDetail.setMaterialsName(detailDTO.getName());
                         return requisitionDetail;
