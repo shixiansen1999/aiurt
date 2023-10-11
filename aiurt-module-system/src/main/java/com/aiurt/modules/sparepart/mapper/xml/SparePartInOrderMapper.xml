@@ -38,7 +38,7 @@
             LEFT JOIN cs_subsystem cs_subsystem ON (t1.system_code = cs_subsystem.system_code and cs_subsystem.del_flag = 0)
             LEFT JOIN material_base_type t4 ON (t1.base_type_code = t4.base_type_code and t4.del_flag = 0)
             LEFT JOIN spare_part_stock_info t5 ON spare_part_in_order.warehouse_code = t5.warehouse_code
-            LEFT JOIN sys_user t6 ON spare_part_in_order.confirm_id = t6.username
+            LEFT JOIN sys_user t6 ON spare_part_in_order.confirm_id = t6.id
             LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'spare_in_order_status'
             LEFT JOIN sys_dict_item AS d1 ON (d1.item_value = spare_part_in_order.confirm_status AND dict1.id = d1.dict_id)
             LEFT JOIN cs_manufactor t7 ON t7.id = t1.manufactor_code

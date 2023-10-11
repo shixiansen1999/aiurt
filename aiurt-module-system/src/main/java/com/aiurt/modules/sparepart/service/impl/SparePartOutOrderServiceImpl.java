@@ -135,11 +135,16 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     @Transactional(rollbackFor = Exception.class)
     public Result<?> update(SparePartOutOrder sparePartOutOrder) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        updateById(sparePartOutOrder);
         SparePartOutOrder outOrder = getById(sparePartOutOrder.getId());
+        outOrder.setStatus(sparePartOutOrder.getStatus());
+        outOrder.setConfirmUserId(user.getId());
+        outOrder.setConfirmTime(new Date());
         // 更新备件库存数据（原库存数-出库数量）
         SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,outOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,outOrder.getWarehouseCode()));
+        // 库存结余
+        int balance;
         if(null!=sparePartStock && sparePartStock.getNum()>=outOrder.getNum()){
+            balance = sparePartStock.getNum() - outOrder.getNum();
             sparePartStock.setNum(sparePartStock.getNum()-outOrder.getNum());
             sparePartStock.setAvailableNum(sparePartStock.getAvailableNum()-outOrder.getNum());
             sparePartStockMapper.updateById(sparePartStock);
@@ -177,6 +182,17 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
                     });
                 }
             }
+            outOrder.setBalance(balance);
+            updateById(outOrder);
+            //同步出库记录到出入库记录表
+            MaterialStockOutInRecord record = new MaterialStockOutInRecord();
+            BeanUtils.copyProperties(outOrder, record);
+            record.setOrderId(outOrder.getId());
+            record.setMaterialRequisitionType(3);
+            record.setIsOutIn(2);
+            record.setOutInType(outOrder.getOutType());
+            record.setBalance(balance);
+            materialStockOutInRecordService.save(record);
             return Result.OK("操作成功!");
         }else{
             return Result.error("库存数量不足!");
@@ -364,14 +380,6 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         } catch (Exception e) {
             e.printStackTrace();
         }
-        sparePartOutOrder.setConfirmTime(new Date());
-        //同步出库记录到出入库记录表
-        MaterialStockOutInRecord record = new MaterialStockOutInRecord();
-        BeanUtils.copyProperties(sparePartOutOrder, record);
-        record.setMaterialRequisitionType(3);
-        record.setIsOutIn(2);
-        record.setOutInType(sparePartOutOrder.getOutType());
-        materialStockOutInRecordService.save(record);
 
         return this.update(sparePartOutOrder);
     }

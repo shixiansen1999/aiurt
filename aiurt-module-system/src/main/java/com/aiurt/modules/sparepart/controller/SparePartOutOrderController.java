@@ -12,6 +12,7 @@ import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.material.constant.MaterialRequisitionConstant;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
@@ -133,6 +134,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
        sparePartOutOrder.setOrderCode(orderCode);
        sparePartOutOrder.setApplyUserId(user.getId());
        sparePartOutOrder.setSysOrgCode(user.getOrgCode());
+       sparePartOutOrder.setOutType(MaterialRequisitionConstant.NORMAL_OUT);
        sparePartOutOrderService.save(sparePartOutOrder);
        List<SparePartOutOrder> orderList = sparePartOutOrderService.list(new LambdaQueryWrapper<SparePartOutOrder>()
                .eq(SparePartOutOrder::getStatus,2)
