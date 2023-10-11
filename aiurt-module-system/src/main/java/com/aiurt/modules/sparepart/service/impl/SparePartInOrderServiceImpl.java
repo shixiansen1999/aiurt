@@ -16,6 +16,8 @@ import com.aiurt.boot.plan.constant.EmergencyPlanConstant;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.CodeGenerateUtils;
+import com.aiurt.modules.material.constant.MaterialRequisitionConstant;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.entity.MaterialRequisition;
 import com.aiurt.modules.material.entity.MaterialRequisitionDetail;
@@ -430,6 +432,8 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
                         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
                         String orgId = loginUser.getOrgId();
                         saveDatum.setOrgId(orgId);
+                        saveDatum.setOrderCode(CodeGenerateUtils.generateSingleCode("3RK", 5));
+                        saveDatum.setInType(MaterialRequisitionConstant.NORMAL_IN);
                         sparePartInOrderMapper.insert(saveDatum);
                     }
                     return imporReturnRes(errorLines,successLines, true, failReportUrl, "文件导入成功");

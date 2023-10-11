@@ -460,7 +460,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
 
             if (ObjectUtil.isNotNull(sparePartStock)) {
                 sparePartStock.setNum(sparePartStock.getNum() - sparePartOutOrder.getNum());
-                sparePartStock.setAvailableNum(sparePartStock.getAvailableNum() - sparePartOutOrder.getNum());
+
                 //计算库存结余
                 sparePartOutOrder.setBalance(sparePartStock.getNum());
                 if (flag) {
