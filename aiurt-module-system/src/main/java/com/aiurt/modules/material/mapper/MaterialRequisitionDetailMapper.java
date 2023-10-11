@@ -16,7 +16,7 @@ public interface MaterialRequisitionDetailMapper extends BaseMapper<MaterialRequ
 
     /**
      * 根据申领单id，将申领单的物资清单的入库数量更新为申请数量
-     * @param materialRequisitionId 入库单id
+     * @param materialRequisitionId 申领单id
      */
     void updateActualNumByMaterialRequisitionId(@Param("materialRequisitionId") String materialRequisitionId);
 

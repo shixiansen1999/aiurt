@@ -202,6 +202,7 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 			sparePartInOrder.setOrderCode(CodeGenerateUtils.generateSingleCode("3RK", 5));
 			//全新数量等于入库数量
 			sparePartInOrder.setNewNum(sparePartInOrder.getNum());
+			sparePartInOrder.setInType(MaterialRequisitionConstant.NORMAL_IN);
 			iSparePartInOrderService.save(sparePartInOrder);
 			//6. 二级库库存表数量修改
 			StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>().eq("material_code", materialCode).eq("warehouse_code", warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0));

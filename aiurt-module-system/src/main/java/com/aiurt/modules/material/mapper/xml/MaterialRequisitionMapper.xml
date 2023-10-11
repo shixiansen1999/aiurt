@@ -14,10 +14,12 @@
             AND mrd.del_flag = 0
             AND mr.code = #{code}
     </select>
-    <select id="queryDetailList" resultType="com.aiurt.modules.material.dto.MaterialRequisitionDetailInfoDTO">
+    <select id="queryRequisitionDetailByRequisitionId" resultType="com.aiurt.modules.material.dto.MaterialRequisitionDetailInfoDTO">
         SELECT
             mrd.*,
+            mb.specifications,
             mb.type,
+            mb.specifications,
             mbt.base_type_code,
             mbt.base_type_name,
             cm.major_code,
@@ -36,6 +38,6 @@
             AND mbt.del_flag = 0
             AND cm.del_flag = 0
             AND cs.del_flag = 0
-            AND mrd.material_requisition_id = #{id}
+            AND mrd.material_requisition_id = #{requisitionId}
     </select>
 </mapper>

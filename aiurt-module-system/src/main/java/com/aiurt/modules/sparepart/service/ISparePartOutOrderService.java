@@ -63,4 +63,6 @@ public interface ISparePartOutOrderService extends IService<SparePartOutOrder> {
      * @return
      */
     SparePartOutOrder queryByOrderCode(String orderCode);
+
+    Result<?> edit(SparePartOutOrder sparePartOutOrder);
 }

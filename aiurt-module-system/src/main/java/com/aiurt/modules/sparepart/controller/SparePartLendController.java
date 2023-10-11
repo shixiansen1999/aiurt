@@ -155,7 +155,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 	 @RequestMapping(value = "/back", method = {RequestMethod.PUT,RequestMethod.POST})
 	 public Result<?> back(@RequestBody SparePartLend sparePartLend) {
 		 LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		 sparePartLend.setBackPerson(user.getUsername());
+		 sparePartLend.setBackPerson(user.getId());
 		 sparePartLend.setBackTime(new Date());
 		 sparePartLendService.updateById(sparePartLend);
 		 SparePartLend one = sparePartLendService.getById(sparePartLend.getId());

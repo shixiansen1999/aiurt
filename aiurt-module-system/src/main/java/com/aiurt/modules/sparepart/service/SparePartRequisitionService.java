@@ -1,11 +1,13 @@
 package com.aiurt.modules.sparepart.service;
 
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.sparepart.entity.dto.req.SparePartRequisitionAddReqDTO;
 import com.aiurt.modules.sparepart.entity.dto.req.SparePartRequisitionListReqDTO;
 import com.aiurt.modules.sparepart.entity.dto.resp.SparePartRequisitionListRespDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import java.text.ParseException;
+import java.util.List;
 
 /**
  * 三级库申领的service，因为用到的实体类是领料单，因此不继承IService
@@ -42,4 +44,10 @@ public interface SparePartRequisitionService {
      * @return Result<String> 返回编辑成功提示
      */
     void submit(String id);
+
+    /**
+     * 获取有部门权限的班组库信息
+     * @return List<String> 保管仓库名称集合
+     */
+    List<SparePartStockInfo> getCustodialStock();
 }

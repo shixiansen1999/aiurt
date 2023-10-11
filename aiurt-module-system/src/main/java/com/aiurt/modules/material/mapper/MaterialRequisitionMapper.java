@@ -16,5 +16,11 @@ import java.util.List;
  */
 public interface MaterialRequisitionMapper extends BaseMapper<MaterialRequisition> {
     Page<MaterialRequisitionDetailInfoDTO> queryPageDetail(Page page,@Param(value = "code") String code);
-    List<MaterialRequisitionDetailInfoDTO> queryDetailList(@Param(value = "id") String id);
+
+    /**
+     * 根据申领单id获取申领单物资列表详情
+     * @param requisitionId 申领单id
+     * @return 申领单物资列表详情DTO
+     */
+    List<MaterialRequisitionDetailInfoDTO> queryRequisitionDetailByRequisitionId(@Param(value = "requisitionId") String requisitionId);
 }

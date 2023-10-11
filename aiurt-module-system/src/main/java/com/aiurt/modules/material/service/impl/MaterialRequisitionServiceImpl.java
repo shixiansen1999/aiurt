@@ -125,7 +125,7 @@ public class MaterialRequisitionServiceImpl extends ServiceImpl<MaterialRequisit
                 .collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
         //物资类型字典
         Map<String, String> typeMap = sysBaseApi.queryDictItemsByCode("material_type").stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
-        List<MaterialRequisitionDetailInfoDTO> materialRequisitionDetailInfoDTOList =  materialRequisitionMapper.queryDetailList(id);
+        List<MaterialRequisitionDetailInfoDTO> materialRequisitionDetailInfoDTOList =  materialRequisitionMapper.queryRequisitionDetailByRequisitionId(id);
         // 物资明细转化从对应DTO，并翻译单位
         materialRequisitionDetailInfoDTOList.forEach(detail -> {
             detail.setUnitName(unitMap.get(detail.getUnit()));

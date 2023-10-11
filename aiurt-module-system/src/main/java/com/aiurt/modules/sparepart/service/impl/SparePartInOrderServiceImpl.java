@@ -17,6 +17,7 @@ import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.entity.MaterialRequisition;
 import com.aiurt.modules.material.entity.MaterialRequisitionDetail;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.material.service.IMaterialRequisitionDetailService;
@@ -138,15 +139,9 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         SparePartInOrder partInOrder = getById(sparePartInOrder.getId());
         // 1.更新当前表状态为已确认
-        partInOrder.setConfirmId(user.getUsername());
+        partInOrder.setConfirmId(user.getId());
         partInOrder.setConfirmTime(new Date());
         partInOrder.setConfirmStatus(sparePartInOrder.getConfirmStatus());
-        sparePartInOrderMapper.updateById(partInOrder);
-        //同步出库记录到出入库记录表
-        LambdaQueryWrapper<MaterialStockOutInRecord> queryWrapper = new LambdaQueryWrapper<>();
-        MaterialStockOutInRecord record = materialStockOutInRecordService.getOne(queryWrapper.eq(MaterialStockOutInRecord::getOrderId, partInOrder.getId()));
-        BeanUtils.copyProperties(partInOrder, record);
-        materialStockOutInRecordService.updateById(record);
         // 2.回填申领单
         MaterialRequisitionDetail detail = materialRequisitionDetailService.getOne(new LambdaQueryWrapper<MaterialRequisitionDetail>()
                 .eq(MaterialRequisitionDetail::getMaterialsCode, sparePartInOrder.getMaterialCode())
@@ -158,11 +153,15 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         // 3.更新备件库存数据（原库存数+入库的数量）
         //查询要入库的物资，备件库存中是否存在
         SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partInOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partInOrder.getWarehouseCode()));
+        //库存结余
+        int balance;
         if(null!=sparePartStock){
+            balance = sparePartStock.getNum() + partInOrder.getNum();
             sparePartStock.setNum(sparePartStock.getNum()+partInOrder.getNum());
             sparePartStock.setAvailableNum(sparePartStock.getAvailableNum()+partInOrder.getNum());
             sparePartStockMapper.updateById(sparePartStock);
         }else{
+            balance = partInOrder.getNum();
             SparePartStock stock = new SparePartStock();
             stock.setMaterialCode(partInOrder.getMaterialCode());
             stock.setNum(partInOrder.getNum());
@@ -205,6 +204,27 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
             stockNum.setOutsourceRepairNum(stockNum.getOutsourceRepairNum() + partInOrder.getOutsourceRepairNum() - partInOrder.getReoutsourceRepairNum());
             sparePartStockNumMapper.updateById(stockNum);
         }
+        partInOrder.setBalance(balance);
+        sparePartInOrderMapper.updateById(partInOrder);
+        //同步入库记录到出入库记录表
+        MaterialRequisition requisition = materialRequisitionService.getOne(new LambdaQueryWrapper<MaterialRequisition>()
+                .eq(MaterialRequisition::getId, sparePartInOrder.getMaterialRequisitionId())
+                .eq(MaterialRequisition::getDelFlag, CommonConstant.DEL_FLAG_0));
+        MaterialStockOutInRecord record = new MaterialStockOutInRecord();
+        BeanUtils.copyProperties(partInOrder, record);
+        record.setConfirmUserId(user.getId());
+        record.setOrderId(partInOrder.getId());
+        record.setStatus(StrUtil.equals(partInOrder.getConfirmStatus(), "1") ? 2 : 1);
+        if (ObjectUtil.isNotNull(requisition)) {
+            record.setMaterialRequisitionType(requisition.getMaterialRequisitionType());
+            record.setMaterialRequisitionCode(requisition.getCode());
+        } else {
+            record.setMaterialRequisitionType(3);
+        }
+        record.setIsOutIn(1);
+        record.setOutInType(partInOrder.getInType());
+        record.setBalance(balance);
+        materialStockOutInRecordService.save(record);
     }
     /**
      * 修改
