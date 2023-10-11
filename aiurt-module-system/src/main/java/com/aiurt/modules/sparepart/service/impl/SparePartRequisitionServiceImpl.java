@@ -980,6 +980,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             SparePartStock  borrowingStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>()
                     .eq(SparePartStock::getMaterialCode, lendOutOrder.getMaterialCode())
                     .eq(SparePartStock::getWarehouseCode, stockInfo.getWarehouseCode()));
+            int num = 0;
             if(ObjectUtil.isNull(borrowingStock)){
                 SparePartStock stock = new SparePartStock();
                 stock.setMaterialCode(lendOutOrder.getMaterialCode());
@@ -992,14 +993,16 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                 stock.setOrgId(departByOrgCode.getId());
                 stock.setSysOrgCode(departByOrgCode.getOrgCode());
                 sparePartStockMapper.insert(stock);
+                num = num + lendOutOrder.getNum();
             }else {
                 borrowingStock.setNum(borrowingStock.getNum()+lendOutOrder.getNum());
                 borrowingStock.setAvailableNum(borrowingStock.getAvailableNum()+lendOutOrder.getNum());
                 //更新库存数量
                 sparePartStockMapper.updateById(borrowingStock);
+                num = num + borrowingStock.getNum();
             }
 
-            int num = null != borrowingStock ? borrowingStock.getNum() : 0;
+
             //6.借入仓库生成入库记录
             SparePartInOrder sparePartInOrder = new SparePartInOrder();
             sparePartInOrder.setOrderCode(CodeGenerateUtils.generateSingleCode("3RK", 5));
@@ -1013,7 +1016,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             sparePartInOrder.setConfirmTime(new Date());
             sparePartInOrder.setSysOrgCode(loginUser.getOrgCode());
             //计算库存结余
-            sparePartInOrder.setBalance(num + lendOutOrder.getNum());
+            sparePartInOrder.setBalance(num);
             sparePartInOrder.setMaterialRequisitionId(materialRequisition.getId());
             sparePartInOrder.setInType(MaterialRequisitionConstant.BORROW_IN);
             sparePartInOrderMapper.insert(sparePartInOrder);
