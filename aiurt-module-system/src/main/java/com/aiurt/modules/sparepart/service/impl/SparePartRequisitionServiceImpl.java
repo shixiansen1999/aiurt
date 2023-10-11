@@ -386,6 +386,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             stockOutboundMaterials.setMaterialCode(applyMaterial.getMaterialsCode());
             stockOutboundMaterials.setWarehouseCode(materialRequisition.getApplyWarehouseCode());
             stockOutboundMaterials.setInventory(applyMaterial.getAvailableNum());
+            stockOutboundMaterials.setRemark(applyMaterial.getRemarks());
 
             StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>().eq("warehouse_code",stockOutOrderLevel.getWarehouseCode()).eq("material_code",applyMaterial.getMaterialsCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
             if (flag) {
