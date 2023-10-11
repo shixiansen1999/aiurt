@@ -306,7 +306,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                             requisitionDetails.add(requisitionDetailDTO);
                         }
                     }
-                    sparePartRequisitionService.addLevel3Requisition(requisitionDetails, sparePartRequisitionAddReqDTO, one);
+                    sparePartRequisitionService.addLevel3Requisition(requisitionDetails, sparePartRequisitionAddReqDTO, one,true);
 
                     //生成三级库出库
                     sparePartRequisitionService.addSparePartOutOrder(materialRequisitionDetails, loginUser, one,false);
@@ -316,7 +316,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                         materialRequisitionDetail.setActualNum(materialRequisitionDetail.getActualNum());
                     }
                     //二级库出库
-                    String outOrderCode = sparePartRequisitionService.addStockOutOrderLevel2(one, materialRequisitionDetails,false);
+                    String outOrderCode = sparePartRequisitionService.addStockOutOrderLevel2(one, materialRequisitionDetails,true);
                     //三级库入库
                     sparePartRequisitionService.addSparePartInOrder(materialRequisitionDetails, one, outOrderCode,loginUser);
                 }

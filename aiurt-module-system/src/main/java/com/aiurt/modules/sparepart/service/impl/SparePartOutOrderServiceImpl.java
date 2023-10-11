@@ -169,8 +169,8 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
             List<SparePartOutOrder> orderList = list(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SparePartOutOrder::getMaterialCode,outOrder.getMaterialCode()).eq(SparePartOutOrder::getWarehouseCode,outOrder.getWarehouseCode()));
 
             if(orderList.isEmpty()){
-                sparePartOutOrder.setUnused(outOrder.getNum()+"");
-                updateOrder(sparePartOutOrder);
+                outOrder.setUnused(outOrder.getNum()+"");
+                outOrder.setSysOrgCode(user.getOrgCode());
             }else{
                 //同一仓库、同一备件 已经确认出库的数据,剩余数量=剩余数量+出库数量
                 List<SparePartOutOrder> outOrders = orderList.stream().filter(s -> 2 == s.getStatus()).collect(Collectors.toList());
@@ -189,6 +189,7 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
             BeanUtils.copyProperties(outOrder, record);
             record.setOrderId(outOrder.getId());
             record.setMaterialRequisitionType(3);
+            record.setNum(-outOrder.getNum());
             record.setIsOutIn(2);
             record.setOutInType(outOrder.getOutType());
             record.setBalance(balance);

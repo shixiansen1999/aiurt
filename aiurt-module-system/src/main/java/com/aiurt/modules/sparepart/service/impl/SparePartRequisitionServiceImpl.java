@@ -272,7 +272,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
 
                 if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(sparePartRequisitionAddReqDTO.getMaterialRequisitionType())) {
                     //三级库申领
-                    addLevel3Requisition(materialRequisitionDetails, sparePartRequisitionAddReqDTO, materialRequisition);
+                    addLevel3Requisition(materialRequisitionDetails, sparePartRequisitionAddReqDTO, materialRequisition,false);
 
                     //生成三级库出库
                     addSparePartOutOrder(requisitionDetailList, loginUser, materialRequisition,false);
@@ -298,7 +298,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
     /**
      * 三级库申领
      * */
-    public void addLevel3Requisition(List<MaterialRequisitionDetail> materialRequisitionDetails, SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO, MaterialRequisition materialRequisition) {
+    public void addLevel3Requisition(List<MaterialRequisitionDetail> materialRequisitionDetails, SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO, MaterialRequisition materialRequisition,Boolean flag) {
         if (CollUtil.isNotEmpty(materialRequisitionDetails)) {
             MaterialRequisition requisition = new MaterialRequisition();
             BeanUtils.copyProperties(sparePartRequisitionAddReqDTO, requisition, "id");
@@ -326,7 +326,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             materialRequisitionDetailService.saveBatch(materialRequisitionDetails);
 
             //二级库出库
-            String outOrderCode = addStockOutOrderLevel2(requisition, materialRequisitionDetails,false);
+            String outOrderCode = addStockOutOrderLevel2(requisition, materialRequisitionDetails,flag);
             //三级库入库
             addSparePartInOrder(materialRequisitionDetails, requisition, outOrderCode,loginUser);
         }
@@ -337,7 +337,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
      * 二级库出库
      * @param materialRequisition
      * @param requisitionDetailList
-     * @param flag  库存信息是否需要更新可使用数量 false不需要，true需要
+     * @param flag  库存信息是否需要更新可使用数量 false不需要，true需要,当没有入库的时候不需要再更新
      * */
     public String addStockOutOrderLevel2(MaterialRequisition materialRequisition, List<MaterialRequisitionDetail> requisitionDetailList,Boolean flag){
         //三级库向二级库申领
@@ -386,10 +386,13 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             stockOutboundMaterials.setMaterialCode(applyMaterial.getMaterialsCode());
             stockOutboundMaterials.setWarehouseCode(materialRequisition.getApplyWarehouseCode());
             stockOutboundMaterials.setInventory(applyMaterial.getAvailableNum());
+            stockOutboundMaterials.setRemark(applyMaterial.getRemarks());
 
             StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>().eq("warehouse_code",stockOutOrderLevel.getWarehouseCode()).eq("material_code",applyMaterial.getMaterialsCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
             if (flag) {
-                stockLevel2.setAvailableNum(stockLevel2.getAvailableNum() - (null!=applyMaterial.getApplyNum()?applyMaterial.getApplyNum():1));
+                //由于特殊申领，这时候二级库的可使用数量已经提前扣掉，但是这里的申领数量还是扣满额的，所以当availableNum小于0的时候就当全出，剩余可使用数量为0
+                int availableNum = stockLevel2.getAvailableNum() - applyMaterial.getApplyNum();
+                stockLevel2.setAvailableNum(Math.max(availableNum, 0));
             }
             if (equals) {
                 //更新二级库库存信息
@@ -880,6 +883,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                         requisitionDetail.setMaterialRequisitionId(level3MaterialRequisition.getId());
                         requisitionDetail.setApplyNum(detailDTO.getApplyNum());
                         requisitionDetail.setActualNum(detailDTO.getApplyNum());
+                        requisitionDetail.setAvailableNum(detailDTO.getAvailableNum());
                         requisitionDetail.setMaterialsCode(detailDTO.getMaterialCode());
                         requisitionDetail.setMaterialsName(detailDTO.getName());
                         return requisitionDetail;
@@ -960,18 +964,33 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             BeanUtils.copyProperties(lendOutOrder, record);
             record.setMaterialRequisitionType(materialRequisition.getMaterialRequisitionType());
             record.setIsOutIn(2);
+            record.setOrderId(lendOutOrder.getId());
             //带负号表示出库
             record.setNum(-record.getNum());
             record.setOutInType(lendOutOrder.getOutType());
             materialStockOutInRecordService.save(record);
 
 
-            //5.因为直接借入然后出库，所以借入仓库库存数做不变,可使用数量不变
+            //5.因为直接借入然后出库，所以借入仓库库存数0,可使用数量0
             //但有可能之前不存在该物资的库存记录，需要新增备件库存数量记录表，所有数量为0
             updateSparePartStockNum(sparePartLend.getMaterialCode(), stockInfo.getWarehouseCode(), sparePartLend.getLendNum());
             SparePartStock  borrowingStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>()
                     .eq(SparePartStock::getMaterialCode, lendOutOrder.getMaterialCode())
                     .eq(SparePartStock::getWarehouseCode, stockInfo.getWarehouseCode()));
+            if(ObjectUtil.isNull(borrowingStock)){
+                SparePartStock stock = new SparePartStock();
+                stock.setMaterialCode(lendOutOrder.getMaterialCode());
+                stock.setNum(0);
+                stock.setAvailableNum(0);
+                stock.setWarehouseCode(lendOutOrder.getWarehouseCode());
+                //存仓库组织机构的关联班组
+                String orgCode = sysBaseApi.getDepartByWarehouseCode(lendOutOrder.getWarehouseCode());
+                SysDepartModel departByOrgCode = sysBaseApi.getDepartByOrgCode(orgCode);
+                stock.setOrgId(departByOrgCode.getId());
+                stock.setSysOrgCode(departByOrgCode.getOrgCode());
+                sparePartStockMapper.insert(stock);
+            }
+
             int num = null != borrowingStock ? borrowingStock.getNum() : 0;
             //6.借入仓库生成入库记录
             SparePartInOrder sparePartInOrder = new SparePartInOrder();
@@ -996,7 +1015,9 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             BeanUtils.copyProperties(sparePartInOrder, record2);
             record2.setConfirmUserId(loginUser.getId());
             record2.setMaterialRequisitionType(materialRequisition.getMaterialRequisitionType());
+            record2.setOrderId(sparePartInOrder.getId());
             record2.setIsOutIn(1);
+            record2.setStatus(2);
             record2.setOutInType(sparePartInOrder.getInType());
             materialStockOutInRecordService.save(record2);
         }
