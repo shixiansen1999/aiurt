@@ -77,7 +77,14 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
         if (ObjectUtil.isNotNull(sysParamModel)) {
             sparePartStock.setSparePartZero(sysParamModel.getValue());
         }
-        return sparePartStockMapper.readAll(page,sparePartStock);
+        List<SparePartStock> sparePartStockList = sparePartStockMapper.readAll(page, sparePartStock);
+        sparePartStockList.forEach(s -> {
+            if (s.getNum() != null && StrUtil.isNotBlank(s.getPrice())) {
+                BigDecimal price = new BigDecimal(s.getPrice());
+                s.setTotalPrices(price.multiply(BigDecimal.valueOf(s.getNum())));
+            }
+        });
+        return sparePartStockList;
     }
     /**
      * 查询列表
