@@ -272,7 +272,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
 
                 if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(sparePartRequisitionAddReqDTO.getMaterialRequisitionType())) {
                     //三级库申领
-                    addLevel3Requisition(materialRequisitionDetails, sparePartRequisitionAddReqDTO, materialRequisition);
+                    addLevel3Requisition(materialRequisitionDetails, sparePartRequisitionAddReqDTO, materialRequisition,false);
 
                     //生成三级库出库
                     addSparePartOutOrder(requisitionDetailList, loginUser, materialRequisition,false);
@@ -298,7 +298,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
     /**
      * 三级库申领
      * */
-    public void addLevel3Requisition(List<MaterialRequisitionDetail> materialRequisitionDetails, SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO, MaterialRequisition materialRequisition) {
+    public void addLevel3Requisition(List<MaterialRequisitionDetail> materialRequisitionDetails, SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO, MaterialRequisition materialRequisition,Boolean flag) {
         if (CollUtil.isNotEmpty(materialRequisitionDetails)) {
             MaterialRequisition requisition = new MaterialRequisition();
             BeanUtils.copyProperties(sparePartRequisitionAddReqDTO, requisition, "id");
@@ -326,7 +326,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             materialRequisitionDetailService.saveBatch(materialRequisitionDetails);
 
             //二级库出库
-            String outOrderCode = addStockOutOrderLevel2(requisition, materialRequisitionDetails,false);
+            String outOrderCode = addStockOutOrderLevel2(requisition, materialRequisitionDetails,flag);
             //三级库入库
             addSparePartInOrder(materialRequisitionDetails, requisition, outOrderCode,loginUser);
         }
@@ -337,7 +337,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
      * 二级库出库
      * @param materialRequisition
      * @param requisitionDetailList
-     * @param flag  库存信息是否需要更新可使用数量 false不需要，true需要
+     * @param flag  库存信息是否需要更新可使用数量 false不需要，true需要,当没有入库的时候不需要再更新
      * */
     public String addStockOutOrderLevel2(MaterialRequisition materialRequisition, List<MaterialRequisitionDetail> requisitionDetailList,Boolean flag){
         //三级库向二级库申领
@@ -390,7 +390,9 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
 
             StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>().eq("warehouse_code",stockOutOrderLevel.getWarehouseCode()).eq("material_code",applyMaterial.getMaterialsCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
             if (flag) {
-                stockLevel2.setAvailableNum(stockLevel2.getAvailableNum() - (null!=applyMaterial.getApplyNum()?applyMaterial.getApplyNum():1));
+                //由于特殊申领，这时候二级库的可使用数量已经提前扣掉，但是这里的申领数量还是扣满额的，所以当availableNum小于0的时候就当全出，剩余可使用数量为0
+                int availableNum = stockLevel2.getAvailableNum() - applyMaterial.getApplyNum();
+                stockLevel2.setAvailableNum(Math.max(availableNum, 0));
             }
             if (equals) {
                 //更新二级库库存信息
