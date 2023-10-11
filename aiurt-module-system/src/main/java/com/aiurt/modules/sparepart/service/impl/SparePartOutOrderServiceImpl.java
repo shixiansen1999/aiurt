@@ -137,6 +137,7 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         SparePartOutOrder outOrder = getById(sparePartOutOrder.getId());
         outOrder.setStatus(sparePartOutOrder.getStatus());
+        outOrder.setConfirmUserId(user.getId());
         outOrder.setConfirmTime(new Date());
         // 更新备件库存数据（原库存数-出库数量）
         SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,outOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,outOrder.getWarehouseCode()));
