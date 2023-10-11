@@ -276,8 +276,8 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
             stock.setMaterialCode(partLend.getMaterialCode());
             stock.setNum(sparePartLend.getLendNum());
             stock.setWarehouseCode(partLend.getBackWarehouseCode());
-            stock.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getLendPerson())).getOrgId());
-            stock.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getLendPerson())).getOrgCode());
+            stock.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getId,partLend.getLendPerson())).getOrgId());
+            stock.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getId,partLend.getLendPerson())).getOrgCode());
             sparePartStockMapper.insert(stock);
         }
         if (null!=stockNum2) {
@@ -296,11 +296,11 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartInOrder.setMaterialCode(partLend.getMaterialCode());
         sparePartInOrder.setWarehouseCode(partLend.getBackWarehouseCode());
         sparePartInOrder.setNum(sparePartLend.getLendNum());
-        sparePartInOrder.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getLendPerson())).getOrgId());
+        sparePartInOrder.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getId,partLend.getLendPerson())).getOrgId());
         sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_STATUS_1);
         sparePartInOrder.setConfirmId(user.getId());
         sparePartInOrder.setConfirmTime(date);
-        sparePartInOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getLendPerson())).getOrgCode());
+        sparePartInOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getId,partLend.getLendPerson())).getOrgCode());
         sparePartInOrder.setNewNum(sparePartLend.getLendNum());
         sparePartInOrder.setOrderCode(CodeGenerateUtils.generateSingleCode("3RK", 5));
         sparePartInOrder.setInType(MaterialRequisitionConstant.BORROW_IN);
@@ -316,7 +316,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         materialStockOutInRecordService.save(record2);
 
         try {
-            LoginUser userById = sysBaseApi.getUserByName(partLend.getLendPerson());
+            LoginUser userById = sysBaseApi.getUserById(partLend.getLendPerson());
 
             //发送通知
             MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件借出成功" + DateUtil.today(), null);
@@ -381,7 +381,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartInOrder.setMaterialCode(partLend.getMaterialCode());
         sparePartInOrder.setWarehouseCode(partLend.getLendWarehouseCode());
         sparePartInOrder.setNum(sparePartLend.getBackNum());
-        sparePartInOrder.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getBackPerson())).getOrgId());
+        sparePartInOrder.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getId,partLend.getBackPerson())).getOrgId());
         sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_STATUS_1);
         sparePartInOrder.setConfirmId(user.getId());
         sparePartInOrder.setConfirmTime(date);
@@ -421,10 +421,10 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartOutOrder.setApplyOutTime(date);
         sparePartOutOrder.setApplyUserId(partLend.getBackPerson());
         sparePartOutOrder.setStatus(CommonConstant.SPARE_PART_OUT_ORDER_STATUS_2);
-        sparePartOutOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getBackPerson())).getOrgCode());
+        sparePartOutOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getId,partLend.getBackPerson())).getOrgCode());
         sparePartOutOrderService.save(sparePartOutOrder);
         try {
-            LoginUser userById = sysBaseApi.getUserByName(partLend.getBackPerson());
+            LoginUser userById = sysBaseApi.getUserById(partLend.getBackPerson());
             //发送通知
             MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件归还成功" + DateUtil.today(), null);
 
