@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
@@ -298,12 +297,14 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
 
                     for (MaterialRequisitionDetail materialRequisitionDetail : materialRequisitionDetails) {
                         int i = materialRequisitionDetail.getApplyNum() - materialRequisitionDetail.getAvailableNum();
-                        int applyNumber = level2MaterialRequisitionDetails.stream().filter(s -> s.getMaterialsCode().equals(materialRequisitionDetail.getMaterialsCode())).mapToInt(MaterialRequisitionDetail::getApplyNum).sum();
-                        MaterialRequisitionDetail requisitionDetailDTO = new MaterialRequisitionDetail();
-                        BeanUtils.copyProperties(materialRequisitionDetail, requisitionDetailDTO, "id");
-                        requisitionDetailDTO.setApplyNum(i);
-                        requisitionDetailDTO.setAvailableNum(i - applyNumber);
-                        requisitionDetails.add(requisitionDetailDTO);
+                        if (i > 0) {
+                            int applyNumber = level2MaterialRequisitionDetails.stream().filter(s -> s.getMaterialsCode().equals(materialRequisitionDetail.getMaterialsCode())).mapToInt(MaterialRequisitionDetail::getApplyNum).sum();
+                            MaterialRequisitionDetail requisitionDetailDTO = new MaterialRequisitionDetail();
+                            BeanUtils.copyProperties(materialRequisitionDetail, requisitionDetailDTO, "id");
+                            requisitionDetailDTO.setApplyNum(i);
+                            requisitionDetailDTO.setAvailableNum(i - applyNumber);
+                            requisitionDetails.add(requisitionDetailDTO);
+                        }
                     }
                     sparePartRequisitionService.addLevel3Requisition(requisitionDetails, sparePartRequisitionAddReqDTO, one);
 
