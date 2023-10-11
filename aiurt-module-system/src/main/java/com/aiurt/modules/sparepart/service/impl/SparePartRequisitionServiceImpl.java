@@ -277,6 +277,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     //生成三级库出库
                     addSparePartOutOrder(requisitionDetailList, loginUser, materialRequisition,false);
                 } else {
+                    requisitionDetailList.forEach(s -> s.setActualNum(s.getApplyNum()));
                     //二级库出库
                     String outOrderCode = addStockOutOrderLevel2(materialRequisition, requisitionDetailList,false);
                     //三级库入库
