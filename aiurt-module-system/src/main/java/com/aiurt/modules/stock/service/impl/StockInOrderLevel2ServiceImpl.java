@@ -21,6 +21,7 @@ import com.aiurt.common.util.XlsUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
+import com.aiurt.modules.material.constant.MaterialRequisitionConstant;
 import com.aiurt.modules.material.dto.MaterialRequisitionDetailInfoDTO;
 import com.aiurt.modules.material.dto.MaterialRequisitionInfoDTO;
 import com.aiurt.modules.material.entity.MaterialBase;
@@ -143,6 +144,23 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		StockInOrderLevel2 stockInOrderLevel2res = new StockInOrderLevel2();
 		stockInOrderLevel2res.setOrderCode(str + format);;
 		return stockInOrderLevel2res;
+	}
+
+	/**
+	 * 获取单个二级库入库单code
+	 * @return String 返回二级库入库单code
+	 */
+	public String getLevel2InOrderCode(){
+		return CodeGenerateUtils.generateSingleCode("RK", 5);
+	}
+
+	/**
+	 * 获取多个二级库入库单code
+	 * @param codeNum 获取的二级库入库单code的数量
+	 * @return List<String> 返回二级库入库单code的列表
+	 */
+	public List<String> getLevel2InOrderCodeList(Integer codeNum){
+		return CodeGenerateUtils.generateMultiCodes("RK", 5, codeNum);
 	}
 
 	@Override
@@ -694,15 +712,20 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 					//错误报告下载
 					return getErrorExcel(errorLines, stockInOrderLevel2DTOList, errorMessage, successLines, type, url);
 				}else {
+					// 获取二级库入库单号
+					List<String> codeList = getLevel2InOrderCodeList(stockInOrderLevel2List.size());
 					successLines = stockInOrderLevel2DTOList.size();
 					for (StockInOrderLevel2 stockInOrderLevel2 : stockInOrderLevel2List) {
-						 StockInOrderLevel2 inOrderCode = this.getInOrderCode();
-						 String orderCode = inOrderCode.getOrderCode();
-						 stockInOrderLevel2.setOrderCode(orderCode);
 						 stockInOrderLevel2.setDelFlag(0);
 						 stockInOrderLevel2.setEntryTime(new Date());
 						 stockInOrderLevel2.setStatus("1");
 						 stockInOrderLevel2.setOrgCode(((LoginUser) SecurityUtils.getSubject().getPrincipal()).getOrgCode());
+						 // 入库单号
+						String orderCode = codeList.get(0);
+						stockInOrderLevel2.setOrderCode(orderCode);
+						codeList.remove(orderCode);
+						// 入库类型(普通入库)
+						stockInOrderLevel2.setInType(MaterialRequisitionConstant.NORMAL_IN);
 						this.save(stockInOrderLevel2);
 
 						for (StockIncomingMaterials stockIncomingMaterials : stockInOrderLevel2.getStockIncomingMaterialsList()) {
