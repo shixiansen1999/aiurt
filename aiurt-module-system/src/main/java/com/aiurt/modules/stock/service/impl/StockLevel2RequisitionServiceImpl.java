@@ -325,7 +325,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                     //二级库出库
                     String outOrderCode = sparePartRequisitionService.addStockOutOrderLevel2(one, materialRequisitionDetails,true);
                     //三级库入库
-                    sparePartRequisitionService.addSparePartInOrder(materialRequisitionDetails, one, outOrderCode,loginUser);
+                    sparePartRequisitionService.addSparePartInOrder(materialRequisitionDetails, one, outOrderCode,loginUser,true);
                 }
 
                 break;
