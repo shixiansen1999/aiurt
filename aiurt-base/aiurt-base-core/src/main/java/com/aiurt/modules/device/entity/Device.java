@@ -350,6 +350,21 @@ public class Device extends DictEntity {
 	@ApiModelProperty(value = "报废时间 CURRENT_TIMESTAMP")
 	private  java.util.Date  scrapTime;
 
+	/**故障件返厂时间*/
+	@Excel(name = "故障件返厂时间", width = 15, format = "yyyy-MM-dd HH:mm:ss",needMerge = true)
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@ApiModelProperty(value = "故障件返厂时间")
+	private  java.util.Date  faultyPartsReturnTime;
+
+	/**返修回时间*/
+	@Excel(name = "返修回时间", width = 15, format = "yyyy-MM-dd HH:mm:ss",needMerge = true)
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@ApiModelProperty(value = "返修回时间")
+	private  java.util.Date  repairReturnTime;
+
+
 	/**
 	 * 报废状态 0-未报废 1-已报废
 	 */

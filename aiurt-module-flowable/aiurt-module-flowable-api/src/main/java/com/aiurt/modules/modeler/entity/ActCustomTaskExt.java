@@ -1,5 +1,6 @@
 package com.aiurt.modules.modeler.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -37,10 +38,12 @@ public class ActCustomTaskExt implements Serializable {
 
 	/**变量列表JSON*/
     @ApiModelProperty(value = "变量列表JSON")
+    @TableField(exist = false)
     private String variableListJson;
 
 	/**存储多实例的assigneeList的JSON*/
     @ApiModelProperty(value = "存储多实例的assigneeList的JSON")
+    @TableField(exist = false)
     private String assigneeListJson;
 
 	/**分组类型*/
@@ -49,6 +52,7 @@ public class ActCustomTaskExt implements Serializable {
 
 	/**保存岗位相关的数据*/
     @ApiModelProperty(value = "保存岗位相关的数据")
+    @TableField(exist = false)
     private String deptPostListJson;
 
 	/**保存角色Id数据*/
@@ -65,6 +69,7 @@ public class ActCustomTaskExt implements Serializable {
 
 	/**抄送相关的数据*/
     @ApiModelProperty(value = "抄送相关的数据")
+    @TableField(exist = false)
     private String copyListJson;
 
     /**表单数据*/
@@ -75,5 +80,6 @@ public class ActCustomTaskExt implements Serializable {
     private String dynamicVariable;
 
     @ApiModelProperty(value = "条件表单式")
+    @TableField(exist = false)
     private String conditionExpression;
 }

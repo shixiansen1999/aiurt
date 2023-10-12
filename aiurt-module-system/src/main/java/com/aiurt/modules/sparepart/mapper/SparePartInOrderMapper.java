@@ -27,5 +27,5 @@ public interface SparePartInOrderMapper extends BaseMapper<SparePartInOrder> {
      */
     List<SparePartInOrder> readAll(Page page,@Param("order") SparePartInOrder sparePartInOrder);
 
-
+    List<SparePartInOrder> readAll(@Param("order") SparePartInOrder sparePartInOrder);
 }

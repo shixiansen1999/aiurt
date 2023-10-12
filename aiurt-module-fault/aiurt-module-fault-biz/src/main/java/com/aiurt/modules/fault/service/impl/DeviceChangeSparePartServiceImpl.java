@@ -42,4 +42,9 @@ public class DeviceChangeSparePartServiceImpl extends ServiceImpl<DeviceChangeSp
     public List<SpareConsumeDTO> querySpareConsume(Date startDate, Date endDate) {
         return baseMapper.querySpareConsume(startDate, endDate);
     }
+
+    @Override
+    public List<DeviceChangeSparePart> getAllDeviceChange(String faultCode, String recordId) {
+        return baseMapper.getAllDeviceChange(faultCode, recordId);
+    }
 }

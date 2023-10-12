@@ -56,4 +56,13 @@ public interface ISparePartOutOrderService extends IService<SparePartOutOrder> {
      * @param sparePartStock
      */
     void appOutbound(SparePartStock sparePartStock);
+
+    /**
+     * 三级库出库管理-根据出库单号查询详情
+     * @param orderCode
+     * @return
+     */
+    SparePartOutOrder queryByOrderCode(String orderCode);
+
+    Result<?> edit(SparePartOutOrder sparePartOutOrder);
 }

@@ -173,5 +173,12 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 		return sparePartInOrderService.importExcel(request,response);
 	}
 
+	@AutoLog(value = "三级库出库管理-根据入库单号查询详情")
+	@ApiOperation(value = "三级库出库管理-根据入库单号查询详情")
+	@GetMapping(value ="/queryByOrderCode")
+	public Result<SparePartInOrder> queryByOrderCode(String orderCode) {
+		SparePartInOrder sparePartInOrder = sparePartInOrderService.queryByOrderCode(orderCode);
+		return Result.ok(sparePartInOrder);
+	}
 
 }

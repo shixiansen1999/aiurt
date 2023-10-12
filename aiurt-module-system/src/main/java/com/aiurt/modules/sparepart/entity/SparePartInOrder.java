@@ -37,6 +37,10 @@ public class SparePartInOrder implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
 	@ApiModelProperty(value = "主键ID")
 	private String id;
+	/**入库单号*/
+	@Excel(name = "入库单号", width = 15)
+	@ApiModelProperty(value = "入库单号")
+	private String orderCode;
 	/**序号*/
 	@Excel(name = "序号", width = 15)
 	@TableField(exist = false)
@@ -68,6 +72,14 @@ public class SparePartInOrder implements Serializable {
 	@Excel(name = "申领编号", width = 15)
 	@ApiModelProperty(value = "申领编号")
 	private String applyCode;
+
+	@ApiModelProperty(value = "领料单表ID")
+	private String materialRequisitionId;
+	@ApiModelProperty(value = "入库类型")
+	@Dict(dicCode = "stock_out_in_type")
+	private Integer inType;
+	@ApiModelProperty(value = "库存结余")
+	private Integer balance;
 	/**物资分类*/
 	@Excel(name = "物资分类", width = 15)
 	@ApiModelProperty(value = "物资分类名称")
@@ -135,7 +147,7 @@ public class SparePartInOrder implements Serializable {
 	private Date confirmTime;
 	/**确认人ID*/
 	@ApiModelProperty(value = "确认人ID")
-	@Dict(dictTable = "sys_user", dicText = "realname", dicCode = "username")
+	@Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
 	private String confirmId;
 	/**确认人*/
 	@Excel(name = "确认人", width = 15)
@@ -200,4 +212,17 @@ public class SparePartInOrder implements Serializable {
 	@ApiModelProperty("管理部门")
 	@TableField(exist = false)
 	private List<String> orgCodes;
+	@ApiModelProperty(value = "根据入库单号查询")
+	@TableField(exist = false)
+	private String queryOrderCode;
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+	@DateTimeFormat(pattern="yyyy-MM-dd")
+	@ApiModelProperty(value = "时间过滤：开始时间")
+	@TableField(exist = false)
+	private Date beginTime;
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+	@DateTimeFormat(pattern="yyyy-MM-dd")
+	@ApiModelProperty(value = "时间过滤：结束时间")
+	@TableField(exist = false)
+	private Date endTime;
 }

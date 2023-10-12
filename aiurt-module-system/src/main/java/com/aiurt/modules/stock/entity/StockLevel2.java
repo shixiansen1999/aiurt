@@ -17,6 +17,8 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.math.BigDecimal;
+
 /**
  * @Description:
  * @Author: swsc
@@ -102,7 +104,10 @@ public class StockLevel2 extends DictEntity {
 	@Excel(name = "库存数量")
     @ApiModelProperty(value = "数量")
 	private  Integer  num;
-
+	/**可用量*/
+	@Excel(name = "可使用数量", width = 15)
+	@ApiModelProperty(value = "可使用数量")
+	private Integer availableNum;
 	/**专业编码*/
 	@ApiModelProperty(value = "专业编码")
 	@Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
@@ -132,6 +137,13 @@ public class StockLevel2 extends DictEntity {
 	@ApiModelProperty(value = "表格用时间")
 	@TableField(exist = false)
 	private  String  stockInTimeExcel;
+
+	@ApiModelProperty(value = "一级库数量")
+	private Integer oneLevelNum;
+	@ApiModelProperty(value = "一级库存放地点")
+	private String oneLevelWarehouseCode;
+	@ApiModelProperty(value = "一级库总价")
+	private BigDecimal oneLevelTotalPrices;
 
 	/**备注*/
 	@ApiModelProperty(value = "备注")

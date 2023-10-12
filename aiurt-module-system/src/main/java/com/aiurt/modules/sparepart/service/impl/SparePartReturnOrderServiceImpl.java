@@ -1,31 +1,43 @@
 package com.aiurt.modules.sparepart.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.RoleConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.CommonTodoStatus;
+import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
+import com.aiurt.common.util.CodeGenerateUtils;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.material.constant.MaterialRequisitionConstant;
 import com.aiurt.modules.sparepart.entity.*;
-import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
-import com.aiurt.modules.sparepart.mapper.SparePartReturnOrderMapper;
-import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
-import com.aiurt.modules.sparepart.mapper.SparePartStockNumMapper;
+import com.aiurt.modules.sparepart.mapper.*;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
+import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
+import com.aiurt.modules.stock.service.impl.MaterialStockOutInRecordServiceImpl;
+import com.aiurt.modules.todo.dto.TodoDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -50,6 +62,14 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
     private ISysBaseAPI sysBaseApi;
     @Autowired
     private SparePartStockNumMapper sparePartStockNumMapper;
+    @Autowired
+    private SparePartStockInfoMapper sparePartStockInfoMapper;
+    @Autowired
+    private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private ISTodoBaseAPI isTodoBaseAPI;
+    @Autowired
+    private MaterialStockOutInRecordServiceImpl materialStockOutInRecordService;
     /**
      * 查询列表
      * @param page
@@ -127,6 +147,7 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,returnOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,returnOrder.getWarehouseCode()));
         if(null!=sparePartStock){
             sparePartStock.setNum(sparePartStock.getNum()+returnOrder.getNum());
+            sparePartStock.setAvailableNum(sparePartStock.getAvailableNum()+returnOrder.getNum());
             sparePartStockMapper.updateById(sparePartStock);
 
             //先获取该备件的数量记录,更新已使用数量
@@ -142,16 +163,28 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         }
         //3.插入备件入库记录
         SparePartInOrder sparePartInOrder = new SparePartInOrder();
+        sparePartInOrder.setOrderCode(CodeGenerateUtils.generateSingleCode("3RK", 5));
         sparePartInOrder.setMaterialCode(returnOrder.getMaterialCode());
         sparePartInOrder.setWarehouseCode(returnOrder.getWarehouseCode());
         sparePartInOrder.setNum(returnOrder.getNum());
         sparePartInOrder.setOrgId(user.getOrgId());
         sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_1);
-        sparePartInOrder.setConfirmId(user.getUsername());
+        sparePartInOrder.setConfirmId(user.getId());
         sparePartInOrder.setConfirmTime(date);
         sparePartInOrder.setUsedNum(returnOrder.getNum());
+        sparePartInOrder.setInType(MaterialRequisitionConstant.NORMAL_IN);
         sparePartInOrderService.save(sparePartInOrder);
-
+        // 同步入库记录到出入库记录表
+        MaterialStockOutInRecord record = new MaterialStockOutInRecord();
+        BeanUtils.copyProperties(sparePartInOrder, record);
+        record.setConfirmUserId(user.getId());
+        record.setOrderId(sparePartInOrder.getId());
+        record.setStatus(StrUtil.equals(sparePartInOrder.getConfirmStatus(), "1") ? 2 : 1);
+        record.setMaterialRequisitionType(3);
+        record.setIsOutIn(1);
+        record.setOutInType(sparePartInOrder.getInType());
+        record.setBalance(sparePartStock.getNum()+returnOrder.getNum());
+        materialStockOutInRecordService.save(record);
         return Result.OK("操作成功！");
 
 
@@ -159,9 +192,66 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
     @Override
     public void updateOrder(SparePartOutOrder sparePartOutOrder){
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        sparePartOutOrder.setConfirmUserId(user.getUsername());
+        sparePartOutOrder.setConfirmUserId(user.getId());
         sparePartOutOrder.setConfirmTime(new Date());
         sparePartOutOrder.setSysOrgCode(user.getOrgCode());
         sparePartOutOrderService.updateById(sparePartOutOrder);
+    }
+
+    @Override
+    public void add(SparePartReturnOrder sparePartReturnOrder) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SparePartStockInfo::getWarehouseCode,sparePartReturnOrder.getMaterialCode());
+        wrapper.eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0);
+        SparePartStockInfo stockInfo = sparePartStockInfoMapper.selectOne(wrapper);
+        if(null!=stockInfo){
+            sparePartReturnOrder.setOrgId(stockInfo.getOrganizationId());
+        }
+        sparePartReturnOrder.setSysOrgCode(user.getOrgCode());
+        sparePartReturnOrder.setUserId(user.getUsername());
+        this.save(sparePartReturnOrder);
+
+        try {
+            //根据仓库编号获取仓库组织机构code
+            String orgCode = sysBaseApi.getDepartByWarehouseCode(sparePartReturnOrder.getWarehouseCode());
+            String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(orgCode), Collections.singletonList(RoleConstant.FOREMAN));
+
+            //发送通知
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件退库-确认" + DateUtil.today(), null);
+
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, sparePartReturnOrder.getId());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_BACK.getType());
+            map.put("materialCode",sparePartReturnOrder.getMaterialCode());
+            String materialName= sysBaseApi.getMaterialNameByCode(sparePartReturnOrder.getMaterialCode());
+            map.put("name",materialName);
+            map.put("num",sparePartReturnOrder.getNum());
+            String warehouseName= sysBaseApi.getWarehouseNameByCode(sparePartReturnOrder.getWarehouseCode());
+            map.put("warehouseName",warehouseName);
+            map.put("realName",user.getRealname());
+
+            messageDTO.setData(map);
+            //发送待办
+            TodoDTO todoDTO = new TodoDTO();
+            todoDTO.setData(map);
+            SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
+            todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
+            todoDTO.setTitle("备件退库-确认" + DateUtil.today());
+            todoDTO.setMsgAbstract("备件退库申请");
+            todoDTO.setPublishingContent("备件退库申请，请确认");
+            todoDTO.setCurrentUserName(userName);
+            todoDTO.setBusinessKey(sparePartReturnOrder.getId());
+            todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_BACK.getType());
+            todoDTO.setCurrentUserName(userName);
+            todoDTO.setTaskType(TodoBusinessTypeEnum.SPAREPART_BACK.getType());
+            todoDTO.setTodoType(CommonTodoStatus.TODO_STATUS_0);
+            todoDTO.setTemplateCode(CommonConstant.SPAREPARTRETURN_SERVICE_NOTICE);
+
+            isTodoBaseAPI.createTodoTask(todoDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

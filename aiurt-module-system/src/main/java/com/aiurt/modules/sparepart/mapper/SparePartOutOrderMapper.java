@@ -1,11 +1,9 @@
 package com.aiurt.modules.sparepart.mapper;
 
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import liquibase.pro.packaged.P;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
 

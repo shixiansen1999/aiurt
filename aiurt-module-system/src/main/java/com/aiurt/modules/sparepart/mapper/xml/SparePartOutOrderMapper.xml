@@ -4,6 +4,8 @@
     <select id="readAll" resultType="com.aiurt.modules.sparepart.entity.SparePartOutOrder">
         SELECT
             spare_part_out_order.id,
+            spare_part_out_order.order_code,
+            mr.code materialRequisitionCode,
             d1.item_text statusName,
             cs_major.major_name majorName,
             cs_subsystem.system_name systemName,
@@ -30,18 +32,34 @@
         LEFT JOIN cs_subsystem cs_subsystem ON (t1.system_code = cs_subsystem.system_code and cs_subsystem.del_flag = 0)
         LEFT JOIN material_base_type t4 ON (t1.base_type_code = t4.base_type_code and  t4.del_flag = 0)
         LEFT JOIN spare_part_stock_info t5 ON spare_part_out_order.warehouse_code = t5.warehouse_code
-        LEFT JOIN sys_user t6 ON spare_part_out_order.apply_user_id = t6.username
+        LEFT JOIN sys_user t6 ON spare_part_out_order.apply_user_id = t6.id
         LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'spare_out_order_status'
         LEFT JOIN sys_dict_item AS d1 ON (d1.item_value = spare_part_out_order.STATUS AND dict1.id = d1.dict_id )
         LEFT JOIN cs_manufactor t7 ON t7.id = t1.manufactor_code
-        LEFT JOIN sys_user t8 ON spare_part_out_order.confirm_user_id = t8.username
+        LEFT JOIN sys_user t8 ON spare_part_out_order.confirm_user_id = t8.id
         LEFT JOIN sys_dict AS dict2 ON dict2.dict_code = 'material_type'
         LEFT JOIN sys_dict_item AS d2 ON (d2.item_value = t1.type AND dict2.id = d2.dict_id)
         LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'
         LEFT JOIN sys_dict_item AS d3 ON (d3.item_value = t1.unit AND dict3.id = d3.dict_id)
+        LEFT JOIN material_requisition mr ON mr.id = spare_part_out_order.material_requisition_id
 
         WHERE
         spare_part_out_order.del_flag =0
+        <if test="out.orderCode != null and out.orderCode != ''">
+            and spare_part_out_order.order_code like concat('%', #{out.orderCode}, "%")
+        </if>
+        <if test="out.queryOrderCode != null and out.queryOrderCode != ''">
+            and spare_part_out_order.order_code = #{out.queryOrderCode}
+        </if>
+        <if test="out.materialRequisitionCode != null and out.materialRequisitionCode != ''">
+            and mr.code like concat('%', #{out.materialRequisitionCode}, '%')
+        </if>
+        <if test="out.beginTime != null">
+            and spare_part_out_order.apply_out_time <![CDATA[ >= ]]> #{out.beginTime}
+        </if>
+        <if test="out.endTime != null">
+            and spare_part_out_order.apply_out_time <![CDATA[ <= ]]> #{out.endTime}
+        </if>
         <if test="out.materialCode!=null and out.materialCode!=''">
             and t1.`code` like concat('%', #{out.materialCode}, '%')
         </if>
@@ -101,11 +119,11 @@
         LEFT JOIN cs_subsystem cs_subsystem ON (t1.system_code = cs_subsystem.system_code and cs_subsystem.del_flag = 0)
         LEFT JOIN material_base_type t4 ON (t1.base_type_code = t4.base_type_code and  t4.del_flag = 0)
         LEFT JOIN spare_part_stock_info t5 ON spare_part_out_order.warehouse_code = t5.warehouse_code
-        LEFT JOIN sys_user t6 ON spare_part_out_order.apply_user_id = t6.username
+        LEFT JOIN sys_user t6 ON spare_part_out_order.apply_user_id = t6.id
         LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'spare_out_order_status'
         LEFT JOIN sys_dict_item AS d1 ON (d1.item_value = spare_part_out_order.STATUS AND dict1.id = d1.dict_id)
         LEFT JOIN cs_manufactor t7 ON t7.id = t1.manufactor_code
-        LEFT JOIN sys_user t8 ON spare_part_out_order.confirm_user_id = t8.username
+        LEFT JOIN sys_user t8 ON spare_part_out_order.confirm_user_id = t8.id
         LEFT JOIN sys_dict AS dict2 ON dict2.dict_code = 'material_type'
         LEFT JOIN sys_dict_item AS d2 ON (d2.item_value = t1.type AND dict2.id = d2.dict_id)
         LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'

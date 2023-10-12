@@ -49,6 +49,11 @@ public class StockOutboundMaterials extends DictEntity {
 	@Dict(dictTable ="stock_level2_info",dicText = "warehouse_name",dicCode = "warehouse_code")
 	private  String  warehouseCode;
 
+	/**出库仓库名称的手动翻译*/
+	@TableField(exist = false)
+	@ApiModelProperty(value = "出库仓库名称的手动翻译")
+	private  String  warehouseName;
+
 	/**备注*/
 	@Excel(name = "备注")
 	@ApiModelProperty(value = "备注")
@@ -58,6 +63,9 @@ public class StockOutboundMaterials extends DictEntity {
 	@Excel(name = "仓库现有库存")
 	@ApiModelProperty(value = "仓库现有库存")
 	private  Integer  inventory;
+
+	@ApiModelProperty(value = "库存结余")
+	private Integer balance;
 
 	/**申请出库数量*/
 	@Excel(name = "申请出库数量")

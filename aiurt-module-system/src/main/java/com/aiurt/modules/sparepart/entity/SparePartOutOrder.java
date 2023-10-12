@@ -39,6 +39,10 @@ public class SparePartOutOrder implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
     private String id;
+    /**出库单号*/
+    @Excel(name = "出库单号", width = 15)
+    @ApiModelProperty(value = "出库单号")
+    private String orderCode;
 	/**物资编号*/
 	@Excel(name = "物资编号", width = 15)
     @ApiModelProperty(value = "物资编号")
@@ -70,7 +74,7 @@ public class SparePartOutOrder implements Serializable {
 	/**确认人ID*/
 	@Excel(name = "确认人ID", width = 15)
     @ApiModelProperty(value = "确认人ID")
-    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "username")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     private String confirmUserId;
     /**确认人*/
     @Excel(name = "确认人", width = 15)
@@ -86,7 +90,7 @@ public class SparePartOutOrder implements Serializable {
 	/**申请出库人ID*/
 	@Excel(name = "申请出库人ID", width = 15)
     @ApiModelProperty(value = "申请出库人ID")
-    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "username")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     private String applyUserId;
     /**申请出库人*/
     @Excel(name = "申请出库人", width = 15)
@@ -111,6 +115,13 @@ public class SparePartOutOrder implements Serializable {
 	@Excel(name = "已出库剩余数量", width = 15)
     @ApiModelProperty(value = "已出库剩余数量")
     private String unused;
+    @ApiModelProperty(value = "领料单表ID")
+    private String materialRequisitionId;
+    @ApiModelProperty(value = "备件出库类型")
+    @Dict(dicCode = "stock_out_in_type")
+    private Integer outType;
+    @ApiModelProperty(value = "库存结余")
+    private Integer balance;
 	/**删除状态(0.未删除 1.已删除)*/
 	@Excel(name = "删除状态(0.未删除 1.已删除)", width = 15)
     @ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")
@@ -200,4 +211,20 @@ public class SparePartOutOrder implements Serializable {
     @ApiModelProperty("管理部门")
     @TableField(exist = false)
     private List<String> orgCodes;
+    @ApiModelProperty(value = "申领单号")
+    @TableField(exist = false)
+    private String materialRequisitionCode;
+    @ApiModelProperty(value = "根据出库单号查询详情")
+    @TableField(exist = false)
+    private String queryOrderCode;
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "时间过滤：开始时间")
+    @TableField(exist = false)
+    private Date beginTime;
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "时间过滤：结束时间")
+    @TableField(exist = false)
+    private Date endTime;
 }
