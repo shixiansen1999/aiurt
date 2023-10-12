@@ -180,6 +180,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		}
 	}
 
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void addCompleteOrderFromRequisition(String requisitionId) throws ParseException {
 		Date now = new Date();
@@ -275,6 +276,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		return ok;
 	}
 
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public boolean submitInOrderStatus(String status, String code, StockInOrderLevel2 stockInOrderLevel2) throws ParseException {
 		String warehouseCode = stockInOrderLevel2.getWarehouseCode();
