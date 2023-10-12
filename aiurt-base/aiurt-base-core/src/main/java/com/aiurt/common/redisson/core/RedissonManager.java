@@ -1,15 +1,16 @@
-package org.jeecg.boot.starter.lock.core;
+package com.aiurt.common.redisson.core;
 
 
+import com.aiurt.common.redisson.core.strategy.RedissonConfigStrategy;
+import com.aiurt.common.redisson.core.strategy.impl.ClusterRedissonConfigStrategyImpl;
+import com.aiurt.common.redisson.core.strategy.impl.MasterslaveRedissonConfigStrategyImpl;
+import com.aiurt.common.redisson.core.strategy.impl.SentinelRedissonConfigStrategyImpl;
+import com.aiurt.common.redisson.core.strategy.impl.StandaloneRedissonConfigStrategyImpl;
+import com.aiurt.common.redisson.enums.RedisConnectionType;
+import com.aiurt.common.redisson.prop.RedissonProperties;
 import com.google.common.base.Preconditions;
 import lombok.extern.slf4j.Slf4j;
-import org.jeecg.boot.starter.lock.core.strategy.RedissonConfigStrategy;
-import org.jeecg.boot.starter.lock.prop.RedissonProperties;
-import org.jeecg.boot.starter.lock.core.strategy.impl.ClusterRedissonConfigStrategyImpl;
-import org.jeecg.boot.starter.lock.core.strategy.impl.MasterslaveRedissonConfigStrategyImpl;
-import org.jeecg.boot.starter.lock.core.strategy.impl.SentinelRedissonConfigStrategyImpl;
-import org.jeecg.boot.starter.lock.core.strategy.impl.StandaloneRedissonConfigStrategyImpl;
-import org.jeecg.boot.starter.lock.enums.RedisConnectionType;
+
 import org.redisson.Redisson;
 import org.redisson.config.Config;
 
