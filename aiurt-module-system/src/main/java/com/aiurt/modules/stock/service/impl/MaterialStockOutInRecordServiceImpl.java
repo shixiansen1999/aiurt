@@ -77,7 +77,7 @@ public class MaterialStockOutInRecordServiceImpl extends ServiceImpl<MaterialSto
         }
         queryWrapper.lambda().eq(MaterialStockOutInRecord::getDelFlag, CommonConstant.DEL_FLAG_0);
         // 按照出入库时间降序
-        queryWrapper.lambda().orderByDesc(MaterialStockOutInRecord::getConfirmTime).orderByAsc(MaterialStockOutInRecord::getOutInType);
+        queryWrapper.lambda().orderByDesc(MaterialStockOutInRecord::getConfirmTime).orderByDesc(MaterialStockOutInRecord::getId);
         this.page(page, queryWrapper);
 
         // 将实体类查询结果转化成响应DTO
