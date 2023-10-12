@@ -605,7 +605,7 @@ public class ArchiveUtils {
         private String refileFolderId;
 
         /**保密期限*/
-        private String secertduration;
+        private String secertDuration;
 
         /**所属全宗id*/
         private String sectid;
