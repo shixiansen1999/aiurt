@@ -284,7 +284,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     //二级库出库
                     String outOrderCode = addStockOutOrderLevel2(materialRequisition, requisitionDetailList,false);
                     //三级库入库
-                    addSparePartInOrder(requisitionDetailList, materialRequisition, outOrderCode,loginUser);
+                    addSparePartInOrder(requisitionDetailList, materialRequisition, outOrderCode,loginUser,false);
                 }
 
 
@@ -308,6 +308,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             BeanUtils.copyProperties(sparePartRequisitionAddReqDTO, requisition, "id");
             requisition.setApplyWarehouseCode(sparePartRequisitionAddReqDTO.getLeve2WarehouseCode());
             requisition.setCustodialWarehouseCode(sparePartRequisitionAddReqDTO.getApplyWarehouseCode());
+            requisition.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3);
             requisition.setLeve2WarehouseCode(null);
             requisition.setStatus(MaterialRequisitionConstant.STATUS_COMPLETED);
             requisition.setMaterialRequisitionPid(materialRequisition.getId());
@@ -332,7 +333,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             //二级库出库
             String outOrderCode = addStockOutOrderLevel2(requisition, materialRequisitionDetails,flag);
             //三级库入库
-            addSparePartInOrder(materialRequisitionDetails, requisition, outOrderCode,loginUser);
+            addSparePartInOrder(materialRequisitionDetails, requisition, outOrderCode,loginUser,flag);
         }
     }
 
@@ -501,7 +502,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
      * @param outOrderCode
      * */
     @Transactional(rollbackFor = Exception.class)
-    public void addSparePartInOrder(List<MaterialRequisitionDetail> materialRequisitionDetails, MaterialRequisition requisition, String outOrderCode,LoginUser loginUser) {
+    public void addSparePartInOrder(List<MaterialRequisitionDetail> materialRequisitionDetails, MaterialRequisition requisition, String outOrderCode,LoginUser loginUser,Boolean flag) {
         for (MaterialRequisitionDetail materialRequisitionDetail : materialRequisitionDetails) {
             SparePartInOrder sparePartInOrder = new SparePartInOrder();
             sparePartInOrder.setMaterialCode(materialRequisitionDetail.getMaterialsCode());
@@ -533,7 +534,9 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                 SparePartStock stock = new SparePartStock();
                 stock.setMaterialCode(sparePartInOrder.getMaterialCode());
                 stock.setNum(sparePartInOrder.getNum());
-                stock.setAvailableNum(sparePartInOrder.getNum());
+                if (flag) {
+                    stock.setAvailableNum(sparePartInOrder.getNum());
+                }
                 stock.setWarehouseCode(sparePartInOrder.getWarehouseCode());
                 //存仓库组织机构的关联班组
                 String orgCode = sysBaseApi.getDepartByWarehouseCode(sparePartInOrder.getWarehouseCode());
@@ -545,7 +548,9 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                 sparePartInOrder.setBalance(stock.getNum());
             }else {
                 sparePartStock.setNum(sparePartStock.getNum()+sparePartInOrder.getNum());
-                sparePartStock.setAvailableNum(sparePartStock.getAvailableNum()+sparePartInOrder.getNum());
+                if (flag) {
+                    sparePartStock.setAvailableNum(sparePartStock.getAvailableNum()+sparePartInOrder.getNum());
+                }
                 //入库结余
                 sparePartInOrder.setBalance(sparePartStock.getNum());
                 //更新库存数量
@@ -902,7 +907,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     //二级库出库
                     String outOrderCode = addStockOutOrderLevel2(level3MaterialRequisition, requisitionDetails,true);
                     //三级库入库
-                    addSparePartInOrder(requisitionDetails, level3MaterialRequisition, outOrderCode,loginUser);
+                    addSparePartInOrder(requisitionDetails, level3MaterialRequisition, outOrderCode,loginUser,true);
                 }
             }
 
