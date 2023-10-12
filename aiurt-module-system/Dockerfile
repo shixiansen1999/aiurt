@@ -6,6 +6,7 @@ RUN mkdir -p /aiurt-platfrom/config/jeecg
 RUN mkdir -p /data/wwwroot/support/test/
 RUN mkdir -p /data/wwwroot/support/upload/
 RUN mkdir -p /data/wwwroot/support/dist/
+RUN mkdir -p /usr/share/fonts/ttf-dejavu
 
 WORKDIR /aiurt-platfrom
 
