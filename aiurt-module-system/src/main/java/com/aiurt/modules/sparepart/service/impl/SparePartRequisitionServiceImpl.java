@@ -171,7 +171,8 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
     /**
      * 提交
      * */
-    private void submitRequisition(MaterialRequisition materialRequisition, List<MaterialRequisitionDetail> requisitionDetailList, SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO) {
+    @Transactional(rollbackFor = Exception.class)
+    public void submitRequisition(MaterialRequisition materialRequisition, List<MaterialRequisitionDetail> requisitionDetailList, SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         if (MaterialRequisitionConstant.APPLY_TYPE_NORMAL.equals(sparePartRequisitionAddReqDTO.getApplyType())) {
             //普通三级库申领
@@ -300,6 +301,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
     /**
      * 三级库申领
      * */
+    @Transactional(rollbackFor = Exception.class)
     public void addLevel3Requisition(List<MaterialRequisitionDetail> materialRequisitionDetails, SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO, MaterialRequisition materialRequisition,Boolean flag) {
         if (CollUtil.isNotEmpty(materialRequisitionDetails)) {
             MaterialRequisition requisition = new MaterialRequisition();
@@ -341,6 +343,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
      * @param requisitionDetailList
      * @param flag  库存信息是否需要更新可使用数量 false不需要，true需要,当没有入库的时候不需要再更新
      * */
+    @Transactional(rollbackFor = Exception.class)
     public String addStockOutOrderLevel2(MaterialRequisition materialRequisition, List<MaterialRequisitionDetail> requisitionDetailList,Boolean flag){
         //三级库向二级库申领
         StockLevel2Info stockLevel2Info = stockLevel2InfoMapper.selectOne(new LambdaQueryWrapper<StockLevel2Info>().eq(StockLevel2Info::getDelFlag, CommonConstant.DEL_FLAG_0).eq(StockLevel2Info::getWarehouseCode, materialRequisition.getApplyWarehouseCode()));
@@ -424,6 +427,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
      * 生成三级库出库
      * @param flag  库存信息是否需要更新可使用数量 false不需要，true需要
      * */
+    @Transactional(rollbackFor = Exception.class)
     public void addSparePartOutOrder(List<MaterialRequisitionDetail> requisitionDetailList, LoginUser loginUser, MaterialRequisition materialRequisition,Boolean flag) {
         for (MaterialRequisitionDetail materialRequisitionDetail : requisitionDetailList) {
             SparePartOutOrder sparePartOutOrder = new SparePartOutOrder();
@@ -496,6 +500,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
      * @param requisition
      * @param outOrderCode
      * */
+    @Transactional(rollbackFor = Exception.class)
     public void addSparePartInOrder(List<MaterialRequisitionDetail> materialRequisitionDetails, MaterialRequisition requisition, String outOrderCode,LoginUser loginUser) {
         for (MaterialRequisitionDetail materialRequisitionDetail : materialRequisitionDetails) {
             SparePartInOrder sparePartInOrder = new SparePartInOrder();
@@ -741,6 +746,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
 
 
     /**故障备件更换*/
+    @Transactional(rollbackFor = Exception.class)
     public void addSpareChange(List<SparePartStockDTO> dtoList, String faultCode,String faultRepairRecordId) {
 
         // 获取当前登录人所属机构， 根据所属机构擦查询管理三级管理仓库
@@ -906,8 +912,8 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
 
     }
 
-
-    private void lendMaterial(List<SparePartStockDTO> lend, LoginUser loginUser, SparePartStockInfo stockInfo, MaterialRequisition materialRequisition) {
+    @Transactional(rollbackFor = Exception.class)
+    public void lendMaterial(List<SparePartStockDTO> lend, LoginUser loginUser, SparePartStockInfo stockInfo, MaterialRequisition materialRequisition) {
         for (SparePartStockDTO sparePartStockDTO : lend) {
             //1.生成借出单（已借出）
             SparePartLend sparePartLend = new SparePartLend();
@@ -1035,7 +1041,8 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
 
     }
 
-    private void dealDeviceChange(LoginUser loginUser,SparePartStockDTO sparePartStockDTO,SparePartStockInfo stockInfo) {
+    @Transactional(rollbackFor = Exception.class)
+    public void dealDeviceChange(LoginUser loginUser,SparePartStockDTO sparePartStockDTO,SparePartStockInfo stockInfo) {
         DeviceChangeSparePart sparePart = new DeviceChangeSparePart();
         sparePart.setCode(sparePartStockDTO.getCode());
         //原组件数量默认1
