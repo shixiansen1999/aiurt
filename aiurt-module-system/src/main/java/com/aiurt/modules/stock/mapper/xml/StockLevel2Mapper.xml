@@ -75,6 +75,7 @@
     </select>
     <select id="exportXls" resultType="com.aiurt.modules.stock.entity.StockLevel2">
         select sl.id,cm.major_name, cs.system_name, mb.base_type_code_cc base_type_code, sl.material_code, mb.`name` material_name,
+        sl.available_num,sl.minimum_stock,
         d1.item_text type_name, sli.warehouse_name, sd.depart_name organization_name, sl.num, d2.item_text unit_name, DATE_FORMAT(sl.stock_in_time,'%Y-%m-%d %H:%i') stock_in_time_excel
         from stock_level2 sl
         left join material_base mb on sl.material_code=mb.`code` and mb.del_flag=0
