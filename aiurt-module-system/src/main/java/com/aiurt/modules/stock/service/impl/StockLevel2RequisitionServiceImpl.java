@@ -313,7 +313,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                         }
                     }
                     sparePartRequisitionAddReqDTO.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3);
-                    sparePartRequisitionService.addLevel3Requisition(requisitionDetails, sparePartRequisitionAddReqDTO, one,true);
+                    sparePartRequisitionService.addLevel3Requisition(requisitionDetails, sparePartRequisitionAddReqDTO, one,true,false);
 
                     //生成三级库出库
                     sparePartRequisitionService.addSparePartOutOrder(materialRequisitionDetails, loginUser, one,false);
