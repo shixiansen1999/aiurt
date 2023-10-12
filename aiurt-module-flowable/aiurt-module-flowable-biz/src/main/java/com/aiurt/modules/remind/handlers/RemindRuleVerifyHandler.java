@@ -42,7 +42,7 @@ public class RemindRuleVerifyHandler extends AbstractFlowHandler<FlowRemindConte
         }
 
         ActCustomModelExt actCustomModelExt = context.getActCustomModelExt();
-        Integer isRemind = Optional.of(actCustomModelExt.getIsRemind()).orElse(0);
+        Integer isRemind = Optional.ofNullable(actCustomModelExt.getIsRemind()).orElse(0);
         // 不催办
         if (isRemind == 0) {
             context.setContinueChain(false);

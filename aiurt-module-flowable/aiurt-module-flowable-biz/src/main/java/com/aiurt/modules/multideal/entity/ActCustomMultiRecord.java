@@ -2,6 +2,7 @@ package com.aiurt.modules.multideal.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -80,6 +81,7 @@ public class ActCustomMultiRecord implements Serializable {
 	/**0-未删除，1已删除（减签）*/
 	@Excel(name = "0-未删除，1已删除（减签）", width = 15)
     @ApiModelProperty(value = "0-未删除，1已删除（减签）")
+    @TableLogic
     private java.lang.Integer delFlag;
 	/**节点id*/
 	@Excel(name = "节点id", width = 15)
@@ -89,4 +91,7 @@ public class ActCustomMultiRecord implements Serializable {
 	@Excel(name = "理由", width = 15)
     @ApiModelProperty(value = "理由")
     private java.lang.String reason;
+
+    @ApiModelProperty(value = "父执行实例id")
+	private String parentExecutionId;
 }

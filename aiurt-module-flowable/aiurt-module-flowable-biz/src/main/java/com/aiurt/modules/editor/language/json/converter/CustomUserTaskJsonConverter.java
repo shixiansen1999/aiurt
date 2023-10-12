@@ -151,16 +151,18 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                     switch (approvalRuleEnum) {
                         // 任意会签
                         case TASK_MULTI_INSTANCE_TYPE_1:
+                            propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Parallel");
+                            propertiesNode.put(PROPERTY_MULTIINSTANCE_CONDITION, "${multiInstance.accessCondition(execution)}");
                             if (Objects.nonNull(loopCharacteristics)) {
                                 loopCharacteristics.setSequential(false);
+                                loopCharacteristics.setCompletionCondition("${multiInstance.accessCondition(execution)}");
                             }
-                            propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Parallel");
-                            propertiesNode.put(PROPERTY_MULTIINSTANCE_CONDITION, "${nrOfCompletedInstances >= 1}");
                             break;
                         // 并行
                         case TASK_MULTI_INSTANCE_TYPE_2:
                             if (Objects.nonNull(loopCharacteristics)) {
                                 loopCharacteristics.setSequential(false);
+                                loopCharacteristics.setCompletionCondition("${nrOfCompletedInstances == nrOfInstances}");
                             }
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Parallel");
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_CONDITION, "${nrOfCompletedInstances == nrOfInstances}");
