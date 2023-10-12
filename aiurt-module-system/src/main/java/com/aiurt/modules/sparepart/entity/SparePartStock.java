@@ -180,6 +180,10 @@ public class SparePartStock implements Serializable {
     @ApiModelProperty(value = " 单位")
     @TableField(exist = false)
     private String unit;
+    /**单位名称*/
+    @ApiModelProperty(value = " 单位名称")
+    @TableField(exist = false)
+    private String unitName;
     /**生产厂商*/
     @ApiModelProperty(value = "生产厂商名称")
     @TableField(exist = false)

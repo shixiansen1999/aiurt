@@ -120,9 +120,10 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         sparePartScrap.setSysOrgCode(user.getOrgCode());
         SparePartScrap scrap = getById(sparePartScrap.getId());
+        sparePartScrap.setConfirmId(user.getUsername());
+        sparePartScrap.setConfirmTime(new Date());
         if(sparePartScrap.getStatus().equals(CommonConstant.SPARE_PART_SCRAP_STATUS_3) || sparePartScrap.getStatus().equals(CommonConstant.SPARE_PART_SCRAP_STATUS_2)){
-            sparePartScrap.setConfirmId(user.getUsername());
-            sparePartScrap.setConfirmTime(new Date());
+
 
             //更新已出库库存数量,做减法
             List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>()
