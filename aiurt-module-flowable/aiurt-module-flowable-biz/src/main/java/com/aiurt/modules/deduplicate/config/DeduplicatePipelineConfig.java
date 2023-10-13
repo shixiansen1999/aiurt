@@ -32,6 +32,9 @@ public class DeduplicatePipelineConfig {
     @Resource
     private AutoCompleteHandler autoCompleteHandler;
 
+    @Resource
+    private DuplicateBeforeVerifyHandler duplicateBeforeVerifyHandler;
+
 
     @Bean
     public DeduplicateHandlerChainPipeline deduplicatePipeline(){
@@ -41,6 +44,7 @@ public class DeduplicatePipelineConfig {
         filterChainPipeline.addFirst("审批意见必填", backNodeRuleVerifyHandler);
         filterChainPipeline.addFirst("加签规则", multiInstanceRuleVerifyHandler);
         filterChainPipeline.addFirst("审批意见必填", approvalRequirementRuleVerifyHandler);
+        filterChainPipeline.addFirst("去重前规则校验", duplicateBeforeVerifyHandler);
         filterChainPipeline.addFirst("构建context", deduplicateContextHandler);
         return filterChainPipeline;
     }

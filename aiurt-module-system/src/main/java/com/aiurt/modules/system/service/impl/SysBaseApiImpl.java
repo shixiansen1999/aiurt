@@ -3380,13 +3380,15 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         String content = null;
         if(StrUtil.isNotBlank(templateCode)){
             SysMessageTemplate templateEntity = getTemplateEntity(templateCode);
-            boolean isMarkdown =CommonConstant.MSG_TEMPLATE_TYPE_MD.equals(templateEntity.getTemplateType());
-            content = templateEntity.getTemplateContent();
-            if(StrUtil.isNotBlank(content) && null!=message.getData()){
-                content = FreemarkerParseFactory.parseTemplateContent(content, message.getData(), isMarkdown);
+            if (Objects.nonNull(templateEntity)) {
+                boolean isMarkdown =CommonConstant.MSG_TEMPLATE_TYPE_MD.equals(templateEntity.getTemplateType());
+                content = templateEntity.getTemplateContent();
+                if(StrUtil.isNotBlank(content) && null!=message.getData()){
+                    content = FreemarkerParseFactory.parseTemplateContent(content, message.getData(), isMarkdown);
+                }
+                message.setIsMarkdown(isMarkdown);
+                message.setContent(content);
             }
-            message.setIsMarkdown(isMarkdown);
-            message.setContent(content);
         }
         /*if(StrUtil.isBlank(message.getContent())){
             throw new AiurtBootException("发送消息失败,消息内容为空！");

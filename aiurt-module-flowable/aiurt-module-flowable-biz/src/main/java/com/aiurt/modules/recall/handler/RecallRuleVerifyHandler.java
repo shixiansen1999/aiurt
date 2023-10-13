@@ -62,7 +62,7 @@ public class RecallRuleVerifyHandler extends AbstractFlowHandler<FlowRecallConte
         }
         //撤回按钮配置未开启不能撤回
         ActCustomModelExt actCustomModelExt = context.getActCustomModelExt();
-        Integer isRecall = Optional.of(actCustomModelExt.getIsRecall()).orElse(0);
+        Integer isRecall = Optional.ofNullable(actCustomModelExt.getIsRecall()).orElse(0);
         if (isRecall == 0) {
             context.setContinueChain(false);
         }

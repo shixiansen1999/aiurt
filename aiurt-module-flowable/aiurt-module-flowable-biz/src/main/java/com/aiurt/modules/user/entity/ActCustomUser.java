@@ -92,4 +92,14 @@ public class ActCustomUser implements Serializable {
 	@ApiModelProperty(value = "关系")
     @TableField(typeHandler = JacksonTypeHandler.class)
 	private JSONArray relation;
+
+    /**
+     * 1: 自动通过， 2：自动转交管理员，3：指定人员审批
+     */
+	@ApiModelProperty(value = "办理人为空类型")
+	private String emptyRule;
+
+	@ApiModelProperty(value = "默认办理人")
+	private String emptyUserName;
+
 }

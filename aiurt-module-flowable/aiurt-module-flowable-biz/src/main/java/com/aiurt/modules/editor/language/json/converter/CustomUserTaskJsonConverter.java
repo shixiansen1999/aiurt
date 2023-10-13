@@ -148,13 +148,12 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                     switch (approvalRuleEnum) {
                         // 任意会签
                         case TASK_MULTI_INSTANCE_TYPE_1:
+                            propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Parallel");
+                            propertiesNode.put(PROPERTY_MULTIINSTANCE_CONDITION, "${multiInstance.accessCondition(execution)}");
                             if (Objects.nonNull(loopCharacteristics)) {
                                 loopCharacteristics.setSequential(false);
-                                // 修提交条件，否则二次编辑提交条件无法修改，原因先执行customUserTaskJsonConverter ，再执行BaseBpmnJsonConverter
-                                loopCharacteristics.setCompletionCondition("${nrOfCompletedInstances >= 1}");
+                                loopCharacteristics.setCompletionCondition("${multiInstance.accessCondition(execution)}");
                             }
-                            propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Parallel");
-                            propertiesNode.put(PROPERTY_MULTIINSTANCE_CONDITION, "${nrOfCompletedInstances >= 1}");
                             break;
                         // 并行
                         case TASK_MULTI_INSTANCE_TYPE_2:
@@ -248,6 +247,21 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 ObjectNode objectNode = objectMapper.createObjectNode();
                 objectNode.put(FlowModelExtElementConstant.EXT_VALUE, value);
                 propertiesNode.set(FlowModelExtElementConstant.EXT_ADD_MULTI, objectNode);
+            }
+
+            // 审批人为空
+            List<ExtensionElement> emptyElementList = extensionElements.get(FlowModelExtElementConstant.EX_EMPTY_APPROVE);
+            if (CollUtil.isNotEmpty(emptyElementList)) {
+                ExtensionElement extensionElement = emptyElementList.get(0);
+                String value = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_VALUE);
+                String username = extensionElement.getAttributeValue(null, "username");
+                ObjectNode objectNode = objectMapper.createObjectNode();
+                objectNode.put(FlowModelExtElementConstant.EXT_VALUE, value);
+                if (StrUtil.isNotBlank(username)) {
+                    JsonNode jsonNode = parseUserAssigneeValue(username);
+                    objectNode.set("username", jsonNode);
+                }
+                propertiesNode.set(FlowModelExtElementConstant.EX_EMPTY_APPROVE, objectNode);
             }
         }
     }
@@ -370,6 +384,8 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.FORM_FIELD_CONFIG, JsonConverterUtil.getProperty(FlowModelExtElementConstant.FORM_FIELD_CONFIG, elementNode));
             // 加减签
             addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EXT_ADD_MULTI, JsonConverterUtil.getProperty(FlowModelExtElementConstant.EXT_ADD_MULTI, elementNode));
+            // 审批人为空
+            addExtensionElementToUserTask(userTask, FlowModelExtElementConstant.EX_EMPTY_APPROVE, JsonConverterUtil.getProperty(FlowModelExtElementConstant.EX_EMPTY_APPROVE, elementNode));
         }
     }
 
