@@ -93,7 +93,7 @@ public class AutoCompleteHandler<T extends FlowDeduplicateContext> extends Abstr
                         NextNodeUserDTO nextNodeUserDTO = new NextNodeUserDTO();
                         nextNodeUserDTO.setNodeId(element.getId());
                         ActCustomUser actCustomUser = customUserService.getActCustomUserByTaskInfo(task.getProcessDefinitionId(), element.getId(), "0");
-                        List<String> userList = defaultSelectUser.getAllUserList(actCustomUser, caseVariables, processInstance);
+                        List<String> userList = defaultSelectUser.getEmptyUserList(actCustomUser, caseVariables, processInstance);
                         nextNodeUserDTO.setApprover(userList);
                         return nextNodeUserDTO;
                     }).collect(Collectors.toList());
@@ -109,6 +109,7 @@ public class AutoCompleteHandler<T extends FlowDeduplicateContext> extends Abstr
 
         taskCompleteDTO.setFlowTaskCompleteDTO(completeCommentDTO);
         try {
+            taskCompleteDTO.setIsCheckAssign(false);
             flowApiService.completeTask(taskCompleteDTO);
             log.info("审批去重成功，taskId:{}, 用户:{}", task.getId(), task.getAssignee());
         } catch (Exception e) {

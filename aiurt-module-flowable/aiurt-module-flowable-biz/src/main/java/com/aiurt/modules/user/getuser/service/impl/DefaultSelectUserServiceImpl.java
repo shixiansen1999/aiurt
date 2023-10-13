@@ -5,6 +5,7 @@ import com.aiurt.modules.user.dto.SelectUserContext;
 import com.aiurt.modules.user.entity.ActCustomUser;
 import com.aiurt.modules.user.handler.BaseUserHandler;
 import com.aiurt.modules.user.handler.CustomVariableUserHandler;
+import com.aiurt.modules.user.handler.DefaultNullUserHandler;
 import com.aiurt.modules.user.handler.SystemVariableUserHandler;
 import com.aiurt.modules.user.getuser.service.DefaultSelectUserService;
 import com.aiurt.modules.user.pipeline.FilterChainPipeline;
@@ -57,6 +58,8 @@ public class DefaultSelectUserServiceImpl implements DefaultSelectUserService {
         return list;
     }
 
+
+
     /**
      * 获取关系类型的人员
      *
@@ -68,6 +71,35 @@ public class DefaultSelectUserServiceImpl implements DefaultSelectUserService {
     @Override
     public List<String> getUserList(ActCustomUser actCustomUser, Map<String, Object> variableData, ProcessInstance processInstance) {
         List<String> filterNames = new ArrayList<>();
+        filterNames.add(CustomVariableUserHandler.class.getSimpleName());
+        filterNames.add(SystemVariableUserHandler.class.getSimpleName());
+        LocalListBasedHandlerSelector filterSelector = new LocalListBasedHandlerSelector(filterNames);
+
+        SelectUserContext context = new SelectUserContext(filterSelector);
+        context.setCustomUser(actCustomUser);
+        context.setVariable(variableData);
+        context.setProcessInstance(processInstance);
+        filterChainPipeline.getFilterChain().handle(context);
+        if (CollUtil.isEmpty(context.getUserList())) {
+            return Collections.emptyList();
+        }
+        List<String> list = context.getUserList().stream().distinct().collect(Collectors.toList());
+        return list;
+    }
+
+    /**
+     * 获取全部人员
+     *
+     * @param actCustomUser
+     * @param variableData
+     * @param processInstance
+     * @return
+     */
+    @Override
+    public List<String> getEmptyUserList(ActCustomUser actCustomUser, Map<String, Object> variableData, ProcessInstance processInstance) {
+        List<String> filterNames = new ArrayList<>();
+        filterNames.add(BaseUserHandler.class.getSimpleName());
+        filterNames.add(DefaultNullUserHandler.class.getSimpleName());
         filterNames.add(CustomVariableUserHandler.class.getSimpleName());
         filterNames.add(SystemVariableUserHandler.class.getSimpleName());
         LocalListBasedHandlerSelector filterSelector = new LocalListBasedHandlerSelector(filterNames);

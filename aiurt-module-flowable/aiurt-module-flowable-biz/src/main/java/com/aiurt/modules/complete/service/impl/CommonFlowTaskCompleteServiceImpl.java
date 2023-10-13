@@ -143,13 +143,15 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         // 自动选人 1, 0 否
         Integer isAutoSelect = customTaskExt.getIsAutoSelect();
         // 办理规则 如果办理规则为空则，就是旧版流程选人，不需要处理, 现在新版也是存在
-        // 多实例最后一步，自动选人则构造下一步节点以及下一个节点的数据,
+        // 多实例最后一步，自动选人则构造下一步节点以及下一个节点的数据, 提交为空时
         if (completeTask) {
             log.info("提交任务（多实例最后一步提交），获取下一步节点信息包括结束节点");
             FlowElement flowElement = flowElementUtil.getFlowElement(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
             List<FlowElement> targetFlowElement = flowElementUtil.getTargetFlowElement(execution, flowElement, busData);
             taskContext.setTargetFlowElement(targetFlowElement);
-            if (Objects.nonNull(isAutoSelect) && isAutoSelect == 1) {
+            // 为空的，而且是自动提交，但是审批人为空的
+            if ((Objects.nonNull(isAutoSelect) && isAutoSelect == 1) ||
+                    (Objects.nonNull(isAutoSelect) && isAutoSelect == 0 && CollUtil.isEmpty(flowCompleteReqDTO.getNextNodeUserParam()))) {
                 // 如果单实例，或者识多实例最后一部办理人时需要自动选人
                 log.info("当前活动是多少实例，且是多实例的最后一个活动，或者时单例任务，设置下一步办理人");
                 Map<String, Object> finalVariableData = variableData;
@@ -157,7 +159,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
                     NextNodeUserDTO nextNodeUserDTO = new NextNodeUserDTO();
                     nextNodeUserDTO.setNodeId(element.getId());
                     ActCustomUser actCustomUser = customUserService.getActCustomUserByTaskInfo(task.getProcessDefinitionId(), element.getId(), "0");
-                    List<String> userList = defaultSelectUser.getAllUserList(actCustomUser, finalVariableData, processInstance);
+                    List<String> userList = defaultSelectUser.getEmptyUserList(actCustomUser, finalVariableData, processInstance);
                     nextNodeUserDTO.setApprover(userList);
                     return nextNodeUserDTO;
                 }).collect(Collectors.toList());

@@ -12,7 +12,7 @@ import java.util.Map;
 public interface DefaultSelectUserService {
 
     /**
-     * 全部人员
+     * 不包括审批人为空的人员
      * @param actCustomUser
      * @param variableData
      * @param processInstance
@@ -28,4 +28,14 @@ public interface DefaultSelectUserService {
      * @return
      */
     List<String> getUserList(ActCustomUser actCustomUser, Map<String, Object> variableData, ProcessInstance processInstance);
+
+
+    /**
+     * 获取全部人员
+     * @param actCustomUser
+     * @param variableData
+     * @param processInstance
+     * @return
+     */
+    List<String> getEmptyUserList(ActCustomUser actCustomUser, Map<String, Object> variableData, ProcessInstance processInstance);
 }

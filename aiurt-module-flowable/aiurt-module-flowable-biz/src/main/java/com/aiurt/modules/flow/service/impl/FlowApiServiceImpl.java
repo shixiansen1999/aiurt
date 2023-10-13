@@ -329,9 +329,14 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 设置签收
         String assignee = task.getAssignee();
 
-        if (StrUtil.isNotBlank(assignee) && !StrUtil.equalsIgnoreCase(loginUser.getUsername(), assignee)) {
+        if (StrUtil.isNotBlank(assignee) && taskCompleteDTO.getIsCheckAssign()  && !StrUtil.equalsIgnoreCase(loginUser.getUsername(), assignee)) {
             throw new AiurtBootException("该任务已被其他人签收！");
         }
+        // 验证流程任务的合法性。
+        if (taskCompleteDTO.getIsCheckAssign()) {
+            this.verifyAndGetRuntimeTaskInfo(task);
+        }
+
 
         if (StrUtil.isBlank(assignee)) {
             taskService.setAssignee(taskId, loginUser.getUsername());
@@ -339,7 +344,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         Date claimTime = task.getClaimTime();
         if (Objects.isNull(claimTime)) {
-            taskService.claim(taskId, loginUser.getUsername());
+            taskService.claim(taskId, task.getAssignee());
         }
 
         // 提交任务
@@ -378,8 +383,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 获取流程实例对象
         ProcessInstance processInstance = getProcessInstance(processInstanceId);
 
-        // 验证流程任务的合法性。
-        this.verifyAndGetRuntimeTaskInfo(processInstanceActiveTask);
+
 
         // 流程业务数据状态更改
         String approvalType = comment.getApprovalType();

@@ -5,19 +5,24 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.deduplicate.context.FlowDeduplicateContext;
 import com.aiurt.modules.flow.constants.FlowApprovalType;
+import com.aiurt.modules.modeler.entity.ActCustomModelExt;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.alibaba.fastjson.JSON;
 import io.swagger.util.Json;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  * @author fgw
  */
+@Slf4j
 @Component
 public class ApprovalRequirementRuleVerifyHandler<T extends FlowDeduplicateContext> extends AbstractFlowHandler<T> {
 

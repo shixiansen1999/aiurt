@@ -252,13 +252,13 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             // 审批人为空
             List<ExtensionElement> emptyElementList = extensionElements.get(FlowModelExtElementConstant.EX_EMPTY_APPROVE);
             if (CollUtil.isNotEmpty(emptyElementList)) {
-                ExtensionElement extensionElement = multiElementList.get(0);
+                ExtensionElement extensionElement = emptyElementList.get(0);
                 String value = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_VALUE);
                 String username = extensionElement.getAttributeValue(null, "username");
                 ObjectNode objectNode = objectMapper.createObjectNode();
                 objectNode.put(FlowModelExtElementConstant.EXT_VALUE, value);
                 if (StrUtil.isNotBlank(username)) {
-                    JsonNode jsonNode = parseUserAssigneeValue(value);
+                    JsonNode jsonNode = parseUserAssigneeValue(username);
                     objectNode.set("username", jsonNode);
                 }
                 propertiesNode.set(FlowModelExtElementConstant.EX_EMPTY_APPROVE, objectNode);

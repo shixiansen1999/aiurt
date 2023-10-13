@@ -77,15 +77,7 @@ public class BuildDeduplicateContextHandler<T extends FlowDeduplicateContext> ex
         context.setHistoricTaskInstanceList(list);
         context.setExecution(execution);
 
-        if (Objects.isNull(actCustomModelExt)) {
-            context.setContinueChain(false);
-        }else {
-            Integer isDeduplicate = Optional.ofNullable(actCustomModelExt.getIsDedulicate()).orElse(0);
-            if (isDeduplicate == 0 ) {
-                log.info("审批人去重， 不开启去重");
-                context.setContinueChain(false);
-            }
-        }
+
         log.info("审批去重，结束构建审批去重上下文");
     }
 }

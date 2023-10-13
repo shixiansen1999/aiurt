@@ -149,4 +149,6 @@ public interface FlowModelExtElementConstant {
      * 审批人为空
      */
     String EX_EMPTY_APPROVE = "emtptyApprover";
+
+    String EXT_EMPTY_USER_NAME = "username";
 }
