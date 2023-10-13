@@ -2,6 +2,8 @@ package com.aiurt.modules.stock.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
+import com.aiurt.modules.stock.dto.req.StockLevel2ReqDTO;
+import com.aiurt.modules.stock.dto.resp.StockLevel2RespDTO;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -53,14 +55,17 @@ public class StockLevel2Controller {
     @ApiOperation(value = "二级库管理-二级库库存管理-分页列表查询", notes = "二级库管理-二级库库存管理-分页列表查询")
     @GetMapping(value = "/list")
     @PermissionData(pageComponent = "secondLevelWarehouse/StockLevel2List")
-    public Result<IPage<StockLevel2>> queryPageList(StockLevel2 stockLevel2,
+    public Result<IPage<StockLevel2RespDTO>> queryPageList(StockLevel2 stockLevel2,
                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                          HttpServletRequest req) {
         Page<StockLevel2> page = new Page<StockLevel2>(pageNo, pageSize);
-        IPage<StockLevel2> pageList = iStockLevel2Service.pageList(page,stockLevel2);
+        IPage<StockLevel2RespDTO> pageList = iStockLevel2Service.pageList(page,stockLevel2);
         return Result.OK(pageList);
     }
+
+
+
     /**
      *  编辑
      *
@@ -82,9 +87,10 @@ public class StockLevel2Controller {
     @AutoLog(value = "二级库管理-二级库库存管理-详情查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockLevel2List")
     @ApiOperation(value = "二级库管理-二级库库存管理-详情查询", notes = "二级库管理-二级库库存管理-详情查询")
     @GetMapping(value = "/queryById")
-    public Result<StockLevel2> queryById(@RequestParam(name = "id", required = true) String id) {
-        StockLevel2 stockLevel2 = iStockLevel2Service.getDetailById(id);
-        return Result.ok(stockLevel2);
+    public Result<StockLevel2RespDTO> queryById(@RequestParam(name = "id", required = true) String id) {
+        // StockLevel2 stockLevel2 = iStockLevel2Service.getDetailById(id);
+        StockLevel2RespDTO stockLevel2RespDTO = iStockLevel2Service.queryDetailById(id);
+        return Result.ok(stockLevel2RespDTO);
     }
 
     @AutoLog(value = "二级库管理-二级库库存管理-导出", operateType = 6, operateTypeAlias = "导出", permissionUrl = "/secondLevelWarehouse/StockLevel2List")
@@ -103,6 +109,20 @@ public class StockLevel2Controller {
         mv.addObject(NormalExcelConstants.PARAMS, exportParams);
         mv.addObject(NormalExcelConstants.DATA_LIST, exportList);
         return mv;
+    }
+
+
+    /**
+     * 二级库管理-二级库库存管理-添加/修改备注
+     * @param stockLevel2ReqDTO 二级库请求DTO
+     * @return Result<String> 返回添加结果
+     */
+    @AutoLog(value = "二级库管理-二级库库存管理-添加/修改备注")
+    @ApiOperation(value = "二级库管理-二级库库存管理-添加/修改备注", notes = "二级库管理-二级库库存管理-添加/修改备注")
+    @PostMapping(value = "/addRemark")
+    public Result<String> addRemark(@RequestBody StockLevel2ReqDTO stockLevel2ReqDTO){
+        iStockLevel2Service.addRemark(stockLevel2ReqDTO);
+        return Result.ok("修改备注成功");
     }
 
 }

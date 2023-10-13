@@ -192,4 +192,6 @@ public class PatrolTaskParam extends PatrolTask {
 
     /**是否有关联故障。也就是巡视任务对应的巡视工单是否有上报的故障（故障要上报审核通过才算有关联故障）*/
     private Boolean isRelateFault;
+    /**是否有关联故障，上面的是布尔值，这个是中文值，注意为了方便通用导出*/
+    private String isRelateFaultName;
 }

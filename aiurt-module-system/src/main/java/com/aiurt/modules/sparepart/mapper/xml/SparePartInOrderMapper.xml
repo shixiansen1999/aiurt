@@ -5,8 +5,10 @@
         SELECT
             distinct
             spare_part_in_order.id,
+            spare_part_in_order.order_code,
             spare_part_in_order.confirm_status,
             spare_part_in_order.apply_code,
+            spare_part_in_order.material_requisition_id,
             d1.item_text confirmStatusName,
             cs_major.major_name majorName,
             cs_subsystem.system_name systemName,
@@ -36,7 +38,7 @@
             LEFT JOIN cs_subsystem cs_subsystem ON (t1.system_code = cs_subsystem.system_code and cs_subsystem.del_flag = 0)
             LEFT JOIN material_base_type t4 ON (t1.base_type_code = t4.base_type_code and t4.del_flag = 0)
             LEFT JOIN spare_part_stock_info t5 ON spare_part_in_order.warehouse_code = t5.warehouse_code
-            LEFT JOIN sys_user t6 ON spare_part_in_order.confirm_id = t6.username
+            LEFT JOIN sys_user t6 ON spare_part_in_order.confirm_id = t6.id
             LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'spare_in_order_status'
             LEFT JOIN sys_dict_item AS d1 ON (d1.item_value = spare_part_in_order.confirm_status AND dict1.id = d1.dict_id)
             LEFT JOIN cs_manufactor t7 ON t7.id = t1.manufactor_code
@@ -48,6 +50,18 @@
 
         WHERE
             spare_part_in_order.del_flag =0
+            <if test="order.orderCode != null and order.orderCode != ''">
+                and spare_part_in_order.order_code like concat('%', #{order.orderCode}, '%')
+            </if>
+            <if test="order.queryOrderCode != null and order.queryOrderCode !=''">
+                and spare_part_in_order.order_code = #{order.queryOrderCode}
+            </if>
+            <if test="order.beginTIme != null">
+                and spare_part_in_order.confirm_time <![CDATA[ >= ]]> #{order.beginTime}
+            </if>
+            <if test="order.endTime != null">
+                and spare_part_in_order.confirm_time <![CDATA[ <= ]]> #{order.endTime}
+            </if>
             <if test="order.materialCode!=null and order.materialCode!=''">
                 and t1.`code` like   concat('%', #{order.materialCode}, '%')
             </if>

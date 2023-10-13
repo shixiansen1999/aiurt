@@ -466,6 +466,11 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "故障时长(天/时/分/秒)")
     private String faultDurationConversion;
 
+    /**持续时长转换后*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "持续时长(天/时/分/秒)")
+    private String durationConversion;
+
     @TableField(exist = false)
     @ApiModelProperty(value = "处理情况")
     private String maintenanceMeasures;
@@ -486,6 +491,9 @@ public class Fault extends DictEntity implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "能否审核")
     private Boolean reviewFlag;
-
+    /**故障维修单id*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "故障维修单id")
+    private String faultRepairRecordId;
 }
 

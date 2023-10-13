@@ -1,6 +1,5 @@
 package com.aiurt.modules.sparepart.service;
 
-import com.aiurt.modules.sparepart.entity.SparePartApply;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -57,5 +56,10 @@ public interface ISparePartInOrderService extends IService<SparePartInOrder> {
      */
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException;
 
-
+    /**
+     * 根据入库单号查询详情
+     * @param orderCode
+     * @return
+     */
+    SparePartInOrder queryByOrderCode(String orderCode);
 }

@@ -10,9 +10,11 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
+import com.aiurt.modules.material.service.IMaterialRequisitionService;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
@@ -22,6 +24,8 @@ import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockNumMapper;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
+import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
+import com.aiurt.modules.stock.service.impl.MaterialStockOutInRecordServiceImpl;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -36,6 +40,7 @@ import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -73,6 +78,10 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     private ISTodoBaseAPI isTodoBaseAPI;
     @Autowired
     private SparePartStockNumMapper sparePartStockNumMapper;
+    @Autowired
+    private IMaterialRequisitionService materialRequisitionService;
+    @Autowired
+    private MaterialStockOutInRecordServiceImpl materialStockOutInRecordService;
     /**
      * 查询列表
      * @param page
@@ -90,6 +99,9 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         if(!user.getRoleCodes().contains("admin")&&departModels.size()!=0){
             List<String> orgCodes = departModels.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
             sparePartOutOrder.setOrgCodes(orgCodes);
+        }
+        if (ObjectUtil.isNotNull(sparePartOutOrder.getEndTime())) {
+            sparePartOutOrder.setEndTime(DateUtil.endOfDay(sparePartOutOrder.getEndTime()));
         }
         return sparePartOutOrderMapper.readAll(page,sparePartOutOrder);
     }
@@ -123,12 +135,18 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     @Transactional(rollbackFor = Exception.class)
     public Result<?> update(SparePartOutOrder sparePartOutOrder) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        updateById(sparePartOutOrder);
         SparePartOutOrder outOrder = getById(sparePartOutOrder.getId());
+        outOrder.setStatus(sparePartOutOrder.getStatus());
+        outOrder.setConfirmUserId(user.getId());
+        outOrder.setConfirmTime(new Date());
         // 更新备件库存数据（原库存数-出库数量）
         SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,outOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,outOrder.getWarehouseCode()));
+        // 库存结余
+        int balance;
         if(null!=sparePartStock && sparePartStock.getNum()>=outOrder.getNum()){
+            balance = sparePartStock.getNum() - outOrder.getNum();
             sparePartStock.setNum(sparePartStock.getNum()-outOrder.getNum());
+            sparePartStock.setAvailableNum(sparePartStock.getAvailableNum()-outOrder.getNum());
             sparePartStockMapper.updateById(sparePartStock);
             //先获取该备件的数量记录,更新全新数量
             LambdaQueryWrapper<SparePartStockNum> numLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -151,8 +169,8 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
             List<SparePartOutOrder> orderList = list(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SparePartOutOrder::getMaterialCode,outOrder.getMaterialCode()).eq(SparePartOutOrder::getWarehouseCode,outOrder.getWarehouseCode()));
 
             if(orderList.isEmpty()){
-                sparePartOutOrder.setUnused(outOrder.getNum()+"");
-                updateOrder(sparePartOutOrder);
+                outOrder.setUnused(outOrder.getNum()+"");
+                outOrder.setSysOrgCode(user.getOrgCode());
             }else{
                 //同一仓库、同一备件 已经确认出库的数据,剩余数量=剩余数量+出库数量
                 List<SparePartOutOrder> outOrders = orderList.stream().filter(s -> 2 == s.getStatus()).collect(Collectors.toList());
@@ -164,6 +182,18 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
                     });
                 }
             }
+            outOrder.setBalance(balance);
+            updateById(outOrder);
+            //同步出库记录到出入库记录表
+            MaterialStockOutInRecord record = new MaterialStockOutInRecord();
+            BeanUtils.copyProperties(outOrder, record);
+            record.setOrderId(outOrder.getId());
+            record.setMaterialRequisitionType(3);
+            record.setNum(-outOrder.getNum());
+            record.setIsOutIn(2);
+            record.setOutInType(outOrder.getOutType());
+            record.setBalance(balance);
+            materialStockOutInRecordService.save(record);
             return Result.OK("操作成功!");
         }else{
             return Result.error("库存数量不足!");
@@ -172,7 +202,7 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     }
     public void updateOrder(SparePartOutOrder sparePartOutOrder){
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        sparePartOutOrder.setConfirmUserId(user.getUsername());
+        sparePartOutOrder.setConfirmUserId(user.getId());
         //sparePartOutOrder.setConfirmTime(new Date());不能把其他的提交时间也修改
         sparePartOutOrder.setSysOrgCode(user.getOrgCode());
         updateById(sparePartOutOrder);
@@ -241,11 +271,13 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         //改为出库已确认
         SparePartOutOrder sparePartOutOrder = new SparePartOutOrder();
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String orderCode = CodeGenerateUtils.generateSingleCode("3CK", 5);
+        sparePartOutOrder.setOrderCode(orderCode);
         sparePartOutOrder.setMaterialCode(sparePartStock.getMaterialCode());
         sparePartOutOrder.setWarehouseCode(sparePartStock.getWarehouseCode());
         sparePartOutOrder.setNum(sparePartStock.getNum());
-        sparePartOutOrder.setApplyUserId(user.getUsername());
-        sparePartOutOrder.setConfirmUserId(user.getUsername());
+        sparePartOutOrder.setApplyUserId(user.getId());
+        sparePartOutOrder.setConfirmUserId(user.getId());
         sparePartOutOrder.setConfirmTime(new Date());
         sparePartOutOrder.setApplyOutTime(new Date());
         sparePartOutOrder.setSysOrgCode(user.getOrgCode());
@@ -262,7 +294,7 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         sparePartOutOrderMapper.updateById(sparePartOutOrder);
         //发一条出库消息
         try {
-            LoginUser userById = sysBaseApi.getUserByName(sparePartOutOrder.getApplyUserId());
+            LoginUser userById = sysBaseApi.getUserById(sparePartOutOrder.getApplyUserId());
             //发送通知
             MessageDTO messageDTO = new MessageDTO(user.getUsername(), userById.getUsername(), "备件出库成功" + DateUtil.today(), null);
 
@@ -300,5 +332,56 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         }else{
             throw new AiurtBootException("库存数量不足!");
         }
+    }
+
+    @Override
+    public SparePartOutOrder queryByOrderCode(String orderCode) {
+        SparePartOutOrder out = new SparePartOutOrder();
+        out.setQueryOrderCode(orderCode);
+        List<SparePartOutOrder> list = sparePartOutOrderMapper.readAll(out);
+        if (CollUtil.isEmpty(list)) {
+            throw new AiurtBootException("未找到对应数据");
+        }
+        return list.get(0);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<?> edit(SparePartOutOrder sparePartOutOrder) {
+        SparePartOutOrder one = this.getById(sparePartOutOrder.getId());
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        try {
+            LoginUser userById = sysBaseApi.getUserById(one.getApplyUserId());
+            //发送通知
+            MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件出库成功" + DateUtil.today(), null);
+
+            //构建消息模板
+            HashMap<String, Object> map = new HashMap<>();
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, one.getId());
+            map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,  SysAnnmentTypeEnum.SPAREPART_OUT.getType());
+            map.put("materialCode",one.getMaterialCode());
+            String materialName= sysBaseApi.getMaterialNameByCode(one.getMaterialCode());
+            map.put("name",materialName);
+            map.put("num",one.getNum());
+            String warehouseName= sysBaseApi.getWarehouseNameByCode(one.getWarehouseCode());
+            map.put("warehouseName",warehouseName);
+            map.put("realName",userById.getRealname());
+
+            messageDTO.setData(map);
+            //业务类型，消息类型，消息模板编码，摘要，发布内容
+            messageDTO.setTemplateCode(CommonConstant.SPAREPARTOUTORDER_SERVICE_NOTICE);
+            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
+            messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
+            messageDTO.setMsgAbstract("备件出库申请通过");
+            messageDTO.setPublishingContent("备件出库申请通过");
+            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
+            sysBaseApi.sendTemplateMessage(messageDTO);
+            // 更新待办
+            isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.SPAREPART_OUT.getType(), one.getId(), user.getUsername(), "1");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return this.update(sparePartOutOrder);
     }
 }

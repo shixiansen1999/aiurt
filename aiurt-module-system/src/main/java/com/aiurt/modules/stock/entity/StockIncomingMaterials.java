@@ -48,6 +48,9 @@ public class StockIncomingMaterials extends DictEntity {
 	@ApiModelProperty(value = "入库数量")
 	private  Integer  number;
 
+	@ApiModelProperty(value = "库存结余")
+	private Integer balance;
+
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
 	@Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")

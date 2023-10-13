@@ -205,10 +205,15 @@ public class SparePartStockDTO implements Serializable {
     /**新组件数量*/
     @ApiModelProperty(value = "新组件数量")
     private Integer newSparePartNum;
+    /**申请出库数量*/
+    @ApiModelProperty(value = "申请出库数量")
+    private Integer applyNum;
 
     /**新组件所在班组*/
     private String newOrgCode;
 
+    @ApiModelProperty(value = "借出记录表ID")
+    private String lendOrderId;
     @ApiModelProperty(value = "出库记录表ID")
     private String outOrderId;
     @ApiModelProperty(value = "借入的出库记录表ID")
@@ -230,4 +235,11 @@ public class SparePartStockDTO implements Serializable {
     /**是否易耗品(1是,0否)**/
     @ApiModelProperty(value = "是否易耗品(1是,0否)", required = true)
     private String consumablesType;
+    /**可使用数量*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "可使用数量")
+    private Integer availableNum;
+    /**申领单类型（1维修领用，3三级库领用，2二级库领用）*/
+    @ApiModelProperty(value = "申领单类型（1维修领用，3三级库领用，2二级库领用）")
+    private Integer materialRequisitionType;
 }

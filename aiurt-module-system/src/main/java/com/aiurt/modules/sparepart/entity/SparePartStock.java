@@ -17,6 +17,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -42,9 +43,13 @@ public class SparePartStock implements Serializable {
     @ApiModelProperty(value = "物资编号")
     private String materialCode;
 	/**数量*/
-	@Excel(name = "数量", width = 15)
-    @ApiModelProperty(value = "数量")
+	@Excel(name = "库存总量", width = 15)
+    @ApiModelProperty(value = "库存总量")
     private Integer num;
+    /**可用量*/
+    @Excel(name = "可使用数量", width = 15)
+    @ApiModelProperty(value = "可使用数量")
+    private Integer availableNum;
 	/**库存中的全新数量*/
     @Excel(name = "库存中的全新数量", width = 15)
     @ApiModelProperty(value = "库存中的全新数量")
@@ -77,6 +82,18 @@ public class SparePartStock implements Serializable {
 	@Excel(name = "组织机构id", width = 15)
     @ApiModelProperty(value = "组织机构id")
     private String orgId;
+    @ApiModelProperty(value = "生产厂商(厂家/品牌)，关联cs_manufactor.code")
+    @TableField(exist = false)
+    private String manufactorCode;
+    @ApiModelProperty(value = "单价")
+    @TableField(exist = false)
+    private String price;
+    @ApiModelProperty(value = "总价")
+    @TableField(exist = false)
+    private BigDecimal totalPrices;
+    @ApiModelProperty(value = "技术参数")
+    @TableField(exist = false)
+    private String technicalParameter;
 	/**删除状态(0.未删除 1.已删除)*/
 	@Excel(name = "删除状态(0.未删除 1.已删除)", width = 15)
     @ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")
@@ -93,8 +110,8 @@ public class SparePartStock implements Serializable {
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
 	/**修改时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
     private Date updateTime;
     /**仓库名称*/
@@ -163,14 +180,14 @@ public class SparePartStock implements Serializable {
     @ApiModelProperty(value = " 单位")
     @TableField(exist = false)
     private String unit;
+    /**单位名称*/
+    @ApiModelProperty(value = " 单位名称")
+    @TableField(exist = false)
+    private String unitName;
     /**生产厂商*/
     @ApiModelProperty(value = "生产厂商名称")
     @TableField(exist = false)
-    private String manufactorCodeName;
-    /**单价(元)*/
-    @ApiModelProperty(value = " 单价")
-    @TableField(exist = false)
-    private String price;
+    private String manufactorName;
     /**当前模块*/
     @ApiModelProperty(value = "当前模块")
     @TableField(exist = false)
@@ -189,4 +206,8 @@ public class SparePartStock implements Serializable {
     @ApiModelProperty(value = "备件库存信息是否查库存为零的数据：1是，0不是")
     @TableField(exist = false)
     private String sparePartZero;
+
+    @ApiModelProperty(value = "申领类型")
+    @TableField(exist = false)
+    private  String  materialRequisitionType;
 }

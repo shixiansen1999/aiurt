@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.entity.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -11,6 +12,7 @@ import lombok.Data;
 @Data
 public class WareHouseDTO {
     private String name;
-    private boolean isMyself;
-
+    private Boolean isMyself;
+    @ApiModelProperty(value = "仓库编号")
+    private String warehouseCode;
 }

@@ -319,5 +319,10 @@
 			<artifactId>aspose-cells</artifactId>
 			<version>23.1</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.redisson</groupId>
+			<artifactId>redisson</artifactId>
+		</dependency>
 	</dependencies>
 </project>

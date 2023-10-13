@@ -305,7 +305,7 @@ public class WorkLogResult {
 
     @TableField(exist = false)
     @ApiModelProperty(value = "保管期限")
-    private String secertduration;
+    private String secertDuration;
 
     @TableField(exist = false)
     private String duration;

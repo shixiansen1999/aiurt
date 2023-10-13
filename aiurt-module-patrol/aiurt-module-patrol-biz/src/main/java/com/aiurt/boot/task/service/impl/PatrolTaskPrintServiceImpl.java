@@ -1,12 +1,7 @@
 package com.aiurt.boot.task.service.impl;
 
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,6 +29,8 @@ import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
 import com.alibaba.excel.write.metadata.fill.FillWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.spire.xls.FileFormat;
+import com.xkcoding.http.support.Http;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -48,6 +45,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @Description: patrol_task print
@@ -160,7 +159,6 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
 
         return sysAttachment.getId()+"?fileName="+sysAttachment.getFileName();
     }
-
 
     /**
      * 通用模板数据封装
@@ -998,7 +996,35 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
             List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceIdAndParent(collect);
             for (PatrolCheckResultDTO c : checkResultList) {
-                List<PatrolCheckResultDTO> list = patrolCheckResultMapper.getQualityStandard(collect,c.getOldId());
+                if (c.getCheck()==1){
+                    PrintDTO printDTO = new PrintDTO();
+                    printDTO.setStandard(ObjectUtil.defaultIfEmpty(c.getQualityStandard(), c.getContent()).replaceAll("[\n ]", ""));
+                    printDTO.setEquipment(c.getContent());
+                    printDTO.setContent(c.getContent());
+                    printDTO.setProcMethods(c.getProcMethods());
+                    if(ObjectUtil.isEmpty(c.getCheckResult())){
+                        printDTO.setResultTrue("☐正常");
+                        printDTO.setResultFalse("☐异常");
+                        printDTO.setResult("☐正常 ☐异常");
+                    }else {
+                        printDTO.setResultTrue(c.getCheckResult()==0?"☐正常":"☑正常");
+                        printDTO.setResultFalse(c.getCheckResult()==0?"☑异常":"☐异常");
+                        printDTO.setResult(c.getCheckResult()==0?"☐正常 ☑异常":"☑正常 ☐异常");
+                        if (ObjectUtil.isNotEmpty(c.getRemark())){
+                            printDTO.setResultAndRemark(c.getCheckResult()==0?"☐正常 ☑异常"+"("+c.getRemark()+")":"☑正常 ☐异常"+"("+c.getRemark()+")");
+                        }else {
+                            printDTO.setResultAndRemark(c.getCheckResult()==0?"☐正常 ☑异常":"☑正常 ☐异常");
+                        }
+                    }
+//                    printDTO.setResult(result);
+//                    printDTO.setContentRemark(contentRemark);
+                    printDTO.setRemark(c.getRemark());
+                    printDTO.setLocation(dto.getStationName());
+                    printDTO.setSubSystem(c.getSubsystemName());
+                    if (ObjectUtil.isNotEmpty(printDTO.getStandard())){
+                        getPrint.add(printDTO);
+                    }
+                }else {                List<PatrolCheckResultDTO> list = patrolCheckResultMapper.getQualityStandard(collect,c.getOldId());
 //                list.stream().filter(l -> l.getCheckResult()==0).collect(Collectors.toList());
 //                String result; String contentRemark = "";
 //                if (CollectionUtil.isNotEmpty(list)){
@@ -1008,35 +1034,36 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
 //                    result = "☑正常\n☐异常";
 //
 //                }
-                for (PatrolCheckResultDTO t :list){
-                    PrintDTO printDTO = new PrintDTO();
-                    printDTO.setStandard(ObjectUtil.defaultIfEmpty(t.getQualityStandard(), t.getContent()).replaceAll("[\n ]", ""));
-                    printDTO.setEquipment(c.getContent());
-                    printDTO.setContent(t.getContent());
-                    printDTO.setProcMethods(t.getProcMethods());
-                    if(ObjectUtil.isEmpty(t.getCheckResult())){
-                        printDTO.setResultTrue("☐正常");
-                        printDTO.setResultFalse("☐异常");
-                        printDTO.setResult("☐正常 ☐异常");
-                    }else {
-                        printDTO.setResultTrue(t.getCheckResult()==0?"☐正常":"☑正常");
-                        printDTO.setResultFalse(t.getCheckResult()==0?"☑异常":"☐异常");
-                        printDTO.setResult(t.getCheckResult()==0?"☐正常 ☑异常":"☑正常 ☐异常");
-                        if (ObjectUtil.isNotEmpty(t.getRemark())){
-                            printDTO.setResultAndRemark(t.getCheckResult()==0?"☐正常 ☑异常"+"("+t.getRemark()+")":"☑正常 ☐异常"+"("+t.getRemark()+")");
+                    for (PatrolCheckResultDTO t :list){
+                        PrintDTO printDTO = new PrintDTO();
+                        printDTO.setStandard(ObjectUtil.defaultIfEmpty(t.getQualityStandard(), t.getContent()).replaceAll("[\n ]", ""));
+                        printDTO.setEquipment(c.getContent());
+                        printDTO.setContent(t.getContent());
+                        printDTO.setProcMethods(t.getProcMethods());
+                        if(ObjectUtil.isEmpty(t.getCheckResult())){
+                            printDTO.setResultTrue("☐正常");
+                            printDTO.setResultFalse("☐异常");
+                            printDTO.setResult("☐正常 ☐异常");
                         }else {
-                            printDTO.setResultAndRemark(t.getCheckResult()==0?"☐正常 ☑异常":"☑正常 ☐异常");
+                            printDTO.setResultTrue(t.getCheckResult()==0?"☐正常":"☑正常");
+                            printDTO.setResultFalse(t.getCheckResult()==0?"☑异常":"☐异常");
+                            printDTO.setResult(t.getCheckResult()==0?"☐正常 ☑异常":"☑正常 ☐异常");
+                            if (ObjectUtil.isNotEmpty(t.getRemark())){
+                                printDTO.setResultAndRemark(t.getCheckResult()==0?"☐正常 ☑异常"+"("+t.getRemark()+")":"☑正常 ☐异常"+"("+t.getRemark()+")");
+                            }else {
+                                printDTO.setResultAndRemark(t.getCheckResult()==0?"☐正常 ☑异常":"☑正常 ☐异常");
+                            }
                         }
-                    }
 //                    printDTO.setResult(result);
 //                    printDTO.setContentRemark(contentRemark);
-                    printDTO.setRemark(t.getRemark());
-                    printDTO.setLocation(dto.getStationName());
-                    printDTO.setSubSystem(t.getSubsystemName());
-                    if (ObjectUtil.isNotEmpty(printDTO.getStandard())){
-                        getPrint.add(printDTO);
-                    }
-                }
+                        printDTO.setRemark(t.getRemark());
+                        printDTO.setLocation(dto.getStationName());
+                        printDTO.setSubSystem(t.getSubsystemName());
+                        if (ObjectUtil.isNotEmpty(printDTO.getStandard())){
+                            getPrint.add(printDTO);
+                        }
+                    }}
+
             }
         }
         return getPrint;

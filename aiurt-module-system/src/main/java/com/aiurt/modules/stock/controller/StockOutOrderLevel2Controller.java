@@ -9,7 +9,7 @@ import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
-import com.aiurt.modules.sparepart.entity.SparePartApply;
+import com.aiurt.modules.stock.dto.MaterialOutRequisitionDTO;
 import com.aiurt.modules.stock.entity.StockLevel2Check;
 import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
 import com.aiurt.modules.stock.service.IStockLevel2CheckService;
@@ -102,9 +102,9 @@ public class StockOutOrderLevel2Controller {
 	@AutoLog(value = "二级库管理-二级库出库管理-详情查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockLevel2SecondaryList")
     @ApiOperation(value = "二级库管理-二级库出库管理-详情查询", notes = "二级库管理-二级库出库管理-详情查询")
     @GetMapping(value = "/queryById")
-    public Result<SparePartApply> queryById(@RequestParam(name = "id", required = true) String id) {
-		SparePartApply sparePartApply = iStockOutOrderLevel2Service.getList(id);
-		return Result.ok(sparePartApply);
+    public Result<MaterialOutRequisitionDTO> queryById(@RequestParam(name = "id", required = true) String id) {
+		MaterialOutRequisitionDTO materialOutRequisitionDTO = iStockOutOrderLevel2Service.getList(id);
+		return Result.ok(materialOutRequisitionDTO);
     }
 
 	/**
@@ -114,9 +114,9 @@ public class StockOutOrderLevel2Controller {
 	@AutoLog(value = "二级库管理-二级库出库管理-确认出库", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/secondLevelWarehouse/StockLevel2SecondaryList")
 	@ApiOperation(value = "二级库管理-二级库出库管理-确认出库", notes = "二级库管理-二级库出库管理-确认出库")
 	@PostMapping(value = "/confirmOutOrder")
-	public Result<?> confirmOutOrder(@RequestBody SparePartApply sparePartApply) {
+	public Result<?> confirmOutOrder(@RequestBody MaterialOutRequisitionDTO materialOutRequisitionDTO) {
 		try {
-			String orderCode = sparePartApply.getOrderCode();
+			String orderCode = materialOutRequisitionDTO.getOrderCode();
 			StockOutOrderLevel2 stockOutOrderLevel2 = iStockOutOrderLevel2Service.getOne(new QueryWrapper<StockOutOrderLevel2>().eq("order_code",orderCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
 			String warehouseCode = stockOutOrderLevel2.getWarehouseCode();
 			List<StockLevel2Check> stockLevel2CheckList = iStockLevel2CheckService.list(new QueryWrapper<StockLevel2Check>().eq("del_flag", CommonConstant.DEL_FLAG_0)
@@ -124,12 +124,12 @@ public class StockOutOrderLevel2Controller {
 			if(stockLevel2CheckList != null && stockLevel2CheckList.size()>0){
 				return Result.error("盘点任务执行期间，物资暂时无法进行出入库操作");
 			}
-			iStockOutOrderLevel2Service.confirmOutOrder(sparePartApply, stockOutOrderLevel2);
+			iStockOutOrderLevel2Service.confirmOutOrder(materialOutRequisitionDTO, stockOutOrderLevel2);
 
 			try {
 				LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 				//发送通知
-				MessageDTO messageDTO = new MessageDTO(user.getUsername(),sparePartApply.getApplyUserId(), "备件入库确认" + DateUtil.today(), null);
+				MessageDTO messageDTO = new MessageDTO(user.getUsername(),materialOutRequisitionDTO.getApplyUserId(), "备件入库确认" + DateUtil.today(), null);
 
 				//构建消息模板
 				HashMap<String, Object> map = new HashMap<>();
@@ -144,7 +144,7 @@ public class StockOutOrderLevel2Controller {
 				messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
 				sysBaseApi.sendTemplateMessage(messageDTO);
 				// 更新待办
-				isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.SPAREPART_APPLY.getType(), sparePartApply.getId(), user.getUsername(), "1");
+				isTodoBaseAPI.updateTodoTaskState(TodoBusinessTypeEnum.SPAREPART_APPLY.getType(), materialOutRequisitionDTO.getId(), user.getUsername(), "1");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

@@ -67,4 +67,10 @@ public interface ISparePartStockService extends IService<SparePartStock> {
     List<SparePartStock> selectAppList(Page<SparePartStock> page, String orgId, String text);
 
     List<WareHouseDTO> getWareHouse(SparePartStock sparePartStock);
+
+    /**
+     * 设置备注
+     * @param stock 库存实体
+     */
+    void addRemark(SparePartStock stock);
 }

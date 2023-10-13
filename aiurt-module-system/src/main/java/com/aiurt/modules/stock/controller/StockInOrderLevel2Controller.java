@@ -6,6 +6,7 @@ import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.stock.dto.StockInOrderLevel2ExportDTO;
@@ -122,7 +123,10 @@ public class StockInOrderLevel2Controller {
     @ApiOperation(value = "新增获取入库编号", notes = "新增获取入库编号")
     @GetMapping(value = "/getInOrderCode")
     public Result<StockInOrderLevel2> getInOrderCode() throws ParseException {
-        return Result.ok(iStockInOrderLevel2Service.getInOrderCode());
+        String orderCode = CodeGenerateUtils.generateSingleCode("RK", 5);
+        StockInOrderLevel2 stockInOrderLevel2 = new StockInOrderLevel2();
+        stockInOrderLevel2.setOrderCode(orderCode);
+        return Result.ok(stockInOrderLevel2);
     }
 
     /**

@@ -1543,7 +1543,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<String> userNameList = participantsList.stream().map(FaultRepairParticipants::getRealName).collect(Collectors.toList());
         repairRecordDTO.setUsers(StrUtil.join(",", list));
         repairRecordDTO.setUserNames(StrUtil.join(",", userNameList));
-        List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, repairRecord.getId());
+        List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.getAllDeviceChange(faultCode, repairRecord.getId());
         // 易耗品 1是易耗
         List<SparePartStockDTO> consumableList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("1", sparepart.getConsumables()))
                 .map(sparepart -> {
@@ -1707,7 +1707,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<SparePartStockDTO> list = repairRecordDTO.getConsumableList();
         deviceChangeList.addAll(list);
         try {
-            sparePartBaseApi.addSparePartOutOrder(deviceChangeList, faultCode);
+            sparePartBaseApi.addSpareChange(deviceChangeList, faultCode,repairRecordDTO.getId());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw  new AiurtBootException(e.getMessage());
@@ -3528,6 +3528,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
+        //查询最新故障维修单id
+        List<String> codeList = records.stream().map(Fault::getCode).collect(Collectors.toList());
+        Map<String, String> recordMap = faultRepairRecordService.list(new LambdaQueryWrapper<FaultRepairRecord>()
+                .select(FaultRepairRecord::getId, FaultRepairRecord::getFaultCode)
+                .in(FaultRepairRecord::getFaultCode, codeList)
+                .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0))
+                .stream().collect(Collectors.toMap(FaultRepairRecord::getFaultCode, FaultRepairRecord::getId));
         // 查询故障设备列表
         Map<String, List<FaultDevice>> faultDeviceMap = faultDeviceService.queryListByFaultCodeList(records.stream().map(Fault::getCode).collect(Collectors.toList()))
                 .stream().collect(Collectors.groupingBy(FaultDevice::getFaultCode));
@@ -3567,6 +3574,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         boolean faultCenterWrite = "1".equals(iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_WRITE).getValue());
 
         records.parallelStream().forEach(fault1 -> {
+            //设置维修单id
+            fault1.setFaultRepairRecordId(recordMap.get(fault1.getCode()));
             //信号二期调度中心下发的故障审核，判断决定是工班长审核还是控制中心审核
             SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
             if ("1".equals(paramModel.getValue()) && "1".equals(fault1.getFaultModeCode())) {
@@ -3659,17 +3668,22 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             // 时长计算，有值就是已提交
             Long duration = fault1.getDuration();
             if (Objects.isNull(duration)) {
-                //
                 Integer status = fault1.getStatus();
                 if (FaultStatusEnum.NEW_FAULT.getStatus().equals(status) || FaultStatusEnum.CANCEL.getStatus().equals(status) || FaultStatusEnum.APPROVAL_REJECT.getStatus().equals(status)) {
                     fault1.setDuration(0L);
+                    fault1.setDurationConversion("0秒");
                 } else {
                     fault1.setDuration(DateUtil.between(new Date(), fault1.getHappenTime(), DateUnit.MINUTE));
+                    long between = DateUtil.between(new Date(), fault1.getHappenTime(), DateUnit.SECOND);
+                    fault1.setDurationConversion(DateUtil.formatBetween(ObjectUtil.isNotNull(between) ? between * 1000 : 0, BetweenFormater.Level.SECOND));
+
                 }
             }else {
                 // 转为分钟
                 long minDuration = duration/60L;
                 fault1.setDuration(minDuration > 0 ? minDuration : 1L);
+
+                fault1.setDurationConversion(DateUtil.formatBetween(ObjectUtil.isNotNull(duration) ? duration * 1000 : 0, BetweenFormater.Level.SECOND));
             }
             //
         });
