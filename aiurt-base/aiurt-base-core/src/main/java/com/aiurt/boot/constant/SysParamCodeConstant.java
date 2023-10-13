@@ -557,4 +557,24 @@ public interface SysParamCodeConstant {
      * 故障下发和转派是否更新调度过来的数据
      */
     String IS_UPDATE_FAULT_EXTERNAL = "is_update_fault_external";
+    /**
+     * 维保任务执行中延时提醒
+     */
+    String REPAIR_IN_EXECUTION_REMIND = "repair_in_execution_remind";
+    /**
+     * 维保任务执行中延时提醒的初始延时时长，单位为秒
+     */
+    String RIE_DELAY = "rie_delay";
+    /**
+     * 维保任务执行中延时提醒的间隔时长，单位为秒
+     */
+    String RIE_PERIOD = "rie_period";
+    /**
+     * 维保任务执行中延时提醒的响铃时长，单位为秒
+     */
+    String RIE_RING_DURATION = "rie_ring_duration";
+    /**
+     * 当日15点整时有未完成巡视任务给予提醒的响铃时长
+     */
+    String PUDR_RING_DURATION = "pudr_ring_duration";
 }

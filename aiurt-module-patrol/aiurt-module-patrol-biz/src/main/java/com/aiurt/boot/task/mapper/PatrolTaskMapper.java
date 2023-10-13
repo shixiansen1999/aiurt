@@ -631,4 +631,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return 返回巡视任务时长
      */
     Integer getTaskDurationBySumDevice(String patrolTaskId);
+
+    /**
+     * 根据日期查询未完成任务
+     * @param date 日期
+     * @return
+     */
+    List<PatrolTaskDTO> queryUnDone(@Param("date") Date date);
 }

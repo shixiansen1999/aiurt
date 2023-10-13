@@ -34,6 +34,7 @@ import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.boot.task.service.IRepairTaskSignUserService;
 import com.aiurt.boot.task.service.IRepairTaskStandardRelService;
 import com.aiurt.common.api.dto.message.MessageDTO;
+import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
@@ -85,6 +86,9 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.jetbrains.annotations.NotNull;
+import org.quartz.SimpleScheduleBuilder;
+import org.quartz.SimpleTrigger;
+import org.quartz.TriggerBuilder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -104,6 +108,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1634,9 +1641,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairPool.setStatus(InspectionConstant.IN_EXECUTION);
                 repairPoolMapper.updateById(repairPool);
             }
+            //维保任务执行中延时提醒
+            processRepairInExecutionToRemind(repairTask);
         }
-
-        repairTaskMapper.updateById(repairTask);
     }
 
     @Override
@@ -2212,6 +2219,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairPool.setStatus(InspectionConstant.IN_EXECUTION);
                 repairPoolMapper.updateById(repairPool);
             }
+            //维保任务执行中延时提醒
+            processRepairInExecutionToRemind(repairTask);
         }
         if (InspectionConstant.GIVE_BACK.equals(examineDTO.getInspectionStatus())) {
             System.out.println(examineDTO.getId() + "将被退回改为执行中");
@@ -2260,6 +2269,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairTask.setTaskConfirmationTime(new Date());
                 repairPoolMapper.updateById(repairPool);
             }
+
+            //维保任务执行中延时提醒
+            processRepairInExecutionToRemind(repairTask);
 
             // 新建待办任务
             try {
@@ -4488,6 +4500,50 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             });
             List<RepairTaskResult> repairTaskResults1 = RepairTaskServiceImpl.treeFirst(resultList);
             repairTaskResults.addAll(repairTaskResults1);
+        }
+    }
+
+    /**
+     * 维保任务执行中延时提醒
+     * @param repairTask 检修单
+     */
+    private void processRepairInExecutionToRemind(RepairTask repairTask) {
+        //提醒配置是否开启
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.REPAIR_IN_EXECUTION_REMIND);
+        boolean b = ObjectUtil.isNotNull(sysParamModel) && "1".equals(sysParamModel.getValue());
+        if (b) {
+            //获取配置参数
+            SysParamModel delayParam = iSysParamAPI.selectByCode(SysParamCodeConstant.RIE_DELAY);
+            SysParamModel periodParam = iSysParamAPI.selectByCode(SysParamCodeConstant.RIE_PERIOD);
+            if (ObjectUtil.isNull(delayParam) || ObjectUtil.isNull(periodParam)) {
+                throw new AiurtBootException("请检查是否配置初始延时时长和间隔时长");
+            }
+            long delay = Long.parseLong(delayParam.getValue());
+            int period = Integer.parseInt(periodParam.getValue());
+            // 计算初始执行时间
+            LocalDateTime localDateTime;
+            if (ObjectUtil.isNotEmpty(repairTask.getUpdateTime())) {
+                localDateTime = repairTask.getUpdateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            } else {
+                localDateTime = repairTask.getCreateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            }
+            LocalDateTime newDateTime = localDateTime.plus(delay, ChronoUnit.SECONDS);
+            Date startTime = Date.from(newDateTime.atZone(ZoneId.systemDefault()).toInstant());
+            log.info("首次执行时间:" + DateUtil.formatDateTime(startTime) + ",RepairInExecutionRemindJob,检修单号:" + repairTask.getCode());
+            // 自定义触发器
+            SimpleTrigger trigger = TriggerBuilder.newTrigger()
+                    .startAt(startTime)
+                    .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInSeconds(period).repeatForever())
+                    .build();
+            String updateTime = ObjectUtil.isNotEmpty(repairTask.getUpdateTime()) ? DateUtil.format(repairTask.getUpdateTime(), "yyyy-MM-dd HH:mm:ss") : "";
+            // 创建定时任务
+            QuartzJobDTO quartzJobDTO = new QuartzJobDTO();
+            quartzJobDTO.setTrigger(trigger);
+            quartzJobDTO.setParameter(repairTask.getCode() + StrUtil.COMMA + repairTask.getStatus() + StrUtil.COMMA + updateTime);
+            quartzJobDTO.setJobClassName("com.aiurt.boot.task.job.RepairInExecutionRemindJob");
+            quartzJobDTO.setDescription("维保任务执行中延时提醒任务");
+            quartzJobDTO.setStatus(0);
+            sysBaseApi.saveAndScheduleJob(quartzJobDTO);
         }
     }
 }

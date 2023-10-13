@@ -62,6 +62,10 @@ public enum SysAnnmentTypeEnum {
      */
     INSPECTION("inspection", "component","","检修业务消息"),
     /**
+     * 检修
+     */
+    REPAIR_IN_EXECUTION_REMIND("repair_in_execution_remind", "component", "", "检修业务消息"),
+    /**
      * 检修退回
      */
     INSPECTION_RETURN("inspection_return", "component","","检修业务消息"),
@@ -77,6 +81,10 @@ public enum SysAnnmentTypeEnum {
      * 巡视审核
      */
     PATROL_AUDIT("patrol_audit", "component","","巡视业务消息"),
+    /**
+     * 当日15点整时有未完成巡视任务给予提醒
+     */
+    PATROL_UN_DONE_REMIND("patrol_un_done_remind", "component", "", "巡视业务消息"),
     /**
      *备件归还
      */

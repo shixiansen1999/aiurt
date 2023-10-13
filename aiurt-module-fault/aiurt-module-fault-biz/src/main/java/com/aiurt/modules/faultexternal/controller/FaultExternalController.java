@@ -156,6 +156,18 @@ public class FaultExternalController extends BaseController<FaultExternal, IFaul
 		if(faultExternal==null) {
 			return Result.error("未找到对应数据");
 		}
+		faultExternal.setAffectPassengerService(0);
+		faultExternal.setAffectDrive(0);
+		faultExternal.setIsStopService(0);
+		if("1".equals(faultExternal.getCrane())){
+			faultExternal.setAffectDrive(1);
+		}
+		if("1".equals(faultExternal.getStopservice())){
+			faultExternal.setIsStopService(1);
+		}
+		if ("1".equals(faultExternal.getTransportservice())) {
+			faultExternal.setAffectPassengerService(1);
+		}
 		List<FaultAttachments> faultAttachments = faultAttachmentsMapper.selectList(new LambdaQueryWrapper<FaultAttachments>()
 				.eq(FaultAttachments::getFaultExternalId, faultExternal.getId())
 				.eq(FaultAttachments::getDelFlag, CommonConstant.DEL_FLAG_0));

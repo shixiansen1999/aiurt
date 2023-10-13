@@ -19,17 +19,10 @@ public interface MaterialRequisitionDetailMapper extends BaseMapper<MaterialRequ
      * @param materialRequisitionId 申领单id
      */
     void updateActualNumByMaterialRequisitionId(@Param("materialRequisitionId") String materialRequisitionId);
-
     /**
-     * @param faultRepairRecordId
+     * 根据申领单id获取物资清单
+     * @param materialRequisitionId
      * @return
      */
-    List<MaterialRequisitionDetail> getList(String faultRepairRecordId);
-
-    /**
-     * @param faultRepairRecordId
-     * @param isUsed
-     */
-    void updateIsUsed(@Param("faultRepairRecordId")String faultRepairRecordId, @Param("isUsed")Integer isUsed);
-
+    List<MaterialRequisitionDetail> getList(String materialRequisitionId);
 }
