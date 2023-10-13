@@ -166,7 +166,7 @@ public class StockLevel2RequisitionServiceImpl implements StockLevel2Requisition
                 requisitionDetail.setMaterialsCode(materialBase.getCode());
                 requisitionDetail.setMaterialsName(materialBase.getName());
                 requisitionDetail.setUnit(materialBase.getUnit());
-                requisitionDetail.setPrice(new BigDecimal(materialBase.getPrice()));
+                requisitionDetail.setPrice(StrUtil.isNotBlank(materialBase.getPrice()) ? new BigDecimal(materialBase.getPrice()) : new BigDecimal(0));
                 requisitionDetail.setTotalPrices(requisitionDetail.getPrice().multiply(BigDecimal.valueOf(detailDTO.getApplyNum())));
             }
             return requisitionDetail;
