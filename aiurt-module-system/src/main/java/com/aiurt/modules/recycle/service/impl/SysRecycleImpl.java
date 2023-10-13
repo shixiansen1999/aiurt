@@ -2,7 +2,6 @@ package com.aiurt.modules.recycle.service.impl;
 
 
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.recycle.constant.SysRecycleConstant;
 import com.aiurt.modules.recycle.entity.SysRecycle;
 import com.aiurt.modules.recycle.mapper.SysRecycleMapper;
@@ -14,14 +13,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
-import org.omg.CORBA.OBJ_ADAPTER;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
