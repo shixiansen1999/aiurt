@@ -212,9 +212,10 @@ public interface ISysBaseAPI extends CommonAPI {
      *
      * @param values       可以根据values查询，多个使用英文逗号分隔。
      * @param isTreeReturn 有values时,true返回树结构,false返回列表
+     * @param isSelect 角色是否选择
      * @return
      */
-    public List<SysUserModel> queryRoleUserTree(String values,Boolean isTreeReturn);
+    public List<SysUserModel> queryRoleUserTree(String values,Boolean isTreeReturn, Boolean isSelect);
 
 
     /**
@@ -222,9 +223,10 @@ public interface ISysBaseAPI extends CommonAPI {
      *
      * @param values       可以根据values查询，多个使用英文逗号分隔。有values时就不返回树结构了，而是列表
      * @param isTreeReturn 有values时,true返回树结构,false返回列表
+     * @param isSelect  岗位是否可以选择
      * @return
      */
-    public List<SysUserModel> queryPostUserTree(String values,Boolean isTreeReturn);
+    public List<SysUserModel> queryPostUserTree(String values,Boolean isTreeReturn, Boolean isSelect);
 
     /**
      * 查询部门用户树，包括用户和部门的树形结构

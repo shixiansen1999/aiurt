@@ -1,16 +1,13 @@
 package com.aiurt.modules.forecast.dto;
 
-import com.aliyun.oss.model.SetBucketQosInfoRequest;
 import lombok.Data;
-import org.flowable.bpmn.BpmnAutoLayout;
-import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.*;
 import org.flowable.task.api.history.HistoricTaskInstance;
 
-import org.flowable.bpmn.model.Process;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author fgw

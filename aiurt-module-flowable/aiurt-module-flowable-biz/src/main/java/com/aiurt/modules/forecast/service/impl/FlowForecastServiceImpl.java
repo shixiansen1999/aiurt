@@ -61,7 +61,7 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
     private DefaultSelectUserService defaultSelectUserService;
 
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
 
     /**
      * 流程预测
@@ -92,7 +92,7 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
         // 正在运行的任务，处理流程节点，构建下一个节点数据
         List<String> runList = new ArrayList<>();
         // 每个节点的出现的次数
-        Map<String, Integer> nodeTimeMap = new HashMap<>();
+        Map<String, Integer> nodeTimeMap = new HashMap<>(16);
         // 处理历史任务，以及查找每个节点的出现的次数，正在运行的任务
         processHistoricTask(userTaskModelMap, resultMap, runList, nodeTimeMap);
 
@@ -126,7 +126,7 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
 
 
         Set<String> collect = resultMap.values().stream().map(HistoricTaskInfo::getUserNameList).flatMap(List::stream).collect(Collectors.toSet());
-        List<LoginUser> loginUserList = sysBaseAPI.getLoginUserList(new ArrayList<>(collect));
+        List<LoginUser> loginUserList = sysBaseApi.getLoginUserList(new ArrayList<>(collect));
         Map<String, String> userMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, LoginUser::getRealname, (t1, t2) -> t1));
 
         // 构建已完成
@@ -148,8 +148,8 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
         // 生成自动布局
         new BpmnAutoLayout(bpmnModel1).execute();
 
-        BpmnXMLConverter bpmnXMLConverter = new BpmnXMLConverter();
-        byte[] xmlBytes = bpmnXMLConverter.convertToXML(bpmnModel1);
+        BpmnXMLConverter bpmnXmlconverter = new BpmnXMLConverter();
+        byte[] xmlBytes = bpmnXmlconverter.convertToXML(bpmnModel1);
         highLightedNodeDTO.setModelXml( new String(xmlBytes));
         highLightedNodeDTO.setFinishedTaskSet(finishedTaskSet);
         highLightedNodeDTO.setFinishedSequenceFlowSet(finishedSequenceFlowSet);
@@ -182,7 +182,7 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
             historicTaskInfo.setRealNameList(realNameList);
             HighLightedUserInfoDTO highLightedUserInfoDTO = new HighLightedUserInfoDTO();
             highLightedUserInfoDTO.setNodeId(nodeId);
-            highLightedUserInfoDTO.setRealName(StrUtil.join(";", realNameList));
+            highLightedUserInfoDTO.setRealName(StrUtil.join("；", realNameList));
             highLightedUserInfoDTOList.add(highLightedUserInfoDTO);
             // 运行，
             if (historicTaskInfo.getIsActive()) {
