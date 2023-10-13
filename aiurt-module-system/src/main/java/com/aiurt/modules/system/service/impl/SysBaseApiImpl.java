@@ -863,7 +863,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
 
     @Override
-    public List<SysUserModel>queryRoleUserTree(String values,Boolean isTreeReturn){
+    public List<SysUserModel>queryRoleUserTree(String values,Boolean isTreeReturn, Boolean isSelect){
         // 将查询岗位，并转成map
         List<DictModel> sysPost = this.getDictItems("sys_post");
         Map<String, String> sysPostMap = sysPost.stream()
@@ -880,6 +880,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             roleSysUserModel.setLabel(role.getRoleName());
             roleSysUserModel.setIsRole(true);
             roleSysUserModel.setIsPost(false);
+            roleSysUserModel.setIsSelect(isSelect);
             LambdaQueryWrapper<SysUserRole> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(SysUserRole::getRoleId,role.getId());
             List<SysUserRole> sysUserRoles = sysUserRoleMapper.selectList(lambdaQueryWrapper);
@@ -961,7 +962,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<SysUserModel> queryPostUserTree(String values, Boolean isTreeReturn) {
+    public List<SysUserModel> queryPostUserTree(String values, Boolean isTreeReturn, Boolean isSelect) {
         List<SysUserModel> list = new ArrayList<>();
         List<DictModel> sysPost = this.getDictItems("sys_post");
         Map<String, String> sysPostMap = sysPost.stream()
@@ -976,6 +977,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 postSysUserModel.setTitle(dictModel.getTitle());
                 postSysUserModel.setIsPost(true);
                 postSysUserModel.setIsRole(false);
+                postSysUserModel.setIsSelect(isSelect);
                  //根据岗位查询用户信息
                 LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>()
                         .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0);

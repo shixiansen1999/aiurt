@@ -2534,7 +2534,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             return;
         }
 
-        List<SysUserModel> sysUserModels = sysBaseAPI.queryRoleUserTree(roleCodes,Boolean.TRUE);
+        List<SysUserModel> sysUserModels = sysBaseAPI.queryRoleUserTree(roleCodes,Boolean.TRUE, Boolean.TRUE);
         if (CollUtil.isNotEmpty(sysUserModels)) {
             ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
             processParticipantsInfoDTO.setTitle("角色");
@@ -2554,7 +2554,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             return;
         }
 
-        List<SysUserModel> sysUserModels = sysBaseAPI.queryPostUserTree(postCodes, Boolean.TRUE);
+        List<SysUserModel> sysUserModels = sysBaseAPI.queryPostUserTree(postCodes, Boolean.TRUE, Boolean.TRUE);
         if (CollUtil.isNotEmpty(sysUserModels)) {
             ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
             processParticipantsInfoDTO.setTitle("岗位");
