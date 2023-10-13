@@ -20,6 +20,7 @@ import com.aiurt.modules.multideal.entity.ActCustomMultiRecord;
 import com.aiurt.modules.multideal.service.IActCustomMultiRecordService;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
 import com.aiurt.modules.multideal.service.IMultiInstanceUserService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +32,9 @@ import org.flowable.engine.HistoryService;
 import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
+import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
+import org.flowable.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
@@ -51,6 +55,9 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class MultiInTaskServiceImpl implements IMultiInTaskService {
+
+    protected static final String NUMBER_OF_INSTANCES = "nrOfInstances";
+    protected static final String NUMBER_OF_COMPLETED_INSTANCES = "nrOfCompletedInstances";
 
     @Autowired
     private IActCustomTaskExtService taskExtService;
@@ -138,11 +145,12 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
             case TASK_MULTI_INSTANCE_TYPE_2:
                 return areParallelMultiInTask(task);
             case TASK_MULTI_INSTANCE_TYPE_1:
-                return false;
+                return anyParallelMultiInTask(task);
             default:
                 return false;
         }
     }
+
 
     /**
      * 判断是否为多实例任务
@@ -205,6 +213,10 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
         if (Objects.isNull(task)) {
             throw new AiurtBootException(AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getCode(), AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getMessage());
         }
+        Execution execution = runtimeService.createExecutionQuery().executionId(task.getExecutionId()).singleResult();
+        if (Objects.isNull(execution)) {
+            throw new AiurtBootException(AiurtErrorEnum.TASK_ID_NOT_FOUND.getCode(), String.format(AiurtErrorEnum.TASK_ID_NOT_FOUND.getMessage(), taskId));
+        }
         String taskDefinitionKey = task.getTaskDefinitionKey();
         UserTask userTaskModel = (UserTask) flowElementUtil.getFlowElement(task.getProcessDefinitionId(), taskDefinitionKey);
 
@@ -247,6 +259,7 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
                     .userName(task.getAssignee())
                     .mutilUserName(userName)
                     .nodeId(taskDefinitionKey)
+                    .parentExecutionId(execution.getParentId())
                     .reason(reason).build();
             recordList.add(build);
         });
@@ -282,8 +295,13 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
         String taskId = addReduceMultiInstanceDTO.getTaskId();
         Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
         if (Objects.isNull(task)) {
-            throw new AiurtBootException(AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getCode(), AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getMessage());
+            throw new AiurtBootException(AiurtErrorEnum.TASK_ID_NOT_FOUND.getCode(), String.format(AiurtErrorEnum.TASK_ID_NOT_FOUND.getMessage(), taskId));
         }
+        Execution execution = runtimeService.createExecutionQuery().executionId(task.getExecutionId()).singleResult();
+        if (Objects.isNull(execution)) {
+            throw new AiurtBootException(AiurtErrorEnum.TASK_ID_NOT_FOUND.getCode(), String.format(AiurtErrorEnum.TASK_ID_NOT_FOUND.getMessage(), taskId));
+        }
+        String processInstanceId = task.getProcessInstanceId();
         String taskDefinitionKey = task.getTaskDefinitionKey();
         UserTask userTaskModel = (UserTask) flowElementUtil.getFlowElement(task.getProcessDefinitionId(), taskDefinitionKey);
 
@@ -305,7 +323,7 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
 
         List<String> userNameList = addReduceMultiInstanceDTO.getUserNameList();
         //  代办的任务
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(taskDefinitionKey).active().list();
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(taskDefinitionKey).active().list();
         // 删除的任务
         List<Task> deleteTaskList = taskList.stream().filter(t -> userNameList.contains(t.getAssignee())).collect(Collectors.toList());
 
@@ -327,13 +345,11 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
         // 如果是串行多实例减签操作，针对 Flowable6.4.2 有BUG问题，做如下处理
         if (userTaskModel.getLoopCharacteristics().isSequential()) {
             Set<String> taskIds =
-                    taskService.createTaskQuery().processInstanceId(task.getProcessInstanceId()).taskDefinitionKey(task.getTaskDefinitionKey())
+                    taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(task.getTaskDefinitionKey())
                             .list().stream().map(Task::getId).collect(Collectors.toSet());
             taskIds.remove(task.getId());
 
             // 部分控制变量需要修改值
-            Execution execution = runtimeService.createExecutionQuery().executionId(
-                    task.getExecutionId()).singleResult();
             if (execution != null && CollUtil.isNotEmpty(assigneeVariables)) {
                 Map<String, Object> executionVariables = new HashMap<>(2);
                 executionVariables.put("nrOfInstances", assigneeVariables.size());
@@ -348,6 +364,18 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
         flowTaskComment.setComment(reason);
         flowTaskComment.setCreateRealname(loginUser.getRealname());
         taskCommentService.getBaseMapper().insert(flowTaskComment);
+
+        //
+        List<Execution> executions = runtimeService.createExecutionQuery().processInstanceId(processInstanceId).parentId(execution.getParentId())
+                .activityId(taskDefinitionKey).list();
+        if (CollUtil.isNotEmpty(executions) && CollUtil.isNotEmpty(userNameList)) {
+            List<String> executionIdList = executions.stream().map(Execution::getId).collect(Collectors.toList());
+            LambdaQueryWrapper<ActCustomMultiRecord> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(ActCustomMultiRecord::getProcessInstanceId, processInstanceId)
+                    .in(ActCustomMultiRecord::getExecutionId, executionIdList)
+                    .in(ActCustomMultiRecord::getMutilUserName, userNameList);
+            multiRecordService.remove(queryWrapper);
+        }
     }
 
     /**
@@ -506,6 +534,39 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
         }
         return false;
     }
+
+    private Boolean anyParallelMultiInTask(Task task) {
+        String executionId = task.getExecutionId();
+        Execution executionTask = runtimeService.createExecutionQuery().executionId(executionId).singleResult();
+        if (Objects.isNull(executionTask)) {
+            return false;
+        }
+
+        ActCustomTaskExt actCustomTaskExt = taskExtService.getByProcessDefinitionIdAndTaskId(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
+        if (Objects.isNull(actCustomTaskExt)) {
+            return false;
+        }
+
+        // 判断是否加签
+        int addMulti = Optional.ofNullable(actCustomTaskExt.getIsAddMulti()).orElse(0);
+        if (addMulti == 0) {
+            return false;
+        }
+
+        // 获取
+        List<String> addAssigneeVariables = taskService.getVariable(task.getId(), FlowVariableConstant.ADD_ASSIGNEE_LIST + task.getTaskDefinitionKey(), List.class);
+        if (CollUtil.isNotEmpty(addAssigneeVariables)) {
+            UserTask userTask = new UserTask();
+            // 获取实例总数
+            int nrOfInstances = Optional.ofNullable(taskService.getVariable(task.getId(), NUMBER_OF_INSTANCES, Integer.class)).orElse(0);
+
+            // 已完成实例总数
+            int nrOfCompletedInstances = Optional.ofNullable(taskService.getVariable(task.getId(), NUMBER_OF_COMPLETED_INSTANCES, Integer.class)).orElse(0);
+            return nrOfInstances - nrOfCompletedInstances > 1;
+        }
+        return false;
+    }
+
 
 
 }

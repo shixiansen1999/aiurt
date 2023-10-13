@@ -1,4 +1,8 @@
 package com.aiurt.modules.flow.service.impl;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
@@ -89,6 +93,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author fgw
@@ -324,9 +329,14 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 设置签收
         String assignee = task.getAssignee();
 
-        if (StrUtil.isNotBlank(assignee) && !StrUtil.equalsIgnoreCase(loginUser.getUsername(), assignee)) {
+        if (StrUtil.isNotBlank(assignee) && taskCompleteDTO.getIsCheckAssign()  && !StrUtil.equalsIgnoreCase(loginUser.getUsername(), assignee)) {
             throw new AiurtBootException("该任务已被其他人签收！");
         }
+        // 验证流程任务的合法性。
+        if (taskCompleteDTO.getIsCheckAssign()) {
+            this.verifyAndGetRuntimeTaskInfo(task);
+        }
+
 
         if (StrUtil.isBlank(assignee)) {
             taskService.setAssignee(taskId, loginUser.getUsername());
@@ -334,7 +344,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         Date claimTime = task.getClaimTime();
         if (Objects.isNull(claimTime)) {
-            taskService.claim(taskId, loginUser.getUsername());
+            taskService.claim(taskId, task.getAssignee());
         }
 
         // 提交任务
@@ -373,8 +383,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 获取流程实例对象
         ProcessInstance processInstance = getProcessInstance(processInstanceId);
 
-        // 验证流程任务的合法性。
-        this.verifyAndGetRuntimeTaskInfo(processInstanceActiveTask);
+
 
         // 流程业务数据状态更改
         String approvalType = comment.getApprovalType();
@@ -1154,6 +1163,64 @@ public class FlowApiServiceImpl implements FlowApiService {
         for (HistoricActivityInstance unfinishedActivity : unfinishedInstanceList) {
             unfinishedTaskSet.add(unfinishedActivity.getActivityId());
         }
+        //获取用户节点办理用户
+        Map<String, com.aiurt.modules.forecast.dto.HistoricTaskInfo> stringHistoricTaskInfoMap = flowChart(processInstanceId);
+        //驳回，获取最新一次任务
+        Map<String, com.aiurt.modules.forecast.dto.HistoricTaskInfo> collect = stringHistoricTaskInfoMap.entrySet().stream()
+                .collect(Collectors.groupingBy(
+                        entry -> {
+                            String key = entry.getKey();
+                            String[] parts = key.split("_");
+                            if (parts.length >= 2) {
+                                // 使用前两个部分组成分组键
+                                return parts[0] + "_" + parts[1]; // 使用前两个部分组成分组键
+                            } else {
+                                // 如果没有足够的部分，保留原键
+                                return key;
+                            }
+                        },
+                        Collectors.maxBy(Comparator.comparing(entry -> {
+                            String key = entry.getKey();
+                            String[] parts = key.split("_");
+                            if (parts.length >= 3) {
+                                // 获取第三部分并将其解析为整数
+                                return Integer.parseInt(parts[2]);
+                            } else {
+                                // 如果没有第三部分，默认为0
+                                return 0;
+                            }
+                        }))
+                ))
+                .entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue().map(Map.Entry::getValue).orElse(null)
+                ));
+
+
+
+        //获取审核通过的用户
+        List<HighLightedUserInfoDTO> highLightedUserInfoDTOs = collect.entrySet().stream()
+                .map(entry -> {
+                    String activityId = entry.getKey();
+                    com.aiurt.modules.forecast.dto.HistoricTaskInfo value = entry.getValue();
+                    List<HistoricTaskInstance> list = value.getList();
+
+                    String realNames = list.stream()
+                            .filter(instance -> !"MI_END".equals(instance.getDeleteReason()))
+                            .map(HistoricTaskInstance::getAssignee)
+                            .distinct()
+                            .map(sysBaseAPI::queryUser)
+                            .filter(user -> user.getRealname() != null)
+                            .map(LoginUser::getRealname)
+                            .collect(Collectors.joining(", "));
+                    HighLightedUserInfoDTO highLightedUserInfoDTO = new HighLightedUserInfoDTO();
+                    highLightedUserInfoDTO.setNodeId(activityId);
+                    highLightedUserInfoDTO.setRealName(realNames);
+                    return highLightedUserInfoDTO;
+                })
+                .collect(Collectors.toList());
+
         // 获取的是当前运行的xml
         byte[] bpmnXml = modelService.getBpmnXML(bpmnModel);
         String modelXml = new String(bpmnXml, StandardCharsets.UTF_8);
@@ -1163,9 +1230,146 @@ public class FlowApiServiceImpl implements FlowApiService {
                 .unfinishedTaskSet(unfinishedTaskSet)
                 .modelName(hpi.getProcessDefinitionName())
                 .modelXml(modelXml)
+                .highLightedUserInfoDTOs(highLightedUserInfoDTOs)
                 .build();
         return highLightedNodeDTO;
     }
+
+    public Map<String,com.aiurt.modules.forecast.dto.HistoricTaskInfo> flowChart(String processInstanceId) {
+        HighLightedNodeDTO highLightedNodeDTO = new HighLightedNodeDTO();
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+        // 历史记录,包括正在运行的节点
+        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByTaskCreateTime().asc().list();
+        list = list.stream().filter(historicTaskInstance -> !StrUtil.equalsIgnoreCase("MI_END", historicTaskInstance.getDeleteReason())).collect(Collectors.toList());
+        // 找出数据
+        String definitionId = historicProcessInstance.getProcessDefinitionId();
+        // bpmnmodel
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(definitionId);
+        // 开始节点
+        StartEvent startEvent = bpmnModel.getMainProcess().findFlowElementsOfType(StartEvent.class, false).get(0);
+
+        Map<String, List<String>> userTaskModelMap = new HashMap<>(16);
+        // 构建好每个节点的出线图
+        buildNextNodeRelation("", startEvent, userTaskModelMap);
+
+        // 合并任务
+        LinkedHashMap<String, com.aiurt.modules.forecast.dto.HistoricTaskInfo> resultMap = mergeTask(list, userTaskModelMap);
+        return resultMap;
+    }
+
+    /**
+     * 构造节点的与下一节点关系
+     * @param userNodeId
+     * @param sourceFlowElement
+     * @param userTaskModelMap
+     */
+    public void buildNextNodeRelation(String userNodeId, FlowElement sourceFlowElement, Map<String, List<String>> userTaskModelMap) {
+        if (sourceFlowElement instanceof FlowNode) {
+            //当前节点必须是FlowNode才做处理，比如UserTask或者GateWay
+            FlowNode thisFlowNode = (FlowNode) sourceFlowElement;
+            if (sourceFlowElement instanceof UserTask) {
+                //
+                String id = sourceFlowElement.getId();
+                List<String> list = userTaskModelMap.get(id);
+                if (Objects.isNull(list)) {
+                    list = new ArrayList<>();
+                }
+                userTaskModelMap.put(id, list);
+                if (StrUtil.isNotBlank(userNodeId)) {
+                    List<String> userNodeList = userTaskModelMap.get(userNodeId);
+                    if (Objects.isNull(userNodeList)) {
+                        userNodeList = new ArrayList<>();
+                    }
+                    userNodeList.add(id);
+                    userTaskModelMap.put(userNodeId, userNodeList);
+                }
+                List<SequenceFlow> targetOutgoings = ((UserTask) sourceFlowElement).getOutgoingFlows();
+                for (SequenceFlow targetOutgoing : targetOutgoings) {
+                    buildNextNodeRelation(id, targetOutgoing.getTargetFlowElement(), userTaskModelMap);
+                }
+
+            } else {
+                List<SequenceFlow> flowNodeOutgoingFlows = thisFlowNode.getOutgoingFlows();
+                for (SequenceFlow flowNodeOutgoingFlow : flowNodeOutgoingFlows) {
+                    buildNextNodeRelation(userNodeId, flowNodeOutgoingFlow.getTargetFlowElement(), userTaskModelMap);
+                }
+            }
+        }
+    }
+
+    @NotNull
+    private LinkedHashMap<String, com.aiurt.modules.forecast.dto.HistoricTaskInfo> mergeTask(List<HistoricTaskInstance> list, Map<String, List<String>> userTaskModelMap) {
+        // 出现的次数
+        Map<String, Integer> res = new HashMap<>(16);
+        // 是否为第一次出现
+        Map<String, Boolean> resFlag = new HashMap<>(16);
+        LinkedHashMap<String, com.aiurt.modules.forecast.dto.HistoricTaskInfo> resultMap = new LinkedHashMap<>(16);
+        list.stream().forEach(historicTaskInstance -> {
+            String taskDefinitionKey = historicTaskInstance.getTaskDefinitionKey();
+            Integer time = res.getOrDefault(taskDefinitionKey, 0);
+
+            //
+            List<String> nextNodeIdList = userTaskModelMap.get(taskDefinitionKey);
+            // 已存在下一步节点
+            boolean flag = nextNodeIdList.stream()
+                    .anyMatch(noNodeId -> resultMap.containsKey(noNodeId));
+            if (flag) {
+                time = time +1;
+                res.put(taskDefinitionKey, time);
+
+                // 设置之前的节点不能添加了
+                Boolean orDefault = resFlag.getOrDefault(taskDefinitionKey + "_" + time, true);
+                if (orDefault) {
+                    resFlag.put(taskDefinitionKey + "_" + time , false);
+                    // 历史数据不允许合并
+                    resultMap.forEach((nodeId, historicTaskInfo)->{
+                        historicTaskInfo.setAddFlag(false);
+                    });
+                }
+            } else {
+                // 被回退的, 但是没有存在下一个节点的数据
+                String key = (time == 0 ) ? taskDefinitionKey : taskDefinitionKey+ "_" + (time);
+                com.aiurt.modules.forecast.dto.HistoricTaskInfo lastTaskInfo = resultMap.get(key);
+                // 历史节点不允许添加了
+                if (Objects.nonNull(lastTaskInfo) && (!lastTaskInfo.getAddFlag())) {
+                    // time +1；
+                    time = time + 1;
+                    res.put(taskDefinitionKey, time);
+                }
+            }
+
+            // 没有回退
+            if (time == 0) {
+                com.aiurt.modules.forecast.dto.HistoricTaskInfo historicTaskInfo = resultMap.get(taskDefinitionKey);
+                if (Objects.isNull(historicTaskInfo)) {
+                    historicTaskInfo = new com.aiurt.modules.forecast.dto.HistoricTaskInfo();
+                    resultMap.put(taskDefinitionKey, historicTaskInfo);
+                }
+                if (historicTaskInfo.getAddFlag()) {
+                    historicTaskInfo.addTaskInstance(historicTaskInstance);
+                }
+                historicTaskInfo.setNodeTime(time);
+                historicTaskInfo.setName(historicTaskInstance.getName());
+
+                // 存在回退的情况
+            } else {
+                com.aiurt.modules.forecast.dto.HistoricTaskInfo historicTaskInfo = resultMap.get(taskDefinitionKey + "_" + time);
+                if (Objects.isNull(historicTaskInfo)) {
+                    historicTaskInfo = new com.aiurt.modules.forecast.dto.HistoricTaskInfo();
+                    resultMap.put(taskDefinitionKey + "_" + time, historicTaskInfo);
+                }
+                if (historicTaskInfo.getAddFlag()) {
+                    historicTaskInfo.addTaskInstance(historicTaskInstance);
+                }
+                // 设置节点信息
+                historicTaskInfo.setNodeTime(time);
+                historicTaskInfo.setName(historicTaskInstance.getName());
+            }
+        });
+        return resultMap;
+    }
+
+
 
     /**
      * 获取流程实例的已完成历史任务列表。

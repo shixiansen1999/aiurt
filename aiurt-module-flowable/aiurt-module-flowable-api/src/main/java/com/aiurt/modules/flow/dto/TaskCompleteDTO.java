@@ -26,4 +26,8 @@ public class TaskCompleteDTO implements Serializable {
     @ApiModelProperty(value = "流程实例id")
     private String processInstanceId;
 
+    @ApiModelProperty(value = "是否校验签收人是否是本人")
+    private Boolean isCheckAssign = true;
+
+
 }

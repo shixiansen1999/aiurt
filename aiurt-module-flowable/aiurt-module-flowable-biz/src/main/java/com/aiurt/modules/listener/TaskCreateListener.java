@@ -14,10 +14,12 @@ import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.remind.service.IFlowRemindService;
 import com.aiurt.modules.todo.dto.BpmnTodoDTO;
+import com.aiurt.modules.user.enums.EmptyRuleEnum;
 import com.aiurt.modules.user.service.IFlowUserService;
 import com.aiurt.modules.user.service.impl.FlowUserServiceImpl;
 import com.aiurt.modules.utils.FlowableNodeActionUtils;
 import com.alibaba.fastjson.JSONObject;
+import liquibase.pro.packaged.E;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
@@ -99,6 +101,11 @@ public class TaskCreateListener implements FlowableEventListener {
                 .getVariable(processInstanceId, FlowVariableConstant.ASSIGNEE_LIST + taskDefinitionKey, List.class);
         if (CollectionUtil.isNotEmpty(list)) {
             // 发送待办
+            if (StrUtil.equalsAnyIgnoreCase(taskEntity.getAssignee(), EmptyRuleEnum.AUTO_COMPLETE.getMessage())) {
+                return;
+            }else if (StrUtil.equalsIgnoreCase(taskEntity.getAssignee(), EmptyRuleEnum.AUTO_ADMIN.getMessage())) {
+                buildToDoList(taskEntity, instance, taskExt, Collections.singletonList("admin"));
+            }
             buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(taskEntity.getAssignee()));
             return;
         }

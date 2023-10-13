@@ -126,11 +126,6 @@ public interface FlowModelExtElementConstant {
     String EXT_RULE = "rule";
 
     /**
-     * 加减签
-     */
-    String EXT_ADD_MULTI = "addMulti";
-
-    /**
      * 超时提醒
      */
     String EXT_TIMEOUT_REMINDER = "timeoutReminder";
@@ -144,4 +139,16 @@ public interface FlowModelExtElementConstant {
      * 超时提醒配置
      */
     String EXT_TIMEOUT_REMIND_CONFIG = "formPermissionConfig";
+
+    /**
+     * 加减签
+     */
+    String EXT_ADD_MULTI = "addMulti";
+
+    /**
+     * 审批人为空
+     */
+    String EX_EMPTY_APPROVE = "emtptyApprover";
+
+    String EXT_EMPTY_USER_NAME = "username";
 }

@@ -5,8 +5,6 @@ import com.aiurt.modules.deduplicate.context.FlowDeduplicateContext;
 import com.aiurt.modules.deduplicate.handler.*;
 import com.aiurt.modules.deduplicate.pipeline.DeduplicateHandlerChainPipeline;
 import com.aiurt.modules.deduplicate.service.IFlowDeduplicateService;
-import com.aiurt.modules.remind.context.FlowRemindContext;
-import com.aiurt.modules.remind.handlers.BuildContextHandler;
 import org.flowable.task.api.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,6 +35,7 @@ public class FlowDeduplicateServiceImpl implements IFlowDeduplicateService {
         filterNames.add(BackNodeRuleVerifyHandler.class.getSimpleName());
         filterNames.add(AutoCompleteHandler.class.getSimpleName());
         filterNames.add(ApprovalRequirementRuleVerifyHandler.class.getSimpleName());
+        filterNames.add(DuplicateBeforeVerifyHandler.class.getSimpleName());
         LocalListBasedHandlerSelector filterSelector = new LocalListBasedHandlerSelector(filterNames);
         FlowDeduplicateContext context = new FlowDeduplicateContext(filterSelector);
         context.setTask(task);

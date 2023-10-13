@@ -1,6 +1,8 @@
 package com.aiurt.modules.listener;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.deduplicate.service.IFlowDeduplicateService;
+import com.aiurt.modules.emptyuser.IEmptyUserService;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.engine.delegate.event.impl.FlowableEntityEventImpl;
@@ -25,8 +27,13 @@ public class TaskAssignedListener implements FlowableEventListener {
             return;
         }
         TaskEntity taskEntity = (TaskEntity) entity;
-        IFlowDeduplicateService deduplicateService = SpringContextUtils.getBean(IFlowDeduplicateService.class);
-        deduplicateService.handler(taskEntity);
+        if (StrUtil.startWith(taskEntity.getAssignee(), "_AUTO_")) {
+            IEmptyUserService emptyUserService = SpringContextUtils.getBean(IEmptyUserService.class);
+            emptyUserService.handEmptyUserName(taskEntity);
+        } else {
+            IFlowDeduplicateService deduplicateService = SpringContextUtils.getBean(IFlowDeduplicateService.class);
+            deduplicateService.handler(taskEntity);
+        }
     }
 
     /**

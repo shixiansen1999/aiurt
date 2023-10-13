@@ -565,6 +565,9 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
      * @param s
      */
     private void addUser(UserTask userTask, Map<String, List<ExtensionElement>> extensionMap, List<ActCustomUser> userList, String extUserAssignee, String s) {
+        ActCustomUser customUser = new ActCustomUser();
+        customUser.setTaskId(userTask.getId());
+        customUser.setType(s);
         Optional.ofNullable(extensionMap.get(extUserAssignee))
                 .ifPresent(elementList -> {
                     ExtensionElement extensionElement = elementList.get(0);
@@ -576,9 +579,6 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                             String value = attr.getValue();
                             FlowUserModel flowUserModel = JSON.parseObject(value, FlowUserModel.class);
                             Optional.ofNullable(flowUserModel).ifPresent(model -> {
-                                ActCustomUser customUser = new ActCustomUser();
-                                customUser.setTaskId(userTask.getId());
-                                customUser.setType(s);
 
                                 List<FlowUserAttributeModel> user = model.getUser();
                                 Optional.ofNullable(user).ifPresent(users -> customUser.setUserName(users.stream().map(FlowUserAttributeModel::getValue).collect(Collectors.joining(","))));
@@ -594,12 +594,34 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                                 // 关系
                                 List<FlowUserRelationAttributeModel> relation = model.getRelation();
                                 Optional.ofNullable(relation).ifPresent(relations -> customUser.setRelation(JSONObject.parseArray(JSON.toJSONString(relation))));
-
-                                userList.add(customUser);
                             });
                         });
                     });
                 });
+        if (StrUtil.equalsIgnoreCase("0", s)) {
+            Optional.ofNullable(extensionMap.get("emtptyApprover")).ifPresent(extensionElements -> {
+                ExtensionElement extensionElement = extensionElements.get(0);
+                Optional.ofNullable(extensionElement).ifPresent(element -> {
+                    Map<String, List<ExtensionAttribute>> elementAttributeMap = element.getAttributes();
+                    ExtensionAttribute extensionAttribute = CollUtil.getFirst(elementAttributeMap.getOrDefault(FlowModelExtElementConstant.EXT_VALUE, Collections.emptyList()));
+                    Optional.ofNullable(extensionAttribute).ifPresent(v->{
+                        customUser.setEmptyRule(v.getValue());
+                    });
+
+                    ExtensionAttribute userNameAttribute = CollUtil.getFirst(elementAttributeMap.getOrDefault(FlowModelExtElementConstant.EXT_EMPTY_USER_NAME, Collections.emptyList()));
+                    Optional.ofNullable(userNameAttribute).ifPresent(v->{
+                        String value = v.getValue();
+                        FlowUserModel flowUserModel = JSON.parseObject(value, FlowUserModel.class);
+                        Optional.ofNullable(flowUserModel).ifPresent(model -> {
+                            List<FlowUserAttributeModel> user = model.getUser();
+                            Optional.ofNullable(user).ifPresent(users -> customUser.setEmptyUserName(users.stream().map(FlowUserAttributeModel::getValue).collect(Collectors.joining(","))));
+                        });
+                    });
+                });
+            });
+        }
+
+        userList.add(customUser);
     }
 
 
