@@ -275,7 +275,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
 
                 if (MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_REPAIR.equals(sparePartRequisitionAddReqDTO.getMaterialRequisitionType())) {
                     //三级库申领
-                    addLevel3Requisition(materialRequisitionDetails, sparePartRequisitionAddReqDTO, materialRequisition,false);
+                    addLevel3Requisition(materialRequisitionDetails, sparePartRequisitionAddReqDTO, materialRequisition,false,false);
 
                     //生成三级库出库
                     addSparePartOutOrder(requisitionDetailList, loginUser, materialRequisition,false);
@@ -284,7 +284,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     //二级库出库
                     String outOrderCode = addStockOutOrderLevel2(materialRequisition, requisitionDetailList,false);
                     //三级库入库
-                    addSparePartInOrder(requisitionDetailList, materialRequisition, outOrderCode,loginUser,false);
+                    addSparePartInOrder(requisitionDetailList, materialRequisition, outOrderCode,loginUser,true);
                 }
 
 
@@ -302,7 +302,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
      * 三级库申领
      * */
     @Transactional(rollbackFor = Exception.class)
-    public void addLevel3Requisition(List<MaterialRequisitionDetail> materialRequisitionDetails, SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO, MaterialRequisition materialRequisition,Boolean flag) {
+    public void addLevel3Requisition(List<MaterialRequisitionDetail> materialRequisitionDetails, SparePartRequisitionAddReqDTO sparePartRequisitionAddReqDTO, MaterialRequisition materialRequisition,Boolean level2OutFlag,Boolean level3InFlag) {
         if (CollUtil.isNotEmpty(materialRequisitionDetails)) {
             MaterialRequisition requisition = new MaterialRequisition();
             BeanUtils.copyProperties(sparePartRequisitionAddReqDTO, requisition, "id");
@@ -331,9 +331,9 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
             materialRequisitionDetailService.saveBatch(materialRequisitionDetails);
 
             //二级库出库
-            String outOrderCode = addStockOutOrderLevel2(requisition, materialRequisitionDetails,flag);
+            String outOrderCode = addStockOutOrderLevel2(requisition, materialRequisitionDetails,level2OutFlag);
             //三级库入库
-            addSparePartInOrder(materialRequisitionDetails, requisition, outOrderCode,loginUser,flag);
+            addSparePartInOrder(materialRequisitionDetails, requisition, outOrderCode,loginUser,level3InFlag);
         }
     }
 
