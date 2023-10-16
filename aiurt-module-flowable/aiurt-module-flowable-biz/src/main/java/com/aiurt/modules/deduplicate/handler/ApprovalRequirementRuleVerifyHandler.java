@@ -36,7 +36,9 @@ public class ApprovalRequirementRuleVerifyHandler<T extends FlowDeduplicateConte
     @Override
     public void handle(T context) {
         // 提交是， 意见是否必填
-
+        if (log.isDebugEnabled()) {
+            log.debug("审批去重，意见必填校验，任务id：{}", context.getTask().getId());
+        }
         ActCustomTaskExt actCustomTaskExt = context.getActCustomTaskExt();
         String operationListJson = actCustomTaskExt.getOperationListJson();
 
@@ -44,6 +46,9 @@ public class ApprovalRequirementRuleVerifyHandler<T extends FlowDeduplicateConte
 
         // 查询提交的按钮
         if (CollUtil.isEmpty(actOperationEntityList)) {
+            if (log.isDebugEnabled()) {
+                log.debug("审批去重，意见必填校验，获取操作按钮为空，任务id：{}", context.getTask().getId());
+            }
             return;
         }
 
@@ -52,6 +57,9 @@ public class ApprovalRequirementRuleVerifyHandler<T extends FlowDeduplicateConte
                 .collect(Collectors.toList());
 
         if (CollUtil.isEmpty(agreeList)) {
+            if (log.isDebugEnabled()) {
+                log.debug("审批去重，意见必填校验，该任务没有配置提交按钮，任务id：{}， 节点id:{}", context.getTask().getId(), context.getTask().getTaskDefinitionKey());
+            }
             return;
         }
 
@@ -62,6 +70,11 @@ public class ApprovalRequirementRuleVerifyHandler<T extends FlowDeduplicateConte
 
         // 是否有填写意见
         Boolean hasRemark = Optional.ofNullable(actOperationEntity.getHasRemark()).orElse(Boolean.TRUE);
+
+        if (log.isDebugEnabled()) {
+            log.debug("审批去重，意见必填校验，任务id：{}， 节点id：{}，是否有填写意见：{}，是否必填：{}",
+                    context.getTask().getId(), context.getTask().getTaskDefinitionKey(), hasRemark, mustRemark);
+        }
 
         // 是否有填写意见
         if (hasRemark) {

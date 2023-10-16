@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * <p>构造上下文</p>
@@ -49,7 +50,10 @@ public class BuildDeduplicateContextHandler<T extends FlowDeduplicateContext> ex
      */
     @Override
     public void handle(T context) {
-        log.info("审批去重，开始构建审批去重上下文");
+        if (log.isDebugEnabled()) {
+            log.debug("审批去重，开始构建审批去重上下文");
+        }
+
         // 当前任务
         Task task = context.getTask();
         // 流程实例id
@@ -69,7 +73,9 @@ public class BuildDeduplicateContextHandler<T extends FlowDeduplicateContext> ex
         Execution execution = runtimeService.createExecutionQuery().executionId(task.getExecutionId()).singleResult();
         //
         List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).list();
-
+        // 过滤没有审批的历史数据
+        list = list.stream().filter(historicTaskInstance -> (Objects.nonNull(historicTaskInstance.getClaimTime())
+                        || Objects.isNull(historicTaskInstance.getEndTime()))).collect(Collectors.toList());
 
         context.setActCustomModelExt(actCustomModelExt);
         context.setActCustomTaskExt(actCustomTaskExt);
@@ -77,7 +83,8 @@ public class BuildDeduplicateContextHandler<T extends FlowDeduplicateContext> ex
         context.setHistoricTaskInstanceList(list);
         context.setExecution(execution);
 
-
-        log.info("审批去重，结束构建审批去重上下文");
+        if (log.isDebugEnabled()) {
+            log.debug("审批去重，结束构建审批去重上下文");
+        }
     }
 }

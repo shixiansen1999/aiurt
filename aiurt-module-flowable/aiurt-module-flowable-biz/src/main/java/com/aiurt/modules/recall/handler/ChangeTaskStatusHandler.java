@@ -9,6 +9,7 @@ package com.aiurt.modules.recall.handler;/**
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
+import com.aiurt.modules.deduplicate.handler.BackNodeRuleVerifyHandler;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
@@ -33,9 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -73,8 +72,12 @@ public class ChangeTaskStatusHandler extends AbstractFlowHandler<FlowRecallConte
         if (ObjectUtil.isNotEmpty(startEvent)) {
              startElementId = startEvent.getId();
         }
+        // 增加变量
+        Map<String, Object> localVariableMap = new HashMap<>();
+        localVariableMap.put(BackNodeRuleVerifyHandler.REJECT_FIRST_USER_TASK, true);
         //将所有节点撤回到开始节点
         runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
-                .moveExecutionsToSingleActivityId(exctutionIds, startElementId).changeState();
+                .moveExecutionsToSingleActivityId(exctutionIds, startElementId)
+                .localVariables(startElementId, localVariableMap).changeState();
     }
 }
