@@ -393,9 +393,30 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
             log.error("该任务已结束或者不存在taskId->{}", taskId);
             return Collections.emptyList();
         }
+
+        // 获取当前执行实例
+        Execution execution = runtimeService.createExecutionQuery().executionId(task.getExecutionId()).singleResult();
+        if (Objects.isNull(execution)) {
+            log.error("执行实例已结束，或者不存在taskId->{}", taskId);
+            return Collections.emptyList();
+        }
+
         String taskDefinitionKey = task.getTaskDefinitionKey();
-        String variableName = FlowVariableConstant.ADD_ASSIGNEE_LIST + taskDefinitionKey;
-        List<String> list = taskService.getVariable(taskId, variableName, List.class);
+
+        List<String> list = null;
+        // 只获取本人添加的数据
+        List<ActCustomMultiRecord> actCustomMultiRecords = multiRecordService.listByParentExecutionId(task.getAssignee(), execution.getParentId());
+
+        if (CollUtil.isNotEmpty(actCustomMultiRecords)) {
+            list = actCustomMultiRecords.stream().map(ActCustomMultiRecord::getMutilUserName).collect(Collectors.toList());
+        } else {
+            // 获取流程变量
+            List<ActCustomMultiRecord> customMultiRecordList = multiRecordService.listByExecutionId(task.getAssignee(), task.getExecutionId());
+
+            list  = customMultiRecordList.stream().map(ActCustomMultiRecord::getMutilUserName).collect(Collectors.toList());
+        }
+
+
         if (CollUtil.isEmpty(list)) {
             return Collections.emptyList();
         }
