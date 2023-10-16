@@ -1,12 +1,5 @@
 package com.aiurt.modules.flow.service.impl;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
-
-import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
-
 import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.modeler.entity.*;
 import com.aiurt.modules.modeler.service.IActCustomModelExtService;
@@ -52,7 +45,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import liquibase.pro.packaged.J;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
@@ -93,8 +85,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 /**
  * @author fgw
  */
@@ -1172,10 +1162,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                             String key = entry.getKey();
                             String[] parts = key.split("_");
                             if (parts.length >= 2) {
-                                // 使用前两个部分组成分组键
-                                return parts[0] + "_" + parts[1]; // 使用前两个部分组成分组键
+                                return parts[0] + "_" + parts[1];
                             } else {
-                                // 如果没有足够的部分，保留原键
                                 return key;
                             }
                         },
@@ -1183,10 +1171,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                             String key = entry.getKey();
                             String[] parts = key.split("_");
                             if (parts.length >= 3) {
-                                // 获取第三部分并将其解析为整数
                                 return Integer.parseInt(parts[2]);
                             } else {
-                                // 如果没有第三部分，默认为0
                                 return 0;
                             }
                         }))
@@ -1196,8 +1182,6 @@ public class FlowApiServiceImpl implements FlowApiService {
                         Map.Entry::getKey,
                         entry -> entry.getValue().map(Map.Entry::getValue).orElse(null)
                 ));
-
-
 
         //获取审核通过的用户
         List<HighLightedUserInfoDTO> highLightedUserInfoDTOs = collect.entrySet().stream()
