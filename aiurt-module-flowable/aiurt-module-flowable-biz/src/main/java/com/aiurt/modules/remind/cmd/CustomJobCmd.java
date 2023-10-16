@@ -69,7 +69,7 @@ public class CustomJobCmd implements Command<Object>, Serializable {
         job.setJobHandlerType(TimeOutRemindJobHandler.TYPE);
         // 处理时间
         job.setDuedate(this.dueDate);
-        job.setExecutionId(null);
+        job.setExecutionId(this.executionId);
         job.setProcessInstanceId(this.processInstanceId);
         job.setJobHandlerConfiguration(jsonObject.toJSONString());
         timerJobService.scheduleTimerJob(job);

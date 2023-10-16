@@ -508,11 +508,12 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
             // 是否自动选人
             List<ExtensionElement> autoSelectElements = extensionMap.get(FlowModelExtElementConstant.EXT_AUTO_SELECT);
+            flowTaskExt.setIsAutoSelect(1);
             if (CollUtil.isNotEmpty(autoSelectElements)) {
                 ExtensionElement extensionElement = autoSelectElements.get(0);
                 String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_USER_VALUE);
                 // 需要转换
-                if (StrUtil.equalsIgnoreCase(attributeValue, "true")) {
+                if (StrUtil.isBlank(attributeValue) || StrUtil.equalsIgnoreCase(attributeValue, "true")) {
                     flowTaskExt.setIsAutoSelect(1);
                 } else {
                     flowTaskExt.setIsAutoSelect(0);
