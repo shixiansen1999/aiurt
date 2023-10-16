@@ -1,5 +1,6 @@
 package com.aiurt.modules.forecast.dto;
 
+import com.alibaba.druid.sql.visitor.functions.If;
 import lombok.Data;
 import org.flowable.bpmn.model.*;
 import org.flowable.task.api.history.HistoricTaskInstance;
@@ -64,6 +65,11 @@ public class HistoricTaskInfo {
     private String taskDefinitionKey;
 
 
+    /**
+     *  节点类型， start
+     */
+    private String type = "userTask";
+
     public void addTaskInstance(HistoricTaskInstance historicTaskInstance) {
         this.list.add(historicTaskInstance);
     }
@@ -85,7 +91,12 @@ public class HistoricTaskInfo {
         return sequenceFlow;
     }
 
-
+    public static FlowElement createStartFlowElement(String id, String name) {
+        StartEvent startEvent = new StartEvent();
+        startEvent.setId(id);
+        startEvent.setName(name);
+        return startEvent;
+    }
 
     /**
      * 创建结束节点信息
@@ -94,7 +105,7 @@ public class HistoricTaskInfo {
      * @return
      */
     public static FlowElement createEndFlowElement(String id,String name){
-        EndEvent endEvent=new EndEvent();
+        EndEvent endEvent = new EndEvent();
         endEvent.setId(id);
         endEvent.setName(name);
         return endEvent;
@@ -108,7 +119,7 @@ public class HistoricTaskInfo {
      * @return
      */
     public static FlowElement createCommonUserTask(String id, String name, String assignee){
-        UserTask userTask=new UserTask();
+        UserTask userTask = new UserTask();
         userTask.setId(id);
         userTask.setName(name);
         userTask.setAssignee(assignee);
@@ -122,7 +133,7 @@ public class HistoricTaskInfo {
      * @return
      */
     public static FlowElement createMultiUserTask(String id,String name){
-        UserTask userTask=new UserTask();
+        UserTask userTask = new UserTask();
         userTask.setId(id);
         userTask.setName(name);
         //分配用户
