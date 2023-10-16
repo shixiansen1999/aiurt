@@ -89,6 +89,13 @@ public interface FlowApiService {
     IPage<FlowTaskDTO> listRuntimeTask(Integer pageNo, Integer pageSize, FlowTaskReqDTO flowTaskReqDTO);
 
     /**
+     * 抄送我的
+     * @param flowCopyReqDTO
+     * @return
+     */
+    IPage<FlowCopyDTO> listCopyInfo(FlowCopyReqDTO flowCopyReqDTO);
+
+    /**
      * 获取流程实例的变量。
      *
      * @param processInstanceId 流程实例Id。
