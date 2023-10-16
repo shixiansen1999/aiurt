@@ -96,7 +96,6 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
         // 处理历史任务，以及查找每个节点的出现的次数，正在运行的任务
         processHistoricTask(userTaskModelMap, resultMap, runList, nodeTimeMap);
 
-        Map<String, Object> variables = runtimeService.getVariables(processInstanceId);
 
         // 预测未来的节点
         buildFeatureTask(processInstanceId, historicProcessInstance, definitionId, userTaskModelMap, resultMap, runList, nodeTimeMap);
