@@ -141,7 +141,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         Boolean completeTask = multiInTaskService.isCompleteTask(task);
 
         // 自动选人 1, 0 否
-        Integer isAutoSelect = customTaskExt.getIsAutoSelect();
+        Integer isAutoSelect = Optional.ofNullable(customTaskExt.getIsAutoSelect()).orElse(1);
         // 办理规则 如果办理规则为空则，就是旧版流程选人，不需要处理, 现在新版也是存在
         // 多实例最后一步，自动选人则构造下一步节点以及下一个节点的数据, 提交为空时
         if (completeTask) {

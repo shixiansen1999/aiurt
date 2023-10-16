@@ -74,7 +74,8 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
         // 历史记录,包括正在运行的节点
         List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByTaskCreateTime().asc().list();
-        list = list.stream().filter(historicTaskInstance -> !StrUtil.equalsIgnoreCase("MI_END", historicTaskInstance.getDeleteReason())).collect(Collectors.toList());
+        list = list.stream().filter(historicTaskInstance -> !(StrUtil.equalsAnyIgnoreCase(historicTaskInstance.getDeleteReason(),"Delete MI execution","MI_END")) )
+                .collect(Collectors.toList());
         // 找出数据
         String definitionId = historicProcessInstance.getProcessDefinitionId();
         // bpmnmodel
@@ -314,7 +315,7 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
             List<HistoricTaskInstance> taskInstanceList = historicTaskInstanceList.stream()
                     .filter(historicTaskInstance -> Objects.isNull(historicTaskInstance.getEndTime())).collect(Collectors.toList());
 
-            // 修改下一个节点数据
+            // 修改下一个节点数据，需要排除减签的数据
             if (CollUtil.isNotEmpty(deleteReasonSet)) {
                 // Change parent activity to Activity_0dc8qph
                 Set<String> targetSet = deleteReasonSet.stream().map(deleteReason -> StrUtil.replace(deleteReason, "Change parent activity to ", "")).collect(Collectors.toSet());
