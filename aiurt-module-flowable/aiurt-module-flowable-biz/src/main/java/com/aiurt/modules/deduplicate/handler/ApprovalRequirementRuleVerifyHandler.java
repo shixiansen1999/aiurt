@@ -10,6 +10,7 @@ import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.entity.ActOperationEntity;
 import com.alibaba.fastjson.JSON;
 import io.swagger.util.Json;
+import kotlin.OptIn;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -56,8 +57,19 @@ public class ApprovalRequirementRuleVerifyHandler<T extends FlowDeduplicateConte
 
         ActOperationEntity actOperationEntity = agreeList.get(0);
 
-        Boolean mustRemark = actOperationEntity.getMustRemark();
-        // 意见必填
-        context.setContinueChain(!mustRemark);
+        // 是否必填
+        Boolean mustRemark = Optional.ofNullable(actOperationEntity.getMustRemark()).orElse(Boolean.TRUE);
+
+        // 是否有填写意见
+        Boolean hasRemark = Optional.ofNullable(actOperationEntity.getHasRemark()).orElse(Boolean.TRUE);
+
+        // 是否有填写意见
+        if (hasRemark) {
+            // 是否必填
+            context.setContinueChain(!mustRemark);
+        }else {
+            context.setContinueChain(true);
+        }
+
     }
 }
