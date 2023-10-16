@@ -21,11 +21,16 @@ public class DuplicateBeforeVerifyHandler<T extends FlowDeduplicateContext> exte
     public void handle(T context) {
         ActCustomModelExt actCustomModelExt = context.getActCustomModelExt();
         if (Objects.isNull(actCustomModelExt)) {
+            if (log.isDebugEnabled()) {
+                log.debug("审批去重，该流程没有配置信息");
+            }
             context.setContinueChain(false);
         }else {
             Integer isDeduplicate = Optional.ofNullable(actCustomModelExt.getIsDedulicate()).orElse(0);
             if (isDeduplicate == 0 ) {
-                log.info("审批人去重， 不开启去重");
+                if (log.isDebugEnabled()) {
+                    log.debug("审批去重，该流程不开始审批去重");
+                }
                 context.setContinueChain(false);
                 return;
             }

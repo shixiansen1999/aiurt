@@ -43,7 +43,9 @@ public class DuplicateRuleVerifyHandler<T extends FlowDeduplicateContext> extend
         int isDeduplicate = Optional.ofNullable(actCustomModelExt.getIsDedulicate()).orElse(0);
 
         if (isDeduplicate == 0 ) {
-            log.info("审批人去重， 不开启去重");
+            if (log.isDebugEnabled()) {
+                log.debug("审批去重，该流程不开始审批去重");
+            }
             context.setContinueChain(false);
             return;
         }
@@ -52,15 +54,24 @@ public class DuplicateRuleVerifyHandler<T extends FlowDeduplicateContext> extend
         String duplicateRule = actCustomModelExt.getDedulicateRule();
 
         if (StrUtil.isBlank(duplicateRule)) {
-            log.info("审批人去重， 没选择去重规则");
+            if (log.isDebugEnabled()) {
+                log.debug("审批去重，该流程没有配置去重规则");
+            }
             context.setContinueChain(false);
             return;
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("审批去重，该流程去重规则：{}", duplicateRule);
         }
         Task task = context.getTask();
         List<HistoricTaskInstance> historicTaskInstanceList = context.getHistoricTaskInstanceList();
         Map<String, List<HistoricTaskInstance>> duplicateUserNameMap = historicTaskInstanceList.stream()
-                .filter(historicTaskInstance -> !StrUtil.equalsIgnoreCase(historicTaskInstance.getId(), task.getId())).collect(Collectors.groupingBy(HistoricTaskInstance::getAssignee));
-        Map<String, List<HistoricTaskInstance>> nodeIdMap = historicTaskInstanceList.stream().filter(historicTaskInstance -> !StrUtil.equalsIgnoreCase(historicTaskInstance.getId(), task.getId()))
+                .filter(historicTaskInstance -> !StrUtil.equalsIgnoreCase(historicTaskInstance.getId(), task.getId()))
+                .collect(Collectors.groupingBy(HistoricTaskInstance::getAssignee));
+
+        Map<String, List<HistoricTaskInstance>> nodeIdMap = historicTaskInstanceList.stream()
+                .filter(historicTaskInstance -> !StrUtil.equalsIgnoreCase(historicTaskInstance.getId(), task.getId()))
                 .collect(Collectors.groupingBy(HistoricTaskInstance::getTaskDefinitionKey));
 
         ProcessInstance processInstance = context.getProcessInstance();
@@ -91,6 +102,9 @@ public class DuplicateRuleVerifyHandler<T extends FlowDeduplicateContext> extend
                     break;
             }
         });
+        if (log.isDebugEnabled()) {
+            log.debug("审批去重，任务id：{}，规则校验结果：{}", task.getId(), flag.get());
+        }
         context.setContinueChain(flag.get());
     }
 }
