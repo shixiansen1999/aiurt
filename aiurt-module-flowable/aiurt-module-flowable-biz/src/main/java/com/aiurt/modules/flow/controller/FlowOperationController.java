@@ -99,6 +99,18 @@ public class FlowOperationController {
     }
 
     /**
+     * 抄送我的
+     * @param flowCopyReqDTO
+     * @return
+     */
+    @ApiOperation(value = "抄送我的", notes = "抄送我的")
+    @PostMapping(value = "/listCopyInfo")
+    public Result<IPage<FlowCopyDTO>> listCopyInfo(@RequestBody FlowCopyReqDTO flowCopyReqDTO) {
+        IPage<FlowCopyDTO> pageList = flowApiService.listCopyInfo(flowCopyReqDTO);
+        return Result.OK(pageList);
+    }
+
+    /**
      * 获取指定流程定义的流程图。
      *
      * @param processDefinitionId 流程定义Id。

@@ -1,6 +1,7 @@
 package com.aiurt.modules.flow.service.impl;
 import java.util.Date;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
+import com.aiurt.modules.copy.service.IActCustomProcessCopyService;
 import com.aiurt.modules.modeler.entity.*;
 import com.aiurt.modules.modeler.service.IActCustomModelExtService;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
@@ -153,6 +154,9 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     @Autowired
     private IActCustomModelExtService modelExtService;
+
+    @Autowired
+    private IActCustomProcessCopyService actCustomProcessCopyService;
 
 
     /**
@@ -930,6 +934,17 @@ public class FlowApiServiceImpl implements FlowApiService {
         result.setSize(pageSize);
         result.setPages(totalCount <= 0 ? 0 : (totalCount > 1 ? (totalCount - 1) / pageSize + 1 : 1));
         return result;
+    }
+
+    @Override
+    public IPage<FlowCopyDTO> listCopyInfo(FlowCopyReqDTO flowCopyReqDTO) {
+        //获取当前登录的用户
+        LoginUser loginUser = checkLogin();
+        String userName = loginUser.getUsername();
+        Page<FlowCopyDTO> page = new Page<>(flowCopyReqDTO.getPageNo(),flowCopyReqDTO.getPageSize());
+        //查询所有抄送信息
+        IPage<FlowCopyDTO> flowCopyDTOIPage = actCustomProcessCopyService.queryPageList(page, flowCopyReqDTO,userName);
+        return flowCopyDTOIPage;
     }
 
     /**
@@ -2122,6 +2137,7 @@ public class FlowApiServiceImpl implements FlowApiService {
     @NotNull
     private List<HistoricTaskInfo> buildHistoricTaskInfo(HistoricProcessInstance processInstance) {
         List<HistoricTaskInstance> instanceList = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstance.getId()).orderByHistoricTaskInstanceStartTime().desc().list();
+
         // 需要重构， 已办理的，未办理的， 已办理的需要
         List<HistoricTaskInfo> historicTaskInfoList = new ArrayList<>();
         HistoricTaskInstance historicTaskInstance = instanceList.get(0);

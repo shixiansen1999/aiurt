@@ -1,5 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.copy.mapper.ActCustomProcessCopyMapper">
+    <select id="queryPageList" resultType="com.aiurt.modules.flow.dto.FlowCopyDTO">
+        SELECT
+        acpc.id as id,
+        acpc.process_instance_id AS processInstanceId,
+        acpc.task_id AS taskId,
+        acpc.create_time AS createTime,
+        acpc.create_by AS assigne,
+        aht.NAME_ AS taskName,
+        aht.PROC_DEF_ID_ as processDefinitionId,
+        arp.NAME_ AS processDefinitionName,
+        ahp.NAME_ as processInstanceName,
+        ahp.START_USER_ID_ AS processInstanceInitiator,
+        ahp.START_TIME_ AS taskCreateTime,
+        aht.TASK_DEF_KEY_ AS nodeId,
+        aht.NAME_ AS nodeName
+        FROM
+        act_custom_process_copy acpc
+        LEFT JOIN act_hi_procinst ahp ON ahp.PROC_INST_ID_ = acpc.process_instance_id
+        LEFT JOIN act_hi_taskinst aht ON aht.ID_ = acpc.task_id
+        LEFT JOIN act_re_procdef arp ON ahp.PROC_DEF_ID_ = arp.ID_
+        WHERE
+        acpc.del_flag = 0
+        AND ahp.ID_ IS NOT NULL
+        <if test="condition.processInstanceId != null and condition.processInstanceId != ''">
+            and acpc.process_instance_id = #{condition.processInstanceId}
+        </if>
+        <if test="condition.processInstanceName != null and condition.processInstanceName != ''">
+            and arp.NAME_ like concat('%', #{condition.processInstanceName}, '%')
+        </if>
+        <if test="userName != null and userName != ''">
+            and acpc.user_name  = #{userName}
+        </if>
+        order by acpc.create_time desc
+    </select>
 
 </mapper>
