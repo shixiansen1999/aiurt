@@ -813,7 +813,11 @@ public class SysPermissionController {
             } else {
                 meta.put("filter", false);
             }
-
+            if (permission.isThirdPartyIsShow()) {
+                meta.put("thirdPartyIsShow", true);
+            } else {
+                meta.put("thirdPartyIsShow", false);
+            }
             /*update_begin author:wuxianquan date:20190908 for:往菜单信息里添加外链菜单打开方式 */
             //外链菜单打开方式
             if (permission.isInternalOrExternal()) {
