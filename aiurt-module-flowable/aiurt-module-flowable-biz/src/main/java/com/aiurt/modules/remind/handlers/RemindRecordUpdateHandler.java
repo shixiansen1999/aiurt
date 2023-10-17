@@ -6,10 +6,14 @@ import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.remind.context.FlowRemindContext;
 import com.aiurt.modules.remind.entity.ActCustomRemindRecord;
 import com.aiurt.modules.remind.service.IActCustomRemindRecordService;
+import org.flowable.task.api.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * <p>更新流程催办记录</p>
@@ -29,10 +33,13 @@ public class RemindRecordUpdateHandler extends AbstractFlowHandler<FlowRemindCon
     @Override
     public void handle(FlowRemindContext context) {
         ActCustomRemindRecord lastRemindRecord = context.getLastRemindRecord();
+        List<Task> taskList = context.getTaskList();
+        List<String> list = taskList.stream().map(Task::getId).collect(Collectors.toList());
         ActCustomRemindRecord actCustomRemindRecord = BeanUtil.copyProperties(lastRemindRecord, ActCustomRemindRecord.class, "id", "lastRemindTime", "receiveUserName");
         actCustomRemindRecord.setLastRemindTime(new Date());
         actCustomRemindRecord.setProcessInstanceId(context.getProcessInstanceId());
         actCustomRemindRecord.setRemindUserName(context.getLoginName());
+        actCustomRemindRecord.setTaskId(Objects.isNull(lastRemindRecord) ? StrUtil.join(",", list) : lastRemindRecord.getTaskId());
         actCustomRemindRecord.setReceiveUserName(StrUtil.join(",", context.getUserNameList()));
         remindRecordService.save(actCustomRemindRecord);
     }

@@ -2,6 +2,7 @@ package com.aiurt.modules.flow.service.impl;
 import java.util.Date;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.copy.service.IActCustomProcessCopyService;
+import com.aiurt.modules.deduplicate.handler.BackNodeRuleVerifyHandler;
 import com.aiurt.modules.modeler.entity.*;
 import com.aiurt.modules.modeler.service.IActCustomModelExtService;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
@@ -440,16 +441,14 @@ public class FlowApiServiceImpl implements FlowApiService {
             turnTask(param);
 
             // 加签
-        } else if (StrUtil.equalsIgnoreCase(FlowApprovalType.ADD_USER, approvalType)) {
-
         }
 
         // 判断当前完成执行的任务，是否存在抄送设置
-        // 增加流程批注数据
+        // todo 不能在这记录数据否则存在问题 审批去重增加流程批注数据
         ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(comment, ActCustomTaskComment.class);
         if (flowTaskComment != null) {
             flowTaskComment.fillWith(processInstanceActiveTask);
-            flowTaskComment.setCreateRealname(checkLogin().getRealname());
+            flowTaskComment.setCreateRealname(task.getAssignee());
             customTaskCommentService.getBaseMapper().insert(flowTaskComment);
         }
 
@@ -1737,7 +1736,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         List<String> nodeIdList = taskList.stream().map(Task::getTaskDefinitionKey).collect(Collectors.toList());
 
         Map<String, Object> localVariableMap = new HashMap<>();
-        localVariableMap.put("reject_first_user_task", true);
+        localVariableMap.put(BackNodeRuleVerifyHandler.REJECT_FIRST_USER_TASK, true);
         // 流程跳转, flowable 已提供
         runtimeService.createChangeActivityStateBuilder()
                 .processInstanceId(instanceDTO.getProcessInstanceId())

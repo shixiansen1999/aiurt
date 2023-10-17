@@ -45,11 +45,8 @@ public class RemindSendMessageHandler extends AbstractFlowHandler<FlowRemindCont
 
         // 代办任务
         List<Task> taskList = context.getTaskList();
-        // 过滤发起人的任务
-        List<Task> remindList = taskList.stream().filter(task -> !StrUtil.equalsIgnoreCase(task.getAssignee(), loginName))
-                .collect(Collectors.toList());
 
-        List<String> list = remindList.stream().map(Task::getAssignee).collect(Collectors.toList());
+        List<String> list = taskList.stream().map(Task::getAssignee).collect(Collectors.toList());
         context.setUserNameList(list);
         Date startTime = processInstance.getStartTime();
         String createTime = DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss");
@@ -62,7 +59,7 @@ public class RemindSendMessageHandler extends AbstractFlowHandler<FlowRemindCont
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.BPM.getType());
 
 
-        List<MessageDTO> messageDTOList = remindList.stream().map(task -> {
+        List<MessageDTO> messageDTOList = taskList.stream().map(task -> {
             MessageDTO messageDTO = new MessageDTO();
             messageDTO.setIsMarkdown(true);
             messageDTO.setFromUser(loginName);

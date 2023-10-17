@@ -1,7 +1,9 @@
 package com.aiurt.modules.remind.handlers;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
@@ -9,11 +11,14 @@ import com.aiurt.modules.modeler.entity.ActCustomModelExt;
 import com.aiurt.modules.remind.context.FlowRemindContext;
 import com.aiurt.modules.remind.entity.ActCustomRemindRecord;
 import org.flowable.engine.history.HistoricProcessInstance;
+import org.flowable.task.api.Task;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * <p>提醒规则校验</p>
@@ -51,14 +56,37 @@ public class RemindRuleVerifyHandler extends AbstractFlowHandler<FlowRemindConte
         ActCustomRemindRecord lastRemindRecord = context.getLastRemindRecord();
         // 仅发起人可催办流程，且可以对每个流程节点每 5 分钟催办一次；
         if (Objects.nonNull(lastRemindRecord)) {
+            String taskId = lastRemindRecord.getTaskId();
+
+            List<Task> taskList = context.getTaskList();
+
             // 上次催办时间
             Date lastRemindTime = Optional.ofNullable(lastRemindRecord.getLastRemindTime()).orElse(new Date());
 
             long between = DateUtil.between(lastRemindTime, new Date(), DateUnit.MINUTE);
 
             if (between < 5) {
-                context.setContinueChain(false);
-                throw new AiurtBootException("催办需间隔5分钟， 请"+(5-between)+"分钟后重试");
+                // 已发送，已提交后
+                if (StrUtil.isNotBlank(taskId)) {
+                    // 校验数据
+                    List<String> hasRemindList = StrUtil.split(taskId, ',');
+
+                    // 获取没有提醒的任务
+                    List<Task> noRemindList = taskList.stream().filter(task -> !hasRemindList.contains(task.getId())).collect(Collectors.toList());
+
+                    if (CollUtil.isNotEmpty(noRemindList)) {
+                        context.setTaskList(noRemindList);
+                        List<String> noRemindTaskIdList = noRemindList.stream().map(Task::getId).collect(Collectors.toList());
+                        hasRemindList.addAll(noRemindTaskIdList);
+                        lastRemindRecord.setTaskId(StrUtil.join(",", hasRemindList));
+                    } else {
+                        context.setContinueChain(false);
+                        throw new AiurtBootException("催办需间隔5分钟， 请"+(5-between)+"分钟后重试");
+                    }
+                } else {
+                    context.setContinueChain(false);
+                    throw new AiurtBootException("催办需间隔5分钟， 请"+(5-between)+"分钟后重试");
+                }
             }
         }
     }
