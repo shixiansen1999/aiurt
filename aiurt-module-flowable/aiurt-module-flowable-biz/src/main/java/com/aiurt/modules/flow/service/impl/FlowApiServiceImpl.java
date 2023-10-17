@@ -1141,24 +1141,19 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
 
         //获取流程实例的历史节点(全部执行过的节点，被拒绝的任务节点将会出现多次)
-        Set<String> finishedTaskSet = new LinkedHashSet<>();
         List<HistoricActivityInstance> activityInstanceList =
                 this.getHistoricActivityInstanceList(processInstanceId);
-        List<String> activityInstanceTask = activityInstanceList.stream()
-                .filter(s -> !StrUtil.equals(s.getActivityType(), "sequenceFlow"))
-                .sorted((Comparator.comparing(HistoricActivityInstance::getStartTime)))
-                .map(HistoricActivityInstance::getActivityId).collect(Collectors.toList());
-        Set<String> finishedTaskSequenceSet = new LinkedHashSet<>();
-        for (int i = 0; i < activityInstanceTask.size(); i++) {
-            String current = activityInstanceTask.get(i);
-            if (i != activityInstanceTask.size() - 1) {
-                String next = activityInstanceTask.get(i + 1);
-                finishedTaskSequenceSet.add(current + next);
-            }
-            finishedTaskSet.add(current);
-        }
-        Set<String> finishedSequenceFlowSet = new HashSet<>();
-        finishedTaskSequenceSet.forEach(s -> finishedSequenceFlowSet.add(allSequenceFlowMap.get(s)));
+        Map<Boolean, Set<String>> partitionedTasks = activityInstanceList.stream()
+                .filter(s -> ObjectUtil.isNotEmpty(s.getEndTime()))
+                .sorted(Comparator.comparing(HistoricActivityInstance::getStartTime))
+                .collect(Collectors.partitioningBy(
+                        s -> StrUtil.equals(s.getActivityType(), "sequenceFlow"),
+                        Collectors.mapping(HistoricActivityInstance::getActivityId, Collectors.toSet())
+                ));
+        //已完成的线路
+        Set<String> finishedTaskSequenceSet = partitionedTasks.get(true);
+        //已完成的任务节点
+        Set<String> finishedTaskSet = partitionedTasks.get(false);
 
         //获取流程实例当前正在待办的节点
         List<HistoricActivityInstance> unfinishedInstanceList =
@@ -1224,7 +1219,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         String modelXml = new String(bpmnXml, StandardCharsets.UTF_8);
         HighLightedNodeDTO highLightedNodeDTO = HighLightedNodeDTO.builder()
                 .finishedTaskSet(finishedTaskSet)
-                .finishedSequenceFlowSet(finishedSequenceFlowSet)
+                .finishedSequenceFlowSet(finishedTaskSequenceSet)
                 .unfinishedTaskSet(unfinishedTaskSet)
                 .modelName(hpi.getProcessDefinitionName())
                 .modelXml(modelXml)
