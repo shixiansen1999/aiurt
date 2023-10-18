@@ -530,6 +530,16 @@ public interface SysParamCodeConstant {
      * 	巡视、检修标准是否关联多个设备分类
      */
     String MULTIPLE_DEVICE_TYPES = "multiple_device_types";
+
+    /**
+     * 	巡视、检修标准是否合并工单
+     */
+    String IS_MERGE_PATROL_TASK_DEVICE= "is_merge_patrol_task_device";
+
+    /**
+     * 	巡视、检修标准在关联设备类型的情况下是否需要指定设备
+     */
+    String WHETHER_TO_SPECIFY_DEVICE = "whether_to_specify_device";
     /**
      * 检修任务领取是否放开时间限制
      */
