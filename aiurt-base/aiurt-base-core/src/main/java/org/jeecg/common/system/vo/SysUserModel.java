@@ -65,5 +65,6 @@ public class SysUserModel implements Serializable {
     private Long userNum;
 
     @ApiModelProperty(value = "是否可选")
-    private Boolean isSelect = Boolean.TRUE;
+    private Boolean selectable = Boolean.TRUE;
+
 }
