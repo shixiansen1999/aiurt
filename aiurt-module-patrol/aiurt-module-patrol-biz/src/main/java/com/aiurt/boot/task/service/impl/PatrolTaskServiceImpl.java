@@ -157,6 +157,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private ISysParamAPI iSysParamAPI;
     @Autowired
     private PatrolStandardDeviceTypeMapper patrolStandardDeviceTypeMapper;
+    @Autowired
+    private IPatrolDeviceService patrolDeviceService;
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
@@ -1518,11 +1520,23 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskStandard.setStandardCode(ns.getCode());
             patrolTaskStandardMapper.insert(patrolTaskStandard);
             String taskStandardId = patrolTaskStandard.getId();
+            // 获取指定设备
+            List<DeviceDTO> deviceList = ns.getDeviceList();
+            // 保存巡视任务设备关联表
+            ArrayList<PatrolDevice> patrolDeviceList = new ArrayList<>();
+            deviceList.forEach(d -> {
+                PatrolDevice patrolDevice = new PatrolDevice();
+                patrolDevice.setTaskId(taskId);
+                patrolDevice.setTaskStandardId(taskStandardId);
+                patrolDevice.setDeviceCode(d.getCode());
+                patrolDeviceList.add(patrolDevice);
+            });
+            patrolDeviceService.saveBatch(patrolDeviceList);
             //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
             if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()  && "0".equals(paramModel.getValue()) ) {
-                List<DeviceDTO> deviceList = ns.getDeviceList();
+
                 if (CollUtil.isEmpty(deviceList)) {
                     throw new AiurtBootException("要指定设备才可以保存");
                 } else {

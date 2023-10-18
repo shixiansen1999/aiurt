@@ -68,6 +68,8 @@ public class TaskPoolQuarter implements Job {
     @Autowired
     private IPatrolCheckResultService patrolCheckResultService;
     @Autowired
+    private IPatrolDeviceService patrolDeviceService;
+    @Autowired
     private ISysParamAPI iSysParamAPI;
 
     @Override
@@ -214,6 +216,25 @@ public class TaskPoolQuarter implements Job {
 
             // 保存巡检任务标准关联数据，并获取对应的任务标准关联表ID
             String taskStandardId = saveTaskStandardData(task, l, standard);
+            // 根据计划ID获取计划设备关联表记录
+            QueryWrapper<PatrolPlanDevice> planDeviceWrapper = new QueryWrapper<>();
+            planDeviceWrapper.lambda()
+                    .eq(PatrolPlanDevice::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    // 对应计划的id
+                    .eq(PatrolPlanDevice::getPlanId, plan.getId())
+                    // 对应计划标准下的设备
+                    .eq(PatrolPlanDevice::getPlanStandardId, l.getId());
+            List<PatrolPlanDevice> planDeviceList = patrolPlanDeviceService.list(planDeviceWrapper);
+            // 保存巡视任务设备关联表
+            ArrayList<PatrolDevice> patrolDeviceList = new ArrayList<>();
+            planDeviceList.forEach(pd -> {
+                PatrolDevice patrolDevice = new PatrolDevice();
+                patrolDevice.setTaskId(task.getId());
+                patrolDevice.setTaskStandardId(taskStandardId);
+                patrolDevice.setDeviceCode(pd.getDeviceCode());
+                patrolDeviceList.add(patrolDevice);
+            });
+            patrolDeviceService.saveBatch(patrolDeviceList);
 
             Integer deviceType = standard.getDeviceType();
 
@@ -266,15 +287,6 @@ public class TaskPoolQuarter implements Job {
                 });
             } else {
                 // 与设备相关，根据设备和标准生成巡检单数据
-                // 根据计划ID获取计划设备关联表记录
-                QueryWrapper<PatrolPlanDevice> planDeviceWrapper = new QueryWrapper<>();
-                planDeviceWrapper.lambda()
-                        .eq(PatrolPlanDevice::getDelFlag, CommonConstant.DEL_FLAG_0)
-                        // 对应计划的id
-                        .eq(PatrolPlanDevice::getPlanId, plan.getId())
-                        // 对应计划标准下的设备
-                        .eq(PatrolPlanDevice::getPlanStandardId, l.getId());
-                List<PatrolPlanDevice> planDeviceList = patrolPlanDeviceService.list(planDeviceWrapper);
                 // 遍历设备列表信息
                 planDeviceList.forEach(
                         // ps 表示巡检计划标准对象
