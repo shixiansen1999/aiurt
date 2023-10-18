@@ -1523,15 +1523,17 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             // 获取指定设备
             List<DeviceDTO> deviceList = ns.getDeviceList();
             // 保存巡视任务设备关联表
-            ArrayList<PatrolDevice> patrolDeviceList = new ArrayList<>();
-            deviceList.forEach(d -> {
-                PatrolDevice patrolDevice = new PatrolDevice();
-                patrolDevice.setTaskId(taskId);
-                patrolDevice.setTaskStandardId(taskStandardId);
-                patrolDevice.setDeviceCode(d.getCode());
-                patrolDeviceList.add(patrolDevice);
-            });
-            patrolDeviceService.saveBatch(patrolDeviceList);
+            if (CollUtil.isNotEmpty(deviceList)) {
+                ArrayList<PatrolDevice> patrolDeviceList = new ArrayList<>();
+                deviceList.forEach(d -> {
+                    PatrolDevice patrolDevice = new PatrolDevice();
+                    patrolDevice.setTaskId(taskId);
+                    patrolDevice.setTaskStandardId(taskStandardId);
+                    patrolDevice.setDeviceCode(d.getCode());
+                    patrolDeviceList.add(patrolDevice);
+                });
+                patrolDeviceService.saveBatch(patrolDeviceList);
+            }
             //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
