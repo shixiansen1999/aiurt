@@ -2051,7 +2051,7 @@ public class FlowApiServiceImpl implements FlowApiService {
     @NotNull
     private List<HistoricTaskInfo> buildHistoricTaskInfo(HistoricProcessInstance processInstance) {
         List<HistoricTaskInstance> instanceList = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstance.getId()).orderByHistoricTaskInstanceStartTime().desc().list();
-        instanceList = instanceList.stream().filter(historicTaskInstance -> StrUtil.equalsIgnoreCase("_AUTO_COMPLETE", historicTaskInstance.getAssignee())).collect(Collectors.toList());
+        instanceList = instanceList.stream().filter(historicTaskInstance -> !StrUtil.equalsIgnoreCase("_AUTO_COMPLETE", historicTaskInstance.getAssignee())).collect(Collectors.toList());
         // 需要重构， 已办理的，未办理的， 已办理的需要
         List<HistoricTaskInfo> historicTaskInfoList = new ArrayList<>();
         HistoricTaskInstance historicTaskInstance = instanceList.get(0);

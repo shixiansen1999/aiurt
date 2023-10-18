@@ -47,7 +47,7 @@ public class ActCustomTaskCommentServiceImpl extends ServiceImpl<ActCustomTaskCo
         LambdaQueryWrapper<ActCustomTaskComment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ActCustomTaskComment::getProcessInstanceId, processInstanceId).eq(ActCustomTaskComment::getIsVisible, 1);
         queryWrapper.orderByAsc(ActCustomTaskComment::getId);
-        return null;
+        return baseMapper.selectList(queryWrapper);
     }
 
     /**
