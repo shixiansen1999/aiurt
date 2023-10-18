@@ -998,7 +998,11 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             for (PatrolCheckResultDTO c : checkResultList) {
                 if (c.getCheck()==1 && c.getParentId().equals("0")){
                     PrintDTO printDTO = new PrintDTO();
-                    printDTO.setStandard(ObjectUtil.defaultIfEmpty(c.getQualityStandard().replaceAll("[\n ]", ""), c.getContent()).replaceAll("[\n ]", ""));
+                    String qualityStandard = "";
+                    if (StrUtil.isNotEmpty(c.getQualityStandard())){
+                        qualityStandard = c.getQualityStandard();
+                    }
+                    printDTO.setStandard(ObjectUtil.defaultIfEmpty(qualityStandard.replaceAll("[\n ]", ""), c.getContent()).replaceAll("[\n ]", ""));
                     printDTO.setEquipment(c.getContent());
                     printDTO.setContent(c.getContent());
                     printDTO.setProcMethods(c.getProcMethods());
@@ -1036,7 +1040,11 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
 //                }
                     for (PatrolCheckResultDTO t :list){
                         PrintDTO printDTO = new PrintDTO();
-                        printDTO.setStandard(ObjectUtil.defaultIfEmpty(t.getQualityStandard().replaceAll("[\n ]", ""), t.getContent()).replaceAll("[\n ]", ""));
+                        String qualityStandard = "";
+                        if (StrUtil.isNotEmpty(t.getQualityStandard())){
+                            qualityStandard = t.getQualityStandard();
+                        }
+                        printDTO.setStandard(ObjectUtil.defaultIfEmpty(qualityStandard.replaceAll("[\n ]", ""), t.getContent()).replaceAll("[\n ]", ""));
                         printDTO.setEquipment(c.getContent());
                         printDTO.setContent(t.getContent());
                         printDTO.setProcMethods(t.getProcMethods());
