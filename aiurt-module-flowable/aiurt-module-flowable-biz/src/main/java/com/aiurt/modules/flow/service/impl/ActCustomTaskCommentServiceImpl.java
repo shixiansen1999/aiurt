@@ -2,6 +2,7 @@ package com.aiurt.modules.flow.service.impl;
 
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.flow.constants.FlowApprovalType;
 import com.aiurt.modules.flow.dto.FlowTaskCommentDTO;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
@@ -11,6 +12,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.intellij.lang.annotations.Flow;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -40,7 +42,13 @@ public class ActCustomTaskCommentServiceImpl extends ServiceImpl<ActCustomTaskCo
         return baseMapper.selectList(queryWrapper);
     }
 
-
+    @Override
+    public List<ActCustomTaskComment> listFlowTaskCommentVisible(String processInstanceId) {
+        LambdaQueryWrapper<ActCustomTaskComment> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ActCustomTaskComment::getProcessInstanceId, processInstanceId).eq(ActCustomTaskComment::getIsVisible, 1);
+        queryWrapper.orderByAsc(ActCustomTaskComment::getId);
+        return null;
+    }
 
     /**
      * 转换ActCustomTaskComment实体对象转成FlowTaskCommentDTO。
@@ -69,7 +77,9 @@ public class ActCustomTaskCommentServiceImpl extends ServiceImpl<ActCustomTaskCo
             flowTaskCommentDTO.setDelegateAssginee(actCustomTaskComment.getDelegateAssignee());
             flowTaskCommentDTO.setCustomBusinessData(actCustomTaskComment.getCustomBusinessData());
             flowTaskCommentDTO.setCreateBy(actCustomTaskComment.getCreateBy());
-            flowTaskCommentDTO.setCreateRealname(actCustomTaskComment.getCreateRealname());
+            if (!StrUtil.equalsIgnoreCase(FlowApprovalType.AUTO_COMPLETE, actCustomTaskComment.getApprovalType())) {
+                flowTaskCommentDTO.setCreateRealname(actCustomTaskComment.getCreateRealname());
+            }
             flowTaskCommentDTO.setCreateTime(actCustomTaskComment.getCreateTime());
             result.add(flowTaskCommentDTO);
         }

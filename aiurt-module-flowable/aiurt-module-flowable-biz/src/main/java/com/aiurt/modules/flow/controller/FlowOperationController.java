@@ -151,7 +151,7 @@ public class FlowOperationController {
     @ApiOperation(value = "获取当前流程任务的审批列表", notes = "获取当前流程任务的审批列表")
     public Result<List<FlowTaskCommentDTO>> listFlowTaskComment(@RequestParam String processInstanceId) {
         List<ActCustomTaskComment> actCustomTaskComments =
-                actCustomTaskCommentService.getFlowTaskCommentList(processInstanceId);
+                actCustomTaskCommentService.listFlowTaskCommentVisible(processInstanceId);
         List<FlowTaskCommentDTO> resultList = actCustomTaskCommentService.convertToCustomTaskCommentList(actCustomTaskComments);
         return Result.OK(resultList);
     }
