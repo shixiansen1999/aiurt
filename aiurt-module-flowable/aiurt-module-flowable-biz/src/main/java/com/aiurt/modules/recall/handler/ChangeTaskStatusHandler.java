@@ -10,6 +10,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.deduplicate.handler.BackNodeRuleVerifyHandler;
+import com.aiurt.modules.flow.constants.FlowApprovalType;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
@@ -49,7 +50,7 @@ public class ChangeTaskStatusHandler extends AbstractFlowHandler<FlowRecallConte
     private FlowElementUtil flowElementUtil;
 
     @Resource
-    private TaskService taskService;
+    private IActCustomTaskCommentService taskCommentService;
 
     @Autowired
     private RuntimeService runtimeService;
@@ -63,7 +64,7 @@ public class ChangeTaskStatusHandler extends AbstractFlowHandler<FlowRecallConte
 
         // fixby fugaowei 在并行网关，多实例中撤回有条数据的问题或者 原因分析（https://blog.csdn.net/weixin_44663675/article/details/125839004）
         List<Execution> executions = runtimeService.createExecutionQuery().parentId(processInstanceId).list();
-        List<String> exctutionIds = executions.stream().map(Execution::getId).collect(Collectors.toList());
+        List<String> executionIds = executions.stream().map(Execution::getId).collect(Collectors.toList());
 
 
         //获取流程发起节点
@@ -77,7 +78,7 @@ public class ChangeTaskStatusHandler extends AbstractFlowHandler<FlowRecallConte
         localVariableMap.put(BackNodeRuleVerifyHandler.REJECT_FIRST_USER_TASK, true);
         //将所有节点撤回到开始节点
         runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
-                .moveExecutionsToSingleActivityId(exctutionIds, startElementId)
+                .moveExecutionsToSingleActivityId(executionIds, startElementId)
                 .localVariables(startElementId, localVariableMap).changeState();
     }
 }

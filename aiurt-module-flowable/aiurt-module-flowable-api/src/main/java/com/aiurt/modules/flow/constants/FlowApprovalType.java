@@ -85,6 +85,8 @@ public final class FlowApprovalType {
      * 删除流程
      */
     public static final String DELETE = "delete";
+
+
     /**
      * 终止流程
      */
@@ -102,6 +104,8 @@ public final class FlowApprovalType {
 
     public static final String RECALL = "recall";
 
+    public static final String AUTO_COMPLETE = "AUTO_COMPLETE";
+
 
 
     public static final Map<Object, String> DICT_MAP = new HashMap<>(16);
@@ -114,8 +118,6 @@ public final class FlowApprovalType {
         DICT_MAP.put(REJECT, "拒绝");
         DICT_MAP.put(REJECT_WANT_TASK, "退回到指定的节点");
         DICT_MAP.put(REJECT_FIRST_USER_TASK, "退回申请人");
-        DICT_MAP.put(ADD_USER, "加签");
-        DICT_MAP.put(REMOVE_USER, "减签");
         DICT_MAP.put(TRANSFER, "转办");
         DICT_MAP.put(CANCEL, "撤销");
         DICT_MAP.put(DELETE, "删除流程");
@@ -123,6 +125,7 @@ public final class FlowApprovalType {
         DICT_MAP.put(ADD_MULTI, "加签");
         DICT_MAP.put(REDUCE_MULTI, "减签");
         DICT_MAP.put(RECALL, "撤回");
+        DICT_MAP.put(AUTO_COMPLETE, "自动通过");
     }
 
     /**

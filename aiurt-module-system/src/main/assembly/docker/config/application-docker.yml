@@ -290,6 +290,8 @@ logging:
         modules:
           system:
             mapper: debug
+  config:
+    classpath:  config/logback-config.xml
 #swagger
 knife4j:
   #开启增强配置

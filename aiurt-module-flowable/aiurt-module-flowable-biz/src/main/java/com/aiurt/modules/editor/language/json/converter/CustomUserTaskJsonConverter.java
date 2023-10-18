@@ -102,7 +102,9 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             UserTask userTask = (UserTask) baseElement;
             // usetask属性修改
             Map<String, List<ExtensionAttribute>> attributes = baseElement.getAttributes();
-            log.info("处理自定义属性:{}",JSON.toJSONString(attributes));
+            if (log.isDebugEnabled()) {
+                log.debug("处理自定义属性:{}", attributes);
+            }
             attributes.forEach((key,list)->{
                 ExtensionAttribute extensionAttribute = list.get(0);
                 if (StrUtil.isNotBlank(extensionAttribute.getValue())) {
