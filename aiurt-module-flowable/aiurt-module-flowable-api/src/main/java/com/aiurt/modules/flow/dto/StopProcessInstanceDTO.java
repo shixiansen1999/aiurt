@@ -23,4 +23,6 @@ public class StopProcessInstanceDTO implements Serializable {
     @ApiModelProperty(value = "终止原因", required = true)
     @NotBlank(message = "请输入终止原因")
     private String stopReason;
+
+    private String approvalType;
 }

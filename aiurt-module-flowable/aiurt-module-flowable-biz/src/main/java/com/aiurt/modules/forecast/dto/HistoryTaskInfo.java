@@ -1,6 +1,5 @@
 package com.aiurt.modules.forecast.dto;
 
-import com.alibaba.druid.sql.visitor.functions.If;
 import lombok.Data;
 import org.flowable.bpmn.model.*;
 import org.flowable.task.api.history.HistoricTaskInstance;
@@ -14,7 +13,7 @@ import java.util.Set;
  * @author fgw
  */
 @Data
-public class HistoricTaskInfo {
+public class HistoryTaskInfo {
 
 
 

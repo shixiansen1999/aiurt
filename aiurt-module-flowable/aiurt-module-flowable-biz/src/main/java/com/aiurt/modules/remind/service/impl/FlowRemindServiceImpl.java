@@ -72,7 +72,7 @@ public class FlowRemindServiceImpl implements IFlowRemindService {
         String processDefinitionId = taskEntity.getProcessDefinitionId();
         //获取超时提醒配置
         ActCustomModelExt actCustomModelExt = actCustomModelExtService.getByProcessDefinitionId(processDefinitionId);
-        if (Objects.nonNull(actCustomModelExt) && Optional.ofNullable(actCustomModelExt.getIsTimeoutRemind()).orElse(0) == 1){
+        if (Objects.nonNull(actCustomModelExt)  && Objects.nonNull(actCustomModelExt.getTimeoutRemindConfig()) && (Optional.ofNullable(actCustomModelExt.getIsTimeoutRemind()).orElse(0) == 1)){
             String timeoutRemindConfig = actCustomModelExt.getTimeoutRemindConfig().toString();
             // 解析 JSON 数据
             Date dueDate = null;

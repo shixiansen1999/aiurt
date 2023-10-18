@@ -90,7 +90,12 @@ public class TaskCreateListener implements FlowableEventListener {
 
         // 新增超时配置
         IFlowRemindService flowRemindService = SpringContextUtils.getBean(IFlowRemindService.class);
-        flowRemindService.timeoutRemind(taskEntity);
+        try {
+            flowRemindService.timeoutRemind(taskEntity);
+        } catch (Exception e) {
+            logger.error("超时提醒定时任务处理失败");
+            logger.error(e.getMessage(), e);
+        }
 
         // 任务节点前附加操作
 
