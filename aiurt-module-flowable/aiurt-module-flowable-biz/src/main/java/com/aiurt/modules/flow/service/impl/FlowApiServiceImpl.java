@@ -3018,56 +3018,54 @@ public class FlowApiServiceImpl implements FlowApiService {
                     recordDTO.setStateColor("#10C443");
                 }
                 atomicBoolean.set(false);
-            }
-
-            // 其他节点
-            if (CollUtil.isNotEmpty(unFinishList)) {
-                if (unFinishList.size() == taskInfoList.size()) {
-                    recordDTO.setStateName("待审批");
-                    recordDTO.setStateColor("#FFA800");
-                } else {
-                    recordDTO.setStateName("审批中");
-                    recordDTO.setStateColor("#1890FF");
-                }
             } else {
-                recordDTO.setStateName("已通过");
-                recordDTO.setStateColor("#10C443");
-
-                // 终止流程，撤回
-                List<String> deleteReasonList = taskInfoList.stream().map(HistoricTaskInstance::getDeleteReason).collect(Collectors.toList());
-
-                // 终止流程
-                boolean stopFlag = deleteReasonList.stream().anyMatch(deleteReason -> StrUtil.contains(deleteReason, endEvent.getId()));
-                // 回退流程
-                boolean changeFlag = deleteReasonList.stream().anyMatch(deleteReason -> StrUtil.startWith(deleteReason,"Change"));
-                if (stopFlag) {
-                    recordDTO.setStateName("已作废");
-                    recordDTO.setStateColor("#FF0000");
-                } else {
-                    if (changeFlag) {
-                        recordDTO.setStateName("已退回");
+                // 其他节点
+                if (CollUtil.isNotEmpty(unFinishList)) {
+                    if (unFinishList.size() == taskInfoList.size()) {
+                        recordDTO.setStateName("待审批");
                         recordDTO.setStateColor("#FFA800");
+                    } else {
+                        recordDTO.setStateName("审批中");
+                        recordDTO.setStateColor("#1890FF");
                     }
-                }
+                } else {
+                    recordDTO.setStateName("已通过");
+                    recordDTO.setStateColor("#10C443");
 
-                // 是否全部自动提交
-                List<HistoricTaskInstance> autoCompleteList = taskInfoList.stream().filter(historicTaskInstance -> {
-                    ActCustomTaskComment actCustomTaskComment = taskCommentMap.get(historicProcessInstance.getId());
-                    if (Objects.isNull(actCustomTaskComment)) {
-                        return false;
+                    // 终止流程，撤回
+                    List<String> deleteReasonList = taskInfoList.stream().map(HistoricTaskInstance::getDeleteReason).collect(Collectors.toList());
+
+                    // 终止流程
+                    boolean stopFlag = deleteReasonList.stream().anyMatch(deleteReason -> StrUtil.contains(deleteReason, endEvent.getId()));
+                    // 回退流程
+                    boolean changeFlag = deleteReasonList.stream().anyMatch(deleteReason -> StrUtil.startWith(deleteReason,"Change"));
+                    if (stopFlag) {
+                        recordDTO.setStateName("已作废");
+                        recordDTO.setStateColor("#FF0000");
+                    } else {
+                        if (changeFlag) {
+                            recordDTO.setStateName("已退回");
+                            recordDTO.setStateColor("#FFA800");
+                        }
                     }
-                    return StrUtil.equalsIgnoreCase(FlowApprovalType.AUTO_COMPLETE, actCustomTaskComment.getApprovalType());
-                }).collect(Collectors.toList());
 
-                if (CollUtil.isNotEmpty(autoCompleteList)) {
-                    if (autoCompleteList.size() == taskInfoList.size()) {
-                        recordDTO.setStateName("自动通过");
-                        recordDTO.setStateColor("#10C443");
+                    // 是否全部自动提交
+                    List<HistoricTaskInstance> autoCompleteList = taskInfoList.stream().filter(historicTaskInstance -> {
+                        ActCustomTaskComment actCustomTaskComment = taskCommentMap.get(historicProcessInstance.getId());
+                        if (Objects.isNull(actCustomTaskComment)) {
+                            return false;
+                        }
+                        return StrUtil.equalsIgnoreCase(FlowApprovalType.AUTO_COMPLETE, actCustomTaskComment.getApprovalType());
+                    }).collect(Collectors.toList());
+
+                    if (CollUtil.isNotEmpty(autoCompleteList)) {
+                        if (autoCompleteList.size() == taskInfoList.size()) {
+                            recordDTO.setStateName("自动通过");
+                            recordDTO.setStateColor("#10C443");
+                        }
                     }
                 }
             }
-
-
 
             List<ProcessRecordNodeInfoDTO> infoDTOList = taskInfoList.stream().map(historicTaskInstance -> {
                 ProcessRecordNodeInfoDTO nodeInfoDTO = ProcessRecordNodeInfoDTO.builder()
