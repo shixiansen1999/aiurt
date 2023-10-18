@@ -285,11 +285,7 @@ cas:
 #Mybatis输出sql日志
 logging:
   level:
-    com:
-      aiurt:
-        modules:
-          system:
-            mapper: debug
+    root: INFO
   config:
     classpath:  config/logback-config.xml
 #swagger
