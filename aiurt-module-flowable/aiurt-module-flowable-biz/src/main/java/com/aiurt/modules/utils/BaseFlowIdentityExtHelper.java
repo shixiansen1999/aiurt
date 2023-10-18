@@ -1,9 +1,5 @@
 package com.aiurt.modules.utils;
 
-import com.aiurt.modules.listener.DeptPostLeaderListener;
-import com.aiurt.modules.listener.UpDeptPostLeaderListener;
-import org.flowable.engine.delegate.TaskListener;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -160,23 +156,5 @@ public interface BaseFlowIdentityExtHelper {
         return new HashMap<>(1);
     }
 
-    /**
-     * 获取任务执行人是当前部门领导岗位的任务监听器。
-     * 通常会在没有找到领导部门岗位Id的时候，为当前任务指定其他的指派人、候选人或候选组。
-     *
-     * @return 任务监听器。
-     */
-    default Class<? extends TaskListener> getDeptPostLeaderListener() {
-        return DeptPostLeaderListener.class;
-    }
 
-    /**
-     * 获取任务执行人是上级部门领导岗位的任务监听器。
-     * 通常会在没有找到领导部门岗位Id的时候，为当前任务指定其他的指派人、候选人或候选组。
-     *
-     * @return 任务监听器。
-     */
-    default Class<? extends TaskListener> getUpDeptPostLeaderListener() {
-        return UpDeptPostLeaderListener.class;
-    }
 }

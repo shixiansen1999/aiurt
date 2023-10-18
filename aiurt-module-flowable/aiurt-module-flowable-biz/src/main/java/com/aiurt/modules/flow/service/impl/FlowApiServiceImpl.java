@@ -2,6 +2,7 @@ package com.aiurt.modules.flow.service.impl;
 import java.util.Date;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.copy.service.IActCustomProcessCopyService;
+import com.aiurt.modules.deduplicate.handler.BackNodeRuleVerifyHandler;
 import com.aiurt.modules.modeler.entity.*;
 import com.aiurt.modules.modeler.service.IActCustomModelExtService;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
@@ -440,16 +441,14 @@ public class FlowApiServiceImpl implements FlowApiService {
             turnTask(param);
 
             // 加签
-        } else if (StrUtil.equalsIgnoreCase(FlowApprovalType.ADD_USER, approvalType)) {
-
         }
 
         // 判断当前完成执行的任务，是否存在抄送设置
-        // 增加流程批注数据
+        // todo 不能在这记录数据否则存在问题 审批去重增加流程批注数据
         ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(comment, ActCustomTaskComment.class);
         if (flowTaskComment != null) {
             flowTaskComment.fillWith(processInstanceActiveTask);
-            flowTaskComment.setCreateRealname(checkLogin().getRealname());
+            flowTaskComment.setCreateRealname(task.getAssignee());
             customTaskCommentService.getBaseMapper().insert(flowTaskComment);
         }
 
@@ -1142,24 +1141,19 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
 
         //获取流程实例的历史节点(全部执行过的节点，被拒绝的任务节点将会出现多次)
-        Set<String> finishedTaskSet = new LinkedHashSet<>();
         List<HistoricActivityInstance> activityInstanceList =
                 this.getHistoricActivityInstanceList(processInstanceId);
-        List<String> activityInstanceTask = activityInstanceList.stream()
-                .filter(s -> !StrUtil.equals(s.getActivityType(), "sequenceFlow"))
-                .sorted((Comparator.comparing(HistoricActivityInstance::getStartTime)))
-                .map(HistoricActivityInstance::getActivityId).collect(Collectors.toList());
-        Set<String> finishedTaskSequenceSet = new LinkedHashSet<>();
-        for (int i = 0; i < activityInstanceTask.size(); i++) {
-            String current = activityInstanceTask.get(i);
-            if (i != activityInstanceTask.size() - 1) {
-                String next = activityInstanceTask.get(i + 1);
-                finishedTaskSequenceSet.add(current + next);
-            }
-            finishedTaskSet.add(current);
-        }
-        Set<String> finishedSequenceFlowSet = new HashSet<>();
-        finishedTaskSequenceSet.forEach(s -> finishedSequenceFlowSet.add(allSequenceFlowMap.get(s)));
+        Map<Boolean, Set<String>> partitionedTasks = activityInstanceList.stream()
+                .filter(s -> ObjectUtil.isNotEmpty(s.getEndTime()))
+                .sorted(Comparator.comparing(HistoricActivityInstance::getStartTime))
+                .collect(Collectors.partitioningBy(
+                        s -> StrUtil.equals(s.getActivityType(), "sequenceFlow"),
+                        Collectors.mapping(HistoricActivityInstance::getActivityId, Collectors.toSet())
+                ));
+        //已完成的线路
+        Set<String> finishedTaskSequenceSet = partitionedTasks.get(true);
+        //已完成的任务节点
+        Set<String> finishedTaskSet = partitionedTasks.get(false);
 
         //获取流程实例当前正在待办的节点
         List<HistoricActivityInstance> unfinishedInstanceList =
@@ -1225,7 +1219,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         String modelXml = new String(bpmnXml, StandardCharsets.UTF_8);
         HighLightedNodeDTO highLightedNodeDTO = HighLightedNodeDTO.builder()
                 .finishedTaskSet(finishedTaskSet)
-                .finishedSequenceFlowSet(finishedSequenceFlowSet)
+                .finishedSequenceFlowSet(finishedTaskSequenceSet)
                 .unfinishedTaskSet(unfinishedTaskSet)
                 .modelName(hpi.getProcessDefinitionName())
                 .modelXml(modelXml)
@@ -1737,7 +1731,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         List<String> nodeIdList = taskList.stream().map(Task::getTaskDefinitionKey).collect(Collectors.toList());
 
         Map<String, Object> localVariableMap = new HashMap<>();
-        localVariableMap.put("reject_first_user_task", true);
+        localVariableMap.put(BackNodeRuleVerifyHandler.REJECT_FIRST_USER_TASK, true);
         // 流程跳转, flowable 已提供
         runtimeService.createChangeActivityStateBuilder()
                 .processInstanceId(instanceDTO.getProcessInstanceId())

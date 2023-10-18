@@ -18,7 +18,7 @@ import java.util.Objects;
 public class BackNodeRuleVerifyHandler<T extends FlowDeduplicateContext> extends AbstractFlowHandler<T> {
 
 
-    private static final String REJECT_FIRST_USER_TASK = "reject_first_user_task" ;
+    public static final String REJECT_FIRST_USER_TASK = "reject_first_user_task" ;
 
     @Autowired
     private TaskService taskService;
@@ -30,16 +30,22 @@ public class BackNodeRuleVerifyHandler<T extends FlowDeduplicateContext> extends
      */
     @Override
     public void handle(T context) {
-        log.info("审批去重， 驳回用户规则校验");
+
         // 通过流程变量区分是否是加签的用户
         Task task = context.getTask();
+
+        if (log.isDebugEnabled()) {
+            log.debug("审批去重，回退，撤回规则校验，任务id：{}， 节点id：{}", task.getId(), task.getTaskDefinitionKey());
+        }
 
         Boolean isMultiAssignTask = taskService.getVariableLocal(task.getId(), REJECT_FIRST_USER_TASK, Boolean.class);
 
         // 加签用户
         if (Objects.nonNull(isMultiAssignTask) && isMultiAssignTask) {
             context.setContinueChain(false);
-            log.info("该用户任务是驳回任务， 审批去重不生效");
+            if (log.isDebugEnabled()) {
+                log.debug("审批去重，该用户任务是驳回任务， 审批去重不生效，任务id：{}， 节点id：{}", task.getId(), task.getTaskDefinitionKey());
+            }
         }
     }
 }
