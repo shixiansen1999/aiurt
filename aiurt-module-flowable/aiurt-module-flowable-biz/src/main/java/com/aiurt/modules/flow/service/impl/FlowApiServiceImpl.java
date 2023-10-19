@@ -393,8 +393,10 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 流程业务数据状态更改
         String approvalType = comment.getApprovalType();
         String commentStr = comment.getComment();
-
         variableData.put("operationType", approvalType);
+        if (StrUtil.equalsIgnoreCase(FlowApprovalType.AUTO_COMPLETE, approvalType)) {
+            variableData.put("operationType", FlowApprovalType.AGREE);
+        }
         variableData.put("comment", commentStr);
 
         // 构建中间变量
@@ -738,15 +740,17 @@ public class FlowApiServiceImpl implements FlowApiService {
             List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId).active().list();
             //获取流程配置中的节点集合
             String recallNodeId = customModelExt.getRecallNodeId();
-            String[] split = recallNodeId.split(",");
-            //判断节点是否在撤回集合内，不在集合内则不显示撤回按钮
-            List<String> keyList = list.stream()
-                    .map(Task::getTaskDefinitionKey)
-                    .filter(s -> Arrays.asList(split).contains(s))
-                    .distinct()
-                    .collect(Collectors.toList());
-            if(CollUtil.isEmpty(keyList)){
-                taskInfoDTO.setWithdraw(false);
+            if (StrUtil.isNotBlank(recallNodeId) && CollUtil.isNotEmpty(list)) {
+                String[] split = recallNodeId.split(",");
+                //判断节点是否在撤回集合内，不在集合内则不显示撤回按钮
+                List<String> keyList =  list.stream()
+                        .map(Task::getTaskDefinitionKey)
+                        .filter(s -> Arrays.asList(split).contains(s))
+                        .distinct()
+                        .collect(Collectors.toList());
+                if(CollUtil.isEmpty(keyList)){
+                    taskInfoDTO.setWithdraw(false);
+                }
             }
             // 获取流程实例
             ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
