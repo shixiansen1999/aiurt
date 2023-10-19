@@ -460,19 +460,23 @@
 
     <select id="selectSingle" resultType="com.aiurt.boot.task.entity.RepairTaskResult">
         SELECT
-	       t1.*,
-        t2.proc_methods
+	        t1.*,
+            t2.proc_methods,
+            GROUP_CONCAT(d.`name`) as abnormalDeviceName
         FROM
 	    repair_task_result t1
         left join inspection_code_content t2 on t1.code = t2.code
+        left join repair_abnormal_device rad on rad.result_id = t1.id and rad.del_flag = 0
+        left join device d on d.code = rad.device_code
         <where>
-	      task_device_rel_id = #{id}
+            t1.del_flag = 0
+	        and task_device_rel_id = #{id}
             <if test="status!=null">
                 and status = #{status}
             </if>
         </where>
         GROUP BY t1.id
-        order by sort_no ASC
+        order by t1.sort_no ASC
     </select>
 
     <select id="selectEnclosure" resultType="com.aiurt.boot.task.entity.RepairTaskEnclosure">

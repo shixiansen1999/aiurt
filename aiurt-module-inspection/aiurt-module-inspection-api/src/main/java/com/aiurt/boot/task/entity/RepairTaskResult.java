@@ -198,4 +198,8 @@ public class RepairTaskResult implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "子节点")
     private List<RepairTaskResult> children;
+    /**异常设备名称，多个用逗号隔开*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "异常设备名称，多个用逗号隔开")
+    private String abnormalDeviceName;
 }
