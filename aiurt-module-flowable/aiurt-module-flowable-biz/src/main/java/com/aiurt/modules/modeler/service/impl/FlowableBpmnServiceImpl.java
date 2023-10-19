@@ -199,6 +199,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         BpmnModel bpmnModel = bpmnXMLConverter.convertToBpmnModel(xtr);
         // 设置xml的processId 也就是modelkey
         bpmnModel.getMainProcess().setId(processModel.getKey());
+        bpmnModel.getMainProcess().setName(processModel.getName());
         // 默认值
         bpmnModel.setTargetNamespace(BaseBpmnJsonConverter.NAMESPACE);
 
@@ -268,6 +269,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
         // 转为bpmnModel 内存模型; 通过model中的editjson转为bpmnl， 流程标准模型
         BpmnModel bpmnModel = modelService.getBpmnModel(model);
+        bpmnModel.getMainProcess().setName(model.getName());
 
         // 构建属性
         List<ActCustomTaskExt> taskExtList = new ArrayList<>();

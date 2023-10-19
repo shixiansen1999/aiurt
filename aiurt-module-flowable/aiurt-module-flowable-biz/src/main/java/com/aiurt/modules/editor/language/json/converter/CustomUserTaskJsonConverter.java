@@ -468,7 +468,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
     private void addExtensionElementToUserTask(UserTask userTask, String extensionName, JsonNode extensionData) throws JsonProcessingException {
         if (Objects.nonNull(extensionData)) {
             String json = objectMapper.writeValueAsString(extensionData);
-            log.info("json->{}", json);
+            log.debug("json->{}", json);
             if (extensionData.isArray()) {
                 JSONArray jsonArray = JSONObject.parseArray(json);
                 for (int i = 0; i < jsonArray.size(); i++) {
