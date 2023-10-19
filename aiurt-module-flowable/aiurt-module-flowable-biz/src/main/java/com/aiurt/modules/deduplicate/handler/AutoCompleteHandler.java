@@ -3,6 +3,7 @@ package com.aiurt.modules.deduplicate.handler;
 import cn.hutool.core.collection.CollUtil;
 import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.deduplicate.context.FlowDeduplicateContext;
+import com.aiurt.modules.flow.constants.FlowApprovalType;
 import com.aiurt.modules.flow.dto.FlowTaskCompleteCommentDTO;
 import com.aiurt.modules.flow.dto.NextNodeUserDTO;
 import com.aiurt.modules.flow.dto.TaskCompleteDTO;
@@ -102,8 +103,8 @@ public class AutoCompleteHandler<T extends FlowDeduplicateContext> extends Abstr
             }
         }
 
-        completeCommentDTO.setApprovalType("agree");
-        completeCommentDTO.setComment("审批去重");
+        completeCommentDTO.setApprovalType(FlowApprovalType.AUTO_COMPLETE);
+        completeCommentDTO.setComment("去重自动通过");
         taskCompleteDTO.setTaskId(task.getId());
         taskCompleteDTO.setProcessInstanceId(task.getProcessInstanceId());
 

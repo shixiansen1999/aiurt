@@ -96,7 +96,6 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.base.Joiner;
-import liquibase.pro.packaged.S;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -106,7 +105,6 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.*;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -880,7 +878,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             roleSysUserModel.setLabel(role.getRoleName());
             roleSysUserModel.setIsRole(true);
             roleSysUserModel.setIsPost(false);
-            roleSysUserModel.setIsSelect(isSelect);
+            roleSysUserModel.setSelectable(isSelect);
             LambdaQueryWrapper<SysUserRole> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(SysUserRole::getRoleId, role.getId());
             List<SysUserRole> sysUserRoles = sysUserRoleMapper.selectList(lambdaQueryWrapper);
@@ -977,7 +975,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 postSysUserModel.setTitle(dictModel.getTitle());
                 postSysUserModel.setIsPost(true);
                 postSysUserModel.setIsRole(false);
-                postSysUserModel.setIsSelect(isSelect);
+                postSysUserModel.setSelectable(isSelect);
                  //根据岗位查询用户信息
                 LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<SysUser>()
                         .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0);

@@ -22,6 +22,15 @@ public interface IActCustomTaskCommentService extends IService<ActCustomTaskComm
      * @return 查询结果集。
      */
     List<ActCustomTaskComment> getFlowTaskCommentList(String processInstanceId);
+
+    /**
+     *
+     * 查询可见的数据
+     * @param processInstanceId
+     * @return
+     */
+    List<ActCustomTaskComment> listFlowTaskCommentVisible(String processInstanceId);
+
     /**
      * 转换ActCustomTaskComment实体对象转成FlowTaskCommentDTO。
      *

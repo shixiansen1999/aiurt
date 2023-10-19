@@ -71,6 +71,9 @@ public class ActCustomTaskComment implements Serializable {
     @ApiModelProperty(value = "创建人名称")
     private String createRealname;
 
+    @ApiModelProperty(value = "是否可见1是，0否")
+    private Integer isVisible;
+
     public ActCustomTaskComment(TaskInfo task) {
         this.fillWith(task);
     }

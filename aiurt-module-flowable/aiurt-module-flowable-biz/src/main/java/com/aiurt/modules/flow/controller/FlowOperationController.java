@@ -1,6 +1,7 @@
 package com.aiurt.modules.flow.controller;
 
 import com.aiurt.common.aspect.annotation.DisableDataFilter;
+import com.aiurt.modules.flow.constants.FlowApprovalType;
 import com.aiurt.modules.flow.dto.*;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.aiurt.modules.flow.service.FlowApiService;
@@ -150,7 +151,7 @@ public class FlowOperationController {
     @ApiOperation(value = "获取当前流程任务的审批列表", notes = "获取当前流程任务的审批列表")
     public Result<List<FlowTaskCommentDTO>> listFlowTaskComment(@RequestParam String processInstanceId) {
         List<ActCustomTaskComment> actCustomTaskComments =
-                actCustomTaskCommentService.getFlowTaskCommentList(processInstanceId);
+                actCustomTaskCommentService.listFlowTaskCommentVisible(processInstanceId);
         List<FlowTaskCommentDTO> resultList = actCustomTaskCommentService.convertToCustomTaskCommentList(actCustomTaskComments);
         return Result.OK(resultList);
     }
@@ -257,6 +258,7 @@ public class FlowOperationController {
     @ApiOperation(value = "终止流程", notes = "终止流程")
     @PutMapping("stopProcessInstance")
     public Result<?> stopProcessInstance(@Valid @RequestBody StopProcessInstanceDTO instanceDTO) {
+        instanceDTO.setApprovalType(FlowApprovalType.STOP);
         flowApiService.stopProcessInstance(instanceDTO);
         return Result.OK("终止流程成功");
     }
@@ -381,6 +383,21 @@ public class FlowOperationController {
     public Result<List<ProcessParticipantsInfoDTO>> getProcessParticipantsInfoWithOutStart(@RequestBody ProcessParticipantsReqDTO processParticipantsReqDTO) {
         List<ProcessParticipantsInfoDTO> result = flowApiService.getProcessParticipantsInfoWithOutStart(processParticipantsReqDTO);
         return Result.OK(result);
+    }
+
+
+    /**
+     * 根据业务id 获取历史记录
+     * @return
+     */
+    @GetMapping("/V1/getHistoricLogByProcessInstanceIdV1")
+    @ApiOperation(value = "根据ProcessInstanceId 获取历史记录V1", notes = "根据ProcessInstanceId 获取历史记录V1")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "processInstanceId", value = "流程实例id", required = true, paramType = "query")
+    })
+    public Result<List<ProcessRecordDTO>> getHistoricLogByProcessInstanceIdV1(@RequestParam(value = "processInstanceId") String processInstanceId) {
+        List<ProcessRecordDTO> list = flowApiService.getHistoricLogByProcessInstanceIdV1(processInstanceId);
+        return Result.OK(list);
     }
 
 
