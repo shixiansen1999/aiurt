@@ -77,7 +77,7 @@ spring:
     #关闭定时任务JOB
     async-executor-activate: true
     #将databaseSchemaUpdate设置为true。当flowable发现库与数据库表结构不一致时，会自动将数据库表结构升级至新版本。
-    database-schema-update: true
+    database-schema-update: false
 
   aop:
     proxy-target-class: true
@@ -184,7 +184,7 @@ mybatis-plus:
       table-underline: true
   configuration:
     # 这个配置会将执行的sql打印出来，在开发或测试的时候可以用
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     # 返回类型为Map,显示null对应的字段
     call-setters-on-nulls: true
   # flowable
@@ -299,6 +299,8 @@ logging:
       modules:
        sysfile:
         mapper: debug
+  config:
+    classpath: config/logback-config.xml
 #swagger
 knife4j:
   #开启增强配置

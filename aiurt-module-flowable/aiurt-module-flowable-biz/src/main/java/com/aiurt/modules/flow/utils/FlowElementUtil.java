@@ -196,6 +196,19 @@ public class FlowElementUtil {
         return startEvent;
     }
 
+    /**
+     * 根据流程定义id 获取结束节点
+     * @param processDefinitionId 流程定义id
+     * @return
+     */
+    public FlowElement getEndFlowElementByDefinitionId(String processDefinitionId) {
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
+
+        EndEvent endEvent = bpmnModel.getMainProcess().findFlowElementsOfType(EndEvent.class, false).get(0);
+
+        return endEvent;
+    }
+
 
     /**
      * 验证并获取流程对象。(根据key查找当前流程的主版本)

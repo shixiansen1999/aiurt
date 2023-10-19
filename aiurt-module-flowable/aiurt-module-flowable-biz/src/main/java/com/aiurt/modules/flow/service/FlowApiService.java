@@ -321,4 +321,12 @@ public interface FlowApiService {
      * @return
      */
     List<ProcessParticipantsInfoDTO> getProcessParticipantsInfoWithOutStart(ProcessParticipantsReqDTO processParticipantsReqDTO);
+
+    /**
+     *
+     *  根据流程实例获取流程记录
+     * @param processInstanceId
+     * @return
+     */
+    List<ProcessRecordDTO> getHistoricLogByProcessInstanceIdV1(String processInstanceId);
 }

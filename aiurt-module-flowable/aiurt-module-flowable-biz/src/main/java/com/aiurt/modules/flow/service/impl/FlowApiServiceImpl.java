@@ -3,6 +3,8 @@ import java.util.Date;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.copy.service.IActCustomProcessCopyService;
 import com.aiurt.modules.deduplicate.handler.BackNodeRuleVerifyHandler;
+import com.aiurt.modules.forecast.dto.HistoryTaskInfo;
+import com.aiurt.modules.forecast.service.IFlowForecastService;
 import com.aiurt.modules.modeler.entity.*;
 import com.aiurt.modules.modeler.service.IActCustomModelExtService;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
@@ -56,6 +58,7 @@ import org.flowable.common.engine.impl.identity.Authentication;
 import org.flowable.editor.language.json.converter.util.CollectionUtils;
 import org.flowable.engine.*;
 import org.flowable.engine.delegate.TaskListener;
+import org.flowable.engine.history.DeleteReason;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
@@ -63,7 +66,6 @@ import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.repository.ProcessDefinition;
-import org.flowable.engine.repository.ProcessDefinitionQuery;
 import org.flowable.engine.runtime.*;
 import org.flowable.identitylink.api.IdentityLink;
 import org.flowable.task.api.Task;
@@ -85,6 +87,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 /**
@@ -158,6 +161,13 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     @Autowired
     private IActCustomProcessCopyService actCustomProcessCopyService;
+
+
+    @Autowired
+    private IFlowForecastService flowForecastService;
+
+    @Autowired
+    private IActCustomTaskCommentService taskCommentService;
 
 
     /**
@@ -388,7 +398,19 @@ public class FlowApiServiceImpl implements FlowApiService {
         variableData.put("comment", commentStr);
 
         // 构建中间变量
-        //buildVariable(busData, variableData, processInstance);
+       // buildVariable(busData, variableData, processInstance);
+
+        ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(comment, ActCustomTaskComment.class);
+        if (flowTaskComment != null && !StrUtil.equalsIgnoreCase(approvalType, FlowApprovalType.CANCEL)) {
+            String assignee = task.getAssignee();
+            LoginUser loginUser = sysBaseAPI.queryUser(assignee);
+            if (Objects.isNull(loginUser)) {
+                loginUser = checkLogin();
+            }
+            flowTaskComment.fillWith(processInstanceActiveTask);
+            flowTaskComment.setCreateRealname(loginUser.getRealname());
+            customTaskCommentService.getBaseMapper().insert(flowTaskComment);
+        }
 
         // 判断使保存还是提交
         if (StrUtil.equalsIgnoreCase(FlowApprovalType.SAVE, approvalType)) {
@@ -402,7 +424,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                     flowElementUtil.setBusinessKeyForProcessInstance(task.getProcessInstanceId(), o);
                 }
             }
-        } else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE, FlowApprovalType.REFUSE, FlowApprovalType.REJECT)) {
+        } else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE,
+                FlowApprovalType.REFUSE, FlowApprovalType.REJECT, FlowApprovalType.AUTO_COMPLETE)) {
             if (Objects.nonNull(busData)) {
                 flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
             }
@@ -416,8 +439,6 @@ public class FlowApiServiceImpl implements FlowApiService {
             flowCompleteReqDTO.setApprovalType(comment.getApprovalType());
             flowCompleteReqDTO.setComment(comment.getComment());
             flowCompleteReqDTO.setVariableData(variableData);
-
-
             commonFlowTaskCompleteService.complete(flowCompleteReqDTO);
         } else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.CANCEL, approvalType)) {
 
@@ -425,6 +446,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             StopProcessInstanceDTO instanceDTO = new StopProcessInstanceDTO();
             instanceDTO.setProcessInstanceId(processInstanceId);
             instanceDTO.setStopReason(commentStr);
+            instanceDTO.setApprovalType(approvalType);
             stopProcessInstance(instanceDTO);
         } else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.REJECT_FIRST_USER_TASK, approvalType)) {
             // 驳回到第一个用户任务
@@ -432,6 +454,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             rejectToStartDTO.setTaskId(taskId);
             rejectToStartDTO.setProcessInstanceId(processInstanceId);
             rejectToStartDTO.setBusData(busData);
+            rejectToStartDTO.setReason(commentStr);
             rejectToStart(rejectToStartDTO);
             // 转办
         } else if (StrUtil.equalsIgnoreCase(FlowApprovalType.TRANSFER, approvalType)) {
@@ -445,12 +468,6 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         // 判断当前完成执行的任务，是否存在抄送设置
         // todo 不能在这记录数据否则存在问题 审批去重增加流程批注数据
-        ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(comment, ActCustomTaskComment.class);
-        if (flowTaskComment != null) {
-            flowTaskComment.fillWith(processInstanceActiveTask);
-            flowTaskComment.setCreateRealname(task.getAssignee());
-            customTaskCommentService.getBaseMapper().insert(flowTaskComment);
-        }
 
         if (Objects.nonNull(busData)) {
             saveData(task, busData, processInstanceId, taskId, processInstance);
@@ -1165,9 +1182,9 @@ public class FlowApiServiceImpl implements FlowApiService {
             unfinishedTaskSet.add(unfinishedActivity.getActivityId());
         }
         //获取用户节点办理用户
-        Map<String, com.aiurt.modules.forecast.dto.HistoricTaskInfo> stringHistoricTaskInfoMap = flowChart(processInstanceId);
+        Map<String, HistoryTaskInfo> stringHistoricTaskInfoMap = flowChart(processInstanceId);
         //驳回，获取最新一次任务
-        Map<String, com.aiurt.modules.forecast.dto.HistoricTaskInfo> collect = stringHistoricTaskInfoMap.entrySet().stream()
+        Map<String, HistoryTaskInfo> collect = stringHistoricTaskInfoMap.entrySet().stream()
                 .collect(Collectors.groupingBy(
                         entry -> {
                             String key = entry.getKey();
@@ -1198,7 +1215,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         List<HighLightedUserInfoDTO> highLightedUserInfoDTOs = collect.entrySet().stream()
                 .map(entry -> {
                     String activityId = entry.getKey();
-                    com.aiurt.modules.forecast.dto.HistoricTaskInfo value = entry.getValue();
+                    HistoryTaskInfo value = entry.getValue();
                     List<HistoricTaskInstance> list = value.getList();
 
                     String realNames = list.stream()
@@ -1230,138 +1247,8 @@ public class FlowApiServiceImpl implements FlowApiService {
         return highLightedNodeDTO;
     }
 
-    public Map<String,com.aiurt.modules.forecast.dto.HistoricTaskInfo> flowChart(String processInstanceId) {
-        HighLightedNodeDTO highLightedNodeDTO = new HighLightedNodeDTO();
-        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-        // 历史记录,包括正在运行的节点
-        List<HistoricTaskInstance> list = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).orderByTaskCreateTime().asc().list();
-        list = list.stream().filter(historicTaskInstance -> !StrUtil.equalsIgnoreCase("MI_END", historicTaskInstance.getDeleteReason())).collect(Collectors.toList());
-        // 找出数据
-        String definitionId = historicProcessInstance.getProcessDefinitionId();
-        // bpmnmodel
-        BpmnModel bpmnModel = repositoryService.getBpmnModel(definitionId);
-        // 开始节点
-        StartEvent startEvent = bpmnModel.getMainProcess().findFlowElementsOfType(StartEvent.class, false).get(0);
-
-        Map<String, List<String>> userTaskModelMap = new HashMap<>(16);
-        // 构建好每个节点的出线图
-        buildNextNodeRelation("", startEvent, userTaskModelMap);
-
-        // 合并任务
-        LinkedHashMap<String, com.aiurt.modules.forecast.dto.HistoricTaskInfo> resultMap = mergeTask(list, userTaskModelMap);
-        return resultMap;
-    }
-
-    /**
-     * 构造节点的与下一节点关系
-     * @param userNodeId
-     * @param sourceFlowElement
-     * @param userTaskModelMap
-     */
-    public void buildNextNodeRelation(String userNodeId, FlowElement sourceFlowElement, Map<String, List<String>> userTaskModelMap) {
-        if (sourceFlowElement instanceof FlowNode) {
-            //当前节点必须是FlowNode才做处理，比如UserTask或者GateWay
-            FlowNode thisFlowNode = (FlowNode) sourceFlowElement;
-            if (sourceFlowElement instanceof UserTask) {
-                //
-                String id = sourceFlowElement.getId();
-                List<String> list = userTaskModelMap.get(id);
-                if (Objects.isNull(list)) {
-                    list = new ArrayList<>();
-                }
-                userTaskModelMap.put(id, list);
-                if (StrUtil.isNotBlank(userNodeId)) {
-                    List<String> userNodeList = userTaskModelMap.get(userNodeId);
-                    if (Objects.isNull(userNodeList)) {
-                        userNodeList = new ArrayList<>();
-                    }
-                    userNodeList.add(id);
-                    userTaskModelMap.put(userNodeId, userNodeList);
-                }
-                List<SequenceFlow> targetOutgoings = ((UserTask) sourceFlowElement).getOutgoingFlows();
-                for (SequenceFlow targetOutgoing : targetOutgoings) {
-                    buildNextNodeRelation(id, targetOutgoing.getTargetFlowElement(), userTaskModelMap);
-                }
-
-            } else {
-                List<SequenceFlow> flowNodeOutgoingFlows = thisFlowNode.getOutgoingFlows();
-                for (SequenceFlow flowNodeOutgoingFlow : flowNodeOutgoingFlows) {
-                    buildNextNodeRelation(userNodeId, flowNodeOutgoingFlow.getTargetFlowElement(), userTaskModelMap);
-                }
-            }
-        }
-    }
-
-    @NotNull
-    private LinkedHashMap<String, com.aiurt.modules.forecast.dto.HistoricTaskInfo> mergeTask(List<HistoricTaskInstance> list, Map<String, List<String>> userTaskModelMap) {
-        // 出现的次数
-        Map<String, Integer> res = new HashMap<>(16);
-        // 是否为第一次出现
-        Map<String, Boolean> resFlag = new HashMap<>(16);
-        LinkedHashMap<String, com.aiurt.modules.forecast.dto.HistoricTaskInfo> resultMap = new LinkedHashMap<>(16);
-        list.stream().forEach(historicTaskInstance -> {
-            String taskDefinitionKey = historicTaskInstance.getTaskDefinitionKey();
-            Integer time = res.getOrDefault(taskDefinitionKey, 0);
-
-            //
-            List<String> nextNodeIdList = userTaskModelMap.get(taskDefinitionKey);
-            // 已存在下一步节点
-            boolean flag = nextNodeIdList.stream()
-                    .anyMatch(noNodeId -> resultMap.containsKey(noNodeId));
-            if (flag) {
-                time = time +1;
-                res.put(taskDefinitionKey, time);
-
-                // 设置之前的节点不能添加了
-                Boolean orDefault = resFlag.getOrDefault(taskDefinitionKey + "_" + time, true);
-                if (orDefault) {
-                    resFlag.put(taskDefinitionKey + "_" + time , false);
-                    // 历史数据不允许合并
-                    resultMap.forEach((nodeId, historicTaskInfo)->{
-                        historicTaskInfo.setAddFlag(false);
-                    });
-                }
-            } else {
-                // 被回退的, 但是没有存在下一个节点的数据
-                String key = (time == 0 ) ? taskDefinitionKey : taskDefinitionKey+ "_" + (time);
-                com.aiurt.modules.forecast.dto.HistoricTaskInfo lastTaskInfo = resultMap.get(key);
-                // 历史节点不允许添加了
-                if (Objects.nonNull(lastTaskInfo) && (!lastTaskInfo.getAddFlag())) {
-                    // time +1；
-                    time = time + 1;
-                    res.put(taskDefinitionKey, time);
-                }
-            }
-
-            // 没有回退
-            if (time == 0) {
-                com.aiurt.modules.forecast.dto.HistoricTaskInfo historicTaskInfo = resultMap.get(taskDefinitionKey);
-                if (Objects.isNull(historicTaskInfo)) {
-                    historicTaskInfo = new com.aiurt.modules.forecast.dto.HistoricTaskInfo();
-                    resultMap.put(taskDefinitionKey, historicTaskInfo);
-                }
-                if (historicTaskInfo.getAddFlag()) {
-                    historicTaskInfo.addTaskInstance(historicTaskInstance);
-                }
-                historicTaskInfo.setNodeTime(time);
-                historicTaskInfo.setName(historicTaskInstance.getName());
-
-                // 存在回退的情况
-            } else {
-                com.aiurt.modules.forecast.dto.HistoricTaskInfo historicTaskInfo = resultMap.get(taskDefinitionKey + "_" + time);
-                if (Objects.isNull(historicTaskInfo)) {
-                    historicTaskInfo = new com.aiurt.modules.forecast.dto.HistoricTaskInfo();
-                    resultMap.put(taskDefinitionKey + "_" + time, historicTaskInfo);
-                }
-                if (historicTaskInfo.getAddFlag()) {
-                    historicTaskInfo.addTaskInstance(historicTaskInstance);
-                }
-                // 设置节点信息
-                historicTaskInfo.setNodeTime(time);
-                historicTaskInfo.setName(historicTaskInstance.getName());
-            }
-        });
-        return resultMap;
+    public Map<String, HistoryTaskInfo> flowChart(String processInstanceId) {
+        return flowForecastService.mergeTask(processInstanceId);
     }
 
 
@@ -1666,36 +1553,50 @@ public class FlowApiServiceImpl implements FlowApiService {
             throw new AiurtBootException("当前流程尚未开始或已经结束！");
         }
 
+        EndEvent endEvent = flowElementUtil.getEndEvent(definitionId);
+
+        if (Objects.isNull(endEvent)) {
+            throw new AiurtBootException("配置错误，缺少结束节点, 请联系管理员");
+        }
+
+
+        List<Execution> executions = runtimeService.createExecutionQuery().parentId(processInstanceId).list();
+        List<String> executionIds = executions.stream().map(Execution::getId).collect(Collectors.toList());
+
+
+        boolean hasVariable = runtimeService.hasVariable(processInstanceId, FlowModelAttConstant.CANCEL);
+        if (!hasVariable) {
+            runtimeService.setVariable(processInstanceId, FlowModelAttConstant.CANCEL, true);
+        } else {
+            runtimeService.setVariable(processInstanceId, FlowModelAttConstant.CANCEL, false);
+        }
+
+        runtimeService.createChangeActivityStateBuilder()
+                .processInstanceId(instanceDTO.getProcessInstanceId())
+                .moveExecutionsToSingleActivityId(executionIds, endEvent.getId())
+                .changeState();
+
+        List<ActCustomTaskComment> taskCommentList = new ArrayList<>();
         for (Task task : list) {
-            // 流程定义id
-            String processDefinitionId = task.getProcessDefinitionId();
-            // 任务定义id
-            String taskDefinitionKey = task.getTaskDefinitionKey();
-            // 结束节点
-            EndEvent endEvent = flowElementUtil.getEndEvent(processDefinitionId);
-            // 任务取消标识变量
-            boolean hasVariable = runtimeService.hasVariable(processInstanceId, FlowModelAttConstant.CANCEL);
-            if (!hasVariable) {
-                runtimeService.setVariable(processInstanceId, FlowModelAttConstant.CANCEL, true);
-            } else {
-                runtimeService.setVariable(processInstanceId, FlowModelAttConstant.CANCEL, false);
-            }
-            // 流程跳转, flowable 已提供
-            runtimeService.createChangeActivityStateBuilder()
-                    .processInstanceId(instanceDTO.getProcessInstanceId())
-                    .moveActivityIdTo(taskDefinitionKey, endEvent.getId())
-                    .changeState();
-
-            //
-            // 添加审批意见
+            // 添加审批意见,用户不可见
             ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment(task);
-            actCustomTaskComment.setApprovalType(FlowApprovalType.STOP);
+            actCustomTaskComment.setApprovalType(instanceDTO.getApprovalType());
             actCustomTaskComment.setCreateRealname(loginUser.getRealname());
-            customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
-
+            actCustomTaskComment.setIsVisible(0);
+            actCustomTaskComment.setComment(instanceDTO.getStopReason());
+            taskCommentList.add(actCustomTaskComment);
             // 更新待办
             todoBaseApi.updateBpmnTaskState(task.getId(), processInstanceId, loginUser.getUsername(), "1");
         }
+
+
+        ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment();
+        actCustomTaskComment.setProcessInstanceId(processInstanceId);
+        actCustomTaskComment.setApprovalType(instanceDTO.getApprovalType());
+        actCustomTaskComment.setCreateRealname(loginUser.getRealname());
+        actCustomTaskComment.setComment(instanceDTO.getStopReason());
+        taskCommentList.add(actCustomTaskComment);
+        customTaskCommentService.saveBatch(taskCommentList);
 
         // 暂时处理先 todo
         if (StrUtil.startWithIgnoreCase(definitionId, "bd_work_ticket2") || StrUtil.startWithIgnoreCase(definitionId, "bd_work_titck")) {
@@ -1730,16 +1631,35 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         List<Task> taskList = taskService.createTaskQuery().processInstanceId(instanceDTO.getProcessInstanceId()).list();
 
-        List<String> nodeIdList = taskList.stream().map(Task::getTaskDefinitionKey).collect(Collectors.toList());
+        List<Execution> executions = runtimeService.createExecutionQuery().parentId(processInstanceId).list();
+        List<String> executionIds = executions.stream().map(Execution::getId).collect(Collectors.toList());
 
         Map<String, Object> localVariableMap = new HashMap<>();
         localVariableMap.put(BackNodeRuleVerifyHandler.REJECT_FIRST_USER_TASK, true);
-        // 流程跳转, flowable 已提供
+        // 流程跳转, flowable 已提供, 存在分支会存在问题
         runtimeService.createChangeActivityStateBuilder()
                 .processInstanceId(instanceDTO.getProcessInstanceId())
-                .moveActivityIdsToSingleActivityId(nodeIdList, firstUserTask.getId())
+                .moveExecutionsToSingleActivityId(executionIds, firstUserTask.getId())
                 .localVariables(firstUserTask.getId(), localVariableMap)
                 .changeState();
+
+        // 增加不可见的日志，，记录日志
+        List<ActCustomTaskComment> taskCommentList = taskList.stream().map(task -> {
+            ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment();
+            actCustomTaskComment.setTaskId(task.getId());
+            actCustomTaskComment.setTaskKey(task.getTaskDefinitionKey());
+            actCustomTaskComment.setTaskName(task.getName());
+            actCustomTaskComment.setCreateRealname(loginUser.getRealname());
+            actCustomTaskComment.setComment(instanceDTO.getReason());
+            actCustomTaskComment.setApprovalType(FlowApprovalType.RECALL);
+            actCustomTaskComment.setProcessInstanceId(processInstanceId);
+            actCustomTaskComment.setIsVisible(0);
+            return actCustomTaskComment;
+        }).collect(Collectors.toList());
+
+        if (CollUtil.isNotEmpty(taskCommentList)) {
+            taskCommentService.saveBatch(taskCommentList);
+        }
     }
 
     /**
@@ -2133,7 +2053,7 @@ public class FlowApiServiceImpl implements FlowApiService {
     @NotNull
     private List<HistoricTaskInfo> buildHistoricTaskInfo(HistoricProcessInstance processInstance) {
         List<HistoricTaskInstance> instanceList = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstance.getId()).orderByHistoricTaskInstanceStartTime().desc().list();
-
+        instanceList = instanceList.stream().filter(historicTaskInstance -> !StrUtil.equalsIgnoreCase("_AUTO_COMPLETE", historicTaskInstance.getAssignee())).collect(Collectors.toList());
         // 需要重构， 已办理的，未办理的， 已办理的需要
         List<HistoricTaskInfo> historicTaskInfoList = new ArrayList<>();
         HistoricTaskInstance historicTaskInstance = instanceList.get(0);
@@ -3043,5 +2963,138 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
         }
         return result;
+    }
+
+
+    /**
+     * 根据流程实例获取流程记录
+     *
+     * @param processInstanceId
+     * @return
+     */
+    @Override
+    public List<ProcessRecordDTO> getHistoricLogByProcessInstanceIdV1(String processInstanceId) {
+
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+
+        FlowElement endEvent = flowElementUtil.getEndFlowElementByDefinitionId(historicProcessInstance.getProcessDefinitionId());
+
+        LinkedHashMap<String, HistoryTaskInfo> recordMap = flowForecastService.mergeTask(processInstanceId);
+        AtomicBoolean atomicBoolean = new AtomicBoolean(true);
+
+        List<ActCustomTaskComment> flowTaskCommentList = taskCommentService.getFlowTaskCommentList(processInstanceId);
+        Map<String, String> commentMap = flowTaskCommentList.stream()
+                .filter(actCustomTaskComment -> StrUtil.isNotBlank(actCustomTaskComment.getTaskId()))
+                .collect(Collectors.toMap(ActCustomTaskComment::getTaskId,
+                        actCustomTaskComment -> Optional.ofNullable(actCustomTaskComment.getComment()).orElse(""), (t1,t2)->t1));
+
+        Map<String, ActCustomTaskComment> taskCommentMap = flowTaskCommentList.stream().filter(actCustomTaskComment -> StrUtil.isNotBlank(actCustomTaskComment.getTaskId()))
+                .collect(Collectors.toMap(ActCustomTaskComment::getTaskId, t -> t, (t1, t2) -> t1));
+
+
+        Set<String> userNameSet = recordMap.values().stream().map(HistoryTaskInfo::getList).flatMap(List::stream)
+                .filter(historicTaskInstance -> StrUtil.isNotBlank(historicTaskInstance.getAssignee()))
+                .map(HistoricTaskInstance::getAssignee).collect(Collectors.toSet());
+
+        List<LoginUser> loginUserList = sysBaseAPI.getLoginUserList(new ArrayList<>(userNameSet));
+        Map<String, LoginUser> userMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, t->t, (t1, t2) -> t1));
+
+        List<ProcessRecordDTO> dtoList = recordMap.keySet().stream().map(key -> {
+            HistoryTaskInfo historyTaskInfo = recordMap.get(key);
+            ProcessRecordDTO recordDTO = ProcessRecordDTO.builder()
+                    .nodeId(historyTaskInfo.getTaskDefinitionKey())
+                    .nodeName(historyTaskInfo.getName())
+                    .build();
+
+            List<HistoricTaskInstance> taskInfoList = historyTaskInfo.getList();
+
+            List<HistoricTaskInstance> unFinishList = taskInfoList.stream().filter(historicTaskInstance -> Objects.isNull(historicTaskInstance.getEndTime()))
+                    .collect(Collectors.toList());
+            // 第一个任务
+            if (atomicBoolean.get()) {
+                //
+                if (CollUtil.isNotEmpty(unFinishList)) {
+                    recordDTO.setStateName("待提交");
+                    recordDTO.setStateColor("#FFA800");
+                } else {
+                    recordDTO.setStateName("已提交");
+                    recordDTO.setStateColor("#10C443");
+                }
+                atomicBoolean.set(false);
+            } else {
+                // 其他节点
+                if (CollUtil.isNotEmpty(unFinishList)) {
+                    if (unFinishList.size() == taskInfoList.size()) {
+                        recordDTO.setStateName("待审批");
+                        recordDTO.setStateColor("#FFA800");
+                    } else {
+                        recordDTO.setStateName("审批中");
+                        recordDTO.setStateColor("#1890FF");
+                    }
+                } else {
+                    recordDTO.setStateName("已通过");
+                    recordDTO.setStateColor("#10C443");
+
+                    // 终止流程，撤回
+                    List<String> deleteReasonList = taskInfoList.stream().map(HistoricTaskInstance::getDeleteReason).collect(Collectors.toList());
+
+                    // 终止流程
+                    boolean stopFlag = deleteReasonList.stream().anyMatch(deleteReason -> StrUtil.contains(deleteReason, endEvent.getId()));
+                    // 回退流程
+                    boolean changeFlag = deleteReasonList.stream().anyMatch(deleteReason -> StrUtil.startWith(deleteReason,"Change"));
+                    if (stopFlag) {
+                        recordDTO.setStateName("已作废");
+                        recordDTO.setStateColor("#FF0000");
+                    } else {
+                        if (changeFlag) {
+                            recordDTO.setStateName("已退回");
+                            recordDTO.setStateColor("#FFA800");
+                        }
+                    }
+
+                    // 是否全部自动提交
+                    List<HistoricTaskInstance> autoCompleteList = taskInfoList.stream().filter(historicTaskInstance -> {
+                        ActCustomTaskComment actCustomTaskComment = taskCommentMap.get(historicProcessInstance.getId());
+                        if (Objects.isNull(actCustomTaskComment)) {
+                            return false;
+                        }
+                        return StrUtil.equalsIgnoreCase(FlowApprovalType.AUTO_COMPLETE, actCustomTaskComment.getApprovalType());
+                    }).collect(Collectors.toList());
+
+                    if (CollUtil.isNotEmpty(autoCompleteList)) {
+                        if (autoCompleteList.size() == taskInfoList.size()) {
+                            recordDTO.setStateName("自动通过");
+                            recordDTO.setStateColor("#10C443");
+                        }
+                    }
+                }
+            }
+
+            List<ProcessRecordNodeInfoDTO> infoDTOList = taskInfoList.stream().map(historicTaskInstance -> {
+                ProcessRecordNodeInfoDTO nodeInfoDTO = ProcessRecordNodeInfoDTO.builder()
+                        .endTime(historicTaskInstance.getEndTime())
+                        .reason(commentMap.get(historicTaskInstance.getId()))
+                        .build();
+                String assignee = historicTaskInstance.getAssignee();
+                if (StrUtil.isNotBlank(assignee)) {
+                    LoginUser loginUser = userMap.get(assignee);
+                    if (Objects.nonNull(loginUser)) {
+                        String orgName = loginUser.getOrgName();
+                        String postNames = loginUser.getPostNames();
+                        nodeInfoDTO.setRealName(loginUser.getRealname());
+                        nodeInfoDTO.setUserName(loginUser.getUsername());
+                        nodeInfoDTO.setUserInfo(String.format("%s；%s", "所属部门-" + orgName, StrUtil.isNotBlank(postNames) ? "岗位-" + postNames : ""));
+                    }
+                } else {
+                    // 兼容历史数据
+
+                }
+                return nodeInfoDTO;
+            }).collect(Collectors.toList());
+            recordDTO.setNodeList(infoDTOList);
+            return recordDTO;
+        }).collect(Collectors.toList());
+        Collections.reverse(dtoList);
+        return dtoList;
     }
 }

@@ -2,6 +2,7 @@ package com.aiurt.modules.recall.service.impl;
 
 import com.aiurt.modules.common.pipeline.selector.LocalListBasedHandlerSelector;
 import com.aiurt.modules.deduplicate.context.FlowDeduplicateContext;
+import com.aiurt.modules.flow.constants.FlowApprovalType;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.aiurt.modules.modeler.service.IActCustomModelExtService;
@@ -48,6 +49,10 @@ public class FlowRecallServiceImpl implements IFlowRecallService {
     public void recall(RecallReqDTO recallReqDTO) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> filterNames = new ArrayList<>();
+        // 正在运行的任务
+        List<Task> list = taskService.createTaskQuery()
+                .processInstanceId(recallReqDTO.getProcessInstanceId())
+                .list();
         // 构造selector
         filterNames.add(FlowDeduplicateContext.class.getSimpleName());
         filterNames.add(BuildRecallContextHandler.class.getSimpleName());
@@ -60,10 +65,8 @@ public class FlowRecallServiceImpl implements IFlowRecallService {
         context.setLoginName(loginUser.getUsername());
         context.setRealName(loginUser.getRealname());
         recallHandlerChainPipeline.getFilterChain().handle(context);
-        //保存撤回原因
-        List<Task> list = taskService.createTaskQuery()
-                .processInstanceId(recallReqDTO.getProcessInstanceId())
-                .list();
+
+        // 保存撤回原因
         List<ActCustomTaskComment> actCustomTaskComments = new ArrayList<>();
         for (Task task : list) {
             ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment();
@@ -74,10 +77,19 @@ public class FlowRecallServiceImpl implements IFlowRecallService {
             actCustomTaskComment.setTaskName(task.getName());
             actCustomTaskComment.setCreateRealname(loginUser.getRealname());
             actCustomTaskComment.setComment(recallReason);
-            actCustomTaskComment.setApprovalType("recall");
+            actCustomTaskComment.setApprovalType(FlowApprovalType.RECALL);
             actCustomTaskComment.setProcessInstanceId(processInstanceId);
+            actCustomTaskComment.setIsVisible(0);
             actCustomTaskComments.add(actCustomTaskComment);
         }
+
+        // 记录撤回的日志
+        ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment();
+        actCustomTaskComment.setComment(context.getRecallReason());
+        actCustomTaskComment.setProcessInstanceId(context.getProcessInstanceId());
+        actCustomTaskComment.setApprovalType(FlowApprovalType.RECALL);
+        actCustomTaskComment.setCreateRealname(context.getRealName());
+        actCustomTaskComments.add(actCustomTaskComment);
         actCustomTaskCommentService.saveBatch(actCustomTaskComments);
 
 

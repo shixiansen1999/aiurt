@@ -1,5 +1,6 @@
 package com.aiurt.modules.editor.language.json.util;
 
+import cn.hutool.core.util.StrUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -20,6 +21,9 @@ public  class CustomJsonConverterUtil {
      * @return jsonNode
      */
     public static JsonNode parseJsonMode(String jsonValue) {
+        if (StrUtil.isBlank(jsonValue)) {
+            return null;
+        }
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             JsonNode jsonNode = objectMapper.readTree(jsonValue);

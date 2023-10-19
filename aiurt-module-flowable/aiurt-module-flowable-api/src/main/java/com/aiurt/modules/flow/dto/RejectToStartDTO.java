@@ -31,4 +31,7 @@ public class RejectToStartDTO implements Serializable {
 
     @ApiModelProperty(value = "流程实例id")
     private String processInstanceId;
+
+    @ApiModelProperty(value = "原因")
+    private String reason;
 }
