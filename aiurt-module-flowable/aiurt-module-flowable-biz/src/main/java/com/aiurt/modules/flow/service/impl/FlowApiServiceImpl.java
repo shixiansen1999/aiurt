@@ -623,6 +623,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                         // 判断是否是表单设计器，
                         taskInfoDTO.setRouterName(jsonObject.getString("formUrl"));
                     }
+                } else {
+                    taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
                 }
 
                 // 是否自动选人
