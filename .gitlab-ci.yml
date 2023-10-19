@@ -9,7 +9,7 @@ example-sonar:
     - gitlab-pos
   script:
     - mvn clean verify -Dmaven.test.skip=true 
-    - mvn -e -X --batch-mode sonar:sonar
+    - mvn  --batch-mode sonar:sonar
         -Dsonar.host.url=http://192.168.1.65:9000
         -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA
         -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME
