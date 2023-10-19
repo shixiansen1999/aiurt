@@ -2983,10 +2983,11 @@ public class FlowApiServiceImpl implements FlowApiService {
         List<ActCustomTaskComment> flowTaskCommentList = taskCommentService.getFlowTaskCommentList(processInstanceId);
         Map<String, String> commentMap = flowTaskCommentList.stream()
                 .filter(actCustomTaskComment -> StrUtil.isNotBlank(actCustomTaskComment.getTaskId()))
-                .collect(Collectors.toMap(ActCustomTaskComment::getTaskId, ActCustomTaskComment::getComment, (t1,t2)->t2));
+                .collect(Collectors.toMap(ActCustomTaskComment::getTaskId,
+                        actCustomTaskComment -> Optional.ofNullable(actCustomTaskComment.getComment()).orElse(""), (t1,t2)->t1));
 
         Map<String, ActCustomTaskComment> taskCommentMap = flowTaskCommentList.stream().filter(actCustomTaskComment -> StrUtil.isNotBlank(actCustomTaskComment.getTaskId()))
-                .collect(Collectors.toMap(ActCustomTaskComment::getTaskId, t -> t, (t1, t2) -> t2));
+                .collect(Collectors.toMap(ActCustomTaskComment::getTaskId, t -> t, (t1, t2) -> t1));
 
 
         Set<String> userNameSet = recordMap.values().stream().map(HistoryTaskInfo::getList).flatMap(List::stream)
