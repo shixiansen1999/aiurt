@@ -39,6 +39,7 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
     private Map<String, String> peerNameMap;
     private Map<String, String> sampNameMap;
     private Map<String, RepairPrintMessage> printMessage;
+    private Map<String, RepairTask> allCodeMap;
 
     /**
      * 构造方法
@@ -55,6 +56,7 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
      * @param peerNameMap   同行人名称映射（根据检修任务ID）
      * @param sampNameMap   抽检人名称映射（根据检修任务ID）
      * @param printMessage  打印信息映射
+     * @param allCodeMap  编码映射
      */
     public RepairTaskThreadService(RepairTask repairTask, InspectionManager manager,
                                    Map<String, String> taskStateMap, Map<String, String> taskTypeMap,
@@ -62,7 +64,8 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
                                    Map<String, String> workTypeMap, Map<String, String> ecmStatusMap,
                                    Map<String, RepairTaskUserNameDTO> overhaulNameMap,
                                    Map<String, String> peerNameMap, Map<String, String> sampNameMap,
-                                   Map<String, RepairPrintMessage> printMessage) {
+                                   Map<String, RepairPrintMessage> printMessage,
+                                   Map<String, RepairTask> allCodeMap) {
         this.repairTask = repairTask;
         this.manager = manager;
         this.taskStateMap = taskStateMap;
@@ -75,6 +78,7 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
         this.peerNameMap = peerNameMap;
         this.sampNameMap = sampNameMap;
         this.printMessage = printMessage;
+        this.allCodeMap = allCodeMap;
     }
 
     /**
@@ -110,6 +114,10 @@ public class RepairTaskThreadService implements Callable<RepairTask> {
             return;
         }
         // 对组织机构、站点、专业、子系统进行编码处理并设置相应的属性
+        repairTask.setSiteCode(allCodeMap.get(repairTask.getId()).getSiteCode());
+        repairTask.setOrgCode(allCodeMap.get(repairTask.getId()).getOrgCode());
+        repairTask.setMajorCode(allCodeMap.get(repairTask.getId()).getMajorCode());
+        repairTask.setSystemCode(allCodeMap.get(repairTask.getId()).getSystemCode());
         setTranslatedCode(repairTask, manager);
 
         // 的检修时长检修时间转化

@@ -411,4 +411,11 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @return
      */
     List<OverhaulStatisticsDTO> countUserList(@Param("condition")OverhaulStatisticsDTOS condition);
+    /**
+     * 获取指定id集合任务的各种编码
+     *
+     * @param repairTaskIds 检修任务ID列表
+     * @return 获取指定id集合任务的各种编码
+     */
+    List<RepairTask> getAllCodes(List<String> repairTaskIds);
 }
