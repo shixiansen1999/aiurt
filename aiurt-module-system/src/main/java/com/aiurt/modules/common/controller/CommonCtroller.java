@@ -501,7 +501,7 @@ public class CommonCtroller {
     @ApiOperation(value = "", notes = "角色树")
     @GetMapping(value = "/queryRoleUserTree")
     public Result<List<SysUserModel>> queryRoleUserTree(@RequestParam(value = "values",required = false) String values,
-                                                        @RequestParam(value = "values", defaultValue = "true",required = false) Boolean isSelect) {
+                                                        @RequestParam(value = "isSelect", defaultValue = "true",required = false) Boolean isSelect) {
         List<SysUserModel> comboModels = sysBaseApi.queryRoleUserTree(values, Boolean.FALSE, isSelect);
         return Result.OK(comboModels);
     }
@@ -515,7 +515,7 @@ public class CommonCtroller {
     @ApiOperation(value = "", notes = "岗位树")
     @GetMapping(value = "/queryPostUserTree")
     public Result<List<SysUserModel>> queryPostUserTree(@RequestParam(value = "values",required = false) String values,
-                                                        @RequestParam(value = "values", defaultValue = "true",required = false) Boolean isSelect) {
+                                                        @RequestParam(value = "isSelect", defaultValue = "true",required = false) Boolean isSelect) {
         List<SysUserModel> list = sysBaseApi.queryPostUserTree(values,Boolean.FALSE, isSelect);
         return Result.OK(list);
     }
