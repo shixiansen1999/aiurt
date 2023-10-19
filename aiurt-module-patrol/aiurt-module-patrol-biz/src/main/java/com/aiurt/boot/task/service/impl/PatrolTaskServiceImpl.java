@@ -1940,6 +1940,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (CollUtil.isNotEmpty(taskStandardList)) {
             patrolTaskStandardMapper.deleteBatchIds(taskStandardList);
         }
+        // 删除巡视任务关联设备表的信息
+        patrolDeviceService.remove(new LambdaQueryWrapper<PatrolDevice>().eq(PatrolDevice::getTaskId, patrolTaskManualDTO.getId()));
         //删除单号
         List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTaskManualDTO.getId()));
         //删除检查项
@@ -1968,11 +1970,24 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskStandard.setStandardCode(ns.getCode());
             patrolTaskStandardMapper.insert(patrolTaskStandard);
             String taskStandardId = patrolTaskStandard.getId();
+            // 获取指定设备
+            List<DeviceDTO> deviceList = ns.getDeviceList();
+            // 保存巡视任务设备关联表
+            if (CollUtil.isNotEmpty(deviceList)) {
+                ArrayList<PatrolDevice> patrolDeviceList = new ArrayList<>();
+                deviceList.forEach(d -> {
+                    PatrolDevice patrolDevice = new PatrolDevice();
+                    patrolDevice.setTaskId(taskId);
+                    patrolDevice.setTaskStandardId(taskStandardId);
+                    patrolDevice.setDeviceCode(d.getCode());
+                    patrolDeviceList.add(patrolDevice);
+                });
+                patrolDeviceService.saveBatch(patrolDeviceList);
+            }
             //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
             if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()  && "0".equals(paramModel.getValue())  ) {
-                List<DeviceDTO> deviceList = ns.getDeviceList();
                 if(CollUtil.isEmpty(deviceList)){
                      throw new AiurtBootException("要指定设备才可以保存");
                 }else{
@@ -2341,37 +2356,55 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void patrolTaskManualDelete(String id) {
         if (StrUtil.isEmpty(id)) {
-            throw new AiurtBootException("操作失败");
+            throw new AiurtBootException("非法操作");
         }
         PatrolTask patrolTask = patrolTaskMapper.selectById(id);
         if (ObjectUtil.isNotEmpty(patrolTask)) {
-            patrolTask.setDelFlag(CommonConstant.DEL_FLAG_1);
-            patrolTaskMapper.updateById(patrolTask);
+            Integer status = patrolTask.getStatus();
+            if (!PatrolConstant.TASK_INIT.equals(status) && !PatrolConstant.TASK_RETURNED.equals(status)) {
+               throw new AiurtBootException("已指派不允许删除");
+            }
+            String taskId = patrolTask.getId();
+            String taskCode = patrolTask.getCode();
+            // 删除巡视任务
+            this.removeById(patrolTask);
             if (StrUtil.isNotEmpty(patrolTask.getCode())) {
-                patrolTaskOrganizationService.update(new LambdaUpdateWrapper<PatrolTaskOrganization>().set(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_1).eq(PatrolTaskOrganization::getTaskCode, patrolTask.getCode()));
-                patrolTaskStationService.update(new LambdaUpdateWrapper<PatrolTaskStation>().set(PatrolTaskStation::getDelFlag, CommonConstant.DEL_FLAG_1).eq(PatrolTaskStation::getTaskCode, patrolTask.getCode()));
-                patrolTaskStandardService.update(new LambdaUpdateWrapper<PatrolTaskStandard>().set(PatrolTaskStandard::getDelFlag, CommonConstant.DEL_FLAG_1).eq(PatrolTaskStandard::getTaskId, patrolTask.getId()));
-                List<PatrolTaskDevice> patrolTaskDeviceList = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTask.getId()));
+                // 删除巡视任务组织机构关联表的信息
+                patrolTaskOrganizationService.remove(new LambdaUpdateWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getTaskCode, taskCode));
+                // 删除巡视任务站点关联表的信息
+                patrolTaskStationService.remove(new LambdaUpdateWrapper<PatrolTaskStation>().eq(PatrolTaskStation::getTaskCode, taskCode));
+                // 删除巡视任务人员关联表的信息
+                patrolTaskUserService.remove(new LambdaUpdateWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, taskCode));
+                // 删除巡视任务标准关联表的信息
+                patrolTaskStandardService.remove(new LambdaUpdateWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getTaskId, taskId));
+                // 删除巡视任务设备关联表的信息
+                patrolDeviceService.remove(new LambdaQueryWrapper<PatrolDevice>().eq(PatrolDevice::getTaskId, taskId));
+                List<PatrolTaskDevice> patrolTaskDeviceList = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, taskId));
                 if (ObjectUtil.isNotEmpty(patrolTaskDeviceList)) {
+                    List<String> taskDeviceIdList = patrolTaskDeviceList.stream().map(PatrolTaskDevice::getId).collect(Collectors.toList());
                     patrolTaskDeviceList.forEach((e) -> {
-                        e.setDelFlag(CommonConstant.DEL_FLAG_1);
-                        patrolTaskDeviceMapper.updateById(e);
                         List<PatrolCheckResult> patrolCheckResultList = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>()
                                 .eq(PatrolCheckResult::getTaskStandardId, e.getTaskStandardId())
                                 .eq(PatrolCheckResult::getTaskDeviceId, e.getId()));
-                        if (ObjectUtil.isNotEmpty(patrolCheckResultList)) {
-                            patrolCheckResultList.forEach((t) -> {
-                                t.setDelFlag(CommonConstant.DEL_FLAG_1);
-                                patrolCheckResultMapper.updateById(t);
-                            });
+                        if (CollUtil.isNotEmpty(patrolCheckResultList)) {
+                            List<String> reusltIdList = patrolCheckResultList.stream().map(PatrolCheckResult::getId).collect(Collectors.toList());
+                            // 删除巡视任务检查结果表的信息
+                            if (CollUtil.isNotEmpty(reusltIdList)) {
+                                patrolCheckResultMapper.deleteBatchIds(reusltIdList);
+                            }
                         }
                     });
+                    // 删除巡视任务工单关联表的信息
+                    if (CollUtil.isNotEmpty(taskDeviceIdList)) {
+                        patrolTaskDeviceMapper.deleteBatchIds(taskDeviceIdList);
+                    }
                 }
             }
         } else {
-            throw new AiurtBootException("操作失败");
+            throw new AiurtBootException("非法操作");
         }
     }
 
