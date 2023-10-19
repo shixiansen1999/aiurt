@@ -54,6 +54,9 @@ public class DefaultNullUserHandler extends AbstractFlowHandler<SelectUserContex
         }
 
         String emptyRule = customUser.getEmptyRule();
+        if (StrUtil.isBlank(emptyRule)) {
+            emptyRule = EmptyRuleEnum.AUTO_ADMIN.getCode();
+        }
 
         String emptyUserName = customUser.getEmptyUserName();
 

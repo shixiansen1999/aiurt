@@ -11,6 +11,7 @@ import com.aiurt.modules.modeler.entity.ActUserTypeEntity;
 import com.aiurt.modules.modeler.entity.AutoSelectEntity;
 import com.aiurt.modules.modeler.entity.NodeActionDTO;
 import com.aiurt.modules.online.page.dto.FormFiledJsonDTO;
+import com.aiurt.modules.user.enums.EmptyRuleEnum;
 import com.aiurt.modules.utils.FlowRelationUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -263,6 +264,11 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                     JsonNode jsonNode = parseUserAssigneeValue(username);
                     objectNode.set("username", jsonNode);
                 }
+                propertiesNode.set(FlowModelExtElementConstant.EX_EMPTY_APPROVE, objectNode);
+                // 默认给审批人员为系统管理员
+            } else {
+                ObjectNode objectNode = objectMapper.createObjectNode();
+                objectNode.put(FlowModelExtElementConstant.EXT_VALUE, EmptyRuleEnum.AUTO_ADMIN.getCode());
                 propertiesNode.set(FlowModelExtElementConstant.EX_EMPTY_APPROVE, objectNode);
             }
         }
