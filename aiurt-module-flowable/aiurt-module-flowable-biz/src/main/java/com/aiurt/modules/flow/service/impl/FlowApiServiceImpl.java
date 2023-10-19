@@ -564,8 +564,8 @@ public class FlowApiServiceImpl implements FlowApiService {
     public TaskInfoDTO viewRuntimeTaskInfo(String processDefinitionId, String processInstanceId, String taskId) {
         log.info("获取流程运行时指定任务的信息请求参数：processInstanceId:{}, taskId:{}",processInstanceId, taskId);
         TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
-        if (StrUtil.isBlank(processInstanceId)) {
-            log.info("流程实例请求参数为空！");
+        if (StrUtil.isBlank(processInstanceId) || StrUtil.isBlank(taskId)) {
+            log.debug("流程实例请求参数为空！");
             return taskInfoDTO;
         }
         HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskId(taskId).singleResult();

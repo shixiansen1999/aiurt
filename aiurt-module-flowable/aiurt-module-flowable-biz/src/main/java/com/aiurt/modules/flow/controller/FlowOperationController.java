@@ -175,7 +175,7 @@ public class FlowOperationController {
     public Result<TaskInfoDTO> viewRuntimeTaskInfo(
             @RequestParam(value = "processDefinitionId", required = false) String processDefinitionId,
             @RequestParam(value = "processInstanceId") String processInstanceId,
-            @RequestParam(value = "taskId") String taskId) {
+            @RequestParam(value = "taskId", required = false) String taskId) {
         TaskInfoDTO taskInfoVo = flowApiService.viewRuntimeTaskInfo(processDefinitionId, processInstanceId, taskId);
         return Result.OK(taskInfoVo);
     }
