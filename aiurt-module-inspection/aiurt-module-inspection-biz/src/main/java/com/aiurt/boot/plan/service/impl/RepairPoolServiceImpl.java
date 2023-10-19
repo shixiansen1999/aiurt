@@ -27,6 +27,7 @@ import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
+import com.aiurt.boot.task.service.IRepairDeviceService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
@@ -119,6 +120,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     private InspectionCodeDeviceTypeMapper inspectionCodeDeviceTypeMapper;
     @Autowired
     private RepairPoolCodeDeviceTypeMapper repairPoolCodeDeviceTypeMapper;
+    @Autowired
+    private IRepairDeviceService repairDeviceService;
 
     /**
      * 查询检修计划池中的检修任务列表。
@@ -790,6 +793,28 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      */
     private void generateInventory(String oldStaId, String newStaId, String taskId, String taskCode, Integer
             isAppointDevice) {
+        // 查询指定设备
+        RepairPoolRel repairPoolRels = relMapper.selectOne(
+                new LambdaQueryWrapper<RepairPoolRel>()
+                        .eq(RepairPoolRel::getRepairPoolCode, taskCode)
+                        .eq(RepairPoolRel::getRepairPoolStaId, oldStaId)
+                        .eq(RepairPoolRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<RepairPoolDeviceRel> repairPoolDeviceRels = null;
+        if (ObjectUtil.isNotEmpty(repairPoolRels)) {
+            repairPoolDeviceRels = repairPoolDeviceRel.selectList(new LambdaQueryWrapper<RepairPoolDeviceRel>().eq(RepairPoolDeviceRel::getRepairPoolRelId, repairPoolRels.getId()));
+            // 保存检修任务关联设备
+            if (CollUtil.isNotEmpty(repairPoolDeviceRels)) {
+                ArrayList<RepairDevice> deviceList = new ArrayList<>();
+                repairPoolDeviceRels.forEach(d -> {
+                    RepairDevice repairDevice = new RepairDevice();
+                    repairDevice.setTaskId(taskId);
+                    repairDevice.setTaskStandardId(newStaId);
+                    repairDevice.setDeviceCode(d.getDeviceCode());
+                    deviceList.add(repairDevice);
+                });
+                repairDeviceService.saveBatch(deviceList);
+            }
+        }
         SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
         // 与设备不相关
         if (InspectionConstant.NO_ISAPPOINT_DEVICE.equals(isAppointDevice) || "1".equals(paramModel.getValue())) {
@@ -819,33 +844,21 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
         // 与设备相关
         if (InspectionConstant.IS_APPOINT_DEVICE.equals(isAppointDevice)) {
-            RepairPoolRel repairPoolRels = relMapper.selectOne(
-                    new LambdaQueryWrapper<RepairPoolRel>()
-                            .eq(RepairPoolRel::getRepairPoolCode, taskCode)
-                            .eq(RepairPoolRel::getRepairPoolStaId, oldStaId)
-                            .eq(RepairPoolRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+            if (CollUtil.isNotEmpty(repairPoolDeviceRels)) {
+                // 与设备相关并且已经指定了设备
+                List<String> deviceCodeList = repairPoolDeviceRels.stream().map(RepairPoolDeviceRel::getDeviceCode).collect(Collectors.toList());
 
-            if (ObjectUtil.isNotEmpty(repairPoolRels)) {
-                List<RepairPoolDeviceRel> repairPoolDeviceRels = repairPoolDeviceRel.selectList(
-                        new LambdaQueryWrapper<RepairPoolDeviceRel>()
-                                .eq(RepairPoolDeviceRel::getRepairPoolRelId, repairPoolRels.getId()));
-
-                if (CollUtil.isNotEmpty(repairPoolDeviceRels)) {
-                    // 与设备相关并且已经指定了设备
-                    List<String> deviceCodeList = repairPoolDeviceRels.stream().map(RepairPoolDeviceRel::getDeviceCode).collect(Collectors.toList());
-
-                    // 插入设备清单
-                    for (String deviceCode : deviceCodeList) {
-                        RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
-                        String jxdCode = CodeGenerateUtils.generateCode("JXD");
-                        repairTaskDeviceRel.setCode(jxdCode);
-                        repairTaskDeviceRel.setDeviceCode(deviceCode);
-                        repairTaskDeviceRel.setRepairTaskId(taskId);
-                        repairTaskDeviceRel.setTaskStandardRelId(newStaId);
-                        repairTaskDeviceRelMapper.insert(repairTaskDeviceRel);
-                        // 生成检修结果表
-                        this.generateItemResult(oldStaId, repairTaskDeviceRel.getId());
-                    }
+                // 插入设备清单
+                for (String deviceCode : deviceCodeList) {
+                    RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
+                    String jxdCode = CodeGenerateUtils.generateCode("JXD");
+                    repairTaskDeviceRel.setCode(jxdCode);
+                    repairTaskDeviceRel.setDeviceCode(deviceCode);
+                    repairTaskDeviceRel.setRepairTaskId(taskId);
+                    repairTaskDeviceRel.setTaskStandardRelId(newStaId);
+                    repairTaskDeviceRelMapper.insert(repairTaskDeviceRel);
+                    // 生成检修结果表
+                    this.generateItemResult(oldStaId, repairTaskDeviceRel.getId());
                 }
             }
         }
