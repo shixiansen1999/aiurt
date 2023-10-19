@@ -289,8 +289,8 @@ public class TaskPool implements Job {
 
             Integer deviceType = standard.getDeviceType();
 
-            //通信十一期通过配置去掉需要指定设备的限制，如果与设备相关且关联多个设备类型，则和与设备无关一样的处理，通过站点生成对应的巡检单
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+            //通过配置去掉需要指定设备的限制，如果和并工单，则和与设备类型无关一样，只根据站点生成工单
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_MERGE_DEVICE);
 
             if (PatrolConstant.DEVICE_INDEPENDENCE.equals(deviceType) || "1".equals(paramModel.getValue())) {
                 // 与设备无关

@@ -534,7 +534,7 @@ public interface SysParamCodeConstant {
     /**
      * 	巡视、检修标准是否合并工单
      */
-    String IS_MERGE_PATROL_TASK_DEVICE= "is_merge_patrol_task_device";
+    String IS_MERGE_DEVICE= "is_merge_device";
 
     /**
      * 	巡视、检修标准在关联设备类型的情况下是否需要指定设备

@@ -608,8 +608,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 e.setDeviceTypeName(q.getDeviceTypeName());
             });
             //检修单名称：检修标准title+设备名称
-            //通信十一期修改关联设备类型之后，没用检修单没用设备
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+            //当不合并工单时，因为一个设备一个工单，就是标准名加设备名
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_MERGE_DEVICE);
             if (e.getIsAppointDevice() == 1 && "0".equals(paramModel.getValue())) {
                 e.setResultName(e.getOverhaulStandardName() + "(" + e.getEquipmentName() + ")");
             } else {
