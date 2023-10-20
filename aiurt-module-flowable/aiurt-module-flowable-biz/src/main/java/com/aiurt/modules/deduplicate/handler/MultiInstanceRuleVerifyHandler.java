@@ -4,6 +4,7 @@ import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.deduplicate.context.FlowDeduplicateContext;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.TaskService;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.task.api.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -34,11 +35,18 @@ public class MultiInstanceRuleVerifyHandler<T extends FlowDeduplicateContext> ex
         // 通过流程变量区分是否是加签的用户
         Task task = context.getTask();
 
+        ExecutionEntity execution = (ExecutionEntity) context.getExecution();
+        Object isMultiAssignTaskObj = execution.getVariableLocal(IS_MUlTI_ASSIGN_TASK);
+
         if (log.isDebugEnabled()) {
             log.debug("审批去重，加签规则校验，任务id：{}， 节点id：{}", task.getId(), task.getTaskDefinitionKey());
         }
 
-        Boolean isMultiAssignTask = taskService.getVariableLocal(task.getId(), IS_MUlTI_ASSIGN_TASK, Boolean.class);
+        Boolean isMultiAssignTask = Boolean.FALSE;
+
+        if (Objects.nonNull(isMultiAssignTaskObj) && isMultiAssignTaskObj instanceof Boolean) {
+            isMultiAssignTask = (Boolean) isMultiAssignTaskObj;
+        }
 
         // 加签用户
         if (Objects.nonNull(isMultiAssignTask) && isMultiAssignTask) {

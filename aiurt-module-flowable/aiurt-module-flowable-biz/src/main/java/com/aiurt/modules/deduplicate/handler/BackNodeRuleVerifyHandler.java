@@ -4,10 +4,13 @@ import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.deduplicate.context.FlowDeduplicateContext;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.TaskService;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
+import org.flowable.engine.runtime.Execution;
 import org.flowable.task.api.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -33,15 +36,17 @@ public class BackNodeRuleVerifyHandler<T extends FlowDeduplicateContext> extends
 
         // 通过流程变量区分是否是加签的用户
         Task task = context.getTask();
+        ExecutionEntity execution = (ExecutionEntity) context.getExecution();
+        Object isBackNodeTaskObj = execution.getVariableLocal(REJECT_FIRST_USER_TASK);
 
         if (log.isDebugEnabled()) {
             log.debug("审批去重，回退，撤回规则校验，任务id：{}， 节点id：{}", task.getId(), task.getTaskDefinitionKey());
         }
-
-        Boolean isMultiAssignTask = taskService.getVariableLocal(task.getId(), REJECT_FIRST_USER_TASK, Boolean.class);
-
+        Boolean isBackNodeTask = false;
+        if (Objects.nonNull(isBackNodeTaskObj) && isBackNodeTaskObj instanceof Boolean)
+            isBackNodeTask = (Boolean) isBackNodeTaskObj;
         // 加签用户
-        if (Objects.nonNull(isMultiAssignTask) && isMultiAssignTask) {
+        if (Objects.nonNull(isBackNodeTask) && isBackNodeTask) {
             context.setContinueChain(false);
             if (log.isDebugEnabled()) {
                 log.debug("审批去重，该用户任务是驳回任务， 审批去重不生效，任务id：{}， 节点id：{}", task.getId(), task.getTaskDefinitionKey());

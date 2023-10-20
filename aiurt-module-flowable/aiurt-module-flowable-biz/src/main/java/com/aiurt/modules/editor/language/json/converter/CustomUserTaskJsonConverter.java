@@ -11,6 +11,7 @@ import com.aiurt.modules.modeler.entity.ActUserTypeEntity;
 import com.aiurt.modules.modeler.entity.AutoSelectEntity;
 import com.aiurt.modules.modeler.entity.NodeActionDTO;
 import com.aiurt.modules.online.page.dto.FormFiledJsonDTO;
+import com.aiurt.modules.user.enums.EmptyRuleEnum;
 import com.aiurt.modules.utils.FlowRelationUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -264,6 +265,11 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                     objectNode.set("username", jsonNode);
                 }
                 propertiesNode.set(FlowModelExtElementConstant.EX_EMPTY_APPROVE, objectNode);
+                // 默认给审批人员为系统管理员
+            } else {
+                ObjectNode objectNode = objectMapper.createObjectNode();
+                objectNode.put(FlowModelExtElementConstant.EXT_VALUE, EmptyRuleEnum.AUTO_ADMIN.getCode());
+                propertiesNode.set(FlowModelExtElementConstant.EX_EMPTY_APPROVE, objectNode);
             }
         }
     }
@@ -468,7 +474,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
     private void addExtensionElementToUserTask(UserTask userTask, String extensionName, JsonNode extensionData) throws JsonProcessingException {
         if (Objects.nonNull(extensionData)) {
             String json = objectMapper.writeValueAsString(extensionData);
-            log.info("json->{}", json);
+            log.debug("json->{}", json);
             if (extensionData.isArray()) {
                 JSONArray jsonArray = JSONObject.parseArray(json);
                 for (int i = 0; i < jsonArray.size(); i++) {

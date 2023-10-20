@@ -21,6 +21,7 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.engine.ProcessEngines;
+import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
@@ -76,7 +77,7 @@ public class FlowableNodeActionUtils {
 
     public static void processTaskData(TaskEntity taskEntity, String processDefinitionId, String taskDefinitionKey, String processInstanceId, String nodeAction) {
         String taskId = taskEntity.getId();
-        TaskService taskService = SpringContextUtils.getBean(TaskService.class);
+        RuntimeService runtimeService = ProcessEngines.getDefaultProcessEngine().getRuntimeService();
 
 
         // 如果是节点后操作， 只在最后一个任务提交执行
@@ -87,20 +88,20 @@ public class FlowableNodeActionUtils {
                 processTaskData(processDefinitionId, taskDefinitionKey, processInstanceId, nodeAction);
 
                 // 提交则需要删除变量， 否则回退时不执行
-                taskService.removeVariable(taskId, FlowModelExtElementConstant.EXT_PRE_NODE_ACTION + "_" + taskDefinitionKey);
+                runtimeService.removeVariable(processInstanceId, FlowModelExtElementConstant.EXT_PRE_NODE_ACTION + "_" + taskDefinitionKey);
 
                 // 删除加签的变量
-                taskService.removeVariable(taskId, FlowVariableConstant.ADD_ASSIGNEE_LIST + taskDefinitionKey);
+                runtimeService.removeVariable(processInstanceId, FlowVariableConstant.ADD_ASSIGNEE_LIST + taskDefinitionKey);
             }
         } else {
             // 判断是否已经执行
-            Boolean variableLocal = taskService.getVariable(taskId, nodeAction + "_" + taskDefinitionKey, Boolean.class);
+            Boolean variableLocal = runtimeService.getVariable(processInstanceId, nodeAction + "_" + taskDefinitionKey, Boolean.class);
             if (Objects.nonNull(variableLocal) && variableLocal) {
                 return;
             }
             processTaskData(processDefinitionId, taskDefinitionKey, processInstanceId, nodeAction);
             // 变量， 标识已经执行
-            taskService.setVariable(taskId, nodeAction + "_" + taskDefinitionKey, Boolean.TRUE);
+            runtimeService.setVariable(processInstanceId, nodeAction + "_" + taskDefinitionKey, Boolean.TRUE);
         }
     }
 
