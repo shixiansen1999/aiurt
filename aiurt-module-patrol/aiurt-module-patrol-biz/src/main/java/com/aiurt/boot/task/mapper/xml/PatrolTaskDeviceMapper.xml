@@ -65,11 +65,11 @@
         FROM patrol_task_device ptd
                      JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
                      LEFT JOIN patrol_standard ps ON pts.standard_id = ps.id
-                     LEFT JOIN patrol_standard_device_type psdt ON psdt.standard_code = ps.code
-                     LEFT JOIN device ON ptd.device_code = device.`code`
-                     LEFT JOIN cs_major cm ON pts.profession_code = cm.major_code
-                     LEFT JOIN cs_subsystem cs ON pts.subsystem_code = cs.system_code
-                     LEFT JOIN device_type dt ON pts.device_type_code = dt.`code`
+                     LEFT JOIN patrol_standard_device_type psdt ON psdt.standard_code = ps.code AND psdt.del_flag = 0
+                     LEFT JOIN device ON ptd.device_code = device.`code` AND device.del_flag = 0
+                     LEFT JOIN cs_major cm ON pts.profession_code = cm.major_code AND cm.del_flag = 0
+                     LEFT JOIN cs_subsystem cs ON pts.subsystem_code = cs.system_code AND cs.del_flag = 0
+                     LEFT JOIN device_type dt ON pts.device_type_code = dt.`code` AND dt.del_flag = 0
                      LEFT JOIN sys_user su ON ptd.user_id = su.id
                 WHERE ptd.del_flag = 0
                   and ptd.status = 2
