@@ -79,6 +79,8 @@ public class ActCustomTaskCommentServiceImpl extends ServiceImpl<ActCustomTaskCo
             flowTaskCommentDTO.setCreateBy(actCustomTaskComment.getCreateBy());
             if (!StrUtil.equalsIgnoreCase(FlowApprovalType.AUTO_COMPLETE, actCustomTaskComment.getApprovalType())) {
                 flowTaskCommentDTO.setCreateRealname(actCustomTaskComment.getCreateRealname());
+            } else if (StrUtil.isNotBlank(actCustomTaskComment.getCreateRealname())){
+                flowTaskCommentDTO.setCreateRealname(actCustomTaskComment.getCreateRealname());
             }
             flowTaskCommentDTO.setCreateTime(actCustomTaskComment.getCreateTime());
             result.add(flowTaskCommentDTO);

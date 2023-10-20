@@ -406,11 +406,10 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (flowTaskComment != null && !StrUtil.equalsIgnoreCase(approvalType, FlowApprovalType.CANCEL)) {
             String assignee = task.getAssignee();
             LoginUser loginUser = sysBaseAPI.queryUser(assignee);
-            if (Objects.isNull(loginUser)) {
-                loginUser = checkLogin();
+            if (Objects.nonNull(loginUser)) {
+                flowTaskComment.setCreateRealname(loginUser.getRealname());
             }
             flowTaskComment.fillWith(processInstanceActiveTask);
-            flowTaskComment.setCreateRealname(loginUser.getRealname());
             customTaskCommentService.getBaseMapper().insert(flowTaskComment);
         }
 
