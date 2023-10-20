@@ -495,6 +495,16 @@ public interface SysParamCodeConstant {
     String HUR_RING_DURATION = "hur_ring_duration";
 
     /**
+     * 工作日志保存检修内容是否需要拼接标准表
+     */
+    String WORKLOG_REPAIR_CONCAT_STANDARD = "worklog_repair_concat_standard";
+
+    /**
+     * 取消挂起时是否更新维修负责人
+     */
+    String CANCEL_HANGUP_CH_AUN = "cancel_hangup_ch_aun";
+
+    /**
      * 备件管理是否启用全新数量、已使用数量、待报废数量、委外送修数量
      */
     String SPARE_PART_EXTRA_NUM = "spare_part_extra_num";
@@ -508,17 +518,13 @@ public interface SysParamCodeConstant {
     String SPARE_PART_ZERO = "spare_part_zero";
 
     /**
-     * 工作日志保存检修内容是否需要拼接标准表
+     * 巡视工时是否使用mac计算，如果不使用就是各工单时长之和
      */
-    String WORKLOG_REPAIR_CONCAT_STANDARD = "worklog_repair_concat_standard";
+    String PATROL_DURATION_USE_MAC = "patrol_duration_use_mac";
     /**
      * 培训编码-是否根据线路生成编码
      */
     String TRAIN_TASK_CODE="train_task_code";
-    /**
-     * 取消挂起时是否更新维修负责人
-     */
-    String CANCEL_HANGUP_CH_AUN = "cancel_hangup_ch_aun";
 
     /**
      * 	巡视、检修标准是否关联多个设备分类
@@ -526,9 +532,14 @@ public interface SysParamCodeConstant {
     String MULTIPLE_DEVICE_TYPES = "multiple_device_types";
 
     /**
-     * 巡视工时是否使用mac计算，如果不使用就是各工单时长之和
+     * 	巡视、检修标准是否合并工单
      */
-    String PATROL_DURATION_USE_MAC = "patrol_duration_use_mac";
+    String IS_MERGE_DEVICE= "is_merge_device";
+
+    /**
+     * 	巡视、检修标准在关联设备类型的情况下是否需要指定设备
+     */
+    String WHETHER_TO_SPECIFY_DEVICE = "whether_to_specify_device";
     /**
      * 检修任务领取是否放开时间限制
      */

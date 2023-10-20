@@ -295,8 +295,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         if (CollUtil.isNotEmpty(patrolPlanDto.getPatrolStandards())) {
             List<PatrolStandardDto> patrolStandardDto = patrolPlanDto.getPatrolStandards();
             List<Device> devices = patrolPlanDto.getDevices();
-            //通信十一期通过配置去掉需要指定设备的限制
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+            //通过配置去掉需要指定设备的限制
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
             patrolStandardDto.forEach(p -> {
                 if (p.getDeviceType().equals(1)) {
                     boolean i = devices.stream().anyMatch(d -> p.getCode().equals(d.getPlanStandardCode()));
@@ -496,8 +496,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 throw new AiurtBootException("计划暂未挑选巡检标准表，不允许启用！");
             }
 
-            //通信十一期通过配置去掉需要指定设备的限制
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+            //通过配置去掉需要指定设备的限制
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
             // 判断标准表中如果与设备类型相关是否选定了设备
             Optional.ofNullable(patrolPlanStandard).orElseGet(Collections::emptyList).stream().forEach(l -> {
                 LambdaQueryWrapper<PatrolStandard> standardWrapper = new LambdaQueryWrapper<>();

@@ -261,8 +261,8 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                 if (ObjectUtil.isEmpty(inspectionCode)) {
                     throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
                 }
-                //通信十一期通过配置去掉需要指定设备的限制
-                SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+                //通过配置去掉需要指定设备的限制
+                SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
                 if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && CollUtil.isEmpty(re.getDevices()) && "0".equals(paramModel.getValue())) {
                     throw new AiurtBootException(String.format("名字为%s需要指定设备", ObjectUtil.isNotEmpty(inspectionCode) ? inspectionCode.getTitle() : ""));
                 }
@@ -589,8 +589,8 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             if (ObjectUtil.isEmpty(inspectionCode)) {
                 throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
             }
-            //通信十一期通过配置去掉需要指定设备的限制
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+            //通过配置去掉需要指定设备的限制
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
             if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && "0".equals(paramModel.getValue())) {
                 List<InspectionStrDeviceRel> inspectionStrDeviceRels = inspectionStrDeviceRelMapper.selectList(new LambdaQueryWrapper<InspectionStrDeviceRel>().eq(InspectionStrDeviceRel::getInspectionStrRelId, re.getId()));
                 if (CollUtil.isEmpty(inspectionStrDeviceRels)) {

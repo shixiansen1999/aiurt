@@ -563,11 +563,15 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         List<PatrolAccompany> accompanyList = patrolAccompanyMapper.selectList(accompanyWrapper);
         taskDeviceParam.setAccompanyInfo(accompanyList);
         List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
+        // 查询工单的全部异常设备，然后用检修项id分组
+        Map<String, List<PatrolAbnormalDeviceDTO>> abnormalDeviceMap = patrolCheckResultMapper.queryAbnormalDevices(taskDeviceParam.getId()).stream().collect(Collectors.groupingBy(PatrolAbnormalDeviceDTO::getResultId));
         // 字典翻译
         Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
                 .stream().filter(l->StrUtil.isNotEmpty(l.getText()))
                 .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
         checkResultList.stream().forEach(c -> {
+            // 每个检查项的异常设备
+            c.setAbnormalDeviceList(abnormalDeviceMap.get(c.getId()));
             c.setRequiredDictName(requiredItems.get(String.valueOf(c.getRequired())));
             if (ObjectUtil.isNotNull(c.getDictCode())) {
                 List<DictModel> list = sysBaseApi.getDictItems(c.getDictCode());
@@ -772,12 +776,16 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 }
             }
             List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckResult(taskDeviceId);
+            // 查询工单的全部异常设备，然后用检修项id分组
+            Map<String, List<PatrolAbnormalDeviceDTO>> abnormalDeviceMap = patrolCheckResultMapper.queryAbnormalDevices(taskDeviceId).stream().collect(Collectors.groupingBy(PatrolAbnormalDeviceDTO::getResultId));
             // 字典翻译
             Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
                     .stream().filter(l-> StrUtil.isNotEmpty(l.getText()))
                     .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
             checkResultList.stream().forEach(e ->
             {
+                // 每个检查项的异常设备
+                e.setAbnormalDeviceList(abnormalDeviceMap.get(e.getId()));
                 e.setRequiredDictName(requiredItems.get(String.valueOf(e.getRequired())));
                 if (ObjectUtil.isNotNull(e.getDictCode())) {
                     List<DictModel> list = sysBaseApi.getDictItems(e.getDictCode());

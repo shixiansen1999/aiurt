@@ -9,7 +9,6 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.InspectionApi;
@@ -64,14 +63,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.ImageUtils;
 import org.apache.poi.util.Units;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
-import org.apache.poi.xssf.usermodel.XSSFShape;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
@@ -94,11 +88,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
-import javax.net.ssl.TrustManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.*;
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
@@ -113,7 +104,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * @Description: repair_task
@@ -638,8 +628,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 e.setDeviceTypeName(q.getDeviceTypeName());
             });
             //检修单名称：检修标准title+设备名称
-            //通信十一期修改关联设备类型之后，没用检修单没用设备
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+            //当不合并工单时，因为一个设备一个工单，就是标准名加设备名
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_MERGE_DEVICE);
             if (e.getIsAppointDevice() == 1 && "0".equals(paramModel.getValue())) {
                 e.setResultName(e.getOverhaulStandardName() + "(" + e.getEquipmentName() + ")");
             } else {
@@ -1382,7 +1372,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
      */
     private List<RepairTaskResult> selectCodeContentList(String id) {
         List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(id, null);
+        // 查询工单的全部异常设备，然后用检查项id分组
+        Map<String, List<RepairAbnormalDeviceDTO>> abnormalDeviceMap = repairTaskMapper.queryAbnormalDevices(id).stream().collect(Collectors.groupingBy(RepairAbnormalDeviceDTO::getResultId));
         repairTaskResults1.forEach(r -> {
+            // 每个检查项的异常设备
+            r.setAbnormalDeviceList(abnormalDeviceMap.get(r.getId()));
             //检修结果
             r.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(r.getStatus())));
 

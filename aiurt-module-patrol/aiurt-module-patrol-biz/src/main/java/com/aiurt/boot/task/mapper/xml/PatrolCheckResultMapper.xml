@@ -49,7 +49,7 @@
         WHERE
         pcr.del_flag =0
         <if test="taskDeviceId != null and taskDeviceId !=''">
-            and task_device_id = #{taskDeviceId}
+            and pcr.task_device_id = #{taskDeviceId}
         </if>
         order by pcr.order
     </select>
@@ -176,6 +176,19 @@
                 #{collect}
             </foreach>
         </if>)
+    </select>
+    <select id="queryAbnormalDevices" resultType="com.aiurt.boot.task.dto.PatrolAbnormalDeviceDTO">
+        SELECT
+            pad.*,
+            d.`name` AS deviceName
+        FROM
+            patrol_check_result pcr
+                INNER JOIN patrol_abnormal_device pad ON pad.result_id = pcr.id
+            LEFT JOIN device d ON d.`code` = pad.device_code
+        WHERE
+            pcr.del_flag = 0
+          AND pad.del_flag = 0
+          AND pcr.task_device_id = #{taskDeviceId}
     </select>
 
 

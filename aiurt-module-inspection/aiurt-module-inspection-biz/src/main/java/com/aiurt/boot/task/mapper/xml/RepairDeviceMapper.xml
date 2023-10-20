@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.boot.task.mapper.RepairDeviceMapper">
+    <select id="queryDevices" resultType="com.aiurt.boot.task.dto.RepairDeviceDTO">
+        SELECT
+            rd.*,
+            d.`name` AS deviceName
+        FROM
+            repair_device rd
+            LEFT JOIN device d ON d.`code` = rd.device_code
+        WHERE
+            rd.del_flag = 0
+            AND d.del_flag = 0
+            AND rd.task_id = #{taskId}
+            AND rd.task_standard_id = #{taskStandardId}
+    </select>
+</mapper>
