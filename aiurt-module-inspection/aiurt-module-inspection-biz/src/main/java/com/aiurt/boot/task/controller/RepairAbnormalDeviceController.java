@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Api(tags = "检修结果异常设备")
 @RestController
-@RequestMapping("/repairDevice")
+@RequestMapping("/repairAbnormalDevice")
 @Slf4j
 public class RepairAbnormalDeviceController extends BaseController<RepairAbnormalDevice, IRepairAbnormalDeviceService> {
 

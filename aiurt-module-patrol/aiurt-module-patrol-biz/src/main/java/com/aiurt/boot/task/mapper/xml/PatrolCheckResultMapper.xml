@@ -43,27 +43,20 @@
 
     <select id="getListByTaskDeviceId" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
         SELECT
-            pcr.*,
-            GROUP_CONCAT(d.`name`) as abnormalDeviceName
+        pcr.*
         FROM
         patrol_check_result pcr
-            LEFT JOIN patrol_abnormal_device pad ON pad.result_id = pcr.id AND pad.del_flag = 0
-            LEFT JOIN device d ON d.code = pad.device_code
         WHERE
-            pcr.del_flag =0
+        pcr.del_flag =0
         <if test="taskDeviceId != null and taskDeviceId !=''">
-            and task_device_id = #{taskDeviceId}
+            and pcr.task_device_id = #{taskDeviceId}
         </if>
-        group by pcr.id
         order by pcr.order
     </select>
     <select id="getCheckResult" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
-    select t1.*, GROUP_CONCAT(d.`name`) as abnormalDeviceName
+    select t1.*
     from patrol_check_result t1
-        LEFT JOIN patrol_abnormal_device pad ON pad.result_id = t1.id AND pad.del_flag = 0
-        LEFT JOIN device d ON d.code = pad.device_code
-    where t1.del_flag =0 and t1.task_device_id = #{taskDeviceId}
-    group by t1.id
+    where t1.task_device_id = #{taskDeviceId}
     order by t1.order
     </select>
 
@@ -180,6 +173,19 @@
                 #{collect}
             </foreach>
         </if>)
+    </select>
+    <select id="queryAbnormalDevices" resultType="com.aiurt.boot.task.dto.PatrolAbnormalDeviceDTO">
+        SELECT
+            pad.*,
+            d.`name` AS deviceName
+        FROM
+            patrol_check_result pcr
+                INNER JOIN patrol_abnormal_device pad ON pad.result_id = pcr.id
+            LEFT JOIN device d ON d.`code` = pad.device_code
+        WHERE
+            pcr.del_flag = 0
+          AND pad.del_flag = 0
+          AND pcr.task_device_id = #{taskDeviceId}
     </select>
 
 

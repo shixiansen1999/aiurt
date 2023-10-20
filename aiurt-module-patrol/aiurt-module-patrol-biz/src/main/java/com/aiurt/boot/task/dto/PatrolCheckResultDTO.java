@@ -64,7 +64,7 @@ public class PatrolCheckResultDTO extends PatrolCheckResult {
 
     @ApiModelProperty(value = "检查值")
     private  String result;
-    /**异常设备名称，多个用逗号隔开*/
-    @ApiModelProperty(value = "异常设备名称，多个用逗号隔开")
-    private String abnormalDeviceName;
+    /**返回异常设备集合*/
+    @ApiModelProperty(value = "返回异常设备集合")
+    private List<PatrolAbnormalDeviceDTO> abnormalDeviceList;
 }

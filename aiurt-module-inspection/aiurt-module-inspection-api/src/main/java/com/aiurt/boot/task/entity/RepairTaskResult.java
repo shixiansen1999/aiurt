@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.entity;
 
+import com.aiurt.boot.task.dto.RepairAbnormalDeviceDTO;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -198,8 +199,8 @@ public class RepairTaskResult implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "子节点")
     private List<RepairTaskResult> children;
-    /**异常设备名称，多个用逗号隔开*/
+    /**返回异常设备集合*/
     @TableField(exist = false)
-    @ApiModelProperty(value = "异常设备名称，多个用逗号隔开")
-    private String abnormalDeviceName;
+    @ApiModelProperty(value = "返回异常设备集合")
+    private List<RepairAbnormalDeviceDTO> abnormalDeviceList;
 }

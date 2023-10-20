@@ -60,7 +60,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
-import lombok.var;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
@@ -1352,7 +1351,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
      */
     private List<RepairTaskResult> selectCodeContentList(String id) {
         List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(id, null);
+        // 查询工单的全部异常设备，然后用检查项id分组
+        Map<String, List<RepairAbnormalDeviceDTO>> abnormalDeviceMap = repairTaskMapper.queryAbnormalDevices(id).stream().collect(Collectors.groupingBy(RepairAbnormalDeviceDTO::getResultId));
         repairTaskResults1.forEach(r -> {
+            // 每个检查项的异常设备
+            r.setAbnormalDeviceList(abnormalDeviceMap.get(r.getId()));
             //检修结果
             r.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(r.getStatus())));
 
