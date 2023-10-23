@@ -100,7 +100,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @param condition
      * @return
      */
-    List<RepairTaskDTO> selectTaskletForDevice(@Param("pageList") Page<RepairTaskDTO> pageList, @Param("condition") RepairTaskDTO condition,@Param("multipleDeviceTypes") String multipleDeviceTypes);
+    List<RepairTaskDTO> selectTaskletForDevice(@Param("pageList") Page<RepairTaskDTO> pageList, @Param("condition") RepairTaskDTO condition);
 
 
     /**

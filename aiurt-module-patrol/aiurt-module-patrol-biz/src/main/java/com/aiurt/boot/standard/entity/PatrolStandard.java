@@ -73,6 +73,14 @@ public class PatrolStandard extends DictEntity implements Serializable {
     /**与设备类型相关：0否 1 是*/
     @ApiModelProperty(value = "与设备类型相关：0否 1 是")
     private java.lang.Integer deviceType;
+    /**
+     * 是否合并工单：0否、1是
+     */
+    @org.jeecgframework.poi.excel.annotation.Excel(name = "是否合并工单：0否、1是", width = 15)
+    @ApiModelProperty(value = "是否合并工单：0否、1是")
+    @Dict(dicCode = "is_merge_device")
+    private java.lang.Integer isMergeDevice;
+
     /**与设备类型相关：0否 1 是*/
     @Excel(name = "是否与设备类型相关", width = 15,needMerge = true,dict = "")
     @ApiModelProperty(value = "与设备类型相关：0否 1 是")

@@ -87,6 +87,13 @@ public class RepairPoolCode implements Serializable {
     @Dict(dicCode = "is_appoint_device")
     private java.lang.Integer isAppointDevice;
     /**
+     * 是否合并工单：0否、1是
+     */
+    @Excel(name = "是否合并工单：0否、1是", width = 15)
+    @ApiModelProperty(value = "是否合并工单：0否、1是")
+    @Dict(dicCode = "is_merge_device")
+    private java.lang.Integer isMergeDevice;
+    /**
      * 专业code,关联cs_major的code
      */
     @Excel(name = "专业code,关联cs_major的code", width = 15)

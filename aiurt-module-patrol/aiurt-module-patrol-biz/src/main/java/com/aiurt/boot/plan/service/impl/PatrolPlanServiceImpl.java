@@ -300,7 +300,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
             patrolStandardDto.forEach(p -> {
                 if (p.getDeviceType().equals(1)) {
                     boolean i = devices.stream().anyMatch(d -> p.getCode().equals(d.getPlanStandardCode()));
-                    if (!i  && "0".equals(paramModel.getValue())) {
+                    if (!i  && CommonConstant.BOOLEAN_1.equals(paramModel.getValue())) {
                         throw new AiurtBootException("标准表名为：" + p.getName() + "暂未指定设备,请指定设备!");
                     }
                 }
@@ -508,7 +508,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                     deviceWrapper.eq(PatrolPlanDevice::getPlanId, planId);
                     deviceWrapper.eq(PatrolPlanDevice::getPlanStandardId, l.getId());
                     List<PatrolPlanDevice> deviceList = patrolPlanDeviceMapper.selectList(deviceWrapper);
-                    if (CollectionUtil.isEmpty(deviceList)  && "0".equals(paramModel.getValue())) {
+                    if (CollectionUtil.isEmpty(deviceList)  && CommonConstant.BOOLEAN_1.equals(paramModel.getValue())) {
                         throw new AiurtBootException("标准表名为:【" + standard.getName() + "】暂未指定设备，不允许启用！");
                     }
                 }

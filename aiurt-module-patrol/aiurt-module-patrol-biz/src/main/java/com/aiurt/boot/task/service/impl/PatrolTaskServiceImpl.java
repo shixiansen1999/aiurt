@@ -1507,8 +1507,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //保存巡检任务标准表的信息
         String taskId = patrolTask.getId();
         List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();
-        //通过配置去掉需要指定设备的限制
-        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
+
         patrolStandardList.stream().forEach(ns -> {
             PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
             patrolTaskStandard.setTaskId(taskId);
@@ -1537,9 +1536,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
-            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()  && "0".equals(paramModel.getValue()) ) {
-
-                if (CollUtil.isEmpty(deviceList)) {
+            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()  && 0 == patrolStandard.getIsMergeDevice() ) {
+                SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
+                if (CollUtil.isEmpty(deviceList) && CommonConstant.BOOLEAN_1.equals(paramModel.getValue())) {
                     throw new AiurtBootException("要指定设备才可以保存");
                 } else {
                     //遍历设备单号
@@ -1957,8 +1956,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //保存巡检任务标准表的信息
         String taskId = patrolTaskManualDTO.getId();
         List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();
-        //通过配置去掉需要指定设备的限制
-        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
+
         patrolStandardList.stream().forEach(ns -> {
             PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
             patrolTaskStandard.setTaskId(taskId);
@@ -1987,8 +1985,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
-            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()  && "0".equals(paramModel.getValue())  ) {
-                if(CollUtil.isEmpty(deviceList)){
+            if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType() && 0 == patrolStandard.getIsMergeDevice()  ) {
+                SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
+                if(CollUtil.isEmpty(deviceList) && CommonConstant.BOOLEAN_1.equals(paramModel.getValue())) {
                      throw new AiurtBootException("要指定设备才可以保存");
                 }else{
                     //遍历设备单号

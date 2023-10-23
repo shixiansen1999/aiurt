@@ -532,9 +532,9 @@ public interface SysParamCodeConstant {
     String MULTIPLE_DEVICE_TYPES = "multiple_device_types";
 
     /**
-     * 	巡视、检修标准是否合并工单
+     * 	巡视、检修履历是否只和设备类型相关
      */
-    String IS_MERGE_DEVICE= "is_merge_device";
+    String IS_ONLY_RELATED_TO_DEVICE_TYPE= "is_only_related_to_device_type";
 
     /**
      * 	巡视、检修标准在关联设备类型的情况下是否需要指定设备

@@ -629,8 +629,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             });
             //检修单名称：检修标准title+设备名称
             //当不合并工单时，因为一个设备一个工单，就是标准名加设备名
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_MERGE_DEVICE);
-            if (e.getIsAppointDevice() == 1 && "0".equals(paramModel.getValue())) {
+            if (e.getIsAppointDevice() == 1 && 0 == e.getIsMergeDevice()) {
                 e.setResultName(e.getOverhaulStandardName() + "(" + e.getEquipmentName() + ")");
             } else {
                 e.setResultName(e.getOverhaulStandardName());
@@ -975,8 +974,18 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
     @Override
     public Page<RepairTaskDTO> repairSelectTaskletForDevice(Page<RepairTaskDTO> pageList, RepairTaskDTO condition) {
-        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
-        List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskletForDevice(pageList, condition,paramModel.getValue());
+        SysParamModel multipleDeviceTypes = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+        SysParamModel whetherToSpecifyDevice = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
+        SysParamModel isOnlyRelatedToDeviceType = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_ONLY_RELATED_TO_DEVICE_TYPE);
+
+        boolean isDeviceCode = CommonConstant.BOOLEAN_0.equals(multipleDeviceTypes.getValue()) && CommonConstant.BOOLEAN_1.equals(whetherToSpecifyDevice.getValue());
+        boolean isDeviceTypeCode = CommonConstant.BOOLEAN_1.equals(multipleDeviceTypes.getValue()) && CommonConstant.BOOLEAN_0.equals(whetherToSpecifyDevice.getValue());
+        boolean isPatrolDeviceCodeAndTypeCode = CommonConstant.BOOLEAN_1.equals(isOnlyRelatedToDeviceType.getValue());
+        condition.setIsDeviceCode(isDeviceCode);
+        condition.setIsDeviceTypeCode(isDeviceTypeCode);
+        condition.setIsPatrolDeviceCodeAndTypeCode(isPatrolDeviceCodeAndTypeCode);
+
+        List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskletForDevice(pageList, condition);
         repairTasks.forEach(e -> {
             //查询同行人
             List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(

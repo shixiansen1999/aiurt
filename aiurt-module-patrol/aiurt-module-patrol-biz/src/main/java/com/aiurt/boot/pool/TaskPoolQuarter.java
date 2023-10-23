@@ -237,11 +237,10 @@ public class TaskPoolQuarter implements Job {
             patrolDeviceService.saveBatch(patrolDeviceList);
 
             Integer deviceType = standard.getDeviceType();
-
+            Integer isMergeDevice = standard.getIsMergeDevice();
             //通过配置去掉需要指定设备的限制，如果和并工单，则和与设备类型无关一样，只根据站点生成工单
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_MERGE_DEVICE);
 
-            if (PatrolConstant.DEVICE_INDEPENDENCE.equals(deviceType) || "1".equals(paramModel.getValue())) {
+            if (PatrolConstant.DEVICE_INDEPENDENCE.equals(deviceType) || 1 == isMergeDevice) {
                 // 与设备无关
                 // 根据计划ID获取计划
                 PatrolPlan patrolPlan = patrolPlanService.getById(l.getPlanId());

@@ -53,9 +53,7 @@
     </select>
     <select id="selectBillInfoForDevice" resultType="com.aiurt.boot.task.param.PatrolTaskDeviceParam">
         SELECT pts.profession_code majorCode,
-               cm.major_name       majorName,
                pts.subsystem_code,
-               cs.system_name      subsystemName,
                pts.device_type_code,
                dt.`name`           deviceTypeName,
                ps.`name`           standardName,
@@ -65,20 +63,17 @@
         FROM patrol_task_device ptd
                      JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
                      LEFT JOIN patrol_standard ps ON pts.standard_id = ps.id
-                     LEFT JOIN patrol_standard_device_type psdt ON psdt.standard_code = ps.code AND psdt.del_flag = 0
-                     LEFT JOIN device ON ptd.device_code = device.`code` AND device.del_flag = 0
-                     LEFT JOIN cs_major cm ON pts.profession_code = cm.major_code AND cm.del_flag = 0
-                     LEFT JOIN cs_subsystem cs ON pts.subsystem_code = cs.system_code AND cs.del_flag = 0
-                     LEFT JOIN device_type dt ON pts.device_type_code = dt.`code` AND dt.del_flag = 0
+                     LEFT JOIN patrol_standard_device_type psdt ON psdt.standard_code = ps.code
+                     LEFT JOIN patrol_device pd ON pd.task_standard_id = pts.id
+                     LEFT JOIN device ON ptd.device_code = device.`code`
+                     LEFT JOIN device_type dt ON pts.device_type_code = dt.`code`
                      LEFT JOIN sys_user su ON ptd.user_id = su.id
                 WHERE ptd.del_flag = 0
                   and ptd.status = 2
         <if test="taskDevice.taskId != null and taskDevice.taskId != ''">
             and ptd.task_id = #{taskDevice.taskId}
         </if>
-        <if test="taskDevice.deviceCode != null and taskDevice.deviceCode != ''">
-            and ptd.device_code = #{taskDevice.deviceCode}
-        </if>
+
         <if test="taskDevice.deviceName != null and taskDevice.deviceName != ''">
             and device.`name` like concat('%', #{taskDevice.deviceName}, '%')
         </if>
@@ -98,9 +93,25 @@
             and DATE_FORMAT(ptd.start_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{taskDevice.startTimeBegin}, '%Y-%m-%d')
             and DATE_FORMAT(ptd.start_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{taskDevice.startTimeEnd}, '%Y-%m-%d')
         </if>
-        <if test="multipleDeviceTypes eq '1'.toString() ">
-            and psdt.device_type_code = #{taskDevice.deviceTypeCode}
+
+        <if test="taskDevice.isDeviceCode and  taskDevice.deviceCode != null and taskDevice.deviceCode != ''">
+            and ptd.device_code = #{taskDevice.deviceCode}
         </if>
+
+        <if test="taskDevice.isDeviceTypeCode and ( taskDevice.deviceCode != null and taskDevice.deviceCode != '')
+                and (taskDevice.deviceTypeCode != null and taskDevice.deviceTypeCode != '') ">
+            <choose>
+                <when test="taskDevice.isPatrolDeviceCodeAndTypeCode ">
+                    and psdt.device_type_code = #{taskDevice.deviceTypeCode}
+                </when>
+                <otherwise>
+                    and ((pd.device_code = #{taskDevice.deviceCode})
+                    or (psdt.device_type_code = #{taskDevice.deviceTypeCode} and isnull(pd.device_code) ))
+                </otherwise>
+            </choose>
+        </if>
+        GROUP BY ptd.id
+
     </select>
     <select id="selectBillInfoByNumber" resultType="com.aiurt.boot.task.param.PatrolTaskDeviceParam">
         SELECT pts.device_type_code,

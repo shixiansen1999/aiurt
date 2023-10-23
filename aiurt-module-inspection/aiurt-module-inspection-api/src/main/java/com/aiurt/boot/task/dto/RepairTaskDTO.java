@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
@@ -244,6 +245,13 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "是否与设备相关，0否1是")
     private Integer isAppointDevice;
 
+    /**
+     * 是否合并工单：0否、1是
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否合并工单：0否、1是")
+    private java.lang.Integer isMergeDevice;
+
     /**搜索*/
     @ApiModelProperty(value = "搜索")
     @TableField(exist = false)
@@ -298,4 +306,17 @@ public class RepairTaskDTO {
     private Boolean isNullSafetyPrecautions;
     @ApiModelProperty(value = "故障编码")
     private String faultCode;
+
+    /**
+     * 不关联多个设备且要指定设备
+     */
+    private Boolean isDeviceCode;
+    /**
+     * 不关联多个设备但不需要指定设备
+     */
+    private Boolean isDeviceTypeCode;
+    /**
+     * 履历是否只和设备类型相关
+     * */
+    private Boolean isPatrolDeviceCodeAndTypeCode;
 }

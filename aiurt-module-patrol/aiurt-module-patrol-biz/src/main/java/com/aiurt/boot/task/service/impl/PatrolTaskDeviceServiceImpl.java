@@ -100,8 +100,18 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
     @Override
     public IPage<PatrolTaskDeviceParam> selectBillInfoForDevice(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam) {
-        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
-        IPage<PatrolTaskDeviceParam> patrolTaskDeviceForDeviceParamPage = patrolTaskDeviceMapper.selectBillInfoForDevice(page, patrolTaskDeviceParam,paramModel.getValue());
+        SysParamModel multipleDeviceTypes = sysParamApi.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+        SysParamModel whetherToSpecifyDevice = sysParamApi.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
+        SysParamModel isOnlyRelatedToDeviceType = sysParamApi.selectByCode(SysParamCodeConstant.IS_ONLY_RELATED_TO_DEVICE_TYPE);
+
+        boolean isDeviceCode = CommonConstant.BOOLEAN_0.equals(multipleDeviceTypes.getValue()) && CommonConstant.BOOLEAN_1.equals(whetherToSpecifyDevice.getValue());
+        boolean isDeviceTypeCode = CommonConstant.BOOLEAN_1.equals(multipleDeviceTypes.getValue()) && CommonConstant.BOOLEAN_0.equals(whetherToSpecifyDevice.getValue());
+        boolean isPatrolDeviceCodeAndTypeCode = CommonConstant.BOOLEAN_1.equals(isOnlyRelatedToDeviceType.getValue());
+        patrolTaskDeviceParam.setIsDeviceCode(isDeviceCode);
+        patrolTaskDeviceParam.setIsDeviceTypeCode(isDeviceTypeCode);
+        patrolTaskDeviceParam.setIsPatrolDeviceCodeAndTypeCode(isPatrolDeviceCodeAndTypeCode);
+
+        IPage<PatrolTaskDeviceParam> patrolTaskDeviceForDeviceParamPage = patrolTaskDeviceMapper.selectBillInfoForDevice(page, patrolTaskDeviceParam);
         List<PatrolTaskDeviceParam> records = patrolTaskDeviceForDeviceParamPage.getRecords();
         if (records != null && records.size() > 0) {
             for (PatrolTaskDeviceParam patrolTaskDeviceForDeviceParam : records) {
