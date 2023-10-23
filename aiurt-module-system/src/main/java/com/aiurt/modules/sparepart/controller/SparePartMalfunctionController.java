@@ -1,30 +1,17 @@
 package com.aiurt.modules.sparepart.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import cn.hutool.core.util.StrUtil;
-import com.aiurt.common.aspect.annotation.PermissionData;
-import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import io.swagger.annotations.ApiParam;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.sparepart.entity.SparePartMalfunction;
 import com.aiurt.modules.sparepart.service.ISparePartMalfunctionService;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -32,9 +19,12 @@ import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
  /**
  * @Description: spare_part_malfunction
@@ -66,16 +56,9 @@ public class SparePartMalfunctionController extends BaseController<SparePartMalf
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		LambdaQueryWrapper<SparePartMalfunction> queryWrapper = new LambdaQueryWrapper<>();
-		if(ObjectUtils.isNotEmpty(sparePartMalfunction.getMaintainTimeBegin()) && ObjectUtils.isNotEmpty(sparePartMalfunction.getMaintainTimeEnd())){
-			queryWrapper.ge(SparePartMalfunction::getMaintainTime,sparePartMalfunction.getMaintainTimeBegin()+" 00:00:00");
-			queryWrapper.le(SparePartMalfunction::getMaintainTime,sparePartMalfunction.getMaintainTimeEnd()+" 23:59:59");
-		}
-		if(ObjectUtils.isNotEmpty(sparePartMalfunction.getOutOrderId())){
-			queryWrapper.eq(SparePartMalfunction::getOutOrderId,sparePartMalfunction.getOutOrderId());
-		}
+
 		Page<SparePartMalfunction> page = new Page<SparePartMalfunction>(pageNo, pageSize);
-		IPage<SparePartMalfunction> pageList = sparePartMalfunctionService.page(page, queryWrapper.eq(SparePartMalfunction::getDelFlag, CommonConstant.DEL_FLAG_0));
+		IPage<SparePartMalfunction> pageList = sparePartMalfunctionService.pageList(page, sparePartMalfunction);
 		return Result.OK(pageList);
 	}
 

@@ -64,6 +64,40 @@ public class FaultDeviceRepairDTO implements Serializable {
     @ApiModelProperty(value = "送修序列号")
     private String repairSerialNumber;
 
+    /**线路(故障)*/
+    @ApiModelProperty(value = "线路(故障)")
+    @Dict(dictTable = "cs_line", dicText = "line_name", dicCode = "line_code")
+    private String faultLineCode;
+
+    /**站点(故障)*/
+    @ApiModelProperty(value = "站点(故障)")
+    @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
+    private String faultStationCode;
+
+    /**位置(故障)*/
+    @ApiModelProperty(value = "位置(故障)")
+    @Dict(dictTable = "cs_station_position", dicText = "position_name", dicCode = "position_code")
+    private String faultStationPositionCode;
+
+    @ApiModelProperty(value = "故障位置")
+    @TableField(exist = false)
+    private String faultPositionName;
+
+    /**故障时间*/
+    @ApiModelProperty(value = "故障时间")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    private Date happenTime;
+
+    /**厂商id*/
+    @ApiModelProperty(value = "厂商id")
+    @Dict(dictTable = "cs_manufactor", dicText = "name", dicCode = "id")
+    private String manufactorId;
+
+    /**维修合同名称*/
+    @ApiModelProperty(value = "维修合同名称")
+    private String repairContract;
+
     /**送修时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")

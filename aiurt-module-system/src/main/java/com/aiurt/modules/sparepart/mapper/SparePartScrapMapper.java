@@ -33,18 +33,18 @@ public interface SparePartScrapMapper extends BaseMapper<SparePartScrap> {
      * @param sparePartScrap
      * @return
      */
-    List<SparePartScrap> queryAllScrapForRepair(Page page, @Param("scrap") SparePartScrap sparePartScrap);
+    List<SparePartScrap> queryAllScrapForRepair(Page<SparePartScrap> page, @Param("scrap") SparePartScrap sparePartScrap);
     /**
-     * 查询负责人
+     * 查询三级库关联部门下的工班长人员的realname
      * @return
      */
-    List<String> queryResponsibleUserName(@Param("warehouseCode") String warehouseCode);
+    List<SparePartScrap> queryResponsibleUserName(@Param("warehouseCode") String warehouseCode);
 
     /**
-     * 查询送修经办人
+     * 查询送修经办人,多个用逗号拼接
      * @return
      */
-    List<String> queryManageUserName();
+    String queryManageUserName();
     /**
      * 查询所有数据不分页
      * @param sparePartScrap
