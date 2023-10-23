@@ -840,10 +840,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     this.generateItemResult(oldStaId, repairTaskDeviceRel.getId());
                 });
             }
-        }
-
-        // 与设备相关
-        if (InspectionConstant.IS_APPOINT_DEVICE.equals(isAppointDevice) || 0 == appointDevice) {
+        }else {
             if (CollUtil.isNotEmpty(repairPoolDeviceRels)) {
                 // 与设备相关并且已经指定了设备
                 List<String> deviceCodeList = repairPoolDeviceRels.stream().map(RepairPoolDeviceRel::getDeviceCode).collect(Collectors.toList());

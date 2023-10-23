@@ -234,6 +234,7 @@
         t2.staff_id as overhaulId,
         t3.title as overhaulStandardName,
         t3.is_appoint_device as isAppointDevice,
+        t3.is_merge_device as isMergeDevice,
         t1.status as maintenanceTaskStatus
         FROM
         repair_task t1
@@ -361,11 +362,12 @@
                     </when>
                     <otherwise>
                         and (rd.device_code = #{condition.equipmentCode}
-                        or t4.device_type_code = #{condition.deviceTypeCode})
+                        or (t4.device_type_code = #{condition.deviceTypeCode} and isnull(rd.device_code)))
                     </otherwise>
                 </choose>
             </if>
         </where>
+        GROUP BY t1.id
         order by t1.start_time desc
     </select>
 
