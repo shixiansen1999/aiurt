@@ -3,18 +3,23 @@ package com.aiurt.modules.sparepart.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
+import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.material.constant.MaterialRequisitionConstant;
 import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.mapper.*;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
+import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
+import com.aiurt.modules.stock.service.impl.MaterialStockOutInRecordServiceImpl;
 import com.aiurt.modules.todo.dto.TodoDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -27,6 +32,7 @@ import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +68,8 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
     private ISysParamAPI iSysParamAPI;
     @Autowired
     private ISTodoBaseAPI isTodoBaseAPI;
+    @Autowired
+    private MaterialStockOutInRecordServiceImpl materialStockOutInRecordService;
     /**
      * 查询列表
      * @param page
@@ -139,6 +147,7 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,returnOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,returnOrder.getWarehouseCode()));
         if(null!=sparePartStock){
             sparePartStock.setNum(sparePartStock.getNum()+returnOrder.getNum());
+            sparePartStock.setAvailableNum(sparePartStock.getAvailableNum()+returnOrder.getNum());
             sparePartStockMapper.updateById(sparePartStock);
 
             //先获取该备件的数量记录,更新已使用数量
@@ -154,6 +163,7 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         }
         //3.插入备件入库记录
         SparePartInOrder sparePartInOrder = new SparePartInOrder();
+        sparePartInOrder.setOrderCode(CodeGenerateUtils.generateSingleCode("3RK", 5));
         sparePartInOrder.setMaterialCode(returnOrder.getMaterialCode());
         sparePartInOrder.setWarehouseCode(returnOrder.getWarehouseCode());
         sparePartInOrder.setNum(returnOrder.getNum());
@@ -162,8 +172,19 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         sparePartInOrder.setConfirmId(user.getId());
         sparePartInOrder.setConfirmTime(date);
         sparePartInOrder.setUsedNum(returnOrder.getNum());
+        sparePartInOrder.setInType(MaterialRequisitionConstant.NORMAL_IN);
         sparePartInOrderService.save(sparePartInOrder);
-
+        // 同步入库记录到出入库记录表
+        MaterialStockOutInRecord record = new MaterialStockOutInRecord();
+        BeanUtils.copyProperties(sparePartInOrder, record);
+        record.setConfirmUserId(user.getId());
+        record.setOrderId(sparePartInOrder.getId());
+        record.setStatus(StrUtil.equals(sparePartInOrder.getConfirmStatus(), "1") ? 2 : 1);
+        record.setMaterialRequisitionType(3);
+        record.setIsOutIn(1);
+        record.setOutInType(sparePartInOrder.getInType());
+        record.setBalance(sparePartStock.getNum()+returnOrder.getNum());
+        materialStockOutInRecordService.save(record);
         return Result.OK("操作成功！");
 
 

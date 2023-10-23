@@ -225,6 +225,12 @@ public class SparePartLend implements Serializable {
     @ApiModelProperty(value = " 仓库")
     @TableField(exist = false)
     private String warehouseName;
+
+    /**可用量*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "可使用数量")
+    private Integer availableNum;
+
     /**库存数量*/
     @TableField(exist = false)
     private String num;

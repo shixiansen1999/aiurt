@@ -10,7 +10,9 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.CommonTodoStatus;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.material.constant.MaterialRequisitionConstant;
 import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.mapper.SparePartLendMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
@@ -20,6 +22,8 @@ import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartLendService;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartStockService;
+import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
+import com.aiurt.modules.stock.service.impl.MaterialStockOutInRecordServiceImpl;
 import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.mapper.SysUserMapper;
 import com.aiurt.modules.system.service.ISysDepartService;
@@ -35,6 +39,7 @@ import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,6 +82,8 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
     private ISTodoBaseAPI isTodoBaseAPI;
     @Autowired
     private SparePartStockNumMapper sparePartStockNumMapper;
+    @Autowired
+    private MaterialStockOutInRecordServiceImpl materialStockOutInRecordService;
     /**
      * 查询列表
      * @param page
@@ -126,6 +133,12 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         if(null!=sparePartStockInfo){
             sparePartLend.setBackWarehouseCode(sparePartStockInfo.getWarehouseCode());
         }
+
+        //2.借出仓库库可使用数量做减法
+        SparePartStock lendStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,sparePartLend.getMaterialCode()).eq(SparePartStock::getWarehouseCode,sparePartLend.getLendWarehouseCode()));
+        lendStock.setAvailableNum(lendStock.getAvailableNum()-sparePartLend.getBorrowNum());
+        sparePartStockMapper.updateById(lendStock);
+
         //查询借出仓库
         SparePartStockInfo lendStockInfo = sparePartStockInfoMapper.selectOne(new LambdaQueryWrapper<SparePartStockInfo>().eq(SparePartStockInfo::getWarehouseCode,sparePartLend.getLendWarehouseCode()).eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0));
         if(null!=lendStockInfo){
@@ -156,13 +169,6 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
 
                 messageDTO.setData(map);
                 //业务类型，消息类型，消息模板编码，摘要，发布内容
-                /*messageDTO.setTemplateCode(CommonConstant.SPAREPARTLEND_SERVICE_NOTICE);
-                SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE);
-                messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
-                messageDTO.setMsgAbstract("备件借出申请");
-                messageDTO.setPublishingContent("备件借出申请，请确认");
-                messageDTO.setCategory(CommonConstant.MSG_CATEGORY_10);
-                sysBaseApi.sendTemplateMessage(messageDTO);*/
                 //发送待办
                 TodoDTO todoDTO = new TodoDTO();
                 todoDTO.setData(map);
@@ -228,7 +234,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         //3.添加出库记录
         SparePartOutOrder sparePartOutOrder = new SparePartOutOrder();
         sparePartOutOrder.setMaterialCode(partLend.getMaterialCode());
-        sparePartOutOrder.setWarehouseCode(partLend.getBackWarehouseCode());
+        sparePartOutOrder.setWarehouseCode(partLend.getLendWarehouseCode());
         sparePartOutOrder.setNum(sparePartLend.getLendNum());
         sparePartOutOrder.setConfirmTime(date);
         sparePartOutOrder.setConfirmUserId(user.getId());
@@ -236,7 +242,23 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartOutOrder.setApplyUserId(partLend.getLendPerson());
         sparePartOutOrder.setStatus(CommonConstant.SPARE_PART_OUT_ORDER_STATUS_2 );
         sparePartOutOrder.setSysOrgCode(user.getOrgCode());
+        sparePartOutOrder.setOutType(MaterialRequisitionConstant.BORROW_OUT);
+        sparePartOutOrder.setOrderCode(CodeGenerateUtils.generateSingleCode("3CK", 5));
+        //计算库存结余
+        sparePartOutOrder.setBalance(lendStock.getNum());
         sparePartOutOrderService.save(sparePartOutOrder);
+
+        //同步出库记录到出入库记录表
+        MaterialStockOutInRecord record = new MaterialStockOutInRecord();
+        BeanUtils.copyProperties(sparePartOutOrder, record);
+        record.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3);
+        record.setIsOutIn(2);
+        //带负号表示出库
+        record.setNum(-record.getNum());
+        record.setOutInType(sparePartOutOrder.getOutType());
+        materialStockOutInRecordService.save(record);
+
+
         //4.借入仓库库存数做加法
         SparePartStock backStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partLend.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partLend.getBackWarehouseCode()));
         //先获取该备件的数量记录,更新全新数量
@@ -248,15 +270,17 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
 
         if(null!=backStock){
             backStock.setNum(backStock.getNum()+sparePartLend.getLendNum());
+            backStock.setAvailableNum(backStock.getAvailableNum()+sparePartLend.getLendNum());
             sparePartStockMapper.updateById(backStock);
         }else{
             //插入库存
             SparePartStock stock = new SparePartStock();
             stock.setMaterialCode(partLend.getMaterialCode());
             stock.setNum(sparePartLend.getLendNum());
+            stock.setAvailableNum(sparePartLend.getLendNum());
             stock.setWarehouseCode(partLend.getBackWarehouseCode());
-            stock.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getLendPerson())).getOrgId());
-            stock.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getLendPerson())).getOrgCode());
+            stock.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getId,partLend.getLendPerson())).getOrgId());
+            stock.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getId,partLend.getLendPerson())).getOrgCode());
             sparePartStockMapper.insert(stock);
         }
         if (null!=stockNum2) {
@@ -275,16 +299,30 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartInOrder.setMaterialCode(partLend.getMaterialCode());
         sparePartInOrder.setWarehouseCode(partLend.getBackWarehouseCode());
         sparePartInOrder.setNum(sparePartLend.getLendNum());
-        sparePartInOrder.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getLendPerson())).getOrgId());
+        sparePartInOrder.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getId,partLend.getLendPerson())).getOrgId());
         sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_STATUS_1);
         sparePartInOrder.setConfirmId(user.getId());
         sparePartInOrder.setConfirmTime(date);
-        sparePartInOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getLendPerson())).getOrgCode());
+        sparePartInOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getId,partLend.getLendPerson())).getOrgCode());
         sparePartInOrder.setNewNum(sparePartLend.getLendNum());
+        sparePartInOrder.setOrderCode(CodeGenerateUtils.generateSingleCode("3RK", 5));
+        sparePartInOrder.setInType(MaterialRequisitionConstant.BORROW_IN);
+        //计算库存结余
+        int num = null != backStock ? backStock.getNum() : 0;
+        sparePartInOrder.setBalance(num + sparePartInOrder.getNum());
         sparePartInOrderService.save(sparePartInOrder);
 
+        //同步入库记录到出入库记录表
+        MaterialStockOutInRecord record2 = new MaterialStockOutInRecord();
+        BeanUtils.copyProperties(sparePartInOrder, record2);
+        record2.setConfirmUserId(user.getId());
+        record2.setMaterialRequisitionType(MaterialRequisitionConstant.MATERIAL_REQUISITION_TYPE_LEVEL3);
+        record2.setIsOutIn(1);
+        record2.setOutInType(sparePartInOrder.getInType());
+        materialStockOutInRecordService.save(record2);
+
         try {
-            LoginUser userById = sysBaseApi.getUserByName(partLend.getLendPerson());
+            LoginUser userById = sysBaseApi.getUserById(partLend.getLendPerson());
 
             //发送通知
             MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件借出成功" + DateUtil.today(), null);
@@ -333,6 +371,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         //2.借出仓库库存数做加法
         SparePartStock lendStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partLend.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partLend.getLendWarehouseCode()));
         lendStock.setNum(lendStock.getNum()+sparePartLend.getBackNum());
+        lendStock.setAvailableNum(lendStock.getAvailableNum()+sparePartLend.getBackNum());
         sparePartStockMapper.updateById(lendStock);
 
         //先获取该备件的数量记录,更新全新数量
@@ -349,7 +388,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartInOrder.setMaterialCode(partLend.getMaterialCode());
         sparePartInOrder.setWarehouseCode(partLend.getLendWarehouseCode());
         sparePartInOrder.setNum(sparePartLend.getBackNum());
-        sparePartInOrder.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getBackPerson())).getOrgId());
+        sparePartInOrder.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getId,partLend.getBackPerson())).getOrgId());
         sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_STATUS_1);
         sparePartInOrder.setConfirmId(user.getId());
         sparePartInOrder.setConfirmTime(date);
@@ -389,10 +428,10 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartOutOrder.setApplyOutTime(date);
         sparePartOutOrder.setApplyUserId(partLend.getBackPerson());
         sparePartOutOrder.setStatus(CommonConstant.SPARE_PART_OUT_ORDER_STATUS_2);
-        sparePartOutOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getBackPerson())).getOrgCode());
+        sparePartOutOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getId,partLend.getBackPerson())).getOrgCode());
         sparePartOutOrderService.save(sparePartOutOrder);
         try {
-            LoginUser userById = sysBaseApi.getUserByName(partLend.getBackPerson());
+            LoginUser userById = sysBaseApi.getUserById(partLend.getBackPerson());
             //发送通知
             MessageDTO messageDTO = new MessageDTO(user.getUsername(),userById.getUsername(), "备件归还成功" + DateUtil.today(), null);
 

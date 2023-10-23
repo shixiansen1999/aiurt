@@ -1,14 +1,11 @@
 package com.aiurt.modules.sparepart.controller;
 
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
@@ -19,21 +16,18 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
-
-import lombok.extern.slf4j.Slf4j;
-
-
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
-
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
@@ -225,5 +219,26 @@ public class SparePartStockInfoController extends BaseController<SparePartStockI
 	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response){
 		return sparePartStockInfoService.importExcel(request, response);
 
+	}
+
+	/**
+	 * 借出仓库查询（无分页）
+	 *
+	 * @param sparePartStockInfo
+	 * @param req
+	 * @return
+	 */
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "借出仓库查询",permissionUrl = "/sparepart/sparePartStockInfo/lendList")
+	@ApiOperation(value="spare_part_stock_info-借出仓库查询", notes="spare_part_stock_info-借出仓库查询")
+	@GetMapping(value = "/lendList")
+	public Result<List<SparePartStockInfo>> lendList(SparePartStockInfo sparePartStockInfo,
+														   HttpServletRequest req) {
+		QueryWrapper<SparePartStockInfo> queryWrapper = QueryGenerator.initQueryWrapper(sparePartStockInfo, req.getParameterMap());
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		if(ObjectUtil.isNotNull(sparePartStockInfo.getModule())){
+			queryWrapper.lambda().notIn(SparePartStockInfo::getOrganizationId,user.getOrgId());
+		}
+		List<SparePartStockInfo> sparePartStockInfos = sparePartStockInfoService.getBaseMapper().selectList(queryWrapper.lambda().eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0));
+		return Result.OK(sparePartStockInfos);
 	}
 }

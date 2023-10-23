@@ -9,7 +9,9 @@ import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.TodoBusinessTypeEnum;
+import com.aiurt.common.util.CodeGenerateUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.material.constant.MaterialRequisitionConstant;
 import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.mapper.*;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
@@ -118,9 +120,10 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         sparePartScrap.setSysOrgCode(user.getOrgCode());
         SparePartScrap scrap = getById(sparePartScrap.getId());
+        sparePartScrap.setConfirmId(user.getUsername());
+        sparePartScrap.setConfirmTime(new Date());
         if(sparePartScrap.getStatus().equals(CommonConstant.SPARE_PART_SCRAP_STATUS_3) || sparePartScrap.getStatus().equals(CommonConstant.SPARE_PART_SCRAP_STATUS_2)){
-            sparePartScrap.setConfirmId(user.getUsername());
-            sparePartScrap.setConfirmTime(new Date());
+
 
             //更新已出库库存数量,做减法
             List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>()
@@ -261,6 +264,7 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
             //生成重新入库记录
             // 插入备件入库管理表
             SparePartInOrder sparePartInOrder = new SparePartInOrder();
+            sparePartInOrder.setOrderCode(CodeGenerateUtils.generateSingleCode("3RK", 5));
             sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_0);
             sparePartInOrder.setMaterialCode(scrap.getMaterialCode());
             sparePartInOrder.setWarehouseCode(scrap.getWarehouseCode());
@@ -269,6 +273,7 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
             sparePartInOrder.setSysOrgCode(user.getOrgCode());
             sparePartInOrder.setOutOrderCode(scrap.getOutOrderId());
             sparePartInOrder.setUsedNum(scrap.getNum());
+            sparePartInOrder.setInType(MaterialRequisitionConstant.NORMAL_IN);
             sparePartInOrderService.save(sparePartInOrder);
         }
         sparePartStockNumMapper.updateById(stockNum);
