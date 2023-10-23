@@ -393,8 +393,10 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 流程业务数据状态更改
         String approvalType = comment.getApprovalType();
         String commentStr = comment.getComment();
-
         variableData.put("operationType", approvalType);
+        if (StrUtil.equalsIgnoreCase(FlowApprovalType.AUTO_COMPLETE, approvalType)) {
+            variableData.put("operationType", FlowApprovalType.AGREE);
+        }
         variableData.put("comment", commentStr);
 
         // 构建中间变量
@@ -404,11 +406,10 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (flowTaskComment != null && !StrUtil.equalsIgnoreCase(approvalType, FlowApprovalType.CANCEL)) {
             String assignee = task.getAssignee();
             LoginUser loginUser = sysBaseAPI.queryUser(assignee);
-            if (Objects.isNull(loginUser)) {
-                loginUser = checkLogin();
+            if (Objects.nonNull(loginUser)) {
+                flowTaskComment.setCreateRealname(loginUser.getRealname());
             }
             flowTaskComment.fillWith(processInstanceActiveTask);
-            flowTaskComment.setCreateRealname(loginUser.getRealname());
             customTaskCommentService.getBaseMapper().insert(flowTaskComment);
         }
 
@@ -562,8 +563,8 @@ public class FlowApiServiceImpl implements FlowApiService {
     public TaskInfoDTO viewRuntimeTaskInfo(String processDefinitionId, String processInstanceId, String taskId) {
         log.info("获取流程运行时指定任务的信息请求参数：processInstanceId:{}, taskId:{}",processInstanceId, taskId);
         TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
-        if (StrUtil.isBlank(processInstanceId)) {
-            log.info("流程实例请求参数为空！");
+        if (StrUtil.isBlank(processInstanceId) || StrUtil.isBlank(taskId)) {
+            log.debug("流程实例请求参数为空！");
             return taskInfoDTO;
         }
         HistoricTaskInstance task = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId).taskId(taskId).singleResult();
@@ -738,15 +739,17 @@ public class FlowApiServiceImpl implements FlowApiService {
             List<Task> list = taskService.createTaskQuery().processInstanceId(processInstanceId).active().list();
             //获取流程配置中的节点集合
             String recallNodeId = customModelExt.getRecallNodeId();
-            String[] split = recallNodeId.split(",");
-            //判断节点是否在撤回集合内，不在集合内则不显示撤回按钮
-            List<String> keyList = list.stream()
-                    .map(Task::getTaskDefinitionKey)
-                    .filter(s -> Arrays.asList(split).contains(s))
-                    .distinct()
-                    .collect(Collectors.toList());
-            if(CollUtil.isEmpty(keyList)){
-                taskInfoDTO.setWithdraw(false);
+            if (StrUtil.isNotBlank(recallNodeId) && CollUtil.isNotEmpty(list)) {
+                String[] split = recallNodeId.split(",");
+                //判断节点是否在撤回集合内，不在集合内则不显示撤回按钮
+                List<String> keyList =  list.stream()
+                        .map(Task::getTaskDefinitionKey)
+                        .filter(s -> Arrays.asList(split).contains(s))
+                        .distinct()
+                        .collect(Collectors.toList());
+                if(CollUtil.isEmpty(keyList)){
+                    taskInfoDTO.setWithdraw(false);
+                }
             }
             // 获取流程实例
             ProcessInstance processInstance = runtimeService.createProcessInstanceQuery()
