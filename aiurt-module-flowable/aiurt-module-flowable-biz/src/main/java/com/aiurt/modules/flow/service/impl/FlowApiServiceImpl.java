@@ -1246,6 +1246,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 .modelName(hpi.getProcessDefinitionName())
                 .modelXml(modelXml)
                 .highLightedUserInfoDTOs(highLightedUserInfoDTOs)
+                .isEnd(Objects.nonNull(hpi.getEndTime()))
                 .build();
         return highLightedNodeDTO;
     }

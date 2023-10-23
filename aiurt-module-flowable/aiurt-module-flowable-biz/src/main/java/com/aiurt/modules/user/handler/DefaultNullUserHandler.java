@@ -7,6 +7,9 @@ import com.aiurt.modules.common.pipeline.FlowHandlerChain;
 import com.aiurt.modules.user.dto.SelectUserContext;
 import com.aiurt.modules.user.entity.ActCustomUser;
 import com.aiurt.modules.user.enums.EmptyRuleEnum;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,6 +22,8 @@ import java.util.Objects;
 @Service
 public class DefaultNullUserHandler extends AbstractFlowHandler<SelectUserContext> {
 
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
 
     /**
      * 实际任务处理
@@ -69,7 +74,14 @@ public class DefaultNullUserHandler extends AbstractFlowHandler<SelectUserContex
             case POINT_USER_NAME:
                 if (StrUtil.isNotBlank(emptyUserName)) {
                     List<String> list = StrUtil.split(emptyUserName, ',');
-                    userNameList.add(list.get(0));
+                    String userName = list.get(0);
+                    // 判断制定人员是否存在
+                    LoginUser loginUser = sysBaseApi.queryUser(userName);
+                    if (Objects.isNull(loginUser)) {
+                        userNameList.add(EmptyRuleEnum.AUTO_ADMIN.getMessage());
+                    } else {
+                        userNameList.add(userName);
+                    }
                 }
                 break;
             default:
