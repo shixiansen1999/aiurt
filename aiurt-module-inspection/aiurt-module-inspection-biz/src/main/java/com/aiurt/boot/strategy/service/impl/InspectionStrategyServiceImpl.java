@@ -256,7 +256,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                 }
                 //通过配置去掉需要指定设备的限制
                 SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
-                if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && CollUtil.isEmpty(re.getDevices()) && "0".equals(paramModel.getValue())) {
+                if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && CollUtil.isEmpty(re.getDevices()) && CommonConstant.BOOLEAN_1.equals(paramModel.getValue())) {
                     throw new AiurtBootException(String.format("名字为%s需要指定设备", ObjectUtil.isNotEmpty(inspectionCode) ? inspectionCode.getTitle() : ""));
                 }
             });
@@ -577,7 +577,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             }
             //通过配置去掉需要指定设备的限制
             SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
-            if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && "0".equals(paramModel.getValue())) {
+            if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && CommonConstant.BOOLEAN_1.equals(paramModel.getValue())) {
                 List<InspectionStrDeviceRel> inspectionStrDeviceRels = inspectionStrDeviceRelMapper.selectList(new LambdaQueryWrapper<InspectionStrDeviceRel>().eq(InspectionStrDeviceRel::getInspectionStrRelId, re.getId()));
                 if (CollUtil.isEmpty(inspectionStrDeviceRels)) {
                     throw new AiurtBootException(String.format("名字为%s的检修标准需要指定设备", ObjectUtil.isNotEmpty(inspectionCode) ? inspectionCode.getTitle() : ""));

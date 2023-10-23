@@ -195,6 +195,7 @@
         t2.staff_id as overhaulId,
         t3.title as overhaulStandardName,
         t3.is_appoint_device as isAppointDevice,
+        t3.is_merge_device as isMergeDevice,
         t1.status as maintenanceTaskStatus
         FROM
         repair_task t1
@@ -321,13 +322,11 @@
         LEFT JOIN repair_task_device_rel t2 ON t1.id = t2.repair_task_id
         LEFT JOIN repair_task_standard_rel t3 ON t2.task_standard_rel_id = t3.id
         LEFT JOIN inspection_code_device_type t4 ON t3.code = t4.inspection_code
+        LEFT JOIN repair_device rd ON rd.task_standard_id = t3.id
         left join sys_user su on su.id = t2.staff_id
         <where>
             t1.del_flag = 0
             AND t2.del_flag = 0 and t1.status = 8
-            <if test="condition.equipmentCode !=null ">
-                AND t2.device_code = #{condition.equipmentCode}
-            </if>
             <if test="condition.taskId !=null ">
                 AND t1.id = #{condition.taskId}
             </if>
@@ -350,8 +349,21 @@
                 and DATE_FORMAT(t2.start_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTimeBegin}, '%Y-%m-%d')
                 and DATE_FORMAT(t2.end_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startTimeEnd}, '%Y-%m-%d')
             </if>
-            <if test="multipleDeviceTypes eq '1'.toString() ">
-                and t4.device_type_code = #{condition.deviceTypeCode}
+            <if test="condition.isDeviceCode and  condition.equipmentCode !=null and  condition.equipmentCode !=''">
+                and t2.device_code = #{condition.equipmentCode}
+            </if>
+
+            <if test="condition.isDeviceTypeCode and ( condition.equipmentCode != null and condition.equipmentCode != '')
+                    and (condition.deviceTypeCode != null and condition.deviceTypeCode != '') ">
+                <choose>
+                    <when test="condition.isPatrolDeviceCodeAndTypeCode">
+                        and t4.device_type_code = #{condition.deviceTypeCode}
+                    </when>
+                    <otherwise>
+                        and (rd.device_code = #{condition.equipmentCode}
+                        or t4.device_type_code = #{condition.deviceTypeCode})
+                    </otherwise>
+                </choose>
             </if>
         </where>
         order by t1.start_time desc

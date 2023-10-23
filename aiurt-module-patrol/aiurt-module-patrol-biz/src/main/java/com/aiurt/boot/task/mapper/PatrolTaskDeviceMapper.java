@@ -37,7 +37,7 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @param patrolTaskDeviceParam
      * @return
      */
-    IPage<PatrolTaskDeviceParam> selectBillInfoForDevice(@Param("page") Page<PatrolTaskDeviceParam> page, @Param("taskDevice") PatrolTaskDeviceParam patrolTaskDeviceParam,@Param("multipleDeviceTypes") String multipleDeviceTypes);
+    IPage<PatrolTaskDeviceParam> selectBillInfoForDevice(@Param("page") Page<PatrolTaskDeviceParam> page, @Param("taskDevice") PatrolTaskDeviceParam patrolTaskDeviceParam);
 
     /**
      * PC巡检任务池详情-巡检工单详情
@@ -276,4 +276,25 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     List<PatrolTaskDevice> getUnFinishPatrolTask(@Param("endTime")String endTime, @Param("orgCode") String orgCode);
+
+    /**
+     * 获取巡视工单ids
+     * @param deviceCode 设备编码
+     * @return
+     */
+    List<String> getIdsByDeviceCode(String deviceCode);
+
+    /**
+     * 获取巡视工单ids
+     * @param deviceTypeCode 设备类型编码
+     * @return
+     */
+    List<String> getIdsByDeviceTypeCode(String deviceTypeCode);
+
+    /**
+     * 获取巡视工单ids
+     * @param deviceCode 设备编码
+     * @return
+     */
+    List<String> getIdsByPatrolDeviceCode(String deviceCode);
 }
