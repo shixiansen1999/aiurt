@@ -10,6 +10,7 @@ import com.aiurt.modules.forecast.dto.FlowElementDTO;
 import com.aiurt.modules.forecast.dto.HistoryTaskInfo;
 import com.aiurt.modules.forecast.service.IFlowForecastService;
 import com.aiurt.modules.user.entity.ActCustomUser;
+import com.aiurt.modules.user.enums.EmptyRuleEnum;
 import com.aiurt.modules.user.getuser.service.DefaultSelectUserService;
 import com.aiurt.modules.user.service.IActCustomUserService;
 import org.flowable.bpmn.BpmnAutoLayout;
@@ -74,7 +75,7 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
         HistoricProcessInstance historicProcessInstance = getHistoricProcessInstance(processInstanceId);
         // 历史记录,包括正在运行的节点
         List<HistoricTaskInstance> list = getHistoricTaskInstances(processInstanceId);
-        // 找出数据
+        // historyTaskInfo
         String definitionId = historicProcessInstance.getProcessDefinitionId();
         // bpmnmodel
         BpmnModel bpmnModel = repositoryService.getBpmnModel(definitionId);
@@ -130,6 +131,11 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
 
         resultMap.put(endId, endEvent);
 
+        Set<String> collect = resultMap.values().stream().filter(historyTaskInfo -> StrUtil.equalsIgnoreCase(historyTaskInfo.getType(), "userTask")).map(HistoryTaskInfo::getUserNameList).flatMap(List::stream).collect(Collectors.toSet());
+        List<LoginUser> loginUserList = sysBaseApi.getLoginUserList(new ArrayList<>(collect));
+        Map<String, String> userMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, LoginUser::getRealname, (t1, t2) -> t1));
+        userMap.put(EmptyRuleEnum.AUTO_COMPLETE.getMessage(), "自动通过");
+
         // 补充信息，办理人
         BpmnModel bpmnModel1 = new BpmnModel();
         // 设置流程信息
@@ -141,13 +147,23 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
         List<FlowElement> userTaskList = resultMap.keySet().stream().map(nodeId -> {
             HistoryTaskInfo historyTaskInfo = resultMap.get(nodeId);
             String type = historyTaskInfo.getType();
+            List<String> userNameList = Optional.ofNullable(historyTaskInfo.getUserNameList()).orElse(Collections.emptyList());
+            List<String> realNameList = userNameList.stream().map(userName -> userMap.get(userName)).filter(s->StrUtil.isNotBlank(s)).collect(Collectors.toList());
+
             switch (type) {
                 case "startEvent" :
                     return HistoryTaskInfo.createStartFlowElement(historyTaskInfo.getTaskDefinitionKey(), null);
                 case "endEvent" :
                     return HistoryTaskInfo.createEndFlowElement(historyTaskInfo.getTaskDefinitionKey(), null);
                 default:
-                    return HistoryTaskInfo.createCommonUserTask(nodeId, historyTaskInfo.getName(), null);
+                    String s = "";
+                    if (CollUtil.isNotEmpty(realNameList)) {
+                        s = realNameList.get(0);
+                        if (realNameList.size() > 1) {
+                             s = s + "...";
+                        }
+                    }
+                    return HistoryTaskInfo.createCommonUserTask(nodeId, historyTaskInfo.getName() + System.getProperty("line.separator") + s, null);
             }
         }).collect(Collectors.toList());
         List<FlowElement> elementList = new ArrayList<>();
@@ -159,11 +175,6 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
 
         // 查询各个节点的关系信息,并添加进流程
         List<FlowElementDTO> flowElementPojoList = new ArrayList<>();
-
-
-        Set<String> collect = resultMap.values().stream().filter(historyTaskInfo -> StrUtil.equalsIgnoreCase(historyTaskInfo.getType(), "userTask")).map(HistoryTaskInfo::getUserNameList).flatMap(List::stream).collect(Collectors.toSet());
-        List<LoginUser> loginUserList = sysBaseApi.getLoginUserList(new ArrayList<>(collect));
-        Map<String, String> userMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, LoginUser::getRealname, (t1, t2) -> t1));
 
         // 构建已完成
         Set<String> finishedTaskSet = new HashSet<>();
@@ -289,9 +300,15 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
                     flowElementPojo.setResourceFlowElementId(nodeId);
                     flowElementPojo.setFlowElementType("sequence");
                     t.set(t.get() + 1);
-
+                    Boolean isActive = historyTaskInfo.getIsActive();
+                    Boolean isFeature = historyTaskInfo.getIsFeature();
                     if (taskInfo.getIsFeature()) {
-                        featureSequenceFlowSet.add(flowId);
+                        if (!isActive && !isFeature) {
+                            finishedSequenceFlowSet.add(flowId);
+                        } else {
+                            featureSequenceFlowSet.add(flowId);
+                        }
+
                     }else {
                         finishedSequenceFlowSet.add(flowId);
                     }
@@ -399,8 +416,12 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
             //
             List<String> nextNodeIdList = userTaskModelMap.get(taskDefinitionKey);
             // 已存在下一步节点
+            Integer finalTime = time;
             boolean flag = nextNodeIdList.stream()
-                    .anyMatch(noNodeId -> resultMap.containsKey(noNodeId));
+                    .anyMatch(noNodeId -> {
+                        noNodeId = finalTime == 0 ? noNodeId : noNodeId + "_" + finalTime;
+                        return resultMap.containsKey(noNodeId);
+                    });
             if (flag) {
                 time = time +1;
                 res.put(taskDefinitionKey, time);
