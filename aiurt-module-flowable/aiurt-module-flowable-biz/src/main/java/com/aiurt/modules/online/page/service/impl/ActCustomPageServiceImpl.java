@@ -2,6 +2,7 @@ package com.aiurt.modules.online.page.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
@@ -60,6 +61,10 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
       // 检查数据库中是否已存在具有相同name的记录
         if (isNameExists(actCustomPage.getPageName(), actCustomPage.getId())) {
             return Result.error("名称已存在，请使用其他名称！");
+        }
+        //如果表单路径已存在，则不可以添加
+        if(isPagePathExists(actCustomPage)){
+            throw new AiurtBootException("表单路径已存在，请使用其他表单路径");
         }
         Integer pageVersion = Optional.ofNullable(page.getPageVersion()).orElse(1);
         // 修改版本号
@@ -146,12 +151,28 @@ public class ActCustomPageServiceImpl extends ServiceImpl<ActCustomPageMapper, A
         return count > 0;
     }
 
+    public boolean isPagePathExists(ActCustomPage actCustomPage) {
+        LambdaQueryWrapper<ActCustomPage> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        if(ObjectUtil.isNotEmpty(actCustomPage)){
+            lambdaQueryWrapper.eq(ActCustomPage::getPagePath,actCustomPage.getPagePath()).eq(ActCustomPage::getDelFlag,CommonConstant.DEL_FLAG_0);
+        }
+        if (StrUtil.isNotEmpty(actCustomPage.getId())) {
+            lambdaQueryWrapper.ne(ActCustomPage::getId, actCustomPage.getId());
+        }
+        Long count = baseMapper.selectCount(lambdaQueryWrapper);
+        return count > 0;
+    }
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<String> add(ActCustomPage actCustomPage) {
         // 检查数据库中是否已存在具有相同名称的记录
         if (isNameExists(actCustomPage.getPageName(), null)) {
             return Result.error("名称已存在，请使用其他名称！");
+        }
+        //如果表单路径已存在，则不可以添加
+        if(isPagePathExists(actCustomPage)){
+            throw new AiurtBootException("表单路径已存在，请使用其他表单路径");
         }
         actCustomPage.setPageVersion(1);
         // 设置表单标识为pageTag+时间戳后6位
