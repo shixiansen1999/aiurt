@@ -26,5 +26,6 @@
         <if test="condition.endDate != null">
             and t2.END_TIME_ &lt;= #{condition.endDate}
         </if>
+        order by t1.START_TIME_ desc
     </select>
 </mapper>
