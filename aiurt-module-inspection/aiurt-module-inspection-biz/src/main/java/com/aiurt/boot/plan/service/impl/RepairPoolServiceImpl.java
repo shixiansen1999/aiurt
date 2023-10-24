@@ -1196,7 +1196,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                         if (CollUtil.isEmpty(repairPoolCode.getDeviceCodes())  && CommonConstant.BOOLEAN_1.equals(paramModel.getValue())) {
                             throw new AiurtBootException("有检修标准未指定设备");
                         }
-                    } else if ("0".equals(paramModel.getValue())){
+                    } else if (CommonConstant.BOOLEAN_1.equals(paramModel.getValue())){
                         throw new AiurtBootException("有检修标准未指定设备");
                     }
                 }
