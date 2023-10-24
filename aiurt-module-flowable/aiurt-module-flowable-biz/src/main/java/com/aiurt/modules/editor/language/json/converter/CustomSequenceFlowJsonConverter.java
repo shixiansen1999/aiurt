@@ -252,7 +252,9 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
                 JsonNode expansionNode = elementNode.get(FlowModelAttConstant.FLOW_CONDITION);
                 if (Objects.nonNull(expansionNode)) {
                     String json = super.objectMapper.writeValueAsString(expansionNode);
-                    log.info("json->{}", json);
+                    if (log.isDebugEnabled()) {
+                       log.debug("流转提交配置信息：json->{}", json);
+                    }
                     JSONArray jsonArray = JSONObject.parseArray(json);
                     for (int i = 0; i < jsonArray.size(); i++) {
                         addExtensionElementFromJson(flowElement, jsonArray.getJSONObject(i), FlowModelAttConstant.FLOW_CONDITION);

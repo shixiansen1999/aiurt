@@ -267,6 +267,12 @@ public class FlowApiServiceImpl implements FlowApiService {
         Map<String, Object> variables = flowElementUtil.getVariablesByModelKey(busData, startBpmnDTO.getModelKey());
         variableData.putAll(variables);
 
+         // 校验节点是否
+        FlowElement startEvent = flowElementUtil.getStartFlowNodeByModelKey(startBpmnDTO.getModelKey());
+        List<FlowElement> targetFlowElement = flowElementUtil.getTargetFlowElement(startBpmnDTO.getModelKey(), startEvent, variables);
+        if (CollUtil.isEmpty(targetFlowElement)) {
+            throw new AiurtBootException("无法找到下一步办理节点，请联系管理员！");
+        }
         // 根据key查询第一个用户任务
         UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(startBpmnDTO.getModelKey());
 
