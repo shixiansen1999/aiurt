@@ -556,6 +556,11 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
         return false;
     }
 
+    /**
+     * 任意节点
+     * @param task
+     * @return
+     */
     private Boolean anyParallelMultiInTask(Task task) {
         String executionId = task.getExecutionId();
         Execution executionTask = runtimeService.createExecutionQuery().executionId(executionId).singleResult();
@@ -577,7 +582,6 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
         // 获取
         List<String> addAssigneeVariables = taskService.getVariable(task.getId(), FlowVariableConstant.ADD_ASSIGNEE_LIST + task.getTaskDefinitionKey(), List.class);
         if (CollUtil.isNotEmpty(addAssigneeVariables)) {
-            UserTask userTask = new UserTask();
             // 获取实例总数
             int nrOfInstances = Optional.ofNullable(taskService.getVariable(task.getId(), NUMBER_OF_INSTANCES, Integer.class)).orElse(0);
 

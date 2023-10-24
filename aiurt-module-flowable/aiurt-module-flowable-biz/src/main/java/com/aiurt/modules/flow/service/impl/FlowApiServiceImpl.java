@@ -227,7 +227,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         variableMap.put(FlowConstant.PROC_INSTANCE_START_USER_NAME_VAR, loginUser.getUsername());
 
         // 启动流程
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(),Objects.isNull(businessKey)?null:(String)businessKey , busData);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceById(result.getId(),Objects.isNull(businessKey)?null:(String)businessKey , busData);
 
         log.info("启动流程成功！");
 
@@ -295,7 +295,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         Authentication.setAuthenticatedUserId(loginName);
         // 启动流程
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), Objects.isNull(businessKey) ? null : (String) businessKey, variableData);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceById(result.getId(), Objects.isNull(businessKey) ? null : (String) businessKey, variableData);
 
         // 获取流程启动后的第一个任务。
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
@@ -321,7 +321,6 @@ public class FlowApiServiceImpl implements FlowApiService {
     /**
      * 设置流程变量
      *
-     * @param busData
      */
     private void initAndGetProcessInstanceVariables(Map<String, Object> busData) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -1187,7 +1186,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         //已完成的任务节点
         Set<String> finishedTaskSet = partitionedTasks.get(false);
 
-        //获取流程实例当前正在待办的节点
+        //获取流程实例当前正在待办的节点,
         List<HistoricActivityInstance> unfinishedInstanceList =
                 this.getHistoricUnfinishedInstanceList(processInstanceId);
         Set<String> unfinishedTaskSet = new LinkedHashSet<>();
@@ -1626,7 +1625,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             actCustomTaskComment.setTaskName(task.getName());
             actCustomTaskComment.setCreateRealname(loginUser.getRealname());
             actCustomTaskComment.setComment(instanceDTO.getReason());
-            actCustomTaskComment.setApprovalType(FlowApprovalType.RECALL);
+            actCustomTaskComment.setApprovalType(FlowApprovalType.REJECT_FIRST_USER_TASK);
             actCustomTaskComment.setProcessInstanceId(processInstanceId);
             actCustomTaskComment.setIsVisible(0);
             return actCustomTaskComment;
@@ -3079,13 +3078,5 @@ public class FlowApiServiceImpl implements FlowApiService {
         }).collect(Collectors.toList());
         Collections.reverse(dtoList);
         return dtoList;
-    }
-
-    public static void main(String[] args) {
-        String jobName = "";
-        Set<String> jonSet = StrUtil.split(jobName, ',').stream().map(v -> {
-            return "123";
-        }).collect(Collectors.toSet());
-        System.out.println(jonSet);
     }
 }

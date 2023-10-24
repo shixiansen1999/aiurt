@@ -380,7 +380,7 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
             if (CollUtil.isNotEmpty(deleteReasonSet)) {
                 // Change parent activity to Activity_0dc8qph
                 // 判断是否回退到结束节点
-                Set<String> targetSet = deleteReasonSet.stream().filter(s->StrUtil.startWith(s,"Event_")).map(deleteReason -> StrUtil.replace(deleteReason, "Change parent activity to ", "")).collect(Collectors.toSet());
+                Set<String> targetSet = deleteReasonSet.stream().filter(s->!StrUtil.contains(s,"Event_")).map(deleteReason -> StrUtil.replace(deleteReason, "Change parent activity to ", "")).collect(Collectors.toSet());
                 targetSet.stream().forEach(id->{
                     historyTaskInfo.addNextNodeList(id, nodeTimeMap.getOrDefault(id, 0));
                 });
