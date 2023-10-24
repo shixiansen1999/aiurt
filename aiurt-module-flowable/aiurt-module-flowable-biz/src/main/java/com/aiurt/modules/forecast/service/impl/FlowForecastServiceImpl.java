@@ -472,6 +472,7 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
                     historyTaskInfo.addTaskInstance(historicTaskInstance);
                 }
                 // 设置节点信息
+                historyTaskInfo.setTaskDefinitionKey(taskDefinitionKey);
                 historyTaskInfo.setNodeTime(time);
                 historyTaskInfo.setName(historicTaskInstance.getName());
             }

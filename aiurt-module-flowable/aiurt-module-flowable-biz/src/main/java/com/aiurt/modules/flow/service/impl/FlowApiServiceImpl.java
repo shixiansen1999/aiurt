@@ -410,7 +410,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 flowTaskComment.setCreateRealname(loginUser.getRealname());
             }
             flowTaskComment.fillWith(processInstanceActiveTask);
-            customTaskCommentService.getBaseMapper().insert(flowTaskComment);
+            customTaskCommentService.save(flowTaskComment);
         }
 
         // 判断使保存还是提交
@@ -2980,8 +2980,9 @@ public class FlowApiServiceImpl implements FlowApiService {
     public List<ProcessRecordDTO> getHistoricLogByProcessInstanceIdV1(String processInstanceId) {
 
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
-
-        FlowElement endEvent = flowElementUtil.getEndFlowElementByDefinitionId(historicProcessInstance.getProcessDefinitionId());
+        String processDefinitionId = historicProcessInstance.getProcessDefinitionId();
+        FlowElement endEvent = flowElementUtil.getEndFlowElementByDefinitionId(processDefinitionId);
+        UserTask userTask = flowElementUtil.getFirstUserTaskByDefinitionId(processDefinitionId);
 
         LinkedHashMap<String, HistoryTaskInfo> recordMap = flowForecastService.mergeTask(processInstanceId);
         AtomicBoolean atomicBoolean = new AtomicBoolean(true);
@@ -3015,7 +3016,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             List<HistoricTaskInstance> unFinishList = taskInfoList.stream().filter(historicTaskInstance -> Objects.isNull(historicTaskInstance.getEndTime()))
                     .collect(Collectors.toList());
             // 第一个任务
-            if (atomicBoolean.get()) {
+            if (StrUtil.equalsIgnoreCase(userTask.getId(), historyTaskInfo.getTaskDefinitionKey())) {
                 //
                 if (CollUtil.isNotEmpty(unFinishList)) {
                     recordDTO.setStateName("待提交");
@@ -3024,7 +3025,6 @@ public class FlowApiServiceImpl implements FlowApiService {
                     recordDTO.setStateName("已提交");
                     recordDTO.setStateColor("#10C443");
                 }
-                atomicBoolean.set(false);
             } else {
                 // 其他节点
                 if (CollUtil.isNotEmpty(unFinishList)) {

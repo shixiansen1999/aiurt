@@ -27,6 +27,7 @@ import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.common.engine.impl.event.FlowableEntityEventImpl;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.ProcessEngines;
+import org.flowable.engine.RuntimeService;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
@@ -69,11 +70,20 @@ public class TaskCreateListener implements FlowableEventListener {
         // 判断是否新版流程，属性变量
         //
 
-        logger.debug("活动启动监听事件,设置办理人员......");
-        TaskEntity taskEntity = (TaskEntity) entity;
-
         // 流程任务id
+
+        TaskEntity taskEntity = (TaskEntity) entity;
         String taskId = taskEntity.getId();
+        boolean deleted = taskEntity.isDeleted();
+        // fixbug, 串行，自动审批，create事件在 complate， process_complete 事件后，导致配置了超时提醒，还会新增act_ru_timer_job,导致执行实例删除失败
+        if (deleted) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("该用户已提交，taskId:{}, 实例id：{}", taskId, taskEntity.getProcessInstanceId());
+            }
+            return;
+        }
+
+
         // 流程定义id
         String processDefinitionId = taskEntity.getProcessDefinitionId();
         // 流程实例id
@@ -219,6 +229,12 @@ public class TaskCreateListener implements FlowableEventListener {
 
     private void buildToDoList(TaskEntity taskEntity, ProcessInstance instance, ActCustomTaskExt taskExt, List<String> userNameList) {
         try {
+            RuntimeService runtimeService = ProcessEngines.getDefaultProcessEngine().getRuntimeService();
+            Boolean startFlowFlag = runtimeService.getVariable(instance.getProcessInstanceId(), FlowConstant.START_FLOWABLE, Boolean.class);
+            if (Objects.isNull(startFlowFlag) ) {
+                runtimeService.setVariable(instance.getProcessInstanceId(), FlowConstant.START_FLOWABLE, Boolean.TRUE);
+                return;
+            }
             BpmnTodoDTO bpmnTodoDTO = new BpmnTodoDTO();
             bpmnTodoDTO.setTaskKey(taskEntity.getTaskDefinitionKey());
             bpmnTodoDTO.setTaskId(taskEntity.getId());
