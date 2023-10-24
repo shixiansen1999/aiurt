@@ -5,6 +5,7 @@ import com.aiurt.modules.multideal.entity.ActCustomMultiRecord;
 import com.aiurt.modules.multideal.mapper.ActCustomMultiRecordMapper;
 import com.aiurt.modules.multideal.service.IActCustomMultiRecordService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -59,5 +60,16 @@ public class ActCustomMultiRecordServiceImpl extends ServiceImpl<ActCustomMultiR
         wrapper.eq(ActCustomMultiRecord::getUserName, userName);
         List<ActCustomMultiRecord> multiRecordList = baseMapper.selectList(wrapper);
         return multiRecordList;
+    }
+
+    @Override
+    public Boolean existMultiRecord(String userName, String executionId) {
+        if (StrUtil.isBlank(executionId) || StrUtil.isBlank(userName)) {
+            return false;
+        }
+        LambdaQueryWrapper<ActCustomMultiRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ActCustomMultiRecord::getExecutionId, executionId);
+        wrapper.eq(ActCustomMultiRecord::getUserName, userName);
+        return this.baseMapper.exists(wrapper);
     }
 }

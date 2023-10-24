@@ -12,6 +12,7 @@ import com.aiurt.modules.forecast.dto.HistoryTaskInfo;
 import com.aiurt.modules.forecast.service.IFlowForecastService;
 import com.aiurt.modules.modeler.entity.*;
 import com.aiurt.modules.modeler.service.IActCustomModelExtService;
+import com.aiurt.modules.multideal.service.IActCustomMultiRecordService;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
 
 import cn.hutool.core.bean.BeanUtil;
@@ -55,6 +56,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import liquibase.pro.packaged.X;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
@@ -178,6 +180,10 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     @Autowired
     private FlowApiServiceMapper flowApiServiceMapper;
+
+    @Autowired
+    private IActCustomMultiRecordService multiRecordService;
+
 
 
     /**
@@ -681,7 +687,9 @@ public class FlowApiServiceImpl implements FlowApiService {
                     if (CollUtil.isNotEmpty(addAssigneeVariables)) {
                         if (!addAssigneeVariables.contains(checkLogin().getUsername())) {
                             taskInfoDTO.setIsAddMulti(true);
-                            taskInfoDTO.setIsReduceMulti(true);
+                            // 判断是否可以减签,只有加签才能减签
+                            Boolean multiRecordFlag = multiRecordService.existMultiRecord(checkLogin().getUsername(), task.getExecutionId());
+                            taskInfoDTO.setIsReduceMulti(multiRecordFlag);
                         }
                     } else {
                         taskInfoDTO.setIsAddMulti(true);
