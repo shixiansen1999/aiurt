@@ -1450,83 +1450,39 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Override
     public IPage<HistoricProcessInstanceDTO> listAllHistoricProcessInstance(HistoricProcessInstanceReqDTO reqDTO) {
 
-        IPage<HistoricProcessInstanceDTO> pages = new Page<>();
-        HistoricProcessInstanceQuery query = historyService.createHistoricProcessInstanceQuery();
+        Page<HistoricProcessInstanceDTO> pages = new Page<>(reqDTO.getPageNo(), reqDTO.getPageSize());
 
         if (Objects.nonNull(reqDTO.getStartTime())) {
             DateTime dateTime = DateUtil.beginOfDay(reqDTO.getStartTime());
-            query.startedAfter(dateTime);
+            reqDTO.setStartTime(dateTime);
         }
 
         if (Objects.nonNull(reqDTO.getEndTime())) {
             DateTime dateTime = DateUtil.endOfDay(reqDTO.getEndTime());
-            query.startedBefore(dateTime);
+            reqDTO.setEndTime(dateTime);
         }
 
-        Set<String> processInstanceIdSet = new HashSet<>();
         if (StrUtil.isNotBlank(reqDTO.getLoginName())) {
             List<String> userNameList = flowUserService.getUserName(reqDTO.getLoginName());
-            userNameList.stream().forEach(name -> {
-                HistoricProcessInstanceQuery instanceQuery = historyService.createHistoricProcessInstanceQuery();
-                List<HistoricProcessInstance> list = instanceQuery.startedBy(name).list();
-                Set<String> set = list.stream().map(HistoricProcessInstance::getId).collect(Collectors.toSet());
-                processInstanceIdSet.addAll(set);
+            reqDTO.setUserNameList(userNameList);
+        }
+
+        List<HistoricProcessInstanceDTO> dtoList = flowApiServiceMapper.listPageHistoricProcessInstance(pages, reqDTO);
+
+        dtoList = Optional.ofNullable(dtoList).orElse(Collections.emptyList());
+
+        List<String> userNameList = dtoList.stream().map(HistoricProcessInstanceDTO::getUserName).collect(Collectors.toList());
+
+        if (CollUtil.isNotEmpty(userNameList)) {
+            List<LoginUser> loginUserList = sysBaseAPI.getLoginUserList(userNameList);
+            Map<String, String> userMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, LoginUser::getRealname, (t1, t2) -> t1));
+            dtoList.stream().forEach(historicProcessInstanceDTO -> {
+                historicProcessInstanceDTO.setRealName(userMap.get(historicProcessInstanceDTO.getUserName()));
             });
         }
 
-        if (StrUtil.isNotBlank(reqDTO.getLoginName()) && CollectionUtil.isEmpty(processInstanceIdSet)) {
-            pages.setCurrent(reqDTO.getPageNo());
-            pages.setRecords(Collections.emptyList());
-            pages.setTotal(0);
-            return pages;
-        }
 
-
-        if (StrUtil.isNotBlank(reqDTO.getProcessDefinitionName())) {
-            query.processDefinitionName(reqDTO.getProcessDefinitionName());
-        }
-
-        if (CollectionUtil.isNotEmpty(processInstanceIdSet)) {
-            query.processInstanceIds(processInstanceIdSet);
-        }
-        // 只查询
-        query.notDeleted();
-
-        query.orderByProcessInstanceStartTime().desc();
-
-        long count = query.count();
-
-        int firstResult = (reqDTO.getPageNo() - 1) * reqDTO.getPageSize();
-
-        List<HistoricProcessInstance> instanceList = query.listPage(firstResult, reqDTO.getPageSize());
-
-        List<HistoricProcessInstanceDTO> instanceDTOList = instanceList.stream().map(historicProcessInstance -> {
-            // 用户名处理
-            String startUserId = historicProcessInstance.getStartUserId();
-            LoginUser userByName = sysBaseAPI.getUserByName(startUserId);
-            String realName = startUserId;
-            if (Objects.nonNull(userByName)) {
-                realName = userByName.getRealname();
-            }
-            return HistoricProcessInstanceDTO.builder()
-                    .businessKey(historicProcessInstance.getBusinessKey())
-                    .startTime(historicProcessInstance.getStartTime())
-                    .name(historicProcessInstance.getName())
-                    .processDefinitionName(historicProcessInstance.getProcessDefinitionName())
-                    .processDefinitionId(historicProcessInstance.getProcessDefinitionId())
-                    .endTime(historicProcessInstance.getEndTime())
-                    .durationInMillis(historicProcessInstance.getDurationInMillis())
-                    .processInstanceId(historicProcessInstance.getId())
-                    .processDefinitionKey(historicProcessInstance.getProcessDefinitionKey())
-                    .realName(realName)
-                    .userName(startUserId).build();
-
-        }).collect(Collectors.toList());
-
-        pages.setCurrent(reqDTO.getPageNo());
-
-        pages.setRecords(instanceDTOList);
-        pages.setTotal(count);
+        pages.setRecords(dtoList);
         return pages;
     }
 
@@ -1595,10 +1551,15 @@ public class FlowApiServiceImpl implements FlowApiService {
             todoBaseApi.updateBpmnTaskState(task.getId(), processInstanceId, loginUser.getUsername(), "1");
         }
 
-
+        // 作废，
         ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment();
         actCustomTaskComment.setProcessInstanceId(processInstanceId);
         actCustomTaskComment.setApprovalType(instanceDTO.getApprovalType());
+        if (StrUtil.equalsIgnoreCase(instanceDTO.getApprovalType(), FlowApprovalType.CANCEL)) {
+            actCustomTaskComment.setTaskId(list.get(0).getId());
+            actCustomTaskComment.setTaskKey(list.get(0).getTaskDefinitionKey());
+            actCustomTaskComment.setTaskName(list.get(0).getName());
+        }
         actCustomTaskComment.setCreateRealname(loginUser.getRealname());
         actCustomTaskComment.setComment(instanceDTO.getStopReason());
         taskCommentList.add(actCustomTaskComment);
