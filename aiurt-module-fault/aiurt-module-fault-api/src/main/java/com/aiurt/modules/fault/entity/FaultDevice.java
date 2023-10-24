@@ -130,6 +130,14 @@ public class FaultDevice implements Serializable {
     @ApiModelProperty(value = "送修序列号")
     private String repairSerialNumber;
 
+    /**厂商id*/
+    @ApiModelProperty(value = "厂商id")
+    private String manufactorId;
+
+    /**维修合同名称*/
+    @ApiModelProperty(value = "维修合同名称")
+    private String repairContract;
+
     /**送修时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")

@@ -73,5 +73,9 @@ public interface RoleConstant {
      * 中心工班长
      */
     String ZXCHENGYUAN = "zxchengyuan";
+    /**
+     * 送修经办人
+     */
+    String REPAIR_AGENT = "repair_agent";
 
 }

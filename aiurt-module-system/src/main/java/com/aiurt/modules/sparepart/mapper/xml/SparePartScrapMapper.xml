@@ -82,7 +82,7 @@
 
     </select>
     <select id="queryAllScrapForRepair" resultType="com.aiurt.modules.sparepart.entity.SparePartScrap">
-        SELECT DISTINCT
+        SELECT
             spare_part_scrap.*,
             t1.`code` materialCode,
             t1.`type`,
@@ -100,6 +100,10 @@
             t4.base_type_name baseTypeCodeName,
             t6.realname createBy,
             t7.`name` manufactorCodeName,
+            f1.line_code AS faultLineCode,
+            f1.station_code AS faultStationCode,
+            f1.station_position_code AS faultStationPositionCode,
+            f1.happen_time,
             f1.symptoms
         FROM
             spare_part_scrap spare_part_scrap
@@ -112,8 +116,9 @@
             LEFT JOIN fault f1 ON ( spare_part_scrap.fault_code = f1.`code` )
         <where>
             spare_part_scrap.status = 3
+            AND spare_part_scrap.del_flag = 0
             AND spare_part_scrap.fault_code IS NOT NULL
-            AND TRIM( spare_part_scrap.fault_code ) != ''
+            AND spare_part_scrap.repair_status IS NOT NULL
             <if test="scrap.repairStatus != null and scrap.repairStatus != ''">
                 AND spare_part_scrap.repair_status = #{scrap.repairStatus}
             </if>
@@ -126,28 +131,74 @@
             <if test="scrap.systemCode != null and scrap.systemCode != ''">
                 AND t3.system_code = #{scrap.systemCode}
             </if>
+            <if test="scrap.serialNumber != null and scrap.serialNumber != ''">
+                AND spare_part_scrap.serial_number like concat('%', #{scrap.serialNumber}, '%')
+            </if>
+            <if test="scrap.location != null and scrap.location != ''">
+                AND spare_part_scrap.location = #{scrap.location}
+            </if>
+            <if test="scrap.num != null">
+                AND spare_part_scrap.num = #{scrap.num}
+            </if>
+            <if test="scrap.symptoms != null and scrap.symptoms != ''">
+                AND f1.symptoms like concat('%', #{scrap.symptoms}, '%')
+            </if>
+            <if test="scrap.repairTime != null">
+                AND spare_part_scrap.repair_time = #{scrap.repairTime}
+            </if>
+            <if test="scrap.returnTime != null">
+                AND spare_part_scrap.return_time =#{scrap.returnTime}
+            </if>
+            <if test="scrap.happenTime != null">
+                AND f1.happen_time = #{scrap.happenTime}
+            </if>
+            <if test="scrap.faultLineCode != null and scrap.faultLineCode != ''">
+                AND f1.line_code = #{scrap.faultLineCode}
+            </if>
+            <if test="scrap.faultStationCode != null and scrap.faultStationCode != ''">
+                AND f1.station_code = #{scrap.faultStationCode}
+            </if>
+            <if test="scrap.faultStationPositionCode != null and scrap.faultStationPositionCode != ''">
+                AND f1.station_position_code = #{scrap.faultStationPositionCode}
+            </if>
+            <if test="scrap.manufactorId != null and scrap.manufactorId != ''">
+                AND spare_part_scrap.manufactor_id = #{scrap.manufactorId}
+            </if>
+            <if test="scrap.repairContract != null and scrap.repairContract != ''">
+                AND spare_part_scrap.repair_contract like concat('%', #{scrap.repairContract}, '%')
+            </if>
         </where>
+        group by spare_part_scrap.id
         order by spare_part_scrap.repair_status asc,spare_part_scrap.create_time desc
     </select>
 
-    <select id="queryResponsibleUserName" resultType="java.lang.String">
-        SELECT distinct
-            s2.realname
+    <select id="queryResponsibleUserName" resultType="com.aiurt.modules.sparepart.entity.SparePartScrap">
+        SELECT
+            s1.warehouse_code,
+            GROUP_CONCAT( s2.realname ) as responsibleUserName
         FROM
-            spare_part_scrap
-                LEFT JOIN spare_part_stock_info s1 ON ( spare_part_scrap.warehouse_code = s1.warehouse_code AND s1.del_flag = 0 )
-                LEFT JOIN sys_user s2 ON ( s1.org_code = s2.org_code )
-                LEFT JOIN sys_user_role s3 ON ( s2.id = s3.user_id )
-                LEFT JOIN sys_role s4 ON ( s3.role_id = s4.id AND s4.role_code = 'foreman' )
-        WHERE spare_part_scrap.warehouse_code = #{warehouseCode}
+            spare_part_stock_info s1
+                LEFT JOIN sys_user s2 ON ( s1.organization_id = s2.org_id )
+                INNER JOIN sys_user_role s3 ON ( s2.id = s3.user_id )
+                INNER JOIN sys_role s4 ON ( s3.role_id = s4.id AND s4.role_code = 'foreman' )
+        WHERE
+            s1.del_flag = 0
+            AND s2.del_flag = 0
+            <if test="warehouseCode != null and warehouseCode != ''">
+                AND s1.warehouse_code = #{warehouse_code}
+            </if>
+        GROUP BY
+            s1.warehouse_code
     </select>
     <select id="queryManageUserName" resultType="java.lang.String">
-        SELECT distinct
-            sys_user.realname
+        SELECT
+            GROUP_CONCAT(sys_user.realname)
         FROM
             sys_user
                 JOIN sys_user_role ON ( sys_user.id = sys_user_role.user_id )
                 JOIN sys_role ON ( sys_user_role.role_id = sys_role.id AND sys_role.role_code = 'repair_agent')
+        WHERE
+            sys_user.del_flag = 0
     </select>
 
 </mapper>

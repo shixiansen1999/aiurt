@@ -5,6 +5,7 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.RoleConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
@@ -16,7 +17,6 @@ import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartScrapService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
@@ -25,16 +25,14 @@ import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -118,9 +116,10 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         sparePartScrap.setSysOrgCode(user.getOrgCode());
         SparePartScrap scrap = getById(sparePartScrap.getId());
+        sparePartScrap.setConfirmId(user.getUsername());
+        sparePartScrap.setConfirmTime(new Date());
         if(sparePartScrap.getStatus().equals(CommonConstant.SPARE_PART_SCRAP_STATUS_3) || sparePartScrap.getStatus().equals(CommonConstant.SPARE_PART_SCRAP_STATUS_2)){
-            sparePartScrap.setConfirmId(user.getUsername());
-            sparePartScrap.setConfirmTime(new Date());
+
 
             //更新已出库库存数量,做减法
             List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>()
@@ -177,38 +176,53 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
     }
 
     @Override
-    public IPage<SparePartScrap> queryAllScrapForRepair(Page page, SparePartScrap sparePartScrap) {
+    public Page<SparePartScrap> queryAllScrapForRepair(Page<SparePartScrap> page, SparePartScrap sparePartScrap) {
         // 只展示给角色为送修经办人的用户
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String roleCodes = sysUser.getRoleCodes();
-        boolean repairAgent = roleCodes.contains("repair_agent");
+        boolean repairAgent = roleCodes.contains(RoleConstant.REPAIR_AGENT);
         if(!repairAgent){
-            page.setRecords(new ArrayList<>());
             return page;
         }
 
         // 查询所有状态为“已报损”且“故障单号"不为空的数据
         List<SparePartScrap> list = sparePartScrapMapper.queryAllScrapForRepair(page, sparePartScrap);
+        if (CollUtil.isEmpty(list)) {
+            return page;
+        }
+        // 查询三级库仓库关联的各个部门下的工班长（负责人），多个用逗号拼接
+        Map<String, String> responsibleUserNameMap = this.baseMapper.queryResponsibleUserName(null).stream().collect(Collectors.toMap(SparePartScrap::getWarehouseCode, SparePartScrap::getResponsibleUserName));
+        // 查询角色为送修经办人的所有用户的realname
+        String manageUserName = this.baseMapper.queryManageUserName();
+        // 获取是否易耗品字典map
+        Map<String, String> consumablesTypeMap = sysBaseApi.queryDictItemsByCode("consumables_type").stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        // 获取备件处置单状态字典map
+        Map<String, String> spareScrapStatusMap = sysBaseApi.queryDictItemsByCode("spare_scrap_status").stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        // 获取物资类型字典map
+        Map<String, String> materialTypeMap = sysBaseApi.queryDictItemsByCode("material_type").stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        // 获取单位字典map
+        Map<String, String> materianUnitMap = sysBaseApi.queryDictItemsByCode("materian_unit").stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        // 获取线路map
+        Map<String, String> lineMap = sysBaseApi.queryTableDictItemsByCode("cs_line", "line_name", "line_code").stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        // 获取站点map
+        Map<String, String> stationMap = sysBaseApi.queryTableDictItemsByCode("cs_station", "station_name", "station_code").stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        // 获取位置map
+        Map<String, String> positionMap = sysBaseApi.queryTableDictItemsByCode("cs_station_position", "position_name", "position_code").stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        //翻译名称等
         list.forEach((e) -> {
-            List<String> queryResponsibleUserNameList = this.baseMapper.queryResponsibleUserName(e.getWarehouseCode());
-            String responsibleUserName = queryResponsibleUserNameList.stream().filter(t -> StrUtil.isNotBlank(t)).collect(Collectors.joining(","));
-            List<String> manageUserNameList = this.baseMapper.queryManageUserName();
-            String manageUserName = manageUserNameList.stream().filter(t -> StrUtil.isNotBlank(t)).collect(Collectors.joining(","));
-            e.setResponsibleUserName(responsibleUserName);
+            e.setResponsibleUserName(responsibleUserNameMap.get(e.getWarehouseCode()));
             e.setManageUserName(manageUserName);
-            String consumablesTypeName = sysBaseApi.translateDict("consumables_type", Convert.toStr(e.getConsumablesType()));
-            String statusName = sysBaseApi.translateDict("spare_scrap_status", Convert.toStr(e.getStatus()));
-            String typeName = sysBaseApi.translateDict("material_type", Convert.toStr(e.getType()));
-            String unitName = sysBaseApi.translateDict("materian_unit", Convert.toStr(e.getUnitValue()));
-            e.setConsumablesTypeName(consumablesTypeName);
-            e.setStatusName(statusName);
-            e.setTypeName(typeName);
-            e.setUnit(unitName);
-            // 设置送修状态为1待返修
-            if (ObjectUtil.isEmpty(e.getRepairStatus())){
-                e.setRepairStatus(CommonConstant.SPARE_PART_SCRAP_REPAIR_STATUS_1);
-                sparePartScrapMapper.updateById(e);
+            e.setConsumablesTypeName(consumablesTypeMap.get(Convert.toStr(e.getConsumablesType())));
+            e.setStatusName(spareScrapStatusMap.get(Convert.toStr(e.getStatus())));
+            e.setTypeName(materialTypeMap.get(Convert.toStr(e.getType())));
+            e.setUnit(materianUnitMap.get(Convert.toStr(e.getUnitValue())));
+            String stationName = stationMap.get(e.getFaultStationCode());
+            String positionName = positionMap.get(e.getFaultStationPositionCode());
+            String faultPositionName = stationName;
+            if (StrUtil.isNotBlank(positionName)) {
+                faultPositionName += CommonConstant.SYSTEM_SPLIT_STR + positionName;
             }
+            e.setFaultPositionName(faultPositionName);
         });
         page.setRecords(list);
         return page;
@@ -248,6 +262,10 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
         SparePartStockNum stockNum = sparePartStockNumMapper.selectOne(numLambdaQueryWrapper);
         if (CommonConstant.SPARE_PART_SCRAP_HANDLE_WAY_0.equals(sparePartScrap.getHandleWay())) {
             scrap.setStatus(CommonConstant.SPARE_PART_SCRAP_STATUS_3);
+            // 处置报损且故障编号不为空设置备件送修状态为待返修
+            if (StrUtil.isNotBlank(scrap.getFaultCode())) {
+                scrap.setRepairStatus(CommonConstant.SPARE_PART_SCRAP_REPAIR_STATUS_1);
+            }
             //报损则委外送修数量增加
             stockNum.setOutsourceRepairNum(stockNum.getOutsourceRepairNum() + scrap.getNum());
         }
