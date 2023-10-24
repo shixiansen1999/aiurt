@@ -1,5 +1,6 @@
 package com.aiurt.modules.listener;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
 import com.aiurt.modules.utils.FlowableNodeActionUtils;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
@@ -12,11 +13,14 @@ import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.delegate.event.impl.FlowableEntityWithVariablesEventImpl;
 import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.job.service.TimerJobService;
+import org.flowable.job.service.impl.persistence.entity.TimerJobEntity;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * @author fgw

@@ -58,17 +58,6 @@ public final class FlowApprovalType {
      */
     public static final String REJECT_FIRST_USER_TASK = "reject_first_user_task";
 
-    /**
-     * 加签
-     */
-    public static final String ADD_USER = "add_user";
-
-    /**
-     * 减签
-     */
-    private static final String REMOVE_USER = "remove_user";
-
-
 
     /**
      * 转办

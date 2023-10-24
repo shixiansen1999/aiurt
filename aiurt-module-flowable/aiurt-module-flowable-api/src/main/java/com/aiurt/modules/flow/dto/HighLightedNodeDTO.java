@@ -64,5 +64,8 @@ public class HighLightedNodeDTO implements Serializable {
     @ApiModelProperty("节点办理用户")
     private List<HighLightedUserInfoDTO> highLightedUserInfoDTOs;
 
+    @ApiModelProperty(value = "是否结束，ture是，false 否")
+    private Boolean isEnd;
+
 
 }

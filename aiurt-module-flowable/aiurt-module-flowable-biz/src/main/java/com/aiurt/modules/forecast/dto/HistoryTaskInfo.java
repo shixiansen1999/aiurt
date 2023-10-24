@@ -112,9 +112,9 @@ public class HistoryTaskInfo {
 
     /**
      * 创建普通任务节点信息
+     *
      * @param id
      * @param name
-     * @param assignee
      * @return
      */
     public static FlowElement createCommonUserTask(String id, String name, String assignee){

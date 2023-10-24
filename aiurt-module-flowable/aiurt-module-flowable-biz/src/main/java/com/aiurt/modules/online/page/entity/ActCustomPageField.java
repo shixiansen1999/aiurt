@@ -1,6 +1,8 @@
 package com.aiurt.modules.online.page.entity;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -47,6 +49,9 @@ public class ActCustomPageField implements Serializable {
 	@Excel(name = "页面id(关联act_custon_page的id)", width = 15)
     @ApiModelProperty(value = "页面id(关联act_custon_page的id)")
     private String pageId;
+    @ApiModelProperty("存放额外的数据")
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private JSONObject extra;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
     private String createBy;
