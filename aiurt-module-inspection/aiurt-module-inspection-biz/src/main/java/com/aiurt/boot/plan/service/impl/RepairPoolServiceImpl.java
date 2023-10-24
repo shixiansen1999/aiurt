@@ -788,12 +788,12 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      *  @param oldStaId        计划中的关联的检修标准id
      * @param newStaId        任务中新的检修标准id
      * @param taskId          任务id
-     * @param taskCode        是否与设备类型相关
-     * @param appointDevice
-     * @param isAppointDevice
+     * @param taskCode
+     * @param isAppointDevice 是否与设备类型相关
+     * @param isMergeDevice 是否合并工单
      */
-    private void generateInventory(String oldStaId, String newStaId, String taskId, String taskCode, Integer appointDevice, Integer
-            isAppointDevice) {
+    private void generateInventory(String oldStaId, String newStaId, String taskId, String taskCode, Integer isAppointDevice, Integer
+            isMergeDevice) {
         // 查询指定设备
         RepairPoolRel repairPoolRels = relMapper.selectOne(
                 new LambdaQueryWrapper<RepairPoolRel>()
@@ -817,7 +817,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             }
         }
         // 与设备不相关
-        if (InspectionConstant.NO_ISAPPOINT_DEVICE.equals(isAppointDevice) || 1 == appointDevice) {
+        if (InspectionConstant.NO_ISAPPOINT_DEVICE.equals(isAppointDevice) || 1 == isMergeDevice) {
             List<RepairTaskStationRel> repairTaskStationRels = repairTaskStationRelMapper.selectList(
                     new LambdaQueryWrapper<RepairTaskStationRel>()
                             .eq(RepairTaskStationRel::getRepairTaskCode, taskCode)
