@@ -379,7 +379,8 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
             // 修改下一个节点数据，需要排除减签的数据
             if (CollUtil.isNotEmpty(deleteReasonSet)) {
                 // Change parent activity to Activity_0dc8qph
-                Set<String> targetSet = deleteReasonSet.stream().map(deleteReason -> StrUtil.replace(deleteReason, "Change parent activity to ", "")).collect(Collectors.toSet());
+                // 判断是否回退到结束节点
+                Set<String> targetSet = deleteReasonSet.stream().filter(s->StrUtil.startWith(s,"Event_")).map(deleteReason -> StrUtil.replace(deleteReason, "Change parent activity to ", "")).collect(Collectors.toSet());
                 targetSet.stream().forEach(id->{
                     historyTaskInfo.addNextNodeList(id, nodeTimeMap.getOrDefault(id, 0));
                 });
