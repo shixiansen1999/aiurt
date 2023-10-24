@@ -83,6 +83,7 @@ import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysUserModel;
 import org.jetbrains.annotations.NotNull;
@@ -2980,7 +2981,6 @@ public class FlowApiServiceImpl implements FlowApiService {
         UserTask userTask = flowElementUtil.getFirstUserTaskByDefinitionId(processDefinitionId);
 
         LinkedHashMap<String, HistoryTaskInfo> recordMap = flowForecastService.mergeTask(processInstanceId);
-        AtomicBoolean atomicBoolean = new AtomicBoolean(true);
 
         List<ActCustomTaskComment> flowTaskCommentList = taskCommentService.getFlowTaskCommentList(processInstanceId);
         Map<String, String> commentMap = flowTaskCommentList.stream()
@@ -2995,7 +2995,8 @@ public class FlowApiServiceImpl implements FlowApiService {
         Set<String> userNameSet = recordMap.values().stream().map(HistoryTaskInfo::getList).flatMap(List::stream)
                 .filter(historicTaskInstance -> StrUtil.isNotBlank(historicTaskInstance.getAssignee()))
                 .map(HistoricTaskInstance::getAssignee).collect(Collectors.toSet());
-
+        List<DictModel> dictModelList = sysBaseAPI.getDictItems("sys_post");
+        Map<String, String> sysPostMap = dictModelList.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (t1, t2) -> t1));
         List<LoginUser> loginUserList = sysBaseAPI.getLoginUserList(new ArrayList<>(userNameSet));
         Map<String, LoginUser> userMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, t->t, (t1, t2) -> t1));
         LoginUser user = new LoginUser();
@@ -3083,10 +3084,14 @@ public class FlowApiServiceImpl implements FlowApiService {
                     LoginUser loginUser = userMap.get(assignee);
                     if (Objects.nonNull(loginUser)) {
                         String orgName = loginUser.getOrgName();
-                        String postNames = loginUser.getPostNames();
+                        String jobName = Optional.ofNullable(loginUser.getJobName()).orElse("");
+                        Set<String> jonSet = StrUtil.split(jobName, ',').stream().map(v -> {
+                            return sysPostMap.get(v);
+                        }).collect(Collectors.toSet());
                         nodeInfoDTO.setRealName(loginUser.getRealname());
                         nodeInfoDTO.setUserName(loginUser.getUsername());
-                        nodeInfoDTO.setUserInfo(String.format("%s；%s", "所属部门-" + orgName, StrUtil.isNotBlank(postNames) ? "岗位-" + postNames : ""));
+
+                        nodeInfoDTO.setUserInfo(String.format("%s；%s",   orgName, StrUtil.join(",", jonSet)));
                     }
                 } else {
                     // 兼容历史数据
@@ -3099,5 +3104,13 @@ public class FlowApiServiceImpl implements FlowApiService {
         }).collect(Collectors.toList());
         Collections.reverse(dtoList);
         return dtoList;
+    }
+
+    public static void main(String[] args) {
+        String jobName = "";
+        Set<String> jonSet = StrUtil.split(jobName, ',').stream().map(v -> {
+            return "123";
+        }).collect(Collectors.toSet());
+        System.out.println(jonSet);
     }
 }
