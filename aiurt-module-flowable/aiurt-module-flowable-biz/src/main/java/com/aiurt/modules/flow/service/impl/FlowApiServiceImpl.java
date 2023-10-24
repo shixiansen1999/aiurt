@@ -1,8 +1,13 @@
 package com.aiurt.modules.flow.service.impl;
+import java.text.DateFormat;
 import java.util.Date;
+
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.format.DateParser;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.copy.service.IActCustomProcessCopyService;
 import com.aiurt.modules.deduplicate.handler.BackNodeRuleVerifyHandler;
+import com.aiurt.modules.flow.mapper.FlowApiServiceMapper;
 import com.aiurt.modules.forecast.dto.HistoryTaskInfo;
 import com.aiurt.modules.forecast.service.IFlowForecastService;
 import com.aiurt.modules.modeler.entity.*;
@@ -39,6 +44,7 @@ import com.aiurt.modules.online.businessdata.service.IActCustomBusinessDataServi
 import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.aiurt.modules.online.page.service.IActCustomPageService;
 import com.aiurt.modules.user.entity.ActCustomUser;
+import com.aiurt.modules.user.enums.EmptyRuleEnum;
 import com.aiurt.modules.user.getuser.service.DefaultSelectUserService;
 import com.aiurt.modules.user.service.IActCustomUserService;
 import com.aiurt.modules.user.service.IFlowUserService;
@@ -168,6 +174,9 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     @Autowired
     private IActCustomTaskCommentService taskCommentService;
+
+    @Autowired
+    private FlowApiServiceMapper flowApiServiceMapper;
 
 
     /**
@@ -776,57 +785,47 @@ public class FlowApiServiceImpl implements FlowApiService {
     /**
      * 已办任务
      *
-     * @param processDefinitionName
-     * @param beginDate
-     * @param endDate
-     * @param pageNo
-     * @param pageSize
+     * @param historicTaskReqDTO
      * @return
      */
     @Override
-    public IPage<FlowHisTaskDTO> listHistoricTask(String processDefinitionName, String beginDate, String endDate, Integer pageNo, Integer pageSize) {
+    public IPage<FlowHisTaskDTO> listHistoricTask(HistoricTaskReqDTO historicTaskReqDTO) {
         // 查询已办任务
-        Page<HistoricTaskInstance> hisTaskFinishList = this.getHistoricTaskInstanceFinishedList(processDefinitionName, beginDate, endDate, pageNo, pageSize);
+        LoginUser loginUser = checkLogin();
+        historicTaskReqDTO.setUserName(loginUser.getUsername());
+        List<String> startTime = historicTaskReqDTO.getStartTime();
+        if (CollUtil.isNotEmpty(startTime)) {
+            if (startTime.size() == 1) {
+                String start = startTime.get(0);
+                DateTime beginDate = DateUtil.parse(start, DatePattern.NORM_DATE_PATTERN);
+                DateTime dateTime = DateUtil.beginOfDay(beginDate);
+                historicTaskReqDTO.setBeginDate(dateTime);
 
-        // 对象转换
-        IPage<FlowHisTaskDTO> result = new Page<>();
-        List<FlowHisTaskDTO> flowHisTaskList = new ArrayList<>();
-        List<HistoricTaskInstance> records = hisTaskFinishList.getRecords();
-        if (CollUtil.isNotEmpty(records)) {
-            records.forEach(re -> {
-                FlowHisTaskDTO flowHisTaskDTO = new FlowHisTaskDTO();
-                flowHisTaskDTO.setId(re.getId());
-                flowHisTaskDTO.setProcessDefinitionId(re.getProcessDefinitionId());
-                flowHisTaskDTO.setProcessInstanceStartTime(re.getCreateTime());
-                flowHisTaskDTO.setTaskName(re.getName());
-                flowHisTaskDTO.setFormKey(re.getFormKey());
-                flowHisTaskDTO.setProcessInstanceId(re.getProcessInstanceId());
-                flowHisTaskList.add(flowHisTaskDTO);
-            });
+            }else if (startTime.size() == 2) {
+                String start = startTime.get(0);
+                DateTime beginDate = DateUtil.parse(start, DatePattern.NORM_DATE_PATTERN);
+                DateTime dateTime = DateUtil.beginOfDay(beginDate);
+                historicTaskReqDTO.setBeginDate(dateTime);
+
+                String end = startTime.get(1);
+                DateTime endDate = DateUtil.parse(end, DatePattern.NORM_DATE_PATTERN);
+                DateTime endTime = DateUtil.beginOfDay(endDate);
+                historicTaskReqDTO.setEndDate(endTime);
+            }
         }
+        Page<FlowHisTaskDTO> pageList = new Page<>(historicTaskReqDTO.getPageNo(),historicTaskReqDTO.getPageSize());
+        List<FlowHisTaskDTO> hisTaskDTOList = flowApiServiceMapper.listPage(pageList, historicTaskReqDTO);
 
         // 封装流程定义、名称等相关信息
-        if (CollUtil.isNotEmpty(records)) {
-            Set<String> instanceIdSet = records.stream()
-                    .map(HistoricTaskInstance::getProcessInstanceId).collect(Collectors.toSet());
-            List<HistoricProcessInstance> instanceList = this.getHistoricProcessInstanceList(instanceIdSet);
-            Map<String, HistoricProcessInstance> instanceMap =
-                    instanceList.stream().collect(Collectors.toMap(HistoricProcessInstance::getId, c -> c));
-            flowHisTaskList.forEach(flowHisTaskDTO -> {
-                HistoricProcessInstance instance = instanceMap.get(flowHisTaskDTO.getProcessInstanceId());
-                flowHisTaskDTO.setProcessDefinitionKey(instance.getProcessDefinitionKey());
-                flowHisTaskDTO.setProcessDefinitionName(instance.getProcessDefinitionName());
-                flowHisTaskDTO.setStartUser(instance.getStartUserId());
-                flowHisTaskDTO.setBusinessKey(instance.getBusinessKey());
-            });
+        if (CollUtil.isNotEmpty(hisTaskDTOList)) {
 
             // 封装审批类型
             Set<String> taskIdSet =
-                    records.stream().map(HistoricTaskInstance::getId).collect(Collectors.toSet());
+                    hisTaskDTOList.stream().map(FlowHisTaskDTO::getId).collect(Collectors.toSet());
             List<ActCustomTaskComment> commentList = customTaskCommentService.getFlowTaskCommentListByTaskIds(taskIdSet);
             Map<String, List<ActCustomTaskComment>> commentMap =
                     commentList.stream().collect(Collectors.groupingBy(ActCustomTaskComment::getTaskId));
-            flowHisTaskList.forEach(flowHisTaskDTO -> {
+            hisTaskDTOList.forEach(flowHisTaskDTO -> {
                 List<ActCustomTaskComment> comments = commentMap.get(flowHisTaskDTO.getId());
                 if (CollUtil.isNotEmpty(comments)) {
                     flowHisTaskDTO.setApprovalType(comments.get(0).getApprovalType());
@@ -835,12 +834,8 @@ public class FlowApiServiceImpl implements FlowApiService {
             });
         }
 
-        result.setRecords(flowHisTaskList);
-        result.setTotal(hisTaskFinishList.getTotal());
-        result.setCurrent(hisTaskFinishList.getCurrent());
-        result.setPages(hisTaskFinishList.getPages());
-        result.setSize(hisTaskFinishList.getSize());
-        return result;
+        pageList.setRecords(hisTaskDTOList);
+        return pageList;
     }
 
     /**
@@ -3003,7 +2998,11 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         List<LoginUser> loginUserList = sysBaseAPI.getLoginUserList(new ArrayList<>(userNameSet));
         Map<String, LoginUser> userMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, t->t, (t1, t2) -> t1));
-
+        LoginUser user = new LoginUser();
+        user.setId(UUID.randomUUID().toString());
+        user.setUsername(EmptyRuleEnum.AUTO_COMPLETE.getMessage());
+        user.setRealname("自动通过");
+        userMap.put(EmptyRuleEnum.AUTO_COMPLETE.getMessage(), user);
         List<ProcessRecordDTO> dtoList = recordMap.keySet().stream().map(key -> {
             HistoryTaskInfo historyTaskInfo = recordMap.get(key);
             ProcessRecordDTO recordDTO = ProcessRecordDTO.builder()
@@ -3058,7 +3057,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
                     // 是否全部自动提交
                     List<HistoricTaskInstance> autoCompleteList = taskInfoList.stream().filter(historicTaskInstance -> {
-                        ActCustomTaskComment actCustomTaskComment = taskCommentMap.get(historicProcessInstance.getId());
+                        ActCustomTaskComment actCustomTaskComment = taskCommentMap.get(historicTaskInstance.getId());
                         if (Objects.isNull(actCustomTaskComment)) {
                             return false;
                         }

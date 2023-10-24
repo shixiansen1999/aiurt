@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.flow.mapper.FlowApiServiceMapper">
+
+    <select id="listPage" resultType="com.aiurt.modules.flow.dto.FlowHisTaskDTO">
+        select
+            t1.ID_ as id,
+            t1.PROC_INST_ID_ as process_instance_id,
+            t1.PROC_DEF_ID_ as process_definition_id,
+            t3.NAME_ as process_definition_name,
+            t1.NAME_ as task_name,
+            t3.KEY_ as process_definition_key,
+            t2.BUSINESS_KEY_ as business_key,
+            t2.START_USER_ID_ as start_user,
+            t1.START_TIME_ as process_instance_start_time
+        from act_hi_taskinst t1
+        left join act_hi_procinst t2 on (t1.PROC_INST_ID_ = t2.PROC_INST_ID_)
+        left join act_re_procdef t3 ON  (t2.PROC_DEF_ID_ = t3.ID_)
+        where t1.END_TIME_ is not null and t1.ASSIGNEE_ = #{condition.userName}
+        <if test="condition.processDefinitionName != null and condition.processDefinitionName != ''">
+            and t3.NAME_ like concat('%', #{condition.processDefinitionName}, '%')
+        </if>
+        <if test="condition.beginDate != null">
+            and t2.START_TIME_ &gt;= #{condition.beginDate}
+        </if>
+        <if test="condition.endDate != null">
+            and t2.END_TIME_ &lt;= #{condition.endDate}
+        </if>
+    </select>
+</mapper>

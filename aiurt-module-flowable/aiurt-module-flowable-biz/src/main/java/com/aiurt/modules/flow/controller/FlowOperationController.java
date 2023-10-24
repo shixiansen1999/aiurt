@@ -188,9 +188,8 @@ public class FlowOperationController {
      */
     @PostMapping("/listHistoricTask")
     @ApiOperation(value = "已办任务", notes = "已办任务")
-    public Result<IPage<FlowHisTaskDTO>> listHistoricTask(@RequestBody HistoricTaskReqDTO historicTaskReqDTO) throws ParseException {
-        IPage<FlowHisTaskDTO> pageList = flowApiService.listHistoricTask(historicTaskReqDTO.getProcessDefinitionName(),
-                historicTaskReqDTO.getBeginDate(), historicTaskReqDTO.getEndDate(), historicTaskReqDTO.getPageNo(), historicTaskReqDTO.getPageSize());
+    public Result<IPage<FlowHisTaskDTO>> listHistoricTask(@RequestBody HistoricTaskReqDTO historicTaskReqDTO) {
+        IPage<FlowHisTaskDTO> pageList = flowApiService.listHistoricTask(historicTaskReqDTO);
         return Result.OK(pageList);
     }
 
