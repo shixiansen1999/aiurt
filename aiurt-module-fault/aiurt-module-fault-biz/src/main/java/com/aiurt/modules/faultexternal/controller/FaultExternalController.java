@@ -2,12 +2,16 @@ package com.aiurt.modules.faultexternal.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.faultattachments.entity.FaultAttachments;
+import com.aiurt.modules.faultattachments.mapper.FaultAttachmentsMapper;
 import com.aiurt.modules.faultexternal.dto.FalutExternalReceiveDTO;
 import com.aiurt.modules.faultexternal.dto.FaultExternalDTO;
 import com.aiurt.modules.faultexternal.entity.FaultExternal;
 import com.aiurt.modules.faultexternal.service.IFaultExternalService;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -23,8 +27,9 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.List;
 
- /**
+/**
  * @Description: 调度系统故障
  * @Author: aiurt
  * @Date:   2023-02-16
@@ -39,7 +44,8 @@ public class FaultExternalController extends BaseController<FaultExternal, IFaul
 	private IFaultExternalService faultExternalService;
 	 @Autowired
 	 private ISysBaseAPI iSysBaseAPI;
-
+	 @Autowired
+	 private FaultAttachmentsMapper faultAttachmentsMapper;
 	/**
 	 * 分页列表查询
 	 *
@@ -150,6 +156,11 @@ public class FaultExternalController extends BaseController<FaultExternal, IFaul
 		if(faultExternal==null) {
 			return Result.error("未找到对应数据");
 		}
+		List<FaultAttachments> faultAttachments = faultAttachmentsMapper.selectList(new LambdaQueryWrapper<FaultAttachments>()
+				.eq(FaultAttachments::getFaultExternalId, faultExternal.getId())
+				.eq(FaultAttachments::getDelFlag, CommonConstant.DEL_FLAG_0));
+		faultExternal.setAttachments(faultAttachments);
+
 		faultExternal.setAffectPassengerService(0);
 		faultExternal.setAffectDrive(0);
 		faultExternal.setIsStopService(0);
