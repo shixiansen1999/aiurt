@@ -673,4 +673,15 @@ public interface CommonConstant {
   * 站点是换乘车站。在cs_station中，is_change=1表示该站点是换乘车站
   */
  Integer STATION_IS_CHANGE = 1;
+
+
+ /**
+  * 系统配置布尔值，1是
+  */
+ public static final String BOOLEAN_1 = "1";
+
+ /**
+  * 系统配置布尔值，0否
+  */
+ public static final String BOOLEAN_0 = "0";
 }

@@ -60,7 +60,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
-import lombok.var;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
@@ -608,9 +607,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 e.setDeviceTypeName(q.getDeviceTypeName());
             });
             //检修单名称：检修标准title+设备名称
-            //通信十一期修改关联设备类型之后，没用检修单没用设备
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
-            if (e.getIsAppointDevice() == 1 && "0".equals(paramModel.getValue())) {
+            //当不合并工单时，因为一个设备一个工单，就是标准名加设备名
+            if (e.getIsAppointDevice() == 1 && 0 == e.getIsMergeDevice()) {
                 e.setResultName(e.getOverhaulStandardName() + "(" + e.getEquipmentName() + ")");
             } else {
                 e.setResultName(e.getOverhaulStandardName());
@@ -955,8 +953,18 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
     @Override
     public Page<RepairTaskDTO> repairSelectTaskletForDevice(Page<RepairTaskDTO> pageList, RepairTaskDTO condition) {
-        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
-        List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskletForDevice(pageList, condition,paramModel.getValue());
+        SysParamModel multipleDeviceTypes = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+        SysParamModel whetherToSpecifyDevice = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
+        SysParamModel isOnlyRelatedToDeviceType = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_ONLY_RELATED_TO_DEVICE_TYPE);
+
+        boolean isDeviceCode = CommonConstant.BOOLEAN_0.equals(multipleDeviceTypes.getValue()) && CommonConstant.BOOLEAN_1.equals(whetherToSpecifyDevice.getValue());
+        boolean isDeviceTypeCode = CommonConstant.BOOLEAN_1.equals(multipleDeviceTypes.getValue()) && CommonConstant.BOOLEAN_0.equals(whetherToSpecifyDevice.getValue());
+        boolean isPatrolDeviceCodeAndTypeCode = CommonConstant.BOOLEAN_1.equals(isOnlyRelatedToDeviceType.getValue());
+        condition.setIsDeviceCode(isDeviceCode);
+        condition.setIsDeviceTypeCode(isDeviceTypeCode);
+        condition.setIsPatrolDeviceCodeAndTypeCode(isPatrolDeviceCodeAndTypeCode);
+
+        List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskletForDevice(pageList, condition);
         repairTasks.forEach(e -> {
             //查询同行人
             List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
@@ -1352,7 +1360,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
      */
     private List<RepairTaskResult> selectCodeContentList(String id) {
         List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(id, null);
+        // 查询工单的全部异常设备，然后用检查项id分组
+        Map<String, List<RepairAbnormalDeviceDTO>> abnormalDeviceMap = repairTaskMapper.queryAbnormalDevices(id).stream().collect(Collectors.groupingBy(RepairAbnormalDeviceDTO::getResultId));
         repairTaskResults1.forEach(r -> {
+            // 每个检查项的异常设备
+            r.setAbnormalDeviceList(abnormalDeviceMap.get(r.getId()));
             //检修结果
             r.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(r.getStatus())));
 

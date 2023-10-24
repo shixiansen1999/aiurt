@@ -295,12 +295,12 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         if (CollUtil.isNotEmpty(patrolPlanDto.getPatrolStandards())) {
             List<PatrolStandardDto> patrolStandardDto = patrolPlanDto.getPatrolStandards();
             List<Device> devices = patrolPlanDto.getDevices();
-            //通信十一期通过配置去掉需要指定设备的限制
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+            //通过配置去掉需要指定设备的限制
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
             patrolStandardDto.forEach(p -> {
                 if (p.getDeviceType().equals(1)) {
                     boolean i = devices.stream().anyMatch(d -> p.getCode().equals(d.getPlanStandardCode()));
-                    if (!i  && "0".equals(paramModel.getValue())) {
+                    if (!i  && CommonConstant.BOOLEAN_1.equals(paramModel.getValue())) {
                         throw new AiurtBootException("标准表名为：" + p.getName() + "暂未指定设备,请指定设备!");
                     }
                 }
@@ -496,8 +496,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 throw new AiurtBootException("计划暂未挑选巡检标准表，不允许启用！");
             }
 
-            //通信十一期通过配置去掉需要指定设备的限制
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+            //通过配置去掉需要指定设备的限制
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
             // 判断标准表中如果与设备类型相关是否选定了设备
             Optional.ofNullable(patrolPlanStandard).orElseGet(Collections::emptyList).stream().forEach(l -> {
                 LambdaQueryWrapper<PatrolStandard> standardWrapper = new LambdaQueryWrapper<>();
@@ -508,7 +508,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                     deviceWrapper.eq(PatrolPlanDevice::getPlanId, planId);
                     deviceWrapper.eq(PatrolPlanDevice::getPlanStandardId, l.getId());
                     List<PatrolPlanDevice> deviceList = patrolPlanDeviceMapper.selectList(deviceWrapper);
-                    if (CollectionUtil.isEmpty(deviceList)  && "0".equals(paramModel.getValue())) {
+                    if (CollectionUtil.isEmpty(deviceList)  && CommonConstant.BOOLEAN_1.equals(paramModel.getValue())) {
                         throw new AiurtBootException("标准表名为:【" + standard.getName() + "】暂未指定设备，不允许启用！");
                     }
                 }

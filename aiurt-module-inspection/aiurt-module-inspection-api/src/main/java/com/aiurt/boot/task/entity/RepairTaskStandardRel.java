@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -50,6 +51,12 @@ public class RepairTaskStandardRel implements Serializable {
     @Excel(name = "是否与设备类型相关(0否1是)", width = 15)
     @ApiModelProperty(value = "是否与设备类型相关(0否1是)")
     private java.lang.Integer isAppointDevice;
+    /**
+     * 是否合并工单：0否、1是
+     */
+    @Excel(name = "是否合并工单：0否、1是", width = 15)
+    @ApiModelProperty(value = "是否合并工单：0否、1是")
+    private java.lang.Integer isMergeDevice;
 	/**专业code,关联cs_major的code*/
 	@Excel(name = "专业code,关联cs_major的code", width = 15)
     @ApiModelProperty(value = "专业code,关联cs_major的code")

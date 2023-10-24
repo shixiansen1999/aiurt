@@ -68,6 +68,8 @@ public class TaskPoolQuarter implements Job {
     @Autowired
     private IPatrolCheckResultService patrolCheckResultService;
     @Autowired
+    private IPatrolDeviceService patrolDeviceService;
+    @Autowired
     private ISysParamAPI iSysParamAPI;
 
     @Override
@@ -214,13 +216,31 @@ public class TaskPoolQuarter implements Job {
 
             // 保存巡检任务标准关联数据，并获取对应的任务标准关联表ID
             String taskStandardId = saveTaskStandardData(task, l, standard);
+            // 根据计划ID获取计划设备关联表记录
+            QueryWrapper<PatrolPlanDevice> planDeviceWrapper = new QueryWrapper<>();
+            planDeviceWrapper.lambda()
+                    .eq(PatrolPlanDevice::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    // 对应计划的id
+                    .eq(PatrolPlanDevice::getPlanId, plan.getId())
+                    // 对应计划标准下的设备
+                    .eq(PatrolPlanDevice::getPlanStandardId, l.getId());
+            List<PatrolPlanDevice> planDeviceList = patrolPlanDeviceService.list(planDeviceWrapper);
+            // 保存巡视任务设备关联表
+            ArrayList<PatrolDevice> patrolDeviceList = new ArrayList<>();
+            planDeviceList.forEach(pd -> {
+                PatrolDevice patrolDevice = new PatrolDevice();
+                patrolDevice.setTaskId(task.getId());
+                patrolDevice.setTaskStandardId(taskStandardId);
+                patrolDevice.setDeviceCode(pd.getDeviceCode());
+                patrolDeviceList.add(patrolDevice);
+            });
+            patrolDeviceService.saveBatch(patrolDeviceList);
 
             Integer deviceType = standard.getDeviceType();
+            Integer isMergeDevice = standard.getIsMergeDevice();
+            //通过配置去掉需要指定设备的限制，如果和并工单，则和与设备类型无关一样，只根据站点生成工单
 
-            //通信十一期通过配置去掉需要指定设备的限制，如果与设备相关且关联多个设备类型，则和与设备无关一样的处理，通过站点生成对应的巡检单
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
-
-            if (PatrolConstant.DEVICE_INDEPENDENCE.equals(deviceType) || "1".equals(paramModel.getValue())) {
+            if (PatrolConstant.DEVICE_INDEPENDENCE.equals(deviceType) || 1 == isMergeDevice) {
                 // 与设备无关
                 // 根据计划ID获取计划
                 PatrolPlan patrolPlan = patrolPlanService.getById(l.getPlanId());
@@ -266,15 +286,6 @@ public class TaskPoolQuarter implements Job {
                 });
             } else {
                 // 与设备相关，根据设备和标准生成巡检单数据
-                // 根据计划ID获取计划设备关联表记录
-                QueryWrapper<PatrolPlanDevice> planDeviceWrapper = new QueryWrapper<>();
-                planDeviceWrapper.lambda()
-                        .eq(PatrolPlanDevice::getDelFlag, CommonConstant.DEL_FLAG_0)
-                        // 对应计划的id
-                        .eq(PatrolPlanDevice::getPlanId, plan.getId())
-                        // 对应计划标准下的设备
-                        .eq(PatrolPlanDevice::getPlanStandardId, l.getId());
-                List<PatrolPlanDevice> planDeviceList = patrolPlanDeviceService.list(planDeviceWrapper);
                 // 遍历设备列表信息
                 planDeviceList.forEach(
                         // ps 表示巡检计划标准对象
