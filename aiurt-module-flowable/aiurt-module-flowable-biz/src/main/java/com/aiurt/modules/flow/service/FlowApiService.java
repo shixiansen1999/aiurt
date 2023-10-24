@@ -190,7 +190,7 @@ public interface FlowApiService {
      * @param pageSize
      * @return
      */
-    IPage<FlowHisTaskDTO> listHistoricTask(String processDefinitionName, String beginDate, String endDate, Integer pageNo, Integer pageSize);
+    IPage<FlowHisTaskDTO> listHistoricTask(HistoricTaskReqDTO historicTaskReqDTO);
 
     /**
      * 给用户节点添加监听器
