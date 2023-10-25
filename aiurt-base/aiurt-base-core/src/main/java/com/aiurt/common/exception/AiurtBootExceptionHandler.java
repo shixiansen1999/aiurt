@@ -117,7 +117,7 @@ public class AiurtBootExceptionHandler {
             return Result.error(errorInfoEnum.getError());
         }
         //update-end---author:zyf ---date:20220411  for：处理Sentinel限流自定义异常
-        return Result.error("操作失败，" + e.getMessage());
+        return Result.error("未知错误，请联系管理员！");
     }
 
     /**

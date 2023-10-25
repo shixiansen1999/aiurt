@@ -1,5 +1,6 @@
 package com.aiurt.modules.recall.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.pipeline.selector.LocalListBasedHandlerSelector;
 import com.aiurt.modules.deduplicate.context.FlowDeduplicateContext;
 import com.aiurt.modules.flow.constants.FlowApprovalType;
@@ -26,6 +27,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author fgw
@@ -82,12 +85,13 @@ public class FlowRecallServiceImpl implements IFlowRecallService {
             actCustomTaskComment.setIsVisible(0);
             actCustomTaskComments.add(actCustomTaskComment);
         }
-
+        Set<String> taskNameSet = list.stream().map(Task::getName).collect(Collectors.toSet());
         // 记录撤回的日志
         ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment();
         actCustomTaskComment.setComment(context.getRecallReason());
         actCustomTaskComment.setProcessInstanceId(context.getProcessInstanceId());
         actCustomTaskComment.setApprovalType(FlowApprovalType.RECALL);
+        actCustomTaskComment.setTaskName(StrUtil.join(",", taskNameSet));
         actCustomTaskComment.setCreateRealname(context.getRealName());
         actCustomTaskComments.add(actCustomTaskComment);
         actCustomTaskCommentService.saveBatch(actCustomTaskComments);

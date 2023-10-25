@@ -188,9 +188,8 @@ public class FlowOperationController {
      */
     @PostMapping("/listHistoricTask")
     @ApiOperation(value = "已办任务", notes = "已办任务")
-    public Result<IPage<FlowHisTaskDTO>> listHistoricTask(@RequestBody HistoricTaskReqDTO historicTaskReqDTO) throws ParseException {
-        IPage<FlowHisTaskDTO> pageList = flowApiService.listHistoricTask(historicTaskReqDTO.getProcessDefinitionName(),
-                historicTaskReqDTO.getBeginDate(), historicTaskReqDTO.getEndDate(), historicTaskReqDTO.getPageNo(), historicTaskReqDTO.getPageSize());
+    public Result<IPage<FlowHisTaskDTO>> listHistoricTask(@RequestBody HistoricTaskReqDTO historicTaskReqDTO) {
+        IPage<FlowHisTaskDTO> pageList = flowApiService.listHistoricTask(historicTaskReqDTO);
         return Result.OK(pageList);
     }
 
@@ -210,7 +209,7 @@ public class FlowOperationController {
 
     /**
      * 根据输入参数查询，当前用户的历史流程数据。
-     * 历史任务查询
+     * 历史任务查询，显示当前用户发起的，已结束流程的审批任务。
      *
      * @return
      */
@@ -218,7 +217,7 @@ public class FlowOperationController {
     @PostMapping("listHistoricProcessInstance")
     public Result<IPage<HistoricProcessInstanceDTO>> listHistoricProcessInstance(@RequestBody HistoricProcessInstanceReqDTO reqDTO) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        reqDTO.setLoginName(loginUser.getUsername());
+        reqDTO.setStartUserName(loginUser.getUsername());
         IPage<HistoricProcessInstanceDTO> result = flowApiService.listAllHistoricProcessInstance(reqDTO);
         return Result.OK(result);
     }

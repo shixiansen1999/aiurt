@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author fgw
@@ -40,4 +41,9 @@ public class HistoricProcessInstanceReqDTO implements Serializable {
 
     @ApiModelProperty("发起人")
     private String loginName;
+
+    @ApiModelProperty(value = "历史任务发起人")
+    private String startUserName;
+
+    private List<String> userNameList;
 }

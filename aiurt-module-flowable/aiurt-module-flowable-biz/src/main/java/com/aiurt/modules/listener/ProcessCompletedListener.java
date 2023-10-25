@@ -1,5 +1,6 @@
 package com.aiurt.modules.listener;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -21,6 +22,9 @@ import org.flowable.engine.RuntimeService;
 import org.flowable.engine.delegate.event.impl.FlowableEntityEventImpl;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
+import org.flowable.engine.impl.util.CommandContextUtil;
+import org.flowable.job.service.TimerJobService;
+import org.flowable.job.service.impl.persistence.entity.TimerJobEntity;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -64,20 +68,19 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                         .createHistoricProcessInstanceQuery()
                         .processInstanceId(executionEntity.getProcessInstanceId())
                         .singleResult();
+
+                TimerJobService timerJobService = CommandContextUtil.getTimerJobService();
+
+                List<TimerJobEntity> timerJobEntityList = timerJobService.findTimerJobsByProcessInstanceId(executionEntity.getProcessInstanceId());
+
+                if (CollUtil.isNotEmpty(timerJobEntityList)) {
+                    timerJobEntityList.stream().forEach(timerJobEntity -> {
+                        timerJobService.deleteTimerJob(timerJobEntity);
+                    });
+                }
                 try {
                     LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
                     ISysBaseAPI iSysBaseApi = SpringContextUtils.getBean(ISysBaseAPI.class);
-                    /*iSysBaseApi.sendBusAnnouncement(
-                            new BusMessageDTO(
-                                    loginUser.getUsername(),
-                                    historicProcessInstance.getStartUserId(),
-                                    historicProcessInstance.getName(),
-                                    msgContent,
-                                    CommonConstant.MSG_CATEGORY_2,
-                                    SysAnnmentTypeEnum.BPM.getType(),
-                                    historicProcessInstance.getBusinessKey()
-                            )
-                    );*/
                     // 发消息
                     MessageDTO messageDTO = new MessageDTO();
                     //构建消息模板
@@ -100,7 +103,6 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                             messageDTO.setProcessName(name);
                         }
                         messageDTO.setProcessDefinitionKey(one.getModelKey());
-                       // map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE,processDefinitionIdList.get(0));
                     }
                     String startUserId = historicProcessInstance.getStartUserId();
                     Date startTime = historicProcessInstance.getStartTime();

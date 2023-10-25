@@ -58,17 +58,6 @@ public final class FlowApprovalType {
      */
     public static final String REJECT_FIRST_USER_TASK = "reject_first_user_task";
 
-    /**
-     * 加签
-     */
-    public static final String ADD_USER = "add_user";
-
-    /**
-     * 减签
-     */
-    private static final String REMOVE_USER = "remove_user";
-
-
 
     /**
      * 转办
@@ -119,7 +108,7 @@ public final class FlowApprovalType {
         DICT_MAP.put(REJECT_WANT_TASK, "退回到指定的节点");
         DICT_MAP.put(REJECT_FIRST_USER_TASK, "退回申请人");
         DICT_MAP.put(TRANSFER, "转办");
-        DICT_MAP.put(CANCEL, "撤销");
+        DICT_MAP.put(CANCEL, "作废");
         DICT_MAP.put(DELETE, "删除流程");
         DICT_MAP.put(STOP, "终止流程");
         DICT_MAP.put(ADD_MULTI, "加签");

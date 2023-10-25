@@ -1,5 +1,6 @@
 package com.aiurt.modules.listener;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.thread.ThreadUtil;
 import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
 import com.aiurt.modules.utils.FlowableNodeActionUtils;
@@ -13,11 +14,14 @@ import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.delegate.event.impl.FlowableEntityWithVariablesEventImpl;
 import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.job.service.TimerJobService;
+import org.flowable.job.service.impl.persistence.entity.TimerJobEntity;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * @author fgw
@@ -34,12 +38,10 @@ public class TaskCompletedListener implements FlowableEventListener {
      */
     @Override
     public void onEvent(FlowableEvent event) {
-        logger.info("任务提交事件");
-
+        logger.info("start task create listener");
         if (!(event instanceof FlowableEntityWithVariablesEventImpl)) {
             return;
         }
-
         FlowableEntityWithVariablesEventImpl flowableEntityEvent = (FlowableEntityWithVariablesEventImpl) event;
         Object entity = flowableEntityEvent.getEntity();
         if (!(entity instanceof TaskEntity)) {
@@ -58,15 +60,10 @@ public class TaskCompletedListener implements FlowableEventListener {
         String taskDefinitionKey = taskEntity.getTaskDefinitionKey();
 
         try {
-
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
-            logger.info("流程提交事件，更新代办任务的状态");
-            todoBaseApi.updateBpmnTaskState(id, taskEntity.getProcessInstanceId(), taskEntity.getAssignee(), "1");
-            logger.info("流程提交事件，更新代办任务的状态结束，任务id：{}, 实例id：{}，办理人：{}", id, processInstanceId, taskEntity.getAssignee());
+           // todoBaseApi.updateBpmnTaskState(id, taskEntity.getProcessInstanceId(), taskEntity.getAssignee(), "1");
             // 任务节点前附加操作
-            logger.info("流程提交事件, 任务节点前附加操作");
             FlowableNodeActionUtils.processTaskData(taskEntity, processDefinitionId, taskDefinitionKey, processInstanceId, FlowModelExtElementConstant.EXT_POST_NODE_ACTION);
-            logger.info("流程提交事件, 任务节点前附加操作结束");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
