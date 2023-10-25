@@ -271,6 +271,10 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         BpmnModel bpmnModel = modelService.getBpmnModel(model);
         bpmnModel.getMainProcess().setName(model.getName());
 
+        // 校验，
+        checkBpmnModel(bpmnModel);
+
+
         // 构建属性
         List<ActCustomTaskExt> taskExtList = new ArrayList<>();
         List<ActCustomUser> userList = new ArrayList<>();
@@ -335,6 +339,29 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         // 流程全局属性
         modelExt.setModelKey(model.getKey()).setProcessDefinitionId(definition.getId());
         actCustomModelExtService.save(modelExt);
+    }
+
+    /**
+     * 校验流程
+     * @param bpmnModel
+     */
+    private void checkBpmnModel(BpmnModel bpmnModel) {
+        List<EndEvent> endEventList = bpmnModel.getMainProcess().findFlowElementsOfType(EndEvent.class, false);
+
+        if (CollUtil.isEmpty(endEventList)) {
+            throw new AiurtBootException("发布失败，没有配置结束节点， 请重新配置该流程！");
+        }
+        if (endEventList.size()>1) {
+            throw new AiurtBootException("发布失败，主流程有且只有一个结束节点， 请重新配置该流程！");
+        }
+        List<StartEvent> startEventList = bpmnModel.getMainProcess().findFlowElementsOfType(StartEvent.class, false);
+
+        if (CollUtil.isEmpty(startEventList)) {
+            throw new AiurtBootException("发布失败，没有配置开始节点， 请重新配置该流程！");
+        }
+        if (startEventList.size()>1) {
+            throw new AiurtBootException("发布失败，主流程有且只有一个开始节点， 请重新配置该流程！");
+        }
     }
 
     @Nullable
