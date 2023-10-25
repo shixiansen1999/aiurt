@@ -204,9 +204,12 @@ public class FlowElementUtil {
     public FlowElement getEndFlowElementByDefinitionId(String processDefinitionId) {
         BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
 
-        EndEvent endEvent = bpmnModel.getMainProcess().findFlowElementsOfType(EndEvent.class, false).get(0);
+        List<EndEvent> flowElementsOfType = bpmnModel.getMainProcess().findFlowElementsOfType(EndEvent.class, false);
 
-        return endEvent;
+        if (CollUtil.isEmpty(flowElementsOfType)) {
+            return null;
+        }
+        return flowElementsOfType.get(0);
     }
 
 
@@ -286,7 +289,12 @@ public class FlowElementUtil {
 
         BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
 
-        EndEvent endEvent = bpmnModel.getMainProcess().findFlowElementsOfType(EndEvent.class, false).get(0);
+        List<EndEvent> endEventList = bpmnModel.getMainProcess().findFlowElementsOfType(EndEvent.class, false);
+
+        if (CollUtil.isEmpty(endEventList)) {
+            return null;
+        }
+        EndEvent endEvent = endEventList.get(0);
 
         return endEvent;
     }

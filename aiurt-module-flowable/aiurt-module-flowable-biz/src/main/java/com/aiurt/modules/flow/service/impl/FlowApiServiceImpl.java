@@ -3016,8 +3016,12 @@ public class FlowApiServiceImpl implements FlowApiService {
                     // 终止流程，撤回
                     List<String> deleteReasonList = taskInfoList.stream().map(HistoricTaskInstance::getDeleteReason).collect(Collectors.toList());
 
+                    boolean stopFlag = false;
                     // 终止流程
-                    boolean stopFlag = deleteReasonList.stream().anyMatch(deleteReason -> StrUtil.contains(deleteReason, endEvent.getId()));
+                    if (Objects.nonNull(endEvent)) {
+                        stopFlag = deleteReasonList.stream().anyMatch(deleteReason -> StrUtil.contains(deleteReason, endEvent.getId()));
+                    }
+
                     // 回退流程
                     boolean changeFlag = deleteReasonList.stream().anyMatch(deleteReason -> StrUtil.startWith(deleteReason,"Change"));
                     if (stopFlag) {
