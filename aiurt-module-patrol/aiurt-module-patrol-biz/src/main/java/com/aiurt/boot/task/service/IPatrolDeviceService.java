@@ -11,5 +11,5 @@ import java.util.List;
  * @since 2023/10/18
  */
 public interface IPatrolDeviceService extends IService<PatrolDevice> {
-    List<PatrolDeviceDTO> queryDevices(String taskId, String taskStandardId);
+    List<PatrolDeviceDTO> queryDevices(String taskId, String taskStandardId, String deviceCode);
 }

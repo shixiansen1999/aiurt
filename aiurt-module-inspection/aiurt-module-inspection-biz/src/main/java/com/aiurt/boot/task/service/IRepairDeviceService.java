@@ -17,5 +17,5 @@ public interface IRepairDeviceService extends IService<RepairDevice> {
      * @param taskStandardId 任务标准关联表id
      * @return
      */
-    List<RepairDeviceDTO> queryDevices(String taskId, String taskStandardId);
+    List<RepairDeviceDTO> queryDevices(String taskId, String taskStandardId, String deviceCode);
 }
