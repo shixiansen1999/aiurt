@@ -208,6 +208,13 @@ public class SysPermission implements Serializable {
     private boolean internalOrExternal;
 	/*update_end author:wuxianquan date:20190908 for:实体增加字段 */
 
+	/**
+	 * 第三方平台是否显示该菜单: 0否  1:是（默认值0）
+	 */
+	@ApiModelProperty("第三方平台是否显示该菜单:false否,true是（默认值false）")
+	@TableField(value="third_party_is_show")
+	private boolean thirdPartyIsShow;
+
     public SysPermission() {
 
     }
@@ -231,6 +238,7 @@ public class SysPermission implements Serializable {
         	this.isSearch=false;
         	this.isFilter=false;
         	this.isNavBar=false;
+        	this.thirdPartyIsShow=false;
     	}
 
     }
