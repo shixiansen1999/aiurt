@@ -10,6 +10,8 @@ import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
+import com.aiurt.modules.flow.enums.FlowStatesEnum;
+import com.aiurt.modules.flow.service.IActCustomFlowStateService;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -78,6 +80,9 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                         timerJobService.deleteTimerJob(timerJobEntity);
                     });
                 }
+
+                IActCustomFlowStateService flowStateService = SpringContextUtils.getBean(IActCustomFlowStateService.class);
+                flowStateService.updateFlowState(executionEntity.getProcessInstanceId(), FlowStatesEnum.COMPLETE.getCode());
                 try {
                     LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
                     ISysBaseAPI iSysBaseApi = SpringContextUtils.getBean(ISysBaseAPI.class);
