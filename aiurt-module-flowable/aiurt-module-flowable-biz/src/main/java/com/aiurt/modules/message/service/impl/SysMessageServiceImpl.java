@@ -1,5 +1,6 @@
 package com.aiurt.modules.message.service.impl;
 
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.message.dto.MessageContext;
@@ -35,7 +36,7 @@ public class SysMessageServiceImpl implements ISysMessageService {
 
 
         Date startTime = processInstance.getStartTime();
-        String createTime = DateUtil.format(startTime, "yyyy-MM-dd HH:mm");
+        String createTime = DateUtil.format(startTime, DatePattern.NORM_DATETIME_MINUTE_PATTERN);
 
 
         HashMap<String, Object> map = new HashMap<>(16);

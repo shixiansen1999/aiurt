@@ -37,7 +37,6 @@ public class TaskCompletedListener implements FlowableEventListener {
      */
     @Override
     public void onEvent(FlowableEvent event) {
-        logger.info("start task create listener");
         if (!(event instanceof FlowableEntityWithVariablesEventImpl)) {
             return;
         }
@@ -48,7 +47,7 @@ public class TaskCompletedListener implements FlowableEventListener {
             return;
         }
 
-        logger.debug("活动启动监听事件,设置办理人员......");
+
         TaskEntity taskEntity = (TaskEntity) entity;
         String id = taskEntity.getId();
         // 流程定义id
@@ -57,12 +56,20 @@ public class TaskCompletedListener implements FlowableEventListener {
         String processInstanceId = taskEntity.getProcessInstanceId();
         // 流程节点定义id
         String taskDefinitionKey = taskEntity.getTaskDefinitionKey();
-
+        if (logger.isDebugEnabled()) {
+            logger.debug("任务提交事件, 任务id：{}， 节点id：{}，流程实例id：{}", id, taskDefinitionKey, processInstanceId);
+        }
         try {
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
-           // todoBaseApi.updateBpmnTaskState(id, taskEntity.getProcessInstanceId(), taskEntity.getAssignee(), "1");
+            todoBaseApi.updateBpmnTaskState(id, taskEntity.getProcessInstanceId(), taskEntity.getAssignee(), "1");
+            if (logger.isDebugEnabled()) {
+                logger.debug("任务提交事件,更新代办状态 任务id：{}， 节点id：{}，流程实例id：{}", id, taskDefinitionKey, processInstanceId);
+            }
             // 任务节点前附加操作
             FlowableNodeActionUtils.processTaskData(taskEntity, processDefinitionId, taskDefinitionKey, processInstanceId, FlowModelExtElementConstant.EXT_POST_NODE_ACTION);
+            if (logger.isDebugEnabled()) {
+                logger.debug("任务提交事件, 节点后操作事件处理 任务id：{}， 节点id：{}，流程实例id：{}", id, taskDefinitionKey, processInstanceId);
+            }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
@@ -70,6 +77,10 @@ public class TaskCompletedListener implements FlowableEventListener {
         String executionId = taskEntity.getExecutionId();
         TimerJobService timerJobService = CommandContextUtil.getTimerJobService();
         timerJobService.deleteTimerJobsByExecutionId(executionId);
+        if (logger.isDebugEnabled()) {
+            logger.debug("任务提交事件, 删除超时定时任务, 任务id：{}， 节点id：{}，流程实例id：{}", id, taskDefinitionKey, processInstanceId);
+            logger.debug("任务提交事件, 业务处理结束, 任务id：{}， 节点id：{}，流程实例id：{}", id, taskDefinitionKey, processInstanceId);
+        }
     }
 
     /**

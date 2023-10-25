@@ -75,14 +75,13 @@ public class FlowableNodeActionUtils {
     public static void processTaskData(TaskEntity taskEntity, String processDefinitionId, String taskDefinitionKey, String processInstanceId, String nodeAction) {
         RuntimeService runtimeService = ProcessEngines.getDefaultProcessEngine().getRuntimeService();
 
-
         // 如果是节点后操作， 只在最后一个任务提交执行
         if (StrUtil.equalsIgnoreCase(nodeAction, FlowModelExtElementConstant.EXT_POST_NODE_ACTION)) {
             IMultiInTaskService multiInTaskService = SpringContextUtils.getBean(IMultiInTaskService.class);
             Boolean completeTask = multiInTaskService.isCompleteTask(taskEntity);
             if (completeTask) {
                 processTaskData(processDefinitionId, taskDefinitionKey, processInstanceId, nodeAction);
-
+                // todo 撤回是否会执行
                 // 提交则需要删除变量， 否则回退时不执行
                 runtimeService.removeVariable(processInstanceId, FlowModelExtElementConstant.EXT_PRE_NODE_ACTION + "_" + taskDefinitionKey);
 

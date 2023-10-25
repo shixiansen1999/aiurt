@@ -3,6 +3,7 @@ package com.aiurt.modules.listener;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.deduplicate.service.IFlowDeduplicateService;
 import com.aiurt.modules.emptyuser.IEmptyUserService;
+import lombok.extern.slf4j.Slf4j;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.engine.delegate.event.impl.FlowableEntityEventImpl;
@@ -13,7 +14,10 @@ import org.jeecg.common.util.SpringContextUtils;
  * 任务设置办理人监听器
  * @author fgw ASSIGNED
  */
+@Slf4j
 public class TaskAssignedListener implements FlowableEventListener {
+
+    private static final String AUTO = "_AUTO_";
     /**
      * Called when an event has been fired
      *
@@ -27,12 +31,21 @@ public class TaskAssignedListener implements FlowableEventListener {
             return;
         }
         TaskEntity taskEntity = (TaskEntity) entity;
-        if (StrUtil.startWith(taskEntity.getAssignee(), "_AUTO_")) {
+        if (log.isDebugEnabled()) {
+            log.debug("任务设置办理人事件，实例id：{}， 任务id：{}， 节点id：{}， 节点名称：{}, 办理人：{}", taskEntity.getProcessInstanceId(),
+                    taskEntity.getId(), taskEntity.getTaskDefinitionKey(), taskEntity.getName(), taskEntity.getAssignee());
+        }
+        if (StrUtil.startWith(taskEntity.getAssignee(), AUTO)) {
             IEmptyUserService emptyUserService = SpringContextUtils.getBean(IEmptyUserService.class);
             emptyUserService.handEmptyUserName(taskEntity);
         } else {
             IFlowDeduplicateService deduplicateService = SpringContextUtils.getBean(IFlowDeduplicateService.class);
             deduplicateService.handler(taskEntity);
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("任务设置办理人事件, 业务处理结束 实例id：{}， 任务id：{}， 节点id：{}， 节点名称：{}, 办理人：{}", taskEntity.getProcessInstanceId(),
+                    taskEntity.getId(), taskEntity.getTaskDefinitionKey(), taskEntity.getName(), taskEntity.getAssignee());
         }
     }
 
