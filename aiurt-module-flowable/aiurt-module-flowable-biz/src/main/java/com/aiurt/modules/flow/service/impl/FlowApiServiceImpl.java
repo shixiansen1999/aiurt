@@ -7,7 +7,9 @@ import cn.hutool.core.date.format.DateParser;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.copy.service.IActCustomProcessCopyService;
 import com.aiurt.modules.deduplicate.handler.BackNodeRuleVerifyHandler;
+import com.aiurt.modules.flow.enums.FlowStatesEnum;
 import com.aiurt.modules.flow.mapper.FlowApiServiceMapper;
+import com.aiurt.modules.flow.service.IActCustomFlowStateService;
 import com.aiurt.modules.forecast.dto.HistoryTaskInfo;
 import com.aiurt.modules.forecast.service.IFlowForecastService;
 import com.aiurt.modules.modeler.entity.*;
@@ -49,6 +51,7 @@ import com.aiurt.modules.user.enums.EmptyRuleEnum;
 import com.aiurt.modules.user.getuser.service.DefaultSelectUserService;
 import com.aiurt.modules.user.service.IActCustomUserService;
 import com.aiurt.modules.user.service.IFlowUserService;
+import com.alibaba.druid.sql.visitor.functions.If;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -184,7 +187,8 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Autowired
     private IActCustomMultiRecordService multiRecordService;
 
-
+    @Autowired
+    private IActCustomFlowStateService flowStateService;
 
     /**
      * @param startBpmnDTO
@@ -229,6 +233,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 启动流程
         ProcessInstance processInstance = runtimeService.startProcessInstanceById(result.getId(),Objects.isNull(businessKey)?null:(String)businessKey , busData);
 
+        flowStateService.updateFlowState(processInstance.getProcessInstanceId(), FlowStatesEnum.UN_COMPLETE.getCode());
         log.info("启动流程成功！");
 
         return processInstance;
@@ -446,6 +451,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                     flowElementUtil.setBusinessKeyForProcessInstance(task.getProcessInstanceId(), o);
                 }
             }
+
+            flowStateService.updateFlowState(processInstance.getProcessInstanceId(), FlowStatesEnum.UN_COMPLETE.getCode());
         } else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE,
                 FlowApprovalType.REFUSE, FlowApprovalType.REJECT, FlowApprovalType.AUTO_COMPLETE)) {
             if (Objects.nonNull(busData)) {
@@ -462,6 +469,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             flowCompleteReqDTO.setComment(comment.getComment());
             flowCompleteReqDTO.setVariableData(variableData);
             commonFlowTaskCompleteService.complete(flowCompleteReqDTO);
+            flowStateService.updateFlowState(processInstance.getProcessInstanceId(), FlowStatesEnum.IN_PROGRESS.getCode());
         } else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.CANCEL, approvalType)) {
 
             // 作废
@@ -470,6 +478,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             instanceDTO.setStopReason(commentStr);
             instanceDTO.setApprovalType(approvalType);
             stopProcessInstance(instanceDTO);
+            flowStateService.updateFlowState(processInstance.getProcessInstanceId(), FlowStatesEnum.CANCEL.getCode());
         } else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.REJECT_FIRST_USER_TASK, approvalType)) {
             // 驳回到第一个用户任务
             RejectToStartDTO rejectToStartDTO = new RejectToStartDTO();
@@ -478,6 +487,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             rejectToStartDTO.setBusData(busData);
             rejectToStartDTO.setReason(commentStr);
             rejectToStart(rejectToStartDTO);
+            flowStateService.updateFlowState(processInstance.getProcessInstanceId(), FlowStatesEnum.RETURN.getCode());
             // 转办
         } else if (StrUtil.equalsIgnoreCase(FlowApprovalType.TRANSFER, approvalType)) {
             TurnTaskDTO param = new TurnTaskDTO();
@@ -999,7 +1009,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         List<ProcessDefinition> definitionList = this.getProcessDefinitionList(processDefinitionIdSet);
         Map<String, ProcessDefinition> definitionMap =
                 definitionList.stream().collect(Collectors.toMap(ProcessDefinition::getId, c -> c));
-
+        Map<String, String> flowStateMap = flowStateService.flowStateMap(procInstanceIdSet);
         for (Task task : taskList) {
             FlowTaskDTO flowTaskVo = new FlowTaskDTO();
             flowTaskVo.setTaskId(task.getId());
@@ -1024,6 +1034,12 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
             flowTaskVo.setProcessInstanceStartTime(processInstance.getStartTime());
             flowTaskVo.setBusinessKey(processInstance.getBusinessKey());
+            String stateName = flowStateMap.get(task.getProcessInstanceId());
+            if (StrUtil.isBlank(stateName)) {
+                stateName = FlowStatesEnum.IN_PROGRESS.getMessage();
+            }
+            flowTaskVo.setStateName(stateName);
+            // 状态
             flowTaskVoList.add(flowTaskVo);
         }
         return flowTaskVoList;
@@ -1488,6 +1504,21 @@ public class FlowApiServiceImpl implements FlowApiService {
             });
         }
 
+        dtoList.stream().forEach(historicProcessInstanceDTO -> {
+            if (Objects.nonNull(historicProcessInstanceDTO.getState())) {
+                FlowStatesEnum statesEnum = FlowStatesEnum.getByCode(historicProcessInstanceDTO.getState());
+                if (Objects.nonNull(statesEnum)) {
+                    historicProcessInstanceDTO.setStateName(statesEnum.getMessage());
+                }else {
+                    historicProcessInstanceDTO.setStateName(Objects.isNull(historicProcessInstanceDTO.getEndTime()) ?
+                            FlowStatesEnum.IN_PROGRESS.getMessage() : FlowStatesEnum.COMPLETE.getMessage());
+                }
+            }else {
+                historicProcessInstanceDTO.setStateName(Objects.isNull(historicProcessInstanceDTO.getEndTime()) ?
+                        FlowStatesEnum.IN_PROGRESS.getMessage() : FlowStatesEnum.COMPLETE.getMessage());
+            }
+        });
+
 
         pages.setRecords(dtoList);
         return pages;
@@ -1584,6 +1615,9 @@ public class FlowApiServiceImpl implements FlowApiService {
             if (StrUtil.isNotBlank(businessKey)) {
                 actCustomTaskCommentMapper.updateConstructionWeekPlanCommand(businessKey);
             }
+        }
+        if (StrUtil.equalsIgnoreCase(FlowApprovalType.STOP, instanceDTO.getApprovalType())) {
+            flowStateService.updateFlowState(processInstanceId, FlowStatesEnum.TERMINATED.getCode());
         }
         // 发送redis事件
     }
