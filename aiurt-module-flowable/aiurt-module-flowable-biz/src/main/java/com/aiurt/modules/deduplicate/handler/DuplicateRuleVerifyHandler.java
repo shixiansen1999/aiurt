@@ -66,9 +66,7 @@ public class DuplicateRuleVerifyHandler<T extends FlowDeduplicateContext> extend
         }
         Task task = context.getTask();
         List<HistoricTaskInstance> historicTaskInstanceList = context.getHistoricTaskInstanceList();
-        Map<String, List<HistoricTaskInstance>> duplicateUserNameMap = historicTaskInstanceList.stream()
-                .filter(historicTaskInstance -> !StrUtil.equalsIgnoreCase(historicTaskInstance.getId(), task.getId()))
-                .collect(Collectors.groupingBy(HistoricTaskInstance::getAssignee));
+
 
         Map<String, List<HistoricTaskInstance>> nodeIdMap = historicTaskInstanceList.stream()
                 .filter(historicTaskInstance -> !StrUtil.equalsIgnoreCase(historicTaskInstance.getId(), task.getId()))
@@ -76,14 +74,15 @@ public class DuplicateRuleVerifyHandler<T extends FlowDeduplicateContext> extend
 
         ProcessInstance processInstance = context.getProcessInstance();
         String definitionId = processInstance.getProcessDefinitionId();
+
+        // 获取连续节点前节点的数据
+        List<FlowElement> preFlowElementList = flowElementUtil.getPreFlowElement(definitionId, task.getTaskDefinitionKey());
         List<String> list = StrUtil.split(duplicateRule, ',');
-        // 1, 重复， 2：连续
+        // 1, 间断重复， 2：连续
         AtomicBoolean flag = new AtomicBoolean(false);
         list.stream().forEach(rule->{
             switch (rule) {
                 case  "2" :
-                    // 获取连续节点
-                    List<FlowElement> preFlowElementList = flowElementUtil.getPreFlowElement(definitionId, task.getTaskDefinitionKey());
                     preFlowElementList.forEach(flowElement->{
                         List<HistoricTaskInstance> historicTaskInstances = nodeIdMap.get(flowElement.getId());
                         if (CollUtil.isNotEmpty(historicTaskInstances)) {
@@ -95,6 +94,11 @@ public class DuplicateRuleVerifyHandler<T extends FlowDeduplicateContext> extend
                     });
                     break;
                 default:
+                    Set<String> nodeIdSet = preFlowElementList.stream().map(FlowElement::getId).collect(Collectors.toSet());
+                    Map<String, List<HistoricTaskInstance>> duplicateUserNameMap = historicTaskInstanceList.stream()
+                            .filter(historicTaskInstance -> (!StrUtil.equalsIgnoreCase(historicTaskInstance.getId(), task.getId()))
+                                    && (!nodeIdSet.contains(historicTaskInstance.getTaskDefinitionKey())))
+                            .collect(Collectors.groupingBy(HistoricTaskInstance::getAssignee));
                     List<HistoricTaskInstance> historicTaskInstances = duplicateUserNameMap.get(task.getAssignee());
                     if (CollUtil.isNotEmpty(historicTaskInstances)) {
                         flag.set(true);
