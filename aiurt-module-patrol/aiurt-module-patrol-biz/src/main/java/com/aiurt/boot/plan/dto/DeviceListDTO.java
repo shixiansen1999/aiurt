@@ -18,7 +18,9 @@ import java.util.List;
  */
 @Data
 public class DeviceListDTO {
-    @ApiModelProperty(value = "站点Code")
+    @ApiModelProperty(value = "站点多选Code")
+    String siteCode;
+    @ApiModelProperty(value = "站点CodeList")
     List<String> siteCodes;
     @ApiModelProperty(value = "适用系统code")
     String subsystemCode;
