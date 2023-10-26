@@ -1611,36 +1611,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<PatrolTaskStandardDTO> standardList = patrolTaskStandardMapper.getStandard(id);
         standardList.stream().forEach(e -> {
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(e.getStandardId());
-            if (patrolStandard.getDeviceType() == 1) {
+            // 查询任务标准关联设备信息
+            List<DeviceDTO> deviceDTOList = patrolDeviceService.queryDevicesDetail(e.getTaskId(), e.getTaskStandardId());
+            e.setDeviceList(deviceDTOList);
+            if (CollUtil.isNotEmpty(deviceDTOList)) {
                 e.setSpecifyDevice(1);
             } else {
                 e.setSpecifyDevice(0);
             }
-            LambdaQueryWrapper<PatrolTaskDevice> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(PatrolTaskDevice::getTaskId, e.getTaskId()).eq(PatrolTaskDevice::getTaskStandardId, e.getTaskStandardId());
-            List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.selectList(queryWrapper);
-            List<DeviceDTO> dtoList = new ArrayList<>();
-            taskDeviceList.stream().forEach(td -> {
-                if (ObjectUtil.isNotNull(td.getDeviceCode())) {
-                    DeviceDTO deviceDTO = patrolTaskDeviceMapper.getTaskStandardDevice(td.getDeviceCode());
-                    String statusName = patrolTaskDeviceMapper.getStatusName(deviceDTO.getStatus());
-                    deviceDTO.setStatusName(statusName);
-                    if (ObjectUtil.isNotEmpty(deviceDTO.getPositionCode())) {
-                        String positionDevice = patrolTaskDeviceMapper.getDevicePosition(deviceDTO.getPositionCode());
-                        String position = deviceDTO.getPositionCodeName() + "/" + positionDevice;
-                        deviceDTO.setPositionCodeName(position);
-                    }
-                    String majorName = patrolTaskDeviceMapper.getMajorName(deviceDTO.getMajorCode());
-                    String sysName = patrolTaskDeviceMapper.getSysName(deviceDTO.getSystemCode());
-                    deviceDTO.setMajorCodeName(majorName);
-                    deviceDTO.setSystemCodeName(sysName);
-                    dtoList.add(deviceDTO);
-                } else {
-                    e.setDeviceList(new ArrayList<>());
-                }
-            });
-            e.setDeviceList(dtoList);
-
             List<PatrolStandardDeviceType> patrolStandardDeviceTypes = patrolStandardDeviceTypeMapper.selectList(new LambdaQueryWrapper<PatrolStandardDeviceType>().eq(PatrolStandardDeviceType::getStandardCode, e.getCode()).select(PatrolStandardDeviceType::getDeviceTypeCode));
             if (CollUtil.isNotEmpty(patrolStandardDeviceTypes)) {
                 Set<String> deviceTypeCodes = patrolStandardDeviceTypes.stream().map(PatrolStandardDeviceType::getDeviceTypeCode).collect(Collectors.toSet());

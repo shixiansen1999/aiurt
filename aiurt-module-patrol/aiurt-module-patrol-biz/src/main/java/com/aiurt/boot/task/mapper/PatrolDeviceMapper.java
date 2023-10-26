@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import com.aiurt.boot.task.dto.DeviceDTO;
 import com.aiurt.boot.task.dto.PatrolDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolDevice;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -13,4 +14,5 @@ import java.util.List;
  */
 public interface PatrolDeviceMapper extends BaseMapper<PatrolDevice> {
     List<PatrolDeviceDTO> queryDevices(@Param("taskId") String taskId, @Param("taskStandardId") String taskStandardId);
+    List<DeviceDTO> queryDevicesDetail(@Param("taskId") String taskId, @Param("taskStandardId") String taskStandardId);
 }
