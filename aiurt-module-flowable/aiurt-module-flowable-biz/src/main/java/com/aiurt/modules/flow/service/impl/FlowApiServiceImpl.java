@@ -2970,6 +2970,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                     .build();
 
             List<HistoricTaskInstance> taskInfoList = historyTaskInfo.getList();
+            taskInfoList = taskInfoList.stream().filter(historicTaskInstance -> (Objects.nonNull(historicTaskInstance.getClaimTime())
+                    || Objects.isNull(historicTaskInstance.getEndTime()))).collect(Collectors.toList());
 
             List<HistoricTaskInstance> unFinishList = taskInfoList.stream().filter(historicTaskInstance -> Objects.isNull(historicTaskInstance.getEndTime()))
                     .collect(Collectors.toList());
