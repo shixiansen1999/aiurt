@@ -114,14 +114,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 String orgNames = orgCodeList.stream().map(OrgVO::getLabel).collect(Collectors.joining(";"));
                 a.setOrgName(orgNames);
             }
-            List<PatrolStandardDeviceType> patrolStandardDeviceTypes = patrolStandardDeviceTypeMapper.selectList(new LambdaQueryWrapper<PatrolStandardDeviceType>().eq(PatrolStandardDeviceType::getStandardCode, a.getCode()).select(PatrolStandardDeviceType::getDeviceTypeCode));
-            if (CollUtil.isNotEmpty(patrolStandardDeviceTypes)) {
-                Set<String> deviceTypeCodes = patrolStandardDeviceTypes.stream().map(PatrolStandardDeviceType::getDeviceTypeCode).collect(Collectors.toSet());
-                a.setDeviceTypeCodeList(new ArrayList<>(deviceTypeCodes));
-                List<DeviceType> typeList = sysBaseApi.selectDeviceTypeByCodes(deviceTypeCodes);
-                String deviceTypeNames = typeList.stream().map(DeviceType::getName).collect(Collectors.joining(";"));
-                a.setDeviceTypeName(deviceTypeNames);
-            }
+            getDeviceTypeName(a);
 
             String username = baseMapper.selectUserName(a.getCreateBy());
             a.setCreateByName(null == username ? a.getCreateBy() : username);
@@ -135,6 +128,18 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         // 以上包含的代码权限拦截局部过滤
         GlobalThreadLocal.setDataFilter(filter);
         return page.setRecords(page1);
+    }
+
+    @Override
+    public void getDeviceTypeName(PatrolStandardDto patrolStandardDto) {
+        List<PatrolStandardDeviceType> patrolStandardDeviceTypes = patrolStandardDeviceTypeMapper.selectList(new LambdaQueryWrapper<PatrolStandardDeviceType>().eq(PatrolStandardDeviceType::getStandardCode, patrolStandardDto.getCode()).select(PatrolStandardDeviceType::getDeviceTypeCode));
+        if (CollUtil.isNotEmpty(patrolStandardDeviceTypes)) {
+            Set<String> deviceTypeCodes = patrolStandardDeviceTypes.stream().map(PatrolStandardDeviceType::getDeviceTypeCode).collect(Collectors.toSet());
+            patrolStandardDto.setDeviceTypeCodeList(new ArrayList<>(deviceTypeCodes));
+            List<DeviceType> typeList = sysBaseApi.selectDeviceTypeByCodes(deviceTypeCodes);
+            String deviceTypeNames = typeList.stream().map(DeviceType::getName).collect(Collectors.joining(";"));
+            patrolStandardDto.setDeviceTypeName(deviceTypeNames);
+        }
     }
 
     private List<String> standardDataPermissionFilter() {
@@ -157,6 +162,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             String username = baseMapper.selectUserName(a.getCreateBy());
             a.setCreateByName(null == username ? a.getCreateBy() : username);
             a.setNumber(baseMapper.number(a.getCode()));
+            getDeviceTypeName(a);
         });
         return page.setRecords(page1);
     }

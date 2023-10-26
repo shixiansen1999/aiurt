@@ -36,6 +36,8 @@ import com.aiurt.boot.strategy.mapper.InspectionStrDeviceRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
 import com.aiurt.boot.strategy.service.IInspectionCoOrgRelService;
+import com.aiurt.boot.strategy.service.IInspectionStrategyService;
+import com.aiurt.boot.strategy.service.impl.InspectionStrategyServiceImpl;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.XlsUtil;
@@ -110,7 +112,8 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
     @Autowired
     private IInspectionCoOrgRelService orgRelService;
     @Autowired
-    private InspectionCodeDeviceTypeMapper inspectionCodeDeviceTypeMapper;
+    private IInspectionStrategyService inspectionStrategyService;
+
     @Override
     public IPage<InspectionCodeDTO> pageList(Page<InspectionCodeDTO> page, InspectionCodeDTO inspectionCodeDTO) {
         List<InspectionCodeDTO> inspectionCodeDTOS = baseMapper.pageList(page,inspectionCodeDTO);
@@ -129,14 +132,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                 String orgNames = orgCodeList.stream().map(OrgVO::getLabel).collect(Collectors.joining(";"));
                 i.setOrgName(orgNames);
             }
-            List<InspectionCodeDeviceType> patrolStandardDeviceTypes = inspectionCodeDeviceTypeMapper.selectList(new LambdaQueryWrapper<InspectionCodeDeviceType>().eq(InspectionCodeDeviceType::getInspectionCode, i.getCode()).select(InspectionCodeDeviceType::getDeviceTypeCode));
-            if (CollUtil.isNotEmpty(patrolStandardDeviceTypes)) {
-                Set<String> deviceTypeCodes = patrolStandardDeviceTypes.stream().map(InspectionCodeDeviceType::getDeviceTypeCode).collect(Collectors.toSet());
-                i.setDeviceTypeCodeList(new ArrayList<>(deviceTypeCodes));
-                List<DeviceType> typeList = sysBaseApi.selectDeviceTypeByCodes(deviceTypeCodes);
-                String deviceTypeNames = typeList.stream().map(DeviceType::getName).collect(Collectors.joining(";"));
-                i.setDeviceTypeName(deviceTypeNames);
-            }
+            inspectionStrategyService.getDeviceTypeName(i);
         });
         if (ObjectUtils.isNotEmpty(inspectionCodeDTO.getInspectionStrCode())) {
             for (InspectionCodeDTO il : inspectionCodeDTOS) {
@@ -178,6 +174,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                 List<String> list = inspectionCoOrgRels.stream().map(InspectionCoOrgRel::getOrgCode).collect(Collectors.toList());
                 codeDTO.setOrgList(list);
             }
+            inspectionStrategyService.getDeviceTypeName(codeDTO);
         }
         GlobalThreadLocal.setDataFilter(false);
         if (ObjectUtils.isNotEmpty(inspectionCodeDTO.getInspectionStrCode())) {

@@ -312,7 +312,7 @@ public class RepairTaskDTO {
      */
     private Boolean isDeviceCode;
     /**
-     * 不关联多个设备但不需要指定设备
+     * 关联多个设备但不需要指定设备
      */
     private Boolean isDeviceTypeCode;
     /**

@@ -29,6 +29,7 @@ import com.aiurt.boot.task.CustomCellMergeHandler;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
+import com.aiurt.boot.task.service.IRepairDeviceService;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.boot.task.service.IRepairTaskSignUserService;
 import com.aiurt.boot.task.service.IRepairTaskStandardRelService;
@@ -167,6 +168,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
     @Autowired
     private IRepairTaskSignUserService repairTaskSignUserService;
+    @Autowired
+    private IRepairDeviceService repairDeviceService;
     @Autowired
     private IRepairTaskStandardRelService repairTaskStandardRelService;
 
@@ -849,6 +852,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 checkListDTO.setSitePosition(station);
             }
             if (checkListDTO.getEquipmentCode() == null) {
+                // 当工单的设备为空时返回，该工单关联任务标准关联的设备
+                List<com.aiurt.boot.task.dto.RepairDeviceDTO> repairDeviceDTOList = repairDeviceService.queryDevices(checkListDTO.getTaskId(), checkListDTO.getStandardId(), null);
+                checkListDTO.setEquipmentCode(repairDeviceDTOList.stream().map(com.aiurt.boot.task.dto.RepairDeviceDTO::getDeviceCode).collect(Collectors.joining(StrUtil.COMMA)));
+                checkListDTO.setEquipmentName(repairDeviceDTOList.stream().map(com.aiurt.boot.task.dto.RepairDeviceDTO::getDeviceCode).collect(Collectors.joining(StrUtil.COMMA)));
                 //设备专业
                 checkListDTO.setDeviceMajorName(manager.translateMajor(Arrays.asList(checkListDTO.getMajorCode()), InspectionConstant.MAJOR));
                 //设备专业编码

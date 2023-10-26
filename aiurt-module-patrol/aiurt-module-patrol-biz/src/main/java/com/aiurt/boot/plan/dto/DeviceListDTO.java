@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.dto;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,4 +30,8 @@ public class DeviceListDTO {
     String deviceCode;
     @ApiModelProperty(value = "设备name")
     String deviceName;
+    @ApiModelProperty(value = "设备类型多选字符串")
+    String deviceTypeCodes;
+    @ApiModelProperty(value = "设备类型多选")
+    private List<String> deviceTypeCodeList;
 }

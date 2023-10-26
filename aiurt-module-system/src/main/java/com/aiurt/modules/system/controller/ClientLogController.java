@@ -1,6 +1,7 @@
 package com.aiurt.modules.system.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.system.entity.ClientLog;
@@ -75,6 +76,7 @@ public class ClientLogController extends BaseController<ClientLog, IClientLogSer
 	@AutoLog(value = "client_log-添加")
 	@ApiOperation(value="client_log-添加", notes="client_log-添加")
 	@PostMapping(value = "/add")
+	@LimitSubmit(key = "add:#clientLog")
 	public Result<String> add(@RequestBody ClientLog clientLog) {
 		log.info("转换前的参数：{}", JSON.toJSONString(clientLog));
 		// 坐标转换
@@ -103,6 +105,7 @@ public class ClientLogController extends BaseController<ClientLog, IClientLogSer
 	@AutoLog(value = "client_log-编辑")
 	@ApiOperation(value="client_log-编辑", notes="client_log-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+	@LimitSubmit(key = "add:#clientLog")
 	public Result<String> edit(@RequestBody ClientLog clientLog) {
 		log.info("转换前的参数：{}", JSON.toJSONString(clientLog));
 		// 坐标转换

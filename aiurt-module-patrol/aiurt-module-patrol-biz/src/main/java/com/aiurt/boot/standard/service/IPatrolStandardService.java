@@ -68,4 +68,9 @@ public interface IPatrolStandardService extends IService<PatrolStandard> {
      * @throws IOException
      */
     void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException;
+
+    /**
+     * @param patrolStandardDto
+     */
+    void getDeviceTypeName(PatrolStandardDto patrolStandardDto);
 }

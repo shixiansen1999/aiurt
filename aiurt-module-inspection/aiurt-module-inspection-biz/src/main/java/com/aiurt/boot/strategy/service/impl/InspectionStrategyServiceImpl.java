@@ -22,6 +22,8 @@ import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.standard.entity.InspectionCode;
+import com.aiurt.boot.standard.entity.InspectionCodeDeviceType;
+import com.aiurt.boot.standard.mapper.InspectionCodeDeviceTypeMapper;
 import com.aiurt.boot.standard.mapper.InspectionCodeMapper;
 import com.aiurt.boot.strategy.dto.*;
 import com.aiurt.boot.strategy.entity.*;
@@ -34,6 +36,8 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.redisson.client.RedissonLockClient;
 import com.aiurt.common.util.UpdateHelperUtils;
 import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.sysfile.constant.PatrolConstant;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -110,6 +114,8 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
     private String upLoadPath;
     @Resource
     private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private InspectionCodeDeviceTypeMapper inspectionCodeDeviceTypeMapper;
     @Override
     public IPage<InspectionStrategyDTO> pageList(Page<InspectionStrategyDTO> page, InspectionStrategyDTO inspectionStrategyDTO) {
         if (Objects.nonNull(inspectionStrategyDTO.getSiteCode())) {
@@ -263,7 +269,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                 }
                 //通过配置去掉需要指定设备的限制
                 SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
-                if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && CollUtil.isEmpty(re.getDevices()) && CommonConstant.BOOLEAN_1.equals(paramModel.getValue())) {
+                if (CollUtil.isEmpty(re.getDevices()) && InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && (CommonConstant.BOOLEAN_1.equals(paramModel.getValue()) || PatrolConstant.NO_MERGE_DEVICE.equals(inspectionCode.getIsMergeDevice()))) {
                     throw new AiurtBootException(String.format("名字为%s需要指定设备", ObjectUtil.isNotEmpty(inspectionCode) ? inspectionCode.getTitle() : ""));
                 }
             });
@@ -434,6 +440,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         // 检修计划关联检修标准信息
         List<InspectionStrRel> inspectionStrRels = inspectionStrRelMapper.selectList(new LambdaQueryWrapper<InspectionStrRel>().eq(InspectionStrRel::getInspectionStrCode, ins.getCode()).eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
+
         // 检修标准信息
         if (CollUtil.isNotEmpty(inspectionStrRels)) {
             List<InspectionCodeDTO> temp = new ArrayList<>();
@@ -483,7 +490,11 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                     // 子系统
                     inspectionCodeDTO.setSubsystemName(manager.translateMajor(Arrays.asList(inspectionCode.getSubsystemCode()), InspectionConstant.SUBSYSTEM));
                     // 设备类型
-                    inspectionCodeDTO.setDeviceTypeName(manager.queryNameByCode(inspectionCode.getDeviceTypeCode()));
+                    if (StrUtil.isNotBlank(inspectionCode.getDeviceTypeCode())) {
+                        inspectionCodeDTO.setDeviceTypeName(manager.queryNameByCode(inspectionCode.getDeviceTypeCode()));
+                    } else {
+                        getDeviceTypeName(inspectionCodeDTO);
+                    }
                     temp.add(inspectionCodeDTO);
                 }
             });
@@ -492,6 +503,18 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         }
 
         return ins;
+    }
+
+    @Override
+    public void getDeviceTypeName(InspectionCodeDTO inspectionCodeDTO) {
+        List<InspectionCodeDeviceType> patrolStandardDeviceTypes = inspectionCodeDeviceTypeMapper.selectList(new LambdaQueryWrapper<InspectionCodeDeviceType>().eq(InspectionCodeDeviceType::getInspectionCode, inspectionCodeDTO.getCode()).select(InspectionCodeDeviceType::getDeviceTypeCode));
+        if (CollUtil.isNotEmpty(patrolStandardDeviceTypes)) {
+            Set<String> deviceTypeCodes = patrolStandardDeviceTypes.stream().map(InspectionCodeDeviceType::getDeviceTypeCode).collect(Collectors.toSet());
+            inspectionCodeDTO.setDeviceTypeCodeList(new ArrayList<>(deviceTypeCodes));
+            List<DeviceType> typeList = sysBaseApi.selectDeviceTypeByCodes(deviceTypeCodes);
+            String deviceTypeNames = typeList.stream().map(DeviceType::getName).collect(Collectors.joining(";"));
+            inspectionCodeDTO.setDeviceTypeName(deviceTypeNames);
+        }
     }
 
 
@@ -591,7 +614,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             }
             //通过配置去掉需要指定设备的限制
             SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
-            if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && CommonConstant.BOOLEAN_1.equals(paramModel.getValue())) {
+            if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && (CommonConstant.BOOLEAN_1.equals(paramModel.getValue()) || PatrolConstant.NO_MERGE_DEVICE.equals(inspectionCode.getIsMergeDevice()))) {
                 List<InspectionStrDeviceRel> inspectionStrDeviceRels = inspectionStrDeviceRelMapper.selectList(new LambdaQueryWrapper<InspectionStrDeviceRel>().eq(InspectionStrDeviceRel::getInspectionStrRelId, re.getId()));
                 if (CollUtil.isEmpty(inspectionStrDeviceRels)) {
                     throw new AiurtBootException(String.format("名字为%s的检修标准需要指定设备", ObjectUtil.isNotEmpty(inspectionCode) ? inspectionCode.getTitle() : ""));

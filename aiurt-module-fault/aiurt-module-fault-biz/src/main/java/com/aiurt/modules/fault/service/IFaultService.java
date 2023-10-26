@@ -9,9 +9,11 @@ import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.system.vo.LoginUser;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @Description: fault
@@ -236,4 +238,15 @@ public interface IFaultService extends IService<Fault> {
      * @return
      */
     String printFault(String code);
+
+    /**
+     * 是否能审核
+     *
+     * @param user 登录人
+     * @param fault 故障单
+     * @param lineSet 线路权限
+     * @param stationSet 站点权限
+     * @return
+     */
+    void getReviewFlag(LoginUser user, Fault fault, Set<String> lineSet,Set<String> stationSet);
 }
