@@ -13,6 +13,10 @@
             pd.del_flag = 0
             AND pd.task_id = #{taskId}
             AND pd.task_standard_id = #{taskStandardId}
+            <if test="deviceCode != null and deviceCode != ''">
+                AND pd.device_code = #{deviceCode}
+            </if>
+        GROUP BY pd.id
     </select>
     <select id="queryDevicesDetail" resultType="com.aiurt.boot.task.dto.DeviceDTO">
         SELECT
@@ -43,5 +47,6 @@
             pd.del_flag = 0
             AND pd.task_id = #{taskId}
             AND pd.task_standard_id = #{taskStandardId}
+        GROUP BY pd.id
     </select>
 </mapper>
