@@ -1,12 +1,11 @@
 package com.aiurt.modules.remind.job;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.common.api.dto.message.MessageDTO;
-import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.message.dto.HistoricProcessInstanceMessage;
+import com.aiurt.modules.message.service.ISysFlowMessageService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,14 +20,12 @@ import org.flowable.job.service.JobHandler;
 import org.flowable.job.service.impl.persistence.entity.JobEntity;
 import org.flowable.task.api.Task;
 import org.flowable.variable.api.delegate.VariableScope;
-import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.util.SpringContextUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author fgw 超时提醒处理器
@@ -37,6 +34,9 @@ import java.util.stream.Collectors;
 public class TimeOutRemindJobHandler  implements JobHandler {
 
     public static final String TYPE = "timeout-remind-handler";
+
+    @Autowired
+    private ISysFlowMessageService sysMessageService;
 
     @Override
     public String getType() {
@@ -72,7 +72,7 @@ public class TimeOutRemindJobHandler  implements JobHandler {
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 
         Date startTime = historicProcessInstance.getStartTime();
-        String createTime = DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss");
+        String createTime = DateUtil.format(startTime, "yyyy-MM-dd HH:mm");
 
         // 发送消息
         HashMap<String, Object> map = new HashMap<>(16);
@@ -81,46 +81,16 @@ public class TimeOutRemindJobHandler  implements JobHandler {
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, historicProcessInstance.getBusinessKey());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.BPM.getType());
 
+        HistoricProcessInstanceMessage message = new HistoricProcessInstanceMessage();
+        message.setHistoricProcessInstance(historicProcessInstance);
+        message.setTaskList(taskList);
+        message.setTemplateCode("bpm_service_recall_process");
+        message.setMsgAbstract("有流程【超时】提醒");
+        message.setPublishingContent("您有一条新的流程超时提醒，请尽快处理！");
+        message.setType("XT");
+        message.setMap(map);
+        message.setUserName("admin");
 
-        List<MessageDTO> messageDTOList = taskList.stream().map(task -> {
-            MessageDTO messageDTO = new MessageDTO();
-            messageDTO.setIsMarkdown(true);
-            messageDTO.setFromUser("admin");
-            messageDTO.setToUser(task.getAssignee());
-            messageDTO.setToAll(false);
-            String processDefinitionName = historicProcessInstance.getProcessDefinitionName();
-            String name = StrUtil.contains(processDefinitionName, "流程") ? processDefinitionName : processDefinitionName + "流程";
-            messageDTO.setTitle(name);
-            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_2);
-            messageDTO.setStartTime(new Date());
-            messageDTO.setMsgAbstract("有流程【超时】提醒");
-            messageDTO.setPublishingContent("您有一条新的流程超时提醒，请尽快处理");
-            messageDTO.setBusKey(historicProcessInstance.getBusinessKey());
-            messageDTO.setBusType(SysAnnmentTypeEnum.BPM.getType());
-            messageDTO.setTemplateCode("bpm_service_recall_process");
-            messageDTO.setIsRingBell(false);
-            messageDTO.setRingDuration(0);
-            messageDTO.setRingType(0);
-            messageDTO.setType("");
-            messageDTO.setData(map);
-            messageDTO.setTaskId(task.getId());
-
-            messageDTO.setProcessInstanceId(task.getProcessInstanceId());
-            messageDTO.setProcessCode(historicProcessInstance.getProcessDefinitionKey());
-            messageDTO.setProcessDefinitionKey(historicProcessInstance.getProcessDefinitionKey());
-            messageDTO.setProcessName(name);
-            messageDTO.setType("XT");
-            messageDTO.setData(map);
-            return messageDTO;
-        }).collect(Collectors.toList());
-
-        ISysBaseAPI sysBaseApi = SpringContextUtils.getBean(ISysBaseAPI.class);
-        if (CollUtil.isNotEmpty(messageDTOList)) {
-            messageDTOList.forEach(messageDTO -> {
-                if(ObjectUtil.isNotEmpty(messageDTO)){
-                    sysBaseApi.sendTemplateMessage(messageDTO);
-                }
-            });
-        }
+       sysMessageService.sendMessage(message);
     }
 }

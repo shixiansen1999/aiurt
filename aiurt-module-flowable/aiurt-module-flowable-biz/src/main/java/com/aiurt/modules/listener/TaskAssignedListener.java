@@ -11,7 +11,8 @@ import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.jeecg.common.util.SpringContextUtils;
 
 /**
- * 任务设置办理人监听器
+ * 任务设置办理人监听器， <p>指派事件是在创建事件之前执行，在触发create事件之前触发assignmen，因为时机上先触发了assignment，
+ * 但是此时还未指定人（指定人是在后续的create事件中），所以不会触发assignmen事件</p>
  * @author fgw ASSIGNED
  */
 @Slf4j

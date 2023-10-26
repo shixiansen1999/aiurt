@@ -452,7 +452,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             if (Objects.nonNull(busData)) {
                 flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
             }
-
+            flowStateService.updateFlowState(processInstance.getProcessInstanceId(), FlowStatesEnum.IN_PROGRESS.getCode());
             // 完成任务
             FlowCompleteReqDTO flowCompleteReqDTO = new FlowCompleteReqDTO();
             flowCompleteReqDTO.setBusData(busData);
@@ -463,7 +463,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             flowCompleteReqDTO.setComment(comment.getComment());
             flowCompleteReqDTO.setVariableData(variableData);
             commonFlowTaskCompleteService.complete(flowCompleteReqDTO);
-            flowStateService.updateFlowState(processInstance.getProcessInstanceId(), FlowStatesEnum.IN_PROGRESS.getCode());
+
         } else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.CANCEL, approvalType)) {
 
             // 作废
@@ -856,52 +856,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         return pageList;
     }
 
-    /**
-     * 获取流程实例的历史流程实例列表。
-     *
-     * @param processInstanceIdSet 流程实例Id集合。
-     * @return 历史流程实例列表。
-     */
-    public List<HistoricProcessInstance> getHistoricProcessInstanceList(Set<String> processInstanceIdSet) {
-        return historyService.createHistoricProcessInstanceQuery().processInstanceIds(processInstanceIdSet).list();
-    }
 
-    /**
-     * 获取已办任务
-     *
-     * @param processDefinitionName 流程名称
-     * @param beginDate             开始时间
-     * @param endDate               结束时间
-     * @param pageNo                当前页
-     * @param pageSize              每页数量
-     * @return
-     */
-    private Page<HistoricTaskInstance> getHistoricTaskInstanceFinishedList(String processDefinitionName, String beginDate, String endDate, Integer pageNo, Integer pageSize) {
-        Page<HistoricTaskInstance> result = new Page<>();
-        String username = checkLogin().getUsername();
-        HistoricTaskInstanceQuery query = historyService.createHistoricTaskInstanceQuery()
-                .taskAssignee(username)
-                .finished();
-        if (StrUtil.isNotBlank(processDefinitionName)) {
-            query.processDefinitionName(processDefinitionName);
-        }
-        if (StrUtil.isNotBlank(beginDate)) {
-            query.taskCompletedAfter(DateUtil.parse(beginDate, "yyyy-MM-dd HH:mm:ss"));
-        }
-        if (StrUtil.isNotBlank(endDate)) {
-            query.taskCompletedBefore(DateUtil.parse(endDate, "yyyy-MM-dd HH:mm:ss"));
-        }
-        query.orderByHistoricTaskInstanceEndTime().desc();
-        long totalCount = query.count();
-        int firstResult = (pageNo - 1) * pageSize;
-        List<HistoricTaskInstance> instanceList = query.listPage(firstResult, pageSize);
-        result.setRecords(instanceList);
-        result.setCurrent(pageNo);
-        result.setSize(pageSize);
-        result.setTotal(totalCount);
-        result.setPages(totalCount <= 0 ? 0 : (totalCount > 1 ? (totalCount - 1) / pageSize + 1 : 1));
-        return result;
-    }
 
     /**
      * 判断当前登录用户是否为流程实例中的用户任务的指派人。或是候选人之一。
@@ -1563,9 +1518,12 @@ public class FlowApiServiceImpl implements FlowApiService {
             runtimeService.setVariable(processInstanceId, FlowModelAttConstant.CANCEL, false);
         }
 
+        Map<String, Object> localVariables = new HashMap<>();
+        localVariables.put(FlowConstant.STOP_PROCESS, Boolean.TRUE);
         runtimeService.createChangeActivityStateBuilder()
                 .processInstanceId(instanceDTO.getProcessInstanceId())
                 .moveExecutionsToSingleActivityId(executionIds, endEvent.getId())
+                .localVariables(endEvent.getId(), localVariables)
                 .changeState();
 
         List<ActCustomTaskComment> taskCommentList = new ArrayList<>();
