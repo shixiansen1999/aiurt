@@ -322,6 +322,9 @@
         repair_task t1
         LEFT JOIN repair_task_device_rel t2 ON t1.id = t2.repair_task_id
         LEFT JOIN repair_task_standard_rel t3 ON t2.task_standard_rel_id = t3.id
+        LEFT JOIN repair_pool rp ON t2.id = t1.repair_pool_id
+        LEFT JOIN repair_pool_rel rpr ON rpr.repair_pool_code = rp.code
+        LEFT JOIN repair_pool_code rpc ON rpc.id = rpr.repair_pool_sta_id
         LEFT JOIN inspection_code_device_type t4 ON t3.code = t4.inspection_code
         LEFT JOIN repair_device rd ON rd.task_standard_id = t3.id
         left join sys_user su on su.id = t2.staff_id
@@ -361,14 +364,19 @@
                         and t4.device_type_code = #{condition.deviceTypeCode}
                     </when>
                     <otherwise>
+                        and
+                        ( rpc.is_merge_device = '1'
                         and (rd.device_code = #{condition.equipmentCode}
-                        or (t4.device_type_code = #{condition.deviceTypeCode} and isnull(rd.device_code)))
+                        or (t4.device_type_code = #{condition.deviceTypeCode} and isnull(rd.device_code))))
+                        or
+                        (rpc.is_merge_device = '0'
+                        and t2.device_code = #{condition.equipmentCode}
+                        )
                     </otherwise>
                 </choose>
             </if>
         </where>
         GROUP BY t1.id
-        order by t1.start_time desc
     </select>
 
 

@@ -282,6 +282,12 @@
         <if test="name!=null">
             AND a.name LIKE CONCAT('%',#{name},'%')
         </if>
+        <if test="deviceTypeCodeList != null and deviceTypeCodeList.size() > 0">
+            AND a.device_type_code in
+            <foreach collection="deviceTypeCodeList" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
     </select>
     <select id="selectStations" resultType="com.aiurt.boot.standard.dto.StationDTO">
         select *

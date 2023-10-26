@@ -72,4 +72,12 @@ public interface PatrolConstant {
 	 * 指派前缀
 	 */
 	String APPOINT_PREFIX = "appoint_pool_id:";
+	/**
+	 * 是否合并工单：1是
+	 */
+	Integer IS_MERGE_DEVICE = 1;
+	/**
+	 * 是否合并工单：0否
+	 */
+	Integer NO_MERGE_DEVICE = 0;
 }

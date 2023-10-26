@@ -175,6 +175,15 @@ public interface PatrolConstant {
      * 与设备类型无关
      */
     Integer DEVICE_INDEPENDENCE = 0;
+
+    /**
+     * 是否合并工单：1是
+     */
+    Integer IS_MERGE_DEVICE = 1;
+    /**
+     * 是否合并工单：0否
+     */
+    Integer NO_MERGE_DEVICE = 0;
     /**
      * 巡检工单初始状态-未开始
      */

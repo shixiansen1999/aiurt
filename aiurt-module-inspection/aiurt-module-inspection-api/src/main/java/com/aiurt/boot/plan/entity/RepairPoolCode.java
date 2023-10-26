@@ -171,7 +171,6 @@ public class RepairPoolCode implements Serializable {
      */
     @ApiModelProperty(value = "设备类型名称")
     @TableField(exist = false)
-    @JsonProperty(value = "deviceTypeCode_dictText")
     private java.lang.String deviceTypeName;
     /**
      * 是否指定设备

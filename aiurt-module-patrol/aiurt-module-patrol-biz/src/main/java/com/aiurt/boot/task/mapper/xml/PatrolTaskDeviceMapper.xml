@@ -105,8 +105,14 @@
                     and psdt.device_type_code = #{taskDevice.deviceTypeCode}
                 </when>
                 <otherwise>
+                    and
+                    ( ps.is_merge_device = '1'
                     and ((pd.device_code = #{taskDevice.deviceCode})
-                    or (psdt.device_type_code = #{taskDevice.deviceTypeCode} and isnull(pd.device_code) ))
+                    or (psdt.device_type_code = #{taskDevice.deviceTypeCode} and isnull(pd.device_code) )))
+                    or
+                    (ps.is_merge_device = '0'
+                    and ptd.device_code = #{taskDevice.deviceCode}
+                    )
                 </otherwise>
             </choose>
         </if>
