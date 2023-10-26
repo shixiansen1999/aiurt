@@ -1,7 +1,6 @@
 package com.aiurt.modules.flow.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.HashUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.flow.entity.ActCustomFlowState;
 import com.aiurt.modules.flow.enums.FlowStatesEnum;

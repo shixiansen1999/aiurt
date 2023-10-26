@@ -1,6 +1,5 @@
 package com.aiurt.modules.flow.enums;
 
-import com.aiurt.common.exception.AiurtErrorEnum;
 
 public enum FlowStatesEnum {
 
