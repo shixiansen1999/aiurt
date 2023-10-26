@@ -1,10 +1,10 @@
 package com.aiurt.boot.pool;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.PatrolConstant;
-import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.service.*;
 import com.aiurt.boot.standard.entity.PatrolStandard;
@@ -20,7 +20,6 @@ import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysParamAPI;
-import org.jeecg.common.system.vo.SysParamModel;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -277,15 +276,17 @@ public class TaskPool implements Job {
                     .eq(PatrolPlanDevice::getPlanStandardId, l.getId());
             List<PatrolPlanDevice> planDeviceList = patrolPlanDeviceService.list(planDeviceWrapper);
             // 保存巡视任务设备关联表
-            ArrayList<PatrolDevice> patrolDeviceList = new ArrayList<>();
-            planDeviceList.forEach(pd -> {
-                PatrolDevice patrolDevice = new PatrolDevice();
-                patrolDevice.setTaskId(task.getId());
-                patrolDevice.setTaskStandardId(taskStandardId);
-                patrolDevice.setDeviceCode(pd.getDeviceCode());
-                patrolDeviceList.add(patrolDevice);
-            });
-            patrolDeviceService.saveBatch(patrolDeviceList);
+            if (CollUtil.isNotEmpty(planDeviceList)) {
+                ArrayList<PatrolDevice> patrolDeviceList = new ArrayList<>();
+                planDeviceList.forEach(pd -> {
+                    PatrolDevice patrolDevice = new PatrolDevice();
+                    patrolDevice.setTaskId(task.getId());
+                    patrolDevice.setTaskStandardId(taskStandardId);
+                    patrolDevice.setDeviceCode(pd.getDeviceCode());
+                    patrolDeviceList.add(patrolDevice);
+                });
+                patrolDeviceService.saveBatch(patrolDeviceList);
+            }
 
             Integer deviceType = standard.getDeviceType();
             Integer isMergeDevice = standard.getIsMergeDevice();

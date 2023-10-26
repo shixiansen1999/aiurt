@@ -17,6 +17,7 @@ import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
+import com.aiurt.boot.task.service.IPatrolDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskStationService;
 import com.aiurt.common.api.dto.message.MessageDTO;
@@ -92,6 +93,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     private ISysParamAPI sysParamApi;
     @Autowired
     private IPatrolTaskStationService patrolTaskStationService;
+    @Autowired
+    private IPatrolDeviceService patrolDeviceService;
 
     @Override
     public IPage<PatrolTaskDeviceParam> selectBillInfo(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam) {
@@ -566,6 +569,10 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         } else {
             taskDeviceParam.setInspectionPositionName(s);
             taskDeviceParam.setDevicePositionName(null);
+            // 当工单的设备为空时返回，该工单关联任务标准关联的设备
+            List<PatrolDeviceDTO> patrolDeviceDTOList = patrolDeviceService.queryDevices(taskDeviceParam.getTaskId(), taskDeviceParam.getTaskStandardId(), null);
+            taskDeviceParam.setDeviceCode(patrolDeviceDTOList.stream().map(PatrolDeviceDTO::getDeviceCode).collect(Collectors.joining(StrUtil.COMMA)));
+            taskDeviceParam.setDeviceName(patrolDeviceDTOList.stream().map(PatrolDeviceDTO::getDeviceName).collect(Collectors.joining(StrUtil.COMMA)));
         }
         // 查询同行人信息
         QueryWrapper<PatrolAccompany> accompanyWrapper = new QueryWrapper<>();

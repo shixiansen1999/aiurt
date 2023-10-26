@@ -156,20 +156,22 @@ public class BigscreenPlanService {
             return page;
         }
 
+        List<String> stationCodeList = StrUtil.isNotBlank(stationCode) ? StrUtil.splitTrim(stationCode, ",") : new ArrayList<>();
+
         // 查询计划数、完成数、未完成数
         if (InspectionConstant.PLAN_TOTAL_1.equals(item) || InspectionConstant.PLAN_FINISH_2.equals(item)|| InspectionConstant.PLAN_UNFINISH_6.equals(item)) {
-            result = repairPoolMapper.getInspectionData(page, orgCodes, item, startTime, endTime, lineCode,stationCode, username);
+            result = repairPoolMapper.getInspectionData(page, orgCodes, item, startTime, endTime, lineCode,stationCodeList, username);
         }
 
         // TODO 漏检
         // 查询今日检修
         if (InspectionConstant.PLAN_TODAY_4.equals(item)) {
-            result = repairPoolMapper.getInspectionTodayData(page, new Date(), orgCodes,lineCode,null,stationCode, username);
+            result = repairPoolMapper.getInspectionTodayData(page, new Date(), orgCodes,lineCode,null,stationCodeList, username);
         }
 
         // 查询今日检修已完成
         if (InspectionConstant.PLAN_TODAY_5.equals(item)) {
-            result = repairPoolMapper.getInspectionTodayData(page, new Date(), orgCodes,lineCode,InspectionConstant.COMPLETED,stationCode, username);
+            result = repairPoolMapper.getInspectionTodayData(page, new Date(), orgCodes,lineCode,InspectionConstant.COMPLETED,stationCodeList, username);
         }
 
         // 统一处理结果
