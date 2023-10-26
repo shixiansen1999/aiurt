@@ -72,14 +72,14 @@ public class ActCustomFlowStateServiceImpl extends ServiceImpl<ActCustomFlowStat
         if (CollUtil.isEmpty(actCustomFlowStates)) {
             return Collections.emptyMap();
         }
-        actCustomFlowStates.stream().collect(Collectors.toMap(ActCustomFlowState::getState, actCustomFlowState->{
+        Map<String, String> map = actCustomFlowStates.stream().collect(Collectors.toMap(ActCustomFlowState::getProcessInstanceId, actCustomFlowState -> {
             FlowStatesEnum statesEnum = FlowStatesEnum.getByCode(actCustomFlowState.getState());
             if (Objects.nonNull(statesEnum)) {
-               return statesEnum.getMessage();
-            }else {
+                return statesEnum.getMessage();
+            } else {
                 return "";
             }
-        }, (t1,t2)->t1));
-        return null;
+        }, (t1, t2) -> t1));
+        return map;
     }
 }

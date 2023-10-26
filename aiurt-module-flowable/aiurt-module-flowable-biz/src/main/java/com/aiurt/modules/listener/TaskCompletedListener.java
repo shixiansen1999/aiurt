@@ -8,8 +8,6 @@ import org.flowable.engine.delegate.event.impl.FlowableEntityWithVariablesEventI
 import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.job.service.TimerJobService;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
-import org.jeecg.common.system.api.ISTodoBaseAPI;
-import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,11 +49,6 @@ public class TaskCompletedListener implements FlowableEventListener {
             logger.debug("任务提交事件, 任务id：{}， 节点id：{}，流程实例id：{}", id, taskDefinitionKey, processInstanceId);
         }
         try {
-            ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
-            todoBaseApi.updateBpmnTaskState(id, taskEntity.getProcessInstanceId(), taskEntity.getAssignee(), "1");
-            if (logger.isDebugEnabled()) {
-                logger.debug("任务提交事件,更新代办状态 任务id：{}， 节点id：{}，流程实例id：{}", id, taskDefinitionKey, processInstanceId);
-            }
             // 任务节点前附加操作
             FlowableNodeActionUtils.processTaskData(taskEntity, processDefinitionId, taskDefinitionKey, processInstanceId, FlowModelExtElementConstant.EXT_POST_NODE_ACTION);
             if (logger.isDebugEnabled()) {
