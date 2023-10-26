@@ -42,9 +42,7 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                 List<TimerJobEntity> timerJobEntityList = timerJobService
                         .findTimerJobsByProcessInstanceId(executionEntity.getProcessInstanceId());
                 if (CollUtil.isNotEmpty(timerJobEntityList)) {
-                    timerJobEntityList.stream().forEach(timerJobEntity -> {
-                        timerJobService.deleteTimerJob(timerJobEntity);
-                    });
+                    timerJobEntityList.stream().forEach(timerJobEntity -> timerJobService.deleteTimerJob(timerJobEntity));
                 }
                 if (logger.isDebugEnabled()) {
                     logger.debug("流程结束监听事件, 删除该流程流程实例的定时任务，历史实例id：{}", executionEntity.getProcessInstanceId());

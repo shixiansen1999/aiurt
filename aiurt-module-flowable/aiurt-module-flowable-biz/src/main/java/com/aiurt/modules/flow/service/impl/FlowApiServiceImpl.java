@@ -1,26 +1,10 @@
 package com.aiurt.modules.flow.service.impl;
-import java.text.DateFormat;
-import java.util.Date;
-
-import cn.hutool.core.date.DatePattern;
-import cn.hutool.core.date.format.DateParser;
-import com.aiurt.modules.common.constant.FlowVariableConstant;
-import com.aiurt.modules.copy.service.IActCustomProcessCopyService;
-import com.aiurt.modules.deduplicate.handler.BackNodeRuleVerifyHandler;
-import com.aiurt.modules.flow.enums.FlowStatesEnum;
-import com.aiurt.modules.flow.mapper.FlowApiServiceMapper;
-import com.aiurt.modules.flow.service.IActCustomFlowStateService;
-import com.aiurt.modules.forecast.dto.HistoryTaskInfo;
-import com.aiurt.modules.forecast.service.IFlowForecastService;
-import com.aiurt.modules.modeler.entity.*;
-import com.aiurt.modules.modeler.service.IActCustomModelExtService;
-import com.aiurt.modules.multideal.service.IActCustomMultiRecordService;
-import com.aiurt.modules.multideal.service.IMultiInTaskService;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.BetweenFormater;
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Assert;
@@ -29,19 +13,31 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
+import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.complete.dto.FlowCompleteReqDTO;
 import com.aiurt.modules.complete.service.impl.CommonFlowTaskCompleteServiceImpl;
 import com.aiurt.modules.constants.FlowConstant;
+import com.aiurt.modules.copy.service.IActCustomProcessCopyService;
+import com.aiurt.modules.deduplicate.handler.BackNodeRuleVerifyHandler;
 import com.aiurt.modules.flow.constants.FlowApprovalType;
 import com.aiurt.modules.flow.dto.*;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
+import com.aiurt.modules.flow.enums.FlowStatesEnum;
 import com.aiurt.modules.flow.mapper.ActCustomTaskCommentMapper;
+import com.aiurt.modules.flow.mapper.FlowApiServiceMapper;
 import com.aiurt.modules.flow.service.FlowApiService;
+import com.aiurt.modules.flow.service.IActCustomFlowStateService;
 import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
+import com.aiurt.modules.forecast.dto.HistoryTaskInfo;
+import com.aiurt.modules.forecast.service.IFlowForecastService;
+import com.aiurt.modules.modeler.entity.*;
+import com.aiurt.modules.modeler.service.IActCustomModelExtService;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.modeler.service.IActCustomVariableService;
+import com.aiurt.modules.multideal.service.IActCustomMultiRecordService;
+import com.aiurt.modules.multideal.service.IMultiInTaskService;
 import com.aiurt.modules.online.businessdata.entity.ActCustomBusinessData;
 import com.aiurt.modules.online.businessdata.service.IActCustomBusinessDataService;
 import com.aiurt.modules.online.page.entity.ActCustomPage;
@@ -51,7 +47,6 @@ import com.aiurt.modules.user.enums.EmptyRuleEnum;
 import com.aiurt.modules.user.getuser.service.DefaultSelectUserService;
 import com.aiurt.modules.user.service.IActCustomUserService;
 import com.aiurt.modules.user.service.IFlowUserService;
-import com.alibaba.druid.sql.visitor.functions.If;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -59,7 +54,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import liquibase.pro.packaged.X;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
@@ -69,15 +63,16 @@ import org.flowable.common.engine.impl.identity.Authentication;
 import org.flowable.editor.language.json.converter.util.CollectionUtils;
 import org.flowable.engine.*;
 import org.flowable.engine.delegate.TaskListener;
-import org.flowable.engine.history.DeleteReason;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
-import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.repository.ProcessDefinition;
-import org.flowable.engine.runtime.*;
+import org.flowable.engine.runtime.ActivityInstance;
+import org.flowable.engine.runtime.ChangeActivityStateBuilder;
+import org.flowable.engine.runtime.Execution;
+import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.identitylink.api.IdentityLink;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskInfo;
@@ -99,7 +94,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 /**
@@ -1499,9 +1493,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (CollUtil.isNotEmpty(userNameList)) {
             List<LoginUser> loginUserList = sysBaseAPI.getLoginUserList(userNameList);
             Map<String, String> userMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, LoginUser::getRealname, (t1, t2) -> t1));
-            dtoList.stream().forEach(historicProcessInstanceDTO -> {
-                historicProcessInstanceDTO.setRealName(userMap.get(historicProcessInstanceDTO.getUserName()));
-            });
+            dtoList.stream().forEach(historicProcessInstanceDTO -> historicProcessInstanceDTO.setRealName(userMap.get(historicProcessInstanceDTO.getUserName())));
         }
 
         dtoList.stream().forEach(historicProcessInstanceDTO -> {

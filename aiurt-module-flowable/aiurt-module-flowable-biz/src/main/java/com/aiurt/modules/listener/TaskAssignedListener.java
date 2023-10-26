@@ -36,11 +36,23 @@ public class TaskAssignedListener implements FlowableEventListener {
                     taskEntity.getId(), taskEntity.getTaskDefinitionKey(), taskEntity.getName(), taskEntity.getAssignee());
         }
         if (StrUtil.startWith(taskEntity.getAssignee(), AUTO)) {
+            if (log.isDebugEnabled()) {
+                log.debug("任务办理人为空处理开始");
+            }
             IEmptyUserService emptyUserService = SpringContextUtils.getBean(IEmptyUserService.class);
             emptyUserService.handEmptyUserName(taskEntity);
+            if (log.isDebugEnabled()) {
+                log.debug("任务办理人为空处理结束");
+            }
         } else {
+            if (log.isDebugEnabled()) {
+                log.debug("任务审批人处理开始");
+            }
             IFlowDeduplicateService deduplicateService = SpringContextUtils.getBean(IFlowDeduplicateService.class);
             deduplicateService.handler(taskEntity);
+            if (log.isDebugEnabled()) {
+                log.debug("任务审批人处理结束");
+            }
         }
 
         if (log.isDebugEnabled()) {

@@ -37,7 +37,7 @@ public class BackNodeRuleVerifyHandler<T extends FlowDeduplicateContext> extends
         if (Objects.nonNull(isBackNodeTaskObj) && isBackNodeTaskObj instanceof Boolean)
             isBackNodeTask = (Boolean) isBackNodeTaskObj;
         // 加签用户
-        if (isBackNodeTask) {
+        if (Boolean.TRUE.equals(isBackNodeTask)) {
             context.setContinueChain(false);
             if (log.isDebugEnabled()) {
                 log.debug("审批去重，该用户任务是驳回任务， 审批去重不生效，任务id：{}， 节点id：{}", task.getId(), task.getTaskDefinitionKey());
