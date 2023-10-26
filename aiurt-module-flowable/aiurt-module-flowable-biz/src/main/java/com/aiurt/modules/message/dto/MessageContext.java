@@ -19,15 +19,7 @@ public class MessageContext {
 
     private HistoricProcessInstance historicProcessInstance;
 
-    private String templateCode;
 
-    private String msgAbstract;
 
-    private String publishingContent;
-
-    /**
-     * 发送的渠道，默认我iXT ，多个逗号隔开
-     */
-    private String type;
 
 }

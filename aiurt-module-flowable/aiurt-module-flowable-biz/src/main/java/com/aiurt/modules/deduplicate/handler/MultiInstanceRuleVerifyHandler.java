@@ -46,7 +46,7 @@ public class MultiInstanceRuleVerifyHandler<T extends FlowDeduplicateContext> ex
         }
 
         // 加签用户
-        if (isMultiAssignTask) {
+        if (Boolean.TRUE.equals(isMultiAssignTask)) {
             context.setContinueChain(false);
             if (log.isDebugEnabled()) {
                 log.debug("审批去重，加签规则校验，该用户是加签任务， 审批去重不生效，任务id：{}， 节点id：{}", task.getId(), task.getTaskDefinitionKey());

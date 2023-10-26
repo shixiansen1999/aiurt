@@ -2,11 +2,10 @@ package com.aiurt.modules.listener;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.utils.ReflectionService;
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.model.ExtensionElement;
 import org.flowable.bpmn.model.FlowElement;
@@ -28,6 +27,7 @@ import java.util.Objects;
  * 流向线监听事件
  * @author fgw
  */
+@Slf4j
 public class SequenceFlowTakenListener implements FlowableEventListener {
 
     private Logger logger = LoggerFactory.getLogger(SequenceFlowTakenListener.class);
@@ -89,7 +89,6 @@ public class SequenceFlowTakenListener implements FlowableEventListener {
                         // 封装数据
                         JSONObject data = new JSONObject();
                         data.put("businessKey", processInstance.getBusinessKey());
-                        data.put("businessKey", processInstance.getBusinessKey());
                         data.put("modelKey", processInstance.getProcessDefinitionKey());
                         data.put("states", value);
                         if (Objects.nonNull(loginUser)) {
@@ -102,7 +101,7 @@ public class SequenceFlowTakenListener implements FlowableEventListener {
                         // 更新状态
                         reflectionService.invokeService(className, list.get(1), data);
                     } catch (Exception exception) {
-                        exception.printStackTrace();
+                        log.error(exception.getMessage(), exception);
                     }
                 }
             }
