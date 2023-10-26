@@ -10,19 +10,14 @@
     </update>
 
     <select id="getList" resultType="com.aiurt.modules.material.entity.MaterialRequisitionDetail">
-        select  mr.apply_warehouse_code as warehouseCode ,mrd.materials_code as materialsCode ,sum(mrd.apply_num) as applyNum,sum(mrd.apply_num) as availableNum
-        from material_requisition_detail mrd
-        left join material_requisition mr on mrd.material_requisition_id = mr.id
-        where mrd.del_flag = 0
-        and mr.del_flag = 0
-        and mr.is_used = 0
-        and mr.fault_repair_record_id = #{faultRepairRecordId}
-        group by mr.apply_warehouse_code,mrd.materials_code
+        SELECT
+                mrd.*,
+                msoir.order_id
+        FROM
+                material_requisition_detail mrd
+                        LEFT JOIN material_stock_out_in_record msoir ON (mrd.material_requisition_id = msoir.material_requisition_id
+                        AND mrd.materials_code = msoir.material_code and msoir.del_flag = 0)
+        WHERE
+                mrd.material_requisition_id =#{materialRequisitionId}
     </select>
-
-    <update id="updateIsUsed">
-        update material_requisition
-        set is_used = #{isUsed}
-        where fault_repair_record_id =#{faultRepairRecordId};
-    </update>
 </mapper>
