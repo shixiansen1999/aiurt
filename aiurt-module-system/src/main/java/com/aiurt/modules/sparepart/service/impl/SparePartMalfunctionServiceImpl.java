@@ -15,6 +15,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,12 +50,25 @@ public class SparePartMalfunctionServiceImpl extends ServiceImpl<SparePartMalfun
         // 根据处置记录id查询故障更换附件表信息
         String scrapId = sparePartMalfunction.getScrapId();
         if (StrUtil.isNotBlank(scrapId)) {
+            List<String> outIds = new ArrayList<>();
             changeSparePartLambdaQueryWrapper.eq(DeviceChangeSparePart::getScrapId, scrapId);
+            List<DeviceChangeSparePart> deviceChangeSpareParts = deviceChangeSparePartService.list(changeSparePartLambdaQueryWrapper);
+            // 两种情况的出库单id
+            List<String> borrowIds = deviceChangeSpareParts.stream().map(DeviceChangeSparePart::getBorrowingOutOrderId).filter(StrUtil::isNotBlank).collect(Collectors.toList());
+            List<String> lendIds = deviceChangeSpareParts.stream().map(DeviceChangeSparePart::getLendOutOrderId).filter(StrUtil::isNotBlank).collect(Collectors.toList());
+            if (CollUtil.isNotEmpty(borrowIds)) {
+                outIds.addAll(borrowIds);
+            }
+            if (CollUtil.isNotEmpty(lendIds)) {
+                outIds.addAll(lendIds);
+            }
+            // 根据处置记录id查询备件故障记录
+            if (CollUtil.isNotEmpty(outIds)) {
+                queryWrapper.in(SparePartMalfunction::getOutOrderId, outIds);
+            } else {
+                return page;
+            }
         }
-        List<DeviceChangeSparePart> deviceChangeSpareParts = deviceChangeSparePartService.list(changeSparePartLambdaQueryWrapper);
-        // 两种情况的出库单id
-        List<String> borrowIds = deviceChangeSpareParts.stream().map(DeviceChangeSparePart::getBorrowingOutOrderId).filter(StrUtil::isNotBlank).collect(Collectors.toList());
-        List<String> lendIds = deviceChangeSpareParts.stream().map(DeviceChangeSparePart::getLendOutOrderId).filter(StrUtil::isNotBlank).collect(Collectors.toList());
         // 根据故障设备编号查询
         String malfunctionDeviceCode = sparePartMalfunction.getMalfunctionDeviceCode();
         if (StrUtil.isNotBlank(malfunctionDeviceCode)) {
@@ -67,12 +81,6 @@ public class SparePartMalfunctionServiceImpl extends ServiceImpl<SparePartMalfun
         if(ObjectUtils.isNotEmpty(sparePartMalfunction.getOutOrderId())){
             queryWrapper.eq(SparePartMalfunction::getOutOrderId,sparePartMalfunction.getOutOrderId());
         }
-        // 根据处置记录id查询备件故障记录
-        queryWrapper.and(wq -> {
-            wq.in(CollUtil.isNotEmpty(borrowIds), SparePartMalfunction::getOutOrderId, borrowIds)
-                    .or()
-                    .in(CollUtil.isNotEmpty(lendIds), SparePartMalfunction::getOutOrderId, lendIds);
-        });
         return this.page(page, queryWrapper);
     }
 }
