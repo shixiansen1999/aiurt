@@ -6,11 +6,16 @@ import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.delegate.event.impl.FlowableProcessStartedEventImpl;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * @author fgw
@@ -35,12 +40,19 @@ public class ProcessStartListener implements Serializable, FlowableEventListener
                 if (logger.isDebugEnabled()) {
                     logger.debug("流程启动监听事件,流程实例id：{}， 发起用户：{}", executionEntity.getProcessInstanceId(), executionEntity.getStartUserId());
                 }
+                ExecutionEntity processInstance = executionEntity.getProcessInstance();
+                ISysBaseAPI sysBaseApi = SpringContextUtils.getBean(ISysBaseAPI.class);
+                LoginUser loginUser = sysBaseApi.queryUser(processInstance.getStartUserId());
+                String realName = "系统管理员";
+                if (Objects.nonNull(loginUser)) {
+                    realName = loginUser.getRealname();
+                }
                 // 获取流程名称
-                String name = executionEntity.getProcessDefinitionName();
+                String name = processInstance.getProcessDefinitionName();
 
-                String format = DateUtil.format(new Date(), "yyyy-MM-dd");
+                String format = DateUtil.format(processInstance.getStartTime(), "yyyy-MM-dd");
 
-                String processName = String.format("%s-%s", name, format);
+                String processName = String.format("%s-%s-%s", name, realName, format);
                 if (logger.isDebugEnabled()) {
                     logger.debug("流程启动监听事件设置流程名称：{}", processName);
                 }
