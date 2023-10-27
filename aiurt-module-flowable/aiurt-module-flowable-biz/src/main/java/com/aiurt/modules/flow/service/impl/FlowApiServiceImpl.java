@@ -707,7 +707,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
 
             // 如果是发起人做返回催办，撤回按钮， 流程未结束, 发起节点的任务
-            if (isCurrentUserInitiatorAndProcessNotEnded(startUserId, loginUser, historicProcessInstance)) {
+            if (isOwnerTask && isCurrentUserInitiatorAndProcessNotEnded(startUserId, loginUser, historicProcessInstance)) {
                 handleRemindLogic(taskInfoDTO, customModelExt, processInstanceId, loginUser);
             }
         }
