@@ -20,6 +20,7 @@ import org.flowable.job.service.JobHandler;
 import org.flowable.job.service.impl.persistence.entity.JobEntity;
 import org.flowable.task.api.Task;
 import org.flowable.variable.api.delegate.VariableScope;
+import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -35,8 +36,6 @@ public class TimeOutRemindJobHandler  implements JobHandler {
 
     public static final String TYPE = "timeout-remind-handler";
 
-    @Autowired
-    private ISysFlowMessageService sysMessageService;
 
     @Override
     public String getType() {
@@ -90,7 +89,7 @@ public class TimeOutRemindJobHandler  implements JobHandler {
         message.setType("XT");
         message.setMap(map);
         message.setUserName("admin");
-
-       sysMessageService.sendMessage(message);
+        SpringContextUtils.getBean(ISysFlowMessageService.class)
+        sysMessageService.sendMessage(message);
     }
 }

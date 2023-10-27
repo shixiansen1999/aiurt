@@ -19,6 +19,7 @@ import com.aiurt.modules.modeler.entity.ActCustomVariable;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.modeler.service.IActCustomVariableService;
+import com.aiurt.modules.online.page.service.IActCustomPageFieldService;
 import com.aiurt.modules.utils.ReflectionService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -78,6 +79,9 @@ public class FlowElementUtil {
 
     @Autowired
     private ManagementService managementService;
+
+    @Autowired
+    private IActCustomPageFieldService pageFieldService;
 
     /**
      * 获取第一个用户节点, 最近的一个版本
@@ -612,6 +616,7 @@ public class FlowElementUtil {
         variableData.put(FlowCustomVariableConstant.ORG_INITIATOR, user.getOrgId());
 
 
+
         // 内置的系统变量
         return variableData;
     }
@@ -639,6 +644,14 @@ public class FlowElementUtil {
             list.stream().forEach(variable -> {
                 String variableName = variable.getVariableName();
                 variableData.put(variableName, busData.get(variableName));
+            });
+        }
+        // 查询消息
+        String pageId = one.getPageId();
+        if (StrUtil.isNotBlank(pageId) && Objects.nonNull(busData)) {
+            List<String> pageFieldCodeList = pageFieldService.listPageFieldCode(pageId);
+            pageFieldCodeList.stream().forEach(code->{
+                variableData.put(code, busData.get(code));
             });
         }
     }
