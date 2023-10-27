@@ -47,7 +47,7 @@ public class SparePartReplaceController extends BaseController<SparePartReplace,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 		Page<SparePartReplace> page = new Page<SparePartReplace>(pageNo, pageSize);
-		IPage<SparePartReplace> pageList = sparePartReplaceService.pageList(page, sparePartReplace, req);
+		IPage<SparePartReplace> pageList = sparePartReplaceService.pageList(page, sparePartReplace);
 		return Result.OK(pageList);
 	}
 
