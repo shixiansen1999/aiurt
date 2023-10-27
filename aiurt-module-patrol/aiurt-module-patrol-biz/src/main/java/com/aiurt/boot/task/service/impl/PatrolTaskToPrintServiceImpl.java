@@ -425,7 +425,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
             List<String> pisSystem = sysBaseApi.getDictItems("cctv_system").stream().map(w-> w.getText()).collect(Collectors.toList());
             pisSystem.forEach(str-> {
                 PrintDTO printDTO = new PrintDTO();
-                PatrolCheckResultDTO patrolCheckResultDTO = parentDTOList.stream().filter(p -> p.getContent().equals(str)).findFirst().orElse(null);
+                PatrolCheckResultDTO patrolCheckResultDTO = parentDTOList.stream().filter(p -> p.getContent().replaceAll("\n", " ").equals(str)).findFirst().orElse(null);
                 if (ObjectUtil.isEmpty(patrolCheckResultDTO)){
                     printDTO.setRemark(null);
                 }else {
