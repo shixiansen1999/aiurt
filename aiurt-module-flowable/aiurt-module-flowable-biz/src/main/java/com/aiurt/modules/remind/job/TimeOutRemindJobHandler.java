@@ -89,7 +89,7 @@ public class TimeOutRemindJobHandler  implements JobHandler {
         message.setType("XT");
         message.setMap(map);
         message.setUserName("admin");
-        SpringContextUtils.getBean(ISysFlowMessageService.class)
+        ISysFlowMessageService sysMessageService = SpringContextUtils.getBean(ISysFlowMessageService.class);
         sysMessageService.sendMessage(message);
     }
 }
