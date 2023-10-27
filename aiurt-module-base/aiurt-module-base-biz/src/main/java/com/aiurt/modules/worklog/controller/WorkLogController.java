@@ -157,7 +157,6 @@ public class WorkLogController {
     @AutoLog(value = "工作日志-添加")
     @ApiOperation(value="工作日志-添加", notes="工作日志-添加")
     @PostMapping(value = "/add")
-    @LimitSubmit(key = "add:#dto")
     public Result<WorkLog> add(@RequestBody WorkLogDTO dto, HttpServletRequest req) {
         Result<WorkLog> result = new Result<WorkLog>();
         try {
@@ -208,7 +207,6 @@ public class WorkLogController {
     @AutoLog(value = "工作日志-编辑")
     @ApiOperation(value="工作日志-编辑", notes="工作日志-编辑")
     @PutMapping(value = "/edit")
-    @LimitSubmit(key = "edit:#dto")
     public Result<WorkLog> edit(@Valid @RequestBody WorkLogDTO dto) {
         try {
             workLogDepotService.editWorkLog(dto);

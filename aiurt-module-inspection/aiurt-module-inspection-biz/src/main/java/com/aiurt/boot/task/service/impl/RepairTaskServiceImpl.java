@@ -1019,7 +1019,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 //设备类型名称
                 e.setDeviceTypeName(q.getDeviceTypeName());
             });
-
+            if (e.getDeviceId() != null && CollectionUtil.isNotEmpty(repairTasks)) {
+                //异常项
+                List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(e.getDeviceId(), InspectionConstant.NO_RESULT_STATUS);
+                if (CollUtil.isNotEmpty(repairTaskResults1) && repairTaskResults1.size() > 0) {
+                    e.setCheckResult(0);
+                } else {
+                    e.setCheckResult(1);
+                }
+            }
         });
         return pageList.setRecords(repairTasks);
     }
