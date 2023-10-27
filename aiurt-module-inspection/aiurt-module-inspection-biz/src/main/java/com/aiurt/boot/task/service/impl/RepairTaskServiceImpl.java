@@ -834,7 +834,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 // 当工单的设备为空时返回，该工单关联任务标准关联的设备
                 List<com.aiurt.boot.task.dto.RepairDeviceDTO> repairDeviceDTOList = repairDeviceService.queryDevices(checkListDTO.getTaskId(), checkListDTO.getStandardId(), null);
                 checkListDTO.setEquipmentCode(repairDeviceDTOList.stream().map(com.aiurt.boot.task.dto.RepairDeviceDTO::getDeviceCode).collect(Collectors.joining(StrUtil.COMMA)));
-                checkListDTO.setEquipmentName(repairDeviceDTOList.stream().map(com.aiurt.boot.task.dto.RepairDeviceDTO::getDeviceCode).collect(Collectors.joining(StrUtil.COMMA)));
+                checkListDTO.setEquipmentName(repairDeviceDTOList.stream().map(com.aiurt.boot.task.dto.RepairDeviceDTO::getDeviceName).collect(Collectors.joining(StrUtil.COMMA)));
                 //设备专业
                 checkListDTO.setDeviceMajorName(manager.translateMajor(Arrays.asList(checkListDTO.getMajorCode()), InspectionConstant.MAJOR));
                 //设备专业编码
