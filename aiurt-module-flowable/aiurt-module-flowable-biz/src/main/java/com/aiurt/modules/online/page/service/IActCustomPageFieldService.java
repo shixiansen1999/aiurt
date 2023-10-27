@@ -4,6 +4,8 @@ package com.aiurt.modules.online.page.service;
 import com.aiurt.modules.online.page.entity.ActCustomPageField;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * @Description: act_custom_page_field
  * @Author: jeecg-boot
@@ -12,4 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IActCustomPageFieldService extends IService<ActCustomPageField> {
 
+    List<String> listPageFieldCode(String pageId);
 }

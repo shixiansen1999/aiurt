@@ -251,13 +251,15 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         Task currentTask = taskContext.getCurrentTask();
         String nodeId = currentTask.getTaskDefinitionKey();
         String definitionId = currentTask.getProcessDefinitionId();
-        List<String> userList = customUserService.getUserByTaskInfo(definitionId, nodeId, "1");
+        List<String> userList =  customUserService.getUserByTaskInfo(definitionId, nodeId, "1");
 
         String processInstanceId = currentTask.getProcessInstanceId();
         String assignee = currentTask.getAssignee();
         String taskId = currentTask.getId();
 
-        List<ActCustomProcessCopy> copyList = userList.stream().map(userName -> {
+
+        List<ActCustomProcessCopy> copyList = userList.stream().filter(s->!StrUtil.equalsIgnoreCase(s, assignee))
+                .map(userName -> {
             ActCustomProcessCopy copy = new ActCustomProcessCopy();
             copy.setProcessInstanceId(processInstanceId);
             copy.setTaskId(taskId);

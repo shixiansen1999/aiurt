@@ -1,6 +1,5 @@
 package com.aiurt.modules.listener;
 
-import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
@@ -20,8 +19,6 @@ public class EntityDeletedListener implements FlowableEventListener {
 
     @Override
     public void onEvent(FlowableEvent flowableEvent) {
-        System.out.println(flowableEvent);
-        System.out.println(JSONObject.toJSONString(flowableEvent));
         if (!(flowableEvent instanceof FlowableEntityEventImpl)) {
             if (log.isDebugEnabled()) {
                 log.debug("事件类型不符合要求，结束");

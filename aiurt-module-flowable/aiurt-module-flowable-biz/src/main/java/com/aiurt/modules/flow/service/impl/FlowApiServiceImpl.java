@@ -628,6 +628,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 任务结束时间
         Date endTime = task.getEndTime();
         // 是否未本人的任务
+        LoginUser loginUser = checkLogin();
         boolean isOwnerTask = this.isAssigneeOrCandidate(task);
         // 本人任务未结束，不显示催办，提醒功能按钮
         if (Objects.isNull(endTime) && isOwnerTask) {
@@ -692,7 +693,9 @@ public class FlowApiServiceImpl implements FlowApiService {
                             taskInfoDTO.setIsAddMulti(true);
                             // 判断是否可以减签,只有加签才能减签
                             Boolean multiRecordFlag = multiRecordService.existMultiRecord(checkLogin().getUsername(), task.getExecutionId());
-                            taskInfoDTO.setIsReduceMulti(multiRecordFlag);
+                            if (Boolean.TRUE.equals(multiRecordFlag)) {
+                                isReduceMulti(processInstanceId, taskInfoDTO, task, loginUser, addAssigneeVariables);
+                            }
                         }
                     } else {
                         taskInfoDTO.setIsAddMulti(true);
@@ -701,13 +704,12 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
         } else {
             String startUserId = historicProcessInstance.getStartUserId();
-            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             // 未结束，非本人-已结束，非本人- 已结束，本人任务
             // 都是详情表单，不返回任何按钮。
             taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
 
             // 如果是发起人做返回催办，撤回按钮， 流程未结束, 发起节点的任务
-            if (isCurrentUserInitiatorAndProcessNotEnded(startUserId, loginUser, historicProcessInstance)) {
+            if (isOwnerTask && isCurrentUserInitiatorAndProcessNotEnded(startUserId, loginUser, historicProcessInstance)) {
                 handleRemindLogic(taskInfoDTO, customModelExt, processInstanceId, loginUser);
             }
         }
@@ -728,6 +730,26 @@ public class FlowApiServiceImpl implements FlowApiService {
         taskInfoDTO.setTaskKey(taskDefinitionKey);
         taskInfoDTO.setProcessName(historicProcessInstance.getProcessDefinitionName());
         return taskInfoDTO;
+    }
+
+    private void isReduceMulti(String processInstanceId, TaskInfoDTO taskInfoDTO, HistoricTaskInstance task, LoginUser loginUser, List<String> addAssigneeVariables) {
+        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId)
+                .taskDefinitionKey(task.getTaskDefinitionKey()).list();
+        // 排除自己, 正在办理中
+        List<String> assigneeList = taskList.stream().filter(task1 -> !StrUtil.equalsIgnoreCase(task1.getAssignee(), loginUser.getUsername()))
+                .map(Task::getAssignee).collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(assigneeList)) {
+            assigneeList.retainAll(addAssigneeVariables);
+            if (CollUtil.isNotEmpty(assigneeList)) {
+                taskInfoDTO.setIsReduceMulti(true);
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        List<String> list = new ArrayList<>();
+        list.removeAll(Collections.singletonList(null));
+        System.out.println(list);
     }
 
     /**
@@ -2970,6 +2992,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                     .build();
 
             List<HistoricTaskInstance> taskInfoList = historyTaskInfo.getList();
+            taskInfoList = taskInfoList.stream().filter(historicTaskInstance -> (Objects.nonNull(historicTaskInstance.getClaimTime())
+                    || Objects.isNull(historicTaskInstance.getEndTime()))).collect(Collectors.toList());
 
             List<HistoricTaskInstance> unFinishList = taskInfoList.stream().filter(historicTaskInstance -> Objects.isNull(historicTaskInstance.getEndTime()))
                     .collect(Collectors.toList());
