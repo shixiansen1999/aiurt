@@ -5,8 +5,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
  * @Description: spare_part_replace
  * @Author: aiurt
@@ -15,5 +13,5 @@ import javax.servlet.http.HttpServletRequest;
  */
 public interface ISparePartReplaceService extends IService<SparePartReplace> {
 
-    IPage<SparePartReplace> pageList(Page<SparePartReplace> page, SparePartReplace sparePartReplace, HttpServletRequest req);
+    IPage<SparePartReplace> pageList(Page<SparePartReplace> page, SparePartReplace sparePartReplace);
 }
