@@ -305,6 +305,10 @@ public class RepairTaskDTO {
     @TableField(exist = false)
     private Boolean isNullSafetyPrecautions;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检查结果：0异常、1正常")
+    private java.lang.Integer checkResult;
+
     /**
      * 不关联多个设备且要指定设备
      */
