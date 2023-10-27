@@ -17,7 +17,7 @@ public class FlowableExceptionHandler {
     private static final String SEQUENCE_FLOW = "No outgoing sequence flow";
 
     @ExceptionHandler(value = FlowableException.class)
-    public Result<?> handleFlowableException(FlowableException e) {
+    public Result<String> handleFlowableException(FlowableException e) {
         // 从异常对象中拿到约束违例信息，并返回其中的第一个错误消息
         String message = e.getMessage();
         if (StrUtil.startWith(message, SEQUENCE_FLOW)) {

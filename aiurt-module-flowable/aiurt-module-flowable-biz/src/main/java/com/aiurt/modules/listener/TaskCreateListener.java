@@ -16,10 +16,8 @@ import com.aiurt.modules.remind.service.IFlowRemindService;
 import com.aiurt.modules.todo.dto.BpmnTodoDTO;
 import com.aiurt.modules.user.enums.EmptyRuleEnum;
 import com.aiurt.modules.user.service.IFlowUserService;
-import com.aiurt.modules.user.service.impl.FlowUserServiceImpl;
 import com.aiurt.modules.utils.FlowableNodeActionUtils;
 import com.alibaba.fastjson.JSONObject;
-import liquibase.pro.packaged.E;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
@@ -56,33 +54,30 @@ public class TaskCreateListener implements FlowableEventListener {
      */
     @Override
     public void onEvent(FlowableEvent event) {
-        logger.info("任务节点出创建事件");
         if (!(event instanceof FlowableEntityEventImpl)) {
+            if (logger.isDebugEnabled()) {
+                logger.info("任务节点创建事件, 事件类型不符合，结束");
+            }
             return;
         }
         FlowableEntityEventImpl flowableEntityEvent = (FlowableEntityEventImpl) event;
         Object entity = flowableEntityEvent.getEntity();
         if (!(entity instanceof TaskEntity)) {
-            logger.debug("活动启动监听事件,实体类型不对");
+            logger.debug("任务节点创建事件,实体类型不对，结束业务处理");
             return;
         }
 
-        // 判断是否新版流程，属性变量
-        //
-
-        // 流程任务id
-
         TaskEntity taskEntity = (TaskEntity) entity;
+        // 流程任务id
         String taskId = taskEntity.getId();
         boolean deleted = taskEntity.isDeleted();
-        // fixbug, 串行，自动审批，create事件在 complate， process_complete 事件后，导致配置了超时提醒，还会新增act_ru_timer_job,导致执行实例删除失败
+        // fix-bug, 串行，自动审批，create事件在 complete， process_complete 事件后，导致配置了超时提醒，还会新增act_ru_timer_job,导致执行实例删除失败
         if (deleted) {
             if (logger.isDebugEnabled()) {
-                logger.debug("该用户已提交，taskId:{}, 实例id：{}", taskId, taskEntity.getProcessInstanceId());
+                logger.debug("任务节点创建事件，该用户已提交，taskId:{}, 实例id：{}", taskId, taskEntity.getProcessInstanceId());
             }
             return;
         }
-
 
         // 流程定义id
         String processDefinitionId = taskEntity.getProcessDefinitionId();
@@ -90,6 +85,11 @@ public class TaskCreateListener implements FlowableEventListener {
         String processInstanceId = taskEntity.getProcessInstanceId();
         // 流程节点定义id
         String taskDefinitionKey = taskEntity.getTaskDefinitionKey();
+
+        if (logger.isDebugEnabled()) {
+            logger.info("任务节点创建事件, 开始处理业务数据，流程定义id：{}，流程实例id：{}，流程节点定义id：{}，任务id：{}，用户账号：{}",
+                    processDefinitionId, processInstanceId, taskDefinitionKey, taskId, taskEntity.getAssignee());
+        }
 
         // 查询流程实例
         ProcessInstance instance = ProcessEngines.getDefaultProcessEngine().getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
@@ -103,12 +103,11 @@ public class TaskCreateListener implements FlowableEventListener {
         try {
             flowRemindService.timeoutRemind(taskEntity);
         } catch (Exception e) {
-            logger.error("超时提醒定时任务处理失败");
+            logger.error("任务节点创建事件,超时提醒定时任务处理失败!!!");
             logger.error(e.getMessage(), e);
         }
 
         // 任务节点前附加操作
-
         FlowableNodeActionUtils.processTaskData(taskEntity,processDefinitionId,taskDefinitionKey,processInstanceId,FlowModelExtElementConstant.EXT_PRE_NODE_ACTION);
 
         // 判断是否为流程多实例
@@ -120,40 +119,44 @@ public class TaskCreateListener implements FlowableEventListener {
                 return;
             }else if (StrUtil.equalsIgnoreCase(taskEntity.getAssignee(), EmptyRuleEnum.AUTO_ADMIN.getMessage())) {
                 buildToDoList(taskEntity, instance, taskExt, Collections.singletonList("admin"));
+            } else {
+                buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(taskEntity.getAssignee()));
             }
-            buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(taskEntity.getAssignee()));
+            if (logger.isDebugEnabled()) {
+                logger.info("任务节点创建事件, V2。0处理业务数据，流程定义id：{}，流程实例id：{}，流程节点定义id：{}，任务id：{}，用户账号：{}",
+                        processDefinitionId, processInstanceId, taskDefinitionKey, taskId, taskEntity.getAssignee());
+            }
             return;
         }
 
         FlowElementUtil flowElementUtil = SpringContextUtils.getBean(FlowElementUtil.class);
 
+        // 发起者
+        String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
+                .getVariable(processInstanceId, FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
         // 判断首个节点是否为驳回
         UserTask userTask = flowElementUtil.getFirstUserTaskByDefinitionId(processDefinitionId);
         if (Objects.nonNull(userTask) && StrUtil.equalsAnyIgnoreCase(userTask.getId(), taskDefinitionKey)) {
             HistoryService historyService = ProcessEngines.getDefaultProcessEngine().getHistoryService();
-            List<HistoricTaskInstance> instanceList = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId)
-                    .taskDefinitionKey(taskDefinitionKey).finished().orderByTaskCreateTime().desc().list();
+            List<HistoricTaskInstance> instanceList = historyService.createHistoricTaskInstanceQuery()
+                    .processInstanceId(processInstanceId).taskDefinitionKey(taskDefinitionKey)
+                    .finished().orderByTaskCreateTime().desc().list();
             if (CollectionUtil.isNotEmpty(instanceList) && instanceList.size()>1) {
                 HistoricTaskInstance historicTaskInstance = instanceList.get(0);
                 String assignee = historicTaskInstance.getAssignee();
+                ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, initiator);
                 if (StrUtil.isBlank(assignee)) {
-                    String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
-                            .getVariable(processInstanceId, FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
-                    ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, initiator);
                     buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(initiator));
                 }else {
                     ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, assignee);
                     buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(assignee));
                 }
-                return;
             }else {
                 // 第一个任务设置为发起人
-                String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
-                        .getVariable(processInstanceId, FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
                 ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, initiator);
                 buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(initiator));
-                return;
             }
+            return;
         }
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -165,12 +168,12 @@ public class TaskCreateListener implements FlowableEventListener {
         // 没有配置则选择发起人
         String groupType = taskExt.getGroupType();
         if (StrUtil.isBlank(groupType)) {
-            String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
-                    .getVariable(processInstanceId, FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
             ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, initiator);
             buildToDoList(taskEntity, instance, taskExt, Collections.singletonList(initiator));
             return;
         }
+
+        // 可以优化
         IFlowUserService flowUserService = SpringContextUtils.getBean(IFlowUserService.class);
         List<String> userNameList = new ArrayList<>();
         switch (groupType) {
@@ -201,15 +204,11 @@ public class TaskCreateListener implements FlowableEventListener {
                 break;
             // 流程发起人
             default:
-                String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
-                        .getVariable(processInstanceId, FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
                 userNameList.add(initiator);
                 break;
         }
 
         if (CollectionUtil.isEmpty(userNameList)) {
-            String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
-                    .getVariable(processInstanceId, FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
             userNameList.add(initiator);
         }
 

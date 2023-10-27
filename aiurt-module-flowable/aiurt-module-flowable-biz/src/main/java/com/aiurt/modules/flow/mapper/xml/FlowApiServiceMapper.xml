@@ -42,9 +42,11 @@
             t2.DEPLOYMENT_ID_ as deployment_id,
             t1.DURATION_ as duration_in_millis,
             t1.START_TIME_ as start_time,
-            t1.END_TIME_ as end_time
+            t1.END_TIME_ as end_time,
+            t3.state as state
         from act_hi_procinst t1
         left  join act_re_procdef t2 ON (t1.PROC_DEF_ID_ = t2.ID_)
+        left join act_custom_flow_state t3 ON (t1.PROC_INST_ID_ = t3.process_instance_id and t3.del_flag)
         where 1=1 and t1.DELETE_REASON_ is null
         <if test="condition.processDefinitionName != null and condition.processDefinitionName !=''">
             and t2.NAME_ like concat('%', #{condition.processDefinitionName}, '%')

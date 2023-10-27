@@ -95,4 +95,7 @@ public class FlowTaskDTO {
      */
     @ApiModelProperty(value = "流程实例主表业务数据主键")
     private String businessKey;
+
+    @ApiModelProperty(value = "状态")
+    private String stateName;
 }

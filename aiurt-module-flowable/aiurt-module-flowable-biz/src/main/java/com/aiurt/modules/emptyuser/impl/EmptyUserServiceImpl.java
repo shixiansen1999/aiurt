@@ -2,8 +2,6 @@ package com.aiurt.modules.emptyuser.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.common.api.dto.message.MessageDTO;
-import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.common.pipeline.selector.LocalListBasedHandlerSelector;
 import com.aiurt.modules.deduplicate.context.FlowDeduplicateContext;
@@ -11,6 +9,8 @@ import com.aiurt.modules.deduplicate.handler.AutoCompleteHandler;
 import com.aiurt.modules.deduplicate.handler.BuildDeduplicateContextHandler;
 import com.aiurt.modules.deduplicate.pipeline.DeduplicateHandlerChainPipeline;
 import com.aiurt.modules.emptyuser.IEmptyUserService;
+import com.aiurt.modules.message.dto.ProcessInstanceMessage;
+import com.aiurt.modules.message.service.ISysFlowMessageService;
 import com.aiurt.modules.user.enums.EmptyRuleEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.RuntimeService;
@@ -22,10 +22,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 
 @Slf4j
@@ -44,6 +41,9 @@ public class EmptyUserServiceImpl implements IEmptyUserService {
 
     @Autowired
     private ISysBaseAPI sysBaseApi;
+
+    @Autowired
+    private ISysFlowMessageService messageService;
 
     /**
      * 审批人为空处理
@@ -64,43 +64,29 @@ public class EmptyUserServiceImpl implements IEmptyUserService {
             String startUserId = processInstance.getStartUserId();
             LoginUser loginUser = sysBaseApi.getUserByName(startUserId);
             Date startTime = processInstance.getStartTime();
-            String createTime = DateUtil.format(startTime, "yyyy-MM-dd HH:mm:ss");
+            String createTime = DateUtil.format(startTime, "yyyy-MM-dd HH:mm");
 
             map.put("creatBy", loginUser.getRealname());
             map.put("creatTime", createTime);
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, processInstance.getBusinessKey());
             map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.BPM.getType());
 
-            // 发送消息
-            MessageDTO messageDTO = new MessageDTO();
-            messageDTO.setIsMarkdown(true);
-            messageDTO.setFromUser("admin");
-            messageDTO.setToUser("admin");
-            messageDTO.setToAll(false);
             String processDefinitionName = processInstance.getProcessDefinitionName();
             String name = StrUtil.contains(processDefinitionName, "流程") ? processDefinitionName : processDefinitionName + "流程";
-            messageDTO.setTitle(name);
-            messageDTO.setCategory(CommonConstant.MSG_CATEGORY_2);
-            messageDTO.setStartTime(new Date());
-            messageDTO.setMsgAbstract("["+name+"]异常消息");
-            messageDTO.setPublishingContent("当前节点["+taskEntity.getName()+"]审批人为空，需要进行设置，以保证流程的正常进行，请尽快处理");
-            messageDTO.setBusKey(processInstance.getBusinessKey());
-            messageDTO.setBusType(SysAnnmentTypeEnum.BPM.getType());
-            messageDTO.setTemplateCode("bpm_service_recall_process");
-            messageDTO.setIsRingBell(false);
-            messageDTO.setRingDuration(0);
-            messageDTO.setRingType(0);
-            messageDTO.setType("");
-            messageDTO.setData(map);
-            messageDTO.setTaskId(taskEntity.getId());
 
-            messageDTO.setProcessInstanceId(taskEntity.getProcessInstanceId());
-            messageDTO.setProcessCode(processInstance.getProcessDefinitionKey());
-            messageDTO.setProcessDefinitionKey(processInstance.getProcessDefinitionKey());
-            messageDTO.setProcessName(name);
-            messageDTO.setType("XT");
-            messageDTO.setData(map);
-            sysBaseApi.sendTemplateMessage(messageDTO);
+            ProcessInstanceMessage message = new ProcessInstanceMessage();
+            message.setProcessInstance(processInstance);
+            taskEntity.setAssignee("admin");
+            message.setTaskList(Collections.singletonList(taskEntity));
+            message.setMap(map);
+            message.setTemplateCode("bpm_service_recall_process");
+            message.setMsgAbstract("["+name+"]异常消息");
+            message.setPublishingContent("当前节点["+taskEntity.getName()+"]审批人为空，需要进行设置，以保证流程的正常进行，请尽快处理！");
+            message.setType("XT");
+            message.setUserName("admin");
+
+            // 发送消息
+            messageService.sendMessage(message);
         }else {
             // 自动提交
             List<String> filterNames = new ArrayList<>();

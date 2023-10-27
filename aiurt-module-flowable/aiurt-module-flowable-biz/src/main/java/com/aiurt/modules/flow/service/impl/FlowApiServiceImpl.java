@@ -1,24 +1,10 @@
 package com.aiurt.modules.flow.service.impl;
-import java.text.DateFormat;
-import java.util.Date;
-
-import cn.hutool.core.date.DatePattern;
-import cn.hutool.core.date.format.DateParser;
-import com.aiurt.modules.common.constant.FlowVariableConstant;
-import com.aiurt.modules.copy.service.IActCustomProcessCopyService;
-import com.aiurt.modules.deduplicate.handler.BackNodeRuleVerifyHandler;
-import com.aiurt.modules.flow.mapper.FlowApiServiceMapper;
-import com.aiurt.modules.forecast.dto.HistoryTaskInfo;
-import com.aiurt.modules.forecast.service.IFlowForecastService;
-import com.aiurt.modules.modeler.entity.*;
-import com.aiurt.modules.modeler.service.IActCustomModelExtService;
-import com.aiurt.modules.multideal.service.IActCustomMultiRecordService;
-import com.aiurt.modules.multideal.service.IMultiInTaskService;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.BetweenFormater;
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Assert;
@@ -27,19 +13,31 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
+import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.complete.dto.FlowCompleteReqDTO;
 import com.aiurt.modules.complete.service.impl.CommonFlowTaskCompleteServiceImpl;
 import com.aiurt.modules.constants.FlowConstant;
+import com.aiurt.modules.copy.service.IActCustomProcessCopyService;
+import com.aiurt.modules.deduplicate.handler.BackNodeRuleVerifyHandler;
 import com.aiurt.modules.flow.constants.FlowApprovalType;
 import com.aiurt.modules.flow.dto.*;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
+import com.aiurt.modules.flow.enums.FlowStatesEnum;
 import com.aiurt.modules.flow.mapper.ActCustomTaskCommentMapper;
+import com.aiurt.modules.flow.mapper.FlowApiServiceMapper;
 import com.aiurt.modules.flow.service.FlowApiService;
+import com.aiurt.modules.flow.service.IActCustomFlowStateService;
 import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
+import com.aiurt.modules.forecast.dto.HistoryTaskInfo;
+import com.aiurt.modules.forecast.service.IFlowForecastService;
+import com.aiurt.modules.modeler.entity.*;
+import com.aiurt.modules.modeler.service.IActCustomModelExtService;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.modeler.service.IActCustomVariableService;
+import com.aiurt.modules.multideal.service.IActCustomMultiRecordService;
+import com.aiurt.modules.multideal.service.IMultiInTaskService;
 import com.aiurt.modules.online.businessdata.entity.ActCustomBusinessData;
 import com.aiurt.modules.online.businessdata.service.IActCustomBusinessDataService;
 import com.aiurt.modules.online.page.entity.ActCustomPage;
@@ -56,7 +54,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import liquibase.pro.packaged.X;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
@@ -66,15 +63,16 @@ import org.flowable.common.engine.impl.identity.Authentication;
 import org.flowable.editor.language.json.converter.util.CollectionUtils;
 import org.flowable.engine.*;
 import org.flowable.engine.delegate.TaskListener;
-import org.flowable.engine.history.DeleteReason;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
-import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.repository.ProcessDefinition;
-import org.flowable.engine.runtime.*;
+import org.flowable.engine.runtime.ActivityInstance;
+import org.flowable.engine.runtime.ChangeActivityStateBuilder;
+import org.flowable.engine.runtime.Execution;
+import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.identitylink.api.IdentityLink;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskInfo;
@@ -96,7 +94,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 /**
@@ -184,7 +181,8 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Autowired
     private IActCustomMultiRecordService multiRecordService;
 
-
+    @Autowired
+    private IActCustomFlowStateService flowStateService;
 
     /**
      * @param startBpmnDTO
@@ -229,6 +227,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 启动流程
         ProcessInstance processInstance = runtimeService.startProcessInstanceById(result.getId(),Objects.isNull(businessKey)?null:(String)businessKey , busData);
 
+        flowStateService.updateFlowState(processInstance.getProcessInstanceId(), FlowStatesEnum.UN_COMPLETE.getCode());
         log.info("启动流程成功！");
 
         return processInstance;
@@ -446,12 +445,14 @@ public class FlowApiServiceImpl implements FlowApiService {
                     flowElementUtil.setBusinessKeyForProcessInstance(task.getProcessInstanceId(), o);
                 }
             }
+
+            flowStateService.updateFlowState(processInstance.getProcessInstanceId(), FlowStatesEnum.UN_COMPLETE.getCode());
         } else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE,
                 FlowApprovalType.REFUSE, FlowApprovalType.REJECT, FlowApprovalType.AUTO_COMPLETE)) {
             if (Objects.nonNull(busData)) {
                 flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
             }
-
+            flowStateService.updateFlowState(processInstance.getProcessInstanceId(), FlowStatesEnum.IN_PROGRESS.getCode());
             // 完成任务
             FlowCompleteReqDTO flowCompleteReqDTO = new FlowCompleteReqDTO();
             flowCompleteReqDTO.setBusData(busData);
@@ -462,6 +463,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             flowCompleteReqDTO.setComment(comment.getComment());
             flowCompleteReqDTO.setVariableData(variableData);
             commonFlowTaskCompleteService.complete(flowCompleteReqDTO);
+
         } else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.CANCEL, approvalType)) {
 
             // 作废
@@ -470,6 +472,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             instanceDTO.setStopReason(commentStr);
             instanceDTO.setApprovalType(approvalType);
             stopProcessInstance(instanceDTO);
+            flowStateService.updateFlowState(processInstance.getProcessInstanceId(), FlowStatesEnum.CANCEL.getCode());
         } else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.REJECT_FIRST_USER_TASK, approvalType)) {
             // 驳回到第一个用户任务
             RejectToStartDTO rejectToStartDTO = new RejectToStartDTO();
@@ -478,6 +481,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             rejectToStartDTO.setBusData(busData);
             rejectToStartDTO.setReason(commentStr);
             rejectToStart(rejectToStartDTO);
+            flowStateService.updateFlowState(processInstance.getProcessInstanceId(), FlowStatesEnum.RETURN.getCode());
             // 转办
         } else if (StrUtil.equalsIgnoreCase(FlowApprovalType.TRANSFER, approvalType)) {
             TurnTaskDTO param = new TurnTaskDTO();
@@ -703,7 +707,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
 
             // 如果是发起人做返回催办，撤回按钮， 流程未结束, 发起节点的任务
-            if (isCurrentUserInitiatorAndProcessNotEnded(startUserId, loginUser, historicProcessInstance)) {
+            if (isOwnerTask && isCurrentUserInitiatorAndProcessNotEnded(startUserId, loginUser, historicProcessInstance)) {
                 handleRemindLogic(taskInfoDTO, customModelExt, processInstanceId, loginUser);
             }
         }
@@ -852,52 +856,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         return pageList;
     }
 
-    /**
-     * 获取流程实例的历史流程实例列表。
-     *
-     * @param processInstanceIdSet 流程实例Id集合。
-     * @return 历史流程实例列表。
-     */
-    public List<HistoricProcessInstance> getHistoricProcessInstanceList(Set<String> processInstanceIdSet) {
-        return historyService.createHistoricProcessInstanceQuery().processInstanceIds(processInstanceIdSet).list();
-    }
 
-    /**
-     * 获取已办任务
-     *
-     * @param processDefinitionName 流程名称
-     * @param beginDate             开始时间
-     * @param endDate               结束时间
-     * @param pageNo                当前页
-     * @param pageSize              每页数量
-     * @return
-     */
-    private Page<HistoricTaskInstance> getHistoricTaskInstanceFinishedList(String processDefinitionName, String beginDate, String endDate, Integer pageNo, Integer pageSize) {
-        Page<HistoricTaskInstance> result = new Page<>();
-        String username = checkLogin().getUsername();
-        HistoricTaskInstanceQuery query = historyService.createHistoricTaskInstanceQuery()
-                .taskAssignee(username)
-                .finished();
-        if (StrUtil.isNotBlank(processDefinitionName)) {
-            query.processDefinitionName(processDefinitionName);
-        }
-        if (StrUtil.isNotBlank(beginDate)) {
-            query.taskCompletedAfter(DateUtil.parse(beginDate, "yyyy-MM-dd HH:mm:ss"));
-        }
-        if (StrUtil.isNotBlank(endDate)) {
-            query.taskCompletedBefore(DateUtil.parse(endDate, "yyyy-MM-dd HH:mm:ss"));
-        }
-        query.orderByHistoricTaskInstanceEndTime().desc();
-        long totalCount = query.count();
-        int firstResult = (pageNo - 1) * pageSize;
-        List<HistoricTaskInstance> instanceList = query.listPage(firstResult, pageSize);
-        result.setRecords(instanceList);
-        result.setCurrent(pageNo);
-        result.setSize(pageSize);
-        result.setTotal(totalCount);
-        result.setPages(totalCount <= 0 ? 0 : (totalCount > 1 ? (totalCount - 1) / pageSize + 1 : 1));
-        return result;
-    }
 
     /**
      * 判断当前登录用户是否为流程实例中的用户任务的指派人。或是候选人之一。
@@ -999,7 +958,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         List<ProcessDefinition> definitionList = this.getProcessDefinitionList(processDefinitionIdSet);
         Map<String, ProcessDefinition> definitionMap =
                 definitionList.stream().collect(Collectors.toMap(ProcessDefinition::getId, c -> c));
-
+        Map<String, String> flowStateMap = flowStateService.flowStateMap(procInstanceIdSet);
         for (Task task : taskList) {
             FlowTaskDTO flowTaskVo = new FlowTaskDTO();
             flowTaskVo.setTaskId(task.getId());
@@ -1024,6 +983,12 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
             flowTaskVo.setProcessInstanceStartTime(processInstance.getStartTime());
             flowTaskVo.setBusinessKey(processInstance.getBusinessKey());
+            String stateName = flowStateMap.get(task.getProcessInstanceId());
+            if (StrUtil.isBlank(stateName)) {
+                stateName = FlowStatesEnum.IN_PROGRESS.getMessage();
+            }
+            flowTaskVo.setStateName(stateName);
+            // 状态
             flowTaskVoList.add(flowTaskVo);
         }
         return flowTaskVoList;
@@ -1483,10 +1448,23 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (CollUtil.isNotEmpty(userNameList)) {
             List<LoginUser> loginUserList = sysBaseAPI.getLoginUserList(userNameList);
             Map<String, String> userMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, LoginUser::getRealname, (t1, t2) -> t1));
-            dtoList.stream().forEach(historicProcessInstanceDTO -> {
-                historicProcessInstanceDTO.setRealName(userMap.get(historicProcessInstanceDTO.getUserName()));
-            });
+            dtoList.stream().forEach(historicProcessInstanceDTO -> historicProcessInstanceDTO.setRealName(userMap.get(historicProcessInstanceDTO.getUserName())));
         }
+
+        dtoList.stream().forEach(historicProcessInstanceDTO -> {
+            if (Objects.nonNull(historicProcessInstanceDTO.getState())) {
+                FlowStatesEnum statesEnum = FlowStatesEnum.getByCode(historicProcessInstanceDTO.getState());
+                if (Objects.nonNull(statesEnum)) {
+                    historicProcessInstanceDTO.setStateName(statesEnum.getMessage());
+                }else {
+                    historicProcessInstanceDTO.setStateName(Objects.isNull(historicProcessInstanceDTO.getEndTime()) ?
+                            FlowStatesEnum.IN_PROGRESS.getMessage() : FlowStatesEnum.COMPLETE.getMessage());
+                }
+            }else {
+                historicProcessInstanceDTO.setStateName(Objects.isNull(historicProcessInstanceDTO.getEndTime()) ?
+                        FlowStatesEnum.IN_PROGRESS.getMessage() : FlowStatesEnum.COMPLETE.getMessage());
+            }
+        });
 
 
         pages.setRecords(dtoList);
@@ -1540,9 +1518,12 @@ public class FlowApiServiceImpl implements FlowApiService {
             runtimeService.setVariable(processInstanceId, FlowModelAttConstant.CANCEL, false);
         }
 
+        Map<String, Object> localVariables = new HashMap<>();
+        localVariables.put(FlowConstant.STOP_PROCESS, Boolean.TRUE);
         runtimeService.createChangeActivityStateBuilder()
                 .processInstanceId(instanceDTO.getProcessInstanceId())
                 .moveExecutionsToSingleActivityId(executionIds, endEvent.getId())
+                .localVariables(endEvent.getId(), localVariables)
                 .changeState();
 
         List<ActCustomTaskComment> taskCommentList = new ArrayList<>();
@@ -1584,6 +1565,9 @@ public class FlowApiServiceImpl implements FlowApiService {
             if (StrUtil.isNotBlank(businessKey)) {
                 actCustomTaskCommentMapper.updateConstructionWeekPlanCommand(businessKey);
             }
+        }
+        if (StrUtil.equalsIgnoreCase(FlowApprovalType.STOP, instanceDTO.getApprovalType())) {
+            flowStateService.updateFlowState(processInstanceId, FlowStatesEnum.TERMINATED.getCode());
         }
         // 发送redis事件
     }
@@ -2986,6 +2970,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                     .build();
 
             List<HistoricTaskInstance> taskInfoList = historyTaskInfo.getList();
+            taskInfoList = taskInfoList.stream().filter(historicTaskInstance -> (Objects.nonNull(historicTaskInstance.getClaimTime())
+                    || Objects.isNull(historicTaskInstance.getEndTime()))).collect(Collectors.toList());
 
             List<HistoricTaskInstance> unFinishList = taskInfoList.stream().filter(historicTaskInstance -> Objects.isNull(historicTaskInstance.getEndTime()))
                     .collect(Collectors.toList());
