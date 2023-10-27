@@ -522,7 +522,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                     deviceWrapper.eq(PatrolPlanDevice::getPlanId, planId);
                     deviceWrapper.eq(PatrolPlanDevice::getPlanStandardId, l.getId());
                     List<PatrolPlanDevice> deviceList = patrolPlanDeviceMapper.selectList(deviceWrapper);
-                    if (CollectionUtil.isEmpty(deviceList)  && CommonConstant.BOOLEAN_1.equals(paramModel.getValue()) || PatrolConstant.NO_MERGE_DEVICE.equals(standard.getIsMergeDevice())) {
+                    if (CollectionUtil.isEmpty(deviceList)  && (CommonConstant.BOOLEAN_1.equals(paramModel.getValue()) || PatrolConstant.NO_MERGE_DEVICE.equals(standard.getIsMergeDevice()))) {
                         throw new AiurtBootException("标准表名为:【" + standard.getName() + "】暂未指定设备，不允许启用！");
                     }
                 }

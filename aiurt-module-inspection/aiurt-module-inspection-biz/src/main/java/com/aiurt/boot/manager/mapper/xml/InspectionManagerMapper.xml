@@ -135,7 +135,7 @@
     </select>
     <select id="queryDeviceByCodesPage" resultType="com.aiurt.boot.plan.dto.RepairDeviceDTO">
         select DISTINCT  d.major_code,
-        d.system_code,
+        d.system_code as subsystemCode,
         d.line_code,
         d.station_code,
         d.position_code,
@@ -144,7 +144,8 @@
         d.NAME,
         d.STATUS,
         d.TEMPORARY,
-        d.device_type_code AS deviceTypeCode
+        d.device_type_code AS deviceTypeCode,
+        dt.name as deviceTypeName
         from device d
         left join device_type dt on dt.`code` = d.device_type_code
         <where>
