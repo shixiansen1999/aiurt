@@ -686,6 +686,13 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     JSONObject getSystemName(String majorCode,String systemName);
     /**
+     * 根据专业code、子系统code，获取子系统
+     * @param systemCode
+     * @param majorCode
+     * @return
+     */
+    JSONObject getSystemNameByCode(String majorCode,String systemCode);
+    /**
      * 根据子系统code，获取子系统名称
      * @param systemCodes
      * @return
