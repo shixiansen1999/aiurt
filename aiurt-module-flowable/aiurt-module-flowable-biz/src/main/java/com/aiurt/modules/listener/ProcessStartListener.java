@@ -37,8 +37,8 @@ public class ProcessStartListener implements Serializable, FlowableEventListener
 
             if (entity instanceof ExecutionEntity) {
                 ExecutionEntity executionEntity = (ExecutionEntity) entity;
-                if (logger.isDebugEnabled()) {
-                    logger.debug("流程启动监听事件,流程实例id：{}， 发起用户：{}", executionEntity.getProcessInstanceId(), executionEntity.getStartUserId());
+                if (logger.isInfoEnabled()) {
+                    logger.info("流程启动监听事件,流程实例id：{}， 发起用户：{}", executionEntity.getProcessInstanceId(), executionEntity.getStartUserId());
                 }
                 ExecutionEntity processInstance = executionEntity.getProcessInstance();
                 ISysBaseAPI sysBaseApi = SpringContextUtils.getBean(ISysBaseAPI.class);
@@ -53,8 +53,8 @@ public class ProcessStartListener implements Serializable, FlowableEventListener
                 String format = DateUtil.format(processInstance.getStartTime(), "yyyy-MM-dd");
 
                 String processName = String.format("%s-%s-%s", name, realName, format);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("流程启动监听事件设置流程名称：{}", processName);
+                if (logger.isInfoEnabled()) {
+                    logger.info("流程启动监听事件设置流程名称：{}", processName);
                 }
                 ProcessEngines.getDefaultProcessEngine().getRuntimeService().setProcessInstanceName(executionEntity.getProcessInstanceId(), processName);
             }

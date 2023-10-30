@@ -63,14 +63,14 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                 if (CollUtil.isNotEmpty(timerJobEntityList)) {
                     timerJobEntityList.stream().forEach(timerJobEntity -> timerJobService.deleteTimerJob(timerJobEntity));
                 }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("流程结束监听事件, 删除该流程流程实例的定时任务，历史实例id：{}", executionEntity.getProcessInstanceId());
+                if (logger.isInfoEnabled()) {
+                    logger.info("流程结束监听事件, 删除该流程流程实例的定时任务，历史实例id：{}", executionEntity.getProcessInstanceId());
                 }
 
                 IActCustomFlowStateService flowStateService = SpringContextUtils.getBean(IActCustomFlowStateService.class);
                 flowStateService.updateFlowState(executionEntity.getProcessInstanceId(), FlowStatesEnum.COMPLETE.getCode());
-                if (logger.isDebugEnabled()) {
-                    logger.debug("流程结束监听事件, 更新流程状态，历史实例id：{}，流程状态:{}", executionEntity.getProcessInstanceId(),
+                if (logger.isInfoEnabled()) {
+                    logger.info("流程结束监听事件, 更新流程状态，历史实例id：{}，流程状态:{}", executionEntity.getProcessInstanceId(),
                             FlowStatesEnum.COMPLETE.getCode());
                 }
 
