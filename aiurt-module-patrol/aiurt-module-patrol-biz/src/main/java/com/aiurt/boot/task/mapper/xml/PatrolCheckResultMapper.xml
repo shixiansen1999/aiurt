@@ -191,5 +191,21 @@
           AND pcr.task_device_id = #{taskDeviceId}
     </select>
 
-
+    <select id="getNum" resultType="com.aiurt.boot.task.param.PatrolTaskDeviceParam">
+        SELECT
+        ptd.patrol_number,
+        IFNULL(SUM( pcr.check_result = 0 ) , 0) `exceptionItem`,
+        IFNULL(SUM( pcr.check_result = 1 ) , 0) `normalItem`
+        FROM patrol_task_device ptd
+        left join  patrol_check_result pcr on  (pcr.task_device_id = ptd.id and pcr.del_flag = 0)
+        WHERE
+        ptd.del_flag = 0
+        <if test="patrolNumbers != null and patrolNumbers.size() > 0">
+            and ptd.patrol_number in
+            <foreach collection="patrolNumbers" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        group by ptd.patrol_number
+    </select>
 </mapper>

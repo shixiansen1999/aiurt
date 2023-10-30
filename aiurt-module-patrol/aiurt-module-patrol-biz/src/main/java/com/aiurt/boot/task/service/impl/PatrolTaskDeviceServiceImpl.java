@@ -117,6 +117,10 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         IPage<PatrolTaskDeviceParam> patrolTaskDeviceForDeviceParamPage = patrolTaskDeviceMapper.selectBillInfoForDevice(page, patrolTaskDeviceParam);
         List<PatrolTaskDeviceParam> records = patrolTaskDeviceForDeviceParamPage.getRecords();
         if (records != null && records.size() > 0) {
+            List<String> patrolNumbers = records.stream().map(PatrolTaskDeviceParam::getPatrolNumber).collect(Collectors.toList());
+            List<PatrolTaskDeviceParam> num = patrolCheckResultMapper.getNum(patrolNumbers);
+            Map<String, PatrolTaskDeviceParam> paramMap = num.stream().collect(Collectors.toMap(PatrolTaskDeviceParam::getPatrolNumber, p -> p, (v1, v2) -> v2));
+
             for (PatrolTaskDeviceParam patrolTaskDeviceForDeviceParam : records) {
                 // 查询同行人信息
                 QueryWrapper<PatrolAccompany> accompanyWrapper = new QueryWrapper<>();
@@ -131,17 +135,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 }
                 patrolTaskDeviceForDeviceParam.setAccompanyInfoStr(res);
                 patrolTaskDeviceForDeviceParam.setAccompanyInfo(accompanyList);
-                PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumber(patrolTaskDeviceForDeviceParam.getPatrolNumber()))
-                        .orElseGet(PatrolTaskDeviceParam::new);
-                List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
-                // 统计检查项中正常项的数据
-                long normalItem = Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList)
-                        .stream().filter(l -> PatrolConstant.RESULT_NORMAL.equals(l.getCheckResult())).count();
-                // 统计检查项中异常项的数据
-                long exceptionItem = Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList)
-                        .stream().filter(l -> PatrolConstant.RESULT_EXCEPTION.equals(l.getCheckResult())).count();
-                patrolTaskDeviceForDeviceParam.setNormalItem(normalItem);
-                patrolTaskDeviceForDeviceParam.setExceptionItem(exceptionItem);
+                PatrolTaskDeviceParam param = paramMap.get(patrolTaskDeviceForDeviceParam.getPatrolNumber());
+                patrolTaskDeviceForDeviceParam.setNormalItem(param.getNormalItem());
+                patrolTaskDeviceForDeviceParam.setExceptionItem(param.getExceptionItem());
             }
         }
 

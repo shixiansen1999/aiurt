@@ -117,7 +117,7 @@
             </choose>
         </if>
         GROUP BY ptd.id
-
+        order by ptd.create_time
     </select>
     <select id="selectBillInfoByNumber" resultType="com.aiurt.boot.task.param.PatrolTaskDeviceParam">
         SELECT pts.device_type_code,
