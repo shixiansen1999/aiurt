@@ -114,7 +114,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 			String userName = sysBaseApi.getUserNameByDeptAuthCodeAndRoleCode(Collections.singletonList(user.getOrgCode()), Collections.singletonList(RoleConstant.FOREMAN));
 
 			//发送通知
-			MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件报废申请-确认" + DateUtil.today(), null);
+			MessageDTO messageDTO = new MessageDTO(user.getUsername(),userName, "备件处置申请-请处置" + DateUtil.today(), null);
 
 			//构建消息模板
 			HashMap<String, Object> map = new HashMap<>();
@@ -142,9 +142,9 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 			todoDTO.setData(map);
 			SysParamModel sysParamModelTodo = iSysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_MESSAGE_PROCESS);
 			todoDTO.setType(ObjectUtil.isNotEmpty(sysParamModelTodo) ? sysParamModelTodo.getValue() : "");
-			todoDTO.setTitle("备件报废申请-确认" + DateUtil.today());
-			todoDTO.setMsgAbstract("备件报废申请");
-			todoDTO.setPublishingContent("备件报废申请，请确认");
+			todoDTO.setTitle("备件处置申请-请处置" + DateUtil.today());
+			todoDTO.setMsgAbstract("备件处置申请");
+			todoDTO.setPublishingContent("备件处置申请，请处置");
 			todoDTO.setCurrentUserName(userName);
 			todoDTO.setBusinessKey(sparePartScrap.getId());
 			todoDTO.setBusinessType(TodoBusinessTypeEnum.SPAREPART_SCRAP.getType());

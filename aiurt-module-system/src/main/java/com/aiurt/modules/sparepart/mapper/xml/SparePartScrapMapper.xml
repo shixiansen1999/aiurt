@@ -14,13 +14,13 @@
         t1.`name`,
         spare_part_scrap.scrap_time,
         spare_part_scrap.num,
-        spare_part_scrap.update_by createBy,
+        t6.realname create_by,
         t1.specifications,
         t7.`name` manufactorCodeName,
         d3.item_text unit,
         t1.price,
         spare_part_scrap.confirm_time confirmTime,
-        t8.realname confirmName,
+        spare_part_scrap.confirm_id,
         spare_part_scrap.reason ,
         spare_part_scrap.status,
         spare_part_scrap.warehouse_code,
@@ -40,7 +40,6 @@
         LEFT JOIN sys_dict_item AS d1 ON (d1.item_value = spare_part_scrap.STATUS
         AND dict1.id = d1.dict_id)
         LEFT JOIN cs_manufactor t7 ON t7.id = t1.manufactor_code
-        LEFT JOIN sys_user t8 ON spare_part_scrap.confirm_id = t8.username
         LEFT JOIN sys_dict AS dict2 ON dict2.dict_code = 'material_type'
         LEFT JOIN sys_dict_item AS d2 ON (d2.item_value = t1.type AND dict2.id = d2.dict_id)
         LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'
