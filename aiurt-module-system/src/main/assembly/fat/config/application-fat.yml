@@ -283,8 +283,7 @@ cas:
   prefixUrl: http://cas.example.org:8443/cas
 #Mybatis输出sql日志
 logging:
-  level:
-    org.jeecg.modules.system.mapper: info
+  config: ./config/logback-spring.xml
 #swagger
 knife4j:
   #开启增强配置
