@@ -401,6 +401,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         scrap.setSysOrgCode(user.getOrgCode());
                         scrap.setMaterialCode(lendStockDTO.getOldMaterialCode());
                         scrap.setWarehouseCode(stockInfo.getWarehouseCode());
+                        scrap.setLocation(stockInfo.getWarehouseName());
                         scrap.setNum(1);
                         scrap.setFaultCode(faultCode);
                         scrap.setScrapTime(new Date());

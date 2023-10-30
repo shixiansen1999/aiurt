@@ -4,7 +4,7 @@ import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
-import com.aiurt.modules.basic.entity.DictEntity;
+import com.aiurt.common.system.base.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -33,7 +33,7 @@ import java.util.List;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="spare_part_scrap对象", description="spare_part_scrap")
-public class SparePartScrap extends DictEntity implements Serializable {
+public class SparePartScrap extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键id*/
@@ -79,19 +79,15 @@ public class SparePartScrap extends DictEntity implements Serializable {
 	@Excel(name = "数量", width = 15)
     @ApiModelProperty(value = "处置数量")
     private Integer num;
-	/**处置时间*/
+	/**申请处置时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
-    @ApiModelProperty(value = "处置时间")
+    @ApiModelProperty(value = "申请处置时间")
     private Date scrapTime;
 	/**处置原因*/
 	@Excel(name = "报废原因", width = 15)
     @ApiModelProperty(value = "处置原因")
     private String reason;
-    /**申请处置人*/
-    @ApiModelProperty(value = "申请处置人")
-    @TableField(exist = false)
-    private String createBy;
 	/**备件处置单状态：1待处理、2已报废、3已报损*/
     @ApiModelProperty(value = "备件处置单状态：1待处理、2已报废、3已报损")
     private Integer status;
@@ -135,19 +131,6 @@ public class SparePartScrap extends DictEntity implements Serializable {
 	/**删除状态(0.未删除 1.已删除)*/
     @ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")
     private Integer delFlag;
-	/**修改人*/
-    @ApiModelProperty(value = "修改人")
-    private String updateBy;
-	/**创建时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "创建时间")
-    private Date createTime;
-	/**修改时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "修改时间")
-    private Date updateTime;
     /**ids*/
     @ApiModelProperty(value = "ids")
     @TableField(exist = false)
@@ -206,17 +189,17 @@ public class SparePartScrap extends DictEntity implements Serializable {
     @ApiModelProperty(value = "状态名称")
     @TableField(exist = false)
     private String statusName;
-    /**确认时间*/
+    /**处置时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
-    @ApiModelProperty(value = "确认时间")
+    @ApiModelProperty(value = "处置时间")
     private Date confirmTime;
-    /**确认人ID*/
-    @ApiModelProperty(value = "确认人ID")
-    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "username")
+    /**处置人ID*/
+    @ApiModelProperty(value = "处置人ID")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
     private String confirmId;
-    /**确认人*/
-    @ApiModelProperty(value = "确认人")
+    /**处置人*/
+    @ApiModelProperty(value = "处置人")
     @TableField(exist = false)
     private String confirmName;
     /**所属部门*/
