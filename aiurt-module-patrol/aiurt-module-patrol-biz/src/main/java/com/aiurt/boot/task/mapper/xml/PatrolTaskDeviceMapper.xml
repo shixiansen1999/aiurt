@@ -128,6 +128,7 @@
                cs.station_name,
                pts.subsystem_code,
                css.system_name as subsystemName,
+               pts.standard_code,
                ptd.*
         FROM patrol_task_device ptd
                      JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id

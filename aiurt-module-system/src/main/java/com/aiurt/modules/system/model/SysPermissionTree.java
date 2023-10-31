@@ -169,6 +169,11 @@ public class SysPermissionTree implements Serializable {
 	private boolean internalOrExternal;
 	/*update_end author:wuxianquan date:20190908 for:model增加字段 */
 
+	/**
+	 * 第三方平台是否显示该菜单: 0否  1:是（默认值0）
+	 */
+	@ApiModelProperty("第三方平台是否显示该菜单: 0否  1:是（默认值0）")
+	private boolean thirdPartyIsShow;
 
 	public SysPermissionTree() {
 	}
@@ -208,6 +213,7 @@ public class SysPermissionTree implements Serializable {
 			this.children = new ArrayList<SysPermissionTree>();
 		}
 		this.status = permission.getStatus();
+		this.thirdPartyIsShow = permission.isThirdPartyIsShow();
 	}
 
 	public String getTitle() {
@@ -441,6 +447,14 @@ public class SysPermissionTree implements Serializable {
 
 	public void setIsLeaf(boolean isLeaf) {
 		this.isLeaf = isLeaf;
+	}
+
+	public boolean isThirdPartyIsShow() {
+		return thirdPartyIsShow;
+	}
+
+	public void setThirdPartyIsShow(boolean thirdPartyIsShow) {
+		this.thirdPartyIsShow = thirdPartyIsShow;
 	}
 
 	public String getPermsType() {

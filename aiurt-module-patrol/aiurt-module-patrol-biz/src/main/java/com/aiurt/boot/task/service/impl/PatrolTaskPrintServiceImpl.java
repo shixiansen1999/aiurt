@@ -529,7 +529,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             List<String> pisSystem = sysBaseApi.getDictItems("cctv_system").stream().map(w-> w.getText()).collect(Collectors.toList());
             pisSystem.forEach(str-> {
                 PrintDTO printDTO = new PrintDTO();
-                PatrolCheckResultDTO patrolCheckResultDTO = parentDTOList.stream().filter(p -> p.getContent().equals(str)).findFirst().orElse(null);
+                PatrolCheckResultDTO patrolCheckResultDTO = parentDTOList.stream().filter(p -> p.getContent().replaceAll("\n", " ").equals(str)).findFirst().orElse(null);
                 if (ObjectUtil.isEmpty(patrolCheckResultDTO)){
                     printDTO.setRemark(null);
                 }else {
@@ -991,9 +991,13 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             List<String> collect = dto.getBillInfo().stream().filter(d -> StrUtil.isNotEmpty(d.getBillCode())).map(t -> t.getBillCode()).collect(Collectors.toList());
             List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckByTaskDeviceIdAndParent(collect);
             for (PatrolCheckResultDTO c : checkResultList) {
-                if (c.getCheck()==1){
+                if (c.getCheck()==1 && c.getParentId().equals("0")){
                     PrintDTO printDTO = new PrintDTO();
-                    printDTO.setStandard(ObjectUtil.defaultIfEmpty(c.getQualityStandard(), c.getContent()).replaceAll("[\n ]", ""));
+                    String qualityStandard = "";
+                    if (StrUtil.isNotEmpty(c.getQualityStandard())){
+                        qualityStandard = c.getQualityStandard();
+                    }
+                    printDTO.setStandard(ObjectUtil.defaultIfEmpty(qualityStandard.replaceAll("[\n ]", ""), c.getContent()).replaceAll("[\n ]", ""));
                     printDTO.setEquipment(c.getContent());
                     printDTO.setContent(c.getContent());
                     printDTO.setProcMethods(c.getProcMethods());
@@ -1031,7 +1035,11 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
 //                }
                     for (PatrolCheckResultDTO t :list){
                         PrintDTO printDTO = new PrintDTO();
-                        printDTO.setStandard(ObjectUtil.defaultIfEmpty(t.getQualityStandard(), t.getContent()).replaceAll("[\n ]", ""));
+                        String qualityStandard = "";
+                        if (StrUtil.isNotEmpty(t.getQualityStandard())){
+                            qualityStandard = t.getQualityStandard();
+                        }
+                        printDTO.setStandard(ObjectUtil.defaultIfEmpty(qualityStandard.replaceAll("[\n ]", ""), t.getContent()).replaceAll("[\n ]", ""));
                         printDTO.setEquipment(c.getContent());
                         printDTO.setContent(t.getContent());
                         printDTO.setProcMethods(t.getProcMethods());

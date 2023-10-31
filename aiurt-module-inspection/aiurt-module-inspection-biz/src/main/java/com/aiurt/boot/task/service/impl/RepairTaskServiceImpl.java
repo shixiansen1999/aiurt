@@ -241,11 +241,12 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         Map<String, RepairTaskUserNameDTO> overhaulNameMap = getOverhaulNameMap(repairTaskIds);
         Map<String, String> peerNameMap = getPeerNameMap(repairTaskIds);
         Map<String, String> sampNameMap = getSampNameMap(repairTaskIds);
+        Map<String, RepairTask> allCodeMap = getAllCodes(repairTaskIds);
         Map<String, RepairPrintMessage> printMessage = new HashMap<>();
 //        Map<String, RepairPrintMessage> printMessage = getPrintMessage(repairTaskIds);
 
         lists.parallelStream().forEach(repairTask -> {
-            RepairTaskThreadService repairTaskThreadService = new RepairTaskThreadService(repairTask, manager, taskStateMap, taskTypeMap, isConfirmMap, sourceMap, workTypeMap, ecmStatusMap, overhaulNameMap, peerNameMap, sampNameMap, printMessage);
+            RepairTaskThreadService repairTaskThreadService = new RepairTaskThreadService(repairTask, manager, taskStateMap, taskTypeMap, isConfirmMap, sourceMap, workTypeMap, ecmStatusMap, overhaulNameMap, peerNameMap, sampNameMap, printMessage,allCodeMap);
             try {
                 repairTaskThreadService.call();
             } catch (Exception e) {
@@ -255,6 +256,21 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
         GlobalThreadLocal.setDataFilter(filter);
         return pageList.setRecords(lists);
+    }
+    /**
+     * 获取检修任务ID与任务映射。
+     *
+     * @param repairTaskIds 检修任务ID列表
+     * @return 获取检修任务ID与任务映射
+     */
+    private Map<String, RepairTask> getAllCodes(List<String> repairTaskIds) {
+        if (CollUtil.isEmpty(repairTaskIds)) {
+            return CollUtil.newHashMap();
+        }
+        return Optional.ofNullable(repairTaskMapper.getAllCodes(repairTaskIds))
+                .orElse(Collections.emptyList())
+                .stream()
+                .collect(Collectors.toMap(RepairTask::getId, r->r, (v1, v2) -> v1));
     }
 
     /**

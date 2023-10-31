@@ -1,5 +1,6 @@
 package com.aiurt.modules.material.controller;
 
+import cn.afterturn.easypoi.excel.entity.ImportParams;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -7,16 +8,12 @@ import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.device.service.IDeviceComposeService;
 import com.aiurt.modules.material.entity.MaterialBase;
-import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseService;
-import com.aiurt.modules.material.service.IMaterialBaseTypeService;
-import com.aliyuncs.CommonResponse;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -24,39 +21,28 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
-import org.apache.xmlbeans.impl.validator.ValidatorUtil;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -149,9 +135,7 @@ public class MaterialBaseController {
                 BeanUtils.copyProperties(translate, materialBase1);
             }
         }
-        result.setSuccess(true);
-        result.setResult(pageList);
-        return result;
+        return Result.ok(pageList);
     }
 
     /**
@@ -213,9 +197,7 @@ public class MaterialBaseController {
                 BeanUtils.copyProperties(translate, materialBase1);
             }
         }
-        result.setSuccess(true);
-        result.setResult(pageList);
-        return result;
+        return Result.ok(pageList);
     }
 
     @AutoLog(value = "系统管理-基础数据管理-物资主数据-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/manage/MainMaterialClassification")
@@ -444,14 +426,6 @@ public class MaterialBaseController {
     @ApiOperation(value = "下载物资导入模板", notes = "下载物资导入模板")
     @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
     public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
-        ClassPathResource classPathResource =  new ClassPathResource("templates/materialBase1.xlsx");
-        InputStream bis = classPathResource.getInputStream();
-        BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
-        int len = 0;
-        while ((len = bis.read()) != -1) {
-            out.write(len);
-            out.flush();
-        }
-        out.close();
+        iMaterialBaseService.getImportTemplate(response, request);
     }
 }

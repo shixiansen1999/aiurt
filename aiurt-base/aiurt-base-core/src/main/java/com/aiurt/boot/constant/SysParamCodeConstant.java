@@ -566,10 +566,6 @@ public interface SysParamCodeConstant {
      */
     String IS_UPDATE_FAULT_EXTERNAL = "is_update_fault_external";
     /**
-     * 当日15点整时有未完成巡视任务给予提醒的响铃时长
-     */
-    String PUDR_RING_DURATION = "pudr_ring_duration";
-    /**
      * 维保任务执行中延时提醒
      */
     String REPAIR_IN_EXECUTION_REMIND = "repair_in_execution_remind";
@@ -585,4 +581,8 @@ public interface SysParamCodeConstant {
      * 维保任务执行中延时提醒的响铃时长，单位为秒
      */
     String RIE_RING_DURATION = "rie_ring_duration";
+    /**
+     * 当日15点整时有未完成巡视任务给予提醒的响铃时长
+     */
+    String PUDR_RING_DURATION = "pudr_ring_duration";
 }

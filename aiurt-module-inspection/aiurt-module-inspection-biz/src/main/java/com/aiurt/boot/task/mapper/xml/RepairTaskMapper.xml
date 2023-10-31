@@ -1184,4 +1184,27 @@
           AND rad.del_flag = 0
           AND rtr.task_device_rel_id = #{taskDeviceRelId}
     </select>
+
+    <select id="getAllCodes" resultType="com.aiurt.boot.task.entity.RepairTask">
+        SELECT
+        t1.id,
+        ( SELECT group_concat( t2.org_code ) FROM repair_task_org_rel AS t2 WHERE t1.`code` = t2.repair_task_code ) AS orgCode,
+        ( SELECT group_concat( t4.station_code ) FROM repair_task_station_rel AS t4 WHERE t1.`code` = t4.repair_task_code ) AS siteCode,
+        ( SELECT group_concat( t6.major_code ) FROM repair_task_standard_rel AS t6 WHERE t1.id = t6.repair_task_id ) AS majorCode,
+        ( SELECT group_concat( t6.subsystem_code ) FROM repair_task_standard_rel AS t6 WHERE t1.id = t6.repair_task_id ) AS systemCode
+        FROM
+        repair_task t1
+        LEFT JOIN repair_task_org_rel t2 ON t1.`code` = t2.repair_task_code
+        LEFT JOIN repair_task_station_rel t4 ON t1.`code` = t4.repair_task_code
+        LEFT JOIN repair_task_standard_rel t6 ON t1.id=t6.repair_task_id
+        <where>
+            t1.del_flag =0
+            <if test="collection != null and collection.size() != 0">
+                and t1.id in
+                <foreach collection="collection" open="(" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

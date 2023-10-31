@@ -180,4 +180,9 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
      * 履历是否只和设备类型相关
      * */
     private Boolean isPatrolDeviceCodeAndTypeCode;
+
+    @Excel(name = "巡检标准表Code", width = 15)
+    @ApiModelProperty(value = "巡检标准表Code")
+    @TableField(exist = false)
+    private java.lang.String standardCode;
 }

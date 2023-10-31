@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.dto;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -28,6 +29,9 @@ public class PrintPatrolTaskDTO {
 
     @ApiModelProperty(value = "提交时间")
     private String submitTime;
+
+    @ApiModelProperty(value = "巡检标准表Code")
+    private java.lang.String standardCode;
 
     private List<PrintStationDTO> printStationDTOList;
 
