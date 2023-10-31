@@ -665,7 +665,11 @@ public class FlowApiServiceImpl implements FlowApiService {
                         // 定制表单
                         taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
                         // 判断是否是表单设计器，
-                        taskInfoDTO.setRouterName(jsonObject.getString("formUrl"));
+                        if (StrUtil.isNotBlank(jsonObject.getString("formUrl"))) {
+                            taskInfoDTO.setRouterName(jsonObject.getString("formUrl"));
+                        } else {
+                            taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
+                        }
                     }
                 } else {
                     taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
@@ -1004,6 +1008,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 flowTaskVo.setProcessInstanceInitiatorName(userByName.getRealname());
             }
             flowTaskVo.setProcessInstanceStartTime(processInstance.getStartTime());
+            flowTaskVo.setProcessInstanceName(processInstance.getName());
             flowTaskVo.setBusinessKey(processInstance.getBusinessKey());
             String stateName = flowStateMap.get(task.getProcessInstanceId());
             if (StrUtil.isBlank(stateName)) {

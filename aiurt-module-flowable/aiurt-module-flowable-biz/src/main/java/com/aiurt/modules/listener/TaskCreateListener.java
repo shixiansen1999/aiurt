@@ -86,7 +86,7 @@ public class TaskCreateListener implements FlowableEventListener {
         // 流程节点定义id
         String taskDefinitionKey = taskEntity.getTaskDefinitionKey();
 
-        if (logger.isDebugEnabled()) {
+        if (logger.isInfoEnabled()) {
             logger.info("任务节点创建事件, 开始处理业务数据，流程定义id：{}，流程实例id：{}，流程节点定义id：{}，任务id：{}，用户账号：{}",
                     processDefinitionId, processInstanceId, taskDefinitionKey, taskId, taskEntity.getAssignee());
         }

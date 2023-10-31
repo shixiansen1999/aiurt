@@ -1,6 +1,7 @@
 package com.aiurt.modules.listener;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -63,14 +64,14 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                 if (CollUtil.isNotEmpty(timerJobEntityList)) {
                     timerJobEntityList.stream().forEach(timerJobEntity -> timerJobService.deleteTimerJob(timerJobEntity));
                 }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("流程结束监听事件, 删除该流程流程实例的定时任务，历史实例id：{}", executionEntity.getProcessInstanceId());
+                if (logger.isInfoEnabled()) {
+                    logger.info("流程结束监听事件, 删除该流程流程实例的定时任务，历史实例id：{}", executionEntity.getProcessInstanceId());
                 }
 
                 IActCustomFlowStateService flowStateService = SpringContextUtils.getBean(IActCustomFlowStateService.class);
                 flowStateService.updateFlowState(executionEntity.getProcessInstanceId(), FlowStatesEnum.COMPLETE.getCode());
-                if (logger.isDebugEnabled()) {
-                    logger.debug("流程结束监听事件, 更新流程状态，历史实例id：{}，流程状态:{}", executionEntity.getProcessInstanceId(),
+                if (logger.isInfoEnabled()) {
+                    logger.info("流程结束监听事件, 更新流程状态，历史实例id：{}，流程状态:{}", executionEntity.getProcessInstanceId(),
                             FlowStatesEnum.COMPLETE.getCode());
                 }
 
@@ -106,34 +107,37 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.BPM.getType());
 
         String definitionName = historicProcessInstance.getProcessDefinitionName();
-        messageDTO.setProcessName(StrUtil.contains(definitionName, "流程") ? definitionName : definitionName + "流程");
+        messageDTO.setProcessName(definitionName);
+        definitionName = StrUtil.contains(definitionName, "流程") ? definitionName : "【"+definitionName + "】流程";
         messageDTO.setProcessDefinitionKey(historicProcessInstance.getProcessDefinitionKey());
         String startUserId = historicProcessInstance.getStartUserId();
         Date startTime = historicProcessInstance.getStartTime();
         ISysBaseAPI sysBaseAPI = SpringContextUtils.getBean(ISysBaseAPI.class);
         LoginUser userByName = sysBaseAPI.getUserByName(startUserId);
-        String format = DateUtil.format(startTime, "yyyy-MM-dd HH:mm");
-        if (logger.isDebugEnabled()) {
-            logger.debug("流程结束监听事件, 更新流程状态，历史实例id：{}，流程状态", executionEntity.getProcessInstanceId(),
-                    FlowStatesEnum.COMPLETE.getCode());
-        }
+        String format = DateUtil.format(startTime, DatePattern.NORM_DATETIME_PATTERN);
 
         map.put("creatBy", userByName.getRealname());
         map.put("creatTime", format);
+        map.put("endTime",  DateUtil.format(new Date(), DatePattern.NORM_DATETIME_PATTERN));
         messageDTO.setData(map);
         messageDTO.setTaskId(executionEntity.getId());
         messageDTO.setProcessInstanceId(executionEntity.getProcessInstanceId());
-        messageDTO.setTitle(definitionName + "-" + userByName.getRealname() + "-" + DateUtil.format(startTime, "yyyy-MM-dd HH:mm"));
+        messageDTO.setTitle(definitionName);
         messageDTO.setFromUser(loginUser.getUsername());
         messageDTO.setToUser(historicProcessInstance.getStartUserId());
         messageDTO.setToAll(false);
         messageDTO.setProcessCode(historicProcessInstance.getProcessDefinitionKey());
-        messageDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE);
+        messageDTO.setTemplateCode("bpm_service_complete_process");
         ISysParamAPI bean = SpringContextUtils.getBean(ISysParamAPI.class);
         SysParamModel sysParamModel = bean.selectByCode(SysParamCodeConstant.BPM_MESSAGE);
         messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
         messageDTO.setMsgAbstract("有流程【归档】提醒");
         iSysBaseApi.sendTemplateMessage(messageDTO);
+
+        if (logger.isInfoEnabled()) {
+            logger.info("流程结束监听事件, 发送消息，历史实例id：{}，流程状态", executionEntity.getProcessInstanceId(),
+                    FlowStatesEnum.COMPLETE.getCode());
+        }
     }
 
     @Override
