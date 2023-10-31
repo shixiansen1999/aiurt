@@ -27,7 +27,7 @@ public interface ISysUserUsageService extends IService<SysUserUsage> {
      * @param name
      * @return
      */
-    List<SysUserUsageRespDTO> globalSearch(String name);
+    List<SysUserUsageRespDTO> globalSearch(String name, String ignoreUserName);
 
     /**
      * 查询当前用户的数据

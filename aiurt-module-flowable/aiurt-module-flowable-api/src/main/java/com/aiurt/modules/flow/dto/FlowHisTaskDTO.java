@@ -77,4 +77,7 @@ public class FlowHisTaskDTO {
      */
     @ApiModelProperty(value = "任务的表单信息")
     private String formKey;
+
+    @ApiModelProperty(value = "流程实例名称")
+    private String processInstanceName;
 }

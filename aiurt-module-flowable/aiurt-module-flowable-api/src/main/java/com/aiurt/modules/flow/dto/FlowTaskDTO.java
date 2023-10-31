@@ -64,6 +64,9 @@ public class FlowTaskDTO {
     @ApiModelProperty(value = "流程定义标识")
     private String processDefinitionKey;
 
+    @ApiModelProperty(value = "流程实例名称")
+    private String processInstanceName;
+
     /**
      * 流程定义版本。
      */

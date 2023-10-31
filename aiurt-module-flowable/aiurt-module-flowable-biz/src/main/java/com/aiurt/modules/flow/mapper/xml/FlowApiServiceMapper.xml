@@ -12,7 +12,8 @@
             t3.KEY_ as process_definition_key,
             t2.BUSINESS_KEY_ as business_key,
             t2.START_USER_ID_ as start_user,
-            t1.START_TIME_ as process_instance_start_time
+            t1.START_TIME_ as process_instance_start_time,
+            t2.NAME_ as process_instance_name
         from act_hi_taskinst t1
         left join act_hi_procinst t2 on (t1.PROC_INST_ID_ = t2.PROC_INST_ID_)
         left join act_re_procdef t3 ON  (t2.PROC_DEF_ID_ = t3.ID_)

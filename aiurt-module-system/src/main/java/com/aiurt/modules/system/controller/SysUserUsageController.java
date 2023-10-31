@@ -43,8 +43,9 @@ public class SysUserUsageController extends BaseController<SysUserUsage, ISysUse
 	 */
 	@ApiOperation(value="搜索", notes="搜索")
 	@GetMapping(value = "/globalSearch")
-	public Result<List<SysUserUsageRespDTO>> globalSearch(@RequestParam(required = false, value = "name") String name) {
-		List<SysUserUsageRespDTO> result = sysUserUsageService.globalSearch(name);
+	public Result<List<SysUserUsageRespDTO>> globalSearch(@RequestParam(required = false, value = "name") String name,
+														  @RequestParam(required = false, value = "ignoreUserName")String ignoreUserName) {
+		List<SysUserUsageRespDTO> result = sysUserUsageService.globalSearch(name, ignoreUserName);
 		return Result.OK(result);
 	}
 
