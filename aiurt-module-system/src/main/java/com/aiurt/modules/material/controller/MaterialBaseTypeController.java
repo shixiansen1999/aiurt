@@ -126,9 +126,7 @@ public class MaterialBaseTypeController {
                 }
             }
         }
-        result.setSuccess(true);
-        result.setResult(pageList);
-        return result;
+        return Result.ok(pageList);
     }
 
     /**
@@ -158,9 +156,7 @@ public class MaterialBaseTypeController {
         }
         materialBaseTypeQueryWrapper.orderByDesc("create_time");
         List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(materialBaseTypeQueryWrapper);
-        result.setSuccess(true);
-        result.setResult(materialBaseTypeList);
-        return result;
+        return Result.ok(materialBaseTypeList);
     }
 
     /**
