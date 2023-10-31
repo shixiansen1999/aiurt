@@ -39,7 +39,7 @@
         t3.depart_name as org_name,
         GROUP_CONCAT(t5.role_name) as role_name
         from sys_user t2
-        left join sys_depart t3 ON (t2.org_id = t2.org_name)
+        left join sys_depart t3 ON t2.org_id = t3.id
         Left join sys_user_role t4 ON t4.user_id = t2.id
         Left join sys_role  t5 on t4.role_id = t5.id
         where t2.del_flag =  0
