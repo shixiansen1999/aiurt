@@ -1004,6 +1004,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 flowTaskVo.setProcessInstanceInitiatorName(userByName.getRealname());
             }
             flowTaskVo.setProcessInstanceStartTime(processInstance.getStartTime());
+            flowTaskVo.setProcessInstanceName(processInstance.getName());
             flowTaskVo.setBusinessKey(processInstance.getBusinessKey());
             String stateName = flowStateMap.get(task.getProcessInstanceId());
             if (StrUtil.isBlank(stateName)) {
