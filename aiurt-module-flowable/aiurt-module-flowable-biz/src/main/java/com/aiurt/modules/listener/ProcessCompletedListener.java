@@ -115,10 +115,6 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
         ISysBaseAPI sysBaseAPI = SpringContextUtils.getBean(ISysBaseAPI.class);
         LoginUser userByName = sysBaseAPI.getUserByName(startUserId);
         String format = DateUtil.format(startTime, DatePattern.NORM_DATETIME_PATTERN);
-        if (logger.isDebugEnabled()) {
-            logger.debug("流程结束监听事件, 更新流程状态，历史实例id：{}，流程状态", executionEntity.getProcessInstanceId(),
-                    FlowStatesEnum.COMPLETE.getCode());
-        }
 
         map.put("creatBy", userByName.getRealname());
         map.put("creatTime", format);
@@ -137,6 +133,11 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
         messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
         messageDTO.setMsgAbstract("有流程【归档】提醒");
         iSysBaseApi.sendTemplateMessage(messageDTO);
+
+        if (logger.isInfoEnabled()) {
+            logger.info("流程结束监听事件, 发送消息，历史实例id：{}，流程状态", executionEntity.getProcessInstanceId(),
+                    FlowStatesEnum.COMPLETE.getCode());
+        }
     }
 
     @Override

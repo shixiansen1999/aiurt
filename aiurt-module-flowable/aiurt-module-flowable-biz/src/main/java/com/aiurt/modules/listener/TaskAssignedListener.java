@@ -32,8 +32,8 @@ public class TaskAssignedListener implements FlowableEventListener {
             return;
         }
         TaskEntity taskEntity = (TaskEntity) entity;
-        if (log.isDebugEnabled()) {
-            log.debug("任务设置办理人事件，实例id：{}， 任务id：{}， 节点id：{}， 节点名称：{}, 办理人：{}", taskEntity.getProcessInstanceId(),
+        if (log.isInfoEnabled()) {
+            log.info("任务设置办理人事件，实例id：{}， 任务id：{}， 节点id：{}， 节点名称：{}, 办理人：{}", taskEntity.getProcessInstanceId(),
                     taskEntity.getId(), taskEntity.getTaskDefinitionKey(), taskEntity.getName(), taskEntity.getAssignee());
         }
         if (StrUtil.startWith(taskEntity.getAssignee(), AUTO)) {
@@ -56,8 +56,8 @@ public class TaskAssignedListener implements FlowableEventListener {
             }
         }
 
-        if (log.isDebugEnabled()) {
-            log.debug("任务设置办理人事件, 业务处理结束 实例id：{}， 任务id：{}， 节点id：{}， 节点名称：{}, 办理人：{}", taskEntity.getProcessInstanceId(),
+        if (log.isInfoEnabled()) {
+            log.info("任务设置办理人事件, 业务处理结束 实例id：{}， 任务id：{}， 节点id：{}， 节点名称：{}, 办理人：{}", taskEntity.getProcessInstanceId(),
                     taskEntity.getId(), taskEntity.getTaskDefinitionKey(), taskEntity.getName(), taskEntity.getAssignee());
         }
     }
