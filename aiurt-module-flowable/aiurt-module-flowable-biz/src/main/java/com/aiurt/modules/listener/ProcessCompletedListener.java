@@ -107,7 +107,8 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.BPM.getType());
 
         String definitionName = historicProcessInstance.getProcessDefinitionName();
-        messageDTO.setProcessName(StrUtil.contains(definitionName, "流程") ? definitionName : "【"+definitionName + "】流程");
+        messageDTO.setProcessName(definitionName);
+        definitionName = StrUtil.contains(definitionName, "流程") ? definitionName : "【"+definitionName + "】流程";
         messageDTO.setProcessDefinitionKey(historicProcessInstance.getProcessDefinitionKey());
         String startUserId = historicProcessInstance.getStartUserId();
         Date startTime = historicProcessInstance.getStartTime();
@@ -121,7 +122,7 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
 
         map.put("creatBy", userByName.getRealname());
         map.put("creatTime", format);
-        map.put("endTime",  DateUtil.format(historicProcessInstance.getEndTime(), DatePattern.NORM_DATETIME_PATTERN));
+        map.put("endTime",  DateUtil.format(new Date(), DatePattern.NORM_DATETIME_PATTERN));
         messageDTO.setData(map);
         messageDTO.setTaskId(executionEntity.getId());
         messageDTO.setProcessInstanceId(executionEntity.getProcessInstanceId());
@@ -130,7 +131,7 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
         messageDTO.setToUser(historicProcessInstance.getStartUserId());
         messageDTO.setToAll(false);
         messageDTO.setProcessCode(historicProcessInstance.getProcessDefinitionKey());
-        messageDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE);
+        messageDTO.setTemplateCode("bpm_service_complete_process");
         ISysParamAPI bean = SpringContextUtils.getBean(ISysParamAPI.class);
         SysParamModel sysParamModel = bean.selectByCode(SysParamCodeConstant.BPM_MESSAGE);
         messageDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
