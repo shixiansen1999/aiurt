@@ -1,6 +1,7 @@
 package com.aiurt.modules.listener;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -106,13 +107,13 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.BPM.getType());
 
         String definitionName = historicProcessInstance.getProcessDefinitionName();
-        messageDTO.setProcessName(StrUtil.contains(definitionName, "流程") ? definitionName : definitionName + "流程");
+        messageDTO.setProcessName(StrUtil.contains(definitionName, "流程") ? definitionName : "【"+definitionName + "】流程");
         messageDTO.setProcessDefinitionKey(historicProcessInstance.getProcessDefinitionKey());
         String startUserId = historicProcessInstance.getStartUserId();
         Date startTime = historicProcessInstance.getStartTime();
         ISysBaseAPI sysBaseAPI = SpringContextUtils.getBean(ISysBaseAPI.class);
         LoginUser userByName = sysBaseAPI.getUserByName(startUserId);
-        String format = DateUtil.format(startTime, "yyyy-MM-dd HH:mm");
+        String format = DateUtil.format(startTime, DatePattern.NORM_DATETIME_PATTERN);
         if (logger.isDebugEnabled()) {
             logger.debug("流程结束监听事件, 更新流程状态，历史实例id：{}，流程状态", executionEntity.getProcessInstanceId(),
                     FlowStatesEnum.COMPLETE.getCode());
@@ -120,10 +121,11 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
 
         map.put("creatBy", userByName.getRealname());
         map.put("creatTime", format);
+        map.put("endTime",  DateUtil.format(historicProcessInstance.getEndTime(), DatePattern.NORM_DATETIME_PATTERN));
         messageDTO.setData(map);
         messageDTO.setTaskId(executionEntity.getId());
         messageDTO.setProcessInstanceId(executionEntity.getProcessInstanceId());
-        messageDTO.setTitle(definitionName + "-" + userByName.getRealname() + "-" + DateUtil.format(startTime, "yyyy-MM-dd HH:mm"));
+        messageDTO.setTitle(definitionName);
         messageDTO.setFromUser(loginUser.getUsername());
         messageDTO.setToUser(historicProcessInstance.getStartUserId());
         messageDTO.setToAll(false);
