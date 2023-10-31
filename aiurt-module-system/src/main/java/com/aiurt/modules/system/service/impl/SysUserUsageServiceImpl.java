@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.system.dto.SysUserUsageRespDTO;
 import com.aiurt.modules.system.entity.SysUserUsage;
@@ -52,7 +53,9 @@ public class SysUserUsageServiceImpl extends ServiceImpl<SysUserUsageMapper, Sys
         List<SysUserUsageRespDTO> list = baseMapper.globalSearch(name);
         if (StrUtil.isNotBlank(ignoreUserName)) {
             List<String> userNameList = StrUtil.split(ignoreUserName, ',');
-            list.removeAll(userNameList);
+            if (CollUtil.isNotEmpty(userNameList) && CollUtil.isNotEmpty(list)) {
+                list = list.stream().filter(sysUserUsageRespDTO -> !userNameList.contains(sysUserUsageRespDTO.getUserName())).collect(Collectors.toList());
+            }
         }
 
         list.removeAll(Collections.singletonList(null));
