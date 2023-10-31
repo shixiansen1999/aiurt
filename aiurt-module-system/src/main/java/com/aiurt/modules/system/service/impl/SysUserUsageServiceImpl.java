@@ -45,11 +45,15 @@ public class SysUserUsageServiceImpl extends ServiceImpl<SysUserUsageMapper, Sys
      * @return
      */
     @Override
-    public List<SysUserUsageRespDTO> globalSearch(String name) {
+    public List<SysUserUsageRespDTO> globalSearch(String name, String ignoreUserName) {
         if (StrUtil.isEmpty(name)) {
             return Collections.emptyList();
         }
         List<SysUserUsageRespDTO> list = baseMapper.globalSearch(name);
+        if (StrUtil.isNotBlank(ignoreUserName)) {
+            List<String> userNameList = StrUtil.split(ignoreUserName, ',');
+            list.removeAll(userNameList);
+        }
 
         list.removeAll(Collections.singletonList(null));
 
