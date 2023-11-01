@@ -62,9 +62,7 @@ public class SysFlowMessageServiceImpl implements ISysFlowMessageService {
         }).collect(Collectors.toList());
 
         if (CollUtil.isNotEmpty(messageDTOList)) {
-            messageDTOList.stream().forEach(messageDTO -> {
-                sysBaseApi.sendTemplateMessage(messageDTO);
-            });
+            messageDTOList.forEach(messageDTO -> sysBaseApi.sendTemplateMessage(messageDTO));
         }
 
 

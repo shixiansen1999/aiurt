@@ -78,7 +78,6 @@ import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskInfo;
 import org.flowable.task.api.TaskQuery;
 import org.flowable.task.api.history.HistoricTaskInstance;
-import org.flowable.task.api.history.HistoricTaskInstanceQuery;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
@@ -665,8 +664,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                         // 定制表单
                         taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
                         // 判断是否是表单设计器，
-                        if (StrUtil.isNotBlank(jsonObject.getString("formUrl"))) {
-                            taskInfoDTO.setRouterName(jsonObject.getString("formUrl"));
+                        if (StrUtil.isNotBlank(jsonObject.getString(FlowModelAttConstant.FORM_URL))) {
+                            taskInfoDTO.setRouterName(jsonObject.getString(FlowModelAttConstant.FORM_URL));
                         } else {
                             taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
                         }
@@ -750,11 +749,6 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
     }
 
-    public static void main(String[] args) {
-        List<String> list = new ArrayList<>();
-        list.removeAll(Collections.singletonList(null));
-        System.out.println(list);
-    }
 
     /**
      * 用于检查是否为发起人且流程未结束
@@ -1959,7 +1953,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                     // 定制表单
                     taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
                     // 判断是否是表单设计器，
-                    taskInfoDTO.setRouterName(jsonObject.getString("formUrl"));
+                    taskInfoDTO.setRouterName(jsonObject.getString(FlowModelAttConstant.FORM_URL));
                     if (StrUtil.equalsAnyIgnoreCase(processDefinitionKey, "bd_work_ticket2", "bd_work_titck")) {
                         taskInfoDTO.setRouterName("@/views/workTicket/modules/BdFirstWorkTicket.vue");
                     }
@@ -3076,9 +3070,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                     if (Objects.nonNull(loginUser)) {
                         String orgName = loginUser.getOrgName();
                         String jobName = Optional.ofNullable(loginUser.getJobName()).orElse("");
-                        Set<String> jonSet = StrUtil.split(jobName, ',').stream().map(v -> {
-                            return sysPostMap.get(v);
-                        }).collect(Collectors.toSet());
+                        Set<String> jonSet = StrUtil.split(jobName, ',').stream().map(v -> sysPostMap.get(v)).collect(Collectors.toSet());
                         nodeInfoDTO.setRealName(loginUser.getRealname());
                         nodeInfoDTO.setUserName(loginUser.getUsername());
 

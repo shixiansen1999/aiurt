@@ -7,7 +7,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
-import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.enums.FlowStatesEnum;
@@ -62,7 +61,7 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                 List<TimerJobEntity> timerJobEntityList = timerJobService
                         .findTimerJobsByProcessInstanceId(executionEntity.getProcessInstanceId());
                 if (CollUtil.isNotEmpty(timerJobEntityList)) {
-                    timerJobEntityList.stream().forEach(timerJobEntity -> timerJobService.deleteTimerJob(timerJobEntity));
+                    timerJobEntityList.stream().forEach(timerJobService::deleteTimerJob);
                 }
                 if (logger.isInfoEnabled()) {
                     logger.info("流程结束监听事件, 删除该流程流程实例的定时任务，历史实例id：{}", executionEntity.getProcessInstanceId());
