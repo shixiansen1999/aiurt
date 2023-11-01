@@ -37,6 +37,7 @@ import static com.aiurt.modules.online.workflowapi.service.IActCustomInterfaceMo
 @RequestMapping("/workflowapi/actCustomInterfaceModule")
 @Slf4j
 public class ActCustomInterfaceModuleController extends BaseController<ActCustomInterfaceModule, IActCustomInterfaceModuleService> {
+    private static final String IS_TRUE = "true";
     @Autowired
     private IActCustomInterfaceModuleService actCustomInterfaceModuleService;
 
@@ -56,7 +57,7 @@ public class ActCustomInterfaceModuleController extends BaseController<ActCustom
                                                                  @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                                  HttpServletRequest req) {
         String hasQuery = req.getParameter("hasQuery");
-        if (hasQuery != null && "true".equals(hasQuery)) {
+        if (hasQuery != null && IS_TRUE.equals(hasQuery)) {
             QueryWrapper<ActCustomInterfaceModule> queryWrapper = QueryGenerator.initQueryWrapper(actCustomInterfaceModule, req.getParameterMap());
             List<ActCustomInterfaceModule> list = actCustomInterfaceModuleService.queryTreeListNoPage(queryWrapper);
             IPage<ActCustomInterfaceModule> pageList = new Page<>(1, 10, list.size());
