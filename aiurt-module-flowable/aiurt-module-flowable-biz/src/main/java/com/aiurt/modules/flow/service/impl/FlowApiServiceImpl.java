@@ -952,8 +952,8 @@ public class FlowApiServiceImpl implements FlowApiService {
         String userName = loginUser.getUsername();
         Page<FlowCopyDTO> page = new Page<>(flowCopyReqDTO.getPageNo(),flowCopyReqDTO.getPageSize());
         //查询所有抄送信息
-        IPage<FlowCopyDTO> flowCopyDTOIPage = actCustomProcessCopyService.queryPageList(page, flowCopyReqDTO,userName);
-        return flowCopyDTOIPage;
+        IPage<FlowCopyDTO> flowCopyPageList = actCustomProcessCopyService.queryPageList(page, flowCopyReqDTO,userName);
+        return flowCopyPageList;
     }
 
     /**
@@ -1182,12 +1182,14 @@ public class FlowApiServiceImpl implements FlowApiService {
         //获取用户节点办理用户
         Map<String, HistoryTaskInfo> stringHistoricTaskInfoMap = flowChart(processInstanceId);
         //驳回，获取最新一次任务
+        int length = 2;
+        int maxNumber = 3;
         Map<String, HistoryTaskInfo> collect = stringHistoricTaskInfoMap.entrySet().stream()
                 .collect(Collectors.groupingBy(
                         entry -> {
                             String key = entry.getKey();
                             String[] parts = key.split("_");
-                            if (parts.length >= 2) {
+                            if (parts.length >= length) {
                                 return parts[0] + "_" + parts[1];
                             } else {
                                 return key;
@@ -1196,7 +1198,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                         Collectors.maxBy(Comparator.comparing(entry -> {
                             String key = entry.getKey();
                             String[] parts = key.split("_");
-                            if (parts.length >= 3) {
+                            if (parts.length >= maxNumber) {
                                 return Integer.parseInt(parts[2]);
                             } else {
                                 return 0;
@@ -1210,7 +1212,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 ));
 
         //获取审核通过的用户
-        List<HighLightedUserInfoDTO> highLightedUserInfoDTOs = collect.entrySet().stream()
+        List<HighLightedUserInfoDTO> highLightedUserInfos = collect.entrySet().stream()
                 .map(entry -> {
                     String activityId = entry.getKey();
                     HistoryTaskInfo value = entry.getValue();
@@ -1240,7 +1242,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 .unfinishedTaskSet(unfinishedTaskSet)
                 .modelName(hpi.getProcessDefinitionName())
                 .modelXml(modelXml)
-                .highLightedUserInfoDTOs(highLightedUserInfoDTOs)
+                .highLightedUserInfoDTOs(highLightedUserInfos)
                 .isEnd(Objects.nonNull(hpi.getEndTime()))
                 .build();
         return highLightedNodeDTO;

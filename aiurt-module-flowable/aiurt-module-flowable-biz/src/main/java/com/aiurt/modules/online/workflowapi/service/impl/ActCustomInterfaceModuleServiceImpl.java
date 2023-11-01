@@ -44,7 +44,8 @@ public class ActCustomInterfaceModuleServiceImpl extends ServiceImpl<ActCustomIn
         } else {
             //如果当前节点父ID不为空 则设置父节点的hasChildren 为1
             ActCustomInterfaceModule parent = baseMapper.selectById(actCustomInterfaceModule.getPid());
-            if (parent != null && !"1".equals(parent.getHasChild())) {
+            String num = "1";
+            if (parent != null && !num.equals(parent.getHasChild())) {
                 parent.setHasChild("1");
                 baseMapper.updateById(parent);
             }
@@ -60,11 +61,11 @@ public class ActCustomInterfaceModuleServiceImpl extends ServiceImpl<ActCustomIn
         if (entity == null) {
             throw new AiurtBootException("未找到对应实体");
         }
-        String old_pid = entity.getPid();
-        String new_pid = actCustomInterfaceModule.getPid();
-        if (!old_pid.equals(new_pid)) {
-            updateOldParentNode(old_pid);
-            if (oConvertUtils.isEmpty(new_pid)) {
+        String oldPid = entity.getPid();
+        String newPid = actCustomInterfaceModule.getPid();
+        if (!oldPid.equals(newPid)) {
+            updateOldParentNode(oldPid);
+            if (oConvertUtils.isEmpty(newPid)) {
                 actCustomInterfaceModule.setPid(IActCustomInterfaceModuleService.ROOT_PID_VALUE);
             }
             if (!IActCustomInterfaceModuleService.ROOT_PID_VALUE.equals(actCustomInterfaceModule.getPid())) {
@@ -82,7 +83,8 @@ public class ActCustomInterfaceModuleServiceImpl extends ServiceImpl<ActCustomIn
     public void deleteActCustomInterfaceModule(String id) throws AiurtBootException {
         //查询选中节点下所有子节点一并删除
         id = this.queryTreeChildIds(id);
-        if (id.indexOf(",") > 0) {
+        String symbol = ",";
+        if (id.indexOf(symbol) > 0) {
             StringBuffer sb = new StringBuffer();
             String[] idArr = id.split(",");
             for (String idVal : idArr) {

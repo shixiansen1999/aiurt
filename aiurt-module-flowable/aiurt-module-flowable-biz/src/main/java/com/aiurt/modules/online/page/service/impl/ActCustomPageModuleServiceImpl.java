@@ -78,11 +78,11 @@ public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageMod
 		if(entity==null) {
 			throw new AiurtBootException("未找到对应实体");
 		}
-		String old_pid = entity.getPid();
-		String new_pid = actCustomPageModule.getPid();
-		if(!old_pid.equals(new_pid)) {
-			updateOldParentNode(old_pid);
-			if(StrUtil.isEmpty(new_pid)){
+		String oldPid = entity.getPid();
+		String newPid = actCustomPageModule.getPid();
+		if(!oldPid.equals(newPid)) {
+			updateOldParentNode(oldPid);
+			if(StrUtil.isEmpty(newPid)){
 				actCustomPageModule.setPid(IActCustomPageModuleService.ROOT_PID_VALUE);
 			}
 			if(!IActCustomPageModuleService.ROOT_PID_VALUE.equals(actCustomPageModule.getPid())) {
