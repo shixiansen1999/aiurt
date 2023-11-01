@@ -2732,7 +2732,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             }
             taskDTO.setSubmitTime(DateUtil.format(byId.getCheckTime(),"yyyy-MM-dd HH:mm:ss"));
             taskDTO.setSignUrl(patrolTask.getSignUrl());
-
+            PatrolStandard taskStandardName = patrolTaskDeviceMapper.getStandardName(id);
+            taskDTO.setStandardCode(taskStandardName.getCode());
             //巡视单内容
             List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfoByDeviceID(id);
 
