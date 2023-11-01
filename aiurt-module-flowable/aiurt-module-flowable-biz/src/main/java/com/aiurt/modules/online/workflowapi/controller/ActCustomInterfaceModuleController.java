@@ -49,7 +49,6 @@ public class ActCustomInterfaceModuleController extends BaseController<ActCustom
      * @param req
      * @return
      */
-    //@AutoLog(value = "act_custom_interface_module-分页列表查询")
     @ApiOperation(value = "act_custom_interface_module-分页列表查询", notes = "act_custom_interface_module-分页列表查询")
     @GetMapping(value = "/rootList")
     public Result<IPage<ActCustomInterfaceModule>> queryPageList(ActCustomInterfaceModule actCustomInterfaceModule,
@@ -131,7 +130,6 @@ public class ActCustomInterfaceModuleController extends BaseController<ActCustom
      * @return 返回 IPage
      * @return
      */
-    //@AutoLog(value = "act_custom_interface_module-批量获取子数据")
     @ApiOperation(value = "act_custom_interface_module-批量获取子数据", notes = "act_custom_interface_module-批量获取子数据")
     @GetMapping("/getChildListBatch")
     public Result getChildListBatch(@RequestParam("parentIds") String parentIds) {

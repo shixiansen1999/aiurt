@@ -17,7 +17,7 @@ import java.util.Objects;
 @Component
 public class MultiInstanceRuleVerifyHandler<T extends FlowDeduplicateContext> extends AbstractFlowHandler<T> {
 
-    private static final String IS_MUlTI_ASSIGN_TASK = "is_multi_assign_task";
+    private static final String IS_MULTI_ASSIGN_TASK = "is_multi_assign_task";
 
 
 
@@ -33,7 +33,7 @@ public class MultiInstanceRuleVerifyHandler<T extends FlowDeduplicateContext> ex
         Task task = context.getTask();
 
         ExecutionEntity execution = (ExecutionEntity) context.getExecution();
-        Object isMultiAssignTaskObj = execution.getVariableLocal(IS_MUlTI_ASSIGN_TASK);
+        Object isMultiAssignTaskObj = execution.getVariableLocal(IS_MULTI_ASSIGN_TASK);
 
         if (log.isDebugEnabled()) {
             log.debug("审批去重，加签规则校验，任务id：{}， 节点id：{}", task.getId(), task.getTaskDefinitionKey());

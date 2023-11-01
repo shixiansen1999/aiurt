@@ -7,7 +7,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.common.api.dto.message.MessageDTO;
-import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.enums.FlowStatesEnum;
@@ -62,12 +61,15 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                 List<TimerJobEntity> timerJobEntityList = timerJobService
                         .findTimerJobsByProcessInstanceId(executionEntity.getProcessInstanceId());
                 if (CollUtil.isNotEmpty(timerJobEntityList)) {
-                    timerJobEntityList.stream().forEach(timerJobEntity -> timerJobService.deleteTimerJob(timerJobEntity));
+                    timerJobEntityList.stream().forEach(timerJobService::deleteTimerJob);
                 }
                 if (logger.isInfoEnabled()) {
                     logger.info("流程结束监听事件, 删除该流程流程实例的定时任务，历史实例id：{}", executionEntity.getProcessInstanceId());
                 }
-
+                Boolean variableLocal = executionEntity.getVariableLocal(FlowConstant.STOP_PROCESS, Boolean.class);
+                if (Objects.nonNull(variableLocal)) {
+                    return;
+                }
                 IActCustomFlowStateService flowStateService = SpringContextUtils.getBean(IActCustomFlowStateService.class);
                 flowStateService.updateFlowState(executionEntity.getProcessInstanceId(), FlowStatesEnum.COMPLETE.getCode());
                 if (logger.isInfoEnabled()) {
@@ -102,7 +104,7 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
         // 发消息
         MessageDTO messageDTO = new MessageDTO();
         //构建消息模板
-        HashMap<String, Object> map = new HashMap<>();
+        HashMap<String, Object> map = new HashMap<>(16);
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, historicProcessInstance.getBusinessKey());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.BPM.getType());
 

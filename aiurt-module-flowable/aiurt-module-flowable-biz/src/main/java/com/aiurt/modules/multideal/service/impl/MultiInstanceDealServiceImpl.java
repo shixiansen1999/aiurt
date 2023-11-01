@@ -49,7 +49,6 @@ public class MultiInstanceDealServiceImpl implements IMultiInstanceDealService {
                     String.format(AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getMessage(),taskId));
         }
         // todo 处理当前活动是否多实例（针对串行情况，需要拿出串行人员列表），设置人员列表变量
-        // this.dealOneNodeMulti(taskId, null, null, null);
         // 判断是否时多实例流程最后一步，或者单实例
         Boolean completeTask = multiInTaskService.isCompleteTask(task);
 

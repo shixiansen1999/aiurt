@@ -11,6 +11,9 @@ import org.flowable.engine.impl.util.CommandContextUtil;
 
 import java.util.Map;
 
+/**
+ * @author gaowei
+ */
 public class ConditionExpressionV2Cmd implements Command<Boolean> {
     private String conditionExpression;
     private Map<String, Object> data;

@@ -183,11 +183,7 @@ public interface FlowApiService {
     /**
      * 已办任务
      *
-     * @param processDefinitionName
-     * @param beginDate
-     * @param endDate
-     * @param pageNo
-     * @param pageSize
+     * @param historicTaskReqDTO
      * @return
      */
     IPage<FlowHisTaskDTO> listHistoricTask(HistoricTaskReqDTO historicTaskReqDTO);

@@ -108,7 +108,6 @@ public class ActCustomProcessCopyController extends BaseController<ActCustomProc
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "act_custom_process_copy-通过id查询")
 	@ApiOperation(value="act_custom_process_copy-通过id查询", notes="act_custom_process_copy-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<ActCustomProcessCopy> queryById(@RequestParam(name="id",required=true) String id) {

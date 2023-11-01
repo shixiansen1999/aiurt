@@ -1,6 +1,10 @@
 package com.aiurt.modules.flow.enums;
 
 
+/**
+ * @author gaowei
+ */
+
 public enum FlowStatesEnum {
 
     /**

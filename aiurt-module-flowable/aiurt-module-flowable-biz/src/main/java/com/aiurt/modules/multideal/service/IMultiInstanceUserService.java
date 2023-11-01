@@ -19,7 +19,7 @@ public interface IMultiInstanceUserService {
     List<String> getCurrentUserList(String taskId);
 
     /**
-     *
+     * 查询下一步用户信息
      * @param nodeId
      * @param businessData
      * @param user

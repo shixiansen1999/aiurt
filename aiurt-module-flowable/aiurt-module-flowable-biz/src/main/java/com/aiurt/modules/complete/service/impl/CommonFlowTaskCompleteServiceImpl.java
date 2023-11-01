@@ -130,8 +130,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         if (Objects.isNull(variableData)) {
             variableData = new HashMap<>(16);
         }
-        Map<String, Object> busData = Optional.ofNullable(flowCompleteReqDTO.getBusData()).orElse(new HashMap<>());
-       // busData.put(APPROVAL_TYPE, approvalType);
+        Map<String, Object> busData = Optional.ofNullable(flowCompleteReqDTO.getBusData()).orElse(new HashMap<>(16));
 
         Map<String, Object> variables = flowElementUtil.getVariables(busData, processInstanceId);
         variableData.putAll(variables);

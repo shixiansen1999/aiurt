@@ -20,6 +20,7 @@ public interface IActCustomPageService extends IService<ActCustomPage> {
     /**
      * 编辑菜单
      * @param actCustomPage
+     * @return string
      */
     Result<String> edit(ActCustomPage actCustomPage);
 

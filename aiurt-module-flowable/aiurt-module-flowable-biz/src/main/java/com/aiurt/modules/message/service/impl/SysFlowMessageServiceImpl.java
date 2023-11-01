@@ -16,6 +16,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * @author gaowe
+ */
 @Service
 public class SysFlowMessageServiceImpl implements ISysFlowMessageService {
 
@@ -59,9 +62,7 @@ public class SysFlowMessageServiceImpl implements ISysFlowMessageService {
         }).collect(Collectors.toList());
 
         if (CollUtil.isNotEmpty(messageDTOList)) {
-            messageDTOList.stream().forEach(messageDTO -> {
-                sysBaseApi.sendTemplateMessage(messageDTO);
-            });
+            messageDTOList.forEach(messageDTO -> sysBaseApi.sendTemplateMessage(messageDTO));
         }
 
 

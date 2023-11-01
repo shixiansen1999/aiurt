@@ -1,5 +1,9 @@
 package com.aiurt.modules.user.enums;
 
+/**
+ * @author gaowei
+ */
+
 public enum EmptyRuleEnum {
 
     /**

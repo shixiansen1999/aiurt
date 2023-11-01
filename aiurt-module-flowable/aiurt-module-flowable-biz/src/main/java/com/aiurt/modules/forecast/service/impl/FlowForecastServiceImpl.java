@@ -148,7 +148,7 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
             HistoryTaskInfo historyTaskInfo = resultMap.get(nodeId);
             String type = historyTaskInfo.getType();
             List<String> userNameList = Optional.ofNullable(historyTaskInfo.getUserNameList()).orElse(Collections.emptyList());
-            List<String> realNameList = userNameList.stream().map(userName -> userMap.get(userName)).filter(s->StrUtil.isNotBlank(s)).collect(Collectors.toList());
+            List<String> realNameList = userNameList.stream().map(userMap::get).filter(StrUtil::isNotBlank).collect(Collectors.toList());
 
             switch (type) {
                 case "startEvent" :

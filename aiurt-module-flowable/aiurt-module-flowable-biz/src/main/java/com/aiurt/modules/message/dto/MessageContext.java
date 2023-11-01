@@ -8,6 +8,9 @@ import org.flowable.task.api.Task;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * @author gaowe
+ */
 @Data
 public class MessageContext {
 

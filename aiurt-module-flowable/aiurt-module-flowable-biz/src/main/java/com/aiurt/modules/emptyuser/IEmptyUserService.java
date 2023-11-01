@@ -2,6 +2,9 @@ package com.aiurt.modules.emptyuser;
 
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 
+/**
+ * @author gaowei
+ */
 public interface IEmptyUserService {
 
     /**

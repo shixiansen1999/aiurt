@@ -45,6 +45,7 @@ public interface IActCustomInterfaceModuleService extends IService<ActCustomInte
 	 * 删除节点
 	 *
 	 * @param id
+	 * @throws AiurtBootException
 	 */
 	void deleteActCustomInterfaceModule(String id) throws AiurtBootException;
 
