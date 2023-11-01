@@ -453,7 +453,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     .eq(SparePartOutOrder::getStatus, 2)
                     .eq(SparePartOutOrder::getMaterialCode, sparePartOutOrder.getMaterialCode())
                     .eq(SparePartOutOrder::getWarehouseCode, sparePartOutOrder.getWarehouseCode())
-                    .orderByDesc(SparePartOutOrder::getConfirmTime));
+                    .orderByDesc(SparePartOutOrder::getConfirmTime).last("limit 1"));
 
             if(ObjectUtil.isNotNull(lastOrder)){
                 //同一仓库、同一备件 已经确认出库的数据更新出库剩余数量
@@ -911,9 +911,9 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     .eq(SparePartOutOrder::getStatus, 2)
                     .eq(SparePartOutOrder::getMaterialCode, lendOutOrder.getMaterialCode())
                     .eq(SparePartOutOrder::getWarehouseCode, lendOutOrder.getWarehouseCode())
-                    .orderByDesc(SparePartOutOrder::getConfirmTime));
+                    .orderByDesc(SparePartOutOrder::getConfirmTime).last("limit 1"));
             if(ObjectUtil.isNull(lastOrder)){
-                lendOutOrder.setUnused("0");
+                lendOutOrder.setUnused(String.valueOf(Integer.parseInt(lastOrder.getUnused())+lendOutOrder.getNum()));
             }else{
                 lendOutOrder.setUnused(String.valueOf(lastOrder.getUnused()));
             }

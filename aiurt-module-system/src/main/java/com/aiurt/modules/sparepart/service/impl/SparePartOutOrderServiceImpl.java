@@ -171,14 +171,14 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
                     .eq(SparePartOutOrder::getStatus, 2)
                     .eq(SparePartOutOrder::getMaterialCode, outOrder.getMaterialCode())
                     .eq(SparePartOutOrder::getWarehouseCode, outOrder.getWarehouseCode())
-                    .orderByDesc(SparePartOutOrder::getConfirmTime));
+                    .orderByDesc(SparePartOutOrder::getConfirmTime).last("limit 1"));
 
             if(ObjectUtil.isNull(lastOrder)){
                 outOrder.setUnused(String.valueOf(outOrder.getNum()));
                 outOrder.setSysOrgCode(user.getOrgCode());
             }else{
                 //同一仓库、同一备件 已经确认出库的数据更新出库剩余数量
-                outOrder.setUnused(String.valueOf(Integer.parseInt(lastOrder.getUnused())+sparePartOutOrder.getNum()));
+                outOrder.setUnused(String.valueOf(Integer.parseInt(lastOrder.getUnused())+outOrder.getNum()));
                 lastOrder.setUnused(outOrder.getUnused());
                 updateById(lastOrder);
             }
@@ -289,7 +289,7 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
                 .eq(SparePartOutOrder::getStatus, 2)
                 .eq(SparePartOutOrder::getMaterialCode, sparePartOutOrder.getMaterialCode())
                 .eq(SparePartOutOrder::getWarehouseCode, sparePartOutOrder.getWarehouseCode())
-                .orderByDesc(SparePartOutOrder::getConfirmTime));
+                .orderByDesc(SparePartOutOrder::getConfirmTime).last("limit 1"));
 
         if(ObjectUtil.isNull(lastOrder)){
             sparePartOutOrder.setUnused(String.valueOf(sparePartOutOrder.getNum()));
