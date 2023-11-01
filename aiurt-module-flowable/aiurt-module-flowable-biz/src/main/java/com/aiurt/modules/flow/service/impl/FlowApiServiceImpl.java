@@ -302,6 +302,8 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 设置办理人
         taskService.claim(task.getId(), loginName);
         taskService.setAssignee(task.getId(), loginName);
+        // 更新代办
+        flowStateService.updateFlowState(processInstance.getProcessInstanceId(), FlowStatesEnum.UN_COMPLETE.getCode());
 
         // 保存数据
         if (Objects.nonNull(busData)) {
@@ -445,8 +447,6 @@ public class FlowApiServiceImpl implements FlowApiService {
                     flowElementUtil.setBusinessKeyForProcessInstance(task.getProcessInstanceId(), o);
                 }
             }
-
-            flowStateService.updateFlowState(processInstance.getProcessInstanceId(), FlowStatesEnum.UN_COMPLETE.getCode());
         } else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE,
                 FlowApprovalType.REFUSE, FlowApprovalType.REJECT, FlowApprovalType.AUTO_COMPLETE)) {
             if (Objects.nonNull(busData)) {
@@ -930,7 +930,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         Page<FlowTaskDTO> result = new Page<>();
         TaskQuery query = taskService.createTaskQuery().active();
         if (StrUtil.isNotBlank(flowTaskReqDTO.getProcessDefinitionKey())) {
-            query.processDefinitionKey(flowTaskReqDTO.getProcessDefinitionKey());
+            query.processDefinitionKeyLike("%"+flowTaskReqDTO.getProcessDefinitionKey()+"%");
         }
         if (StrUtil.isNotBlank(flowTaskReqDTO.getProcessDefinitionName())) {
             query.processDefinitionNameLike("%" + flowTaskReqDTO.getProcessDefinitionName() + "%");

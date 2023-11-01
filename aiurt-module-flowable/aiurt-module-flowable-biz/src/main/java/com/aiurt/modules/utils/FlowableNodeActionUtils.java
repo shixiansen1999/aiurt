@@ -182,7 +182,7 @@ public class FlowableNodeActionUtils {
 
         Map<String, String> headers = buildHeaders();
         String responseResult = HttpUtils.sendGetRequest(customInterfaceAddress, headers, buildRequestParams(processInstanceId));
-        log.info(responseResult);
+        log.info("执行自定义接口:{}", responseResult);
     }
 
     /**
