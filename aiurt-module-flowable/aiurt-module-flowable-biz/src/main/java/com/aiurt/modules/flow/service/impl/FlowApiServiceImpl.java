@@ -1574,19 +1574,6 @@ public class FlowApiServiceImpl implements FlowApiService {
         taskCommentList.add(actCustomTaskComment);
         customTaskCommentService.saveBatch(taskCommentList);
 
-        // 暂时处理先 todo
-        if (StrUtil.startWithIgnoreCase(definitionId, "bd_work_ticket2") || StrUtil.startWithIgnoreCase(definitionId, "bd_work_titck")) {
-            String businessKey = historicProcessInstance.getBusinessKey();
-            if (StrUtil.isNotBlank(businessKey)) {
-                actCustomTaskCommentMapper.updateWorkticketState(businessKey);
-            }
-
-        } else if (StrUtil.startWithIgnoreCase(definitionId, "week_plan_construction") || StrUtil.startWithIgnoreCase(definitionId, "supplementary_plan")) {
-            String businessKey = historicProcessInstance.getBusinessKey();
-            if (StrUtil.isNotBlank(businessKey)) {
-                actCustomTaskCommentMapper.updateConstructionWeekPlanCommand(businessKey);
-            }
-        }
         if (StrUtil.equalsIgnoreCase(FlowApprovalType.STOP, instanceDTO.getApprovalType())) {
             flowStateService.updateFlowState(processInstanceId, FlowStatesEnum.TERMINATED.getCode());
         }
@@ -1954,9 +1941,6 @@ public class FlowApiServiceImpl implements FlowApiService {
                     taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
                     // 判断是否是表单设计器，
                     taskInfoDTO.setRouterName(jsonObject.getString(FlowModelAttConstant.FORM_URL));
-                    if (StrUtil.equalsAnyIgnoreCase(processDefinitionKey, "bd_work_ticket2", "bd_work_titck")) {
-                        taskInfoDTO.setRouterName("@/views/workTicket/modules/BdFirstWorkTicket.vue");
-                    }
                 }
             }
 
@@ -2927,7 +2911,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (isAutoSelect == 1) {
             return Collections.emptyList();
         }
-        Map<String, Object> busData = Optional.ofNullable(processParticipantsReqDTO.getBusData()).orElse(new HashMap<>(16));;
+        Map<String, Object> busData = Optional.ofNullable(processParticipantsReqDTO.getBusData()).orElse(new HashMap<>(16));
         busData.put("__APPROVAL_TYPE", processParticipantsReqDTO.getApprovalType());
         List<FlowElement> flowElementList = flowElementUtil.getTargetFlowElement(modelKey, userTask, busData);
         ExecutionEntityImpl processInstance = new ExecutionEntityImpl();
@@ -3070,7 +3054,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                     if (Objects.nonNull(loginUser)) {
                         String orgName = loginUser.getOrgName();
                         String jobName = Optional.ofNullable(loginUser.getJobName()).orElse("");
-                        Set<String> jonSet = StrUtil.split(jobName, ',').stream().map(v -> sysPostMap.get(v)).collect(Collectors.toSet());
+                        Set<String> jonSet = StrUtil.split(jobName, ',').stream().map(sysPostMap::get).collect(Collectors.toSet());
                         nodeInfoDTO.setRealName(loginUser.getRealname());
                         nodeInfoDTO.setUserName(loginUser.getUsername());
 

@@ -34,6 +34,8 @@ public class SequenceFlowTakenListener implements FlowableEventListener {
 
     private static final String PROPERTY = "property";
 
+    private static final int TWO_SIZE = 2;
+
     @Override
     public void onEvent(FlowableEvent event) {
         if (!(event instanceof FlowableSequenceFlowTakenEventImpl)) {
@@ -77,7 +79,7 @@ public class SequenceFlowTakenListener implements FlowableEventListener {
             }
             if (StrUtil.isAllNotBlank(value, service)) {
                 List<String> list = StrUtil.splitTrim(service, '.');
-                if (list.size() == 2) {
+                if (list.size() == TWO_SIZE) {
                     // 更新状态
                     String className = StrUtil.lowerFirst(list.get(0));
 
