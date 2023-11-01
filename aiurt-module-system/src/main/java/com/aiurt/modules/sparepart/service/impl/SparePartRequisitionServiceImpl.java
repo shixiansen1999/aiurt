@@ -913,7 +913,7 @@ public class SparePartRequisitionServiceImpl implements SparePartRequisitionServ
                     .eq(SparePartOutOrder::getWarehouseCode, lendOutOrder.getWarehouseCode())
                     .orderByDesc(SparePartOutOrder::getConfirmTime).last("limit 1"));
             if(ObjectUtil.isNull(lastOrder)){
-                lendOutOrder.setUnused(String.valueOf(Integer.parseInt(lastOrder.getUnused())+lendOutOrder.getNum()));
+                lendOutOrder.setUnused("0");
             }else{
                 lendOutOrder.setUnused(String.valueOf(lastOrder.getUnused()));
             }
