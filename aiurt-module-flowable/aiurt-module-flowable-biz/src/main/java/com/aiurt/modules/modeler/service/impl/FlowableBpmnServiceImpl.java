@@ -629,7 +629,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                     });
                 });
         if (StrUtil.equalsIgnoreCase("0", s)) {
-            Optional.ofNullable(extensionMap.get("emtptyApprover")).ifPresent(extensionElements -> {
+            Optional.ofNullable(extensionMap.get(FlowModelExtElementConstant.EX_EMPTY_APPROVE)).ifPresent(extensionElements -> {
                 ExtensionElement extensionElement = extensionElements.get(0);
                 Optional.ofNullable(extensionElement).ifPresent(element -> {
                     Map<String, List<ExtensionAttribute>> elementAttributeMap = element.getAttributes();
