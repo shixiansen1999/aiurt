@@ -157,6 +157,7 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 						errorStrs.add("第 " + i + " 行：物资系统类别为空，忽略导入。");
 						materialBase.setText("物资系统类别为空，忽略导入");
 						list.add(materialBase);
+						continue;
 					} else {
 						//物资分类
 						QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<MaterialBaseType>();
