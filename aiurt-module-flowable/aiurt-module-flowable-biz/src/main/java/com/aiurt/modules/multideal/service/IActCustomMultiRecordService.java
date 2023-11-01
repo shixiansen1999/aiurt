@@ -29,5 +29,11 @@ public interface IActCustomMultiRecordService extends IService<ActCustomMultiRec
      */
     public List<ActCustomMultiRecord> listByExecutionId(String userName, String executionId);
 
+    /**
+     * 是否存在加签记录
+     * @param userName
+     * @param executionId
+     * @return
+     */
     Boolean existMultiRecord(String userName, String executionId);
 }

@@ -116,7 +116,6 @@ public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInf
             if (modelInfo.getStatus().equals(ModelFormStatusEnum.CG.getStatus())) {
                 this.removeById(id);
                 String modelId = modelInfo.getModelId();
-               // repositoryService.getBpmnModel(modelId);
                 modelService.deleteModel(modelId);
             } else {
                 throw new AiurtBootException("模型不是草稿状态，请勿删除！");

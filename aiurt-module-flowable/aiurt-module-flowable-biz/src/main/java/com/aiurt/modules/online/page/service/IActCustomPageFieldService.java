@@ -14,5 +14,10 @@ import java.util.List;
  */
 public interface IActCustomPageFieldService extends IService<ActCustomPageField> {
 
+    /**
+     * 根据pageId查询页面字段
+     * @param pageId
+     * @return
+     */
     List<String> listPageFieldCode(String pageId);
 }

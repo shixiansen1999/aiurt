@@ -114,13 +114,4 @@ public class FlowRelationUtil {
         return Collections.emptyList();
     }
 
-    public static void main(String[] args) {
-        String input = "假如我有([1]or[2])and[3]";
-        Map<String, String> replacements = new HashMap<>();
-        replacements.put("[1]", "你");
-        replacements.put("[2]", "我");
-        replacements.put("[3]", "他");
-        String replaced = replacePlaceholders(input, replacements);
-        System.out.println(replaced);
-    }
 }

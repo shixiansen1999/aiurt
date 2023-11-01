@@ -105,7 +105,7 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
         // 发消息
         MessageDTO messageDTO = new MessageDTO();
         //构建消息模板
-        HashMap<String, Object> map = new HashMap<>();
+        HashMap<String, Object> map = new HashMap<>(16);
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_ID, historicProcessInstance.getBusinessKey());
         map.put(org.jeecg.common.constant.CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.BPM.getType());
 

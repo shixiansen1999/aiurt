@@ -489,7 +489,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
         // 属性名与操作的映射表,该接口定义了一个 accept 方法，用于接受两个输入参数，并执行相关的操作。
         // 由于 BiConsumer 是一个函数式接口，可以通过 lambda 表达式来实现它的方法
-        Map<String, BiConsumer<ExtensionAttribute, ActCustomTaskExt>> attributeHandlers = new HashMap<>();
+        Map<String, BiConsumer<ExtensionAttribute, ActCustomTaskExt>> attributeHandlers = new HashMap<>(16);
         attributeHandlers.put(FlowModelAttConstant.FORM_TYPE, (attr, ext) -> form.put(attr.getName(), attr.getValue()));
         attributeHandlers.put(FlowModelAttConstant.FORM_URL, (attr, ext) -> form.put(attr.getName(), attr.getValue()));
         attributeHandlers.put(FlowModelAttConstant.SERVICE, (attr, ext) -> form.put(attr.getName(), attr.getValue()));

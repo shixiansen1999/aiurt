@@ -2,6 +2,9 @@ package com.aiurt.modules.message.dto;
 
 import java.util.Date;
 
+/**
+ * @author gaowe
+ */
 public interface IMessage {
 
     /**

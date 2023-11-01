@@ -1545,7 +1545,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             runtimeService.setVariable(processInstanceId, FlowModelAttConstant.CANCEL, false);
         }
 
-        Map<String, Object> localVariables = new HashMap<>();
+        Map<String, Object> localVariables = new HashMap<>(16);
         localVariables.put(FlowConstant.STOP_PROCESS, Boolean.TRUE);
         runtimeService.createChangeActivityStateBuilder()
                 .processInstanceId(instanceDTO.getProcessInstanceId())
@@ -1619,7 +1619,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         List<Execution> executions = runtimeService.createExecutionQuery().parentId(processInstanceId).list();
         List<String> executionIds = executions.stream().map(Execution::getId).collect(Collectors.toList());
 
-        Map<String, Object> localVariableMap = new HashMap<>();
+        Map<String, Object> localVariableMap = new HashMap<>(16);
         localVariableMap.put(BackNodeRuleVerifyHandler.REJECT_FIRST_USER_TASK, true);
         // 流程跳转, flowable 已提供, 存在分支会存在问题
         runtimeService.createChangeActivityStateBuilder()
@@ -2262,7 +2262,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (!completeTask) {
             return Collections.emptyList();
         }
-        Map<String, Object> busData = Optional.ofNullable(processParticipantsReqDTO.getBusData()).orElse(new HashMap<>());
+        Map<String, Object> busData = Optional.ofNullable(processParticipantsReqDTO.getBusData()).orElse(new HashMap<>(16));
         busData.put("__APPROVAL_TYPE", processParticipantsReqDTO.getApprovalType());
         List<FlowElement> targetFlowElements = getTargetFlowElements(execution, processDefinitionId, taskDefinitionKey, busData);
         Map<String, Object> variables = flowElementUtil.getVariables(busData, task.getProcessInstanceId());
@@ -2933,7 +2933,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (isAutoSelect == 1) {
             return Collections.emptyList();
         }
-        Map<String, Object> busData = Optional.ofNullable(processParticipantsReqDTO.getBusData()).orElse(new HashMap<>());;
+        Map<String, Object> busData = Optional.ofNullable(processParticipantsReqDTO.getBusData()).orElse(new HashMap<>(16));;
         busData.put("__APPROVAL_TYPE", processParticipantsReqDTO.getApprovalType());
         List<FlowElement> flowElementList = flowElementUtil.getTargetFlowElement(modelKey, userTask, busData);
         ExecutionEntityImpl processInstance = new ExecutionEntityImpl();
