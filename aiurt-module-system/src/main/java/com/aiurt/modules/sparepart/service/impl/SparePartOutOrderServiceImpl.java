@@ -166,21 +166,21 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
                 sparePartStockNumMapper.updateById(stockNum);
             }
             //查询出库表同一仓库、同一备件是否有出库记录，没有则更新剩余数量为出库数量；
-            List<SparePartOutOrder> orderList = list(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SparePartOutOrder::getMaterialCode,outOrder.getMaterialCode()).eq(SparePartOutOrder::getWarehouseCode,outOrder.getWarehouseCode()));
+            SparePartOutOrder lastOrder = getOne(new LambdaQueryWrapper<SparePartOutOrder>()
+                    .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .eq(SparePartOutOrder::getStatus, 2)
+                    .eq(SparePartOutOrder::getMaterialCode, outOrder.getMaterialCode())
+                    .eq(SparePartOutOrder::getWarehouseCode, outOrder.getWarehouseCode())
+                    .orderByDesc(SparePartOutOrder::getConfirmTime));
 
-            if(orderList.isEmpty()){
-                outOrder.setUnused(outOrder.getNum()+"");
+            if(ObjectUtil.isNull(lastOrder)){
+                outOrder.setUnused(String.valueOf(outOrder.getNum()));
                 outOrder.setSysOrgCode(user.getOrgCode());
             }else{
-                //同一仓库、同一备件 已经确认出库的数据,剩余数量=剩余数量+出库数量
-                List<SparePartOutOrder> outOrders = orderList.stream().filter(s -> 2 == s.getStatus()).collect(Collectors.toList());
-                if (CollUtil.isNotEmpty(outOrders)) {
-                    orderList.forEach(order -> {
-                        Integer n = Integer.parseInt(order.getUnused())+outOrder.getNum();
-                        order.setUnused(n+"");
-                        updateOrder(order);
-                    });
-                }
+                //同一仓库、同一备件 已经确认出库的数据更新出库剩余数量
+                outOrder.setUnused(String.valueOf(Integer.parseInt(lastOrder.getUnused())+sparePartOutOrder.getNum()));
+                lastOrder.setUnused(outOrder.getUnused());
+                updateById(lastOrder);
             }
             outOrder.setBalance(balance);
             updateById(outOrder);
@@ -283,13 +283,21 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         sparePartOutOrder.setSysOrgCode(user.getOrgCode());
         sparePartOutOrder.setStatus(2);
         sparePartOutOrderMapper.insert(sparePartOutOrder);
-        List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>()
-                .eq(SparePartOutOrder::getStatus, 2)
+        //查询出库表同一仓库、同一备件是否有出库记录，没有则更新剩余数量为出库数量；
+        SparePartOutOrder lastOrder = getOne(new LambdaQueryWrapper<SparePartOutOrder>()
                 .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(SparePartOutOrder::getStatus, 2)
                 .eq(SparePartOutOrder::getMaterialCode, sparePartOutOrder.getMaterialCode())
-                .eq(SparePartOutOrder::getWarehouseCode, sparePartOutOrder.getWarehouseCode()));
-        if (!orderList.isEmpty()) {
-            sparePartOutOrder.setUnused(orderList.get(0).getUnused());
+                .eq(SparePartOutOrder::getWarehouseCode, sparePartOutOrder.getWarehouseCode())
+                .orderByDesc(SparePartOutOrder::getConfirmTime));
+
+        if(ObjectUtil.isNull(lastOrder)){
+            sparePartOutOrder.setUnused(String.valueOf(sparePartOutOrder.getNum()));
+        }else{
+            //同一仓库、同一备件 已经确认出库的数据更新出库剩余数量
+            sparePartOutOrder.setUnused(String.valueOf(Integer.parseInt(lastOrder.getUnused())+sparePartOutOrder.getNum()));
+            lastOrder.setUnused(sparePartOutOrder.getUnused());
+            updateById(lastOrder);
         }
         sparePartOutOrderMapper.updateById(sparePartOutOrder);
         //发一条出库消息
