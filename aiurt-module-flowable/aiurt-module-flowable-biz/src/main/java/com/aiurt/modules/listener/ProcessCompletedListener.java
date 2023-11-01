@@ -67,7 +67,10 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
                 if (logger.isInfoEnabled()) {
                     logger.info("流程结束监听事件, 删除该流程流程实例的定时任务，历史实例id：{}", executionEntity.getProcessInstanceId());
                 }
-
+                Boolean variableLocal = executionEntity.getVariableLocal(FlowConstant.STOP_PROCESS, Boolean.class);
+                if (Objects.nonNull(variableLocal)) {
+                    return;
+                }
                 IActCustomFlowStateService flowStateService = SpringContextUtils.getBean(IActCustomFlowStateService.class);
                 flowStateService.updateFlowState(executionEntity.getProcessInstanceId(), FlowStatesEnum.COMPLETE.getCode());
                 if (logger.isInfoEnabled()) {

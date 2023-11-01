@@ -36,7 +36,7 @@ public class ActCustomTaskCommentServiceImpl extends ServiceImpl<ActCustomTaskCo
     public List<ActCustomTaskComment> getFlowTaskCommentList(String processInstanceId) {
         LambdaQueryWrapper<ActCustomTaskComment> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ActCustomTaskComment::getProcessInstanceId, processInstanceId);
-        queryWrapper.orderByAsc(ActCustomTaskComment::getId);
+        queryWrapper.orderByAsc(ActCustomTaskComment::getCreateTime);
         return baseMapper.selectList(queryWrapper);
     }
 
