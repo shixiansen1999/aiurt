@@ -183,6 +183,8 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Autowired
     private IActCustomFlowStateService flowStateService;
 
+    private static final int TWO_SIZE = 2;
+
     /**
      * @param startBpmnDTO
      * @return
@@ -839,7 +841,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 DateTime dateTime = DateUtil.beginOfDay(beginDate);
                 historicTaskReqDTO.setBeginDate(dateTime);
 
-            }else if (startTime.size() == 2) {
+            }else if (startTime.size() == TWO_SIZE) {
                 String start = startTime.get(0);
                 DateTime beginDate = DateUtil.parse(start, DatePattern.NORM_DATE_PATTERN);
                 DateTime dateTime = DateUtil.beginOfDay(beginDate);
@@ -952,8 +954,8 @@ public class FlowApiServiceImpl implements FlowApiService {
         String userName = loginUser.getUsername();
         Page<FlowCopyDTO> page = new Page<>(flowCopyReqDTO.getPageNo(),flowCopyReqDTO.getPageSize());
         //查询所有抄送信息
-        IPage<FlowCopyDTO> flowCopyDTOIPage = actCustomProcessCopyService.queryPageList(page, flowCopyReqDTO,userName);
-        return flowCopyDTOIPage;
+        IPage<FlowCopyDTO> flowCopyPageList = actCustomProcessCopyService.queryPageList(page, flowCopyReqDTO,userName);
+        return flowCopyPageList;
     }
 
     /**
@@ -1180,14 +1182,38 @@ public class FlowApiServiceImpl implements FlowApiService {
             unfinishedTaskSet.add(unfinishedActivity.getActivityId());
         }
         //获取用户节点办理用户
+        List<HighLightedUserInfoDTO> highLightedUserInfos = getHighLightedUserInfo(processInstanceId);
+
+        // 获取的是当前运行的xml
+        byte[] bpmnXml = modelService.getBpmnXML(bpmnModel);
+        String modelXml = new String(bpmnXml, StandardCharsets.UTF_8);
+        HighLightedNodeDTO highLightedNodeDTO = HighLightedNodeDTO.builder()
+                .finishedTaskSet(finishedTaskSet)
+                .finishedSequenceFlowSet(finishedTaskSequenceSet)
+                .unfinishedTaskSet(unfinishedTaskSet)
+                .modelName(hpi.getProcessDefinitionName())
+                .modelXml(modelXml)
+                .highLightedUserInfoDTOs(highLightedUserInfos)
+                .isEnd(Objects.nonNull(hpi.getEndTime()))
+                .build();
+        return highLightedNodeDTO;
+    }
+
+    public Map<String, HistoryTaskInfo> flowChart(String processInstanceId) {
+        return flowForecastService.mergeTask(processInstanceId);
+    }
+
+    public  List<HighLightedUserInfoDTO> getHighLightedUserInfo(String processInstanceId){
         Map<String, HistoryTaskInfo> stringHistoricTaskInfoMap = flowChart(processInstanceId);
         //驳回，获取最新一次任务
+        int length = 2;
+        int maxNumber = 3;
         Map<String, HistoryTaskInfo> collect = stringHistoricTaskInfoMap.entrySet().stream()
                 .collect(Collectors.groupingBy(
                         entry -> {
                             String key = entry.getKey();
                             String[] parts = key.split("_");
-                            if (parts.length >= 2) {
+                            if (parts.length >= length) {
                                 return parts[0] + "_" + parts[1];
                             } else {
                                 return key;
@@ -1196,7 +1222,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                         Collectors.maxBy(Comparator.comparing(entry -> {
                             String key = entry.getKey();
                             String[] parts = key.split("_");
-                            if (parts.length >= 3) {
+                            if (parts.length >= maxNumber) {
                                 return Integer.parseInt(parts[2]);
                             } else {
                                 return 0;
@@ -1209,8 +1235,21 @@ public class FlowApiServiceImpl implements FlowApiService {
                         entry -> entry.getValue().map(Map.Entry::getValue).orElse(null)
                 ));
 
+        // 获取所有可能的assignee值
+        List<String> allAssignees = collect.entrySet().stream()
+                .map(entry -> entry.getValue().getList())
+                .flatMap(list -> list.stream()
+                        .filter(instance -> !"MI_END".equals(instance.getDeleteReason()))
+                        .map(HistoricTaskInstance::getAssignee))
+                .distinct()
+                .collect(Collectors.toList());
+
+        // 一次性查询所有assignee的信息并将其转换为映射
+        List<LoginUser> allUsers = sysBaseAPI.getLoginUserList(allAssignees);
+        Map<String, LoginUser> assigneeToUserMap = allUsers.stream()
+                .collect(Collectors.toMap(LoginUser::getUsername, user -> user));
         //获取审核通过的用户
-        List<HighLightedUserInfoDTO> highLightedUserInfoDTOs = collect.entrySet().stream()
+        List<HighLightedUserInfoDTO> highLightedUserInfos = collect.entrySet().stream()
                 .map(entry -> {
                     String activityId = entry.getKey();
                     HistoryTaskInfo value = entry.getValue();
@@ -1220,9 +1259,10 @@ public class FlowApiServiceImpl implements FlowApiService {
                             .filter(instance -> !"MI_END".equals(instance.getDeleteReason()))
                             .map(HistoricTaskInstance::getAssignee)
                             .distinct()
-                            .map(sysBaseAPI::queryUser)
-                            .filter(user -> user.getRealname() != null)
-                            .map(LoginUser::getRealname)
+                            .map(assignee -> {
+                                LoginUser user = assigneeToUserMap.get(assignee);
+                                return user != null && user.getRealname() != null ? user.getRealname() : "";
+                            })
                             .collect(Collectors.joining(", "));
                     HighLightedUserInfoDTO highLightedUserInfoDTO = new HighLightedUserInfoDTO();
                     highLightedUserInfoDTO.setNodeId(activityId);
@@ -1230,27 +1270,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                     return highLightedUserInfoDTO;
                 })
                 .collect(Collectors.toList());
-
-        // 获取的是当前运行的xml
-        byte[] bpmnXml = modelService.getBpmnXML(bpmnModel);
-        String modelXml = new String(bpmnXml, StandardCharsets.UTF_8);
-        HighLightedNodeDTO highLightedNodeDTO = HighLightedNodeDTO.builder()
-                .finishedTaskSet(finishedTaskSet)
-                .finishedSequenceFlowSet(finishedTaskSequenceSet)
-                .unfinishedTaskSet(unfinishedTaskSet)
-                .modelName(hpi.getProcessDefinitionName())
-                .modelXml(modelXml)
-                .highLightedUserInfoDTOs(highLightedUserInfoDTOs)
-                .isEnd(Objects.nonNull(hpi.getEndTime()))
-                .build();
-        return highLightedNodeDTO;
+        return highLightedUserInfos;
     }
-
-    public Map<String, HistoryTaskInfo> flowChart(String processInstanceId) {
-        return flowForecastService.mergeTask(processInstanceId);
-    }
-
-
 
     /**
      * 获取流程实例的已完成历史任务列表。
@@ -1574,19 +1595,6 @@ public class FlowApiServiceImpl implements FlowApiService {
         taskCommentList.add(actCustomTaskComment);
         customTaskCommentService.saveBatch(taskCommentList);
 
-        // 暂时处理先 todo
-        if (StrUtil.startWithIgnoreCase(definitionId, "bd_work_ticket2") || StrUtil.startWithIgnoreCase(definitionId, "bd_work_titck")) {
-            String businessKey = historicProcessInstance.getBusinessKey();
-            if (StrUtil.isNotBlank(businessKey)) {
-                actCustomTaskCommentMapper.updateWorkticketState(businessKey);
-            }
-
-        } else if (StrUtil.startWithIgnoreCase(definitionId, "week_plan_construction") || StrUtil.startWithIgnoreCase(definitionId, "supplementary_plan")) {
-            String businessKey = historicProcessInstance.getBusinessKey();
-            if (StrUtil.isNotBlank(businessKey)) {
-                actCustomTaskCommentMapper.updateConstructionWeekPlanCommand(businessKey);
-            }
-        }
         if (StrUtil.equalsIgnoreCase(FlowApprovalType.STOP, instanceDTO.getApprovalType())) {
             flowStateService.updateFlowState(processInstanceId, FlowStatesEnum.TERMINATED.getCode());
         }
@@ -1954,9 +1962,6 @@ public class FlowApiServiceImpl implements FlowApiService {
                     taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
                     // 判断是否是表单设计器，
                     taskInfoDTO.setRouterName(jsonObject.getString(FlowModelAttConstant.FORM_URL));
-                    if (StrUtil.equalsAnyIgnoreCase(processDefinitionKey, "bd_work_ticket2", "bd_work_titck")) {
-                        taskInfoDTO.setRouterName("@/views/workTicket/modules/BdFirstWorkTicket.vue");
-                    }
                 }
             }
 
@@ -2927,7 +2932,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (isAutoSelect == 1) {
             return Collections.emptyList();
         }
-        Map<String, Object> busData = Optional.ofNullable(processParticipantsReqDTO.getBusData()).orElse(new HashMap<>(16));;
+        Map<String, Object> busData = Optional.ofNullable(processParticipantsReqDTO.getBusData()).orElse(new HashMap<>(16));
         busData.put("__APPROVAL_TYPE", processParticipantsReqDTO.getApprovalType());
         List<FlowElement> flowElementList = flowElementUtil.getTargetFlowElement(modelKey, userTask, busData);
         ExecutionEntityImpl processInstance = new ExecutionEntityImpl();
@@ -3070,7 +3075,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                     if (Objects.nonNull(loginUser)) {
                         String orgName = loginUser.getOrgName();
                         String jobName = Optional.ofNullable(loginUser.getJobName()).orElse("");
-                        Set<String> jonSet = StrUtil.split(jobName, ',').stream().map(v -> sysPostMap.get(v)).collect(Collectors.toSet());
+                        Set<String> jonSet = StrUtil.split(jobName, ',').stream().map(sysPostMap::get).collect(Collectors.toSet());
                         nodeInfoDTO.setRealName(loginUser.getRealname());
                         nodeInfoDTO.setUserName(loginUser.getUsername());
 

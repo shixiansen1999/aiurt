@@ -336,7 +336,7 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
             String result = StrUtil.join("\",\"", list);
             return String.format("%s,\"%s\"", flowConditionDTO.getCode(), result);
         } else {
-            return String.format("%s,%s", flowConditionDTO.getCode(), flowConditionDTO.getValue());
+            return String.format("%s,\"%s\"", flowConditionDTO.getCode(), flowConditionDTO.getValue());
         }
     }
 

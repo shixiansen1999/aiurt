@@ -86,6 +86,10 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
     private static final String BPMN_EXTENSION = ".bpmn";
     private static final String BPMN20_XML_EXTENSION = ".bpmn20.xml";
 
+    private static final String IS_TRUE = "true";
+
+    private static final String ZERO_SIZE = "0";
+
     @Autowired
     private ModelService modelService;
 
@@ -376,7 +380,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
             ExtensionElement extensionElement = extensionElementList.get(0);
             String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_VALUE);
             // 是否提醒
-            if (StrUtil.equalsIgnoreCase(attributeValue, "true")) {
+            if (StrUtil.equalsIgnoreCase(attributeValue, IS_TRUE)) {
                 modelExt.setIsRemind(1);
             } else {
                 modelExt.setIsRemind(0);
@@ -542,7 +546,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                 ExtensionElement extensionElement = autoSelectElements.get(0);
                 String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_USER_VALUE);
                 // 需要转换
-                if (StrUtil.isBlank(attributeValue) || StrUtil.equalsIgnoreCase(attributeValue, "true")) {
+                if (StrUtil.isBlank(attributeValue) || StrUtil.equalsIgnoreCase(attributeValue, IS_TRUE)) {
                     flowTaskExt.setIsAutoSelect(1);
                 } else {
                     flowTaskExt.setIsAutoSelect(0);
@@ -575,7 +579,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                 ExtensionElement extensionElement = addMultiElements.get(0);
                 String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_VALUE);
                 // 需要转换
-                if (StrUtil.equalsIgnoreCase(attributeValue, "true")) {
+                if (StrUtil.equalsIgnoreCase(attributeValue, IS_TRUE)) {
                     flowTaskExt.setIsAddMulti(1);
                 } else {
                     flowTaskExt.setIsAddMulti(0);
@@ -628,7 +632,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                         });
                     });
                 });
-        if (StrUtil.equalsIgnoreCase("0", s)) {
+        if (StrUtil.equalsIgnoreCase(ZERO_SIZE, s)) {
             Optional.ofNullable(extensionMap.get(FlowModelExtElementConstant.EX_EMPTY_APPROVE)).ifPresent(extensionElements -> {
                 ExtensionElement extensionElement = extensionElements.get(0);
                 Optional.ofNullable(extensionElement).ifPresent(element -> {

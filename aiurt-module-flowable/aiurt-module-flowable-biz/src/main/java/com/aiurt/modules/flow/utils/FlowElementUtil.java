@@ -635,9 +635,14 @@ public class FlowElementUtil {
         }
         // 查询消息
         String pageId = one.getPageId();
-        if (StrUtil.isNotBlank(pageId) && Objects.nonNull(busData)) {
+        if (StrUtil.isNotBlank(pageId) && Objects.nonNull(busData) && MapUtil.isNotEmpty(busData)) {
             List<String> pageFieldCodeList = pageFieldService.listPageFieldCode(pageId);
-            pageFieldCodeList.stream().forEach(code-> variableData.put(code, busData.get(code)));
+            pageFieldCodeList.stream().forEach(code-> {
+                Object o = busData.get(code);
+                if (Objects.nonNull(o)) {
+                    variableData.put(code, o);
+                }
+            });
         }
     }
 
