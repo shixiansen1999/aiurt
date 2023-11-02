@@ -6,6 +6,9 @@ import org.flowable.task.api.Task;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * @author gaowei
+ */
 @Data
 public abstract class AbstractMessage implements IMessage{
 

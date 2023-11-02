@@ -37,6 +37,7 @@ import static com.aiurt.modules.online.workflowapi.service.IActCustomInterfaceMo
 @RequestMapping("/workflowapi/actCustomInterfaceModule")
 @Slf4j
 public class ActCustomInterfaceModuleController extends BaseController<ActCustomInterfaceModule, IActCustomInterfaceModuleService> {
+    private static final String IS_TRUE = "true";
     @Autowired
     private IActCustomInterfaceModuleService actCustomInterfaceModuleService;
 
@@ -49,7 +50,6 @@ public class ActCustomInterfaceModuleController extends BaseController<ActCustom
      * @param req
      * @return
      */
-    //@AutoLog(value = "act_custom_interface_module-分页列表查询")
     @ApiOperation(value = "act_custom_interface_module-分页列表查询", notes = "act_custom_interface_module-分页列表查询")
     @GetMapping(value = "/rootList")
     public Result<IPage<ActCustomInterfaceModule>> queryPageList(ActCustomInterfaceModule actCustomInterfaceModule,
@@ -57,7 +57,7 @@ public class ActCustomInterfaceModuleController extends BaseController<ActCustom
                                                                  @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                                  HttpServletRequest req) {
         String hasQuery = req.getParameter("hasQuery");
-        if (hasQuery != null && "true".equals(hasQuery)) {
+        if (hasQuery != null && IS_TRUE.equals(hasQuery)) {
             QueryWrapper<ActCustomInterfaceModule> queryWrapper = QueryGenerator.initQueryWrapper(actCustomInterfaceModule, req.getParameterMap());
             List<ActCustomInterfaceModule> list = actCustomInterfaceModuleService.queryTreeListNoPage(queryWrapper);
             IPage<ActCustomInterfaceModule> pageList = new Page<>(1, 10, list.size());
@@ -131,7 +131,6 @@ public class ActCustomInterfaceModuleController extends BaseController<ActCustom
      * @return 返回 IPage
      * @return
      */
-    //@AutoLog(value = "act_custom_interface_module-批量获取子数据")
     @ApiOperation(value = "act_custom_interface_module-批量获取子数据", notes = "act_custom_interface_module-批量获取子数据")
     @GetMapping("/getChildListBatch")
     public Result getChildListBatch(@RequestParam("parentIds") String parentIds) {

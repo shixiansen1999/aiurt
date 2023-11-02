@@ -21,7 +21,6 @@ import org.flowable.job.service.impl.persistence.entity.JobEntity;
 import org.flowable.task.api.Task;
 import org.flowable.variable.api.delegate.VariableScope;
 import org.jeecg.common.util.SpringContextUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Date;

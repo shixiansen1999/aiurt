@@ -32,6 +32,8 @@ import java.util.Optional;
 @Service
 public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMapper, ActCustomVersion> implements IActCustomVersionService {
 
+    private static final String IS_MAIN_VERSION = "1";
+
     @Lazy
     @Autowired
     private FlowElementUtil flowElementUtil;
@@ -105,7 +107,7 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
 
         ActCustomVersion customVersion = vaildEntity(actCustomVersion);
 
-        if (StrUtil.equalsIgnoreCase(customVersion.getMainVersion(), "1")) {
+        if (StrUtil.equalsIgnoreCase(customVersion.getMainVersion(), IS_MAIN_VERSION)) {
             throw new AiurtBootException("该版本已经为当前工作流的发布主版本，不能重复设置！");
         }
 

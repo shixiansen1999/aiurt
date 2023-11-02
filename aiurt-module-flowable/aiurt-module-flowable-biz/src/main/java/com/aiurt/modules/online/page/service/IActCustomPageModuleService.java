@@ -4,7 +4,6 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.online.page.entity.ActCustomPageModule;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.vo.SelectTreeModel;
 
 import java.util.List;

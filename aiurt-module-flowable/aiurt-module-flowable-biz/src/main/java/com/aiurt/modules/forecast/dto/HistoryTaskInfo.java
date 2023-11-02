@@ -138,7 +138,6 @@ public class HistoryTaskInfo {
         //分配用户
         userTask.setAssignee("${assignee}");
         MultiInstanceLoopCharacteristics multiInstanceLoopCharacteristics=new MultiInstanceLoopCharacteristics();
-//        multiInstanceLoopCharacteristics.setCollectionString("${collectionList}");
         //完成条件,默认所有人都完成
         multiInstanceLoopCharacteristics.setCompletionCondition("${completionCondition}");
         //元素变量多实例,一般和设置的assignee变量是对应的

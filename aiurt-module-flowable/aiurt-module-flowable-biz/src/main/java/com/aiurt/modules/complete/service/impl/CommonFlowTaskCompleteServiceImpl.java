@@ -130,8 +130,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         if (Objects.isNull(variableData)) {
             variableData = new HashMap<>(16);
         }
-        Map<String, Object> busData = Optional.ofNullable(flowCompleteReqDTO.getBusData()).orElse(new HashMap<>());
-       // busData.put(APPROVAL_TYPE, approvalType);
+        Map<String, Object> busData = Optional.ofNullable(flowCompleteReqDTO.getBusData()).orElse(new HashMap<>(16));
 
         Map<String, Object> variables = flowElementUtil.getVariables(busData, processInstanceId);
         variableData.putAll(variables);
@@ -147,7 +146,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         if (completeTask) {
             log.info("提交任务（多实例最后一步提交），获取下一步节点信息包括结束节点");
             FlowElement flowElement = flowElementUtil.getFlowElement(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
-            List<FlowElement> targetFlowElement = flowElementUtil.getTargetFlowElement(execution, flowElement, busData);
+            List<FlowElement> targetFlowElement = flowElementUtil.getTargetFlowElement(execution, flowElement, variableData);
             taskContext.setTargetFlowElement(targetFlowElement);
             // 为空的，而且是自动提交，但是审批人为空的
             if ((Objects.nonNull(isAutoSelect) && isAutoSelect == 1) ||

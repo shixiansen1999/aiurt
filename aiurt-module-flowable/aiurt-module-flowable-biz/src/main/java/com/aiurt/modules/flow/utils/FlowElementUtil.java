@@ -195,9 +195,7 @@ public class FlowElementUtil {
     public FlowElement getStartFlowNodeByDefinitionId(String processDefinitionId) {
         BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
 
-        StartEvent startEvent = bpmnModel.getMainProcess().findFlowElementsOfType(StartEvent.class, false).get(0);
-
-        return startEvent;
+        return bpmnModel.getMainProcess().findFlowElementsOfType(StartEvent.class, false).get(0);
     }
 
     /**
@@ -232,8 +230,7 @@ public class FlowElementUtil {
     public ProcessDefinition getProcessDefinition(String processDefinitionKey) {
         ActCustomVersion customVersion = getFlowMainVersion(processDefinitionKey);
 
-        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(customVersion.getProcessDefinitionId()).singleResult();
-        return processDefinition;
+        return repositoryService.createProcessDefinitionQuery().processDefinitionId(customVersion.getProcessDefinitionId()).singleResult();
     }
 
     /**
@@ -279,9 +276,8 @@ public class FlowElementUtil {
         if (Objects.isNull(bpmnModel)) {
             throw new AiurtBootException("");
         }
-        FlowElement flowElement = bpmnModel.getMainProcess().getFlowElement(flowElementId);
 
-        return flowElement;
+        return bpmnModel.getMainProcess().getFlowElement(flowElementId);
     }
 
     /**
@@ -298,9 +294,8 @@ public class FlowElementUtil {
         if (CollUtil.isEmpty(endEventList)) {
             return null;
         }
-        EndEvent endEvent = endEventList.get(0);
 
-        return endEvent;
+        return endEventList.get(0);
     }
 
 
@@ -550,16 +545,6 @@ public class FlowElementUtil {
     }
 
     /**
-     *
-     * @param activityId  id of the multi-instance activity (id attribute in the BPMN XML)
-     * @param  parentExecutionId  can be the process instance id
-     * @param assigneeList username
-     */
-    public void addMultiInstanceExecution(String activityId, String parentExecutionId, List<String> assigneeList) {
-        // 设置多实例
-    }
-
-    /**
      * 构建流程变量，防止页面的数据太多
      * @param busData
      * @param processInstanceId
@@ -650,10 +635,13 @@ public class FlowElementUtil {
         }
         // 查询消息
         String pageId = one.getPageId();
-        if (StrUtil.isNotBlank(pageId) && Objects.nonNull(busData)) {
+        if (StrUtil.isNotBlank(pageId) && Objects.nonNull(busData) && MapUtil.isNotEmpty(busData)) {
             List<String> pageFieldCodeList = pageFieldService.listPageFieldCode(pageId);
-            pageFieldCodeList.stream().forEach(code->{
-                variableData.put(code, busData.get(code));
+            pageFieldCodeList.stream().forEach(code-> {
+                Object o = busData.get(code);
+                if (Objects.nonNull(o)) {
+                    variableData.put(code, o);
+                }
             });
         }
     }

@@ -252,7 +252,7 @@ public class TaskCreateListener implements FlowableEventListener {
                     bpmnTodoDTO.setUrlType(json.getString("formType"));
                 }
             }
-            HashMap<String, Object> map = new HashMap<>();
+            HashMap<String, Object> map = new HashMap<>(16);
             // 处理流程
             String processDefinitionKey = instance.getProcessDefinitionKey();
             String processDefinitionName = instance.getProcessDefinitionName();
