@@ -1182,6 +1182,28 @@ public class FlowApiServiceImpl implements FlowApiService {
             unfinishedTaskSet.add(unfinishedActivity.getActivityId());
         }
         //获取用户节点办理用户
+        List<HighLightedUserInfoDTO> highLightedUserInfos = getHighLightedUserInfo(processInstanceId);
+
+        // 获取的是当前运行的xml
+        byte[] bpmnXml = modelService.getBpmnXML(bpmnModel);
+        String modelXml = new String(bpmnXml, StandardCharsets.UTF_8);
+        HighLightedNodeDTO highLightedNodeDTO = HighLightedNodeDTO.builder()
+                .finishedTaskSet(finishedTaskSet)
+                .finishedSequenceFlowSet(finishedTaskSequenceSet)
+                .unfinishedTaskSet(unfinishedTaskSet)
+                .modelName(hpi.getProcessDefinitionName())
+                .modelXml(modelXml)
+                .highLightedUserInfoDTOs(highLightedUserInfos)
+                .isEnd(Objects.nonNull(hpi.getEndTime()))
+                .build();
+        return highLightedNodeDTO;
+    }
+
+    public Map<String, HistoryTaskInfo> flowChart(String processInstanceId) {
+        return flowForecastService.mergeTask(processInstanceId);
+    }
+
+    public  List<HighLightedUserInfoDTO> getHighLightedUserInfo(String processInstanceId){
         Map<String, HistoryTaskInfo> stringHistoricTaskInfoMap = flowChart(processInstanceId);
         //驳回，获取最新一次任务
         int length = 2;
@@ -1213,6 +1235,19 @@ public class FlowApiServiceImpl implements FlowApiService {
                         entry -> entry.getValue().map(Map.Entry::getValue).orElse(null)
                 ));
 
+        // 获取所有可能的assignee值
+        List<String> allAssignees = collect.entrySet().stream()
+                .map(entry -> entry.getValue().getList())
+                .flatMap(list -> list.stream()
+                        .filter(instance -> !"MI_END".equals(instance.getDeleteReason()))
+                        .map(HistoricTaskInstance::getAssignee))
+                .distinct()
+                .collect(Collectors.toList());
+
+        // 一次性查询所有assignee的信息并将其转换为映射
+        List<LoginUser> allUsers = sysBaseAPI.getLoginUserList(allAssignees);
+        Map<String, LoginUser> assigneeToUserMap = allUsers.stream()
+                .collect(Collectors.toMap(LoginUser::getUsername, user -> user));
         //获取审核通过的用户
         List<HighLightedUserInfoDTO> highLightedUserInfos = collect.entrySet().stream()
                 .map(entry -> {
@@ -1224,9 +1259,10 @@ public class FlowApiServiceImpl implements FlowApiService {
                             .filter(instance -> !"MI_END".equals(instance.getDeleteReason()))
                             .map(HistoricTaskInstance::getAssignee)
                             .distinct()
-                            .map(sysBaseAPI::queryUser)
-                            .filter(user -> user.getRealname() != null)
-                            .map(LoginUser::getRealname)
+                            .map(assignee -> {
+                                LoginUser user = assigneeToUserMap.get(assignee);
+                                return user != null && user.getRealname() != null ? user.getRealname() : "";
+                            })
                             .collect(Collectors.joining(", "));
                     HighLightedUserInfoDTO highLightedUserInfoDTO = new HighLightedUserInfoDTO();
                     highLightedUserInfoDTO.setNodeId(activityId);
@@ -1234,27 +1270,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                     return highLightedUserInfoDTO;
                 })
                 .collect(Collectors.toList());
-
-        // 获取的是当前运行的xml
-        byte[] bpmnXml = modelService.getBpmnXML(bpmnModel);
-        String modelXml = new String(bpmnXml, StandardCharsets.UTF_8);
-        HighLightedNodeDTO highLightedNodeDTO = HighLightedNodeDTO.builder()
-                .finishedTaskSet(finishedTaskSet)
-                .finishedSequenceFlowSet(finishedTaskSequenceSet)
-                .unfinishedTaskSet(unfinishedTaskSet)
-                .modelName(hpi.getProcessDefinitionName())
-                .modelXml(modelXml)
-                .highLightedUserInfoDTOs(highLightedUserInfos)
-                .isEnd(Objects.nonNull(hpi.getEndTime()))
-                .build();
-        return highLightedNodeDTO;
+        return highLightedUserInfos;
     }
-
-    public Map<String, HistoryTaskInfo> flowChart(String processInstanceId) {
-        return flowForecastService.mergeTask(processInstanceId);
-    }
-
-
 
     /**
      * 获取流程实例的已完成历史任务列表。
