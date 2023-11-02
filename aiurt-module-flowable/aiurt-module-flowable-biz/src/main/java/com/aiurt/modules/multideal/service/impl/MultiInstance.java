@@ -1,18 +1,13 @@
 package com.aiurt.modules.multideal.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.multideal.entity.ActCustomMultiRecord;
 import com.aiurt.modules.multideal.service.IActCustomMultiRecordService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import org.ehcache.shadow.org.terracotta.statistics.TableSkeleton;
-import org.flowable.bpmn.model.FlowElement;
-import org.flowable.bpmn.model.UserTask;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.delegate.DelegateExecution;
-import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.impl.util.ExecutionGraphUtil;
 import org.flowable.task.api.Task;

@@ -275,8 +275,8 @@ public class TaskCreateListener implements FlowableEventListener {
             bpmnTodoDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE_PROCESS);
             bpmnTodoDTO.setData(map);
             bpmnTodoDTO.setMsgAbstract("有流程到达");
-            ISysParamAPI iSysParamAPI = SpringContextUtils.getBean(ISysParamAPI.class);
-            SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.BPM_MESSAGE);
+            ISysParamAPI sysParamApi = SpringContextUtils.getBean(ISysParamAPI.class);
+            SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.BPM_MESSAGE);
             bpmnTodoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
 
             bpmnTodoDTO.setTitle(bpmnTodoDTO.getProcessName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd"));

@@ -17,7 +17,6 @@ import org.flowable.bpmn.model.ExtensionElement;
 import org.flowable.bpmn.model.Process;
 import org.flowable.editor.language.json.converter.BpmnJsonConverter;
 import org.flowable.editor.language.json.converter.BpmnJsonConverterContext;
-import org.flowable.editor.language.json.converter.util.JsonConverterUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

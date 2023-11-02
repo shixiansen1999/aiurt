@@ -1,7 +1,6 @@
 package com.aiurt.modules.modeler.service;
 
 import com.aiurt.modules.modeler.dto.ConnectionConditionConfigDTO;
-import com.aiurt.modules.modeler.dto.FlowConditionDTO;
 import com.aiurt.modules.modeler.entity.ActCustomVariable;
 import com.baomidou.mybatisplus.extension.service.IService;
 
