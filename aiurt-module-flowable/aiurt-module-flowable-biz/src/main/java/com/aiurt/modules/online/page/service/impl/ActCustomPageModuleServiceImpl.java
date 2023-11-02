@@ -35,7 +35,8 @@ import java.util.List;
  */
 @Service
 public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageModuleMapper, ActCustomPageModule> implements IActCustomPageModuleService {
-
+    private static final String ONE_SIZE = "1";
+    private static final String COMMA = ",";
     @Autowired
     private ActCustomPageMapper actCustomPageMapper;
     @Autowired
@@ -62,7 +63,7 @@ public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageMod
 		}else{
 			//如果当前节点父ID不为空 则设置父节点的hasChildren 为1
 			ActCustomPageModule parent = baseMapper.selectById(actCustomPageModule.getPid());
-			if(parent!=null && !"1".equals(parent.getHasChild())){
+			if(parent!=null && !ONE_SIZE.equals(parent.getHasChild())){
 				parent.setHasChild("1");
 				baseMapper.updateById(parent);
 			}
@@ -102,7 +103,7 @@ public class ActCustomPageModuleServiceImpl extends ServiceImpl<ActCustomPageMod
         }
         //查询选中节点下所有子节点一并删除
         id = this.queryTreeChildIds(id);
-        if(id.indexOf(",")>0) {
+        if(id.indexOf(COMMA)>0) {
             StringBuffer sb = new StringBuffer();
             String[] idArr = id.split(",");
             for (String idVal : idArr) {

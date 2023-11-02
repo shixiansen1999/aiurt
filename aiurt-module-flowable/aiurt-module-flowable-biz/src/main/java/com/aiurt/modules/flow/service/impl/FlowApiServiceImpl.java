@@ -183,6 +183,8 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Autowired
     private IActCustomFlowStateService flowStateService;
 
+    private static final int TWO_SIZE = 2;
+
     /**
      * @param startBpmnDTO
      * @return
@@ -839,7 +841,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 DateTime dateTime = DateUtil.beginOfDay(beginDate);
                 historicTaskReqDTO.setBeginDate(dateTime);
 
-            }else if (startTime.size() == 2) {
+            }else if (startTime.size() == TWO_SIZE) {
                 String start = startTime.get(0);
                 DateTime beginDate = DateUtil.parse(start, DatePattern.NORM_DATE_PATTERN);
                 DateTime dateTime = DateUtil.beginOfDay(beginDate);
