@@ -164,7 +164,7 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         sparePartInOrder.setConfirmId(user.getId());
         sparePartInOrder.setConfirmTime(date);
         sparePartInOrder.setUsedNum(returnOrder.getNum());
-        sparePartInOrder.setInType(MaterialRequisitionConstant.NORMAL_IN);
+        sparePartInOrder.setInType(MaterialRequisitionConstant.RETURN_LIBRARY);
         sparePartInOrderService.save(sparePartInOrder);
         // 同步入库记录到出入库记录表
         MaterialStockOutInRecord record = new MaterialStockOutInRecord();
@@ -175,7 +175,7 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         record.setMaterialRequisitionType(3);
         record.setIsOutIn(1);
         record.setOutInType(sparePartInOrder.getInType());
-        record.setBalance(sparePartStock.getNum()+returnOrder.getNum());
+        record.setBalance(sparePartStock.getNum());
         materialStockOutInRecordService.save(record);
         return Result.OK("操作成功！");
 
