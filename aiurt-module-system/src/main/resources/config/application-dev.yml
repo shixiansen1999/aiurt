@@ -279,7 +279,7 @@ jeecg:
       data-type: database
   #分布式锁配置
   redisson:
-    address: 127.0.0.1:6379
+    address: 192.168.1.29:6379
     password: 1qaz@2wsx
     type: STANDALONE
     enabled: true
@@ -291,14 +291,9 @@ jeecg:
 #cas单点登录
 cas:
   prefixUrl: http://cas.example.org:8443/cas
-#Mybatis输出sql日志
+# logback配置
 logging:
-  level:
-    com:
-     aiurt:
-      modules:
-       sysfile:
-        mapper: debug
+  config: ./config/logback-spring.xml
 #swagger
 knife4j:
   #开启增强配置
