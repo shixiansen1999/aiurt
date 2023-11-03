@@ -3036,7 +3036,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                         stopFlag = deleteReasonList.stream().anyMatch(deleteReason -> StrUtil.contains(deleteReason, endEvent.getId()));
                     }
 
-                    // 回退流程
+                    // 回退流程，todo 区分是真办理
                     boolean changeFlag = deleteReasonList.stream().anyMatch(deleteReason -> StrUtil.startWith(deleteReason,"Change"));
                     if (stopFlag) {
                         recordDTO.setStateName("已作废");
