@@ -738,17 +738,17 @@ public class FlowApiServiceImpl implements FlowApiService {
     }
 
     private void isReduceMulti(String processInstanceId, TaskInfoDTO taskInfoDTO, HistoricTaskInstance task, LoginUser loginUser, List<String> addAssigneeVariables) {
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId)
+        List<HistoricTaskInstance> taskList = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId)
                 .taskDefinitionKey(task.getTaskDefinitionKey()).list();
-        // 排除自己, 正在办理中
-        List<String> assigneeList = taskList.stream().filter(task1 -> !StrUtil.equalsIgnoreCase(task1.getAssignee(), loginUser.getUsername()))
-                .map(Task::getAssignee).collect(Collectors.toList());
-        if (CollUtil.isNotEmpty(assigneeList)) {
-            assigneeList.retainAll(addAssigneeVariables);
-            if (CollUtil.isNotEmpty(assigneeList)) {
-                taskInfoDTO.setIsReduceMulti(true);
-            }
+        // 排除自己, 正在办理中 正在办理的任务，创行, 过滤
+        List<String> assigneeList = taskList.stream().filter(historicTaskInstance -> Objects.nonNull(historicTaskInstance.getEndTime()))
+                .map(HistoricTaskInstance::getAssignee).collect(Collectors.toList());
+        // 被加签人员,
+        addAssigneeVariables.removeAll(assigneeList);
+        if (CollUtil.isNotEmpty(addAssigneeVariables)) {
+            taskInfoDTO.setIsReduceMulti(true);
         }
+
     }
 
 
