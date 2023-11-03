@@ -34,6 +34,12 @@ public class CustomVariableContainsAnyExpressionFunction extends VariableContain
                     if (StrUtil.isNotBlank(variableStringValue) && StrUtil.isNotBlank(stringValue)) {
                         List<String> variableList = StrUtil.split(variableStringValue, ',');
                         List<String> valueList = StrUtil.split(stringValue, ',');
+                        if (valueList.size() == 1 && variableList.size() == 1) {
+                            if (StringUtils.contains(variableStringValue, stringValue)) {
+                                return true;
+                            }
+                        }
+                        // 比较
                         Collection<String> intersection = CollUtil.intersection(variableList, valueList);
                         return CollUtil.isNotEmpty(intersection);
                     }
