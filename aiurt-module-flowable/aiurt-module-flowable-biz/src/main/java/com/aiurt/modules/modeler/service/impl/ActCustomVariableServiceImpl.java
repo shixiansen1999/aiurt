@@ -88,26 +88,26 @@ public class ActCustomVariableServiceImpl extends ServiceImpl<ActCustomVariableM
     private List<ConnectionConditionConfigDTO> getSystemVariableList() {
         List<ConnectionConditionConfigDTO> systemVariableList = Optional.ofNullable(sysBaseApi.getDictItems(FLOWABLE_FILTER_FIELD_NAME)).orElse(CollUtil.newArrayList()).stream()
                 .map(dictItem -> {
-                    ConnectionConditionConfigDTO ConnectionConditionConfigDTO = new ConnectionConditionConfigDTO();
-                    ConnectionConditionConfigDTO.setLabel(dictItem.getText());
-                    ConnectionConditionConfigDTO.setKey(dictItem.getValue());
-                    ConnectionConditionConfigDTO.setValue(dictItem.getValue());
+                    ConnectionConditionConfigDTO connectionConditionConfigDTO = new ConnectionConditionConfigDTO();
+                    connectionConditionConfigDTO.setLabel(dictItem.getText());
+                    connectionConditionConfigDTO.setKey(dictItem.getValue());
+                    connectionConditionConfigDTO.setValue(dictItem.getValue());
 
                     switch (dictItem.getValue()) {
                         case ROLE_INITIATOR:
-                            ConnectionConditionConfigDTO.setOptions(getRoleInitiatorList());
+                            connectionConditionConfigDTO.setOptions(getRoleInitiatorList());
                             break;
                         case POSITION_INITIATOR:
-                            ConnectionConditionConfigDTO.setOptions(getPositionInitiatorList());
+                            connectionConditionConfigDTO.setOptions(getPositionInitiatorList());
                             break;
                         case ORG_INITIATOR:
                             List<ConnectionConditionConfigDTO> deptList = getOrgInitiatorList();
-                            ConnectionConditionConfigDTO.setOptions(constructTree(deptList));
+                            connectionConditionConfigDTO.setOptions(constructTree(deptList));
                             break;
                         default:
                             break;
                     }
-                    return ConnectionConditionConfigDTO;
+                    return connectionConditionConfigDTO;
                 }).collect(Collectors.toList());
         return systemVariableList;
     }
@@ -125,11 +125,11 @@ public class ActCustomVariableServiceImpl extends ServiceImpl<ActCustomVariableM
         List<ActCustomVariable> actCustomVariables = list(wrapper);
         if (CollUtil.isNotEmpty(actCustomVariables)) {
             List<ConnectionConditionConfigDTO> customVariableList = Optional.of(actCustomVariables).orElse(CollUtil.newArrayList()).stream().map(actCustomVariable -> {
-                ConnectionConditionConfigDTO ConnectionConditionConfigDTO = new ConnectionConditionConfigDTO();
-                ConnectionConditionConfigDTO.setLabel(actCustomVariable.getShowName());
-                ConnectionConditionConfigDTO.setKey(actCustomVariable.getVariableName());
-                ConnectionConditionConfigDTO.setValue(actCustomVariable.getVariableName());
-                return ConnectionConditionConfigDTO;
+                ConnectionConditionConfigDTO connectionConditionConfigDTO = new ConnectionConditionConfigDTO();
+                connectionConditionConfigDTO.setLabel(actCustomVariable.getShowName());
+                connectionConditionConfigDTO.setKey(actCustomVariable.getVariableName());
+                connectionConditionConfigDTO.setValue(actCustomVariable.getVariableName());
+                return connectionConditionConfigDTO;
             }).collect(Collectors.toList());
             return customVariableList;
         }

@@ -85,7 +85,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
     private DefaultSelectUserService defaultSelectUser;
 
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
 
     /**
      * 始前处理
@@ -271,7 +271,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         }
         if (CollUtil.isNotEmpty(userList)) {
             String startUserId = processInstance.getStartUserId();
-            LoginUser loginUser = sysBaseAPI.getUserByName(startUserId);
+            LoginUser loginUser = sysBaseApi.getUserByName(startUserId);
             String format = DateUtil.format(processInstance.getStartTime(), "yyyy-MM-dd");
             // 发送消息
             HashMap<String, Object> map = new HashMap<>(16);
@@ -313,7 +313,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
 
             messageDTO.setType("XT");
             messageDTO.setData(map);
-            sysBaseAPI.sendTemplateMessage(messageDTO);
+            sysBaseApi.sendTemplateMessage(messageDTO);
         }
 
 

@@ -1,6 +1,5 @@
 package com.aiurt.modules.multideal.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -25,16 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
-import org.flowable.bpmn.model.FlowElement;
 import org.flowable.bpmn.model.MultiInstanceLoopCharacteristics;
 import org.flowable.bpmn.model.UserTask;
 import org.flowable.engine.HistoryService;
-import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
-import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
-import org.flowable.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
-import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
@@ -84,7 +78,7 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
     private HistoryService historyService;
 
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
 
 
     /**
@@ -471,7 +465,7 @@ public class MultiInTaskServiceImpl implements IMultiInTaskService {
             return;
         }
 
-        List<LoginUser> loginUsers = sysBaseAPI.getLoginUserList(userNameStr);
+        List<LoginUser> loginUsers = sysBaseApi.getLoginUserList(userNameStr);
         if (CollUtil.isEmpty(loginUsers)) {
             return;
         }

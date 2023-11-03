@@ -1,7 +1,6 @@
 package com.aiurt.modules.online.workflowapi.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.modules.base.BaseEntity;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

@@ -71,6 +71,8 @@ public class FlowableNodeActionUtils {
      */
     private static final String VARIABLE_COMMENT = "comment";
 
+    private static final int FIVE_SIZE = 5;
+
 
     public static void processTaskData(TaskEntity taskEntity, String processDefinitionId, String taskDefinitionKey, String processInstanceId, String nodeAction) {
         RuntimeService runtimeService = ProcessEngines.getDefaultProcessEngine().getRuntimeService();
@@ -240,7 +242,7 @@ public class FlowableNodeActionUtils {
             int whereIndex = customSql.toLowerCase().indexOf("where");
             if (whereIndex != -1) {
                 // 找到 WHERE 关键字，检查是否是空的 WHERE
-                if (whereIndex + 5 == customSql.length()) {
+                if (whereIndex + FIVE_SIZE == customSql.length()) {
                     // WHERE 后面是空的，直接添加条件
                     sqlBuilder.append(" id = '").append(businessId).append("'");
                 } else {
