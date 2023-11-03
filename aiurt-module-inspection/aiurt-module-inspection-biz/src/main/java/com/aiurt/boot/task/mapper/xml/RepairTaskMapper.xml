@@ -375,7 +375,7 @@
             </if>
         </where>
         GROUP BY t1.id
-        order by t2.create_time
+        order by t2.submit_time desc
     </select>
 
 
