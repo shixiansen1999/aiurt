@@ -587,7 +587,9 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     public TaskInfoDTO viewRuntimeTaskInfo(String processDefinitionId, String processInstanceId, String taskId) {
-        log.info("获取流程运行时指定任务的信息请求参数：processInstanceId:{}, taskId:{}",processInstanceId, taskId);
+        if (log.isDebugEnabled()) {
+            log.info("获取流程运行时指定任务的信息请求参数：processInstanceId:{}, taskId:{}",processInstanceId, taskId);
+        }
         TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
         if (StrUtil.isBlank(processInstanceId) || StrUtil.isBlank(taskId)) {
             log.debug("流程实例请求参数为空！");
@@ -2997,7 +2999,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
             List<HistoricTaskInstance> taskInfoList = historyTaskInfo.getList();
             taskInfoList = taskInfoList.stream().filter(historicTaskInstance -> (Objects.nonNull(historicTaskInstance.getClaimTime())
-                    || Objects.isNull(historicTaskInstance.getEndTime()))).collect(Collectors.toList());
+                    || Objects.isNull(historicTaskInstance.getEndTime()) || StrUtil.isNotBlank(historicTaskInstance.getDeleteReason()))).collect(Collectors.toList());
 
             List<HistoricTaskInstance> unFinishList = taskInfoList.stream().filter(historicTaskInstance -> Objects.isNull(historicTaskInstance.getEndTime()))
                     .collect(Collectors.toList());
