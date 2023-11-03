@@ -114,8 +114,8 @@ public class ProcessCompletedListener implements Serializable, FlowableEventList
         messageDTO.setProcessDefinitionKey(historicProcessInstance.getProcessDefinitionKey());
         String startUserId = historicProcessInstance.getStartUserId();
         Date startTime = historicProcessInstance.getStartTime();
-        ISysBaseAPI sysBaseAPI = SpringContextUtils.getBean(ISysBaseAPI.class);
-        LoginUser userByName = sysBaseAPI.getUserByName(startUserId);
+        ISysBaseAPI sysBaseApi = SpringContextUtils.getBean(ISysBaseAPI.class);
+        LoginUser userByName = sysBaseApi.getUserByName(startUserId);
         String format = DateUtil.format(startTime, DatePattern.NORM_DATETIME_PATTERN);
 
         map.put("creatBy", userByName.getRealname());

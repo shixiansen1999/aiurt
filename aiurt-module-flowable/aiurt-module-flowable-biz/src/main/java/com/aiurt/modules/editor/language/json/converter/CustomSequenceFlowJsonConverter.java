@@ -24,7 +24,6 @@ import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.model.*;
 import org.flowable.editor.language.json.converter.*;
 
-import javax.validation.Valid;
 import java.util.*;
 
 /**
@@ -36,6 +35,11 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
     private static final String CUSTOM_CONDITION = "customCondition";
     private static final String PROPERTY = "property";
     private static final String SERVICE = "service";
+    private static final String ONE_SIZE= "1";
+    private static final String TWO_SIZE= "2";
+    private static final int TWO_NUMBER= 2;
+
+
     /**
      * 流转条件的第一个编号
      */
@@ -85,7 +89,7 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
         dockersArrayNode.add(sourceDockNode);
 
         // 设置中间节点
-        if (model.getFlowLocationGraphicInfo(sequenceFlow.getId()).size() > 2) {
+        if (model.getFlowLocationGraphicInfo(sequenceFlow.getId()).size() > TWO_NUMBER) {
             for (int i = 1; i < model.getFlowLocationGraphicInfo(sequenceFlow.getId()).size() - 1; i++) {
                 GraphicInfo graphicInfo = model.getFlowLocationGraphicInfo(sequenceFlow.getId()).get(i);
                 ObjectNode middleDockNode = objectMapper.createObjectNode();
@@ -131,7 +135,7 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
             // 修复，组合条件删除了，但是表达式没有删除的
             String value = extensionElement.getAttributeValue(null, "value");
             // 0为内置按钮
-            if (StrUtil.equalsAnyIgnoreCase(value, "1","2")) {
+            if (StrUtil.equalsAnyIgnoreCase(value, ONE_SIZE,TWO_SIZE)) {
                 propertiesNode.remove(PROPERTY_SEQUENCEFLOW_CONDITION);
             }
 

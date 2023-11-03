@@ -1,8 +1,6 @@
 package com.aiurt.modules.user.entity;
 
-import com.aiurt.modules.modeler.dto.FlowUserRelationAttributeModel;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -16,7 +14,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @Description: 流程办理人与抄送人

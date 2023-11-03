@@ -8,7 +8,6 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.common.constant.FlowModelAttConstant;
 import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
-import com.aiurt.modules.editor.language.json.converter.CustomBpmnJsonConverter;
 import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
 import com.aiurt.modules.modeler.dto.*;
@@ -25,7 +24,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,7 +31,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.jayway.jsonpath.JsonPath;
-import liquibase.pro.packaged.F;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -85,6 +82,10 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
     private static final String BPMN_EXTENSION = ".bpmn";
     private static final String BPMN20_XML_EXTENSION = ".bpmn20.xml";
+
+    private static final String IS_TRUE = "true";
+
+    private static final String ZERO_SIZE = "0";
 
     @Autowired
     private ModelService modelService;
@@ -376,7 +377,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
             ExtensionElement extensionElement = extensionElementList.get(0);
             String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_VALUE);
             // 是否提醒
-            if (StrUtil.equalsIgnoreCase(attributeValue, "true")) {
+            if (StrUtil.equalsIgnoreCase(attributeValue, IS_TRUE)) {
                 modelExt.setIsRemind(1);
             } else {
                 modelExt.setIsRemind(0);
@@ -542,7 +543,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                 ExtensionElement extensionElement = autoSelectElements.get(0);
                 String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_USER_VALUE);
                 // 需要转换
-                if (StrUtil.isBlank(attributeValue) || StrUtil.equalsIgnoreCase(attributeValue, "true")) {
+                if (StrUtil.isBlank(attributeValue) || StrUtil.equalsIgnoreCase(attributeValue, IS_TRUE)) {
                     flowTaskExt.setIsAutoSelect(1);
                 } else {
                     flowTaskExt.setIsAutoSelect(0);
@@ -575,7 +576,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                 ExtensionElement extensionElement = addMultiElements.get(0);
                 String attributeValue = extensionElement.getAttributeValue(null, FlowModelExtElementConstant.EXT_VALUE);
                 // 需要转换
-                if (StrUtil.equalsIgnoreCase(attributeValue, "true")) {
+                if (StrUtil.equalsIgnoreCase(attributeValue, IS_TRUE)) {
                     flowTaskExt.setIsAddMulti(1);
                 } else {
                     flowTaskExt.setIsAddMulti(0);
@@ -628,7 +629,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                         });
                     });
                 });
-        if (StrUtil.equalsIgnoreCase("0", s)) {
+        if (StrUtil.equalsIgnoreCase(ZERO_SIZE, s)) {
             Optional.ofNullable(extensionMap.get(FlowModelExtElementConstant.EX_EMPTY_APPROVE)).ifPresent(extensionElements -> {
                 ExtensionElement extensionElement = extensionElements.get(0);
                 Optional.ofNullable(extensionElement).ifPresent(element -> {

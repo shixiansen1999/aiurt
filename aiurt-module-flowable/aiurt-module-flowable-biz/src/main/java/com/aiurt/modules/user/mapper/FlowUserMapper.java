@@ -64,21 +64,21 @@ public interface FlowUserMapper {
     List<String> getUserNameByUserIdOrUserName(@Param("userIdList") List<String> userIdList);
 
     /**
-     *
+     *根据角色id或角色code获取用户名称
      * @param roleIdList
      * @return
      */
     List<String> getUserNameByRoleIdOrRoleCode(@Param("roleIdList") List<String> roleIdList);
 
     /**
-     *
+     * 根据组织机构id或code获取用户名称
      * @param orgIdList
      * @return
      */
     List<String> getUserNameByOrgIdOrOrgCode(@Param("orgIdList") List<String> orgIdList);
 
     /**
-     *
+     * 根据岗位获取用户名称
      * @param postList
      * @return
      */

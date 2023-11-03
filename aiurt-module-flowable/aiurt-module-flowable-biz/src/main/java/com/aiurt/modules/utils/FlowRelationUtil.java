@@ -12,7 +12,6 @@ import org.flowable.bpmn.model.ExtensionElement;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**

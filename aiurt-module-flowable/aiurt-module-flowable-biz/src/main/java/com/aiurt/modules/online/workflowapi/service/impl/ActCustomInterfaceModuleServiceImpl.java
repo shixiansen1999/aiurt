@@ -29,7 +29,7 @@ import java.util.Set;
  */
 @Service
 public class ActCustomInterfaceModuleServiceImpl extends ServiceImpl<ActCustomInterfaceModuleMapper, ActCustomInterfaceModule> implements IActCustomInterfaceModuleService {
-
+    private static final String ONE_SIZE = "1";
     @Autowired
     public RedisTemplate<String, Object> redisTemplate;
     @Autowired
@@ -44,8 +44,7 @@ public class ActCustomInterfaceModuleServiceImpl extends ServiceImpl<ActCustomIn
         } else {
             //如果当前节点父ID不为空 则设置父节点的hasChildren 为1
             ActCustomInterfaceModule parent = baseMapper.selectById(actCustomInterfaceModule.getPid());
-            String num = "1";
-            if (parent != null && !num.equals(parent.getHasChild())) {
+            if (parent != null && !ONE_SIZE.equals(parent.getHasChild())) {
                 parent.setHasChild("1");
                 baseMapper.updateById(parent);
             }

@@ -4,7 +4,6 @@ import com.aiurt.modules.recall.handler.BuildRecallContextHandler;
 import com.aiurt.modules.recall.handler.ChangeTaskStatusHandler;
 import com.aiurt.modules.recall.handler.RecallRuleVerifyHandler;
 import com.aiurt.modules.recall.pipeline.RecallHandlerChainPipeline;
-import com.aiurt.modules.remind.pipeline.RemindHandlerChainPipeline;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

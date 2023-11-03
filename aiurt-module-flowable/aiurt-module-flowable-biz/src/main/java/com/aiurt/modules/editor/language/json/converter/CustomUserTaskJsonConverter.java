@@ -13,16 +13,13 @@ import com.aiurt.modules.modeler.entity.NodeActionDTO;
 import com.aiurt.modules.online.page.dto.FormFiledJsonDTO;
 import com.aiurt.modules.user.enums.EmptyRuleEnum;
 import com.aiurt.modules.utils.FlowRelationUtil;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import liquibase.pro.packaged.F;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.model.*;
@@ -30,7 +27,6 @@ import org.flowable.editor.language.json.converter.BaseBpmnJsonConverter;
 import org.flowable.editor.language.json.converter.BpmnJsonConverterContext;
 import org.flowable.editor.language.json.converter.UserTaskJsonConverter;
 import org.flowable.editor.language.json.converter.util.JsonConverterUtil;
-import org.intellij.lang.annotations.Flow;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -173,6 +169,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                         default:
                             if (Objects.nonNull(loopCharacteristics)) {
                                 loopCharacteristics.setSequential(true);
+                                loopCharacteristics.setCompletionCondition(null);
                             }
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Sequential");
                     }
