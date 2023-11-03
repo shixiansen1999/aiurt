@@ -78,6 +78,7 @@ import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskInfo;
 import org.flowable.task.api.TaskQuery;
 import org.flowable.task.api.history.HistoricTaskInstance;
+import org.flowable.task.service.impl.persistence.entity.HistoricTaskInstanceEntityImpl;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
@@ -604,12 +605,14 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (Objects.nonNull(task)) {
             taskDefinitionKey = task.getTaskDefinitionKey();
         }
-
+        
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 
         if (Objects.isNull(historicProcessInstance) || StrUtil.isBlank(taskDefinitionKey)) {
             throw new AiurtBootException(AiurtErrorEnum.PROCESS_INSTANCE_NOT_FOUND.getCode(), AiurtErrorEnum.PROCESS_INSTANCE_NOT_FOUND.getMessage());
         }
+
+
 
         taskInfoDTO.setBusinessKey(historicProcessInstance.getBusinessKey());
 
@@ -679,9 +682,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                 }
 
                 // 是否自动选人
-                if (Objects.nonNull(flowTaskExt.getIsAutoSelect()) && flowTaskExt.getIsAutoSelect() == 0) {
-                    taskInfoDTO.setIsAutoSelect(false);
-                }
+                setIsAutoSelectUser(processInstanceId, taskId, taskInfoDTO, task, flowTaskExt);
+
                 //表单权限设置，是否可见和编辑
                 JSONArray formFieldConfig = flowTaskExt.getFormFieldConfig();
                 if(Objects.nonNull(formFieldConfig)){
@@ -737,6 +739,20 @@ public class FlowApiServiceImpl implements FlowApiService {
         taskInfoDTO.setTaskKey(taskDefinitionKey);
         taskInfoDTO.setProcessName(historicProcessInstance.getProcessDefinitionName());
         return taskInfoDTO;
+    }
+
+    private void setIsAutoSelectUser(String processInstanceId, String taskId, TaskInfoDTO taskInfoDTO, HistoricTaskInstance task, ActCustomTaskExt flowTaskExt) {
+        if (Objects.nonNull(flowTaskExt.getIsAutoSelect()) && flowTaskExt.getIsAutoSelect() == 0) {
+            if (Objects.isNull(task.getEndTime())) {
+                Task activeTask = taskService.createTaskQuery().processInstanceId(processInstanceId).taskId(taskId).singleResult();
+                if (Objects.nonNull(activeTask)) {
+                    Boolean completeTask = multiInTaskService.isCompleteTask(activeTask);
+                    if (completeTask) {
+                        taskInfoDTO.setIsAutoSelect(false);
+                    }
+                }
+            }
+        }
     }
 
     private void isReduceMulti(String processInstanceId, TaskInfoDTO taskInfoDTO, HistoricTaskInstance task, LoginUser loginUser, List<String> addAssigneeVariables) {
@@ -3036,7 +3052,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                         stopFlag = deleteReasonList.stream().anyMatch(deleteReason -> StrUtil.contains(deleteReason, endEvent.getId()));
                     }
 
-                    // 回退流程，todo 区分是真办理
+                    // 回退流程
                     boolean changeFlag = deleteReasonList.stream().anyMatch(deleteReason -> StrUtil.startWith(deleteReason,"Change"));
                     if (stopFlag) {
                         recordDTO.setStateName("已作废");
@@ -3071,6 +3087,9 @@ public class FlowApiServiceImpl implements FlowApiService {
                         .endTime(historicTaskInstance.getEndTime())
                         .reason(commentMap.get(historicTaskInstance.getId()))
                         .build();
+                if (Objects.isNull(historicTaskInstance.getClaimTime())) {
+                    nodeInfoDTO.setEndTime(null);
+                }
                 String assignee = historicTaskInstance.getAssignee();
                 if (StrUtil.isNotBlank(assignee)) {
                     LoginUser loginUser = userMap.get(assignee);

@@ -169,6 +169,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                         default:
                             if (Objects.nonNull(loopCharacteristics)) {
                                 loopCharacteristics.setSequential(true);
+                                loopCharacteristics.setCompletionCondition(null);
                             }
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Sequential");
                     }
