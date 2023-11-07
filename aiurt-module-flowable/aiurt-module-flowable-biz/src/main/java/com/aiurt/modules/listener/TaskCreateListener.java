@@ -245,10 +245,6 @@ public class TaskCreateListener implements FlowableEventListener {
                     .executionId(executionId)
                     .singleResult();
 
-            HistoryService historyService = ProcessEngines.getDefaultProcessEngine().getHistoryService();
-            HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
-            HistoricProcessInstance historicProcessInstance = historicProcessInstanceQuery.processInstanceId(executionEntity.getProcessInstanceId()).singleResult();
-
             Boolean variableLocal = executionEntity.getVariableLocal(BackNodeRuleVerifyHandler.REJECT_FIRST_USER_TASK, Boolean.class);
 
             BpmnTodoDTO bpmnTodoDTO = new BpmnTodoDTO();
