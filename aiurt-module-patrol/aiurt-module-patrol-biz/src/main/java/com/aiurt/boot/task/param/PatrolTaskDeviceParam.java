@@ -164,9 +164,4 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
 
     @ApiModelProperty(value = "抽检人")
     private String samplePersonName;
-
-    @Excel(name = "巡检标准表Code", width = 15)
-    @ApiModelProperty(value = "巡检标准表Code")
-    @TableField(exist = false)
-    private java.lang.String standardCode;
 }

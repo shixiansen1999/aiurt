@@ -579,6 +579,16 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     }
                 });
             }
+
+            //巡检结果字典值列表
+            List<DictModel> list = sysBaseApi.getDictItems(c.getResultDictCode());
+            c.setResultList(list);
+            list.stream().forEach(l -> {
+                if (l.getValue().equals(c.getCheckResult())) {
+                    c.setResultDictName(l.getTitle());
+                }
+            });
+
             String userName = patrolTaskMapper.getUserName(c.getUserId());
             c.setCheckUserName(userName);
 
@@ -701,6 +711,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             result.setCheck(l.getCheck());  // 是否为巡检项目
             result.setInputType(l.getInputType());  // 填写数据类型
             result.setDictCode(l.getDictCode());    // 关联的数据字典
+            result.setResultDictCode(l.getResultDictCode());    // 关联巡检结果的数据字典
             result.setRegular(l.getRegular());  // 数据校验表达式
             result.setSpecialCharacters(l.getSpecialCharacters());  // 特殊字符输入
             result.setDelFlag(0);  // 数据校验表达式
@@ -776,6 +787,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
                     .stream().filter(l-> StrUtil.isNotEmpty(l.getText()))
                     .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+
             checkResultList.stream().forEach(e ->
             {
                 e.setRequiredDictName(requiredItems.get(String.valueOf(e.getRequired())));
@@ -790,6 +802,14 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                         }
                     });
                 }
+                //巡检结果字典值列表
+                List<DictModel> list = sysBaseApi.getDictItems(e.getResultDictCode());
+                e.setResultList(list);
+                list.stream().forEach(l -> {
+                    if (l.getValue().equals(e.getCheckResult())) {
+                        e.setResultDictName(l.getTitle());
+                    }
+                });
 
                 if (PatrolConstant.DATE_TYPE_SPECIALCHAR.equals(e.getInputType())) {
                     //查询原标准项判断是否填写过
