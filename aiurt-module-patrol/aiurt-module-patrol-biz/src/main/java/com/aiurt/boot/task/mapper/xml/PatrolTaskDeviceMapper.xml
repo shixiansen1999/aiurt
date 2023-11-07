@@ -63,7 +63,7 @@
         FROM patrol_task_device ptd
                      JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
                      LEFT JOIN patrol_standard ps ON pts.standard_id = ps.id
-                     LEFT JOIN patrol_standard_device_type psdt ON psdt.standard_code = ps.code
+                     LEFT JOIN patrol_device_type pdt ON pdt.task_standard_id = pts.id
                      LEFT JOIN patrol_device pd ON pd.task_standard_id = pts.id
                      LEFT JOIN device ON ptd.device_code = device.`code`
                      LEFT JOIN device_type dt ON pts.device_type_code = dt.`code`
@@ -102,15 +102,15 @@
                 and (taskDevice.deviceTypeCode != null and taskDevice.deviceTypeCode != '') ">
             <choose>
                 <when test="taskDevice.isPatrolDeviceCodeAndTypeCode ">
-                    and psdt.device_type_code = #{taskDevice.deviceTypeCode}
+                    and pdt.device_type_code = #{taskDevice.deviceTypeCode}
                 </when>
                 <otherwise>
                     and
-                    (( ps.is_merge_device = '1'
+                    (( pts.is_merge_device = '1'
                     and ((pd.device_code = #{taskDevice.deviceCode})
-                    or (psdt.device_type_code = #{taskDevice.deviceTypeCode} and isnull(pd.device_code) )))
+                    or (pdt.device_type_code = #{taskDevice.deviceTypeCode} and isnull(pd.device_code) )))
                     or
-                    (ps.is_merge_device = '0'
+                    (pts.is_merge_device = '0'
                     and ptd.device_code = #{taskDevice.deviceCode}
                     ))
                 </otherwise>
