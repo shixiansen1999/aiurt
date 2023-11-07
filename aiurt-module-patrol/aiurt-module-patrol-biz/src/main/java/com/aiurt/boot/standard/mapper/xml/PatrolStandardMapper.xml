@@ -51,6 +51,7 @@
         a.profession_code AS professionCode,
         a.subsystem_code AS subsystemCode,
         a.device_type AS deviceType,
+        a.is_merge_device,
         a.specify_device AS specifyDevice,
         a.device_type_code AS deviceTypeCode,
         a.status AS status,

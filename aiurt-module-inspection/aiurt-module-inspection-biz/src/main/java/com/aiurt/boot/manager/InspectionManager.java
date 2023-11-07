@@ -5,18 +5,26 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.dto.OrgDTO;
 import com.aiurt.boot.manager.mapper.InspectionManagerMapper;
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
+import com.aiurt.boot.plan.entity.RepairPoolCodeDeviceType;
+import com.aiurt.boot.plan.mapper.RepairPoolCodeDeviceTypeMapper;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.RedisUtil;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -38,7 +46,10 @@ public class InspectionManager {
     private InspectionManagerMapper inspectionManagerMapper;
     @Resource
     private RedisUtil redisUtil;
-
+    @Resource
+    private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private RepairPoolCodeDeviceTypeMapper repairPoolCodeDeviceTypeMapper;
 
     /**
      * 翻译专业、专业子系统信息
@@ -238,8 +249,8 @@ public class InspectionManager {
                     String positionCodeName = translateStation(Arrays.asList(stationDTO));
                     JSONObject major = sysBaseApi.getCsMajorByCode(repairDeviceDTO.getMajorCode());
                     repairDeviceDTO.setMajorName(major != null ? major.getString("majorName") : "");
-                    JSONObject systemName = sysBaseApi.getSystemName(repairDeviceDTO.getMajorCode(), repairDeviceDTO.getSubsystemCode());
-                    repairDeviceDTO.setSubsystemName(systemName != null ? systemName.getString("systemCode") : "");
+                    JSONObject systemName = sysBaseApi.getSystemNameByCode(repairDeviceDTO.getMajorCode(), repairDeviceDTO.getSubsystemCode());
+                    repairDeviceDTO.setSubsystemName(systemName != null ? systemName.getString("systemName") : "");
                     repairDeviceDTO.setPositionCodeName(positionCodeName);
                 }
             }
@@ -291,8 +302,8 @@ public class InspectionManager {
                     String positionCodeName = translateStation(Arrays.asList(stationDTO));
                     JSONObject major = sysBaseApi.getCsMajorByCode(repairDeviceDTO.getMajorCode());
                     repairDeviceDTO.setMajorName(major != null ? major.getString("majorName") : "");
-                    JSONObject systemName = sysBaseApi.getSystemName(repairDeviceDTO.getMajorCode(), repairDeviceDTO.getSubsystemCode());
-                    repairDeviceDTO.setSubsystemName(systemName != null ? systemName.getString("systemCode") : "");
+                    JSONObject systemName = sysBaseApi.getSystemNameByCode(repairDeviceDTO.getMajorCode(), repairDeviceDTO.getSubsystemCode());
+                    repairDeviceDTO.setSubsystemName(systemName != null ? systemName.getString("systemName") : "");
                     repairDeviceDTO.setPositionCodeName(positionCodeName);
                 }
             }

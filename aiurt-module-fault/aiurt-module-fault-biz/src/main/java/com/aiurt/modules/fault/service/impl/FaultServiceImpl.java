@@ -2013,25 +2013,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
             fault.setState(FaultStatesEnum.FINISH.getStatus());
             fault.setStatus(FaultStatusEnum.Close.getStatus());
-            // 修改备件, 更改状态
-            LambdaQueryWrapper<DeviceChangeSparePart> dataWrapper = new LambdaQueryWrapper<>();
-            dataWrapper.eq(DeviceChangeSparePart::getCode, faultCode).eq(DeviceChangeSparePart::getConsumables, 0);
-            List<DeviceChangeSparePart> oneSourceList = sparePartService.list(dataWrapper);
-            // 处理备件
-            if (CollectionUtil.isNotEmpty(oneSourceList)) {
-                List<DeviceChangeSparePartDTO> dataList = new ArrayList<>();
-                oneSourceList.stream().forEach(deviceChangeSparePart -> {
-                    DeviceChangeSparePartDTO dto = new DeviceChangeSparePartDTO();
-                    BeanUtils.copyProperties(deviceChangeSparePart, dto);
-                    dataList.add(dto);
-                });
-                try {
-                    //sparePartBaseApi.dealChangeSparePartV2(dataList);
-                    sparePartBaseApi.dealChangeSparePart(dataList);
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
 
             saveLog(loginUser, "维修结果审核通过", faultCode, FaultStatusEnum.Close.getStatus(), resultDTO.getApprovalRejection());
             Set<String> userNameSet = new HashSet<>();

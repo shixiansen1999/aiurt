@@ -66,8 +66,8 @@ public class PatrolTaskDevice extends DictEntity implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "工单提交时间")
     private java.util.Date checkTime;
-	/**检查结果：0正常、1异常*/
-	@Excel(name = "检查结果：0正常、1异常", width = 15)
+	/**检查结果：0异常、1正常*/
+	@Excel(name = "检查结果：0异常、1正常", width = 15)
     @ApiModelProperty(value = "检查结果：0异常、1正常")
     private java.lang.Integer checkResult;
     /**线路编号*/
