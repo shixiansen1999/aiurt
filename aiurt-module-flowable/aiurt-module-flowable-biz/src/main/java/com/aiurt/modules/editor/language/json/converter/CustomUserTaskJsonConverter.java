@@ -13,7 +13,6 @@ import com.aiurt.modules.modeler.entity.NodeActionDTO;
 import com.aiurt.modules.online.page.dto.FormFiledJsonDTO;
 import com.aiurt.modules.user.enums.EmptyRuleEnum;
 import com.aiurt.modules.utils.FlowRelationUtil;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -162,7 +161,6 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                         case TASK_MULTI_INSTANCE_TYPE_2:
                             if (Objects.nonNull(loopCharacteristics)) {
                                 loopCharacteristics.setSequential(false);
-                                // 修提交条件，否则二次编辑提交条件无法修改，原因先执行customUserTaskJsonConverter ，再执行BaseBpmnJsonConverter
                                 loopCharacteristics.setCompletionCondition("${nrOfCompletedInstances == nrOfInstances}");
                             }
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Parallel");
@@ -171,7 +169,6 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                         default:
                             if (Objects.nonNull(loopCharacteristics)) {
                                 loopCharacteristics.setSequential(true);
-                                // 修提交条件，否则二次编辑提交条件无法修改，原因先执行customUserTaskJsonConverter ，再执行BaseBpmnJsonConverter
                                 loopCharacteristics.setCompletionCondition(null);
                             }
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Sequential");

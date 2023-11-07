@@ -78,6 +78,7 @@ import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskInfo;
 import org.flowable.task.api.TaskQuery;
 import org.flowable.task.api.history.HistoricTaskInstance;
+import org.flowable.task.service.impl.persistence.entity.HistoricTaskInstanceEntityImpl;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
@@ -121,7 +122,7 @@ public class FlowApiServiceImpl implements FlowApiService {
     protected IdentityService identityService;
 
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
 
     @Autowired
     private ModelService modelService;
@@ -428,7 +429,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(comment, ActCustomTaskComment.class);
         if (flowTaskComment != null && !StrUtil.equalsIgnoreCase(approvalType, FlowApprovalType.CANCEL)) {
             String assignee = task.getAssignee();
-            LoginUser loginUser = sysBaseAPI.queryUser(assignee);
+            LoginUser loginUser = sysBaseApi.queryUser(assignee);
             if (Objects.nonNull(loginUser)) {
                 flowTaskComment.setCreateRealname(loginUser.getRealname());
             }
@@ -587,7 +588,9 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     public TaskInfoDTO viewRuntimeTaskInfo(String processDefinitionId, String processInstanceId, String taskId) {
-        log.info("获取流程运行时指定任务的信息请求参数：processInstanceId:{}, taskId:{}",processInstanceId, taskId);
+        if (log.isDebugEnabled()) {
+            log.info("获取流程运行时指定任务的信息请求参数：processInstanceId:{}, taskId:{}",processInstanceId, taskId);
+        }
         TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
         if (StrUtil.isBlank(processInstanceId) || StrUtil.isBlank(taskId)) {
             log.debug("流程实例请求参数为空！");
@@ -608,6 +611,8 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (Objects.isNull(historicProcessInstance) || StrUtil.isBlank(taskDefinitionKey)) {
             throw new AiurtBootException(AiurtErrorEnum.PROCESS_INSTANCE_NOT_FOUND.getCode(), AiurtErrorEnum.PROCESS_INSTANCE_NOT_FOUND.getMessage());
         }
+
+
 
         taskInfoDTO.setBusinessKey(historicProcessInstance.getBusinessKey());
 
@@ -653,33 +658,12 @@ public class FlowApiServiceImpl implements FlowApiService {
                     taskInfoDTO.setOperationList(objectList);
                 }
 
-                String formJson = flowTaskExt.getFormJson();
-                if (StrUtil.isNotBlank(formJson)) {
-                    // 表单类型
-                    JSONObject jsonObject = JSONObject.parseObject(formJson);
-                    String formType = jsonObject.getString(FlowModelAttConstant.FORM_TYPE);
-                    // 中间业务数据
-                    // 表单设计
-                    if (StrUtil.equalsIgnoreCase(formType, FlowModelAttConstant.DYNAMIC_FORM_TYPE)) {
-                        setPageAttr(taskInfoDTO, jsonObject);
-                    } else {
-                        // 定制表单
-                        taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
-                        // 判断是否是表单设计器，
-                        if (StrUtil.isNotBlank(jsonObject.getString(FlowModelAttConstant.FORM_URL))) {
-                            taskInfoDTO.setRouterName(jsonObject.getString(FlowModelAttConstant.FORM_URL));
-                        } else {
-                            taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
-                        }
-                    }
-                } else {
-                    taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
-                }
+                // 处理表单数据
+                pageInfoDeal(taskInfoDTO, actCustomModelInfo, flowTaskExt);
 
                 // 是否自动选人
-                if (Objects.nonNull(flowTaskExt.getIsAutoSelect()) && flowTaskExt.getIsAutoSelect() == 0) {
-                    taskInfoDTO.setIsAutoSelect(false);
-                }
+                setIsAutoSelectUser(processInstanceId, taskId, taskInfoDTO, task, flowTaskExt);
+
                 //表单权限设置，是否可见和编辑
                 JSONArray formFieldConfig = flowTaskExt.getFormFieldConfig();
                 if(Objects.nonNull(formFieldConfig)){
@@ -737,18 +721,57 @@ public class FlowApiServiceImpl implements FlowApiService {
         return taskInfoDTO;
     }
 
-    private void isReduceMulti(String processInstanceId, TaskInfoDTO taskInfoDTO, HistoricTaskInstance task, LoginUser loginUser, List<String> addAssigneeVariables) {
-        List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId)
-                .taskDefinitionKey(task.getTaskDefinitionKey()).list();
-        // 排除自己, 正在办理中
-        List<String> assigneeList = taskList.stream().filter(task1 -> !StrUtil.equalsIgnoreCase(task1.getAssignee(), loginUser.getUsername()))
-                .map(Task::getAssignee).collect(Collectors.toList());
-        if (CollUtil.isNotEmpty(assigneeList)) {
-            assigneeList.retainAll(addAssigneeVariables);
-            if (CollUtil.isNotEmpty(assigneeList)) {
-                taskInfoDTO.setIsReduceMulti(true);
+    private void pageInfoDeal(TaskInfoDTO taskInfoDTO, ActCustomModelInfo actCustomModelInfo, ActCustomTaskExt flowTaskExt) {
+        String formJson = flowTaskExt.getFormJson();
+        if (StrUtil.isNotBlank(formJson)) {
+            // 表单类型
+            JSONObject jsonObject = JSONObject.parseObject(formJson);
+            String formType = jsonObject.getString(FlowModelAttConstant.FORM_TYPE);
+            // 中间业务数据
+            // 表单设计
+            if (StrUtil.equalsIgnoreCase(formType, FlowModelAttConstant.DYNAMIC_FORM_TYPE)) {
+                setPageAttr(taskInfoDTO, jsonObject);
+            } else {
+                // 定制表单
+                taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
+                // 判断是否是表单设计器，
+                if (StrUtil.isNotBlank(jsonObject.getString(FlowModelAttConstant.FORM_URL))) {
+                    taskInfoDTO.setRouterName(jsonObject.getString(FlowModelAttConstant.FORM_URL));
+                } else {
+                    taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
+                }
+            }
+        } else {
+            taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
+        }
+    }
+
+    private void setIsAutoSelectUser(String processInstanceId, String taskId, TaskInfoDTO taskInfoDTO, HistoricTaskInstance task, ActCustomTaskExt flowTaskExt) {
+        if (Objects.nonNull(flowTaskExt.getIsAutoSelect()) && flowTaskExt.getIsAutoSelect() == 0) {
+            if (Objects.isNull(task.getEndTime())) {
+                Task activeTask = taskService.createTaskQuery().processInstanceId(processInstanceId).taskId(taskId).singleResult();
+                if (Objects.nonNull(activeTask)) {
+                    Boolean completeTask = multiInTaskService.isCompleteTask(activeTask);
+                    if (completeTask) {
+                        taskInfoDTO.setIsAutoSelect(false);
+                    }
+                }
             }
         }
+    }
+
+    private void isReduceMulti(String processInstanceId, TaskInfoDTO taskInfoDTO, HistoricTaskInstance task, LoginUser loginUser, List<String> addAssigneeVariables) {
+        List<HistoricTaskInstance> taskList = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstanceId)
+                .taskDefinitionKey(task.getTaskDefinitionKey()).list();
+        // 排除自己, 正在办理中 正在办理的任务，创行, 过滤
+        List<String> assigneeList = taskList.stream().filter(historicTaskInstance -> Objects.nonNull(historicTaskInstance.getEndTime()))
+                .map(HistoricTaskInstance::getAssignee).collect(Collectors.toList());
+        // 被加签人员,
+        addAssigneeVariables.removeAll(assigneeList);
+        if (CollUtil.isNotEmpty(addAssigneeVariables)) {
+            taskInfoDTO.setIsReduceMulti(true);
+        }
+
     }
 
 
@@ -997,7 +1020,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             flowTaskVo.setProcessInstanceId(processInstance.getId());
             String startUserId = processInstance.getStartUserId();
 
-            LoginUser userByName = sysBaseAPI.getUserByName(startUserId);
+            LoginUser userByName = sysBaseApi.getUserByName(startUserId);
 
             flowTaskVo.setProcessInstanceInitiator(startUserId);
             if (ObjectUtil.isNotNull(userByName)){
@@ -1245,7 +1268,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 .collect(Collectors.toList());
 
         // 一次性查询所有assignee的信息并将其转换为映射
-        List<LoginUser> allUsers = sysBaseAPI.getLoginUserList(allAssignees);
+        List<LoginUser> allUsers = sysBaseApi.getLoginUserList(allAssignees);
         Map<String, LoginUser> assigneeToUserMap = allUsers.stream()
                 .collect(Collectors.toMap(LoginUser::getUsername, user -> user));
         //获取审核通过的用户
@@ -1488,7 +1511,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         List<String> userNameList = dtoList.stream().map(HistoricProcessInstanceDTO::getUserName).collect(Collectors.toList());
 
         if (CollUtil.isNotEmpty(userNameList)) {
-            List<LoginUser> loginUserList = sysBaseAPI.getLoginUserList(userNameList);
+            List<LoginUser> loginUserList = sysBaseApi.getLoginUserList(userNameList);
             Map<String, String> userMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, LoginUser::getRealname, (t1, t2) -> t1));
             dtoList.stream().forEach(historicProcessInstanceDTO -> historicProcessInstanceDTO.setRealName(userMap.get(historicProcessInstanceDTO.getUserName())));
         }
@@ -2058,7 +2081,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         //
         String[] userNameList = finishList.stream().map(HistoricTaskInstance::getAssignee).toArray(String[]::new);
 
-        List<LoginUser> loginUserList = sysBaseAPI.queryUserByNames(userNameList);
+        List<LoginUser> loginUserList = sysBaseApi.queryUserByNames(userNameList);
         Map<String, LoginUser> userMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, t -> t, (t1, t2) -> t1));
 
         Map<String, List<HistoricTaskInstance>> unFinishMap = unFinishList.stream().collect(Collectors.groupingBy(HistoricTaskInstance::getTaskDefinitionKey));
@@ -2116,7 +2139,7 @@ public class FlowApiServiceImpl implements FlowApiService {
      * @param nameList
      */
     private void setAssign(HistoricTaskInfo historicTaskInfo, List<String> nameList) {
-        List<LoginUser> userListByName = sysBaseAPI.getLoginUserList(nameList);
+        List<LoginUser> userListByName = sysBaseApi.getLoginUserList(nameList);
 
         if (CollectionUtil.isNotEmpty(userListByName)) {
             historicTaskInfo.setAssignName(StrUtil.join(",", userListByName.stream().map(LoginUser::getUsername).collect(Collectors.toList())));
@@ -2296,7 +2319,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (CollUtil.isNotEmpty(resultList)) {
             resultList.removeAll(userList);
             String[] array = resultList.stream().toArray(String[]::new);
-            List<SysUserModel> data = Optional.ofNullable(sysBaseAPI.queryUserByNames(array)).orElse(Collections.emptyList()).stream()
+            List<SysUserModel> data = Optional.ofNullable(sysBaseApi.queryUserByNames(array)).orElse(Collections.emptyList()).stream()
                     .filter(Objects::nonNull).map(this::buildSysUserModel).collect(Collectors.toList());
 
 
@@ -2382,7 +2405,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
 
         String[] userNames = StrUtil.split(userNameStr, ",");
-        List<LoginUser> loginUsers = sysBaseAPI.queryUserByNames(userNames);
+        List<LoginUser> loginUsers = sysBaseApi.queryUserByNames(userNames);
         if (CollUtil.isEmpty(loginUsers)) {
             return;
         }
@@ -2414,7 +2437,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             return;
         }
 
-        List<SysUserModel> sysUserModels = sysBaseAPI.queryDepartUserTree(departIdStr);
+        List<SysUserModel> sysUserModels = sysBaseApi.queryDepartUserTree(departIdStr);
         if (CollUtil.isNotEmpty(sysUserModels)) {
             ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
             processParticipantsInfoDTO.setTitle("部门");
@@ -2434,7 +2457,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             return;
         }
 
-        List<SysUserModel> sysUserModels = sysBaseAPI.queryRoleUserTree(roleCodes,Boolean.TRUE, Boolean.TRUE);
+        List<SysUserModel> sysUserModels = sysBaseApi.queryRoleUserTree(roleCodes,Boolean.TRUE, Boolean.TRUE);
         if (CollUtil.isNotEmpty(sysUserModels)) {
             ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
             processParticipantsInfoDTO.setTitle("角色");
@@ -2454,7 +2477,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             return;
         }
 
-        List<SysUserModel> sysUserModels = sysBaseAPI.queryPostUserTree(postCodes, Boolean.TRUE, Boolean.TRUE);
+        List<SysUserModel> sysUserModels = sysBaseApi.queryPostUserTree(postCodes, Boolean.TRUE, Boolean.TRUE);
         if (CollUtil.isNotEmpty(sysUserModels)) {
             ProcessParticipantsInfoDTO processParticipantsInfoDTO = new ProcessParticipantsInfoDTO();
             processParticipantsInfoDTO.setTitle("岗位");
@@ -2969,6 +2992,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         List<ActCustomTaskComment> flowTaskCommentList = taskCommentService.getFlowTaskCommentList(processInstanceId);
         Map<String, String> commentMap = flowTaskCommentList.stream()
                 .filter(actCustomTaskComment -> StrUtil.isNotBlank(actCustomTaskComment.getTaskId()))
+                .filter(actCustomTaskComment -> !StrUtil.equalsAnyIgnoreCase(actCustomTaskComment.getApprovalType(), FlowApprovalType.ADD_MULTI, FlowApprovalType.REDUCE_MULTI))
                 .collect(Collectors.toMap(ActCustomTaskComment::getTaskId,
                         actCustomTaskComment -> Optional.ofNullable(actCustomTaskComment.getComment()).orElse(""), (t1,t2)->t1));
 
@@ -2979,9 +3003,9 @@ public class FlowApiServiceImpl implements FlowApiService {
         Set<String> userNameSet = recordMap.values().stream().map(HistoryTaskInfo::getList).flatMap(List::stream)
                 .filter(historicTaskInstance -> StrUtil.isNotBlank(historicTaskInstance.getAssignee()))
                 .map(HistoricTaskInstance::getAssignee).collect(Collectors.toSet());
-        List<DictModel> dictModelList = sysBaseAPI.getDictItems("sys_post");
+        List<DictModel> dictModelList = sysBaseApi.getDictItems("sys_post");
         Map<String, String> sysPostMap = dictModelList.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (t1, t2) -> t1));
-        List<LoginUser> loginUserList = sysBaseAPI.getLoginUserList(new ArrayList<>(userNameSet));
+        List<LoginUser> loginUserList = sysBaseApi.getLoginUserList(new ArrayList<>(userNameSet));
         Map<String, LoginUser> userMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, t->t, (t1, t2) -> t1));
         LoginUser user = new LoginUser();
         user.setId(UUID.randomUUID().toString());
@@ -2997,7 +3021,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
             List<HistoricTaskInstance> taskInfoList = historyTaskInfo.getList();
             taskInfoList = taskInfoList.stream().filter(historicTaskInstance -> (Objects.nonNull(historicTaskInstance.getClaimTime())
-                    || Objects.isNull(historicTaskInstance.getEndTime()))).collect(Collectors.toList());
+                    || Objects.isNull(historicTaskInstance.getEndTime()) || StrUtil.isNotBlank(historicTaskInstance.getDeleteReason()))).collect(Collectors.toList());
 
             List<HistoricTaskInstance> unFinishList = taskInfoList.stream().filter(historicTaskInstance -> Objects.isNull(historicTaskInstance.getEndTime()))
                     .collect(Collectors.toList());
@@ -3041,8 +3065,25 @@ public class FlowApiServiceImpl implements FlowApiService {
                         recordDTO.setStateColor("#FF0000");
                     } else {
                         if (changeFlag) {
-                            recordDTO.setStateName("已退回");
-                            recordDTO.setStateColor("#FFA800");
+                            //回退流程区分是退回还是撤回
+                            //撤回或退回的任务id集合
+                            List<String> taskIdList = taskInfoList.stream()
+                                    .filter(historicTaskInstance -> historicTaskInstance.getDeleteReason().startsWith("Change"))
+                                    .map(HistoricTaskInstance::getId).collect(Collectors.toList());
+                            //撤回或退回的任务实体集合
+                            List<ActCustomTaskComment> filteredValues = taskIdList.stream()
+                                    .map(taskCommentMap::get)
+                                    .filter(Objects::nonNull)
+                                    .collect(Collectors.toList());
+                            boolean recallFlag = filteredValues.stream().anyMatch(actCustomTaskComment -> "recall".equals(actCustomTaskComment.getApprovalType()));
+                            boolean rejectFlag = filteredValues.stream().anyMatch(actCustomTaskComment -> actCustomTaskComment.getApprovalType().startsWith("reject"));
+                            if (recallFlag) {
+                                recordDTO.setStateName("已撤回");
+                                recordDTO.setStateColor("#FFA800");
+                            } else if (rejectFlag) {
+                                recordDTO.setStateName("已退回");
+                                recordDTO.setStateColor("#FFA800");
+                            }
                         }
                     }
 
@@ -3069,6 +3110,9 @@ public class FlowApiServiceImpl implements FlowApiService {
                         .endTime(historicTaskInstance.getEndTime())
                         .reason(commentMap.get(historicTaskInstance.getId()))
                         .build();
+                if (Objects.isNull(historicTaskInstance.getClaimTime())) {
+                    nodeInfoDTO.setEndTime(null);
+                }
                 String assignee = historicTaskInstance.getAssignee();
                 if (StrUtil.isNotBlank(assignee)) {
                     LoginUser loginUser = userMap.get(assignee);

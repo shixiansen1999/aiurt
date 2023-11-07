@@ -9,7 +9,6 @@ import com.aiurt.modules.multideal.dto.MultiDealDTO;
 import com.aiurt.modules.multideal.service.IMultiInTaskService;
 import com.aiurt.modules.multideal.service.IMultiInstanceDealService;
 import com.aiurt.modules.multideal.service.IMultiInstanceUserService;
-import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.flowable.engine.ProcessEngines;
@@ -19,8 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-
-import static com.aiurt.common.enums.SentinelErrorInfoEnum.FlowException;
 
 /**
  * @author fgw

@@ -6,7 +6,6 @@ import org.flowable.ui.common.security.CustomPersistentRememberMeServices;
 import org.flowable.ui.common.security.PersistentTokenService;
 import org.flowable.ui.modeler.service.FlowableModelQueryService;
 import org.flowable.ui.modeler.service.ModelImageService;
-import org.flowable.ui.modeler.service.ModelServiceImpl;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;

@@ -1,6 +1,5 @@
 package com.aiurt.modules.state.service;
 
-import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.state.entity.ActCustomState;
 import com.baomidou.mybatisplus.extension.service.IService;
 
