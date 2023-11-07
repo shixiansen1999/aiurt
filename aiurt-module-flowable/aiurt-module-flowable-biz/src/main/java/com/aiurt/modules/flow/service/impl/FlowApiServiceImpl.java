@@ -605,7 +605,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (Objects.nonNull(task)) {
             taskDefinitionKey = task.getTaskDefinitionKey();
         }
-        
+
         HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 
         if (Objects.isNull(historicProcessInstance) || StrUtil.isBlank(taskDefinitionKey)) {
@@ -658,28 +658,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                     taskInfoDTO.setOperationList(objectList);
                 }
 
-                String formJson = flowTaskExt.getFormJson();
-                if (StrUtil.isNotBlank(formJson)) {
-                    // 表单类型
-                    JSONObject jsonObject = JSONObject.parseObject(formJson);
-                    String formType = jsonObject.getString(FlowModelAttConstant.FORM_TYPE);
-                    // 中间业务数据
-                    // 表单设计
-                    if (StrUtil.equalsIgnoreCase(formType, FlowModelAttConstant.DYNAMIC_FORM_TYPE)) {
-                        setPageAttr(taskInfoDTO, jsonObject);
-                    } else {
-                        // 定制表单
-                        taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
-                        // 判断是否是表单设计器，
-                        if (StrUtil.isNotBlank(jsonObject.getString(FlowModelAttConstant.FORM_URL))) {
-                            taskInfoDTO.setRouterName(jsonObject.getString(FlowModelAttConstant.FORM_URL));
-                        } else {
-                            taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
-                        }
-                    }
-                } else {
-                    taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
-                }
+                // 处理表单数据
+                pageInfoDeal(taskInfoDTO, actCustomModelInfo, flowTaskExt);
 
                 // 是否自动选人
                 setIsAutoSelectUser(processInstanceId, taskId, taskInfoDTO, task, flowTaskExt);
@@ -739,6 +719,31 @@ public class FlowApiServiceImpl implements FlowApiService {
         taskInfoDTO.setTaskKey(taskDefinitionKey);
         taskInfoDTO.setProcessName(historicProcessInstance.getProcessDefinitionName());
         return taskInfoDTO;
+    }
+
+    private void pageInfoDeal(TaskInfoDTO taskInfoDTO, ActCustomModelInfo actCustomModelInfo, ActCustomTaskExt flowTaskExt) {
+        String formJson = flowTaskExt.getFormJson();
+        if (StrUtil.isNotBlank(formJson)) {
+            // 表单类型
+            JSONObject jsonObject = JSONObject.parseObject(formJson);
+            String formType = jsonObject.getString(FlowModelAttConstant.FORM_TYPE);
+            // 中间业务数据
+            // 表单设计
+            if (StrUtil.equalsIgnoreCase(formType, FlowModelAttConstant.DYNAMIC_FORM_TYPE)) {
+                setPageAttr(taskInfoDTO, jsonObject);
+            } else {
+                // 定制表单
+                taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
+                // 判断是否是表单设计器，
+                if (StrUtil.isNotBlank(jsonObject.getString(FlowModelAttConstant.FORM_URL))) {
+                    taskInfoDTO.setRouterName(jsonObject.getString(FlowModelAttConstant.FORM_URL));
+                } else {
+                    taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
+                }
+            }
+        } else {
+            taskInfoDTO.setRouterName(actCustomModelInfo.getBusinessUrl());
+        }
     }
 
     private void setIsAutoSelectUser(String processInstanceId, String taskId, TaskInfoDTO taskInfoDTO, HistoricTaskInstance task, ActCustomTaskExt flowTaskExt) {
@@ -2987,6 +2992,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         List<ActCustomTaskComment> flowTaskCommentList = taskCommentService.getFlowTaskCommentList(processInstanceId);
         Map<String, String> commentMap = flowTaskCommentList.stream()
                 .filter(actCustomTaskComment -> StrUtil.isNotBlank(actCustomTaskComment.getTaskId()))
+                .filter(actCustomTaskComment -> !StrUtil.equalsAnyIgnoreCase(actCustomTaskComment.getApprovalType(), FlowApprovalType.ADD_MULTI, FlowApprovalType.REDUCE_MULTI))
                 .collect(Collectors.toMap(ActCustomTaskComment::getTaskId,
                         actCustomTaskComment -> Optional.ofNullable(actCustomTaskComment.getComment()).orElse(""), (t1,t2)->t1));
 
@@ -3059,8 +3065,25 @@ public class FlowApiServiceImpl implements FlowApiService {
                         recordDTO.setStateColor("#FF0000");
                     } else {
                         if (changeFlag) {
-                            recordDTO.setStateName("已退回");
-                            recordDTO.setStateColor("#FFA800");
+                            //回退流程区分是退回还是撤回
+                            //撤回或退回的任务id集合
+                            List<String> taskIdList = taskInfoList.stream()
+                                    .filter(historicTaskInstance -> historicTaskInstance.getDeleteReason().startsWith("Change"))
+                                    .map(HistoricTaskInstance::getId).collect(Collectors.toList());
+                            //撤回或退回的任务实体集合
+                            List<ActCustomTaskComment> filteredValues = taskIdList.stream()
+                                    .map(taskCommentMap::get)
+                                    .filter(Objects::nonNull)
+                                    .collect(Collectors.toList());
+                            boolean recallFlag = filteredValues.stream().anyMatch(actCustomTaskComment -> "recall".equals(actCustomTaskComment.getApprovalType()));
+                            boolean rejectFlag = filteredValues.stream().anyMatch(actCustomTaskComment -> actCustomTaskComment.getApprovalType().startsWith("reject"));
+                            if (recallFlag) {
+                                recordDTO.setStateName("已撤回");
+                                recordDTO.setStateColor("#FFA800");
+                            } else if (rejectFlag) {
+                                recordDTO.setStateName("已退回");
+                                recordDTO.setStateColor("#FFA800");
+                            }
                         }
                     }
 

@@ -9,6 +9,7 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.constants.FlowConstant;
+import com.aiurt.modules.deduplicate.handler.BackNodeRuleVerifyHandler;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
@@ -26,7 +27,11 @@ import org.flowable.common.engine.impl.event.FlowableEntityEventImpl;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.ProcessEngines;
 import org.flowable.engine.RuntimeService;
+import org.flowable.engine.history.HistoricProcessInstance;
+import org.flowable.engine.history.HistoricProcessInstanceQuery;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
@@ -234,6 +239,18 @@ public class TaskCreateListener implements FlowableEventListener {
                 runtimeService.setVariable(instance.getProcessInstanceId(), FlowConstant.START_FLOWABLE, Boolean.TRUE);
                 return;
             }
+            String executionId = taskEntity.getExecutionId();
+
+            ExecutionEntity executionEntity = (ExecutionEntity) runtimeService.createExecutionQuery()
+                    .executionId(executionId)
+                    .singleResult();
+
+            HistoryService historyService = ProcessEngines.getDefaultProcessEngine().getHistoryService();
+            HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
+            HistoricProcessInstance historicProcessInstance = historicProcessInstanceQuery.processInstanceId(executionEntity.getProcessInstanceId()).singleResult();
+
+            Boolean variableLocal = executionEntity.getVariableLocal(BackNodeRuleVerifyHandler.REJECT_FIRST_USER_TASK, Boolean.class);
+
             BpmnTodoDTO bpmnTodoDTO = new BpmnTodoDTO();
             bpmnTodoDTO.setTaskKey(taskEntity.getTaskDefinitionKey());
             bpmnTodoDTO.setTaskId(taskEntity.getId());
@@ -268,18 +285,27 @@ public class TaskCreateListener implements FlowableEventListener {
             Date startTime = instance.getStartTime();
             ISysBaseAPI bean = SpringContextUtils.getBean(ISysBaseAPI.class);
             LoginUser userByName = bean.getUserByName(startUserId);
-            String format = DateUtil.format(startTime, "yyyy-MM-dd");
 
-            map.put("creatBy",userByName.getRealname());
-            map.put("creatTime",format);
             bpmnTodoDTO.setTemplateCode(CommonConstant.BPM_SERVICE_NOTICE_PROCESS);
             bpmnTodoDTO.setData(map);
-            bpmnTodoDTO.setMsgAbstract("有流程到达");
+            if(Objects.nonNull(variableLocal)){
+                LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                map.put("creatBy",loginUser.getRealname());
+                String format = DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss");
+                map.put("creatTime",format);
+                bpmnTodoDTO.setMsgAbstract("有流程【退回】提醒");
+                bpmnTodoDTO.setTitle(bpmnTodoDTO.getProcessName());
+            }else{
+                map.put("creatBy",userByName.getRealname());
+                String format = DateUtil.format(startTime, "yyyy-MM-dd");
+                map.put("creatTime",format);
+                bpmnTodoDTO.setMsgAbstract("有流程到达");
+                bpmnTodoDTO.setTitle(bpmnTodoDTO.getProcessName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd"));
+            }
             ISysParamAPI sysParamApi = SpringContextUtils.getBean(ISysParamAPI.class);
             SysParamModel sysParamModel = sysParamApi.selectByCode(SysParamCodeConstant.BPM_MESSAGE);
             bpmnTodoDTO.setType(ObjectUtil.isNotEmpty(sysParamModel) ? sysParamModel.getValue() : "");
 
-            bpmnTodoDTO.setTitle(bpmnTodoDTO.getProcessName()+"-"+userByName.getRealname()+"-"+DateUtil.format(startTime, "yyyy-MM-dd"));
             ISTodoBaseAPI todoBaseApi = SpringContextUtils.getBean(ISTodoBaseAPI.class);
             todoBaseApi.createBbmnTodoTask(bpmnTodoDTO);
 
