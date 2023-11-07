@@ -1952,6 +1952,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (CollUtil.isNotEmpty(taskStandardList)) {
             patrolTaskStandardMapper.deleteBatchIds(taskStandardList);
         }
+        // 删除巡视任务标准关联设备类型
+        patrolDeviceTypeService.remove(new LambdaQueryWrapper<PatrolDeviceType>().eq(PatrolDeviceType::getTaskId, patrolTaskManualDTO.getId()));
         // 删除巡视任务关联设备表的信息
         patrolDeviceService.remove(new LambdaQueryWrapper<PatrolDevice>().eq(PatrolDevice::getTaskId, patrolTaskManualDTO.getId()));
         //删除单号
@@ -1981,6 +1983,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskStandard.setStandardCode(ns.getCode());
             patrolTaskStandardMapper.insert(patrolTaskStandard);
             String taskStandardId = patrolTaskStandard.getId();
+            // 保存巡视任务标准关联设备类型
+            if (!PatrolConstant.DEVICE_INDEPENDENCE.equals(ns.getDeviceType())) {
+                saveTaskDeviceType(taskId, taskStandardId, ns.getCode());
+            }
             // 获取指定设备
             List<DeviceDTO> deviceList = ns.getDeviceList();
             // 保存巡视任务设备关联表
@@ -2392,6 +2398,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 patrolTaskUserService.remove(new LambdaUpdateWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, taskCode));
                 // 删除巡视任务标准关联表的信息
                 patrolTaskStandardService.remove(new LambdaUpdateWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getTaskId, taskId));
+                // 删除巡视任务标准关联设备类型信息
+                patrolDeviceTypeService.remove(new LambdaQueryWrapper<PatrolDeviceType>().eq(PatrolDeviceType::getTaskId, taskId));
                 // 删除巡视任务设备关联表的信息
                 patrolDeviceService.remove(new LambdaQueryWrapper<PatrolDevice>().eq(PatrolDevice::getTaskId, taskId));
                 List<PatrolTaskDevice> patrolTaskDeviceList = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, taskId));
