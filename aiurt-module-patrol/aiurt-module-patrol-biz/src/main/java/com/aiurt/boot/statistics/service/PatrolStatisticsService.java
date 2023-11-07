@@ -498,6 +498,15 @@ public class PatrolStatisticsService {
                         }
                     });
                 }
+
+                //巡检结果字典值列表
+                List<DictModel> list = sysBaseApi.getDictItems(c.getResultDictCode());
+                c.setResultList(list);
+                list.stream().forEach(l -> {
+                    if (l.getValue().equals(String.valueOf(c.getCheckResult()))) {
+                        c.setResultDictName(l.getTitle());
+                    }
+                });
                 String userName = patrolTaskMapper.getUserName(c.getUserId());
                 c.setCheckUserName(userName);
             });

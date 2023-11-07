@@ -30,6 +30,9 @@ public class PatrolCheckResultDTO extends PatrolCheckResult {
      */
     @ApiModelProperty(value = "检查值名称")
      private  String checkDictName;
+
+    @ApiModelProperty(value = "结果值名称")
+    private  String resultDictName;
     /**
      * 子节点
      */
@@ -50,6 +53,11 @@ public class PatrolCheckResultDTO extends PatrolCheckResult {
      */
     @ApiModelProperty(value = "字典下拉列表")
     private  List<DictModel> list;
+    /**
+     * 巡检结果字典下拉列表
+     */
+    @ApiModelProperty(value = "巡检结果字典下拉列表")
+    private  List<DictModel> resultList;
     /**
      * 子系统名称
      */

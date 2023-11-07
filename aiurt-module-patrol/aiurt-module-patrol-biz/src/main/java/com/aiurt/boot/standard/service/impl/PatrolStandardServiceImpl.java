@@ -287,9 +287,12 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
             String requiredName = requiredModels.stream().map(DictModel::getText).collect(Collectors.joining());
             items.setRequiredDictName(requiredName);
             List<DictModel> modelList = patrolStandardMapper.querySysDict(modules);
-            modelList = modelList.stream().filter(e -> e.getValue().equals(String.valueOf(items.getDictCode()))).collect(Collectors.toList());
-            String modelName = modelList.stream().map(DictModel::getText).collect(Collectors.joining());
+            List<DictModel> dictModels = modelList.stream().filter(e -> e.getValue().equals(String.valueOf(items.getDictCode()))).collect(Collectors.toList());
+            List<DictModel> resultDictModels = modelList.stream().filter(e -> e.getValue().equals(String.valueOf(items.getResultDictCode()))).collect(Collectors.toList());
+            String modelName = dictModels.stream().map(DictModel::getText).collect(Collectors.joining());
+            String resultModelName = resultDictModels.stream().map(DictModel::getText).collect(Collectors.joining());
             items.setDictCode(modelName);
+            items.setResultDictCode(resultModelName);
             String regular = sysBaseApi.translateDict("regex", items.getRegular());
             items.setRegular(regular);
         }
@@ -472,6 +475,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
         ExcelSelectListUtil.selectList(workbook, "关联数据字典", 17, 17, modelList);
         List<DictModel> regularModels = bean.queryDictItemsByCode("regex");
         ExcelSelectListUtil.selectList(workbook, "数据校验表达式", 18, 18, regularModels);
+        ExcelSelectListUtil.selectList(workbook, "巡检结果关联的数据字典", 19, 19, modelList);
         String fileName = "巡检标准导入模板.xlsx";
         try {
             response.setHeader("Content-Disposition",
@@ -574,6 +578,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 }
             }
             lm.put("dictCode", deviceAssemblyErrorModel.getDictCode());
+            lm.put("resultDictCode", deviceAssemblyErrorModel.getResultDictCode());
             List<DictModel> regex = sysBaseApi.getDictItems("regex");
             if (CollUtil.isNotEmpty(regex)) {
                 String dictText = regex.stream().filter(t -> StrUtil.equals(t.getValue(), deviceAssemblyErrorModel.getRegular())).map(DictModel::getText).limit(1).collect(Collectors.joining());
@@ -774,6 +779,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 String itemsCode = items.getCode();
                 String checkName = items.getCheckName();
                 String content = items.getContent();
+                String resultDictCode = items.getResultDictCode();
                 //重复数据校验
                 Integer s = duplicateData.get(items.getCode());
                 if (s == null) {
@@ -781,7 +787,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                 } else {
                     stringBuilder.append("该数据存在相同数据,");
                 }
-                if (StrUtil.isNotEmpty(hierarchyTypeName) && StrUtil.isNotEmpty(itemsCode) && StrUtil.isNotEmpty(checkName) && StrUtil.isNotEmpty(content)) {
+                if (StrUtil.isNotEmpty(hierarchyTypeName) && StrUtil.isNotEmpty(itemsCode) && StrUtil.isNotEmpty(checkName) && StrUtil.isNotEmpty(content) && StrUtil.isNotEmpty(resultDictCode)) {
+
                     List<PatrolStandardItems> itemsList = new ArrayList<>();
                     if (!(PatrolConstant.ONE_LEVEL + PatrolConstant.SON_LEVEL).contains(hierarchyTypeName)) {
                         stringBuilder.append("层级类型填写不规范,");
@@ -804,7 +811,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                                 if (itemsList.size() == 0 && items.getHierarchyTypeName().equals(PatrolConstant.SON_LEVEL)) {
                                     stringBuilder.append("父级不存在,");
                                 }
-                                if(parentItems.size()!=1){
+                                if (parentItems.size() != 1) {
                                     stringBuilder.append("存在相同的父级,");
                                 }
                             }
@@ -826,7 +833,7 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                         items.setCheck(PatrolConstant.IS_DEVICE_TYPE.equals(checkName) ? 1 : 0);
                     }
                     if (items.getCheck() == 0 && items.getHierarchyType() == 0) {
-                        if (ObjectUtil.isNotEmpty(items.getRegular()) || ObjectUtil.isNotEmpty(items.getQualityStandard()) || ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getInputTypeName()) || ObjectUtil.isNotEmpty(items.getRequiredDictName())|| ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                        if (ObjectUtil.isNotEmpty(items.getRegular()) || ObjectUtil.isNotEmpty(items.getQualityStandard()) || ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getInputTypeName()) || ObjectUtil.isNotEmpty(items.getRequiredDictName()) || ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
                             stringBuilder.append("质量标准、检查值类型、检查值是否必填、关联数据字典、数据校验表达式、特殊字符不用填写，");
                         }
                     }
@@ -852,12 +859,12 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                                 } else {
                                     items.setInputType(Integer.valueOf(value));
                                 }
-                            }else {
+                            } else {
                                 stringBuilder.append("系统没有启用的检查值类型数据字典，");
                             }
 
                             if (items.getInputType() == 1) {
-                                if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular())  || ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular()) || ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
                                     stringBuilder.append("检查值类型为无时：关联数据字典、数据检验表达式、检查值不用填写");
                                 }
                             }
@@ -933,12 +940,12 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                                 } else {
                                     items.setInputType(Integer.valueOf(value));
                                 }
-                            }else {
+                            } else {
                                 stringBuilder.append("系统没有启用的检查值类型数据字典，");
                             }
 
                             if (items.getInputType() == 1) {
-                                if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular())  || ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
+                                if (ObjectUtil.isNotEmpty(items.getDictCode()) || ObjectUtil.isNotEmpty(items.getRegular()) || ObjectUtil.isNotEmpty(items.getSpecialCharacters())) {
                                     stringBuilder.append("检查值类型为无时：关联数据字典、数据检验表达式、检查值不用填写");
                                 }
                             }
@@ -993,8 +1000,15 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
                             }
                         }
                     }
+                    //巡检结果数据字典
+                    String dictCode = patrolStandardMapper.getDictCode(resultDictCode);
+                    if (ObjectUtil.isNotEmpty(dictCode)) {
+                        items.setResultDictCode(dictCode);
+                    } else {
+                        stringBuilder.append("巡检结果关联数据字典选择不正确，");
+                    }
                 } else {
-                    stringBuilder.append("层级类型、巡视项内容、巡视项编号、是否为巡视项目要必填，");
+                    stringBuilder.append("层级类型、巡视项内容、巡视项编号、是否为巡视项目、巡检结果关联数据字典要必填，");
                 }
                 if (stringBuilder.length() > 0) {
                     // 截取字符

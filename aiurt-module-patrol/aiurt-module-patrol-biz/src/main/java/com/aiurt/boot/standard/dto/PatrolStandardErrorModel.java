@@ -101,6 +101,10 @@ public class PatrolStandardErrorModel {
     @Excel(name = "关联数据字典", width = 15)
     @ApiModelProperty(value = "选择项关联的数据字典code")
     private java.lang.String dictCode;
+    /**巡检结果关联的数据字典code*/
+    @Excel(name = "巡检结果关联的数据字典code", width = 15)
+    @ApiModelProperty(value = "巡检结果关联的数据字典code")
+    private java.lang.String resultDictCode;
     /**数据校验表达式*/
     @Excel(name = "数据校验表达式", width = 15)
     @ApiModelProperty(value = "数据校验表达式")

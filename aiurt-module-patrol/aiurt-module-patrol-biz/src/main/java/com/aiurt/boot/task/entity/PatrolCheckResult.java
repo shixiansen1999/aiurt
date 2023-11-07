@@ -90,6 +90,10 @@ public class PatrolCheckResult implements Serializable {
 	@Excel(name = "关联的数据字典编码", width = 15)
     @ApiModelProperty(value = "关联的数据字典编码")
     private java.lang.String dictCode;
+    /**巡检结果关联的数据字典code*/
+    @cn.afterturn.easypoi.excel.annotation.Excel(name = "巡检结果关联的数据字典code", width = 15)
+    @ApiModelProperty(value = "巡检结果关联的数据字典code")
+    private java.lang.String resultDictCode;
 	/**关联的数据字典项或开关项结果值*/
 	@Excel(name = "关联的数据字典项或开关项结果值", width = 15)
     @ApiModelProperty(value = "关联的数据字典项或开关项结果值")
