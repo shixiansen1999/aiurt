@@ -584,7 +584,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             List<DictModel> list = sysBaseApi.getDictItems(c.getResultDictCode());
             c.setResultList(list);
             list.stream().forEach(l -> {
-                if (l.getValue().equals(c.getCheckResult())) {
+                if (l.getValue().equals(String.valueOf(c.getCheckResult()))) {
                     c.setResultDictName(l.getTitle());
                 }
             });
@@ -806,7 +806,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 List<DictModel> list = sysBaseApi.getDictItems(e.getResultDictCode());
                 e.setResultList(list);
                 list.stream().forEach(l -> {
-                    if (l.getValue().equals(e.getCheckResult())) {
+                    if (l.getValue().equals(String.valueOf(e.getCheckResult()))) {
                         e.setResultDictName(l.getTitle());
                     }
                 });
