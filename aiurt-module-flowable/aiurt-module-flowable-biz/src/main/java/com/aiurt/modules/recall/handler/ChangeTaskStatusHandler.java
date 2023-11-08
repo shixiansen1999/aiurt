@@ -9,6 +9,7 @@ package com.aiurt.modules.recall.handler;/**
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.deduplicate.handler.BackNodeRuleVerifyHandler;
+import com.aiurt.modules.flow.constants.FlowApprovalType;
 import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.recall.context.FlowRecallContext;
@@ -60,7 +61,8 @@ public class ChangeTaskStatusHandler extends AbstractFlowHandler<FlowRecallConte
         }
         // 增加变量
         Map<String, Object> localVariableMap = new HashMap<>(16);
-        localVariableMap.put(BackNodeRuleVerifyHandler.REJECT_FIRST_USER_TASK, true);
+//        localVariableMap.put(BackNodeRuleVerifyHandler.REJECT_FIRST_USER_TASK, true);
+        localVariableMap.put(FlowApprovalType.RECALL_FIRST_USER_TASK, true);
         //将所有节点撤回到开始节点
         runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
                 .moveExecutionsToSingleActivityId(executionIds, startElementId)
