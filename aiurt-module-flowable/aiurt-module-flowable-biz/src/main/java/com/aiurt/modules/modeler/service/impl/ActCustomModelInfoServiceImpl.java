@@ -169,7 +169,7 @@ public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInf
         }
         this.updateById(actCustomModelInfo);
 
-        model.setName(one.getName());
+        model.setName(actCustomModelInfo.getName());
         modelService.saveModel(model);
     }
 
