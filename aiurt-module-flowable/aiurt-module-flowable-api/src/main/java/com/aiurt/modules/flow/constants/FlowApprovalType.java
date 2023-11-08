@@ -58,6 +58,11 @@ public final class FlowApprovalType {
      */
     public static final String REJECT_FIRST_USER_TASK = "reject_first_user_task";
 
+    /**
+     *  撤回任务到流程发起人
+     */
+    public static final String RECALL_FIRST_USER_TASK = "recall_first_user_task";
+
 
     /**
      * 转办

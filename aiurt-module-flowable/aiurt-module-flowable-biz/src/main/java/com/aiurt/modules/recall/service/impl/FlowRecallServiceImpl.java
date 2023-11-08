@@ -11,6 +11,7 @@ import com.aiurt.modules.recall.dto.RecallReqDTO;
 import com.aiurt.modules.recall.handler.BuildRecallContextHandler;
 import com.aiurt.modules.recall.handler.ChangeTaskStatusHandler;
 import com.aiurt.modules.recall.handler.RecallRuleVerifyHandler;
+import com.aiurt.modules.recall.handler.RecallSendMessageHandler;
 import com.aiurt.modules.recall.pipeline.RecallHandlerChainPipeline;
 import com.aiurt.modules.recall.service.IFlowRecallService;
 import org.apache.shiro.SecurityUtils;
@@ -56,6 +57,7 @@ public class FlowRecallServiceImpl implements IFlowRecallService {
         filterNames.add(BuildRecallContextHandler.class.getSimpleName());
         filterNames.add(ChangeTaskStatusHandler.class.getSimpleName());
         filterNames.add(RecallRuleVerifyHandler.class.getSimpleName());
+        filterNames.add(RecallSendMessageHandler.class.getSimpleName());
         LocalListBasedHandlerSelector filterSelector = new LocalListBasedHandlerSelector(filterNames);
         FlowRecallContext context = new FlowRecallContext(filterSelector);
         context.setProcessInstanceId(recallReqDTO.getProcessInstanceId());

@@ -3068,7 +3068,10 @@ public class FlowApiServiceImpl implements FlowApiService {
                             //回退流程区分是退回还是撤回
                             //撤回或退回的任务id集合
                             List<String> taskIdList = taskInfoList.stream()
-                                    .filter(historicTaskInstance -> historicTaskInstance.getDeleteReason().startsWith("Change"))
+                                    .filter(historicTaskInstance -> {
+                                        String deleteReason = historicTaskInstance.getDeleteReason();
+                                        return deleteReason != null && deleteReason.startsWith("Change");
+                                    })
                                     .map(HistoricTaskInstance::getId).collect(Collectors.toList());
                             //撤回或退回的任务实体集合
                             List<ActCustomTaskComment> filteredValues = taskIdList.stream()

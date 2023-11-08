@@ -10,6 +10,7 @@ import com.aiurt.modules.common.constant.FlowModelExtElementConstant;
 import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.deduplicate.handler.BackNodeRuleVerifyHandler;
+import com.aiurt.modules.flow.constants.FlowApprovalType;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
@@ -244,12 +245,10 @@ public class TaskCreateListener implements FlowableEventListener {
             ExecutionEntity executionEntity = (ExecutionEntity) runtimeService.createExecutionQuery()
                     .executionId(executionId)
                     .singleResult();
-
-            HistoryService historyService = ProcessEngines.getDefaultProcessEngine().getHistoryService();
-            HistoricProcessInstanceQuery historicProcessInstanceQuery = historyService.createHistoricProcessInstanceQuery();
-            HistoricProcessInstance historicProcessInstance = historicProcessInstanceQuery.processInstanceId(executionEntity.getProcessInstanceId()).singleResult();
-
+            //是否驳回
             Boolean variableLocal = executionEntity.getVariableLocal(BackNodeRuleVerifyHandler.REJECT_FIRST_USER_TASK, Boolean.class);
+            //是否撤回
+            Boolean recallFlag = executionEntity.getVariableLocal(FlowApprovalType.RECALL_FIRST_USER_TASK, Boolean.class);
 
             BpmnTodoDTO bpmnTodoDTO = new BpmnTodoDTO();
             bpmnTodoDTO.setTaskKey(taskEntity.getTaskDefinitionKey());
@@ -294,6 +293,13 @@ public class TaskCreateListener implements FlowableEventListener {
                 String format = DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss");
                 map.put("creatTime",format);
                 bpmnTodoDTO.setMsgAbstract("有流程【退回】提醒");
+                bpmnTodoDTO.setTitle(bpmnTodoDTO.getProcessName());
+            }else if(Objects.nonNull(recallFlag)){
+                LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                map.put("creatBy",loginUser.getRealname());
+                String format = DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss");
+                map.put("creatTime",format);
+                bpmnTodoDTO.setMsgAbstract("有流程【撤回】提醒");
                 bpmnTodoDTO.setTitle(bpmnTodoDTO.getProcessName());
             }else{
                 map.put("creatBy",userByName.getRealname());
