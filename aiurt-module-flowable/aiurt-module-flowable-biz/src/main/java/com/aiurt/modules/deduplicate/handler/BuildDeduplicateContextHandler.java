@@ -2,6 +2,7 @@ package com.aiurt.modules.deduplicate.handler;
 
 import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.deduplicate.context.FlowDeduplicateContext;
+import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomModelExt;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomModelExtService;
@@ -9,6 +10,7 @@ import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RuntimeService;
+import org.flowable.engine.TaskService;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;

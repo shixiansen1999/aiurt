@@ -2,22 +2,23 @@ package com.aiurt.modules.deduplicate.handler;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.deduplicate.context.FlowDeduplicateContext;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomModelExt;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.FlowElement;
+import org.flowable.bpmn.model.MultiInstanceLoopCharacteristics;
+import org.flowable.bpmn.model.UserTask;
+import org.flowable.engine.TaskService;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,9 @@ public class DuplicateRuleVerifyHandler<T extends FlowDeduplicateContext> extend
 
     @Autowired
     private FlowElementUtil flowElementUtil;
+
+    @Autowired
+    private TaskService taskService;
 
     /**
      * 执行任务
@@ -84,11 +88,29 @@ public class DuplicateRuleVerifyHandler<T extends FlowDeduplicateContext> extend
             switch (rule) {
                 case  "2" :
                     preFlowElementList.forEach(flowElement->{
+
                         List<HistoricTaskInstance> historicTaskInstances = nodeIdMap.get(flowElement.getId());
                         if (CollUtil.isNotEmpty(historicTaskInstances)) {
                             Set<String> set = historicTaskInstances.stream().map(HistoricTaskInstance::getAssignee).collect(Collectors.toSet());
                             if (set.contains(task.getAssignee())) {
                                 flag.set(true);
+                            }
+                        }
+                        if (flag.get()) {
+                            return;
+                        }
+                        // 如果上个节点是串行，而且是最一个人自动提交，需要查询正在运行的任务，原因还没生成历史任务
+                        UserTask userTaskModel = (UserTask) flowElementUtil.getFlowElement(task.getProcessDefinitionId(), flowElement.getId());
+                        if (Objects.isNull(userTaskModel)) {
+                            return;
+                        }
+                        MultiInstanceLoopCharacteristics loopCharacteristics = userTaskModel.getLoopCharacteristics();
+                        if (Objects.nonNull(loopCharacteristics) && loopCharacteristics.isSequential()) {
+                            List variableList = taskService.getVariable(task.getId(), FlowVariableConstant.ASSIGNEE_LIST + flowElement.getId(), List.class);
+                            if (CollUtil.isNotEmpty(variableList)) {
+                                if (variableList.contains(task.getAssignee())) {
+                                    flag.set(true);
+                                }
                             }
                         }
                     });
@@ -100,6 +122,7 @@ public class DuplicateRuleVerifyHandler<T extends FlowDeduplicateContext> extend
                                     && (!nodeIdSet.contains(historicTaskInstance.getTaskDefinitionKey())))
                             .collect(Collectors.groupingBy(HistoricTaskInstance::getAssignee));
                     List<HistoricTaskInstance> historicTaskInstances = duplicateUserNameMap.get(task.getAssignee());
+                    //
                     if (CollUtil.isNotEmpty(historicTaskInstances)) {
                         flag.set(true);
                     }
