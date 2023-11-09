@@ -61,7 +61,6 @@ public class ChangeTaskStatusHandler extends AbstractFlowHandler<FlowRecallConte
         }
         // 增加变量
         Map<String, Object> localVariableMap = new HashMap<>(16);
-//        localVariableMap.put(BackNodeRuleVerifyHandler.REJECT_FIRST_USER_TASK, true);
         localVariableMap.put(FlowApprovalType.RECALL_FIRST_USER_TASK, true);
         //将所有节点撤回到开始节点
         runtimeService.createChangeActivityStateBuilder().processInstanceId(processInstanceId)
