@@ -78,7 +78,6 @@ import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskInfo;
 import org.flowable.task.api.TaskQuery;
 import org.flowable.task.api.history.HistoricTaskInstance;
-import org.flowable.task.service.impl.persistence.entity.HistoricTaskInstanceEntityImpl;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
@@ -1198,11 +1197,11 @@ public class FlowApiServiceImpl implements FlowApiService {
         Set<String> finishedTaskSet = partitionedTasks.get(false);
 
         //获取流程实例当前正在待办的节点,
-        List<HistoricActivityInstance> unfinishedInstanceList =
+        List<HistoricTaskInstance> unfinishedInstanceList =
                 this.getHistoricUnfinishedInstanceList(processInstanceId);
         Set<String> unfinishedTaskSet = new LinkedHashSet<>();
-        for (HistoricActivityInstance unfinishedActivity : unfinishedInstanceList) {
-            unfinishedTaskSet.add(unfinishedActivity.getActivityId());
+        for (HistoricTaskInstance unfinishedActivity : unfinishedInstanceList) {
+            unfinishedTaskSet.add(unfinishedActivity.getTaskDefinitionKey());
         }
         //获取用户节点办理用户
         List<HighLightedUserInfoDTO> highLightedUserInfos = getHighLightedUserInfo(processInstanceId);
@@ -1314,8 +1313,8 @@ public class FlowApiServiceImpl implements FlowApiService {
      * @return 流程实例待完成的任务列表。
      */
     @Override
-    public List<HistoricActivityInstance> getHistoricUnfinishedInstanceList(String processInstanceId) {
-        return historyService.createHistoricActivityInstanceQuery()
+    public List<HistoricTaskInstance> getHistoricUnfinishedInstanceList(String processInstanceId) {
+        return historyService.createHistoricTaskInstanceQuery()
                 .processInstanceId(processInstanceId).unfinished().list();
     }
 

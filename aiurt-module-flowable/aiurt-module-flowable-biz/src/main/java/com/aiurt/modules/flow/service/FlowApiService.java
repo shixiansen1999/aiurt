@@ -1,7 +1,6 @@
 package com.aiurt.modules.flow.service;
 
 import com.aiurt.modules.flow.dto.*;
-import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.bpmn.model.FlowElement;
@@ -13,6 +12,7 @@ import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskInfo;
+import org.flowable.task.api.history.HistoricTaskInstance;
 
 import java.util.Collection;
 import java.util.List;
@@ -159,7 +159,7 @@ public interface FlowApiService {
      * @param processInstanceId 流程实例Id。
      * @return 流程实例待完成的任务列表。
      */
-    List<HistoricActivityInstance> getHistoricUnfinishedInstanceList(String processInstanceId);
+    List<HistoricTaskInstance> getHistoricUnfinishedInstanceList(String processInstanceId);
 
     /**
      * 获取指定流程实例和任务Id的当前活动任务。

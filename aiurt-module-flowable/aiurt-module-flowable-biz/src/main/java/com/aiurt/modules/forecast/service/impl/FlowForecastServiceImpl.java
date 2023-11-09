@@ -498,6 +498,14 @@ public class FlowForecastServiceImpl implements IFlowForecastService {
                 if (Objects.isNull(list)) {
                     list = new ArrayList<>();
                 }else {
+                    if (StrUtil.isNotBlank(userNodeId)) {
+                        List<String> userNodeList = userTaskModelMap.get(userNodeId);
+                        if (Objects.isNull(userNodeList)) {
+                            userNodeList = new ArrayList<>();
+                        }
+                        userNodeList.add(id);
+                        userTaskModelMap.put(userNodeId, userNodeList);
+                    }
                     return;
                 }
                 userTaskModelMap.put(id, list);
