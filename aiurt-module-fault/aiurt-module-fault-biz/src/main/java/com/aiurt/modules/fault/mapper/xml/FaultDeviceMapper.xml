@@ -47,7 +47,11 @@
             f.symptoms as symptoms,
             b.system_code as systemCode,
             f.receive_user_name as receiveUserName,
-            f.major_code as majorCode
+            f.major_code as majorCode,
+            f.line_code AS faultLineCode,
+            f.station_code AS faultStationCode,
+            f.station_position_code AS faultStationPositionCode,
+            f.happen_time
         from
             fault_device a
                 LEFT JOIN fault f on a.fault_code = f.code
@@ -73,6 +77,45 @@
         </if>
         <if test="condition.repairStatus != null and condition.repairStatus !=''">
             and a.repair_status = #{condition.repairStatus}
+        </if>
+        <if test="condition.repairSerialNumber != null and condition.repairSerialNumber != ''">
+            and a.repair_serial_number like concat('%', #{condition.repairSerialNumber}, '%')
+        </if>
+        <if test="condition.lineCode != null and condition.lineCode != ''">
+            and b.line_code = #{condition.lineCode}
+        </if>
+        <if test="condition.stationCode != null and condition.stationCode != ''">
+            and b.station_code = #{condition.stationCode}
+        </if>
+        <if test="condition.positionCode != null and condition.positionCode != ''">
+            and b.position_code = #{condition.positionCode}
+        </if>
+        <if test="condition.symptoms != null and condition.symptoms != ''">
+            and f.symptoms like concat('%', #{condition.symptoms}, '%')
+        </if>
+        <if test="condition.repairSendTime != null">
+            and a.repair_send_time = #{condition.repairSendTime}
+        </if>
+        <if test="condition.repairBackTime != null">
+            and a.repair_back_time = #{condition.repairBackTime}
+        </if>
+        <if test="condition.happenTime != null">
+            and f.happen_time = #{condition.happenTime}
+        </if>
+        <if test="condition.faultLineCode != null and condition.faultLineCode != ''">
+            and f.line_code = #{condition.faultLineCode}
+        </if>
+        <if test="condition.faultStationCode != null and condition.faultStationCode != ''">
+            and f.station_code = #{condition.faultStationCode}
+        </if>
+        <if test="condition.faultStationPositionCode != null and condition.faultStationPositionCode != ''">
+            and f.station_position_code = #{condition.faultStationPositionCode}
+        </if>
+        <if test="condition.manufactorId != null and condition.manufactorId != ''">
+            and a.manufactor_id = #{condition.manufactorId}
+        </if>
+        <if test="condition.repairContract != null and condition.repairContract != ''">
+            and a.repair_contract like concat('%', #{condition.repairContract}, '%')
         </if>
         </where>
         ORDER BY  a.repair_status ASC,a.create_time DESC

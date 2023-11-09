@@ -1,7 +1,6 @@
 package com.aiurt.modules.sparepart.service;
 
 import com.aiurt.modules.sparepart.entity.SparePartScrap;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
@@ -43,7 +42,7 @@ public interface ISparePartScrapService extends IService<SparePartScrap> {
      * @return
      */
 
-    IPage<SparePartScrap> queryAllScrapForRepair(Page page, SparePartScrap sparePartScrap);
+    Page<SparePartScrap> queryAllScrapForRepair(Page<SparePartScrap> page, SparePartScrap sparePartScrap);
 
     /**
      * 委外备件送修-验收

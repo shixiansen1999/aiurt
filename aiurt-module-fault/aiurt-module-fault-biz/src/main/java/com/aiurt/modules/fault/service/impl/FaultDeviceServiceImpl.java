@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Description: fault_device
@@ -62,6 +65,16 @@ private ISysBaseAPI sysBaseApi;
         }
         //查询故障单状态为已完成且为委外送修的设备数据
         List<FaultDeviceRepairDTO> faultDeviceRepairDtoList = faultDeviceMapper.queryRepairDeviceList(page, FaultDeviceRepairDTO);
+        if (CollUtil.isEmpty(faultDeviceRepairDtoList)) {
+            return page;
+        }
+        // 获取线路map
+        Map<String, String> lineMap = sysBaseApi.queryTableDictItemsByCode("cs_line", "line_name", "line_code").stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        // 获取站点map
+        Map<String, String> stationMap = sysBaseApi.queryTableDictItemsByCode("cs_station", "station_name", "station_code").stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        // 获取位置map
+        Map<String, String> positionMap = sysBaseApi.queryTableDictItemsByCode("cs_station_position", "position_name", "position_code").stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
+        // 遍历翻译等
         for (FaultDeviceRepairDTO record : faultDeviceRepairDtoList) {
             //将查出来的数据设置送修状态为待返修
             FaultDevice faultDevice = new FaultDevice();
@@ -99,9 +112,9 @@ private ISysBaseAPI sysBaseApi;
             String stationCode = record.getStationCode()==null?"":record.getStationCode();
             //位置
             String positionCode = record.getPositionCode()==null?"":record.getPositionCode();
-            String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
-            String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
-            String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
+            String lineCodeName = lineMap.get(lineCode);
+            String stationCodeName = stationMap.get(stationCode);
+            String positionCodeName = positionMap.get(positionCode);
             String positionCodeCc = lineCode ;
             if(stationCode!= null && !"".equals(stationCode)){
                 positionCodeCc += CommonConstant.SYSTEM_SPLIT_STR + stationCode;
@@ -119,6 +132,13 @@ private ISysBaseAPI sysBaseApi;
             }
             record.setPositionCodeCcName(positionCodeCcName);
             record.setPositionCodeCc(positionCodeCc);
+            String stationName = stationMap.get(record.getFaultStationCode());
+            String positionName = positionMap.get(record.getFaultStationPositionCode());
+            String faultPositionName = stationName;
+            if (StrUtil.isNotBlank(positionName)) {
+                faultPositionName += CommonConstant.SYSTEM_SPLIT_STR + positionName;
+            }
+            record.setFaultPositionName(faultPositionName);
         }
         page.setRecords(faultDeviceRepairDtoList);
         return page;

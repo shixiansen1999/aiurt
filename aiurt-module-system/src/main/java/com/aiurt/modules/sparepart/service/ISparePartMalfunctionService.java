@@ -1,7 +1,7 @@
 package com.aiurt.modules.sparepart.service;
 
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartMalfunction;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -21,4 +21,6 @@ public interface ISparePartMalfunctionService extends IService<SparePartMalfunct
      * @return
      */
     List<SparePartMalfunction> selectList(SparePartMalfunction sparePartMalfunction);
+
+    IPage<SparePartMalfunction> pageList(Page<SparePartMalfunction> page, SparePartMalfunction sparePartMalfunction);
 }
