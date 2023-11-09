@@ -2,6 +2,7 @@ package com.aiurt.boot.task.param;
 
 import com.aiurt.boot.task.entity.PatrolAccompany;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
@@ -29,6 +30,7 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
      */
     @Excel(name = "专业编码", width = 15)
     @ApiModelProperty(value = "专业编码")
+    @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     private String majorCode;
 
     /**
@@ -48,6 +50,7 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
      */
     @Excel(name = "子系统编码", width = 15)
     @ApiModelProperty(value = "子系统编码")
+    @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     private String subsystemCode;
     /**
      * 子系统名称
@@ -169,4 +172,17 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
     @ApiModelProperty(value = "巡检标准表Code")
     @TableField(exist = false)
     private java.lang.String standardCode;
+
+    /**
+     * 不关联多个设备且要指定设备
+     */
+    private Boolean isDeviceCode;
+    /**
+     * 关联多个设备但不需要指定设备
+     */
+    private Boolean isDeviceTypeCode;
+    /**
+     * 履历是否只和设备类型相关
+     * */
+    private Boolean isPatrolDeviceCodeAndTypeCode;
 }

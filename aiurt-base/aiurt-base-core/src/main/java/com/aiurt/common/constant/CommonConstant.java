@@ -678,4 +678,15 @@ public interface CommonConstant {
   * 根节点标识
   */
  public static final String ROOT_NODE_ID = "0";
+
+
+ /**
+  * 系统配置布尔值，1是
+  */
+ public static final String BOOLEAN_1 = "1";
+
+ /**
+  * 系统配置布尔值，0否
+  */
+ public static final String BOOLEAN_0 = "0";
 }

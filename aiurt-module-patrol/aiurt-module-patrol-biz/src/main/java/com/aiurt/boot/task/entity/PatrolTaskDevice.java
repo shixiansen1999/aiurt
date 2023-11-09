@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.entity;
 
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -26,7 +27,7 @@ import java.io.Serializable;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="patrol_task_device对象", description="patrol_task_device")
-public class PatrolTaskDevice implements Serializable {
+public class PatrolTaskDevice extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键ID*/
@@ -65,8 +66,8 @@ public class PatrolTaskDevice implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "工单提交时间")
     private java.util.Date checkTime;
-	/**检查结果：0正常、1异常*/
-	@Excel(name = "检查结果：0正常、1异常", width = 15)
+	/**检查结果：0异常、1正常*/
+	@Excel(name = "检查结果：0异常、1正常", width = 15)
     @ApiModelProperty(value = "检查结果：0异常、1正常")
     private java.lang.Integer checkResult;
     /**线路编号*/

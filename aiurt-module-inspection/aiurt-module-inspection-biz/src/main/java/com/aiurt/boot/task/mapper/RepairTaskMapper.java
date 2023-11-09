@@ -100,7 +100,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @param condition
      * @return
      */
-    List<RepairTaskDTO> selectTaskletForDevice(@Param("pageList") Page<RepairTaskDTO> pageList, @Param("condition") RepairTaskDTO condition,@Param("multipleDeviceTypes") String multipleDeviceTypes);
+    List<RepairTaskDTO> selectTaskletForDevice(@Param("pageList") Page<RepairTaskDTO> pageList, @Param("condition") RepairTaskDTO condition);
 
 
     /**
@@ -172,6 +172,12 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      */
     List<RepairTaskResult> selectSingle(@Param("id") String id, @Param("status") Integer status);
 
+    /**
+     * 查询一个工单的全部异常设备
+     * @param taskDeviceRelId 任务工单关联表id
+     * @return
+     */
+    List<RepairAbnormalDeviceDTO> queryAbnormalDevices(@Param("taskDeviceRelId") String taskDeviceRelId);
 
     /**
      * 查询附件信息

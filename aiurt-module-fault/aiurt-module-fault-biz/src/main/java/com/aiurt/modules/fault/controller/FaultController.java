@@ -35,6 +35,7 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
+import org.jeecg.common.system.vo.CsUserStationModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.BeanUtils;
@@ -43,10 +44,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Description: fault
@@ -172,25 +171,11 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     })
     public Result<Fault> queryByCode(@RequestParam(name = "code", required = true) String code) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserStationModel> stationModelList = sysBaseAPI.getStationByUserId(user.getId());
+        Set<String> lineSet = Optional.ofNullable(stationModelList).orElse(Collections.emptyList()).stream().map(CsUserStationModel::getLineCode).collect(Collectors.toSet());
+        Set<String> stationSet = Optional.ofNullable(stationModelList).orElse(Collections.emptyList()).stream().map(CsUserStationModel::getStationCode).collect(Collectors.toSet());
         Fault fault = faultService.queryByCode(code);
-        //信号二期调度中心下发的故障审核，判断决定是工班长审核还是控制中心审核
-        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
-        if ("1".equals(paramModel.getValue()) && "1".equals(fault.getFaultModeCode())) {
-            fault.setReviewFlag(false);
-            boolean a = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.ZXBANZHANG))||user.getRoleCodes().contains(RoleConstant.ZXCHENGYUAN));
-            boolean b = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.FOREMAN)));
-
-            if ( a && FaultConstant.CONTROL_CENTER_REVIEW_STATUS_0.equals(fault.getControlCenterReviewStatus())) {
-                fault.setReviewFlag(true);
-            }
-            if ( b && (fault.getControlCenterReviewStatus() == null || FaultConstant.CONTROL_CENTER_REVIEW_STATUS_2.equals(fault.getControlCenterReviewStatus()))) {
-                fault.setReviewFlag(true);
-            }
-            boolean c = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.ADMIN)));
-            if (c) {
-                fault.setReviewFlag(true);
-            }
-        }
+        faultService.getReviewFlag(user, fault,lineSet,stationSet);
         if (fault == null) {
             return Result.error("未找到对应数据");
         }

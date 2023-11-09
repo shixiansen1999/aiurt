@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.PatrolManager;
@@ -17,7 +18,11 @@ import com.aiurt.boot.plan.service.IPatrolPlanService;
 import com.aiurt.boot.standard.dto.PatrolStandardDto;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.boot.standard.entity.PatrolStandardDeviceType;
+import com.aiurt.boot.standard.mapper.PatrolStandardDeviceTypeMapper;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
+import com.aiurt.boot.standard.service.IPatrolStandardService;
+import com.aiurt.boot.standard.service.impl.PatrolStandardServiceImpl;
 import com.aiurt.boot.task.dto.GeneralReturn;
 import com.aiurt.boot.task.dto.MajorDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
@@ -25,6 +30,7 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -70,6 +76,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     private PatrolManager patrolManager;
     @Resource
     private ISysParamAPI iSysParamAPI;
+    @Autowired
+    private IPatrolStandardService iPatrolStandardService;
     @Override
     public IPage<PatrolPlanDto> pageList(Page<PatrolPlanDto> page, PatrolPlanDto patrolPlan) {
         if (Objects.nonNull(patrolPlan.getSiteCode())) {
@@ -295,12 +303,13 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         if (CollUtil.isNotEmpty(patrolPlanDto.getPatrolStandards())) {
             List<PatrolStandardDto> patrolStandardDto = patrolPlanDto.getPatrolStandards();
             List<Device> devices = patrolPlanDto.getDevices();
-            //通信十一期通过配置去掉需要指定设备的限制
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+            //通过配置去掉需要指定设备的限制
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
             patrolStandardDto.forEach(p -> {
                 if (p.getDeviceType().equals(1)) {
                     boolean i = devices.stream().anyMatch(d -> p.getCode().equals(d.getPlanStandardCode()));
-                    if (!i  && "0".equals(paramModel.getValue())) {
+                    boolean b = CommonConstant.BOOLEAN_1.equals(paramModel.getValue()) || PatrolConstant.NO_MERGE_DEVICE.equals(p.getIsMergeDevice());
+                    if (!i  && b) {
                         throw new AiurtBootException("标准表名为：" + p.getName() + "暂未指定设备,请指定设备!");
                     }
                 }
@@ -336,6 +345,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                     devices.forEach(object -> object.setPlanStandardCode(patrolPlanStandard.getStandardCode()));
                     p.setDevicesSs(devices);
                 }
+                iPatrolStandardService.getDeviceTypeName(p);
             });
             patrolPlanDto.setPatrolStandards(patrolStandardDtos);
         }
@@ -445,7 +455,11 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
 
     @Override
     public IPage<Device> deviceList(Page<Device> page, DeviceListDTO deviceListDTO) {
-        IPage<Device> deviceIpage = baseMapper.deviceList(page, deviceListDTO.getSiteCodes(), deviceListDTO.getSubsystemCode(), deviceListDTO.getMajorCode(), deviceListDTO.getDeviceTypeCode(), deviceListDTO.getDeviceCode(), deviceListDTO.getDeviceName());
+        List<String> deviceTypeCodeList = StrUtil.isNotBlank(deviceListDTO.getDeviceTypeCodes()) ? StrUtil.splitTrim(deviceListDTO.getDeviceTypeCodes(), ",") : new ArrayList<>();
+        List<String> siteCodeList = StrUtil.isNotBlank(deviceListDTO.getSiteCode()) ? StrUtil.splitTrim(deviceListDTO.getSiteCode(), ",") : new ArrayList<>();
+        deviceListDTO.setDeviceTypeCodeList(deviceTypeCodeList);
+        deviceListDTO.setSiteCodes(siteCodeList);
+        IPage<Device> deviceIpage = baseMapper.deviceList(page, deviceListDTO.getSiteCodes(), deviceListDTO.getSubsystemCode(), deviceListDTO.getMajorCode(), deviceListDTO.getDeviceTypeCode(), deviceListDTO.getDeviceCode(), deviceListDTO.getDeviceName(),deviceListDTO.getDeviceTypeCodeList());
         List<Device> records = deviceIpage.getRecords();
         if (records != null && records.size() > 0) {
             for (Device d : records) {
@@ -496,8 +510,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 throw new AiurtBootException("计划暂未挑选巡检标准表，不允许启用！");
             }
 
-            //通信十一期通过配置去掉需要指定设备的限制
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+            //通过配置去掉需要指定设备的限制
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
             // 判断标准表中如果与设备类型相关是否选定了设备
             Optional.ofNullable(patrolPlanStandard).orElseGet(Collections::emptyList).stream().forEach(l -> {
                 LambdaQueryWrapper<PatrolStandard> standardWrapper = new LambdaQueryWrapper<>();
@@ -508,7 +522,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                     deviceWrapper.eq(PatrolPlanDevice::getPlanId, planId);
                     deviceWrapper.eq(PatrolPlanDevice::getPlanStandardId, l.getId());
                     List<PatrolPlanDevice> deviceList = patrolPlanDeviceMapper.selectList(deviceWrapper);
-                    if (CollectionUtil.isEmpty(deviceList)  && "0".equals(paramModel.getValue())) {
+                    if (CollectionUtil.isEmpty(deviceList)  && (CommonConstant.BOOLEAN_1.equals(paramModel.getValue()) || PatrolConstant.NO_MERGE_DEVICE.equals(standard.getIsMergeDevice()))) {
                         throw new AiurtBootException("标准表名为:【" + standard.getName() + "】暂未指定设备，不允许启用！");
                     }
                 }

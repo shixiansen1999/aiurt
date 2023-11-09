@@ -164,7 +164,7 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
    * @param deviceTypeCode
    * @return
    */
-    IPage<Device> deviceList(Page<Device> page, @Param("siteCodes")List<String> siteCodes,@Param("subsystemCode") String subsystemCode, @Param("majorCode")String majorCode,@Param("deviceTypeCode")String deviceTypeCode,@Param("code") String code,@Param("name") String name);
+    IPage<Device> deviceList(Page<Device> page, @Param("siteCodes")List<String> siteCodes,@Param("subsystemCode") String subsystemCode, @Param("majorCode")String majorCode,@Param("deviceTypeCode")String deviceTypeCode,@Param("code") String code,@Param("name") String name,@Param("deviceTypeCodeList")List<String> deviceTypeCodeList);
 
   /**
    * 查询站点信息

@@ -532,6 +532,16 @@ public interface SysParamCodeConstant {
      */
     String MULTIPLE_DEVICE_TYPES = "multiple_device_types";
 
+
+    /**
+     * 	巡视、检修履历是否只和设备类型相关
+     */
+    String IS_ONLY_RELATED_TO_DEVICE_TYPE= "is_only_related_to_device_type";
+
+    /**
+     * 	巡视、检修标准在关联设备类型的情况下是否需要指定设备
+     */
+    String WHETHER_TO_SPECIFY_DEVICE = "whether_to_specify_device";
     /**
      * 检修任务领取是否放开时间限制
      */

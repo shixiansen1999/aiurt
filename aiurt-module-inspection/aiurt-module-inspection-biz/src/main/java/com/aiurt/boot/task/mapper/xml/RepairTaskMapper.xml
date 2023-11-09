@@ -4,6 +4,10 @@
     <select id="selectables" resultType="com.aiurt.boot.task.entity.RepairTask">
         SELECT
         t1.*,
+        ( SELECT group_concat( t2.org_code ) FROM repair_task_org_rel AS t2 WHERE t1.`code` = t2.repair_task_code ) AS orgCode,
+        ( SELECT group_concat( t4.station_code ) FROM repair_task_station_rel AS t4 WHERE t1.`code` = t4.repair_task_code ) AS siteCode,
+        ( SELECT group_concat( t6.major_code ) FROM repair_task_standard_rel AS t6 WHERE t1.id = t6.repair_task_id ) AS majorCode,
+        ( SELECT group_concat( t6.subsystem_code ) FROM repair_task_standard_rel AS t6 WHERE t1.id = t6.repair_task_id ) AS systemCode,
         t8.start_time as startOverhaulTime,
         t8.end_time as endOverhaulTime,
         t8.device_code as equipmentCode,
@@ -191,6 +195,7 @@
         t2.staff_id as overhaulId,
         t3.title as overhaulStandardName,
         t3.is_appoint_device as isAppointDevice,
+        t3.is_merge_device as isMergeDevice,
         t1.status as maintenanceTaskStatus
         FROM
         repair_task t1
@@ -229,6 +234,7 @@
         t2.staff_id as overhaulId,
         t3.title as overhaulStandardName,
         t3.is_appoint_device as isAppointDevice,
+        t3.is_merge_device as isMergeDevice,
         t1.status as maintenanceTaskStatus
         FROM
         repair_task t1
@@ -316,7 +322,9 @@
         repair_task t1
         LEFT JOIN repair_task_device_rel t2 ON t1.id = t2.repair_task_id
         LEFT JOIN repair_task_standard_rel t3 ON t2.task_standard_rel_id = t3.id
+        LEFT JOIN repair_pool_code rpc ON rpc.code = t3.code
         LEFT JOIN inspection_code_device_type t4 ON t3.code = t4.inspection_code
+        LEFT JOIN repair_device rd ON rd.task_standard_id = t3.id
         left join sys_user su on su.id = t2.staff_id
         <where>
             t1.del_flag = 0
@@ -346,11 +354,31 @@
                 and DATE_FORMAT(t2.start_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTimeBegin}, '%Y-%m-%d')
                 and DATE_FORMAT(t2.end_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startTimeEnd}, '%Y-%m-%d')
             </if>
-            <if test="multipleDeviceTypes eq '1'.toString() ">
-                and t4.device_type_code = #{condition.deviceTypeCode}
+            <if test="condition.isDeviceCode and  condition.equipmentCode !=null and  condition.equipmentCode !=''">
+                and t2.device_code = #{condition.equipmentCode}
+            </if>
+
+            <if test="condition.isDeviceTypeCode and ( condition.equipmentCode != null and condition.equipmentCode != '')
+                    and (condition.deviceTypeCode != null and condition.deviceTypeCode != '') ">
+                <choose>
+                    <when test="condition.isPatrolDeviceCodeAndTypeCode">
+                        and t4.device_type_code = #{condition.deviceTypeCode}
+                    </when>
+                    <otherwise>
+                        and
+                        (( rpc.is_merge_device = '1'
+                        and (rd.device_code = #{condition.equipmentCode}
+                        or (t4.device_type_code = #{condition.deviceTypeCode} and isnull(rd.device_code))))
+                        or
+                        (rpc.is_merge_device = '0'
+                        and t2.device_code = #{condition.equipmentCode}
+                        ))
+                    </otherwise>
+                </choose>
             </if>
         </where>
-        order by t1.start_time desc
+        GROUP BY t1.id
+        order by t2.create_time
     </select>
 
 
@@ -456,19 +484,20 @@
 
     <select id="selectSingle" resultType="com.aiurt.boot.task.entity.RepairTaskResult">
         SELECT
-	       t1.*,
-        t2.proc_methods
+	        t1.*,
+            t2.proc_methods
         FROM
 	    repair_task_result t1
         left join inspection_code_content t2 on t1.code = t2.code
         <where>
-	      task_device_rel_id = #{id}
+            t1.del_flag = 0
+	        and t1.task_device_rel_id = #{id}
             <if test="status!=null">
-                and status = #{status}
+                and t1.status = #{status}
             </if>
         </where>
         GROUP BY t1.id
-        order by sort_no ASC
+        order by t1.sort_no ASC
     </select>
 
     <select id="selectEnclosure" resultType="com.aiurt.boot.task.entity.RepairTaskEnclosure">
@@ -1142,6 +1171,19 @@
             </if>
         </where>
         group by t2.user_id
+    </select>
+    <select id="queryAbnormalDevices" resultType="com.aiurt.boot.task.dto.RepairAbnormalDeviceDTO">
+        SELECT
+            rad.*,
+            d.`name` AS deviceName
+        FROM
+            repair_task_result rtr
+                INNER JOIN repair_abnormal_device rad ON rad.result_id = rtr.id
+                LEFT JOIN device d ON d.`code` = rad.device_code
+        WHERE
+            rtr.del_flag = 0
+          AND rad.del_flag = 0
+          AND rtr.task_device_rel_id = #{taskDeviceRelId}
     </select>
 
     <select id="getAllCodes" resultType="com.aiurt.boot.task.entity.RepairTask">

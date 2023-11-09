@@ -60,6 +60,12 @@ public class DeviceDTO extends DictEntity {
     @ApiModelProperty(value = "子系统编号")
     @Dict(dictTable ="cs_subsystem",dicText = "system_name",dicCode = "system_code")
     private  String  systemCode;
+    @ApiModelProperty(value = "线路名称")
+    private String lineName;
+    @ApiModelProperty(value = "站点名称")
+    private String stationName;
+    @ApiModelProperty(value = "位置名称")
+    private String positionName;
     @Excel(name = "设备位置", width = 15)
     @ApiModelProperty(value = "设备位置")
     @TableField(exist = false)
@@ -69,6 +75,8 @@ public class DeviceDTO extends DictEntity {
     @ApiModelProperty(value = "临时设备(是/否（默认否）1是,0:否)")
     @Dict(dicCode = "device_temporary")
     private  String  temporary;
+    @ApiModelProperty(value = "临时设备(是/否)")
+    private String temporaryName;
     /**状态 0-停用 1-正常*/
 	@Excel(name = "状态 0-停用 1-正常", width = 15)
     @ApiModelProperty(value = "状态 0-停用 1-正常")

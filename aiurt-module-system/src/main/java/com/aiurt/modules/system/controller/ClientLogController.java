@@ -1,6 +1,7 @@
 package com.aiurt.modules.system.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.system.entity.ClientLog;

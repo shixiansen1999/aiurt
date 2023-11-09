@@ -1,10 +1,10 @@
 package com.aiurt.boot.pool;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.PatrolConstant;
-import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.service.*;
 import com.aiurt.boot.standard.entity.PatrolStandard;
@@ -20,7 +20,6 @@ import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysParamAPI;
-import org.jeecg.common.system.vo.SysParamModel;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -67,7 +66,8 @@ public class TaskPool implements Job {
     private IPatrolStandardItemsService patrolStandardItemsService;
     @Autowired
     private IPatrolCheckResultService patrolCheckResultService;
-
+    @Autowired
+    private IPatrolDeviceService patrolDeviceService;
     @Autowired
     private ISysParamAPI iSysParamAPI;
 
@@ -266,13 +266,34 @@ public class TaskPool implements Job {
 
             // 保存巡检任务标准关联数据，并获取对应的任务标准关联表ID
             String taskStandardId = saveTaskStandardData(task, l, standard);
+            // 根据计划ID获取计划设备关联表记录
+            QueryWrapper<PatrolPlanDevice> planDeviceWrapper = new QueryWrapper<>();
+            planDeviceWrapper.lambda()
+                    .eq(PatrolPlanDevice::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    // 对应计划的id
+                    .eq(PatrolPlanDevice::getPlanId, plan.getId())
+                    // 对应计划标准下的设备
+                    .eq(PatrolPlanDevice::getPlanStandardId, l.getId());
+            List<PatrolPlanDevice> planDeviceList = patrolPlanDeviceService.list(planDeviceWrapper);
+            // 保存巡视任务设备关联表
+            if (CollUtil.isNotEmpty(planDeviceList)) {
+                ArrayList<PatrolDevice> patrolDeviceList = new ArrayList<>();
+                planDeviceList.forEach(pd -> {
+                    PatrolDevice patrolDevice = new PatrolDevice();
+                    patrolDevice.setTaskId(task.getId());
+                    patrolDevice.setTaskStandardId(taskStandardId);
+                    patrolDevice.setDeviceCode(pd.getDeviceCode());
+                    patrolDeviceList.add(patrolDevice);
+                });
+                patrolDeviceService.saveBatch(patrolDeviceList);
+            }
 
             Integer deviceType = standard.getDeviceType();
+            Integer isMergeDevice = standard.getIsMergeDevice();
 
-            //通信十一期通过配置去掉需要指定设备的限制，如果与设备相关且关联多个设备类型，则和与设备无关一样的处理，通过站点生成对应的巡检单
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+            //通过配置去掉需要指定设备的限制，如果合并工单，则和与设备类型无关一样，只根据站点生成工单
 
-            if (PatrolConstant.DEVICE_INDEPENDENCE.equals(deviceType) || "1".equals(paramModel.getValue())) {
+            if (PatrolConstant.DEVICE_INDEPENDENCE.equals(deviceType) || 1 == isMergeDevice) {
                 // 与设备无关
                 // 根据计划ID获取计划
                 PatrolPlan patrolPlan = patrolPlanService.getById(l.getPlanId());
@@ -318,15 +339,6 @@ public class TaskPool implements Job {
                 });
             } else {
                 // 与设备相关，根据设备和标准生成巡检单数据
-                // 根据计划ID获取计划设备关联表记录
-                QueryWrapper<PatrolPlanDevice> planDeviceWrapper = new QueryWrapper<>();
-                planDeviceWrapper.lambda()
-                        .eq(PatrolPlanDevice::getDelFlag, CommonConstant.DEL_FLAG_0)
-                        // 对应计划的id
-                        .eq(PatrolPlanDevice::getPlanId, plan.getId())
-                        // 对应计划标准下的设备
-                        .eq(PatrolPlanDevice::getPlanStandardId, l.getId());
-                List<PatrolPlanDevice> planDeviceList = patrolPlanDeviceService.list(planDeviceWrapper);
                 // 遍历设备列表信息
                 planDeviceList.forEach(
                         // ps 表示巡检计划标准对象

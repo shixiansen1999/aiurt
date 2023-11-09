@@ -1,6 +1,7 @@
 package com.aiurt.boot.strategy.service;
 
 import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
+import com.aiurt.boot.manager.dto.InspectionCodeDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.strategy.dto.InspectionStrategyDTO;
@@ -127,4 +128,9 @@ public interface IInspectionStrategyService extends IService<InspectionStrategy>
      * @return
      */
     Result<?> importExcel(HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * @param inspectionCodeDTO
+     */
+    void getDeviceTypeName(InspectionCodeDTO inspectionCodeDTO);
 }

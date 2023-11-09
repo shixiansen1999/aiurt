@@ -91,6 +91,15 @@ public class InspectionConstant {
      * 是否与设备类型相关：1是
      */
     public static final Integer IS_APPOINT_DEVICE = 1;
+    /**
+     * 是否合并工单：1是
+     */
+    public static final Integer IS_MERGE_DEVICE = 1;
+    /**
+     * 是否合并工单：0否
+     */
+    public static final Integer NO_MERGE_DEVICE = 0;
+
 
     /**
      * 检修管理-手工下发任务状态 1已指派

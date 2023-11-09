@@ -1,12 +1,12 @@
 package com.aiurt.boot.task.mapper;
 
+import com.aiurt.boot.task.dto.PatrolAbnormalDeviceDTO;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.entity.PatrolCheckResult;
+import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
-import org.jeecg.common.system.vo.DictModel;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -38,6 +38,12 @@ public interface PatrolCheckResultMapper extends BaseMapper<PatrolCheckResult> {
      */
     List<PatrolCheckResultDTO> getCheckResult(String taskDeviceId);
     /**
+     * 根据工单id查询异常设备
+     * @param taskDeviceId 工单id
+     * @return
+     */
+    List<PatrolAbnormalDeviceDTO> queryAbnormalDevices(@Param("taskDeviceId") String taskDeviceId);
+    /**
      * 根据任务设备表id查找巡检结果(只找是巡检项目)
      * @param taskDeviceId
      * @return
@@ -65,5 +71,12 @@ public interface PatrolCheckResultMapper extends BaseMapper<PatrolCheckResult> {
      */
     List<PatrolCheckResultDTO> getCheckResultAllByTaskId(@Param("collect") List<String> collect);
 
+
+    /**
+     * 获取正常项数量，异常项数量
+     * @param patrolNumbers 巡检单号集合
+     * @return
+     */
+    List<PatrolTaskDeviceParam> getNum(@Param("patrolNumbers")  List<String> patrolNumbers);
 
 }

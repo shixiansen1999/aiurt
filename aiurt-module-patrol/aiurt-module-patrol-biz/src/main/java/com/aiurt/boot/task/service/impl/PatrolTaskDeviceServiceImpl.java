@@ -17,6 +17,7 @@ import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
+import com.aiurt.boot.task.service.IPatrolDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskStationService;
 import com.aiurt.common.api.dto.message.MessageDTO;
@@ -92,6 +93,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     private ISysParamAPI sysParamApi;
     @Autowired
     private IPatrolTaskStationService patrolTaskStationService;
+    @Autowired
+    private IPatrolDeviceService patrolDeviceService;
 
     @Override
     public IPage<PatrolTaskDeviceParam> selectBillInfo(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam) {
@@ -100,10 +103,21 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
     @Override
     public IPage<PatrolTaskDeviceParam> selectBillInfoForDevice(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam) {
-        SysParamModel paramModel = sysParamApi.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
-        IPage<PatrolTaskDeviceParam> patrolTaskDeviceForDeviceParamPage = patrolTaskDeviceMapper.selectBillInfoForDevice(page, patrolTaskDeviceParam,paramModel.getValue());
+        SysParamModel multipleDeviceTypes = sysParamApi.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+        SysParamModel whetherToSpecifyDevice = sysParamApi.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
+        SysParamModel isOnlyRelatedToDeviceType = sysParamApi.selectByCode(SysParamCodeConstant.IS_ONLY_RELATED_TO_DEVICE_TYPE);
+
+        boolean isDeviceCode = CommonConstant.BOOLEAN_0.equals(multipleDeviceTypes.getValue()) && CommonConstant.BOOLEAN_1.equals(whetherToSpecifyDevice.getValue());
+        boolean isDeviceTypeCode = CommonConstant.BOOLEAN_1.equals(multipleDeviceTypes.getValue()) && CommonConstant.BOOLEAN_0.equals(whetherToSpecifyDevice.getValue());
+        boolean isPatrolDeviceCodeAndTypeCode = CommonConstant.BOOLEAN_1.equals(isOnlyRelatedToDeviceType.getValue());
+        patrolTaskDeviceParam.setIsDeviceCode(isDeviceCode);
+        patrolTaskDeviceParam.setIsDeviceTypeCode(isDeviceTypeCode);
+        patrolTaskDeviceParam.setIsPatrolDeviceCodeAndTypeCode(isPatrolDeviceCodeAndTypeCode);
+
+        IPage<PatrolTaskDeviceParam> patrolTaskDeviceForDeviceParamPage = patrolTaskDeviceMapper.selectBillInfoForDevice(page, patrolTaskDeviceParam);
         List<PatrolTaskDeviceParam> records = patrolTaskDeviceForDeviceParamPage.getRecords();
         if (records != null && records.size() > 0) {
+
             for (PatrolTaskDeviceParam patrolTaskDeviceForDeviceParam : records) {
                 // 查询同行人信息
                 QueryWrapper<PatrolAccompany> accompanyWrapper = new QueryWrapper<>();
@@ -118,17 +132,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 }
                 patrolTaskDeviceForDeviceParam.setAccompanyInfoStr(res);
                 patrolTaskDeviceForDeviceParam.setAccompanyInfo(accompanyList);
-                PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumber(patrolTaskDeviceForDeviceParam.getPatrolNumber()))
-                        .orElseGet(PatrolTaskDeviceParam::new);
-                List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
-                // 统计检查项中正常项的数据
-                long normalItem = Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList)
-                        .stream().filter(l -> PatrolConstant.RESULT_NORMAL.equals(l.getCheckResult())).count();
-                // 统计检查项中异常项的数据
-                long exceptionItem = Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList)
-                        .stream().filter(l -> PatrolConstant.RESULT_EXCEPTION.equals(l.getCheckResult())).count();
-                patrolTaskDeviceForDeviceParam.setNormalItem(normalItem);
-                patrolTaskDeviceForDeviceParam.setExceptionItem(exceptionItem);
             }
         }
 
@@ -556,6 +559,10 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         } else {
             taskDeviceParam.setInspectionPositionName(s);
             taskDeviceParam.setDevicePositionName(null);
+            // 当工单的设备为空时返回，该工单关联任务标准关联的设备
+            List<PatrolDeviceDTO> patrolDeviceDTOList = patrolDeviceService.queryDevices(taskDeviceParam.getTaskId(), taskDeviceParam.getTaskStandardId(), null);
+            taskDeviceParam.setDeviceCode(patrolDeviceDTOList.stream().map(PatrolDeviceDTO::getDeviceCode).collect(Collectors.joining(StrUtil.COMMA)));
+            taskDeviceParam.setDeviceName(patrolDeviceDTOList.stream().map(PatrolDeviceDTO::getDeviceName).collect(Collectors.joining(StrUtil.COMMA)));
         }
         // 查询同行人信息
         QueryWrapper<PatrolAccompany> accompanyWrapper = new QueryWrapper<>();
@@ -563,11 +570,15 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         List<PatrolAccompany> accompanyList = patrolAccompanyMapper.selectList(accompanyWrapper);
         taskDeviceParam.setAccompanyInfo(accompanyList);
         List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
+        // 查询工单的全部异常设备，然后用检修项id分组
+        Map<String, List<PatrolAbnormalDeviceDTO>> abnormalDeviceMap = patrolCheckResultMapper.queryAbnormalDevices(taskDeviceParam.getId()).stream().collect(Collectors.groupingBy(PatrolAbnormalDeviceDTO::getResultId));
         // 字典翻译
         Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
                 .stream().filter(l->StrUtil.isNotEmpty(l.getText()))
                 .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
         checkResultList.stream().forEach(c -> {
+            // 每个检查项的异常设备
+            c.setAbnormalDeviceList(abnormalDeviceMap.get(c.getId()));
             c.setRequiredDictName(requiredItems.get(String.valueOf(c.getRequired())));
             if (ObjectUtil.isNotNull(c.getDictCode())) {
                 List<DictModel> list = sysBaseApi.getDictItems(c.getDictCode());
@@ -772,12 +783,16 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 }
             }
             List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckResult(taskDeviceId);
+            // 查询工单的全部异常设备，然后用检修项id分组
+            Map<String, List<PatrolAbnormalDeviceDTO>> abnormalDeviceMap = patrolCheckResultMapper.queryAbnormalDevices(taskDeviceId).stream().collect(Collectors.groupingBy(PatrolAbnormalDeviceDTO::getResultId));
             // 字典翻译
             Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
                     .stream().filter(l-> StrUtil.isNotEmpty(l.getText()))
                     .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
             checkResultList.stream().forEach(e ->
             {
+                // 每个检查项的异常设备
+                e.setAbnormalDeviceList(abnormalDeviceMap.get(e.getId()));
                 e.setRequiredDictName(requiredItems.get(String.valueOf(e.getRequired())));
                 if (ObjectUtil.isNotNull(e.getDictCode())) {
                     List<DictModel> list = sysBaseApi.getDictItems(e.getDictCode());

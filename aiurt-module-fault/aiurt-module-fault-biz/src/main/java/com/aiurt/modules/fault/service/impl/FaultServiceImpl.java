@@ -260,12 +260,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
                 fault.setApprovalPassTime(new Date());
             } else {
-                Date date = new Date();
                 fault.setAppointUserName(user.getUsername());
                 fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
                 // 方便统计
                 //fault.setApprovalPassTime(fault.getReceiveTime());
-
+                Date date = new Date();
                 fault.setApprovalPassTime(date);
                 //响应时长为0
                 fault.setResponseDuration(0);
@@ -3574,28 +3573,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 根据配置获取中心班组是否可填写其他人的维修记录
         boolean faultCenterWrite = "1".equals(iSysParamAPI.selectByCode(SysParamCodeConstant.FAULT_CENTER_WRITE).getValue());
 
+        List<CsUserStationModel> stationModelList = sysBaseAPI.getStationByUserId(user.getId());
+        Set<String> lineSet = Optional.ofNullable(stationModelList).orElse(Collections.emptyList()).stream().map(CsUserStationModel::getLineCode).collect(Collectors.toSet());
+        Set<String> stationSet = Optional.ofNullable(stationModelList).orElse(Collections.emptyList()).stream().map(CsUserStationModel::getStationCode).collect(Collectors.toSet());
         records.parallelStream().forEach(fault1 -> {
-            //设置维修单id
-            fault1.setFaultRepairRecordId(recordMap.get(fault1.getCode()));
-            //信号二期调度中心下发的故障审核，判断决定是工班长审核还是控制中心审核
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
-            if ("1".equals(paramModel.getValue()) && "1".equals(fault1.getFaultModeCode())) {
-                fault1.setReviewFlag(false);
-                boolean a = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.ZXBANZHANG))||user.getRoleCodes().contains(RoleConstant.ZXCHENGYUAN));
-                boolean b = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.FOREMAN)));
-
-                if ( a && FaultConstant.CONTROL_CENTER_REVIEW_STATUS_0.equals(fault1.getControlCenterReviewStatus())) {
-                    fault1.setReviewFlag(true);
-                }
-                if ( b && (fault1.getControlCenterReviewStatus() == null || FaultConstant.CONTROL_CENTER_REVIEW_STATUS_2.equals(fault1.getControlCenterReviewStatus()))) {
-                    fault1.setReviewFlag(true);
-                }
-                boolean c = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.ADMIN)));
-                if (c) {
-                    fault1.setReviewFlag(true);
-                }
-            }
-
+            getReviewFlag(user, fault1,lineSet,stationSet);
 
             //通信八期获取维修记录中的处理情况和处理方式，并且把各时长转换为天时分秒
             LambdaQueryWrapper<FaultRepairRecord> queryWrapper = new LambdaQueryWrapper<>();
@@ -3669,6 +3651,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             // 时长计算，有值就是已提交
             Long duration = fault1.getDuration();
             if (Objects.isNull(duration)) {
+                //
                 Integer status = fault1.getStatus();
                 if (FaultStatusEnum.NEW_FAULT.getStatus().equals(status) || FaultStatusEnum.CANCEL.getStatus().equals(status) || FaultStatusEnum.APPROVAL_REJECT.getStatus().equals(status)) {
                     fault1.setDuration(0L);
@@ -3688,6 +3671,30 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
             //
         });
+    }
+
+    @Override
+    public void getReviewFlag(LoginUser user, Fault fault,Set<String> lineSet,Set<String> stationSet) {
+        //信号二期调度中心下发的故障审核，判断决定是工班长审核还是控制中心审核
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.IS_EXTERNAL_SPECIAL_USE);
+
+        if ("1".equals(paramModel.getValue()) && "1".equals(fault.getFaultModeCode())) {
+            fault.setReviewFlag(false);
+            boolean isZxBanZhang = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.ZXBANZHANG))|| user.getRoleCodes().contains(RoleConstant.ZXCHENGYUAN));
+            boolean isForeman = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.FOREMAN)));
+            boolean isAdmin = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.ADMIN)));
+            boolean isLineStation = (CollUtil.isNotEmpty(lineSet) && lineSet.contains(fault.getLineCode())) && CollUtil.isNotEmpty(stationSet) && stationSet.contains(fault.getStationCode());
+
+            if (isAdmin) {
+                fault.setReviewFlag(true);
+            } else if ( isZxBanZhang && FaultConstant.CONTROL_CENTER_REVIEW_STATUS_0.equals(fault.getControlCenterReviewStatus())) {
+                fault.setReviewFlag(true);
+            }else if ((isForeman && !isZxBanZhang && isLineStation)  && (fault.getControlCenterReviewStatus() == null || FaultConstant.CONTROL_CENTER_REVIEW_STATUS_2.equals(fault.getControlCenterReviewStatus()))) {
+                //工班长不能有控制中心班长身份且当前故障的线路站点在工班长的站点权限内
+                fault.setReviewFlag(true);
+            }
+
+        }
     }
 
     /**

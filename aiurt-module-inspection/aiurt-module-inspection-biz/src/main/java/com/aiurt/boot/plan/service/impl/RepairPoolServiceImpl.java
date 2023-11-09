@@ -9,6 +9,7 @@ import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.manager.InspectionManager;
+import com.aiurt.boot.manager.dto.InspectionCodeDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.manager.dto.OrgDTO;
 import com.aiurt.boot.manager.utils.CodeGenerateUtils;
@@ -27,6 +28,7 @@ import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
+import com.aiurt.boot.task.service.IRepairDeviceService;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
@@ -38,6 +40,7 @@ import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
+import com.aiurt.modules.sysfile.constant.PatrolConstant;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -119,6 +122,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     private InspectionCodeDeviceTypeMapper inspectionCodeDeviceTypeMapper;
     @Autowired
     private RepairPoolCodeDeviceTypeMapper repairPoolCodeDeviceTypeMapper;
+    @Autowired
+    private IRepairDeviceService repairDeviceService;
 
     /**
      * 查询检修计划池中的检修任务列表。
@@ -699,9 +704,10 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     repairTaskStandardRel.setTitle(re.getTitle());
                     repairTaskStandardRel.setDeviceTypeCode(re.getDeviceTypeCode());
                     repairTaskStandardRel.setIsAppointDevice(re.getIsAppointDevice());
+                    repairTaskStandardRel.setIsMergeDevice(re.getIsMergeDevice());
                     repairTaskStandardRelMapper.insert(repairTaskStandardRel);
                     // 生成检修设备清单
-                    this.generateInventory(re.getId(), repairTaskStandardRel.getId(), taskId, taskCode, repairTaskStandardRel.getIsAppointDevice());
+                    this.generateInventory(re.getId(), repairTaskStandardRel.getId(), taskId, taskCode, repairTaskStandardRel.getIsAppointDevice(),repairTaskStandardRel.getIsMergeDevice());
                 });
 
             }
@@ -781,18 +787,39 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
     /**
      * 生成检修设备清单
-     *
-     * @param oldStaId        计划中的关联的检修标准id
+     *  @param oldStaId        计划中的关联的检修标准id
      * @param newStaId        任务中新的检修标准id
      * @param taskId          任务id
-     * @param taskCode        是否与设备类型相关
-     * @param isAppointDevice
+     * @param taskCode
+     * @param isAppointDevice 是否与设备类型相关
+     * @param isMergeDevice 是否合并工单
      */
-    private void generateInventory(String oldStaId, String newStaId, String taskId, String taskCode, Integer
-            isAppointDevice) {
-        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+    private void generateInventory(String oldStaId, String newStaId, String taskId, String taskCode, Integer isAppointDevice, Integer
+            isMergeDevice) {
+        // 查询指定设备
+        RepairPoolRel repairPoolRels = relMapper.selectOne(
+                new LambdaQueryWrapper<RepairPoolRel>()
+                        .eq(RepairPoolRel::getRepairPoolCode, taskCode)
+                        .eq(RepairPoolRel::getRepairPoolStaId, oldStaId)
+                        .eq(RepairPoolRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        List<RepairPoolDeviceRel> repairPoolDeviceRels = null;
+        if (ObjectUtil.isNotEmpty(repairPoolRels)) {
+            repairPoolDeviceRels = repairPoolDeviceRel.selectList(new LambdaQueryWrapper<RepairPoolDeviceRel>().eq(RepairPoolDeviceRel::getRepairPoolRelId, repairPoolRels.getId()));
+            // 保存检修任务关联设备
+            if (CollUtil.isNotEmpty(repairPoolDeviceRels)) {
+                ArrayList<RepairDevice> deviceList = new ArrayList<>();
+                repairPoolDeviceRels.forEach(d -> {
+                    RepairDevice repairDevice = new RepairDevice();
+                    repairDevice.setTaskId(taskId);
+                    repairDevice.setTaskStandardId(newStaId);
+                    repairDevice.setDeviceCode(d.getDeviceCode());
+                    deviceList.add(repairDevice);
+                });
+                repairDeviceService.saveBatch(deviceList);
+            }
+        }
         // 与设备不相关
-        if (InspectionConstant.NO_ISAPPOINT_DEVICE.equals(isAppointDevice) || "1".equals(paramModel.getValue())) {
+        if (InspectionConstant.NO_ISAPPOINT_DEVICE.equals(isAppointDevice) || InspectionConstant.IS_MERGE_DEVICE.equals(isMergeDevice)) {
             List<RepairTaskStationRel> repairTaskStationRels = repairTaskStationRelMapper.selectList(
                     new LambdaQueryWrapper<RepairTaskStationRel>()
                             .eq(RepairTaskStationRel::getRepairTaskCode, taskCode)
@@ -815,37 +842,22 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     this.generateItemResult(oldStaId, repairTaskDeviceRel.getId());
                 });
             }
-        }
+        }else {
+            if (CollUtil.isNotEmpty(repairPoolDeviceRels)) {
+                // 与设备相关并且已经指定了设备
+                List<String> deviceCodeList = repairPoolDeviceRels.stream().map(RepairPoolDeviceRel::getDeviceCode).collect(Collectors.toList());
 
-        // 与设备相关
-        if (InspectionConstant.IS_APPOINT_DEVICE.equals(isAppointDevice)) {
-            RepairPoolRel repairPoolRels = relMapper.selectOne(
-                    new LambdaQueryWrapper<RepairPoolRel>()
-                            .eq(RepairPoolRel::getRepairPoolCode, taskCode)
-                            .eq(RepairPoolRel::getRepairPoolStaId, oldStaId)
-                            .eq(RepairPoolRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-
-            if (ObjectUtil.isNotEmpty(repairPoolRels)) {
-                List<RepairPoolDeviceRel> repairPoolDeviceRels = repairPoolDeviceRel.selectList(
-                        new LambdaQueryWrapper<RepairPoolDeviceRel>()
-                                .eq(RepairPoolDeviceRel::getRepairPoolRelId, repairPoolRels.getId()));
-
-                if (CollUtil.isNotEmpty(repairPoolDeviceRels)) {
-                    // 与设备相关并且已经指定了设备
-                    List<String> deviceCodeList = repairPoolDeviceRels.stream().map(RepairPoolDeviceRel::getDeviceCode).collect(Collectors.toList());
-
-                    // 插入设备清单
-                    for (String deviceCode : deviceCodeList) {
-                        RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
-                        String jxdCode = CodeGenerateUtils.generateCode("JXD");
-                        repairTaskDeviceRel.setCode(jxdCode);
-                        repairTaskDeviceRel.setDeviceCode(deviceCode);
-                        repairTaskDeviceRel.setRepairTaskId(taskId);
-                        repairTaskDeviceRel.setTaskStandardRelId(newStaId);
-                        repairTaskDeviceRelMapper.insert(repairTaskDeviceRel);
-                        // 生成检修结果表
-                        this.generateItemResult(oldStaId, repairTaskDeviceRel.getId());
-                    }
+                // 插入设备清单
+                for (String deviceCode : deviceCodeList) {
+                    RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
+                    String jxdCode = CodeGenerateUtils.generateCode("JXD");
+                    repairTaskDeviceRel.setCode(jxdCode);
+                    repairTaskDeviceRel.setDeviceCode(deviceCode);
+                    repairTaskDeviceRel.setRepairTaskId(taskId);
+                    repairTaskDeviceRel.setTaskStandardRelId(newStaId);
+                    repairTaskDeviceRelMapper.insert(repairTaskDeviceRel);
+                    // 生成检修结果表
+                    this.generateItemResult(oldStaId, repairTaskDeviceRel.getId());
                 }
             }
         }
@@ -1159,8 +1171,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      * @param repairPoolCodes
      */
     private void handleDevice(List<String> stationCodes, List<RepairPoolCodeReq> repairPoolCodes) {
-        //通信十一期通过配置去掉需要指定设备的限制
-        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
+        //通过配置去掉需要指定设备的限制
+        SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
         if (CollUtil.isNotEmpty(repairPoolCodes) && CollUtil.isNotEmpty(stationCodes)) {
 
             for (RepairPoolCodeReq repairPoolCode : repairPoolCodes) {
@@ -1183,10 +1195,10 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                                 .collect(Collectors.toList());
                         repairPoolCode.setDeviceCodes(new ArrayList<>());
                         repairPoolCode.setDeviceCodes(result);
-                        if (CollUtil.isEmpty(repairPoolCode.getDeviceCodes())  && "0".equals(paramModel.getValue())) {
+                        if (CollUtil.isEmpty(repairPoolCode.getDeviceCodes())  && (CommonConstant.BOOLEAN_1.equals(paramModel.getValue()) || PatrolConstant.NO_MERGE_DEVICE.equals(inspectionCode.getIsMergeDevice()))) {
                             throw new AiurtBootException("有检修标准未指定设备");
                         }
-                    } else if ("0".equals(paramModel.getValue())){
+                    } else if (CommonConstant.BOOLEAN_1.equals(paramModel.getValue()) || PatrolConstant.NO_MERGE_DEVICE.equals(inspectionCode.getIsMergeDevice())){
                         throw new AiurtBootException("有检修标准未指定设备");
                     }
                 }
@@ -1340,9 +1352,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                         deviceTypes.add(inspectionCode.getDeviceTypeCode());
                     }
                 }
-                //通信十一期通过配置去掉需要指定设备的限制
-                SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
-                if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && CollUtil.isEmpty(re.getDeviceCodes()) && "0".equals(paramModel.getValue())) {
+                //通过配置去掉需要指定设备的限制
+                SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
+                if (CollUtil.isEmpty(re.getDeviceCodes()) && InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && (CommonConstant.BOOLEAN_1.equals(paramModel.getValue()) || PatrolConstant.NO_MERGE_DEVICE.equals(inspectionCode.getIsMergeDevice()))) {
                     throw new AiurtBootException(String.format("名字为%s需要指定设备", ObjectUtil.isNotEmpty(inspectionCode) ? inspectionCode.getTitle() : ""));
                 }
             });
@@ -1413,7 +1425,13 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     // 翻译检修标准字典
                     repairPoolCodes.setMajorName(manager.translateMajor(Arrays.asList(repairPoolCodes.getMajorCode()), InspectionConstant.MAJOR));
                     repairPoolCodes.setSubsystemName(manager.translateMajor(Arrays.asList(repairPoolCodes.getSubsystemCode()), InspectionConstant.SUBSYSTEM));
-                    repairPoolCodes.setDeviceTypeName(manager.queryNameByCode(repairPoolCodes.getDeviceTypeCode()));
+                    if (StrUtil.isNotBlank(repairPoolCodes.getDeviceTypeCode())) {
+                        repairPoolCodes.setDeviceTypeName(manager.queryNameByCode(repairPoolCodes.getDeviceTypeCode()));
+                    } else {
+                        getDeviceTypeName(repairPoolCodes);
+                    }
+
+
                     repairPoolCodes.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairPoolCodes.getType())));
                     repairPoolCodes.setIsAppointDeviceName(sysBaseApi.translateDict(DictConstant.IS_APPOINT_DEVICE, String.valueOf(repairPoolCodes.getIsAppointDevice())));
 
@@ -1436,6 +1454,16 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         return repairPoolDTO;
     }
 
+    public void getDeviceTypeName(RepairPoolCode repairPoolCode) {
+        List<RepairPoolCodeDeviceType> repairPoolCodeDeviceTypes = repairPoolCodeDeviceTypeMapper.selectList(new LambdaQueryWrapper<RepairPoolCodeDeviceType>().eq(RepairPoolCodeDeviceType::getRepairPoolCode, repairPoolCode.getCode()).select(RepairPoolCodeDeviceType::getDeviceTypeCode));
+        if (CollUtil.isNotEmpty(repairPoolCodeDeviceTypes)) {
+            Set<String> deviceTypeCodes = repairPoolCodeDeviceTypes.stream().map(RepairPoolCodeDeviceType::getDeviceTypeCode).collect(Collectors.toSet());
+            repairPoolCode.setDeviceTypeCodeList(new ArrayList<>(deviceTypeCodes));
+            List<DeviceType> typeList = sysBaseApi.selectDeviceTypeByCodes(deviceTypeCodes);
+            String deviceTypeNames = typeList.stream().map(DeviceType::getName).collect(Collectors.joining(";"));
+            repairPoolCode.setDeviceTypeName(deviceTypeNames);
+        }
+    }
     /**
      * 修改手工下发检修任务信息
      *
@@ -1556,9 +1584,10 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     deviceTypes.add(inspectionCode.getDeviceTypeCode());
                 }
             }
-            //通信十一期通过配置去掉需要指定设备的限制
-            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.MULTIPLE_DEVICE_TYPES);
-            if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && CollUtil.isEmpty(re.getDeviceCodes()) && "0".equals(paramModel.getValue())) {
+            //通过配置去掉需要指定设备的限制
+            SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WHETHER_TO_SPECIFY_DEVICE);
+
+            if (InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice()) && CollUtil.isEmpty(re.getDeviceCodes()) && (CommonConstant.BOOLEAN_1.equals(paramModel.getValue()) || PatrolConstant.NO_MERGE_DEVICE.equals(inspectionCode.getIsMergeDevice()))) {
                 throw new AiurtBootException(String.format("名字为%s需要指定设备", ObjectUtil.isNotEmpty(inspectionCode) ? inspectionCode.getTitle() : ""));
             }
         });

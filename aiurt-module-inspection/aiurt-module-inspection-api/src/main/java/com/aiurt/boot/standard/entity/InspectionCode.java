@@ -82,6 +82,13 @@ public class InspectionCode extends DictEntity implements Serializable {
     @ApiModelProperty(value = "是否与设备相关(0否1是)")
     @Dict(dicCode = "is_appoint_device")
     private java.lang.Integer isAppointDevice;
+    /**
+     * 是否合并工单：0否、1是
+     */
+    @Excel(name = "是否合并工单：0否、1是", width = 15)
+    @ApiModelProperty(value = "是否合并工单：0否、1是")
+    @Dict(dicCode = "is_merge_device")
+    private java.lang.Integer isMergeDevice;
 
     /**是否与设备相关(0否1是)*/
     @Excel(name = "与设备类型相关", width = 15,dicCode = "is_appoint_device")

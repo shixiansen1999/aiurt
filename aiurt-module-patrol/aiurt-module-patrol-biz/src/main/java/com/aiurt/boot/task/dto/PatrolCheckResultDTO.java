@@ -64,4 +64,7 @@ public class PatrolCheckResultDTO extends PatrolCheckResult {
 
     @ApiModelProperty(value = "检查值")
     private  String result;
+    /**返回异常设备集合*/
+    @ApiModelProperty(value = "返回异常设备集合")
+    private List<PatrolAbnormalDeviceDTO> abnormalDeviceList;
 }
