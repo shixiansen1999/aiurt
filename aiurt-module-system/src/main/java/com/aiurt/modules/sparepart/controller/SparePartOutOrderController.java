@@ -136,14 +136,6 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
        sparePartOutOrder.setSysOrgCode(user.getOrgCode());
        sparePartOutOrder.setOutType(MaterialRequisitionConstant.NORMAL_OUT);
        sparePartOutOrderService.save(sparePartOutOrder);
-       List<SparePartOutOrder> orderList = sparePartOutOrderService.list(new LambdaQueryWrapper<SparePartOutOrder>()
-               .eq(SparePartOutOrder::getStatus,2)
-               .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
-               .eq(SparePartOutOrder::getMaterialCode,sparePartOutOrder.getMaterialCode())
-               .eq(SparePartOutOrder::getWarehouseCode,sparePartOutOrder.getWarehouseCode()));
-       if(!orderList.isEmpty()){
-           sparePartOutOrder.setUnused(orderList.get(0).getUnused());
-       }
        sparePartOutOrderService.updateById(sparePartOutOrder);
 
        try {
