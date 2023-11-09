@@ -178,6 +178,9 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		String userId = loginUser.getId();
 		String username = loginUser.getUsername();
+
+		SysParamModel commonUrl = sysParamAPI.selectByCode(SysParamCodeConstant.COMMON);
+
 		//获取当前登录人所有业务消息
 		List<SysAnnouncementTypeCountDTO> announcementTypeCountDTOList = baseMapper.queryTypeCount(userId);
 
@@ -227,6 +230,14 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 				SysParamModel sysParamModel = sysParamAPI.selectByCode(busType);
 				if (Objects.nonNull(sysParamModel)) {
 					typeDTO.setValue(sysParamModel.getValue());
+				}else {
+					if (Objects.nonNull(commonUrl)) {
+						typeDTO.setValue(commonUrl.getValue());
+					}
+				}
+			}else {
+				if (Objects.nonNull(commonUrl)) {
+					typeDTO.setValue(commonUrl.getValue());
 				}
 			}
 
@@ -308,7 +319,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 					.busType(Objects.isNull(typeEnum)? sysTodoCountDTO.getProcessCode(): typeEnum.getType())
 					.build();
 
-			setPicture(typeDTO, type);
+			setPicture(commonUrl, typeDTO, type);
 
 			// 查询最近一条的时间
 			List<String> stringList = dtoList.stream().map(SysTodoCountDTO::getProcessCode).collect(Collectors.toList());
@@ -332,7 +343,7 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 		return list;
 	}
 
-	public SysMessageTypeDTO setPicture(SysMessageTypeDTO sysMessageTypeDTO,String type){
+	public SysMessageTypeDTO setPicture(SysParamModel commonUrl, SysMessageTypeDTO sysMessageTypeDTO,String type){
 		//设置消息类型和头像
 		if (SysParamCodeConstant.FAULT.equals(type)) {
 			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.FAULT_FLOW);
@@ -366,6 +377,12 @@ public class SysAnnouncementServiceImpl extends ServiceImpl<SysAnnouncementMappe
 			SysParamModel sysParamModel = sysParamAPI.selectByCode(SysParamCodeConstant.SPAREPART_FLOW);
 			sysMessageTypeDTO.setValue(sysParamModel.getValue());
 		}
+		if (StrUtil.isBlank(sysMessageTypeDTO.getValue())) {
+			if (Objects.nonNull(commonUrl)) {
+				sysMessageTypeDTO.setValue(commonUrl.getValue());
+			}
+		}
+
 		return sysMessageTypeDTO;
 	}
 

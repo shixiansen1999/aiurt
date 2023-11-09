@@ -460,4 +460,9 @@ public interface SysParamCodeConstant {
      * 获取施工计划登录门户url
      */
     String CONSTRUCTION_URL="construction_url";
+
+    /**
+     * 固定资产
+     */
+    String COMMON = "common";
 }
