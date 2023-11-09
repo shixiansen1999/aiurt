@@ -36,8 +36,6 @@ public class RecallRuleVerifyHandler extends AbstractFlowHandler<FlowRecallConte
     @Autowired
     private TaskService taskService;
     @Resource
-    private HistoryService historyService;
-    @Resource
     private RuntimeService runtimeService;
     @Override
     public void handle(FlowRecallContext context) {
