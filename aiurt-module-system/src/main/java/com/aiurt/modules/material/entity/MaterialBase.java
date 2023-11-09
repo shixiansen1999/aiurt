@@ -1,5 +1,6 @@
 package com.aiurt.modules.material.entity;
 
+import cn.afterturn.easypoi.excel.annotation.Excel;
 import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
@@ -14,11 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * @Description: 设备
@@ -46,7 +43,7 @@ public class MaterialBase extends DictEntity {
 	@MajorFilterColumn
 	private  String  majorCode;
 	/**所属专业手动翻译*/
-	@Excel(name = "专业名称", width = 15)
+	@Excel(name = "专业类型", width = 15)
 	@ApiModelProperty(value = "专业名称")
 	@TableField(exist = false)
 	private  String  majorCodeName;
@@ -69,7 +66,7 @@ public class MaterialBase extends DictEntity {
 	@Dict(dictTable ="material_base_type",dicText = "base_type_name",dicCode = "base_type_code")
 	private  String  baseTypeCode;
 	/**分类编码*/
-	@Excel(name = "物资分类名称", width = 15)
+	@Excel(name = "物资系统类别", width = 15)
 	@ApiModelProperty(value = "物资分类名称")
 	@TableField(exist = false)
 	private  String  baseTypeCodeName;
@@ -82,9 +79,9 @@ public class MaterialBase extends DictEntity {
 	@TableField(exist = false)
 	private  String  baseTypeCodeCcName;
 
-	/**编码*/
-	@Excel(name = "编码", width = 15)
-    @ApiModelProperty(value = "编码")
+	/**物资编码*/
+	@Excel(name = "物资编码", width = 15)
+    @ApiModelProperty(value = "物资编码")
 	private  String  code;
 
 	/**类型*/
@@ -115,11 +112,10 @@ public class MaterialBase extends DictEntity {
 	private  String  manufactorCodeName;
 
 	/**单位*/
-	@Excel(name = "单位", width = 15)
 	@ApiModelProperty(value = " 单位")
 	@Dict(dicCode = "materian_unit")
 	private  String  unit;
-	@Excel(name = "单位名称", width = 15)
+	@Excel(name = "单位", width = 15)
 	@ApiModelProperty(value = "单位名称")
 	@TableField(exist = false)
 	private  String  unitName;

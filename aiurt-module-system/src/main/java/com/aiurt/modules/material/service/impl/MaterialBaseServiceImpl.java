@@ -1,8 +1,15 @@
 package com.aiurt.modules.material.service.impl;
 
+import cn.afterturn.easypoi.excel.ExcelExportUtil;
+import cn.afterturn.easypoi.excel.ExcelImportUtil;
+import cn.afterturn.easypoi.excel.entity.ImportParams;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.util.ImportExcelUtil;
+import com.aiurt.common.util.ExcelSelectListUtil;
+import com.aiurt.common.util.XlsUtil;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
@@ -13,33 +20,33 @@ import com.aiurt.modules.material.mapper.MaterialBaseMapper;
 import com.aiurt.modules.material.mapper.MaterialBaseTypeMapper;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
-import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecgframework.poi.excel.ExcelExportUtil;
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.entity.TemplateExportParams;
+import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -67,6 +74,8 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 	private ICsManufactorService csManufactorService;
 	@Value("${jeecg.path.upload}")
 	private String upLoadPath;
+	@Value("${jeecg.path.errorExcelUpload}")
+	private String errorExcelUpload;
 	@Override
 	public String getNewBaseCode(String finalstr) {
 		String res = "";
@@ -109,211 +118,6 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 	}
 
 	@Override
-	public Result importExcelMaterial(MultipartFile file, ImportParams params) throws Exception {
-		List<MaterialBase> listMaterial = ExcelImportUtil.importExcel(file.getInputStream(), MaterialBase.class, params);
-		List<String> errorStrs = new ArrayList<>();
-		// 去掉 sql 中的重复数据
-		Integer errorLines=0;
-		Integer successLines=0;
-
-		List<MaterialBase> list = new ArrayList<>();
-		for (int i = 0; i < listMaterial.size(); i++) {
-			try {
-				MaterialBase materialBase = listMaterial.get(i);
-				String finalstr = "";
-				//专业
-				String majorCodeName = materialBase.getMajorCodeName()==null?"":materialBase.getMajorCodeName();
-				if("".equals(majorCodeName)){
-					errorStrs.add("第 " + i + " 行：专业名称为空，忽略导入。");
-					materialBase.setText("专业名称为空，忽略导入");
-					list.add(materialBase);
-					continue;
-				}
-				CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().eq("major_name",majorCodeName).eq("del_flag",0));
-				if(csMajor == null){
-					errorStrs.add("第 " + i + " 行：无法根据专业名称找到对应数据，忽略导入。");
-					materialBase.setText("无法根据专业名称找到对应数据，忽略导入");
-					list.add(materialBase);
-					continue;
-				}else{
-					materialBase.setMajorCode(csMajor.getMajorCode());
-					//子系统
-					String systemCodeName = materialBase.getSystemCodeName()==null?"":materialBase.getSystemCodeName();
-					CsSubsystem csSubsystem = csSubsystemService.getOne(new QueryWrapper<CsSubsystem>().eq("major_code",csMajor.getMajorCode()).eq("system_name",systemCodeName).eq("del_flag",0));
-					if(!"".equals(systemCodeName) && csSubsystem == null){
-						errorStrs.add("第 " + i + " 行：无法根据子系统名称找到对应数据，忽略导入。");
-						materialBase.setText("无法根据子系统名称找到对应数据，忽略导入");
-						list.add(materialBase);
-						continue;
-					}else{
-						if(csSubsystem != null){
-							materialBase.setSystemCode(csSubsystem.getSystemCode());
-						}
-						//物资分类
-						String baseTypeCodeName = materialBase.getBaseTypeCodeName()==null?"":materialBase.getBaseTypeCodeName();
-						if("".equals(baseTypeCodeName)){
-							errorStrs.add("第 " + i + " 行：物资分类编码为空，忽略导入。");
-							materialBase.setText("物资分类编码为空，忽略导入");
-							list.add(materialBase);
-							continue;
-						}
-						QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<MaterialBaseType>();
-						queryWrapper.eq("major_code",csMajor.getMajorCode()).eq("base_type_name",baseTypeCodeName).eq("del_flag",0);
-						if(!"".equals(systemCodeName)){
-							queryWrapper.eq("system_code",csSubsystem.getSystemCode());
-						}else{
-							queryWrapper.apply(" (system_code = '' or system_code is null) ");
-						}
-						MaterialBaseType materialBaseType = materialBaseTypeService.getOne(queryWrapper);
-						if(materialBaseType == null){
-							errorStrs.add("第 " + i + " 行：无法根据物资分类名称找到对应数据，忽略导入。");
-							materialBase.setText("无法根据物资分类名称找到对应数据，忽略导入");
-							list.add(materialBase);
-							continue;
-						}else{
-							materialBase.setBaseTypeCode(materialBaseType.getBaseTypeCode());
-						}
-						if (StrUtil.isNotEmpty(materialBase.getCode())){
-							List<MaterialBase> materialBase1 = materialBaseMapper.selectList(new LambdaQueryWrapper<MaterialBase>()
-									.eq(MaterialBase::getCode,materialBase.getCode())
-									.eq(MaterialBase::getMajorCode,materialBase.getMajorCode())
-									.eq(MaterialBase::getDelFlag,0));
-							if (materialBase1.size()>0){
-								errorStrs.add("第 " + i + " 行：在同一专业下相同的物资编号，忽略导入。");
-								materialBase.setText("在同一专业下相同的物资编号，忽略导入");
-								list.add(materialBase);
-								continue;
-							}
-						}
-						MaterialBaseType materialBaseTypefinal = materialBaseTypeService.getOne(new QueryWrapper<MaterialBaseType>().lambda()
-								                             .eq(MaterialBaseType::getBaseTypeCode,materialBaseType.getBaseTypeCode())
-								                             .eq(MaterialBaseType::getMajorCode,materialBaseType.getMajorCode())
-								                             .eq(MaterialBaseType::getDelFlag,0));
-						String typeCodeCc = materialBaseTypeService.getCcStr(materialBaseTypefinal);
-						materialBase.setBaseTypeCodeCc(typeCodeCc);
-					}
-				}
-				//物资名称
-				String name = materialBase.getName()==null?"":materialBase.getName();
-				if ("".equals(name)) {
-					errorStrs.add("第 " + i + " 行：物资名称为空，忽略导入。");
-					materialBase.setText("物资名称为空，忽略导入");
-					list.add(materialBase);
-					continue;
-				}
-				String type = materialBase.getType()==null?"":materialBase.getType();
-				if ("".equals(type)) {
-					errorStrs.add("第 " + i + " 行：物资类型为空，忽略导入。");
-					materialBase.setText("物资类型为空，忽略导入");
-					list.add(materialBase);
-					continue;
-				}else {
-					if (type.equals("通用类")){
-						materialBase.setType("2");
-					}else if (type.equals("专用类")){
-							materialBase.setType("1");
-						}else if (type.equals("AFC类")){
-							materialBase.setType("3");
-						}else {
-						errorStrs.add("第 " + i + " 行：物资类型不存在，忽略导入。");
-						materialBase.setText("物资类型不存在，忽略导入");
-						list.add(materialBase);
-						continue;
-					}
-				}
-				//生产厂商
-				if (StrUtil.isNotEmpty(materialBase.getManufactorCodeName())){
-				String manufactorCodeName = materialBase.getManufactorCodeName()==null?"":materialBase.getManufactorCodeName();
-				CsManufactor csManufactor = csManufactorService.getOne(new QueryWrapper<CsManufactor>().eq("name",manufactorCodeName).eq("del_flag",0).last("limit 1"));
-				if(!"".equals(manufactorCodeName) && csManufactor == null){
-					errorStrs.add("第 " + i + " 行：无法根据生产厂商名称找到对应数据，忽略导入。");
-					materialBase.setText("无法根据生产厂商名称找到对应数据，忽略导入");
-					list.add(materialBase);
-					continue;
-				}else{
-					materialBase.setManufactorCode(csManufactor.getId());
-				}
-				}
-				//单位
-				if (StrUtil.isNotEmpty(materialBase.getUnit())){
-				String unit = materialBase.getUnit()==null?"":materialBase.getUnit();
-				if(!"".equals(unit)){
-					List<DictModel> materianUnit = sysBaseApi.queryDictItemsByCode("materian_unit");
-					List<DictModel> collect = materianUnit.stream().filter(m -> m.getText().equals(unit)).collect(Collectors.toList());
-					if(collect != null && collect.size()>0){
-						materialBase.setUnit(collect.get(0).getValue());
-					}else{
-						errorStrs.add("第 " + i + " 行：无法根据物资单位找到对应数据，忽略导入。");
-						materialBase.setText("无法根据物资单位找到对应数据，忽略导入");
-						list.add(materialBase);
-						continue;
-					}
-				}
-				}
-				if(StrUtil.isNotEmpty(materialBase.getConsumablesName())){
-					//是否为易耗品 默认为否 在为是的时候修改状态
-					if ("是".equals(materialBase.getConsumablesName())){
-						materialBase.setConsumablesType(1);
-					}
-				}
-				LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-				materialBase.setSysOrgCode(user.getOrgCode());
-				int save = materialBaseMapper.insert(materialBase);
-				if(save<=0){
-					throw new Exception(CommonConstant.SQL_INDEX_UNIQ_MATERIAL_BASE_CODE);
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		if (list.size()>0){
-			//创建导入失败错误报告,进行模板导出
-			Resource resource = new ClassPathResource("templates\\materialBaseError.xlsx");
-			InputStream resourceAsStream = resource.getInputStream();
-			//2.获取临时文件
-			File fileTemp= new File("templates\\materialBaseError.xlsx");
-			try {
-				//将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
-				FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
-			} catch (Exception e) {
-				log.error(e.getMessage());
-			}
-			String path = fileTemp.getAbsolutePath();
-			TemplateExportParams exportParams = new TemplateExportParams(path);
-			List<Map<String, Object>> mapList = new ArrayList<>();
-			list.forEach(l->{
-				Map<String, Object> lm = new HashMap<String, Object>();
-				lm.put("majorCodeName",l.getMajorCodeName());
-				lm.put("systemCodeName",l.getSystemCodeName());
-				lm.put("baseTypeCodeName",l.getBaseTypeCodeName());
-				lm.put("code",l.getCode());
-				lm.put("name",l.getName());
-				lm.put("type",l.getType());
-				lm.put("manufactorCodeName",l.getManufactorCodeName());
-				lm.put("specifications",l.getSpecifications());
-				lm.put("unitName",l.getUnitName());
-				lm.put("price",l.getPrice());
-				lm.put("consumablesName",l.getConsumablesName());
-				lm.put("text",l.getText());
-				mapList.add(lm);
-			});
-			Map<String, Object> errorMap = new HashMap<String, Object>();
-			errorMap.put("maplist", mapList);
-					Workbook workbook = ExcelExportUtil.exportExcel(exportParams,errorMap);
-						String fileName = "物资主数据错误模板"+"_" + System.currentTimeMillis()+".xlsx";
-						FileOutputStream out = new FileOutputStream(upLoadPath+ File.separator+fileName);
-						String  url = fileName;
-						workbook.write(out);
-						errorLines+=errorStrs.size();
-						successLines+=(listMaterial.size()-errorLines);
-					return ImportExcelUtil.imporReturnRes(errorLines,successLines,errorStrs,url);
-				}
-		errorLines+=errorStrs.size();
-		successLines+=(listMaterial.size()-errorLines);
-		return ImportExcelUtil.imporReturnRes(errorLines,successLines,errorStrs);
-	}
-
-	@Override
 	public String getCodeByCc(String baseTypeCodeCc) {
 		String baseTypeCode = "";
 		if(!"".equals(baseTypeCodeCc)){
@@ -339,5 +143,250 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 			return null;
 		}
 		return baseMapper.selectByCode(code);
+	}
+
+	@Override
+	public void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		//获取输入流，原始模板位置
+		org.springframework.core.io.Resource resource = new ClassPathResource("/templates/materialBase1.xlsx");
+		InputStream resourceAsStream = resource.getInputStream();
+		//2.获取临时文件
+		File fileTemp = new File("/templates/materialBase1.xlsx");
+		try {
+			//将读取到的类容存储到临时文件中，后面就可以用这个临时文件访问了
+			FileUtils.copyInputStreamToFile(resourceAsStream, fileTemp);
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
+		String path = fileTemp.getAbsolutePath();
+		cn.afterturn.easypoi.excel.entity.TemplateExportParams exportParams = new cn.afterturn.easypoi.excel.entity.TemplateExportParams(path);
+		Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(16);
+		Workbook workbook = cn.afterturn.easypoi.excel.ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+		CommonAPI bean = SpringContextUtils.getBean(CommonAPI.class);
+		List<DictModel> majorModels = bean.queryTableDictItemsByCode("cs_major", "major_name", "major_code");
+		ExcelSelectListUtil.selectList(workbook, "专业类型", 3, 1, 1, majorModels);
+		List<DictModel> materialBaseTypeModels = bean.queryTableDictItemsByCode("material_base_type", "base_type_name", "base_type_code");
+		ExcelSelectListUtil.selectList(workbook, "物资系统类别", 3, 2, 2, materialBaseTypeModels);
+		List<DictModel> csManufactorModels = bean.queryTableDictItemsByCode("cs_manufactor", "name", "code");
+		ExcelSelectListUtil.selectList(workbook, "厂家品牌", 3, 4, 4, csManufactorModels);
+		List<DictModel> unitModels = bean.queryDictItemsByCode("materian_unit");
+		ExcelSelectListUtil.selectList(workbook, "单位", 3, 7, 7, unitModels);
+		String fileName = "物资主数据导入模板.xlsx";
+		try {
+			response.setHeader("Content-Disposition",
+					"attachment;filename=" + new String(fileName.getBytes(StandardCharsets.UTF_8), "iso8859-1"));
+			response.setHeader("Content-Disposition", "attachment;filename=" + "物资主数据导入模板.xlsx");
+			BufferedOutputStream bufferedOutPut = new BufferedOutputStream(response.getOutputStream());
+			workbook.write(bufferedOutPut);
+			bufferedOutPut.flush();
+			bufferedOutPut.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response, Class<MaterialBase> materialBaseClass) {
+		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+		List<String> errorMessage = new ArrayList<>();
+		int successLines = 0;
+		// 错误信息
+		int  errorLines = 0;
+		for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+			// 获取上传文件对象
+			MultipartFile file = entity.getValue();
+			String type = FilenameUtils.getExtension(file.getOriginalFilename());
+			if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
+				return XlsUtil.importReturnRes(errorLines, successLines, errorMessage, false, null);
+			}
+			ImportParams params = new ImportParams();
+			params.setTitleRows(2);
+			params.setHeadRows(1);
+			params.setNeedSave(true);
+			try {
+				List<MaterialBase> list = ExcelImportUtil.importExcel(file.getInputStream(), MaterialBase.class, params);
+
+				errorLines = check(list, errorLines);
+
+				if (errorLines > 0) {
+					//存在错误，导出错误清单
+					return getErrorExcel(errorLines, errorMessage, list, successLines, null, type);
+				}
+				this.saveBatch(list);
+				return XlsUtil.importReturnRes(errorLines, list.size(), errorMessage, true, null);
+			} catch (Exception e) {
+				//update-begin-author:taoyan date:20211124 for: 导入数据重复增加提示
+				String msg = e.getMessage();
+				log.error(msg, e);
+				if(msg!=null && msg.contains("Duplicate entry")){
+					return Result.error("文件导入失败:有重复数据！");
+				}else{
+					return Result.error("文件导入失败:" + e.getMessage());
+				}
+				//update-end-author:taoyan date:20211124 for: 导入数据重复增加提示
+			} finally {
+				try {
+					file.getInputStream().close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return Result.error("文件导入失败！");
+	}
+	
+	/**
+	 * 检验导入数据
+	 * @param list 导入数据
+	 * @param errorLines 错误行数
+	 * @return 返回错误行数
+	 */
+	private int check(List<MaterialBase> list, int errorLines) {
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		// 专业map
+		Map<String, CsMajor> csMajorMap = csMajorService.list(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0)).stream().collect(Collectors.toMap(CsMajor::getMajorName, Function.identity()));
+		// 单位map
+		Map<String, String> materianUnitMap = sysBaseApi.queryDictItemsByCode("materian_unit").stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue));
+		// 导入数据的code集合，检验重复编码
+		Set<String> codes = new HashSet<>();
+		// 遍历
+		for (MaterialBase materialBase : list) {
+			StringBuilder error = new StringBuilder();
+			// 物资编码
+			String code = materialBase.getCode();
+			if (StrUtil.isBlank(code)) {
+				error.append("物资编码不能为空;");
+			} else {
+				if (codes.contains(code)) {
+					error.append("物资编码重复;");
+				} else {
+					codes.add(code);
+				}
+			}
+			// 专业
+			String majorCodeName = materialBase.getMajorCodeName();
+			if (StrUtil.isBlank(majorCodeName)) {
+				error.append("专业类型不能为空;");
+			}
+			// 物资系统类别
+			String baseTypeCodeName = materialBase.getBaseTypeCodeName();
+			if (StrUtil.isBlank(baseTypeCodeName)) {
+				error.append("物资系统类别不能为空;");
+			}
+			// 验证编码、专业、分类
+			if (StrUtil.isNotBlank(majorCodeName)) {
+				CsMajor csMajor = csMajorMap.get(majorCodeName);
+				if (ObjectUtil.isNull(csMajor)) {
+					error.append("系统中不存在该专业类型;");
+				} else {
+					materialBase.setMajorCode(csMajor.getMajorCode());
+					//编码
+					if (StrUtil.isNotBlank(code)) {
+						List<MaterialBase> materialBase1 = materialBaseMapper.selectList(new LambdaQueryWrapper<MaterialBase>()
+								.eq(MaterialBase::getCode, code)
+								.eq(MaterialBase::getMajorCode, materialBase.getMajorCode())
+								.eq(MaterialBase::getDelFlag, 0));
+						if (materialBase1.size() > 0) {
+							error.append("系统中该专业下已存在相同的物资编码;");
+						}
+					}
+					//物资分类（包括子系统）
+					if (StrUtil.isNotBlank(baseTypeCodeName)) {
+						QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<MaterialBaseType>();
+						queryWrapper.lambda().eq(MaterialBaseType::getMajorCode, csMajor.getMajorCode())
+								.eq(MaterialBaseType::getBaseTypeName, baseTypeCodeName)
+								.eq(MaterialBaseType::getDelFlag, 0);
+						MaterialBaseType materialBaseType = materialBaseTypeService.getOne(queryWrapper, false);
+						if (ObjectUtil.isNull(materialBaseType)) {
+							error.append("该专业下不存在该物资分类;");
+						} else {
+							materialBase.setBaseTypeCode(materialBaseType.getBaseTypeCode());
+							materialBase.setSystemCode(materialBaseType.getSystemCode());
+							MaterialBaseType materialBaseTypefinal = materialBaseTypeService.getOne(new QueryWrapper<MaterialBaseType>().lambda()
+									.eq(MaterialBaseType::getBaseTypeCode, materialBaseType.getBaseTypeCode())
+									.eq(MaterialBaseType::getMajorCode, materialBaseType.getMajorCode())
+									.eq(MaterialBaseType::getDelFlag, CommonConstant.DEL_FLAG_0));
+							String typeCodeCc = materialBaseTypeService.getCcStr(materialBaseTypefinal);
+							materialBase.setBaseTypeCodeCc(typeCodeCc);
+						}
+					}
+				}
+			}
+			//物资名称
+			String name = materialBase.getName();
+			if (StrUtil.isBlank(name)) {
+				error.append("物资名称不能为空;");
+			}
+			//厂家/品牌
+			String manufactorCodeName = materialBase.getManufactorCodeName();
+			if (StrUtil.isNotBlank(manufactorCodeName)) {
+				CsManufactor csManufactor = csManufactorService.getOne(new QueryWrapper<CsManufactor>().lambda()
+						.eq(CsManufactor::getName, manufactorCodeName)
+						.eq(CsManufactor::getDelFlag, CommonConstant.DEL_FLAG_0), false);
+				if (ObjectUtil.isNull(csManufactor)) {
+					error.append("系统中不存在该厂家/品牌;");
+				} else {
+					materialBase.setManufactorCode(csManufactor.getId());
+				}
+			}
+			//单位
+			String unitName = materialBase.getUnitName();
+			if (StrUtil.isNotBlank(unitName)) {
+				if (materianUnitMap.containsKey(unitName)) {
+					materialBase.setUnit(materianUnitMap.get(unitName));
+				} else {
+					error.append("系统中不存在该单位;");
+				}
+			}
+
+			// 是否易耗品:默认否
+			materialBase.setConsumablesType(0);
+			materialBase.setSysOrgCode(user.getOrgCode());
+			if (ObjectUtil.isNotEmpty(error)) {
+				errorLines++;
+				materialBase.setText(error.toString());
+			}
+		}
+		return errorLines;
+	}
+
+
+	private Result<?> getErrorExcel(int errorLines, List<String> errorMessage, List<MaterialBase> list, int successLines, String url, String type) {
+		try {
+			TemplateExportParams exportParams = XlsUtil.getExcelModel("templates/materialBaseError.xlsx");
+			Map<String, Object> errorMap = new HashMap<>(16);
+
+			List<Map<String, String>> listMap = new ArrayList<>();
+			for (MaterialBase materialBase : list) {
+				Map<String, String> lm = new HashMap<>(11);
+				lm.put("code",materialBase.getCode());
+				lm.put("majorCodeName",materialBase.getMajorCodeName());
+				lm.put("baseTypeCodeName",materialBase.getBaseTypeCodeName());
+				lm.put("name",materialBase.getName());
+				lm.put("manufactorCodeName",materialBase.getManufactorCodeName());
+				lm.put("specifications",materialBase.getSpecifications());
+				lm.put("technicalParameter", materialBase.getTechnicalParameter());
+				lm.put("unitName",materialBase.getUnitName());
+				lm.put("price",materialBase.getPrice());
+				lm.put("remark", materialBase.getRemark());
+				lm.put("text",materialBase.getText());
+				listMap.add(lm);
+			}
+			errorMap.put("maplist", listMap);
+			Map<Integer, Map<String, Object>> sheetsMap = new HashMap<>(1);
+			sheetsMap.put(0, errorMap);
+			Workbook workbook =  ExcelExportUtil.exportExcel(sheetsMap, exportParams);
+
+			String fileName = "物资主数据导入错误清单"+"_" + System.currentTimeMillis()+"."+type;
+			FileOutputStream out = new FileOutputStream(errorExcelUpload+ File.separator+fileName);
+			url = File.separator+"errorExcelFiles"+ File.separator+fileName;
+			workbook.write(out);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return XlsUtil.importReturnRes(errorLines, successLines, errorMessage,true,url);
 	}
 }

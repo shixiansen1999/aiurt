@@ -716,7 +716,7 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
             List<PatrolCheckResultDTO> checkResultAll =  patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
             List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
             List<String> safty = sysBaseApi.getDictItems("safty_produce_check").stream().map(w-> w.getText()).collect(Collectors.toList());
-            boolean result = checkDTOs.stream().anyMatch(f -> f.getContent().contains("电暖气"));
+            boolean result = checkDTOs.stream().filter(c-> c.getContent().equals("电暖气")).anyMatch(f-> f.getCheckResult()!=0);
             if (result){
                 map.put("isTrue","☑有");
                 map.put("isFalse","☐无");
@@ -724,25 +724,30 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
                 map.put("isFalse","☑无");
                 map.put("isTrue","☐有");
             }
-            safty.add(7,null);
-            safty.forEach(s ->{
+            safty.add(6,null);
+            int size = safty.size();
+            for (int i = 0; i < size; i++) {
+                String s = safty.get(i);
                 PrintDTO printDTO = new PrintDTO();
-
                 PatrolCheckResultDTO patrolCheckResultDTO = checkDTOs.stream().filter(p -> p.getContent().replaceAll(" |-", "").equals(s)).findFirst().orElse(null);
                 if (ObjectUtil.isEmpty(patrolCheckResultDTO)){
                     printDTO.setResult("☐是 ☐否");
                     getPrint.add(printDTO);
                 }else {
-                    if(ObjectUtil.isEmpty(patrolCheckResultDTO.getCheckResult())){
-                        printDTO.setResult("☐是 ☐否");
+                    // 如果是最后一次循环，执行其他操作
+                    if (i == size - 1) {
+                        map.put("remark",patrolCheckResultDTO.getRemark());
                     }else {
-                        printDTO.setResult(patrolCheckResultDTO.getCheckResult()==0?"☐是 ☑否":"☑是 ☐否");
+                        if(ObjectUtil.isEmpty(patrolCheckResultDTO.getCheckResult())){
+                            printDTO.setResult("☐是 ☐否");
+                        }else {
+                            printDTO.setResult(patrolCheckResultDTO.getCheckResult()==0?"☐是 ☑否":"☑是 ☐否");
+                        }
+                        printDTO.setRemark(patrolCheckResultDTO.getRemark());
+                        getPrint.add(printDTO);
                     }
-                    printDTO.setRemark(patrolCheckResultDTO.getRemark());
-                    getPrint.add(printDTO);
                 }
-
-            });
+            }
         }
         return getPrint;
     }

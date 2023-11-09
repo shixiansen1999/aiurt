@@ -2,9 +2,12 @@ package com.aiurt.modules.material.service;
 
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.springframework.web.multipart.MultipartFile;
 import org.jeecg.common.api.vo.Result;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 /**
  * @Description: 设备
  * @Author: swsc
@@ -27,15 +30,6 @@ public interface IMaterialBaseService extends IService<MaterialBase> {
     MaterialBase translate(MaterialBase materialBase);
 
     /**
-     * 导入
-     * @param file
-     * @param params
-     * @return
-     * @throws Exception
-     */
-    Result importExcelMaterial(MultipartFile file, ImportParams params) throws Exception;
-
-    /**
      * 编码分级处理
      * @param baseTypeCodeCc
      * @return
@@ -48,4 +42,20 @@ public interface IMaterialBaseService extends IService<MaterialBase> {
      * @return
      */
     MaterialBase selectByCode(String code);
+
+    /**
+     * 获取导入模板
+     * @param response 相应
+     * @param request 请求
+     */
+    void getImportTemplate(HttpServletResponse response, HttpServletRequest request) throws IOException;
+
+    /**
+     * 导入
+     * @param request 请求
+     * @param response 响应
+     * @param materialBaseClass 物资主数据实体类class
+     * @return
+     */
+    Result<?> importExcel(HttpServletRequest request, HttpServletResponse response, Class<MaterialBase> materialBaseClass);
 }
