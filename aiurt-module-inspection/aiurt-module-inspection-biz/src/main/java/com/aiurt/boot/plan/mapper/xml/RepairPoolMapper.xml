@@ -93,8 +93,11 @@
             <if test="lineCode != null and lineCode != ''">
                 and rr.line_code = #{lineCode}
             </if>
-            <if test="stationCode != null and stationCode != ''">
-                and rr.station_code = #{stationCode}
+            <if test="stationCodeList != null and stationCodeList.size() > 0">
+                and rr.station_code in
+                <foreach collection="stationCodeList" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
             <if test="username != null and username != ''">
                 and rtu.name

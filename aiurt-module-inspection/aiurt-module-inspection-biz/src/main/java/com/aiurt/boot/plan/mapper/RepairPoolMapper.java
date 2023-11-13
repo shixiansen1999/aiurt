@@ -80,7 +80,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @param endDate
      * @return
      */
-    List<InspectionDTO> getInspectionData(@Param("page") Page<InspectionDTO> page, @Param("orgCodes") List<String> orgCodes, @Param("item") Integer item, @Param("beginDate") Date beginDate, @Param("endDate") Date endDate,@Param("lineCode")String lineCode, @Param("stationCode")String stationCode, @Param("username")String username);
+    List<InspectionDTO> getInspectionData(@Param("page") Page<InspectionDTO> page, @Param("orgCodes") List<String> orgCodes, @Param("item") Integer item, @Param("beginDate") Date beginDate, @Param("endDate") Date endDate,@Param("lineCode")String lineCode, @Param("stationCodeList")List<String> stationCodeList, @Param("username")String username);
 
     /**
      * 今日检修（带分页）
@@ -90,7 +90,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @param codeList
      * @return
      */
-    List<InspectionDTO> getInspectionTodayData(@Param("page") Page<InspectionDTO> page, @Param("date") Date date, @Param("codeList") List<String> codeList,@Param("lineCode")String lineCode,@Param("status")Integer status,@Param("stationCode")String stationCode,@Param("username")String username);
+    List<InspectionDTO> getInspectionTodayData(@Param("page") Page<InspectionDTO> page, @Param("date") Date date, @Param("codeList") List<String> codeList,@Param("lineCode")String lineCode,@Param("status")Integer status,@Param("stationCodeList")List<String> stationCodeList,@Param("username")String username);
 
     /**
      * 获取完成数量和未完成数量
