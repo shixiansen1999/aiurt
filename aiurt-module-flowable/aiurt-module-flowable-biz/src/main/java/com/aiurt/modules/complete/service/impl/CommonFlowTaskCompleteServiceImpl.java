@@ -208,33 +208,8 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
     @Override
     public void dealComplete(CompleteTaskContext taskContext) {
         Task currentTask = taskContext.getCurrentTask();
-        String processInstanceId = currentTask.getProcessInstanceId();
-        String nodeId = currentTask.getTaskDefinitionKey();
         Map<String, Object> variableData = taskContext.getVariableData();
-        Boolean completeTask = taskContext.getCompleteTask();
-        List<FlowElement> targetFlowElement = taskContext.getTargetFlowElement();
-        // 校验
-        if (completeTask) {
-            if (CollectionUtil.isEmpty(targetFlowElement)) {
-                throw new AiurtBootException(AiurtErrorEnum.NEXT_NODE_NOT_FOUND.getCode(),
-                        String.format(AiurtErrorEnum.NEXT_NODE_NOT_FOUND.getMessage(), "无法找到下一步办理节点"));
-            }
-        }
-
         taskService.complete(currentTask.getId(), variableData);
-
-        // 如果任意会签， 则需要自动提交其他任务, 可能不需要我们手动伟华
-        String multiApprovalRule = taskContext.getMultiApprovalRule();
-        if (StrUtil.equalsIgnoreCase(multiApprovalRule, MultiApprovalRuleEnum.TASK_MULTI_INSTANCE_TYPE_1.getCode())) {
-            //
-            List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(nodeId).list();
-
-           /* taskList.stream().forEach(task -> {
-                task.setDescription("ANY_NODE");
-                taskService.complete(task.getId());
-            });*/
-        }
-
     }
 
     /**
