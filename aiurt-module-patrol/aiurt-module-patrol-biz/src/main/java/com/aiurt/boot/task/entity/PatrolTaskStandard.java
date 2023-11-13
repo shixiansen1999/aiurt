@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -46,6 +47,10 @@ public class PatrolTaskStandard implements Serializable {
 	@Excel(name = "标准编号", width = 15)
     @ApiModelProperty(value = "标准编号")
     private java.lang.String standardCode;
+    /**是否合并工单：0否、1是*/
+    @ApiModelProperty(value = "是否合并工单：0否、1是")
+    @Dict(dicCode = "is_merge_device")
+    private Integer isMergeDevice;
 	/**专业code*/
 	@Excel(name = "专业code", width = 15)
     @ApiModelProperty(value = "专业code")

@@ -21,6 +21,7 @@ import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.entity.PatrolStandardDeviceType;
 import com.aiurt.boot.standard.mapper.PatrolStandardDeviceTypeMapper;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
+import com.aiurt.boot.standard.service.IPatrolStandardDeviceTypeService;
 import com.aiurt.boot.statistics.dto.IndexStationDTO;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
@@ -159,6 +160,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private PatrolStandardDeviceTypeMapper patrolStandardDeviceTypeMapper;
     @Autowired
     private IPatrolDeviceService patrolDeviceService;
+    @Autowired
+    private IPatrolStandardDeviceTypeService patrolStandardDeviceTypeService;
+    @Autowired
+    private IPatrolDeviceTypeService patrolDeviceTypeService;
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
@@ -1517,8 +1522,13 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskStandard.setSubsystemCode(ns.getSubsystemCode());
             patrolTaskStandard.setProfessionCode(ns.getProfessionCode());
             patrolTaskStandard.setStandardCode(ns.getCode());
+            patrolTaskStandard.setIsMergeDevice(ns.getIsMergeDevice());
             patrolTaskStandardMapper.insert(patrolTaskStandard);
             String taskStandardId = patrolTaskStandard.getId();
+            // 保存巡视任务标准关联设备类型
+            if (!PatrolConstant.DEVICE_INDEPENDENCE.equals(ns.getDeviceType())) {
+                saveTaskDeviceType(taskId, taskStandardId, ns.getCode());
+            }
             // 获取指定设备
             List<DeviceDTO> deviceList = ns.getDeviceList();
             // 保存巡视任务设备关联表
@@ -1575,6 +1585,31 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
             }
         });
+    }
+
+    /**
+     * 保存巡视任务标准关联的设备类型
+     * @param taskId 巡视任务id
+     * @param taskStandardId 巡视任务标准关联表id
+     * @param standardCode 标准code
+     */
+    private void saveTaskDeviceType(String taskId, String taskStandardId, String standardCode) {
+        // 获取标准关联的设备类型
+        LambdaQueryWrapper<PatrolStandardDeviceType> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PatrolStandardDeviceType::getStandardCode, standardCode).eq(PatrolStandardDeviceType::getDelFlag, CommonConstant.DEL_FLAG_0);
+        List<PatrolStandardDeviceType> list = patrolStandardDeviceTypeService.list(queryWrapper);
+        ArrayList<PatrolDeviceType> patrolDeviceTypes = new ArrayList<>();
+        // 保存
+        for (PatrolStandardDeviceType deviceType : list) {
+            PatrolDeviceType patrolDeviceType = new PatrolDeviceType();
+            patrolDeviceType.setTaskId(taskId);
+            patrolDeviceType.setTaskStandardId(taskStandardId);
+            patrolDeviceType.setDeviceTypeCode(deviceType.getDeviceTypeCode());
+            patrolDeviceTypes.add(patrolDeviceType);
+        }
+        if (CollUtil.isNotEmpty(patrolDeviceTypes)) {
+            patrolDeviceTypeService.saveBatch(patrolDeviceTypes);
+        }
     }
 
     @Override
@@ -1917,6 +1952,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (CollUtil.isNotEmpty(taskStandardList)) {
             patrolTaskStandardMapper.deleteBatchIds(taskStandardList);
         }
+        // 删除巡视任务标准关联设备类型
+        patrolDeviceTypeService.remove(new LambdaQueryWrapper<PatrolDeviceType>().eq(PatrolDeviceType::getTaskId, patrolTaskManualDTO.getId()));
         // 删除巡视任务关联设备表的信息
         patrolDeviceService.remove(new LambdaQueryWrapper<PatrolDevice>().eq(PatrolDevice::getTaskId, patrolTaskManualDTO.getId()));
         //删除单号
@@ -1946,6 +1983,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskStandard.setStandardCode(ns.getCode());
             patrolTaskStandardMapper.insert(patrolTaskStandard);
             String taskStandardId = patrolTaskStandard.getId();
+            // 保存巡视任务标准关联设备类型
+            if (!PatrolConstant.DEVICE_INDEPENDENCE.equals(ns.getDeviceType())) {
+                saveTaskDeviceType(taskId, taskStandardId, ns.getCode());
+            }
             // 获取指定设备
             List<DeviceDTO> deviceList = ns.getDeviceList();
             // 保存巡视任务设备关联表
@@ -2357,6 +2398,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 patrolTaskUserService.remove(new LambdaUpdateWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, taskCode));
                 // 删除巡视任务标准关联表的信息
                 patrolTaskStandardService.remove(new LambdaUpdateWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getTaskId, taskId));
+                // 删除巡视任务标准关联设备类型信息
+                patrolDeviceTypeService.remove(new LambdaQueryWrapper<PatrolDeviceType>().eq(PatrolDeviceType::getTaskId, taskId));
                 // 删除巡视任务设备关联表的信息
                 patrolDeviceService.remove(new LambdaQueryWrapper<PatrolDevice>().eq(PatrolDevice::getTaskId, taskId));
                 List<PatrolTaskDevice> patrolTaskDeviceList = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, taskId));

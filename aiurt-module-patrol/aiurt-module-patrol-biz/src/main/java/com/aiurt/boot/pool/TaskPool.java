@@ -8,7 +8,9 @@ import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.service.*;
 import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.boot.standard.entity.PatrolStandardDeviceType;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
+import com.aiurt.boot.standard.service.IPatrolStandardDeviceTypeService;
 import com.aiurt.boot.standard.service.IPatrolStandardItemsService;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.boot.task.entity.*;
@@ -17,6 +19,7 @@ import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysParamAPI;
@@ -68,6 +71,10 @@ public class TaskPool implements Job {
     private IPatrolCheckResultService patrolCheckResultService;
     @Autowired
     private IPatrolDeviceService patrolDeviceService;
+    @Autowired
+    private IPatrolStandardDeviceTypeService patrolStandardDeviceTypeService;
+    @Autowired
+    private IPatrolDeviceTypeService patrolDeviceTypeService;
     @Autowired
     private ISysParamAPI iSysParamAPI;
 
@@ -266,6 +273,12 @@ public class TaskPool implements Job {
 
             // 保存巡检任务标准关联数据，并获取对应的任务标准关联表ID
             String taskStandardId = saveTaskStandardData(task, l, standard);
+            Integer deviceType = standard.getDeviceType();
+            Integer isMergeDevice = standard.getIsMergeDevice();
+            // 保存巡视任务标准关联设备类型
+            if (!PatrolConstant.DEVICE_INDEPENDENCE.equals(deviceType)) {
+                saveTaskDeviceType(task.getId(), taskStandardId, standard.getCode());
+            }
             // 根据计划ID获取计划设备关联表记录
             QueryWrapper<PatrolPlanDevice> planDeviceWrapper = new QueryWrapper<>();
             planDeviceWrapper.lambda()
@@ -287,9 +300,6 @@ public class TaskPool implements Job {
                 });
                 patrolDeviceService.saveBatch(patrolDeviceList);
             }
-
-            Integer deviceType = standard.getDeviceType();
-            Integer isMergeDevice = standard.getIsMergeDevice();
 
             //通过配置去掉需要指定设备的限制，如果合并工单，则和与设备类型无关一样，只根据站点生成工单
 
@@ -444,6 +454,8 @@ public class TaskPool implements Job {
         patrolTaskStandard.setStandardId(standard.getId());
         // 标准编号
         patrolTaskStandard.setStandardCode(planStandard.getStandardCode());
+        // 是否合并工单
+        patrolTaskStandard.setIsMergeDevice(standard.getIsMergeDevice());
         // 专业编号
         patrolTaskStandard.setProfessionCode(planStandard.getProfessionCode());
         // 子系统编号
@@ -453,6 +465,31 @@ public class TaskPool implements Job {
         // 保存任务标准关联表数据
         patrolTaskStandardService.save(patrolTaskStandard);
         return patrolTaskStandard.getId();
+    }
+
+    /**
+     * 保存巡视任务标准关联的设备类型
+     * @param taskId 巡视任务id
+     * @param taskStandardId 巡视任务标准关联表id
+     * @param standardCode 标准code
+     */
+    private void saveTaskDeviceType(String taskId, String taskStandardId, String standardCode) {
+        // 获取标准关联的设备类型
+        LambdaQueryWrapper<PatrolStandardDeviceType> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PatrolStandardDeviceType::getStandardCode, standardCode).eq(PatrolStandardDeviceType::getDelFlag, CommonConstant.DEL_FLAG_0);
+        List<PatrolStandardDeviceType> list = patrolStandardDeviceTypeService.list(queryWrapper);
+        ArrayList<PatrolDeviceType> patrolDeviceTypes = new ArrayList<>();
+        // 保存
+        for (PatrolStandardDeviceType deviceType : list) {
+            PatrolDeviceType patrolDeviceType = new PatrolDeviceType();
+            patrolDeviceType.setTaskId(taskId);
+            patrolDeviceType.setTaskStandardId(taskStandardId);
+            patrolDeviceType.setDeviceTypeCode(deviceType.getDeviceTypeCode());
+            patrolDeviceTypes.add(patrolDeviceType);
+        }
+        if (CollUtil.isNotEmpty(patrolDeviceTypes)) {
+            patrolDeviceTypeService.saveBatch(patrolDeviceTypes);
+        }
     }
 
     /**

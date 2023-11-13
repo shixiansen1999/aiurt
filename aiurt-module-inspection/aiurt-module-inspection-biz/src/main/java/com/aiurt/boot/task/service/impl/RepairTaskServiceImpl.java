@@ -1046,11 +1046,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
                 e.setSamplingName(stringBuffer.toString());
             }
-            //专业
-            e.setMajorName(manager.translateMajor(Arrays.asList(e.getMajorCode()), InspectionConstant.MAJOR));
 
-            //子系统
-            e.setSystemName(manager.translateMajor(Arrays.asList(e.getSystemCode()), InspectionConstant.SUBSYSTEM));
 
             //根据设备编码翻译设备名称和设备类型名称
             List<RepairDeviceDTO> repairDeviceDTOList = manager.queryDeviceByCodes(Arrays.asList(e.getEquipmentCode()));
@@ -1060,46 +1056,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 //设备类型名称
                 e.setDeviceTypeName(q.getDeviceTypeName());
             });
-            //设备位置
-            if (e.getEquipmentCode() != null) {
-                List<StationDTO> stationDTOList = repairTaskMapper.selectStationLists(e.getEquipmentCode());
-                e.setEquipmentLocation(manager.translateStation(stationDTOList));
-            }
-            //检修任务状态
-            if (e.getStartTime() == null) {
-                e.setTaskStatusName("未开始");
-                e.setTaskStatus("0");
-            }
-            if (e.getStartTime() != null) {
-                e.setTaskStatusName("进行中");
-                e.setTaskStatus("1");
-            }
-            if (e.getIsSubmit() != null && e.getIsSubmit().equals(InspectionConstant.IS_EFFECT)) {
-                e.setTaskStatusName("已提交");
-                e.setTaskStatus("2");
-            }
-            //提交人名称
-            if (e.getOverhaulId() != null) {
-                String realName = repairTaskMapper.getRealName(e.getOverhaulId());
-                e.setOverhaulName(realName);
-            }
             if (e.getDeviceId() != null && CollectionUtil.isNotEmpty(repairTasks)) {
-                //正常项
-                List<RepairTaskResult> repairTaskResults = repairTaskMapper.selectSingle(e.getDeviceId(), InspectionConstant.RESULT_STATUS);
-                e.setNormal(Integer.toString(repairTaskResults.size()));
                 //异常项
                 List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(e.getDeviceId(), InspectionConstant.NO_RESULT_STATUS);
-                e.setAbnormal(Integer.toString(repairTaskResults1.size()));
+                if (CollUtil.isNotEmpty(repairTaskResults1) && repairTaskResults1.size() > 0) {
+                    e.setCheckResult(0);
+                } else {
+                    e.setCheckResult(1);
+                }
             }
-            //未开始的数量
-            long count1 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getStartTime() == null).count();
-            e.setNotStarted((int) count1);
-            //进行中的数量
-            long count2 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getStartTime() != null).count();
-            e.setHaveInHand((int) count2);
-            //已提交的数量
-            long count3 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getIsSubmit() != null && repairTaskDTO.getIsSubmit().equals(InspectionConstant.IS_EFFECT)).count();
-            e.setSubmitted((int) count3);
         });
         return pageList.setRecords(repairTasks);
     }

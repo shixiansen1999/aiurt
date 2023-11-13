@@ -161,7 +161,6 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                         case TASK_MULTI_INSTANCE_TYPE_2:
                             if (Objects.nonNull(loopCharacteristics)) {
                                 loopCharacteristics.setSequential(false);
-                                // 修提交条件，否则二次编辑提交条件无法修改，原因先执行customUserTaskJsonConverter ，再执行BaseBpmnJsonConverter
                                 loopCharacteristics.setCompletionCondition("${nrOfCompletedInstances == nrOfInstances}");
                             }
                             propertiesNode.put(PROPERTY_MULTIINSTANCE_TYPE, "Parallel");
