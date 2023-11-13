@@ -585,4 +585,9 @@ public interface SysParamCodeConstant {
      * 当日15点整时有未完成巡视任务给予提醒的响铃时长
      */
     String PUDR_RING_DURATION = "pudr_ring_duration";
+
+    /**
+     * 固定资产
+     */
+    String COMMON = "common";
 }

@@ -85,7 +85,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
     private DefaultSelectUserService defaultSelectUser;
 
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
 
     /**
      * 始前处理
@@ -146,7 +146,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         if (completeTask) {
             log.info("提交任务（多实例最后一步提交），获取下一步节点信息包括结束节点");
             FlowElement flowElement = flowElementUtil.getFlowElement(task.getProcessDefinitionId(), task.getTaskDefinitionKey());
-            List<FlowElement> targetFlowElement = flowElementUtil.getTargetFlowElement(execution, flowElement, busData);
+            List<FlowElement> targetFlowElement = flowElementUtil.getTargetFlowElement(execution, flowElement, variableData);
             taskContext.setTargetFlowElement(targetFlowElement);
             // 为空的，而且是自动提交，但是审批人为空的
             if ((Objects.nonNull(isAutoSelect) && isAutoSelect == 1) ||
@@ -208,33 +208,8 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
     @Override
     public void dealComplete(CompleteTaskContext taskContext) {
         Task currentTask = taskContext.getCurrentTask();
-        String processInstanceId = currentTask.getProcessInstanceId();
-        String nodeId = currentTask.getTaskDefinitionKey();
         Map<String, Object> variableData = taskContext.getVariableData();
-        Boolean completeTask = taskContext.getCompleteTask();
-        List<FlowElement> targetFlowElement = taskContext.getTargetFlowElement();
-        // 校验
-        if (completeTask) {
-            if (CollectionUtil.isEmpty(targetFlowElement)) {
-                throw new AiurtBootException(AiurtErrorEnum.NEXT_NODE_NOT_FOUND.getCode(),
-                        String.format(AiurtErrorEnum.NEXT_NODE_NOT_FOUND.getMessage(), "无法找到下一步办理节点"));
-            }
-        }
-
         taskService.complete(currentTask.getId(), variableData);
-
-        // 如果任意会签， 则需要自动提交其他任务, 可能不需要我们手动伟华
-        String multiApprovalRule = taskContext.getMultiApprovalRule();
-        if (StrUtil.equalsIgnoreCase(multiApprovalRule, MultiApprovalRuleEnum.TASK_MULTI_INSTANCE_TYPE_1.getCode())) {
-            //
-            List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId).taskDefinitionKey(nodeId).list();
-
-           /* taskList.stream().forEach(task -> {
-                task.setDescription("ANY_NODE");
-                taskService.complete(task.getId());
-            });*/
-        }
-
     }
 
     /**
@@ -271,7 +246,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
         }
         if (CollUtil.isNotEmpty(userList)) {
             String startUserId = processInstance.getStartUserId();
-            LoginUser loginUser = sysBaseAPI.getUserByName(startUserId);
+            LoginUser loginUser = sysBaseApi.getUserByName(startUserId);
             String format = DateUtil.format(processInstance.getStartTime(), "yyyy-MM-dd");
             // 发送消息
             HashMap<String, Object> map = new HashMap<>(16);
@@ -313,7 +288,7 @@ public class CommonFlowTaskCompleteServiceImpl extends AbsFlowCompleteServiceImp
 
             messageDTO.setType("XT");
             messageDTO.setData(map);
-            sysBaseAPI.sendTemplateMessage(messageDTO);
+            sysBaseApi.sendTemplateMessage(messageDTO);
         }
 
 

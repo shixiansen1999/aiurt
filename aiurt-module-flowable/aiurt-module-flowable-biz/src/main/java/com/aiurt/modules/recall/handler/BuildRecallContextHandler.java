@@ -6,16 +6,11 @@ import com.aiurt.modules.common.pipeline.AbstractFlowHandler;
 import com.aiurt.modules.modeler.entity.ActCustomModelExt;
 import com.aiurt.modules.modeler.service.IActCustomModelExtService;
 import com.aiurt.modules.recall.context.FlowRecallContext;
-import com.aiurt.modules.remind.entity.ActCustomRemindRecord;
-import com.aiurt.modules.remind.service.IActCustomRemindRecordService;
 import org.flowable.engine.HistoryService;
-import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.task.api.Task;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -34,12 +29,6 @@ public class BuildRecallContextHandler<T extends FlowRecallContext> extends Abst
 
     @Resource
     private TaskService taskService;
-
-    @Resource
-    private IActCustomRemindRecordService remindRecordService;
-
-    @Autowired
-    private RuntimeService runtimeService;
 
     /**
      * 执行任务

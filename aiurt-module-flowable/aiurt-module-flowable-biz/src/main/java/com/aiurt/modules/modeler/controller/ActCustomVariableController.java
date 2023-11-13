@@ -8,7 +8,6 @@ import com.aiurt.modules.common.constant.FlowVariableConstant;
 import com.aiurt.modules.common.enums.SystemVariableEnum;
 import com.aiurt.modules.modeler.dto.ActCustomVariableDTO;
 import com.aiurt.modules.modeler.dto.ConnectionConditionConfigDTO;
-import com.aiurt.modules.modeler.dto.FlowConditionDTO;
 import com.aiurt.modules.modeler.entity.ActCustomVariable;
 import com.aiurt.modules.modeler.service.IActCustomVariableService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @Description: 流程变量

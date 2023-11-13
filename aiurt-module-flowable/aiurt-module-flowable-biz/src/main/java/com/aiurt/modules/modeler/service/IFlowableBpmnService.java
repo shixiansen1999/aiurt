@@ -5,7 +5,6 @@ import com.aiurt.modules.modeler.dto.ModelInfoVo;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.ui.modeler.domain.Model;
-import org.flowable.ui.modeler.model.ModelRepresentation;
 import org.jeecg.common.system.vo.LoginUser;
 
 import java.io.ByteArrayInputStream;

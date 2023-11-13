@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 @Component
 public class RemindRuleVerifyHandler extends AbstractFlowHandler<FlowRemindContext> {
 
+    private static final int REMIND_TIME = 5;
 
     /**
      * 执行任务
@@ -65,7 +66,7 @@ public class RemindRuleVerifyHandler extends AbstractFlowHandler<FlowRemindConte
 
             long between = DateUtil.between(lastRemindTime, new Date(), DateUnit.MINUTE);
 
-            if (between < 5) {
+            if (between < REMIND_TIME) {
                 // 已发送，已提交后
                 if (StrUtil.isNotBlank(taskId)) {
                     // 校验数据

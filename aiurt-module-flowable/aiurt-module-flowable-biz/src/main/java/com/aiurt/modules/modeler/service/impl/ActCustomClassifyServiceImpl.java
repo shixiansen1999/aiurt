@@ -24,8 +24,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
  */
 @Service
 public class ActCustomClassifyServiceImpl extends ServiceImpl<ActCustomClassifyMapper, ActCustomClassify> implements IActCustomClassifyService {
+    private static final String ONE_SIZE = "1";
 
-	@Override
+    private static final String COMMA = ",";
+
+
+    @Override
 	public void addActCustomClassify(ActCustomClassify actCustomClassify) {
 	   //新增时设置hasChild为0
 	    actCustomClassify.setHasChild(IActCustomClassifyService.NOCHILD);
@@ -34,7 +38,7 @@ public class ActCustomClassifyServiceImpl extends ServiceImpl<ActCustomClassifyM
 		}else{
 			//如果当前节点父ID不为空 则设置父节点的hasChildren 为1
 			ActCustomClassify parent = baseMapper.selectById(actCustomClassify.getPid());
-			if(parent!=null && !"1".equals(parent.getHasChild())){
+			if(parent!=null && !ONE_SIZE.equals(parent.getHasChild())){
 				parent.setHasChild("1");
 				baseMapper.updateById(parent);
 			}
@@ -67,7 +71,7 @@ public class ActCustomClassifyServiceImpl extends ServiceImpl<ActCustomClassifyM
 	public void deleteActCustomClassify(String id) throws AiurtBootException {
 		//查询选中节点下所有子节点一并删除
         id = this.queryTreeChildIds(id);
-        if(id.indexOf(",")>0) {
+        if(id.indexOf(COMMA)>0) {
             StringBuffer sb = new StringBuffer();
             String[] idArr = id.split(",");
             for (String idVal : idArr) {

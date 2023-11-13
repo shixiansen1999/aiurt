@@ -2,7 +2,6 @@ package com.aiurt.modules.deduplicate.pipeline;
 
 import com.aiurt.modules.common.pipeline.DefaultFlowHandlerChain;
 import com.aiurt.modules.common.pipeline.FlowHandler;
-import com.aiurt.modules.remind.pipeline.RemindHandlerChainPipeline;
 
 /**
  * @author fgw
