@@ -86,7 +86,7 @@
                     #{item}
                 </foreach>
             </if>
-            order by spare_part_in_order.create_time desc
+            order by spare_part_in_order.confirm_status asc, spare_part_in_order.confirm_time desc, spare_part_in_order.create_time desc
     </select>
 
 
