@@ -108,6 +108,10 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 	@ApiOperation(value="spare_part_return_order-添加", notes="spare_part_return_order-添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody SparePartReturnOrder sparePartReturnOrder) {
+		int num = 0;
+		if (num == sparePartReturnOrder.getNum()) {
+			return Result.error("退库数量不能为0！");
+		}
 		sparePartReturnOrderService.add(sparePartReturnOrder);
 		return Result.OK("添加成功！");
 

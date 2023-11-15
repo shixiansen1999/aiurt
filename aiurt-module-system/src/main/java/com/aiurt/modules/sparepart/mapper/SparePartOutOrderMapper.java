@@ -47,4 +47,13 @@ public interface SparePartOutOrderMapper extends BaseMapper<SparePartOutOrder> {
      * @param num
      */
     void updateSparePartOutOrderUnused(@Param("id") String id, @Param("num") Integer num);
+
+    /**
+     * 通过出库id查询关联故障编号
+     *
+     * @param id 出库id
+     * @return
+     */
+    String getFaultByOutId(@Param("id") String id);
+
 }
