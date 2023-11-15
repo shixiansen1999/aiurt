@@ -161,9 +161,9 @@ public class FlowableNodeActionUtils {
             Connection connection = dataSource.getConnection();
             Statement statement = connection.createStatement();
             // 执行SQL语句
-            boolean success = statement.execute(customSql);
+            boolean success = statement.execute(sql);
             if (!success) {
-                log.error("流程节点自定义sql执行失败: {}", customSql);
+                log.error("流程节点自定义sql执行失败: {}", sql);
             }
         } catch (SQLException e) {
             log.error("流程节点自定义sql执行失败: {}", e.getMessage());
