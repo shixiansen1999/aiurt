@@ -561,7 +561,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                             }else if (PatrolConstant.DEVICE_INP_TYPE.equals(c.getInputType())) {
                                 writeValue = patrolCheckResultMapper.getSysDict(c.getDictCode(),c.getOptionValue());
                             }
-                            if (StrUtil.isNotEmpty(c.getRemark())){
+                            if (StrUtil.isNotEmpty(writeValue) &&StrUtil.isNotEmpty(c.getRemark())){
                                 writeValue =writeValue+",";
                             }
                             if (StrUtil.isNotEmpty(writeValue)){
@@ -867,7 +867,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                             }else if (PatrolConstant.DEVICE_INP_TYPE.equals(patrolCheckResultDTOList.get(0).getInputType())) {
                                 writeValue = patrolCheckResultMapper.getSysDict(patrolCheckResultDTOList.get(0).getDictCode(),patrolCheckResultDTOList.get(0).getOptionValue());
                             }
-                            if (StrUtil.isNotEmpty(patrolCheckResultDTOList.get(1).getRemark())){
+                            if (StrUtil.isNotEmpty(writeValue) && StrUtil.isNotEmpty(patrolCheckResultDTOList.get(1).getRemark())){
                                 writeValue =writeValue+",";
                             }
                             printDTO.setRemark(writeValue+patrolCheckResultDTOList.get(1).getRemark());
@@ -1079,7 +1079,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                     }else if (PatrolConstant.DEVICE_INP_TYPE.equals(c.getInputType())) {
                         writeValue = patrolCheckResultMapper.getSysDict(c.getDictCode(),c.getOptionValue());
                     }
-                    if (StrUtil.isNotEmpty(c.getRemark())){
+                    if (StrUtil.isNotEmpty(writeValue) && StrUtil.isNotEmpty(c.getRemark())){
                         writeValue =writeValue+",";
                     }
                     printDTO.setRemark(writeValue+c.getRemark());
@@ -1132,7 +1132,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                         }else if (PatrolConstant.DEVICE_INP_TYPE.equals(t.getInputType())) {
                             writeValue = patrolCheckResultMapper.getSysDict(t.getDictCode(),t.getOptionValue());
                         }
-                        if (StrUtil.isNotEmpty(t.getRemark())){
+                        if (StrUtil.isNotEmpty(writeValue) && StrUtil.isNotEmpty(t.getRemark())){
                             writeValue =writeValue+",";
                         }
                         printDTO.setRemark(writeValue+t.getRemark());
