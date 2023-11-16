@@ -747,29 +747,43 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
                 PrintDTO printDTO = new PrintDTO();
                 if (s.contains("干粉灭火器") || s.contains("二氧化碳灭火器")){
                     List<PatrolCheckResultDTO> patrolCheckResultDTOList = checkDTOs.stream().filter(p -> p.getContent().replaceAll(" |-", "").equals(s)).collect(Collectors.toList());
-                    if (ObjectUtil.isEmpty(patrolCheckResultDTOList.get(1))){
-                        printDTO.setResult("☐是 ☐否");
-                        getPrint.add(printDTO);
-                    }else {
-                        if(ObjectUtil.isEmpty(patrolCheckResultDTOList.get(1).getCheckResult())){
+                    if (CollUtil.isNotEmpty(patrolCheckResultDTOList) && patrolCheckResultDTOList.size() ==1){
+                        PatrolCheckResultDTO patrolCheckResultDTO = checkDTOs.stream().filter(p -> p.getContent().replaceAll(" |-", "").equals(s)).findFirst().orElse(null);
+                        if (ObjectUtil.isEmpty(patrolCheckResultDTO)){
                             printDTO.setResult("☐是 ☐否");
+                            getPrint.add(printDTO);
                         }else {
-                            printDTO.setResult(patrolCheckResultDTOList.get(1).getCheckResult()==0?"☐是 ☑否":"☑是 ☐否");
+                                if(ObjectUtil.isEmpty(patrolCheckResultDTO.getCheckResult())){
+                                    printDTO.setResult("☐是 ☐否");
+                                }else {
+                                    printDTO.setResult(patrolCheckResultDTO.getCheckResult()==0?"☐是 ☑否":"☑是 ☐否");
+                                }
+                                printDTO.setRemark(patrolCheckResultDTO.getRemark());
+                                getPrint.add(printDTO);
                         }
-                        String writeValue = "";
-                        if (PatrolConstant.DATE_TYPE_SPECIALCHAR.equals(patrolCheckResultDTOList.get(0).getInputType())) {
-                            writeValue =patrolCheckResultDTOList.get(0).getSpecialCharacters().replaceAll("[/#&$]", "");
-                        }else if (PatrolConstant.DEVICE_OUT.equals(patrolCheckResultDTOList.get(0).getInputType())) {
-                            writeValue = patrolCheckResultDTOList.get(0).getWriteValue();
-                        }else if (PatrolConstant.DEVICE_INP_TYPE.equals(patrolCheckResultDTOList.get(0).getInputType())) {
-                            writeValue = patrolCheckResultMapper.getSysDict(patrolCheckResultDTOList.get(0).getDictCode(),patrolCheckResultDTOList.get(0).getOptionValue());
-                        }
-                        if (StrUtil.isNotEmpty(writeValue) &&StrUtil.isNotEmpty(patrolCheckResultDTOList.get(1).getRemark())){
-                            writeValue =writeValue+",";
-                        }
-                        printDTO.setRemark(writeValue+patrolCheckResultDTOList.get(1).getRemark());
-                        getPrint.add(printDTO);
-                    }
+                    }else if (ObjectUtil.isEmpty(patrolCheckResultDTOList.get(1))){
+                                printDTO.setResult("☐是 ☐否");
+                                getPrint.add(printDTO);
+                            }else {
+                                if(ObjectUtil.isEmpty(patrolCheckResultDTOList.get(1).getCheckResult())){
+                                    printDTO.setResult("☐是 ☐否");
+                                }else {
+                                    printDTO.setResult(patrolCheckResultDTOList.get(1).getCheckResult()==0?"☐是 ☑否":"☑是 ☐否");
+                                }
+                                String writeValue = "";
+                                if (PatrolConstant.DATE_TYPE_SPECIALCHAR.equals(patrolCheckResultDTOList.get(0).getInputType())) {
+                                    writeValue =patrolCheckResultDTOList.get(0).getSpecialCharacters().replaceAll("[/#&$]", "");
+                                }else if (PatrolConstant.DEVICE_OUT.equals(patrolCheckResultDTOList.get(0).getInputType())) {
+                                    writeValue = patrolCheckResultDTOList.get(0).getWriteValue();
+                                }else if (PatrolConstant.DEVICE_INP_TYPE.equals(patrolCheckResultDTOList.get(0).getInputType())) {
+                                    writeValue = patrolCheckResultMapper.getSysDict(patrolCheckResultDTOList.get(0).getDictCode(),patrolCheckResultDTOList.get(0).getOptionValue());
+                                }
+                                if (StrUtil.isNotEmpty(writeValue) &&StrUtil.isNotEmpty(patrolCheckResultDTOList.get(1).getRemark())){
+                                    writeValue =writeValue+",";
+                                }
+                                printDTO.setRemark(writeValue+patrolCheckResultDTOList.get(1).getRemark());
+                                getPrint.add(printDTO);
+                            }
                 }else {
                     PatrolCheckResultDTO patrolCheckResultDTO = checkDTOs.stream().filter(p -> p.getContent().replaceAll(" |-", "").equals(s)).findFirst().orElse(null);
                     if (ObjectUtil.isEmpty(patrolCheckResultDTO)){
@@ -970,13 +984,15 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
 //                    printDTO.setContentRemark(contentRemark);
                     String writeValue = "";
                     if (PatrolConstant.DATE_TYPE_SPECIALCHAR.equals(c.getInputType())) {
-                        writeValue =c.getSpecialCharacters().replaceAll("[/#&$]", "");
+                        if (c.getSpecialCharacters().contains("/")){
+                            writeValue =c.getSpecialCharacters().replaceAll("[/#&$]", "");
+                        }
                     }else if (PatrolConstant.DEVICE_OUT.equals(c.getInputType())) {
                         writeValue = c.getWriteValue();
                     }else if (PatrolConstant.DEVICE_INP_TYPE.equals(c.getInputType())) {
                         writeValue = patrolCheckResultMapper.getSysDict(c.getDictCode(),c.getOptionValue());
                     }
-                    if (StrUtil.isNotEmpty(writeValue) &&StrUtil.isNotEmpty(c.getRemark())){
+                    if (StrUtil.isNotEmpty(writeValue) && StrUtil.isNotEmpty(c.getRemark())){
                         writeValue =writeValue+",";
                     }
                     printDTO.setRemark(writeValue+c.getRemark());
@@ -1023,13 +1039,15 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
 //                    printDTO.setContentRemark(contentRemark);
                         String writeValue = "";
                         if (PatrolConstant.DATE_TYPE_SPECIALCHAR.equals(t.getInputType())) {
-                            writeValue =t.getSpecialCharacters().replaceAll("[/#&$]", "");
+                            if (t.getSpecialCharacters().contains("/")){
+                                writeValue =c.getSpecialCharacters().replaceAll("[/#&$]", "");
+                            }
                         }else if (PatrolConstant.DEVICE_OUT.equals(t.getInputType())) {
                             writeValue = t.getWriteValue();
                         }else if (PatrolConstant.DEVICE_INP_TYPE.equals(t.getInputType())) {
                             writeValue = patrolCheckResultMapper.getSysDict(t.getDictCode(),t.getOptionValue());
                         }
-                        if (StrUtil.isNotEmpty(writeValue) &&StrUtil.isNotEmpty(t.getRemark())){
+                        if (StrUtil.isNotEmpty(writeValue) && StrUtil.isNotEmpty(t.getRemark())){
                             writeValue =writeValue+",";
                         }
                         printDTO.setRemark(writeValue+t.getRemark());
