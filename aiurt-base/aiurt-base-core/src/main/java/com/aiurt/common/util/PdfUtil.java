@@ -1,12 +1,54 @@
 package com.aiurt.common.util;
 
 
-import com.aspose.cells.*;
+import com.aspose.cells.License;
+import com.aspose.cells.PdfSaveOptions;
+import com.aspose.cells.Workbook;
+import com.aspose.words.Document;
+import com.aspose.words.SaveFormat;
+import me.zhyd.oauth.log.Log;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.lang.reflect.Modifier;
 
 public class PdfUtil {
+    /**
+     * word转pdf
+     * @param wordFilePath word路径
+     */
+    public static void wordToPdf(String wordFilePath) {
+        Document doc;
+        try {
+            FileInputStream in = new FileInputStream(wordFilePath);
+            removeWaterMark();
+            doc = new Document(in);
+            String pdfFilePath = getPdfFilePath(wordFilePath);
+            FileOutputStream fileOs = new FileOutputStream(pdfFilePath);
+            doc.save(fileOs, SaveFormat.PDF);
+            fileOs.flush();
+            fileOs.close();
+        } catch (Exception e) {
+            Log.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 去除word转pdf水印
+     * 使用反射替换变量
+     * @throws Exception 异常
+     */
+    private static void removeWaterMark() throws Exception {
+        Class<?> aClass = Class.forName("com.aspose.words.zzXyu");
+        java.lang.reflect.Field zzzxg = aClass.getDeclaredField("zzZXG");
+        zzzxg.setAccessible(true);
+        java.lang.reflect.Field modifiersField = zzzxg.getClass().getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(zzzxg, zzzxg.getModifiers() & ~Modifier.FINAL);
+        // 设置为检验通过
+        zzzxg.set(null,new byte[]{76, 73, 67, 69, 78, 83, 69, 68});
+    }
 
     /**
      * excel 转 pdf

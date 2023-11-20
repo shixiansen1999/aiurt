@@ -9,7 +9,6 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.InspectionApi;
@@ -64,19 +63,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
-import lombok.var;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.ImageUtils;
 import org.apache.poi.util.Units;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
-import org.apache.poi.xssf.usermodel.XSSFShape;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
+import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -98,11 +92,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.imageio.ImageIO;
-import javax.net.ssl.TrustManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.*;
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
@@ -112,12 +103,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * @Description: repair_task
@@ -3304,19 +3293,19 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     public void archRepairTask(RepairTask repairTask, String token, String archiveUserId, String refileFolderId, String realname, String sectId) {
         try {
             dealInfo(repairTask);
-            SXSSFWorkbook archiveRepairTask = createArchiveRepairTask(repairTask, "/templates/repairTaskTemplate.xlsx");
+            XWPFDocument document = archToWord(repairTask);
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             Date date = new Date();
             Date startTime = repairTask.getStartTime();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
             String fileName = repairTask.getSiteName() + "检修记录表" + sdf.format(startTime);
-            String path = exportPath + fileName + ".xlsx";
+            String path = exportPath + fileName + ".docx";
             FileOutputStream fos = new FileOutputStream(path);
-            archiveRepairTask.write(os);
+            document.write(fos);
             fos.write(os.toByteArray());
             os.close();
             fos.close();
-            PdfUtil.excel2pdf(path);
+            PdfUtil.wordToPdf(path);
             //传入档案系统
             //创建文件夹
             String foldername = fileName + "_" + date.getTime();
@@ -3468,6 +3457,222 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
     }
 
+    /**
+     * 保存到word模板中
+     * @param repairTask 任务信息
+     * @return XWPFDocument
+     */
+    private XWPFDocument archToWord(RepairTask repairTask) {
+        InputStream in;
+        XWPFDocument document = null;
+        try {
+            org.springframework.core.io.Resource resource = new ClassPathResource("/templates/repairTaskTemplate.docx");
+            in = resource.getInputStream();
+            document = new XWPFDocument(in);
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+        assert document != null : "can not find repairTaskTemplate.docx";
+        List<XWPFParagraph> paragraphs = document.getParagraphs();
+        // 标题
+        String head = repairTask.getLineName() + repairTask.getSiteName() + "检修记录表";
+        XWPFParagraph paragraph = paragraphs.get(0);
+        XWPFRun Run0 = paragraph.createRun();
+        Run0.setText(head);
+        Run0.setFontFamily(CommonConstant.FONT_ST);
+        Run0.setFontSize(24);
+        Run0.setBold(true);
+        // 表格内容
+        List<XWPFTable> tables = document.getTables();
+        XWPFTable table = tables.get(0);
+        // 检修班组
+        XWPFParagraph paragraph01 = table.getRow(0).getCell(1).getParagraphs().get(0);
+        XWPFRun run01 = paragraph01.createRun();
+        run01.setFontFamily(CommonConstant.FONT_ST);
+        run01.setFontSize(12);
+        run01.setText(repairTask.getOrganizational());
+        // 检修日期
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String start = "";
+        String end = "";
+        if (repairTask.getStartTime() != null) {
+            start = sdf.format(repairTask.getStartTime());
+        }
+        if (repairTask.getEndTime() != null) {
+            end = sdf.format(repairTask.getEndTime());
+        }
+        XWPFParagraph paragraph03 = table.getRow(0).getCell(3).getParagraphs().get(0);
+        XWPFRun run03 = paragraph03.createRun();
+        run03.setFontFamily(CommonConstant.FONT_ST);
+        run03.setFontSize(12);
+        run03.setText(start + " " + end);
+        // 检修地点
+        XWPFParagraph paragraph11 = table.getRow(1).getCell(1).getParagraphs().get(0);
+        XWPFRun run11 = paragraph11.createRun();
+        run11.setFontFamily(CommonConstant.FONT_ST);
+        run11.setFontSize(12);
+        run11.setText(repairTask.getLineName() + repairTask.getSiteName());
+        // 检修计划时间
+        XWPFParagraph paragraph13 = table.getRow(1).getCell(3).getParagraphs().get(0);
+        XWPFRun run13 = paragraph13.createRun();
+        run13.setFontFamily(CommonConstant.FONT_ST);
+        run13.setFontSize(12);
+        run13.setText(sdf.format(repairTask.getStartTime()));
+        // 检修人员
+        XWPFParagraph paragraph21 = table.getRow(2).getCell(1).getParagraphs().get(0);
+        XWPFRun run21 = paragraph21.createRun();
+        run21.setFontFamily(CommonConstant.FONT_ST);
+        run21.setFontSize(12);
+        run21.setText(repairTask.getOverhaulName());
+        // 检修开始时间
+        XWPFParagraph paragraph23 = table.getRow(2).getCell(3).getParagraphs().get(0);
+        XWPFRun run23 = paragraph23.createRun();
+        run23.setFontFamily(CommonConstant.FONT_ST);
+        run23.setFontSize(12);
+        run23.setText(DateUtil.format(repairTask.getBeginTime(), "yyyy-MM-dd HH:mm:ss"));
+        // 周检:内容
+        List<RepairTaskResult> list = repairTask.getRepairTaskResultList();
+        XWPFParagraph paragraph31 = table.getRow(3).getCell(1).getParagraphs().get(0);
+        XWPFRun run31 = paragraph31.createRun();
+        run31.setFontFamily(CommonConstant.FONT_ST);
+        run31.setFontSize(12);
+        for (RepairTaskResult repairTaskResult : list) {
+            StringBuilder content = new StringBuilder();
+            content.append(repairTaskResult.getName());
+            List<RepairTaskResult> children = repairTaskResult.getChildren();
+            if (CollUtil.isNotEmpty(children)) {
+                content.append("：");
+                for (int j = 0, index = 0; j < children.size(); j++) {
+                    ++index;
+                    content.append(index).append(".").append(children.get(j).getName());
+                }
+            }
+            run31.setText(content.toString());
+            run31.addBreak();
+        }
+        // 检修记录
+        XWPFParagraph paragraph41 = table.getRow(4).getCell(1).getParagraphs().get(0);
+        XWPFRun run41 = paragraph41.createRun();
+        run41.setFontFamily(CommonConstant.FONT_ST);
+        run41.setFontSize(12);
+        run41.setText(repairTask.getRepairRecord());
+        // 处理结果
+        XWPFParagraph paragraph51 = table.getRow(5).getCell(1).getParagraphs().get(0);
+        XWPFRun run51 = paragraph51.createRun();
+        run51.setFontFamily(CommonConstant.FONT_ST);
+        run51.setFontSize(12);
+        run51.setText(repairTask.getRepairResult());
+        // 备件更换
+        List<SpareResult> spareResults = repairTask.getSpareChange();
+        if (spareResults != null) {
+            int index2 = 0;
+            StringBuilder spare = new StringBuilder();
+            for (SpareResult spareResult : spareResults) {
+                index2++;
+                spare.append(index2).append(".").append("组件名称(旧)：").append(spareResult.getOldSparePartName()).append(" ")
+                        .append("数量：").append(spareResult.getOldSparePartNum()).append("  ")
+                        .append("组件名称(新)：").append(spareResult.getNewSparePartName())
+                        .append("数量：").append(spareResult.getNewSparePartNum());
+            }
+            XWPFParagraph paragraph61 = table.getRow(6).getCell(1).getParagraphs().get(0);
+            XWPFRun run61 = paragraph61.createRun();
+            run61.setFontFamily(CommonConstant.FONT_ST);
+            run61.setFontSize(12);
+            run61.setText(spare.toString());
+        }
+        // 附件信息:只展示图片
+        List<String> enclosureUrlList = repairTask.getEnclosureUrl();
+        if (CollUtil.isNotEmpty(enclosureUrlList)) {
+            List<InputStream> inputStreamList = new ArrayList<>();
+            for (String url : enclosureUrlList) {
+                if (StrUtil.isNotBlank(url) && CommonUtils.isImage(url)) {
+                    try {
+                        InputStream inputStream =  this.getInputStreamByUrl(url);
+                        if (ObjectUtil.isNotNull(inputStream)) {
+                            inputStreamList.add(inputStream);
+                        }
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+
+            }
+            if (CollUtil.isNotEmpty(inputStreamList)) {
+                XWPFParagraph paragraph71 = table.getRow(7).getCell(1).getParagraphs().get(0);
+                XWPFRun run71 = paragraph71.createRun();
+                for (InputStream inputStream : inputStreamList) {
+                    try {
+                        run71.addPicture(inputStream, XWPFDocument.PICTURE_TYPE_PNG, "附件", Units.toEMU(100), Units.toEMU(100));
+                    } catch (Exception e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+            }
+        }
+        // 作业类型
+        XWPFParagraph paragraph81 = table.getRow(8).getCell(1).getParagraphs().get(0);
+        XWPFRun run81 = paragraph81.createRun();
+        run81.setFontFamily(CommonConstant.FONT_ST);
+        run81.setFontSize(12);
+        run81.setText(repairTask.getWorkTypeName());
+        // 计划令编码
+        XWPFParagraph paragraph83 = table.getRow(8).getCell(3).getParagraphs().get(0);
+        XWPFRun run83 = paragraph83.createRun();
+        run83.setFontFamily(CommonConstant.FONT_ST);
+        run83.setFontSize(12);
+        run83.setText(repairTask.getPlanOrderCode());
+        // 计划令
+        String planOrderCodeUrl = repairTask.getPlanOrderCodeUrl();
+        if (StrUtil.isNotBlank(planOrderCodeUrl)) {
+            try (InputStream inputStream2 = this.getInputStreamByUrl(planOrderCodeUrl)) {
+                if (ObjectUtil.isNotNull(inputStream2)) {
+                    XWPFParagraph paragraph92 = table.getRow(9).getCell(1).getParagraphs().get(0);
+                    XWPFRun run92 = paragraph92.createRun();
+                    run92.addPicture(inputStream2, XWPFDocument.PICTURE_TYPE_PNG, "计划令", Units.toEMU(100), Units.toEMU(100));
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+        // 提交人
+        XWPFParagraph paragraph101 = table.getRow(10).getCell(1).getParagraphs().get(0);
+        XWPFRun run101 = paragraph101.createRun();
+        run101.setFontFamily(CommonConstant.FONT_ST);
+        run101.setFontSize(12);
+        run101.setText(repairTask.getSumitUserName());
+        // 提交时间
+        XWPFParagraph paragraph103 = table.getRow(10).getCell(3).getParagraphs().get(0);
+        XWPFRun run103 = paragraph103.createRun();
+        run103.setFontFamily(CommonConstant.FONT_ST);
+        run103.setFontSize(12);
+        run103.setText(DateUtil.format(repairTask.getSubmitTime(), "yyyy-MM-dd HH:mm:ss"));
+        // 确认人
+        XWPFParagraph paragraph111 = table.getRow(11).getCell(1).getParagraphs().get(0);
+        XWPFRun run111 = paragraph111.createRun();
+        run111.setFontFamily(CommonConstant.FONT_ST);
+        run111.setFontSize(12);
+        run111.setText(repairTask.getConfirmUserName());
+        // 确认时间
+        XWPFParagraph paragraph113 = table.getRow(11).getCell(3).getParagraphs().get(0);
+        XWPFRun run113 = paragraph113.createRun();
+        run113.setFontFamily(CommonConstant.FONT_ST);
+        run113.setFontSize(12);
+        run113.setText(DateUtil.format(repairTask.getConfirmTime(), "yyyy-MM-dd HH:mm:ss"));
+        // 验收人
+        XWPFParagraph paragraph121 = table.getRow(12).getCell(1).getParagraphs().get(0);
+        XWPFRun run121 = paragraph121.createRun();
+        run121.setFontFamily(CommonConstant.FONT_ST);
+        run121.setFontSize(12);
+        run121.setText(repairTask.getReceiptUserName());
+        // 验收时间
+        XWPFParagraph paragraph123 = table.getRow(12).getCell(3).getParagraphs().get(0);
+        XWPFRun run123 = paragraph123.createRun();
+        run123.setFontFamily(CommonConstant.FONT_ST);
+        run123.setFontSize(12);
+        run123.setText(DateUtil.format(repairTask.getReceiptTime(), "yyyy-MM-dd HH:mm:ss"));
+        return document;
+    }
+
     private SXSSFWorkbook createArchiveRepairTask(RepairTask repairTask, String path) {
         InputStream in;
         XSSFWorkbook xssfWb = null;
@@ -3552,7 +3757,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         Row rowSix = sheet.getRow(6);
         Cell c61 = rowSix.getCell(1);
         //c61.setCellValue(repairTask.getProcessContent());
-        c61.setCellValue(repairTask.getRepairRecord());
+        c61.setCellValue(repairTask.getRepairResult());
         //更换备件
         Row rowSeven = sheet.getRow(7);
         Cell c71 = rowSeven.getCell(1);
