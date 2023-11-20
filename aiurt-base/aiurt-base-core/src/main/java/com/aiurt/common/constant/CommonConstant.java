@@ -689,4 +689,8 @@ public interface CommonConstant {
   * 系统配置布尔值，0否
   */
  public static final String BOOLEAN_0 = "0";
+ /**
+  * 字体：宋体
+  */
+ String FONT_ST = "宋体";
 }

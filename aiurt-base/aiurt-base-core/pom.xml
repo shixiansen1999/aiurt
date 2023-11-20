@@ -319,6 +319,12 @@
 			<artifactId>aspose-cells</artifactId>
 			<version>23.1</version>
 		</dependency>
+		<dependency>
+			<groupId>com.aspose</groupId>
+			<artifactId>aspose-words</artifactId>
+			<version>21.6</version>
+		</dependency>
+
 		<!--redis分布式锁-->
 		<dependency>
 			<groupId>org.redisson</groupId>
