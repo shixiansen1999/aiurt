@@ -1,6 +1,7 @@
 package com.aiurt.common.util;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.DataBaseConstant;
 import com.aiurt.common.constant.SymbolConstant;
@@ -397,5 +398,18 @@ public class CommonUtils {
         String yms = DateUtil.format(yearDate, "yyyy-MM-dd");
         String hms = DateUtil.format(timeDate, "HH:mm:ss");
         return DateUtil.parse(yms + " " + hms, "yyyy-MM-dd HH:mm:ss");
+    }
+
+    /**
+     * 判断文件后缀是否是图片类型
+     * @param url 文件路径
+     * @return
+     */
+    public static boolean isImage(String url) {
+        if (StrUtil.isBlank(url)) {
+            return false;
+        }
+        String extension = url.substring(url.lastIndexOf(StrUtil.DOT) + 1).toLowerCase();
+        return StrUtil.equalsAny(extension, "jpeg", "jpg", "png", "gif", "bmp");
     }
 }
