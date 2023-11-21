@@ -65,4 +65,12 @@ public interface ISparePartOutOrderService extends IService<SparePartOutOrder> {
     SparePartOutOrder queryByOrderCode(String orderCode);
 
     Result<?> edit(SparePartOutOrder sparePartOutOrder);
+
+    /**
+     * 通过出库id查询关联故障编号
+     *
+     * @param id 出库id
+     * @return
+     */
+    String getFaultByOutId(String id);
 }

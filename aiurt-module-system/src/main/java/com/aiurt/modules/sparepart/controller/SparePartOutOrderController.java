@@ -248,4 +248,18 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
         SparePartOutOrder sparePartOutOrder = sparePartOutOrderService.queryByOrderCode(orderCode);
         return Result.ok(sparePartOutOrder);
     }
+
+    /**
+     * 通过出库id查询关联故障编号
+     *
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过出库id查询关联故障编号",permissionUrl = "/sparepart/sparePartOutOrder/list")
+    @ApiOperation(value="通过出库id查询关联故障编号", notes="通过出库id查询关联故障编号")
+    @GetMapping(value = "/getFaultByOutId")
+    public Result<String> getFaultByOutId(@RequestParam(name="id",required=true) String id) {
+        String faultCode = sparePartOutOrderService.getFaultByOutId(id);
+        return Result.OK(faultCode);
+    }
 }

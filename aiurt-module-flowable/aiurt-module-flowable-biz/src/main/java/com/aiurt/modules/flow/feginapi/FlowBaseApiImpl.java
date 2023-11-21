@@ -128,7 +128,7 @@ public class FlowBaseApiImpl implements FlowBaseApi {
                 }
             }
 
-            String key = String.format("process:%s:%s:%s", processDefinitionId, taskDefinitionKey, userName);
+            String key = String.format("process:%s:%s:%s:%s",processInstanceId, processDefinitionId, taskDefinitionKey, userName);
             String s = redisTemplate.opsForValue().get(key);
 
             if (StrUtil.isNotBlank(s)) {

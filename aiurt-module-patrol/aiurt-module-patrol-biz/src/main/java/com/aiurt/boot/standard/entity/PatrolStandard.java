@@ -109,7 +109,7 @@ public class PatrolStandard extends DictEntity implements Serializable {
     @Dict(dicCode = "realname",dictTable="sys_user",dicText="username")
     private java.lang.String createBy;
 	/**创建时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "创建时间")
     private java.util.Date createTime;
@@ -117,7 +117,7 @@ public class PatrolStandard extends DictEntity implements Serializable {
     @ApiModelProperty(value = "更新人")
     private java.lang.String updateBy;
 	/**更新时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
