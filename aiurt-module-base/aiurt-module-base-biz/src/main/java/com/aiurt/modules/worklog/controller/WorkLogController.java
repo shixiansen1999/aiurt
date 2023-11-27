@@ -13,6 +13,7 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.result.*;
 import com.aiurt.common.util.ArchiveUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.worklog.dto.WorkLogArchDTO;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
 import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
 import com.aiurt.modules.worklog.entity.WorkLog;
@@ -28,7 +29,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.constant.CommonConstant;
@@ -539,46 +539,8 @@ public class WorkLogController {
     @AutoLog(value = "日志归档")
     @ApiOperation(value = "日志归档", notes = "日志归档")
     @PostMapping(value = "/archiveWorkLog")
-    public Result archiveWorkLog(HttpServletRequest request, @RequestBody List<WorkLogResult> data) {
-        if (data == null || data.size() == 0) {
-            return Result.error("没有选择要归档的文件");
-        }
-
-        // 获取token先看有没有归档权限
-        String token = null;
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        try {
-            token = archiveUtils.getToken(sysUser.getUsername());
-            System.out.println(token);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Result.error("系统异常");
-        }
-        if (StringUtils.isEmpty(token)) {
-            return Result.error("没有归档权限");
-        }
-
-        // 获取登录用户信息
-        Map userInfo = archiveUtils.getArchiveUser(sysUser.getUsername(), token);
-        if (ObjectUtil.isEmpty(userInfo)) {
-            return Result.error("没有归档权限");
-        }
-
-        // 通过id获取档案类型信息，拿到refileFolderId
-        Map typeInfo = archiveUtils.getTypeInfoById(token);
-        String refileFolderId = typeInfo.get("refileFolderId").toString();
-
-        // 逐条归档
-        String finalToken = token;
-        String finalArchiveUserId = userInfo.get("ID").toString();
-        String username = userInfo.get("Name").toString();
-        String sectId = typeInfo.get("sectId").toString();
-
-        data.forEach(workLogResult -> {
-            workLogDepotService.archWorkLog(workLogResult, finalToken, finalArchiveUserId, refileFolderId, username, sectId);
-        });
-
-        return Result.ok("归档成功");
+    public Result<?> archiveWorkLog(HttpServletRequest request, @RequestBody List<WorkLogArchDTO> data) {
+        return workLogDepotService.archiveWorkLog(data);
     }
 
     /**

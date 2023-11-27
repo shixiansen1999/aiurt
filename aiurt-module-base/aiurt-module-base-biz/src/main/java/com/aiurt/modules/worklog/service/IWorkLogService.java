@@ -143,7 +143,12 @@ public interface IWorkLogService extends IService<WorkLog> {
      */
     Map getTodayJobContent(String nowday,String createTime);
 
-    void archWorkLog(WorkLogResult workLogResult, String token, String archiveUserId, String refileFolderId, String realname, String sectId);
+    /**
+     *
+     * @param data 归档数据
+     * @return 返回结果
+     */
+    Result<?> archiveWorkLog(List<WorkLogArchDTO> data);
 
     /**
      * 最新的未完成事项

@@ -590,4 +590,12 @@ public interface SysParamCodeConstant {
      * 固定资产
      */
     String COMMON = "common";
+    /**
+     * 检修归档的档案类型名称
+     */
+    String REPAIR_ARCH_TYPE = "repair_arch_type";
+    /**
+     * 工作日志归档的档案类型名称
+     */
+    String WORK_LOG_ARCH_TYPE = "work_log_arch_type";
 }

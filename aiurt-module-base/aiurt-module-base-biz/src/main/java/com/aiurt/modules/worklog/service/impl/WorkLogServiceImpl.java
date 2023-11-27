@@ -2,13 +2,10 @@ package com.aiurt.modules.worklog.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.Week;
-import cn.hutool.core.io.IoUtil;
-import cn.hutool.core.math.MathUtil;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -1225,109 +1222,236 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     }
 
     @Override
-    public void archWorkLog(WorkLogResult workLogResult, String token, String archiveUserId, String refileFolderId, String realname, String sectId) {
+    public Result<?> archiveWorkLog(List<WorkLogArchDTO> data) {
+        if (data == null || data.size() == 0) {
+            return Result.error("没有选择要归档的文件");
+        }
+        // 获取token先看有没有归档权限
+        String token;
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         try {
-            dealInfo(workLogResult);
-            SXSSFWorkbook archiveRepairTask = createArchiveWorkLog(workLogResult, "/templates/workLogTemplate.xlsx");
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Date date = new Date();
-            Date submitTime = workLogResult.getSubmitTime();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-            String fileName = workLogResult.getSubmitOrgName() + "工作日志" + sdf.format(submitTime);
-            workLogResult.setSubmitOrgName("");
-            String path = exportPath + fileName + ".xlsx";
-            FileOutputStream fos = new FileOutputStream(path);
-            archiveRepairTask.write(os);
-            fos.write(os.toByteArray());
-            os.close();
-            fos.close();
-            PdfUtil.excel2pdf(path);
-            //传入档案系统
-            //创建文件夹
-            String foldername = fileName + "_" + date.getTime();
-            String refileFolderIdNew = archiveUtils.createFolder(token, refileFolderId, foldername);
-            //上传文件
-            String fileType = "pdf";
-            File file = new File(exportPath + fileName + "." + fileType);
-            Long size = file.length();
-            InputStream in = Files.newInputStream(file.toPath());
-            JSONObject res = archiveUtils.upload(token, refileFolderIdNew, fileName + "." + fileType, size, fileType, in);
-            String fileId = res.getString("fileId");
-            Map<String, String> fileInfo = new HashMap<>();
-            fileInfo.put("fileId", fileId);
-            fileInfo.put("operateType", "upload");
-            ArrayList<Object> fileList = new ArrayList<>();
-            fileList.add(fileInfo);
-
-            // 修改为使用实体类
-            Date archDate = new Date();
-            String uuid = UUID.randomUUID().toString();
-            ArchiveUtils.ArchiveInfo archiveInfo = archiveUtils.getArchiveInfo();
-            archiveInfo.setId(uuid);
-            sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            archiveInfo.setArchivedate(sdf.format(archDate));
-            archiveInfo.setArchiver(archiveUserId);
-            archiveInfo.setArchivername(realname);
-            archiveInfo.setArchtypeid();
-            archiveInfo.setCarrier("电子");
-            archiveInfo.setDuration(workLogResult.getSecertDuration());
-            archiveInfo.setObjtype("其他");
-            archiveInfo.setEntrystate("0");
-            archiveInfo.setFileList(fileList);
-            archiveInfo.setIfDossiered("0");
-            archiveInfo.setIfInbound("0");
-            archiveInfo.setLastAutoAddNo("其他");
-            archiveInfo.setLittleStatus("0");
-            archiveInfo.setName(fileName);
-            archiveInfo.setSecert(workLogResult.getSecert());
-            //number怎么取值
-            archiveInfo.setRefileFolderId(refileFolderIdNew);
-            archiveInfo.setSecertDuration(workLogResult.getSecertDuration());
-            archiveInfo.setSectid(sectId);
-            archiveInfo.setTimes(archDate.getTime());
-            sdf = new SimpleDateFormat("yyyy-MM-dd");
-            archiveInfo.setWrittendate(sdf.format(archDate));
-            Map result = archiveUtils.arch(archiveInfo, token);
-
-            /*
-            Map values = new HashMap();
-            values.put("archiver", archiveUserId);
-            values.put("username", realname);
-            values.put("duration", workLogResult.getSecertduration());
-            values.put("secert", workLogResult.getSecert());
-            values.put("secertduration", workLogResult.getSecertduration());
-            values.put("name", fileName);
-            values.put("fileList", fileList);
-            values.put("number", values.get("number"));
-            values.put("refileFolderId", refileFolderIdNew);
-            values.put("sectid", sectId);
-            Map result = archiveUtils.arch(values, token);
-            */
-            Map<String, String> obj = JSON.parseObject((String) result.get("obj"), new TypeReference<HashMap<String, String>>() {
-            });
-
-            //更新归档状态
-            if (result.get("result").toString() == "true" && "新增".equals(obj.get("rs"))) {
-                UpdateWrapper<WorkLog> uwrapper = new UpdateWrapper<>();
-                uwrapper.eq("id", workLogResult.getId()).set("ecm_status", 1);
-                this.update(uwrapper);
-            }
-
+            token = archiveUtils.getToken(sysUser.getUsername());
+            System.out.println(token);
         } catch (Exception e) {
             e.printStackTrace();
+            return Result.error("系统异常");
         }
+        if (org.apache.commons.lang3.StringUtils.isEmpty(token)) {
+            return Result.error("没有归档权限");
+        }
+
+        // 获取登录用户信息
+        Map<String, String> userInfo = archiveUtils.getArchiveUser(sysUser.getUsername(), token);
+        if (ObjectUtil.isEmpty(userInfo)) {
+            return Result.error("没有归档权限");
+        }
+
+        // 获取检修档案类型名称配置
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.WORK_LOG_ARCH_TYPE);
+        if (ObjectUtil.isNull(sysParamModel)) {
+            return Result.error("没有配置工作日志归档类型名称");
+        }
+        String archTypeName = sysParamModel.getValue();
+        // 获取每个任务的档案类型信息
+        String errorMsg = this.getArchTypeId(data, token, archTypeName);
+        if (StrUtil.isNotBlank(errorMsg)) {
+            return Result.error(errorMsg);
+        }
+        // 先全部保存为pdf
+        errorMsg = this.saveToPdf(data);
+        if (StrUtil.isNotBlank(errorMsg)) {
+            return Result.error(errorMsg);
+        }
+        String finalToken = token;
+        String finalArchiveUserId = userInfo.get("ID");
+        String username = userInfo.get("Name");
+        // 逐条归档
+        for (WorkLogArchDTO workLog : data) {
+            errorMsg = this.archWorkLog(workLog, finalToken, finalArchiveUserId, username);
+            if (StrUtil.isNotBlank(errorMsg)) {
+                return Result.error(errorMsg);
+            }
+        }
+        return Result.ok("归档成功");
     }
 
-    private void dealInfo(WorkLogResult workLogResult) {
+    private String getArchTypeId(List<WorkLogArchDTO> data, String token, String archTypeName) {
+        String errorMsg;
+        String yearName = "年";
+        String monthName = "月";
+        for (WorkLogArchDTO workLog : data) {
+            try {
+                // 查找检修归档对应的档案类型id
+                int year = DateUtil.year(workLog.getLogTime());
+                int month = DateUtil.month(workLog.getLogTime()) + 1;
+                String typeId = archiveUtils.getTypeByName(token, year + yearName, archTypeName, month + monthName);
+                if (StrUtil.isBlank(typeId)) {
+                    errorMsg = "档案系统未找到对应的档案类型:" + workLog.getCode();
+                    return errorMsg;
+                }
+                // 通过id获取档案类型信息，拿到refileFolderId
+                Map<String, String> typeInfo = archiveUtils.getTypeInfoById(token, typeId);
+                if (CollUtil.isEmpty(typeInfo)) {
+                    errorMsg = "没有获取到档案类型信息:" + typeId;
+                    return errorMsg;
+                }
+                String refileFolderId = typeInfo.get("refileFolderId");
+                String sectId = typeInfo.get("sectId");
+                workLog.setRefileFolderId(refileFolderId);
+                workLog.setSectId(sectId);
+            } catch (UnsupportedEncodingException e) {
+                log.error(e.getMessage(), e);
+                errorMsg = "获取档案类型信息时转码异常";
+                return errorMsg;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 保存为pdf
+     * @param data 归档数据
+     * @return 错误信息
+     */
+    private String saveToPdf(List<WorkLogArchDTO> data) {
+        String errorMsg;
+        for (WorkLogArchDTO workLog : data) {
+            dealInfo(workLog);
+            SXSSFWorkbook archiveRepairTask = createArchiveWorkLog(workLog);
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            Date submitTime = workLog.getSubmitTime();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+            String fileName = workLog.getSubmitOrgName() + "工作日志" + sdf.format(submitTime);
+            String path = exportPath + fileName + ".xlsx";
+            try {
+                FileOutputStream fos = new FileOutputStream(path);
+                archiveRepairTask.write(os);
+                fos.write(os.toByteArray());
+                os.close();
+                fos.close();
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+                errorMsg = "保存excel时IO异常:" + workLog.getCode();
+                return errorMsg;
+            }
+            try {
+                PdfUtil.excel2pdf(path);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                errorMsg = "保存pdf时IO异常:" + workLog.getCode();
+                return errorMsg;
+            }
+            workLog.setFileName(fileName);
+        }
+        return null;
+    }
+
+    /**
+     * 逐条归档
+     * @param workLog 工作日志
+     * @param token token
+     * @param archiveUserId 归档人
+     * @param realname 归档人realname
+     */
+    private String archWorkLog(WorkLogArchDTO workLog, String token, String archiveUserId, String realname) {
+        //传入档案系统
+        String errorMsg;
+        Date date = new Date();
+        String fileName = workLog.getFileName();
+        String refileFolderId = workLog.getRefileFolderId();
+        String sectId = workLog.getSectId();
+        //创建文件夹
+        String folderName = fileName + "_" + date.getTime();
+        String refileFolderIdNew;
+        try {
+            refileFolderIdNew = archiveUtils.createFolder(token, refileFolderId, folderName);
+        } catch (UnsupportedEncodingException e) {
+            log.error(e.getMessage(), e);
+            errorMsg = "创建文件夹时转码异常:" + workLog.getCode();
+            return errorMsg;
+        }
+        //上传文件
+        String fileType = "pdf";
+        File file = new File(exportPath + fileName + "." + fileType);
+        Long size = file.length();
+        InputStream in;
+        try {
+            in = Files.newInputStream(file.toPath());
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            errorMsg = "获取文件IO异常:" + exportPath + fileName + "." + fileType;
+            return errorMsg;
+        }
+        JSONObject res;
+        try {
+            res = archiveUtils.upload(token, refileFolderIdNew, fileName + "." + fileType, size, fileType, in);
+        } catch (UnsupportedEncodingException e) {
+            log.error(e.getMessage(), e);
+            errorMsg = "上传文件时转码异常:" + workLog.getCode();
+            return errorMsg;
+        }
+        String fileId = res.getString("fileId");
+        Map<String, String> fileInfo = new HashMap<>();
+        fileInfo.put("fileId", fileId);
+        fileInfo.put("operateType", "upload");
+        ArrayList<Object> fileList = new ArrayList<>();
+        fileList.add(fileInfo);
+
+        // 修改为使用实体类
+        Date archDate = new Date();
+        String uuid = UUID.randomUUID().toString();
+        ArchiveUtils.ArchiveInfo archiveInfo = archiveUtils.getArchiveInfo();
+        archiveInfo.setId(uuid);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        archiveInfo.setArchivedate(sdf.format(archDate));
+        archiveInfo.setArchiver(archiveUserId);
+        archiveInfo.setArchivername(realname);
+        archiveInfo.setArchtypeid();
+        archiveInfo.setCarrier("电子");
+        archiveInfo.setDuration(workLog.getSecertDuration());
+        archiveInfo.setObjtype("其他");
+        archiveInfo.setEntrystate("0");
+        archiveInfo.setFileList(fileList);
+        archiveInfo.setIfDossiered("0");
+        archiveInfo.setIfInbound("0");
+        archiveInfo.setLastAutoAddNo("其他");
+        archiveInfo.setLittleStatus("0");
+        archiveInfo.setName(fileName);
+        archiveInfo.setSecert(workLog.getSecert());
+        //number怎么取值
+        archiveInfo.setRefileFolderId(refileFolderIdNew);
+        archiveInfo.setSecertDuration(workLog.getSecertDuration());
+        archiveInfo.setSectid(sectId);
+        archiveInfo.setTimes(archDate.getTime());
+        sdf = new SimpleDateFormat("yyyy-MM-dd");
+        archiveInfo.setWrittendate(sdf.format(archDate));
+        Map<String, String> result = archiveUtils.arch(archiveInfo, token);
+        Map<String, String> obj = JSON.parseObject(result.get("obj"), new TypeReference<HashMap<String, String>>() {
+        });
+
+        //更新归档状态
+        String rs = obj.get("rs");
+        if (Objects.equals(result.get("result"), "true") && "新增".equals(rs)) {
+            UpdateWrapper<WorkLog> uwrapper = new UpdateWrapper<>();
+            uwrapper.lambda().eq(WorkLog::getId, workLog.getId()).set(WorkLog::getEcmStatus, 1);
+            this.update(uwrapper);
+        } else {
+            errorMsg = rs + workLog.getCode();
+            return errorMsg;
+        }
+        return null;
+    }
+
+    private void dealInfo(WorkLogArchDTO workLogArchDTO) {
         //巡检修内容
-        workLogResult.setPatrolRepairContent("巡视工作完成情况："  + workLogResult.getPatrolContent() + StrUtil.CRLF + "检修工作完成情况：" + workLogResult.getRepairContent());
+        workLogArchDTO.setPatrolRepairContent("巡视工作完成情况："  + workLogArchDTO.getPatrolContent() + StrUtil.CRLF + "检修工作完成情况：" + workLogArchDTO.getRepairContent());
     }
 
-    private SXSSFWorkbook createArchiveWorkLog(WorkLogResult workLogResult, String path) {
-        InputStream in = null;
+    private SXSSFWorkbook createArchiveWorkLog(WorkLogArchDTO workLog) {
+        InputStream in;
         XSSFWorkbook xssfWb = null;
         try {
-            org.springframework.core.io.Resource resource = new ClassPathResource(path);
+            org.springframework.core.io.Resource resource = new ClassPathResource("/templates/workLogTemplate.xlsx");
             in = resource.getInputStream();
             xssfWb = new XSSFWorkbook(in);
         } catch (Exception e) {
@@ -1341,7 +1465,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //A4
         printSetup.setPaperSize((short) 9);
         //画图的顶级管理器，一个sheet只能获取一个（一定要注意这点）
-        Drawing drawingPatriarch = sheet.createDrawingPatriarch();
+        Drawing<?> drawingPatriarch = sheet.createDrawingPatriarch();
         CreationHelper helper = sheet.getWorkbook().getCreationHelper();
         Row row = sheet.getRow(0);
         Cell cell = row.getCell(0);
@@ -1349,64 +1473,64 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         cell.setCellValue(head);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Row rowOne = sheet.getRow(1);
-        if (ObjectUtil.isNotEmpty(workLogResult.getSubmitTime())) {
+        if (ObjectUtil.isNotEmpty(workLog.getSubmitTime())) {
             Cell c11 = rowOne.getCell(1);
-            c11.setCellValue(sdf.format(workLogResult.getSubmitTime()));
+            c11.setCellValue(sdf.format(workLog.getSubmitTime()));
         }
         Cell c13 = rowOne.getCell(3);
-        c13.setCellValue(workLogResult.getSubmitName());
+        c13.setCellValue(workLog.getSubmitName());
 
-        if (StrUtil.isNotBlank(workLogResult.getPatrolRepairContent())) {
+        if (StrUtil.isNotBlank(workLog.getPatrolRepairContent())) {
             Row rowTwo = sheet.getRow(2);
             Cell c21 = rowTwo.getCell(1);
-            c21.setCellValue(workLogResult.getPatrolRepairContent());
+            c21.setCellValue(workLog.getPatrolRepairContent());
             CellStyle c21Style = c21.getCellStyle();
-            float height2 = ArchExecelUtil.getExcelCellAutoHeight(workLogResult.getPatrolRepairContent(), 20f);
+            float height2 = ArchExecelUtil.getExcelCellAutoHeight(workLog.getPatrolRepairContent(), 20f);
             c21Style.setWrapText(true);
             rowTwo.setHeightInPoints(height2);
         }
 
-        if (workLogResult.getFaultContent() != null) {
+        if (workLog.getFaultContent() != null) {
             Row rowThree = sheet.getRow(3);
             Cell c31 = rowThree.getCell(1);
-            c31.setCellValue(workLogResult.getFaultContent());
+            c31.setCellValue(workLog.getFaultContent());
             CellStyle c31Style = c31.getCellStyle();
             c31Style.setWrapText(true);
-            float height3 = ArchExecelUtil.getExcelCellAutoHeight(workLogResult.getFaultContent(), 20f);
+            float height3 = ArchExecelUtil.getExcelCellAutoHeight(workLog.getFaultContent(), 20f);
             rowThree.setHeightInPoints(height3);
         }
 
         Row rowFour = sheet.getRow(4);
         Cell c41 = rowFour.getCell(1);
-        c41.setCellValue(workLogResult.getWorkContent() == null ? "" : workLogResult.getWorkContent());
+        c41.setCellValue(workLog.getWorkContent() == null ? "" : workLog.getWorkContent());
         Row rowFive = sheet.getRow(5);
         Cell c51 = rowFive.getCell(1);
-        c51.setCellValue(workLogResult.getContent() == null ? "" : workLogResult.getContent());
+        c51.setCellValue(workLog.getContent() == null ? "" : workLog.getContent());
 
         Row rowSix = sheet.getRow(6);
         Cell c61 = rowSix.getCell(1);
-        c61.setCellValue(workLogResult.getSucceedName() == null ? "无" : workLogResult.getSucceedName());
+        c61.setCellValue(workLog.getSucceedName() == null ? "无" : workLog.getSucceedName());
         Cell c63 = rowSix.getCell(3);
-        if (workLogResult.getAssortTimes() != null && workLogResult.getAssortTimes().length > 1) {
-            String[] assortTimes = workLogResult.getAssortTimes();
+        if (workLog.getAssortTimes() != null && workLog.getAssortTimes().length > 1) {
+            String[] assortTimes = workLog.getAssortTimes();
             c63.setCellValue(assortTimes[0] + " 至 " + assortTimes[1]);
         }
 
         Row rowSev = sheet.getRow(7);
         Cell c71 = rowSev.getCell(1);
-        c71.setCellValue(workLogResult.getAssortLocationName());
+        c71.setCellValue(workLog.getAssortLocationName());
         Cell c73 = rowSev.getCell(3);
-        c73.setCellValue(workLogResult.getAssortUnit());
+        c73.setCellValue(workLog.getAssortUnit());
 
         Row rowEig = sheet.getRow(8);
         Cell c81 = rowEig.getCell(1);
-        c81.setCellValue(workLogResult.getAssortNames());
+        c81.setCellValue(workLog.getAssortNames());
         Cell c83 = rowEig.getCell(3);
-        c83.setCellValue(workLogResult.getAssortNum() == null ? "" : workLogResult.getAssortNum().toString());
+        c83.setCellValue(workLog.getAssortNum() == null ? "" : workLog.getAssortNum().toString());
 
         Row rowNine = sheet.getRow(9);
         float heigth9 = 25f;
-        String assortContent = workLogResult.getAssortContent();
+        String assortContent = workLog.getAssortContent();
         if (StrUtil.isNotBlank(assortContent)) {
             Cell c91 = rowNine.getCell(1);
             c91.setCellValue(assortContent);
@@ -1417,7 +1541,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
 
         //附件，只展示图片
-        List<String> urlList = StrUtil.splitTrim(workLogResult.getUrlList(), ",");
+        List<String> urlList = StrUtil.splitTrim(workLog.getUrlList(), ",");
         if (CollUtil.isNotEmpty(urlList)) {
             List<BufferedImage> bufferedImageList = new ArrayList<>();
             //遍历附件，获取其中的图片
@@ -1469,7 +1593,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
 
         //签名
-        String signature = workLogResult.getSignature();
+        String signature = workLog.getSignature();
         if (StrUtil.isNotBlank(signature)) {
             try (InputStream inputStreamByUrl = this.getInputStreamByUrl(signature)) {
                 if (ObjectUtil.isNotEmpty(inputStreamByUrl)) {
