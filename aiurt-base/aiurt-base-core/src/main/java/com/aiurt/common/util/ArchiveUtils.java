@@ -1,7 +1,9 @@
 package com.aiurt.common.util;
 
 
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import lombok.Data;
@@ -11,6 +13,7 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.http.Consts;
@@ -70,6 +73,14 @@ public class ArchiveUtils {
 
     @Value("${support.archivesTypeId}")
     private String archivesTypeId;
+    /**
+     * 档案类型名称：通号中心
+     */
+    private final static String THZX = "通号中心";
+    /**
+     * 档案类型名称：通信维修分部
+     */
+    private final static String WXFB = "通信维修分部";
 
 
     public String doPost(String url, JSONObject json) throws UnsupportedEncodingException {
@@ -93,6 +104,7 @@ public class ArchiveUtils {
         try {
             int code = httpClient.executeMethod(postMethod);
             if (code == 200) {
+                postMethod.getParams().setParameter(HttpMethodParams.HTTP_CONTENT_CHARSET, "UTF-8");
                 res = postMethod.getResponseBodyAsString();
                 System.out.println(res);
             }
@@ -109,7 +121,7 @@ public class ArchiveUtils {
      * @author: niuzeyu
      * @date: 2022/9/8 16:25
      */
-    public String doPost2(String url, Map param) throws UnsupportedEncodingException {
+    public String doPost2(String url, Map param) {
         HttpClient httpClient = new HttpClient();
         PostMethod postMethod = new PostMethod(url);
 
@@ -308,7 +320,7 @@ public class ArchiveUtils {
      * @date: 2022/9/7 18:23
      * @Return: java.lang.String
      */
-    public Map getArchiveUser(String account, String token){
+    public Map<String, String> getArchiveUser(String account, String token){
         String httpUrl = host + "/api/services/OrgUser/GetUserInfoByAccount?account=" + account + "&token=" + token;
         Map<String, String> userInfo = null;
         String res = doGet(httpUrl);
@@ -340,6 +352,95 @@ public class ArchiveUtils {
         return null;
     }
 
+    /**
+     * 根据档案类型id获取档案类型信息
+     * @param token token
+     * @param typeId 档案类型id
+     * @return 档案类型信息
+     */
+    public Map<String, String> getTypeInfoById(String token, String typeId) {
+        String httpUrl = host + "/edrmscore/api/archType/getById?id=" + typeId + "&token=" + token;
+        String res = doGet(httpUrl);
+        HashMap<String, String> info = null;
+        if (StringUtils.isNotEmpty(res) && !"".equals(res)) {
+            Map<String, String> map = JSON.parseObject(res, new TypeReference<HashMap<String, String>>() {
+            });
+            info = JSON.parseObject(map.get("obj"), new TypeReference<HashMap<String, String>>() {
+            });
+            return info;
+        }
+        return info;
+    }
+
+    /**
+     *
+     * @param token token
+     * @param year 年份
+     * @param nextName 分部下的档案类型名称
+     * @param archType 查找的目标档案类型名称
+     * @return 查找的档案类型id
+     * @throws UnsupportedEncodingException 异常
+     */
+    public String getTypeByName(String token, String year, String nextName, String archType) throws UnsupportedEncodingException {
+        String findTypeName = year + StrUtil.SLASH + THZX + StrUtil.SLASH + WXFB + StrUtil.SLASH + nextName + StrUtil.SLASH + archType;
+        return getTypeId(token, archivesTypeId, findTypeName);
+    }
+
+    /**
+     *
+     * @param token token
+     * @param year 年份
+     * @param archType 查找的目标档案类型名称
+     * @return 查找的档案类型id
+     */
+    public String getTypeByName(String token, String year, String archType) throws UnsupportedEncodingException {
+        String findTypeName = year + StrUtil.SLASH + THZX + StrUtil.SLASH + WXFB + StrUtil.SLASH + archType;
+        return getTypeId(token, archivesTypeId, findTypeName);
+    }
+
+    /**
+     * 根据档案类型路径递归获取档案类型id
+     * @param token token
+     * @param parentId 父级id
+     * @param findTypeName 档案类型路径
+     * @return 查找的档案类型id
+     * @throws UnsupportedEncodingException 异常
+     */
+    public String getTypeId(String token, String parentId, String findTypeName) throws UnsupportedEncodingException {
+        int index = findTypeName.indexOf("/");
+        String target;
+        if (index == -1) {
+            target = findTypeName;
+        } else {
+            target = findTypeName.substring(0, index);
+        }
+        String httpUrl = host + "/edrmscore/api/sect/sectAndArchTypeList?token=" + token;
+        Map<String, Object> folderInfo = new HashMap<>();
+        folderInfo.put("curPage", 1);
+        folderInfo.put("pageSize", 50);
+        folderInfo.put("parentId", parentId);
+        JSONObject json = (JSONObject) JSONObject.toJSON(folderInfo);
+        String res = doPost(httpUrl, json);
+        if (StringUtils.isNotEmpty(res) && !"".equals(res)) {
+            JSONObject jsonObject = JSONObject.parseObject(res);
+            JSONObject obj = jsonObject.getJSONObject("obj");
+            JSONArray entryDataLists = obj.getJSONArray("entryDataLists");
+            for (int i = 0; i < entryDataLists.size(); i++) {
+                JSONObject jsonObject1 = entryDataLists.getJSONObject(i);
+                String name = jsonObject1.getString("name");
+                if (StrUtil.equals(target, name)) {
+                    String id = jsonObject1.getString("id");
+                    if (index == -1) {
+                        return id;
+                    }
+                    findTypeName = findTypeName.substring(index + 1);
+                    return getTypeId(token, id, findTypeName);
+                }
+            }
+        }
+        return null;
+    }
+
     //创建文件夹
     public String createFolder(String token, String refileFolderId, String name) throws UnsupportedEncodingException {
         String httpUrl = host + "/api/services/Folder/CreateFolder";
@@ -352,7 +453,7 @@ public class ArchiveUtils {
         JSONObject json = (JSONObject) JSONObject.toJSON(folderInfo);
         String res = doPost(httpUrl, json);
         String folderId = null;
-        if (StringUtils.isNotEmpty(res) && res != "") {
+        if (StringUtils.isNotEmpty(res) && !"".equals(res)) {
             Map<String, String> jsonMap = JSON.parseObject(res, new TypeReference<HashMap<String, String>>() {
             });
             Map<String, String> jsonMap2 = JSON.parseObject(jsonMap.get("data"), new TypeReference<HashMap<String, String>>() {
@@ -362,7 +463,7 @@ public class ArchiveUtils {
         return folderId;
     }
 
-    public Map arch(Map<String, Object> values, String token) {
+    public Map<String, String> arch(Map<String, Object> values, String token) {
         Map<String, Object> param = new HashMap<>();
         Date date = new Date();
         UUID uuid = UUID.randomUUID();
@@ -400,7 +501,7 @@ public class ArchiveUtils {
         return jsonMap;
     }
 
-    public Map arch(ArchiveInfo archiveInfo, String token) {
+    public Map<String, String> arch(ArchiveInfo archiveInfo, String token) {
         String json = JSONObject.toJSONString(archiveInfo);
         String url = host + "/edrmscore/api/arch?token=" + token;
         String result = doPut(url, json);

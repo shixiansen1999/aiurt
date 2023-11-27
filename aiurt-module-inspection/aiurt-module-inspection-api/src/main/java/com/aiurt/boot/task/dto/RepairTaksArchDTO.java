@@ -1,0 +1,382 @@
+package com.aiurt.boot.task.dto;
+
+import com.aiurt.boot.task.entity.RepairTaskResult;
+import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.common.result.SpareResult;
+import com.aiurt.modules.base.BaseEntity;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.List;
+
+/**
+ * @author sbx
+ * @since 2023/11/24
+ */
+@Data
+public class RepairTaksArchDTO extends BaseEntity {
+    private static final long serialVersionUID = 1L;
+
+    /**主键id,自动递增*/
+    @ApiModelProperty(value = "主键id,自动递增")
+    private java.lang.String id;
+    /**编号,示例:JX20211105 */
+    @ApiModelProperty(value = "编号,示例:JX20211105 ")
+    private java.lang.String code;
+    /**检修周期类型，0周检、1月检、2双月检、3季检、4半年检、5年检*/
+    @ApiModelProperty(value = "检修周期类型，0周检、1月检、2双月检、3季检、4半年检、5年检")
+    private java.lang.Integer type;
+    /**任务来源*/
+    @ApiModelProperty(value = "任务来源")
+    private java.lang.Integer source;
+    /**年份*/
+    @ApiModelProperty(value = "年份")
+    private java.lang.Integer year;
+    /**周数*/
+    @ApiModelProperty(value = "周数")
+    private java.lang.Integer weeks;
+
+    /**所属周*/
+    @ApiModelProperty(value = "所属周")
+    private String weekName;
+
+    /**年*/
+    @ApiModelProperty(value = "年")
+    private Long years;
+    /**计划开始时间，精确到分钟*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "计划开始时间，精确到分钟")
+    private java.util.Date startTime;
+    /**计划结束时间，精确到分钟*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "计划结束时间，精确到分钟")
+    private java.util.Date endTime;
+    /**检修状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7待验收、8已完成*/
+    @ApiModelProperty(value = "检修状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7待验收、8已完成 ")
+    private java.lang.Integer status;
+    /**原因，不予确认/验收 原因*/
+    @ApiModelProperty(value = "原因，不予确认/验收 原因")
+    private java.lang.String errorContent;
+    /**是否需要审核：0否 1是*/
+    @ApiModelProperty(value = "是否需要审核：0否 1是")
+    private java.lang.Integer isConfirm;
+    /**是否需要验收：0否1是*/
+    @ApiModelProperty(value = "是否需要验收：0否1是")
+    private java.lang.Integer isReceipt;
+    /**指派人id，关联sys_user的id*/
+    @ApiModelProperty(value = "指派人id，关联sys_user的id")
+    private java.lang.String assignUserId;
+    /**指派人名称*/
+    @ApiModelProperty(value = "指派人名称")
+    private java.lang.String assignUserName;
+    /**指派时间，精确到秒*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "指派时间，精确到秒")
+    private java.util.Date assignTime;
+    /**提交人id，关联sys_user的id*/
+    @ApiModelProperty(value = "提交人id，关联sys_user的id")
+    private java.lang.String submitUserId;
+    /**提交人*/
+    @ApiModelProperty(value = "提交人")
+    private java.lang.String sumitUserName;
+    /**检修人点击开始执行任务的时间*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "检修人点击开始执行任务的时间")
+    private java.util.Date beginTime;
+    /**提交时间，精确到秒*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "提交时间，精确到分")
+    private java.util.Date submitTime;
+    /**确认人id，关联sys_user的id*/
+    @ApiModelProperty(value = "确认人id，关联sys_user的id")
+    private java.lang.String confirmUserId;
+    /**确认人*/
+    @ApiModelProperty(value = "确认人")
+    private java.lang.String confirmUserName;
+    /**确认时间，精确到秒*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "确认时间，精确到秒")
+    private java.util.Date confirmTime;
+    /**提交签名url*/
+    @ApiModelProperty(value = "提交签名url")
+    private java.lang.String confirmUrl;
+    /**验收人id，关联sys_user的id*/
+    @ApiModelProperty(value = "验收人id，关联sys_user的id")
+    private java.lang.String receiptUserId;	@Excel(name = "验收人", width = 15)
+    @ApiModelProperty(value = "验收人")
+    private java.lang.String receiptUserName;
+
+    /**验收人*/
+    /**验收时间，精确到秒*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "验收时间，精确到秒")
+    private java.util.Date receiptTime;
+    /**验收签名url*/
+    @ApiModelProperty(value = "验收签名url")
+    private java.lang.String receiptUrl;
+    /**检修计划池id，关联repair_pool的id*/
+    @ApiModelProperty(value = "检修计划池id，关联repair_pool的id")
+    private java.lang.String repairPoolId;
+    /**作业类型（A1不用计划令,A2,A3,B1,B2,B3）*/
+    @ApiModelProperty(value = "作业类型（A1不用计划令,A2,A3,B1,B2,B3）")
+    private java.lang.String workType;
+    /**计划令编码*/
+    @ApiModelProperty(value = "计划令编码")
+    private java.lang.String planOrderCode;
+    /**计划令图片*/
+    @ApiModelProperty(value = "计划令图片")
+    private java.lang.String planOrderCodeUrl;
+    /**是否委外：0否1是*/
+    @ApiModelProperty(value = "是否委外：0否1是")
+    private java.lang.Integer isOutsource;
+    /**删除状态：0未删除 1已删除*/
+    @ApiModelProperty(value = "删除状态：0未删除 1已删除")
+    private java.lang.Integer delFlag;
+    /**任务确认时间，精确到秒*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "任务确认时间，精确到秒")
+    private java.util.Date taskConfirmationTime;
+    /**创建时间，精确到秒*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "创建时间，精确到秒")
+    private java.util.Date createTime;
+    /**创建者*/
+    @ApiModelProperty(value = "创建者")
+    private java.lang.String createBy;
+    /**更新时间，精确到秒*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "更新时间，精确到秒")
+    private java.util.Date updateTime;
+    /**更新者*/
+    @ApiModelProperty(value = "更新者")
+    private java.lang.String updateBy;
+
+    @ApiModelProperty(value = "检修任务附件")
+    private String url;
+
+    /**检修任务的检修时长，提交任务时赋值*/
+    @ApiModelProperty(value = "检修任务的检修时长")
+    private Integer duration;
+
+    /**检修时长转化，转化成1小时10分5秒这种形式*/
+    @ApiModelProperty(value = "检修时长")
+    private String durationString;
+
+    /**组织机构名称*/
+    @ApiModelProperty(value = "组织机构名称")
+    private String organizational;
+
+    /**组织编码*/
+    @ApiModelProperty(value = "组织编码")
+    private String orgCode;
+
+    /**站点名称*/
+    @ApiModelProperty(value = "站点名称")
+    private String siteName;
+
+    /**站点编码*/
+    @ApiModelProperty(value = "站点编码")
+    private String siteCode;
+
+    /**线路名称，这个线路名称直接从上面的站点编码中获取，就没有多加一个线路编码。如果检修任务是多线路的话，使用”；“分隔，因为上面的站点名称
+     * 也是使用中文分号分隔的
+     */
+    @ApiModelProperty(value = "线路名称")
+    private String lineName;
+
+    /**专业名称*/
+    @ApiModelProperty(value = "专业名称")
+    private String majorName;
+
+    /**专业编码*/
+    @ApiModelProperty(value = "专业编码")
+    private String majorCode;
+
+    /**专业名称*/
+    @ApiModelProperty(value = "系统名称")
+    private String systemName;
+
+    /**系统编码*/
+    @ApiModelProperty(value = "系统编码")
+    private String systemCode;
+
+    /** 检修周期类型名称*/
+    @ApiModelProperty(value = "检修周期类型名称")
+    private String typeName;
+
+    /** 状态名称*/
+    @ApiModelProperty(value = "状态名称")
+    private String statusName;
+
+    /**是否需要审核名称*/
+    @ApiModelProperty(value = "是否需要审核名称")
+    private String isConfirmName;
+
+    /**是否需要验收名称*/
+    @ApiModelProperty(value = "是否需要验收名称")
+    private String isReceiptName;
+
+    /**任务来源名称*/
+    @ApiModelProperty(value = "任务来源名称")
+    private String sourceName;
+
+    /**作业类型名称*/
+    @ApiModelProperty(value = "作业类型名称")
+    private String workTypeName;
+
+    /**开始时间*/
+    @ApiModelProperty(value = "开始时间")
+    private String time1;
+
+    /**结束时间*/
+    @ApiModelProperty(value = "结束时间")
+    private String time2;
+
+    /**所属周开始时间*/
+    @ApiModelProperty(value = "所属周开始时间")
+    private String weekStartTime;
+
+    /**所属周结束时间*/
+    @ApiModelProperty(value = "所属周结束时间")
+    private String weekEndTime;
+
+
+    /**计划开始时间，精确到分钟*/
+    @Excel(name = "开始检修时间", width = 15, format = "yyyy-MM-dd HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "开始检修时间")
+    
+    private java.util.Date startOverhaulTime;
+
+
+    /**计划开始时间，精确到分钟*/
+    @Excel(name = "结束检修时间", width = 15, format = "yyyy-MM-dd HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "结束检修时间")
+    
+    private java.util.Date endOverhaulTime;
+
+    /**设备名称*/
+    
+    @ApiModelProperty(value = "设备名称")
+    private String equipmentName;
+
+    /**设备编码*/
+    
+    @ApiModelProperty(value = "设备编码")
+    private String equipmentCode;
+
+    /**检修结果*/
+    
+    @ApiModelProperty(value = "检修结果")
+    private Integer maintenanceResults;
+
+    /**检修单号*/
+    
+    @ApiModelProperty(value = "检修单号")
+    private String overhaulCode;
+
+    /**检修人id*/
+    
+    @ApiModelProperty(value = "检修人id")
+    private String overhaulId;
+
+    /**检修人名称*/
+    
+    @ApiModelProperty(value = "检修人名称")
+    private String overhaulName;
+
+    /**同行人名称*/
+    @ApiModelProperty(value = "同行人名称")
+    
+    private String peerName;
+
+    @ApiModelProperty(value = "抽检人名称")
+    
+    private String samplingName;
+
+    @ApiModelProperty(value = "检修编码")
+    
+    private List<String> codeList;
+
+    @ApiModelProperty(value = "密级")
+    
+    private String secert;
+
+    @ApiModelProperty(value = "保管期限")
+    
+    private String secertDuration;
+
+    /**归档状态*/
+    @Excel(name = "归档状态", width = 15)
+    @ApiModelProperty(value = "归档状态：0未归档 1已归档")
+    private Integer ecmStatus;
+
+    /**归档状态*/
+    @Excel(name = "归档状态", width = 15)
+    @ApiModelProperty(value = "归档状态：0未归档 1已归档")
+    private String ecmStatusName;
+
+    @ApiModelProperty(value = "附件")
+    private String path;
+
+    @ApiModelProperty(value = "标题")
+    private String title;
+    /** 状态名称*/
+    
+    @ApiModelProperty(value = "检修结果名称")
+    private String repairRecord;
+    
+    @ApiModelProperty(value = "处理结果")
+    private String repairResult;
+    
+    @ApiModelProperty(value = "备件更换")
+    private List<SpareResult> spareChange;
+    /**检修单附件*/
+    
+    @ApiModelProperty(value = "检修单附件")
+    private List<String> enclosureUrl;
+
+    @ApiModelProperty(value = "检修单（树形）")
+    List<RepairTaskResult> repairTaskResultList;
+
+    /**这个是列表查询里面用到的根据id查询，主要是导出使用*/
+    @ApiModelProperty(value = "查询的任务id列表")
+    List<String> selections;
+
+    /**
+     * 检修策略编码，关联inspection_strategy的code
+     * 字典值作为检修任务名称(就是检修策略，换个马甲)
+     */
+    @Excel(name = "检修策略编码，关联inspection_strategy的code", width = 15)
+    @ApiModelProperty(value = "检修策略编码，关联inspection_strategy的code",required = false)
+    @Dict(dictTable = "inspection_strategy",dicCode = "code",dicText = "name")
+    private java.lang.String inspectionStrCode;
+
+    @ApiModelProperty(value = "是否是手工下发任务，0否1是")
+    private Integer isManual;
+
+    @ApiModelProperty(value = "档案类型的文件夹id")
+    private String refileFolderId;
+
+    @ApiModelProperty(value = "所属全宗id")
+    private String sectId;
+
+    @ApiModelProperty(value = "归档后的文件名，不包含文件格式")
+    private String fileName;
+}

@@ -6,32 +6,28 @@ import com.aspose.cells.PdfSaveOptions;
 import com.aspose.cells.Workbook;
 import com.aspose.words.Document;
 import com.aspose.words.SaveFormat;
-import me.zhyd.oauth.log.Log;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Modifier;
 
+@Slf4j
 public class PdfUtil {
     /**
      * word转pdf
      * @param wordFilePath word路径
      */
-    public static void wordToPdf(String wordFilePath) {
-        Document doc;
-        try {
-            FileInputStream in = new FileInputStream(wordFilePath);
-            removeWaterMark();
-            doc = new Document(in);
-            String pdfFilePath = getPdfFilePath(wordFilePath);
-            FileOutputStream fileOs = new FileOutputStream(pdfFilePath);
-            doc.save(fileOs, SaveFormat.PDF);
-            fileOs.flush();
-            fileOs.close();
-        } catch (Exception e) {
-            Log.error(e.getMessage(), e);
-        }
+    public static void wordToPdf(String wordFilePath) throws Exception {
+        FileInputStream in = new FileInputStream(wordFilePath);
+        removeWaterMark();
+        Document doc = new Document(in);
+        String pdfFilePath = getPdfFilePath(wordFilePath);
+        FileOutputStream fileOs = new FileOutputStream(pdfFilePath);
+        doc.save(fileOs, SaveFormat.PDF);
+        fileOs.flush();
+        fileOs.close();
     }
 
     /**
@@ -55,7 +51,7 @@ public class PdfUtil {
      *
      * @param excelFilePath excel文件路径
      */
-    public static void excel2pdf(String excelFilePath) {
+    public static void excel2pdf(String excelFilePath) throws Exception {
         excel2pdf(excelFilePath, null, null);
     }
 
@@ -65,7 +61,7 @@ public class PdfUtil {
      * @param excelFilePath excel文件路径
      * @param convertSheets 需要转换的sheet
      */
-    public static void excel2pdf(String excelFilePath, int[] convertSheets) {
+    public static void excel2pdf(String excelFilePath, int[] convertSheets) throws Exception {
         excel2pdf(excelFilePath, null, convertSheets);
     }
 
@@ -75,7 +71,7 @@ public class PdfUtil {
      * @param excelFilePath excel文件路径
      * @param pdfFilePath   pdf文件路径
      */
-    public static void excel2pdf(String excelFilePath, String pdfFilePath) {
+    public static void excel2pdf(String excelFilePath, String pdfFilePath) throws Exception {
         excel2pdf(excelFilePath, pdfFilePath, null);
     }
 
@@ -86,28 +82,22 @@ public class PdfUtil {
      * @param pdfFilePath   pdf文件路径
      * @param convertSheets 需要转换的sheet
      */
-    public static void excel2pdf(String excelFilePath, String pdfFilePath, int[] convertSheets) {
-        try {
-
-            pdfFilePath = pdfFilePath == null ? getPdfFilePath(excelFilePath) : pdfFilePath;
-            // 验证 License
-            getLicense();
-            Workbook wb = new Workbook(excelFilePath);
-            FileOutputStream fileOS = new FileOutputStream(pdfFilePath);
-            PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
-            pdfSaveOptions.setOnePagePerSheet(false);
+    public static void excel2pdf(String excelFilePath, String pdfFilePath, int[] convertSheets) throws Exception {
+        pdfFilePath = pdfFilePath == null ? getPdfFilePath(excelFilePath) : pdfFilePath;
+        // 验证 License
+        getLicense();
+        Workbook wb = new Workbook(excelFilePath);
+        FileOutputStream fileOs = new FileOutputStream(pdfFilePath);
+        PdfSaveOptions pdfSaveOptions = new PdfSaveOptions();
+        pdfSaveOptions.setOnePagePerSheet(false);
 //            pdfSaveOptions.setOnePagePerSheet(true);
-            if (null != convertSheets) {
-                printSheetPage(wb, convertSheets);
-            }
-            wb.save(fileOS, pdfSaveOptions);
-            fileOS.flush();
-            fileOS.close();
-            System.out.println("convert success");
-        } catch (Exception e) {
-            System.out.println("convert failed");
-            e.printStackTrace();
+        if (null != convertSheets) {
+            printSheetPage(wb, convertSheets);
         }
+        wb.save(fileOs, pdfSaveOptions);
+        fileOs.flush();
+        fileOs.close();
+        log.info("convert success");
     }
     /**
      * 获取 生成的 pdf 文件路径，默认与源文件同一目录
@@ -130,8 +120,8 @@ public class PdfUtil {
             License license = new License();
             license.setLicense(is);
         } catch (Exception e) {
-            System.out.println("license verify failed");
-            e.printStackTrace();
+            log.info("license verify failed");
+            log.error(e.getMessage(), e);
         }
     }
 

@@ -11,10 +11,8 @@ import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -237,19 +235,11 @@ public interface IRepairTaskService extends IService<RepairTask> {
     List<SystemInformationDTO> getSystemInformation();
 
     /**
-     * 检修归档
-     * @param repairTask
-     * @return
+     * 归档
+     * @param data 归档数据
+     * @return 返回结果
      */
-    void archRepairTask(RepairTask repairTask, String token, String archiveUserId, String refileFolderId, String realname, String sectId);
-
-    /**
-     * 检修归档导出pdf
-     * @param repairTask
-     * @return
-     */
-    void exportPdf(HttpServletRequest request, RepairTask repairTask, HttpServletResponse response) throws IOException;
-
+    Result<?> archiveRepair(List<RepairTaksArchDTO> data);
 
     /**
      * 检修任务表-打印检修详情
