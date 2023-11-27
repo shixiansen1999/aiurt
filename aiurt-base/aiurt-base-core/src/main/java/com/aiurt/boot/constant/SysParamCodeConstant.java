@@ -575,4 +575,12 @@ public interface SysParamCodeConstant {
      * 当日15点整时有未完成巡视任务给予提醒的响铃时长
      */
     String PUDR_RING_DURATION = "pudr_ring_duration";
+    /**
+     * 检修归档的档案类型名称
+     */
+    String REPAIR_ARCH_TYPE = "repair_arch_type";
+    /**
+     * 工作日志归档的档案类型名称
+     */
+    String WORK_LOG_ARCH_TYPE = "work_log_arch_type";
 }

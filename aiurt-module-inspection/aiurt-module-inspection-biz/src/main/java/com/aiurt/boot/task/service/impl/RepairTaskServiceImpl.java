@@ -1,7 +1,5 @@
 package com.aiurt.boot.task.service.impl;
 
-import cn.afterturn.easypoi.excel.ExcelExportUtil;
-import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
@@ -45,11 +43,11 @@ import com.aiurt.common.util.*;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.todo.dto.TodoDTO;
+import com.alibaba.druid.util.StringUtils;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.enums.WriteDirectionEnum;
 import com.alibaba.excel.metadata.data.WriteCellData;
-import com.alibaba.excel.util.IoUtils;
 import com.alibaba.excel.util.MapUtils;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.excel.write.metadata.fill.FillConfig;
@@ -63,15 +61,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.util.Units;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISTodoBaseAPI;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.api.ISysParamAPI;
@@ -91,10 +90,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.imageio.ImageIO;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -3290,66 +3285,218 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
-    public void archRepairTask(RepairTask repairTask, String token, String archiveUserId, String refileFolderId, String realname, String sectId) {
+    public Result<?> archiveRepair(List<RepairTaksArchDTO> data) {
+        if (data == null || data.size() == 0) {
+            return Result.error("没有选择要归档的文件");
+        }
+        // 获取token先看有没有归档权限
+        String token;
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         try {
+            token = archiveUtils.getToken(sysUser.getUsername());
+            System.out.println(token);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("系统异常");
+        }
+        if (StringUtils.isEmpty(token)) {
+            return Result.error("没有归档权限");
+        }
+        // 获取登录用户信息
+        Map<String, String> userInfo = archiveUtils.getArchiveUser(sysUser.getUsername(), token);
+        if (ObjectUtil.isEmpty(userInfo)) {
+            return Result.error("没有归档权限");
+        }
+        // 获取检修档案类型名称配置
+        SysParamModel sysParamModel = iSysParamAPI.selectByCode(SysParamCodeConstant.REPAIR_ARCH_TYPE);
+        if (ObjectUtil.isNull(sysParamModel)) {
+            return Result.error("没有配置检修归档类型名称");
+        }
+        String archTypeName = sysParamModel.getValue();
+        // 获取每个任务的档案类型信息
+        String errorMsg = this.getArchTypeId(data, token, archTypeName);
+        if (StrUtil.isNotBlank(errorMsg)) {
+            return Result.error(errorMsg);
+        }
+        // 先全部保存为pdf
+        errorMsg = this.saveToPdf(data);
+        if (StrUtil.isNotBlank(errorMsg)) {
+            return Result.error(errorMsg);
+        }
+        String finalToken = token;
+        String finalArchiveUserId = userInfo.get("ID");
+        String username = userInfo.get("Name");
+        // 逐条归档
+        for (RepairTaksArchDTO repairTask : data) {
+            errorMsg = this.archRepairTask(repairTask, finalToken, finalArchiveUserId, username);
+            if (StrUtil.isNotBlank(errorMsg)) {
+                return Result.error(errorMsg);
+            }
+        }
+        return Result.ok("归档成功");
+    }
+
+    private String getArchTypeId(List<RepairTaksArchDTO> data, String token, String archTypeName) {
+        String errorMsg;
+        String yearName = "年";
+        for (RepairTaksArchDTO repairTask : data) {
+            try {
+                // 查找检修归档对应的档案类型id
+                String typeId = archiveUtils.getTypeByName(token, repairTask.getYear() + yearName, repairTask.getLineName(), archTypeName);
+                if (StrUtil.isBlank(typeId)) {
+                    errorMsg = "档案系统未找到对应的档案类型:" + repairTask.getCode();
+                    return errorMsg;
+                }
+                // 通过id获取档案类型信息，拿到refileFolderId
+                Map<String, String> typeInfo = archiveUtils.getTypeInfoById(token, typeId);
+                if (CollUtil.isEmpty(typeInfo)) {
+                    errorMsg = "没有获取到档案类型信息:" + typeId;
+                    return errorMsg;
+                }
+                String refileFolderId = typeInfo.get("refileFolderId");
+                String sectId = typeInfo.get("sectId");
+                repairTask.setRefileFolderId(refileFolderId);
+                repairTask.setSectId(sectId);
+            } catch (UnsupportedEncodingException e) {
+                log.error(e.getMessage(), e);
+                errorMsg = "获取档案类型信息时转码异常";
+                return errorMsg;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 保存为pdf
+     * @param data 归档数据
+     * @return 错误信息
+     */
+    private String saveToPdf(List<RepairTaksArchDTO> data) {
+        String errorMsg;
+        XWPFDocument document;
+        ByteArrayOutputStream os;
+        FileOutputStream fos;
+        for (RepairTaksArchDTO repairTask : data) {
             dealInfo(repairTask);
-            XWPFDocument document = archToWord(repairTask);
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Date date = new Date();
+            try {
+                document = archToWord(repairTask);
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+                errorMsg = "获取模板IO异常";
+                return errorMsg;
+            }
+            os = new ByteArrayOutputStream();
             Date startTime = repairTask.getStartTime();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
             String fileName = repairTask.getSiteName() + "检修记录表" + sdf.format(startTime);
             String path = exportPath + fileName + ".docx";
-            FileOutputStream fos = new FileOutputStream(path);
-            document.write(fos);
-            fos.write(os.toByteArray());
-            os.close();
-            fos.close();
-            PdfUtil.wordToPdf(path);
-            //传入档案系统
-            //创建文件夹
-            String foldername = fileName + "_" + date.getTime();
-            String refileFolderIdNew = archiveUtils.createFolder(token, refileFolderId, foldername);
-            //上传文件
-            String fileType = "pdf";
-            File file = new File(exportPath + fileName + "." + fileType);
-            Long size = file.length();
-            InputStream in = Files.newInputStream(file.toPath());
-            JSONObject res = archiveUtils.upload(token, refileFolderIdNew, fileName + "." + fileType, size, fileType, in);
-            String fileId = res.getString("fileId");
-            Map<String, String> fileInfo = new HashMap<>();
-            fileInfo.put("fileId", fileId);
-            fileInfo.put("operateType", "upload");
-            ArrayList<Object> fileList = new ArrayList<>();
-            fileList.add(fileInfo);
-            Map<String, Object> values = new HashMap<>();
-            values.put("archiver", archiveUserId);
-            values.put("username", realname);
-            values.put("duration", repairTask.getSecertDuration());
-            values.put("secert", repairTask.getSecert());
-            values.put("secertDuration", repairTask.getSecertDuration());
-            values.put("name", fileName);
-            values.put("fileList", fileList);
-            values.put("number", values.get("number"));
-            values.put("refileFolderId", refileFolderIdNew);
-            values.put("sectid", sectId);
-            Map result = archiveUtils.arch(values, token);
-            Map<String, String> obj = JSON.parseObject((String) result.get("obj"), new TypeReference<HashMap<String, String>>() {
-            });
-
-            //更新归档状态
-            if (result.get("result").toString() == "true" && "新增".equals(obj.get("rs"))) {
-                UpdateWrapper<RepairTask> uwrapper = new UpdateWrapper<>();
-                uwrapper.eq("id", repairTask.getId()).set("ecm_status", 1);
-                update(uwrapper);
+            try {
+                fos = new FileOutputStream(path);
+                document.write(os);
+                fos.write(os.toByteArray());
+                os.close();
+                fos.close();
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+                errorMsg = "保存word时IO异常:" + repairTask.getCode();
+                return errorMsg;
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            try {
+                PdfUtil.wordToPdf(path);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                errorMsg = "保存pdf时IO异常:" + repairTask.getCode();
+                return errorMsg;
+            }
+            repairTask.setFileName(fileName);
         }
+        return null;
     }
 
-    private void dealInfo(RepairTask repairTask) {
+    /**
+     * 逐条归档
+     * @param repairTask 任务
+     * @param token token
+     * @param archiveUserId 归档人id
+     * @param realname 归档人name
+     * @return 返回错误信息
+     */
+    private String archRepairTask(RepairTaksArchDTO repairTask, String token, String archiveUserId, String realname) {
+        //传入档案系统
+        String errorMsg;
+        Date date = new Date();
+        String fileName = repairTask.getFileName();
+        String sectId = repairTask.getSectId();
+        //创建文件夹
+        String refileFolderId = repairTask.getRefileFolderId();
+        String folderName = fileName + "_" + date.getTime();
+        String refileFolderIdNew;
+        try {
+            refileFolderIdNew = archiveUtils.createFolder(token, refileFolderId, folderName);
+        } catch (UnsupportedEncodingException e) {
+            log.error(e.getMessage(), e);
+            errorMsg = "创建文件夹时转码异常:" + repairTask.getCode();
+            return errorMsg;
+        }
+        if (StrUtil.isBlank(refileFolderIdNew)) {
+            errorMsg = "文件夹id为空:" + repairTask.getCode();
+            return errorMsg;
+        }
+        //上传文件
+        String fileType = "pdf";
+        File file = new File(exportPath + fileName + "." + fileType);
+        Long size = file.length();
+        InputStream in;
+        try {
+            in = Files.newInputStream(file.toPath());
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            errorMsg = "获取文件IO异常:" + exportPath + fileName + "." + fileType;
+            return errorMsg;
+        }
+        JSONObject res;
+        try {
+            res = archiveUtils.upload(token, refileFolderIdNew, fileName + "." + fileType, size, fileType, in);
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+            errorMsg = "上传文件时转码异常:" + repairTask.getCode();
+            return errorMsg;
+        }
+        String fileId = res.getString("fileId");
+        Map<String, String> fileInfo = new HashMap<>();
+        fileInfo.put("fileId", fileId);
+        fileInfo.put("operateType", "upload");
+        ArrayList<Object> fileList = new ArrayList<>();
+        fileList.add(fileInfo);
+        Map<String, Object> values = new HashMap<>();
+        values.put("archiver", archiveUserId);
+        values.put("username", realname);
+        values.put("duration", repairTask.getSecertDuration());
+        values.put("secert", repairTask.getSecert());
+        values.put("secertDuration", repairTask.getSecertDuration());
+        values.put("name", fileName);
+        values.put("fileList", fileList);
+        values.put("number", values.get("number"));
+        values.put("refileFolderId", refileFolderIdNew);
+        values.put("sectid", sectId);
+        Map<String, String> result = archiveUtils.arch(values, token);
+        Map<String, String> obj = JSON.parseObject(result.get("obj"), new TypeReference<HashMap<String, String>>() {
+        });
+
+        //更新归档状态
+        String rs = obj.get("rs");
+        if (Objects.equals(result.get("result"), "true") && "新增".equals(rs)) {
+            UpdateWrapper<RepairTask> uwrapper = new UpdateWrapper<>();
+            uwrapper.lambda().eq(RepairTask::getId, repairTask.getId()).set(RepairTask::getEcmStatus, 1);
+            update(uwrapper);
+        } else {
+            errorMsg = rs + repairTask.getCode();
+            return errorMsg;
+        }
+        return null;
+    }
+
+    private void dealInfo(RepairTaksArchDTO repairTask) {
         List<RepairTaskStationDTO> repairTaskStationDTOS = this.repairTaskStationList(repairTask.getId());
         //检查结果状态字典
         List<DictModel> resultDicts = sysBaseApi.queryDictItemsByCode(DictConstant.OVERHAUL_RESULT);
@@ -3462,17 +3609,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
      * @param repairTask 任务信息
      * @return XWPFDocument
      */
-    private XWPFDocument archToWord(RepairTask repairTask) {
+    private XWPFDocument archToWord(RepairTaksArchDTO repairTask) throws IOException {
         InputStream in;
-        XWPFDocument document = null;
-        try {
-            org.springframework.core.io.Resource resource = new ClassPathResource("/templates/repairTaskTemplate.docx");
-            in = resource.getInputStream();
-            document = new XWPFDocument(in);
-        } catch (IOException e) {
-            log.error(e.getMessage(), e);
-        }
-        assert document != null : "can not find repairTaskTemplate.docx";
+        org.springframework.core.io.Resource resource = new ClassPathResource("/templates/repairTaskTemplate.docx");
+        in = resource.getInputStream();
+        XWPFDocument document = new XWPFDocument(in);
         List<XWPFParagraph> paragraphs = document.getParagraphs();
         // 标题
         String head = repairTask.getLineName() + repairTask.getSiteName() + "检修记录表";
@@ -3673,226 +3814,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         return document;
     }
 
-    private SXSSFWorkbook createArchiveRepairTask(RepairTask repairTask, String path) {
-        InputStream in;
-        XSSFWorkbook xssfWb = null;
-        try {
-            org.springframework.core.io.Resource resource = new ClassPathResource(path);
-            in = resource.getInputStream();
-            xssfWb = new XSSFWorkbook(in);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        SXSSFWorkbook workbook = new SXSSFWorkbook(xssfWb);
-        Sheet sheet = workbook.getXSSFWorkbook().getSheetAt(0);
-        PrintSetup printSetup = sheet.getPrintSetup();
-        //横向展示
-        //printSetup.setLandscape(true);
-        //A4
-        printSetup.setPaperSize((short) 9);
-        //画图的顶级管理器，一个sheet只能获取一个（一定要注意这点）
-        Drawing drawingPatriarch = sheet.createDrawingPatriarch();
-        CreationHelper helper = sheet.getWorkbook().getCreationHelper();
-        Row row = sheet.getRow(0);
-        Cell cell = row.getCell(0);
-        String head = repairTask.getLineName()+repairTask.getSiteName() + "检修记录表";
-        cell.setCellValue(head);
-        Row rowOne = sheet.getRow(1);
-        Cell c11 = rowOne.getCell(1);
-        c11.setCellValue(repairTask.getOrganizational());
-        //检修日期
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String start ="";
-        String end ="";
-        if (repairTask.getStartTime()!=null){
-            start = sdf.format(repairTask.getStartTime());
-        }
-        if (repairTask.getEndTime()!=null){
-            end = sdf.format(repairTask.getEndTime());
-        }
-        Cell c13 = rowOne.getCell(3);
-        c13.setCellValue(StrUtil.trim(start+" "+end));
-        Row rowTwo = sheet.getRow(2);
-        Cell c21 = rowTwo.getCell(1);
-        c21.setCellValue(repairTask.getLineName()+repairTask.getSiteName());
-        Cell c23 = rowTwo.getCell(3);
-        c23.setCellValue(sdf.format(repairTask.getStartTime()));
-        Row rowThree = sheet.getRow(3);
-        Cell c31 = rowThree.getCell(1);
-        c31.setCellValue(repairTask.getOverhaulName());
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Cell c33 = rowThree.getCell(3);
-        if (ObjectUtil.isNotEmpty(repairTask.getBeginTime())) {
-            c33.setCellValue(format.format(repairTask.getBeginTime()));
-        }
-        Row rowFour = sheet.getRow(4);
-        //内容
-        StringBuilder content = new StringBuilder();
-        List<RepairTaskResult> list = repairTask.getRepairTaskResultList();
-        for (RepairTaskResult repairTaskResult : list) {
-            content.append(repairTaskResult.getName());
-            List<RepairTaskResult> children = repairTaskResult.getChildren();
-            if (CollUtil.isNotEmpty(children)) {
-                content.append("：");
-                for (int j = 0, index = 0; j < children.size(); j++) {
-                    ++index;
-                    content.append(index + "." + children.get(j).getName());
-                }
-            }
-            content.append("\r\n");
-        }
-        if (ObjectUtil.isNotEmpty(content)) {
-            float height = ArchExecelUtil.getExcelCellAutoHeight(content.toString(),16f);
-            Cell c41 = rowFour.getCell(1);
-            CellStyle c41Style = c41.getCellStyle();
-            c41Style.setWrapText(true);
-            c41.setCellValue(content.toString());
-            rowFour.setHeightInPoints(height/2);
-        }
-        //检修记录
-        Row fowFive = sheet.getRow(5);
-        Cell c51 = fowFive.getCell(1);
-        c51.setCellValue(repairTask.getRepairRecord());
-        //处理结果
-        Row rowSix = sheet.getRow(6);
-        Cell c61 = rowSix.getCell(1);
-        //c61.setCellValue(repairTask.getProcessContent());
-        c61.setCellValue(repairTask.getRepairResult());
-        //更换备件
-        Row rowSeven = sheet.getRow(7);
-        Cell c71 = rowSeven.getCell(1);
-        CellStyle c71Style = c71.getCellStyle();
-        c71Style.setWrapText(true);
-        List<SpareResult> spareResults = repairTask.getSpareChange();
-        if (spareResults != null){
-            int index2 = 0;
-            StringBuilder spare = new StringBuilder();
-            for (SpareResult spareResult : spareResults) {
-                index2++;
-                spare.append(index2).append(".").append("组件名称(旧)：").append(spareResult.getOldSparePartName()).append(" ")
-                        .append("数量：").append(spareResult.getOldSparePartNum()).append("  ")
-                        .append("组件名称(新)：").append(spareResult.getNewSparePartName())
-                        .append("数量：").append(spareResult.getNewSparePartNum());
-            }
-            float height2 = ArchExecelUtil.getExcelCellAutoHeight(spare.toString(),16f);
-            c71.setCellValue(spare.toString());
-            rowSeven.setHeightInPoints(height2);
-        }
-        //附件信息，只展示图片
-        Row rowEight = sheet.getRow(8);
-        List<String> enclosureUrlList = repairTask.getEnclosureUrl();
-        if (CollUtil.isNotEmpty(enclosureUrlList)) {
-            List<BufferedImage> bufferedImageList = new ArrayList<>();
-            //遍历附件，获取其中的图片
-            for (String url : enclosureUrlList) {
-                BufferedImage bufferedImage = null;
-                try (InputStream inputStreamByUrl = this.getInputStreamByUrl(url)) {
-                    //读取图片，非图片bufferedImage为null
-                    if (ObjectUtil.isNotNull(inputStreamByUrl)) {
-                        bufferedImage = ImageIO.read(inputStreamByUrl);
-                    }
-                    if (ObjectUtil.isNotNull(bufferedImage)) {
-                        bufferedImageList.add(bufferedImage);
-                    }
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                }
-            }
-            //插入图片到单元格
-            if (CollUtil.isNotEmpty(bufferedImageList)) {
-                //设置边距
-                int widthCol1 = Units.columnWidthToEMU(sheet.getColumnWidth(1));
-                int heightRow8 = Units.toEMU(rowEight.getHeightInPoints());
-                int wMar = 3 * Units.EMU_PER_POINT;
-                int hMar = 2 * Units.EMU_PER_POINT;
-                int size = bufferedImageList.size();
-                //每个图片宽度（大致平均值）
-                int ave = (widthCol1 - (size + 1) * wMar) / size;
-                for (int i = 0; i < size; i++) {
-                    try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-                        ImageIO.write(bufferedImageList.get(i), "jpg", byteArrayOutputStream);
-                        byte[] bytes = byteArrayOutputStream.toByteArray();
-                        int pictureIdx = sheet.getWorkbook().addPicture(bytes, Workbook.PICTURE_TYPE_JPEG);
-                        ClientAnchor anchor = helper.createClientAnchor();
-                        anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_AND_RESIZE);
-                        anchor.setCol1(1);
-                        anchor.setCol2(2);
-                        anchor.setRow1(8);
-                        anchor.setRow2(8);
-                        anchor.setDx1((i + 1) * wMar + i * ave);
-                        anchor.setDy1(hMar);
-                        anchor.setDx2((i + 1) * (wMar + ave));
-                        anchor.setDy2(heightRow8 - hMar);
-                        drawingPatriarch.createPicture(anchor, pictureIdx);
-                    } catch (IOException e) {
-                        log.error(e.getMessage(), e);
-                    }
-                }
-            }
-        }
-
-        //
-        Row rowNine = sheet.getRow(9);
-        Cell c91 = rowNine.getCell(1);
-        c91.setCellValue(repairTask.getWorkTypeName());
-        Cell c93 = rowNine.getCell(3);
-        c93.setCellValue(repairTask.getPlanOrderCode());
-
-        //计划令 TODO
-        Row rowTen = sheet.getRow(10);
-        Cell c101 = rowTen.getCell(1);
-        String planOrderCodeUrl = repairTask.getPlanOrderCodeUrl();
-        if (StrUtil.isNotBlank(planOrderCodeUrl)) {
-            try (InputStream inputStreamByUrl = this.getInputStreamByUrl(planOrderCodeUrl)) {
-                if (ObjectUtil.isNotEmpty(inputStreamByUrl)) {
-                    byte[] bytes = IoUtils.toByteArray(inputStreamByUrl);
-                    int pictureIdx = sheet.getWorkbook().addPicture(bytes, Workbook.PICTURE_TYPE_JPEG);
-                    ClientAnchor anchor = helper.createClientAnchor();
-                    anchor.setAnchorType(ClientAnchor.AnchorType.MOVE_AND_RESIZE);
-                    anchor.setCol1(1);
-                    anchor.setCol2(4);
-                    anchor.setRow1(10);
-                    anchor.setRow2(11);
-                    anchor.setDx1(Units.EMU_PER_POINT);
-                    anchor.setDy1(Units.EMU_PER_POINT);
-                    drawingPatriarch.createPicture(anchor, pictureIdx);
-                }
-            } catch (Exception e) {
-                log.error(e.getMessage());
-            }
-        }
-        //
-        Row rowELe = sheet.getRow(11);
-        Cell c111= rowELe.getCell(1);
-        c111.setCellValue(repairTask.getSumitUserName());
-        Cell c113 = rowELe.getCell(3);
-        c113.setCellValue(DateUtil.format(repairTask.getSubmitTime(), "yyyy-MM-dd HH:mm:ss"));
-
-        //
-        Row rowTwe = sheet.getRow(12);
-        Cell c121= rowTwe.getCell(1);
-        c121.setCellValue(repairTask.getConfirmUserName());
-        Cell c123 = rowTwe.getCell(3);
-        if (repairTask.getConfirmTime()!=null) {
-            c123.setCellValue(format.format(repairTask.getConfirmTime()));
-        }
-        //
-        Row rowThr = sheet.getRow(13);
-        Cell c131 = rowThr.getCell(1);
-        c131.setCellValue(repairTask.getReceiptUserName());
-        Cell c133 = rowThr.getCell(3);
-        if (repairTask.getReceiptTime()!=null) {
-            c133.setCellValue(format.format(repairTask.getReceiptTime()));
-        }
-
-
-        return workbook;
-    }
-
     /**
      * 根据图片url获取InputSream
-     * @param url
-     * @return
+     * @param url url
+     * @return InputStream流
      */
     private InputStream getInputStreamByUrl(String url) {
         InputStream inputStream = null;
@@ -3904,7 +3829,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 sysAttachment = iSysBaseAPI.getFilePath(attachId);
 
             }
-            if (ObjectUtil.isNotEmpty(sysAttachment)) {
+            if (ObjectUtil.isNotNull(sysAttachment)) {
                 if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
                     inputStream = MinioUtil.getMinioFile(bucketName, sysAttachment.getFilePath());
                 } else {
@@ -3925,61 +3850,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             log.error(e.getMessage(), e);
         }
         return inputStream;
-    }
-
-    @Override
-    public void exportPdf(HttpServletRequest request, RepairTask repairTask, HttpServletResponse response) throws IOException {
-        String path = "templates/repairTaskTemplate.xlsx";
-        TemplateExportParams params = new TemplateExportParams(path, true);
-        Map<String, Object> map = new HashMap<String, Object>();
-
-//        检修任务单号
-        map.put("code", repairTask.getCode());
-//        任务来源
-        map.put("sourceName", repairTask.getSourceName());
-//        适用专业
-        map.put("majorName", repairTask.getMajorName());
-//        适用系统
-        map.put("systemName", repairTask.getSystemName());
-//        适用站点
-        map.put("siteName", repairTask.getSiteName());
-//        组织机构
-        map.put("organizational", repairTask.getOrganizational());
-//        检修周期类型
-        map.put("typeName", repairTask.getTypeName());
-//        所属周
-        map.put("weekName", repairTask.getWeekName());
-//        作业类型
-        map.put("workType", repairTask.getWorkType());
-//        作业令
-        map.put("planOrderCodeUrl", repairTask.getPlanOrderCodeUrl());
-//        同行人
-        map.put("peerName", repairTask.getPeerName());
-//        抽检人
-        map.put("samplingName", repairTask.getSamplingName());
-//        计划开始时间
-        map.put("startTime", DateUtil.format(repairTask.getStartTime(), "YYYY-MM-dd HH:mm:ss"));
-//        计划结束时间vwv
-        map.put("endTime", DateUtil.format(repairTask.getEndTime(), "YYYY-MM-dd HH:mm:ss"));
-//        开始检修任务时间
-        map.put("overhaulTime", DateUtil.format(repairTask.getStartOverhaulTime(), "YYYY-MM-dd HH:mm:ss"));
-//        结束检修任务时间
-        map.put("endOverhaulTime", DateUtil.format(repairTask.getEndOverhaulTime(), "YYYY-MM-dd HH:mm:ss"));
-//        任务状态
-        map.put("statusName", repairTask.getStatusName());
-//        检修任务提交人
-        map.put("sumitUserName", repairTask.getSumitUserName());
-
-        String fileName = repairTask.getSiteName() + "检修记录表";
-        String exportRepairTaskPath = exportPath + "/" + fileName + ".xlsx";
-        Workbook workbook = ExcelExportUtil.exportExcel(params, map);
-        FileOutputStream fos = new FileOutputStream(exportRepairTaskPath);
-        BufferedOutputStream bos = new BufferedOutputStream(fos);
-        workbook.write(bos);
-        bos.close();
-        fos.close();
-        workbook.close();
-        PdfUtil.excel2pdf(exportRepairTaskPath);
     }
 
     @Override
