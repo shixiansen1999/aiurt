@@ -296,6 +296,9 @@ public class WorkLogArchDTO {
     @Dict(dicCode = "work_log_isAdditionalRecording")
     private  Integer  isAdditionalRecording;
 
+    @ApiModelProperty(value = "档案类型id")
+    private String archtypeId;
+
     @ApiModelProperty(value = "档案类型的文件夹id")
     private String refileFolderId;
 
