@@ -1143,7 +1143,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                         String writeValue = "";
                         if (PatrolConstant.DATE_TYPE_SPECIALCHAR.equals(t.getInputType())) {
                             if (t.getSpecialCharacters().contains("/")){
-                                writeValue =c.getSpecialCharacters().replaceAll("[/#&$]", "");
+                                writeValue =t.getSpecialCharacters().replaceAll("[/#&$]", "");
                             }
                         }else if (PatrolConstant.DEVICE_OUT.equals(t.getInputType())) {
                             writeValue = t.getWriteValue();
