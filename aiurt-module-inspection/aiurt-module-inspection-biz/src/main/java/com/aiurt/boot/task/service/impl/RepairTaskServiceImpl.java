@@ -3347,6 +3347,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     errorMsg = "档案系统未找到对应的档案类型:" + repairTask.getCode();
                     return errorMsg;
                 }
+                repairTask.setArchtypeId(typeId);
                 // 通过id获取档案类型信息，拿到refileFolderId
                 Map<String, String> typeInfo = archiveUtils.getTypeInfoById(token, typeId);
                 if (CollUtil.isEmpty(typeInfo)) {
@@ -3388,7 +3389,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             os = new ByteArrayOutputStream();
             Date startTime = repairTask.getStartTime();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-            String fileName = repairTask.getSiteName() + "检修记录表" + sdf.format(startTime);
+            String fileName = repairTask.getLineName() + repairTask.getSiteName() + "检修记录表" + sdf.format(startTime);
             String path = exportPath + fileName + ".docx";
             try {
                 fos = new FileOutputStream(path);
@@ -3426,7 +3427,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         String errorMsg;
         Date date = new Date();
         String fileName = repairTask.getFileName();
-        String sectId = repairTask.getSectId();
         //创建文件夹
         String refileFolderId = repairTask.getRefileFolderId();
         String folderName = fileName + "_" + date.getTime();
@@ -3477,8 +3477,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         values.put("name", fileName);
         values.put("fileList", fileList);
         values.put("number", values.get("number"));
+        values.put("archtypeid", repairTask.getArchtypeId());
         values.put("refileFolderId", refileFolderIdNew);
-        values.put("sectid", sectId);
+        values.put("sectid", repairTask.getSectId());
         Map<String, String> result = archiveUtils.arch(values, token);
         Map<String, String> obj = JSON.parseObject(result.get("obj"), new TypeReference<HashMap<String, String>>() {
         });
