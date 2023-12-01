@@ -360,7 +360,9 @@ public class ArchiveUtils {
      */
     public Map<String, String> getTypeInfoById(String token, String typeId) {
         String httpUrl = host + "/edrmscore/api/archType/getById?id=" + typeId + "&token=" + token;
+        log.info("获取档案类型信息接口入参:" + "typeId:" + typeId + ",token:" + token);
         String res = doGet(httpUrl);
+        log.info("获取档案类型信息接口返回:" + res);
         HashMap<String, String> info = null;
         if (StringUtils.isNotEmpty(res) && !"".equals(res)) {
             Map<String, String> map = JSON.parseObject(res, new TypeReference<HashMap<String, String>>() {
@@ -420,7 +422,9 @@ public class ArchiveUtils {
         folderInfo.put("pageSize", 50);
         folderInfo.put("parentId", parentId);
         JSONObject json = (JSONObject) JSONObject.toJSON(folderInfo);
+        log.info("查找档案类型接口入参:" + folderInfo);
         String res = doPost(httpUrl, json);
+        log.info("查找档案类型接口返回:" + res);
         if (StringUtils.isNotEmpty(res) && !"".equals(res)) {
             JSONObject jsonObject = JSONObject.parseObject(res);
             JSONObject obj = jsonObject.getJSONObject("obj");
@@ -451,7 +455,9 @@ public class ArchiveUtils {
         folderInfo.put("Remark", "");
         folderInfo.put("ParentFolderId", refileFolderId);
         JSONObject json = (JSONObject) JSONObject.toJSON(folderInfo);
+        log.info("归档创建文件夹接口入参:" + folderInfo);
         String res = doPost(httpUrl, json);
+        log.info("归档创建文件夹接口返回:" + res);
         String folderId = null;
         if (StringUtils.isNotEmpty(res) && !"".equals(res)) {
             Map<String, String> jsonMap = JSON.parseObject(res, new TypeReference<HashMap<String, String>>() {
@@ -468,34 +474,59 @@ public class ArchiveUtils {
         Date date = new Date();
         UUID uuid = UUID.randomUUID();
         SimpleDateFormat sdf = null;
-        param.put("Id", uuid.toString());//唯一标识
+        //唯一标识
+        param.put("Id", uuid.toString());
         sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        param.put("archivedate", sdf.format(date));//归档时间
-        param.put("archiver", values.get("archiver")); //归档人id
-        param.put("archivername", values.get("username")); //归档姓名
-        param.put("archtypeid", archivesTypeId); //归档姓名
-        param.put("carrier", "电子");//载体形式
-        param.put("duration", values.get("duration"));//保管期限
-        param.put("objtype", "其他");//实体类型
-        param.put("entrystate", "0");//档案类型 0整编库（未归档）1档案库（已归档）
-        param.put("fileList", values.get("fileList"));//文件集合
-        param.put("ifDossiered", "0");//是否卷内文件
-        param.put("ifInbound", "0");//是否上架
-        param.put("folderId", "");//新建档案库文件夹id
-        param.put("lastAutoAddNo", "其他");//编号
-        param.put("littleStatus", "0");//流程状态
-        param.put("name", values.get("name"));//档案名称
-        param.put("secert", values.get("secert"));//密级
-        param.put("number", values.get("number"));//档案编号
-        param.put("refileFolderId", values.get("refileFolderId"));//新建整编库文件夹id
-        param.put("secertduration", values.get("secertduration"));//保密期限
-        param.put("sectid", values.get("sectid"));//所属全宗id
-        param.put("times", date.getTime());//13位时间戳
+        //归档时间
+        param.put("archivedate", sdf.format(date));
+        //归档人id
+        param.put("archiver", values.get("archiver"));
+        //归档姓名
+        param.put("archivername", values.get("username"));
+        // 归档类型id
+        param.put("archtypeid", values.get("archtypeid"));
+        //载体形式
+        param.put("carrier", "电子");
+        //保管期限
+        param.put("duration", values.get("duration"));
+        //实体类型
+        param.put("objtype", "其他");
+        //档案类型 0整编库（未归档）1档案库（已归档）
+        param.put("entrystate", "0");
+        //文件集合
+        param.put("fileList", values.get("fileList"));
+        //是否卷内文件
+        param.put("ifDossiered", "0");
+        //是否上架
+        param.put("ifInbound", "0");
+        //新建档案库文件夹id
+        param.put("folderId", "");
+        //编号
+        param.put("lastAutoAddNo", "其他");
+        //流程状态
+        param.put("littleStatus", "0");
+        //档案名称
+        param.put("name", values.get("name"));
+        //密级
+        param.put("secert", values.get("secert"));
+        //档案编号
+        param.put("number", values.get("number"));
+        //新建整编库文件夹id
+        param.put("refileFolderId", values.get("refileFolderId"));
+        //保密期限
+        param.put("secertduration", values.get("secertduration"));
+        //所属全宗id
+        param.put("sectid", values.get("sectid"));
+        //13位时间戳
+        param.put("times", date.getTime());
         sdf = new SimpleDateFormat("yyyy-MM-dd");
-        param.put("writtendate", sdf.format(date.getTime()));//成文日期
+        //成文日期
+        param.put("writtendate", sdf.format(date.getTime()));
         String json = JSONObject.toJSONString(param);
         String url = host + "/edrmscore/api/arch?token=" + token;
+        log.info("条目信息归档接口入参:" + param);
         String result = doPut(url, json);
+        log.info("条目信息归档接口返回:" + result);
         Map<String, String> jsonMap = JSON.parseObject(result, new TypeReference<HashMap<String, String>>() {
         });
         return jsonMap;
@@ -504,7 +535,9 @@ public class ArchiveUtils {
     public Map<String, String> arch(ArchiveInfo archiveInfo, String token) {
         String json = JSONObject.toJSONString(archiveInfo);
         String url = host + "/edrmscore/api/arch?token=" + token;
+        log.info("条目信息归档接口入参:" + archiveInfo.toString());
         String result = doPut(url, json);
+        log.info("条目信息归档接口返回:" + result);
         Map<String, String> jsonMap = JSON.parseObject(result, new TypeReference<HashMap<String, String>>() {
         });
         return jsonMap;
@@ -523,8 +556,9 @@ public class ArchiveUtils {
         checkParam.put("attachType", "0");
         checkParam.put("strategy", "majorUpgrade");
         checkParam.put("fileModel", "UPLOAD");
+        log.info("归档发送上传请求接口入参:" + checkParam);
         String res = doPost2(checkUrl, checkParam);
-
+        log.info("归档发送上传请求接口返回:" + res);
         //第二步上传文件
         JSONObject resjson = JSONObject.parseObject(res);
         if (resjson.getInteger("result") == 0) {

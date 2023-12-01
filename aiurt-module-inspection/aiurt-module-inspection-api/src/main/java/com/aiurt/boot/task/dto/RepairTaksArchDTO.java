@@ -371,6 +371,9 @@ public class RepairTaksArchDTO extends BaseEntity {
     @ApiModelProperty(value = "是否是手工下发任务，0否1是")
     private Integer isManual;
 
+    @ApiModelProperty(value = "档案类型id")
+    private String archtypeId;
+
     @ApiModelProperty(value = "档案类型的文件夹id")
     private String refileFolderId;
 

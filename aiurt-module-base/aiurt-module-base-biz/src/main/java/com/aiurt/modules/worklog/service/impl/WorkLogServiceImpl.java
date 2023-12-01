@@ -1289,6 +1289,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                     errorMsg = "档案系统未找到对应的档案类型:" + workLog.getCode();
                     return errorMsg;
                 }
+                workLog.setArchtypeId(typeId);
                 // 通过id获取档案类型信息，拿到refileFolderId
                 Map<String, String> typeInfo = archiveUtils.getTypeInfoById(token, typeId);
                 if (CollUtil.isEmpty(typeInfo)) {
@@ -1359,7 +1360,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         Date date = new Date();
         String fileName = workLog.getFileName();
         String refileFolderId = workLog.getRefileFolderId();
-        String sectId = workLog.getSectId();
         //创建文件夹
         String folderName = fileName + "_" + date.getTime();
         String refileFolderIdNew;
@@ -1406,7 +1406,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         archiveInfo.setArchivedate(sdf.format(archDate));
         archiveInfo.setArchiver(archiveUserId);
         archiveInfo.setArchivername(realname);
-        archiveInfo.setArchtypeid();
+        archiveInfo.setArchtypeid(workLog.getArchtypeId());
         archiveInfo.setCarrier("电子");
         archiveInfo.setDuration(workLog.getSecertDuration());
         archiveInfo.setObjtype("其他");
@@ -1421,7 +1421,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //number怎么取值
         archiveInfo.setRefileFolderId(refileFolderIdNew);
         archiveInfo.setSecertDuration(workLog.getSecertDuration());
-        archiveInfo.setSectid(sectId);
+        archiveInfo.setSectid(workLog.getSectId());
         archiveInfo.setTimes(archDate.getTime());
         sdf = new SimpleDateFormat("yyyy-MM-dd");
         archiveInfo.setWrittendate(sdf.format(archDate));
