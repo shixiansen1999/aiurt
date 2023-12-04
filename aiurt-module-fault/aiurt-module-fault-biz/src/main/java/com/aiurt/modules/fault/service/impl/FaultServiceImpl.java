@@ -3671,13 +3671,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             boolean isAdmin = (StrUtil.isNotBlank(user.getRoleCodes()) && (user.getRoleCodes().contains(RoleConstant.ADMIN)));
             boolean isLineStation = (CollUtil.isNotEmpty(lineSet) && lineSet.contains(fault.getLineCode())) && CollUtil.isNotEmpty(stationSet) && stationSet.contains(fault.getStationCode());
 
-            if (isAdmin) {
-                fault.setReviewFlag(true);
-            } else if ( isZxBanZhang && FaultConstant.CONTROL_CENTER_REVIEW_STATUS_0.equals(fault.getControlCenterReviewStatus())) {
-                fault.setReviewFlag(true);
-            }else if ((isForeman && !isZxBanZhang && isLineStation)  && (fault.getControlCenterReviewStatus() == null || FaultConstant.CONTROL_CENTER_REVIEW_STATUS_2.equals(fault.getControlCenterReviewStatus()))) {
-                //工班长不能有控制中心班长身份且当前故障的线路站点在工班长的站点权限内
-                fault.setReviewFlag(true);
+            //第一次审核只能是工班长且当前故障的线路站点在该工班长的站点权限内才能审核
+            if (fault.getControlCenterReviewStatus() == null || FaultConstant.CONTROL_CENTER_REVIEW_STATUS_2.equals(fault.getControlCenterReviewStatus())) {
+                if (isForeman  && isLineStation || isAdmin) {
+                    fault.setReviewFlag(true);
+                }
+            } else {
+                //第二次审核只能是控制中心工班长审核
+                if (isZxBanZhang || isAdmin) {
+                    fault.setReviewFlag(true);
+                }
             }
 
         }
