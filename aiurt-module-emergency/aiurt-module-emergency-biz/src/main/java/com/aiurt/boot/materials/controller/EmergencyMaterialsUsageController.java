@@ -157,7 +157,7 @@ public class EmergencyMaterialsUsageController extends BaseController<EmergencyM
     */
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, EmergencyMaterialsUsage emergencyMaterialsUsage) {
-        return super.exportXls(request, emergencyMaterialsUsage, EmergencyMaterialsUsage.class, "emergency_materials_usage");
+        return super.exportXls(request, emergencyMaterialsUsage, EmergencyMaterialsUsage.class, "应急物资使用记录");
     }
 
     /**
