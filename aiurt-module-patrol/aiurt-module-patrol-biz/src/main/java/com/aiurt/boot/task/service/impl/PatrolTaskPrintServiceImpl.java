@@ -860,7 +860,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                         getPrint.add(printDTO);
                     }else {
                         if (patrolCheckResultDTOList.get(0).getCheckResult()==0){
-                            printDTO.setResult("☑无");
+                            printDTO.setResult("☐是 ☐否");
                         }else if(ObjectUtil.isEmpty(patrolCheckResultDTOList.get(1).getCheckResult())){
                             printDTO.setResult("☐是 ☐否");
                         }else {

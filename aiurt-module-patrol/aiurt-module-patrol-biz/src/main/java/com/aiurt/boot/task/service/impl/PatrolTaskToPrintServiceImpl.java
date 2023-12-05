@@ -732,15 +732,6 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
             List<PatrolCheckResultDTO> checkResultAll =  patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
             List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
             List<String> safty = sysBaseApi.getDictItems("safty_produce_check").stream().map(w-> w.getText()).collect(Collectors.toList());
-            boolean result = checkDTOs.stream().filter(c-> c.getContent().equals("电暖气")).anyMatch(f-> f.getCheckResult()!=0);
-            if (result){
-                map.put("isTrue","☑有");
-                map.put("isFalse","☐无");
-            }else {
-                map.put("isFalse","☑无");
-                map.put("isTrue","☐有");
-            }
-            safty.add(6,"");
             int size = safty.size();
             for (int i = 0; i < size; i++) {
                 String s = safty.get(i);
@@ -753,37 +744,39 @@ public class PatrolTaskToPrintServiceImpl implements IPatrolTaskPrintService {
                             printDTO.setResult("☐是 ☐否");
                             getPrint.add(printDTO);
                         }else {
-                                if(ObjectUtil.isEmpty(patrolCheckResultDTO.getCheckResult())){
-                                    printDTO.setResult("☐是 ☐否");
-                                }else {
-                                    printDTO.setResult(patrolCheckResultDTO.getCheckResult()==0?"☐是 ☑否":"☑是 ☐否");
-                                }
-                                printDTO.setRemark(patrolCheckResultDTO.getRemark());
-                                getPrint.add(printDTO);
+                            if(ObjectUtil.isEmpty(patrolCheckResultDTO.getCheckResult())){
+                                printDTO.setResult("☐是 ☐否");
+                            }else {
+                                printDTO.setResult(patrolCheckResultDTO.getCheckResult()==0?"☐是 ☑否":"☑是 ☐否");
+                            }
+                            printDTO.setRemark(patrolCheckResultDTO.getRemark());
+                            getPrint.add(printDTO);
                         }
                     }else if (ObjectUtil.isEmpty(patrolCheckResultDTOList.get(1))){
-                                printDTO.setResult("☐是 ☐否");
-                                getPrint.add(printDTO);
-                            }else {
-                                if(ObjectUtil.isEmpty(patrolCheckResultDTOList.get(1).getCheckResult())){
-                                    printDTO.setResult("☐是 ☐否");
-                                }else {
-                                    printDTO.setResult(patrolCheckResultDTOList.get(1).getCheckResult()==0?"☐是 ☑否":"☑是 ☐否");
-                                }
-                                String writeValue = "";
-                                if (PatrolConstant.DATE_TYPE_SPECIALCHAR.equals(patrolCheckResultDTOList.get(0).getInputType())) {
-                                    writeValue =patrolCheckResultDTOList.get(0).getSpecialCharacters().replaceAll("[/#&$]", "");
-                                }else if (PatrolConstant.DEVICE_OUT.equals(patrolCheckResultDTOList.get(0).getInputType())) {
-                                    writeValue = patrolCheckResultDTOList.get(0).getWriteValue();
-                                }else if (PatrolConstant.DEVICE_INP_TYPE.equals(patrolCheckResultDTOList.get(0).getInputType())) {
-                                    writeValue = patrolCheckResultMapper.getSysDict(patrolCheckResultDTOList.get(0).getDictCode(),patrolCheckResultDTOList.get(0).getOptionValue());
-                                }
-                                if (StrUtil.isNotEmpty(writeValue) &&StrUtil.isNotEmpty(patrolCheckResultDTOList.get(1).getRemark())){
-                                    writeValue =writeValue+",";
-                                }
-                                printDTO.setRemark(writeValue+patrolCheckResultDTOList.get(1).getRemark());
-                                getPrint.add(printDTO);
-                            }
+                        printDTO.setResult("☐是 ☐否");
+                        getPrint.add(printDTO);
+                    }else {
+                        if (patrolCheckResultDTOList.get(0).getCheckResult()==0){
+                            printDTO.setResult("☐是 ☐否");
+                        }else if(ObjectUtil.isEmpty(patrolCheckResultDTOList.get(1).getCheckResult())){
+                            printDTO.setResult("☐是 ☐否");
+                        }else {
+                            printDTO.setResult(patrolCheckResultDTOList.get(1).getCheckResult()==0?"☐是 ☑否":"☑是 ☐否");
+                        }
+                        String writeValue = "";
+                        if (PatrolConstant.DATE_TYPE_SPECIALCHAR.equals(patrolCheckResultDTOList.get(0).getInputType())) {
+                            writeValue =patrolCheckResultDTOList.get(0).getSpecialCharacters().replaceAll("[/#&$]", "");
+                        }else if (PatrolConstant.DEVICE_OUT.equals(patrolCheckResultDTOList.get(0).getInputType())) {
+                            writeValue = patrolCheckResultDTOList.get(0).getWriteValue();
+                        }else if (PatrolConstant.DEVICE_INP_TYPE.equals(patrolCheckResultDTOList.get(0).getInputType())) {
+                            writeValue = patrolCheckResultMapper.getSysDict(patrolCheckResultDTOList.get(0).getDictCode(),patrolCheckResultDTOList.get(0).getOptionValue());
+                        }
+                        if (StrUtil.isNotEmpty(writeValue) &&StrUtil.isNotEmpty(patrolCheckResultDTOList.get(1).getRemark())){
+                            writeValue =writeValue+",";
+                        }
+                        printDTO.setRemark(writeValue+patrolCheckResultDTOList.get(1).getRemark());
+                        getPrint.add(printDTO);
+                    }
                 }else {
                     PatrolCheckResultDTO patrolCheckResultDTO = checkDTOs.stream().filter(p -> p.getContent().replaceAll(" |-", "").equals(s)).findFirst().orElse(null);
                     if (ObjectUtil.isEmpty(patrolCheckResultDTO)){
