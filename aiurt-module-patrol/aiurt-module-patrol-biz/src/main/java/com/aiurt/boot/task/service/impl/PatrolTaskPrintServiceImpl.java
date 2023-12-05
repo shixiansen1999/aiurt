@@ -835,15 +835,6 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             List<PatrolCheckResultDTO> checkResultAll =  patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
             List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
             List<String> safty = sysBaseApi.getDictItems("safty_produce_check").stream().map(w-> w.getText()).collect(Collectors.toList());
-            boolean result = checkDTOs.stream().filter(c-> c.getContent().equals("电暖气")).anyMatch(f-> f.getCheckResult()!=0);
-            if (result){
-                map.put("isTrue","☑有");
-                map.put("isFalse","☐无");
-            }else {
-                map.put("isFalse","☑无");
-                map.put("isTrue","☐有");
-            }
-            safty.add(6,"");
             int size = safty.size();
             for (int i = 0; i < size; i++) {
                 String s = safty.get(i);
@@ -868,7 +859,9 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
                         printDTO.setResult("☐是 ☐否");
                         getPrint.add(printDTO);
                     }else {
-                        if(ObjectUtil.isEmpty(patrolCheckResultDTOList.get(1).getCheckResult())){
+                        if (patrolCheckResultDTOList.get(0).getCheckResult()==0){
+                            printDTO.setResult("☑无");
+                        }else if(ObjectUtil.isEmpty(patrolCheckResultDTOList.get(1).getCheckResult())){
                             printDTO.setResult("☐是 ☐否");
                         }else {
                             printDTO.setResult(patrolCheckResultDTOList.get(1).getCheckResult()==0?"☐是 ☑否":"☑是 ☐否");
