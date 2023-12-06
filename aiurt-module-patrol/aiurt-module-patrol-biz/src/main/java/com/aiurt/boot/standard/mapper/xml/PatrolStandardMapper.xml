@@ -41,7 +41,7 @@
                 #{item}
             </foreach>
         </if>-->
-        order by patrol_standard.create_time desc
+        order by patrol_standard.create_time,patrol_standard.id desc
     </select>
     <select id="pageLists" resultType="com.aiurt.boot.standard.dto.PatrolStandardDto">
         SELECT * from (SELECT
