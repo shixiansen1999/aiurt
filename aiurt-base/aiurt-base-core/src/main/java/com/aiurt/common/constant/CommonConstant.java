@@ -677,4 +677,14 @@ public interface CommonConstant {
   * 字体：宋体
   */
  String FONT_ST = "宋体";
+
+ /**
+  * 实施配置布尔值-是
+  */
+ public static final String SYSTEM_CONFIG_BOOLEAN_YES = "0";
+
+ /**
+  * 实施配置布尔值-否
+  */
+ public static final String SYSTEM_CONFIG_BOOLEAN_NO = "1";
 }

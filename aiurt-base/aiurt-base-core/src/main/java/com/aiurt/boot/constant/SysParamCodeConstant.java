@@ -583,4 +583,37 @@ public interface SysParamCodeConstant {
      * 工作日志归档的档案类型名称
      */
     String WORK_LOG_ARCH_TYPE = "work_log_arch_type";
+
+    /**
+     * 巡视是否自动进行温度判断
+     */
+    String PATROL_AUTO_TEMP_HUMIDITY_JUDGE = "patrol_auto_temp_humidity_judge";
+
+    /**
+     * 最高温度
+     */
+    String MAXIMUM_TEMPERATURE = " maximum_temperature";
+
+    /**
+     * 最低温度
+     */
+    String MINIMUM_TEMPERATURE = "minimum_temperature";
+    /**
+     * 最高湿度
+     */
+    String MAXIMUM_HUMIDITY = " maximum_humidity";
+
+    /**
+     * 最低湿度
+     */
+    String MINIMUM_HUMIDITY = "minimum_humidity";
+
+    /**
+     * 巡检温度字典值
+     */
+    String PATROL_TEMP_STATUS_TEST = "patrol_temp_status_test";
+    /**
+     * 巡检湿度字典值
+     */
+    String PATROL_HUMIDITY_STATUS_TEST = "patrol_humidity_status_test";
 }

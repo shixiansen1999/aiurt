@@ -2,10 +2,12 @@ package com.aiurt.boot.task.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.constant.SysParamCodeConstant;
 import com.aiurt.boot.task.dto.PatrolCheckDTO;
 import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.aiurt.boot.task.service.IPatrolCheckResultService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -15,7 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.api.ISysParamAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysParamModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +43,8 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 	private IPatrolCheckResultService patrolCheckResultService;
 	@Autowired
 	private ISysBaseAPI sysBaseApi;
+	@Autowired
+	private ISysParamAPI iSysParamAPI;
 
 	/**
 	 * 分页列表查询
@@ -138,6 +144,43 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 			 	else
 				{
 					updateWrapper.set(PatrolCheckResult::getWriteValue,patrolCheckDTO.getWriteValue()).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,patrolCheckDTO.getId());
+					//通信要根据温湿度自动判断检查结果是否异常
+					String writeValue = patrolCheckDTO.getWriteValue();
+					String pattern = "/(\\d+\\.\\d+)/";  // 正则表达式，匹配两个斜杠之间的数字
+
+					SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_AUTO_TEMP_HUMIDITY_JUDGE);
+					if (CommonConstant.SYSTEM_CONFIG_BOOLEAN_YES.equals(paramModel.getValue())) {
+						Pattern r = Pattern.compile(pattern);
+						Matcher m = r.matcher(writeValue);
+
+						if (m.find()) {
+							String result = m.group(1);
+							Double max = 0.0;
+							Double min = 0.0;
+							//温度判断
+							if (SysParamCodeConstant.PATROL_TEMP_STATUS_TEST.equals(patrolCheckResult.getResultDictCode())) {
+								SysParamModel maximumTemperature = iSysParamAPI.selectByCode(SysParamCodeConstant.MAXIMUM_TEMPERATURE);
+								max = Double.parseDouble(maximumTemperature.getValue());
+								SysParamModel minimumTemperature = iSysParamAPI.selectByCode(SysParamCodeConstant.MINIMUM_TEMPERATURE);
+								min = Double.parseDouble(minimumTemperature.getValue());
+
+							}
+							//湿度判断
+							if (SysParamCodeConstant.PATROL_HUMIDITY_STATUS_TEST.equals(patrolCheckResult.getResultDictCode())) {
+								SysParamModel maximumHumidity = iSysParamAPI.selectByCode(SysParamCodeConstant.MAXIMUM_HUMIDITY);
+								max = Double.parseDouble(maximumHumidity.getValue());
+								SysParamModel minimumHumidity = iSysParamAPI.selectByCode(SysParamCodeConstant.MINIMUM_HUMIDITY);
+								min = Double.parseDouble(minimumHumidity.getValue());
+							}
+
+							if (Double.parseDouble(result) > max || Double.parseDouble(result) < min) {
+								updateWrapper.set(PatrolCheckResult::getCheckResult, PatrolConstant.RESULT_EXCEPTION).set(PatrolCheckResult::getUserId, sysUser.getId()).eq(PatrolCheckResult::getId, patrolCheckDTO.getId());
+							} else {
+								updateWrapper.set(PatrolCheckResult::getCheckResult, PatrolConstant.RESULT_NORMAL).set(PatrolCheckResult::getUserId, sysUser.getId()).eq(PatrolCheckResult::getId, patrolCheckDTO.getId());
+							}
+						}
+
+					}
 
 				}
 			 }
