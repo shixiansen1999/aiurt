@@ -592,7 +592,7 @@ public interface SysParamCodeConstant {
     /**
      * 最高温度
      */
-    String MAXIMUM_TEMPERATURE = " maximum_temperature";
+    String MAXIMUM_TEMPERATURE = "maximum_temperature";
 
     /**
      * 最低温度
@@ -601,7 +601,7 @@ public interface SysParamCodeConstant {
     /**
      * 最高湿度
      */
-    String MAXIMUM_HUMIDITY = " maximum_humidity";
+    String MAXIMUM_HUMIDITY = "maximum_humidity";
 
     /**
      * 最低湿度

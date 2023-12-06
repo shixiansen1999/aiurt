@@ -681,10 +681,10 @@ public interface CommonConstant {
  /**
   * 实施配置布尔值-是
   */
- public static final String SYSTEM_CONFIG_BOOLEAN_YES = "0";
+ public static final String SYSTEM_CONFIG_BOOLEAN_YES = "1";
 
  /**
   * 实施配置布尔值-否
   */
- public static final String SYSTEM_CONFIG_BOOLEAN_NO = "1";
+ public static final String SYSTEM_CONFIG_BOOLEAN_NO = "0";
 }
