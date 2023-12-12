@@ -392,4 +392,9 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
 
         return this.update(sparePartOutOrder);
     }
+
+    @Override
+    public String getFaultByOutId(String id) {
+        return sparePartOutOrderMapper.getFaultByOutId(id);
+    }
 }

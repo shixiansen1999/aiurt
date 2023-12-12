@@ -920,6 +920,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             return StrUtil.equals(username, task.getAssignee());
         }
         TaskQuery query = taskService.createTaskQuery();
+        query.taskId(task.getId()).processInstanceId(task.getProcessInstanceId());
         this.buildCandidateCondition(query, loginUser);
         return query.active().count() != 0;
     }

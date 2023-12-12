@@ -3100,10 +3100,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         //如果工单中不存在线路站点，则从设备中拿
                         if (StrUtil.isEmpty(stationName) && StrUtil.isEmpty(lineName)) {
                             String deviceCode = deviceRel.getDeviceCode();
-                            if (StrUtil.isEmpty(deviceCode)) {
+                            if (StrUtil.isNotBlank(deviceCode)) {
                                 JSONObject deviceByCode = iSysBaseAPI.getDeviceByCode(deviceCode);
-                                stationName = iSysBaseAPI.getPosition(deviceByCode.getString("lineCode"));
-                                lineName = iSysBaseAPI.getPosition(deviceByCode.getString("stationCode"));
+                                lineName = iSysBaseAPI.getPosition(deviceByCode.getString("lineCode"));
+                                stationName = iSysBaseAPI.getPosition(deviceByCode.getString("stationCode"));
                             }
                         }
                         LoginUser userById = iSysBaseAPI.getUserById(deviceRel.getStaffId());

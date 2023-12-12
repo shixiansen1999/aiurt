@@ -170,4 +170,12 @@
     <update id="updateSparePartOutOrderUnused">
         update spare_part_out_order set unused = (unused - #{num}) where id = #{id}
     </update>
+
+    <select id="getFaultByOutId" resultType="java.lang.String">
+        SELECT frr.fault_code
+            FROM spare_part_out_order spoo
+            left join material_requisition mr on mr.id = spoo.material_requisition_id and mr.del_flag = 0
+            left join fault_repair_record frr on frr.id = mr.fault_repair_record_id and frr.del_flag = 0
+            where spoo.id = #{id}
+    </select>
 </mapper>
