@@ -155,6 +155,7 @@ public class BigscreenPlanService {
         if (CollUtil.isEmpty(orgCodes)) {
             return page;
         }
+        List<String> stationCodeList = StrUtil.isNotBlank(stationCode) ? StrUtil.splitTrim(stationCode, ",") : new ArrayList<>();
 
         List<String> stationCodeList = StrUtil.isNotBlank(stationCode) ? StrUtil.splitTrim(stationCode, ",") : new ArrayList<>();
 

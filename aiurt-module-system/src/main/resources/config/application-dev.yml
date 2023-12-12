@@ -75,9 +75,9 @@ spring:
     job-executor-activate: false
   flowable:
     #关闭定时任务JOB
-    async-executor-activate: true
+    async-executor-activate: false
     #将databaseSchemaUpdate设置为true。当flowable发现库与数据库表结构不一致时，会自动将数据库表结构升级至新版本。
-    database-schema-update: false
+    database-schema-update: true
 
   aop:
     proxy-target-class: true
@@ -184,7 +184,7 @@ mybatis-plus:
       table-underline: true
   configuration:
     # 这个配置会将执行的sql打印出来，在开发或测试的时候可以用
-    # log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     # 返回类型为Map,显示null对应的字段
     call-setters-on-nulls: true
   # flowable
@@ -279,7 +279,7 @@ jeecg:
       data-type: database
   #分布式锁配置
   redisson:
-    address: 127.0.0.1:6379
+    address: 192.168.1.29:6379
     password: 1qaz@2wsx
     type: STANDALONE
     enabled: true
@@ -291,16 +291,9 @@ jeecg:
 #cas单点登录
 cas:
   prefixUrl: http://cas.example.org:8443/cas
-#Mybatis输出sql日志
+# logback配置
 logging:
-  level:
-    com:
-     aiurt:
-      modules:
-       sysfile:
-        mapper: debug
-  config:
-    classpath: config/logback-config.xml
+  config: ./config/logback-spring.xml
 #swagger
 knife4j:
   #开启增强配置

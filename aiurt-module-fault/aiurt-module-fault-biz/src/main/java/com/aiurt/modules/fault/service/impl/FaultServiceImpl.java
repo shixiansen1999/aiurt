@@ -1708,7 +1708,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<SparePartStockDTO> list = repairRecordDTO.getConsumableList();
         deviceChangeList.addAll(list);
         try {
-            sparePartBaseApi.addSpareChange(deviceChangeList, faultCode,repairRecordDTO.getId());
+            if (CollUtil.isNotEmpty(deviceChangeList)) {
+                sparePartBaseApi.addSpareChange(deviceChangeList, faultCode,repairRecordDTO.getId());
+            }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw  new AiurtBootException(e.getMessage());

@@ -6,8 +6,8 @@
 
         INSERT INTO patrol_check_result
         ( id, task_standard_id, task_device_id, `code`, content, quality_standard, hierarchy_type,
-        old_id, parent_id, `order`, `check`, check_result, input_type, dict_code, option_value, write_value,
-        regular, special_characters, proc_methods,required, del_flag, create_by, create_time, update_by, update_time )
+        old_id, parent_id, `order`, `check`, check_result, input_type, dict_code,result_dict_code, option_value, write_value,
+        regular, special_characters,required, proc_methods,del_flag, create_by, create_time, update_by, update_time )
         VALUES
         <foreach collection="list" item="item" separator=",">
             (
@@ -25,12 +25,13 @@
             #{item.checkResult,jdbcType=TINYINT},
             #{item.inputType,jdbcType=TINYINT},
             #{item.dictCode,jdbcType=VARCHAR},
+            #{item.resultDictCode,jdbcType=VARCHAR},
             #{item.optionValue,jdbcType=TINYINT},
             #{item.writeValue,jdbcType=VARCHAR},
             #{item.regular,jdbcType=VARCHAR},
             #{item.specialCharacters,jdbcType=VARCHAR},
-            #{item.procMethods,jdbcType=TINYINT},
             #{item.required,jdbcType=TINYINT},
+            #{item.procMethods,jdbcType=TINYINT},
             #{item.delFlag,jdbcType=TINYINT},
             #{item.createBy,jdbcType=VARCHAR},
             #{item.createTime,jdbcType=TIMESTAMP},
@@ -66,7 +67,8 @@
         pcr.content,
         pcr.quality_standard,
         pcr.check_result,
-        pcr.remark
+        pcr.remark,
+        pcr.result_dict_code
         FROM
         patrol_check_result pcr
         WHERE

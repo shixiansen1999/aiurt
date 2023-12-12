@@ -1914,6 +1914,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                                             .setCheck(result.getCheck())
                                             .setInputType(result.getInputType())
                                             .setDictCode(result.getDictCode())
+                                            .setResultDictCode(result.getResultDictCode())
                                             .setRegular(result.getRegular())
                                             .setSpecialCharacters(result.getSpecialCharacters())
                                             .setRequired(result.getRequired())
@@ -2224,6 +2225,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                                                 .orElse(c.getContent())
                                 );
                                 printDetailDTO.setResult(Convert.toStr(c.getCheckResult()));
+
+                                //巡检结果字典值列表
+                                List<DictModel> list = sysBaseApi.getDictItems(c.getResultDictCode());
+                                printDetailDTO.setResultList(list);
+
                                 printDetailDTO.setRemark(c.getRemark());
                                 printDetailList.add(printDetailDTO);
                             }
@@ -2801,8 +2807,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             }
             taskDTO.setSubmitTime(DateUtil.format(byId.getCheckTime(),"yyyy-MM-dd HH:mm:ss"));
             taskDTO.setSignUrl(patrolTask.getSignUrl());
-            PatrolStandard taskStandardName = patrolTaskDeviceMapper.getStandardName(id);
-            taskDTO.setStandardCode(taskStandardName.getCode());
             //巡视单内容
             List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfoByDeviceID(id);
 

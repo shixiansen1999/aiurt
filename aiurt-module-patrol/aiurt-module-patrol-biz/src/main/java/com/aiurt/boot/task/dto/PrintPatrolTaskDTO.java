@@ -30,9 +30,6 @@ public class PrintPatrolTaskDTO {
     @ApiModelProperty(value = "提交时间")
     private String submitTime;
 
-    @ApiModelProperty(value = "巡检标准表Code")
-    private java.lang.String standardCode;
-
     private List<PrintStationDTO> printStationDTOList;
 
     @ApiModelProperty(value = "任务提交的用户签名图片")

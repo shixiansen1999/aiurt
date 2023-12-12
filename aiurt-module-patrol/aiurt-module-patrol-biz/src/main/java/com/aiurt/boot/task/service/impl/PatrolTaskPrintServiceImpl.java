@@ -813,7 +813,7 @@ public class PatrolTaskPrintServiceImpl implements IPatrolTaskPrintService {
             List<PatrolCheckResultDTO> checkResultAll =  patrolCheckResultMapper.getCheckResultAllByTaskId(collect);
             List<PatrolCheckResultDTO> checkDTOs = checkResultAll.stream().filter(c -> c.getCheck() != 0).collect(Collectors.toList());
             List<String> safty = sysBaseApi.getDictItems("safty_produce_check").stream().map(w-> w.getText()).collect(Collectors.toList());
-            boolean result = checkDTOs.stream().anyMatch(f -> f.getContent().contains("电暖气"));
+            boolean result = checkDTOs.stream().filter(c-> c.getContent().equals("电暖气")).anyMatch(f-> f.getCheckResult()!=0);
             if (result){
                 map.put("isTrue","☑有");
                 map.put("isFalse","☐无");
