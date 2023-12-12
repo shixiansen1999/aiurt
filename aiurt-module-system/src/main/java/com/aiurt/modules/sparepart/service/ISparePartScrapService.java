@@ -56,4 +56,13 @@ public interface ISparePartScrapService extends IService<SparePartScrap> {
      * @return
      */
     Result<?> edit(SparePartScrap sparePartScrap);
+
+    /**
+     * 更新出库剩余数量
+     * @param materialCode 物资编码
+     * @param warehouseCode 仓库编码
+     * @param num 处置数量
+     * @return
+     */
+     boolean updateUnused(String materialCode, String warehouseCode, Integer num);
 }

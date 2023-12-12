@@ -18,6 +18,7 @@ import com.aiurt.modules.sparepart.mapper.*;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
+import com.aiurt.modules.sparepart.service.ISparePartScrapService;
 import com.aiurt.modules.stock.entity.MaterialStockOutInRecord;
 import com.aiurt.modules.stock.service.impl.MaterialStockOutInRecordServiceImpl;
 import com.aiurt.modules.todo.dto.TodoDTO;
@@ -55,8 +56,6 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
     @Autowired
     private ISparePartInOrderService sparePartInOrderService;
     @Autowired
-    private SparePartOutOrderMapper sparePartOutOrderMapper;
-    @Autowired
     private ISparePartOutOrderService sparePartOutOrderService;
     @Autowired
     private ISysBaseAPI sysBaseApi;
@@ -70,6 +69,8 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
     private ISTodoBaseAPI isTodoBaseAPI;
     @Autowired
     private MaterialStockOutInRecordServiceImpl materialStockOutInRecordService;
+    @Autowired
+    private ISparePartScrapService iSparePartScrapService;
     /**
      * 查询列表
      * @param page
@@ -125,18 +126,9 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         Date date = new Date();
         SparePartReturnOrder returnOrder = getById(sparePartReturnOrder.getId());
         //更新已出库库存数量,做减法
-        List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SparePartOutOrder::getMaterialCode,sparePartReturnOrder.getMaterialCode()).eq(SparePartOutOrder::getWarehouseCode,sparePartReturnOrder.getWarehouseCode()));
-        if(!orderList.isEmpty()){
-            for(int i =0;i<orderList.size();i++){
-                SparePartOutOrder order = orderList.get(i);
-                if(Integer.parseInt(order.getUnused())>=returnOrder.getNum()){
-                    Integer number = Integer.parseInt(order.getUnused())-returnOrder.getNum();
-                    order.setUnused(number+"");
-                    updateOrder(order);
-                }else{
-                    return Result.error("剩余数量不足！");
-                }
-            }
+        boolean result = iSparePartScrapService.updateUnused(sparePartReturnOrder.getMaterialCode(), sparePartReturnOrder.getWarehouseCode(), returnOrder.getNum());
+        if (!result){
+            return Result.error("剩余数量不足！");
         }
         //1.更改状态为“已确认”
         returnOrder.setConfirmId(user.getUsername());
@@ -172,7 +164,7 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         sparePartInOrder.setConfirmId(user.getId());
         sparePartInOrder.setConfirmTime(date);
         sparePartInOrder.setUsedNum(returnOrder.getNum());
-        sparePartInOrder.setInType(MaterialRequisitionConstant.NORMAL_IN);
+        sparePartInOrder.setInType(MaterialRequisitionConstant.RETURN_LIBRARY);
         sparePartInOrderService.save(sparePartInOrder);
         // 同步入库记录到出入库记录表
         MaterialStockOutInRecord record = new MaterialStockOutInRecord();
@@ -183,7 +175,7 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         record.setMaterialRequisitionType(3);
         record.setIsOutIn(1);
         record.setOutInType(sparePartInOrder.getInType());
-        record.setBalance(sparePartStock.getNum()+returnOrder.getNum());
+        record.setBalance(sparePartStock.getNum());
         materialStockOutInRecordService.save(record);
         return Result.OK("操作成功！");
 

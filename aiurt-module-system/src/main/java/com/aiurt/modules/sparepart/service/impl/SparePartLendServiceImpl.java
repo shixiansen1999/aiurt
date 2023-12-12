@@ -246,6 +246,18 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartOutOrder.setOrderCode(CodeGenerateUtils.generateSingleCode("3CK", 5));
         //计算库存结余
         sparePartOutOrder.setBalance(lendStock.getNum());
+        //查询出库表同一仓库、同一备件是否有出库记录,借出没有出库剩余数量，此备件的出库剩余数量没有变更；
+        SparePartOutOrder lastOrder = sparePartOutOrderService.getOne(new LambdaQueryWrapper<SparePartOutOrder>()
+                .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(SparePartOutOrder::getStatus, 2)
+                .eq(SparePartOutOrder::getMaterialCode, sparePartOutOrder.getMaterialCode())
+                .eq(SparePartOutOrder::getWarehouseCode, sparePartOutOrder.getWarehouseCode())
+                .orderByDesc(SparePartOutOrder::getConfirmTime).last("limit 1"));
+        if(ObjectUtil.isNull(lastOrder)){
+            sparePartOutOrder.setUnused("0");
+        }else{
+            sparePartOutOrder.setUnused(String.valueOf(lastOrder.getUnused()));
+        }
         sparePartOutOrderService.save(sparePartOutOrder);
 
         //同步出库记录到出入库记录表
@@ -429,6 +441,20 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartOutOrder.setApplyUserId(partLend.getBackPerson());
         sparePartOutOrder.setStatus(CommonConstant.SPARE_PART_OUT_ORDER_STATUS_2);
         sparePartOutOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getId,partLend.getBackPerson())).getOrgCode());
+
+        //查询出库表同一仓库、同一备件是否有出库记录,归还出库没有出库剩余数量，此备件的出库剩余数量没有变更；
+        SparePartOutOrder lastOrder = sparePartOutOrderService.getOne(new LambdaQueryWrapper<SparePartOutOrder>()
+                .eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(SparePartOutOrder::getStatus, 2)
+                .eq(SparePartOutOrder::getMaterialCode, partLend.getMaterialCode())
+                .eq(SparePartOutOrder::getWarehouseCode, partLend.getBackWarehouseCode())
+                .orderByDesc(SparePartOutOrder::getConfirmTime).last("limit 1"));
+        if(ObjectUtil.isNull(lastOrder)){
+            sparePartOutOrder.setUnused("0");
+        }else{
+            sparePartOutOrder.setUnused(String.valueOf(lastOrder.getUnused()));
+        }
+
         sparePartOutOrderService.save(sparePartOutOrder);
         try {
             LoginUser userById = sysBaseApi.getUserById(partLend.getBackPerson());
