@@ -90,7 +90,12 @@
         pcr.`check`,
         css.system_name as subsystemName,
         pcr.parent_id,
-        psi.proc_methods
+        psi.proc_methods,
+        pcr.write_value,
+        pcr.input_type,
+        pcr.special_characters,
+        pcr.dict_code,
+        pcr.option_value
         FROM
         patrol_check_result pcr
         LEFT JOIN patrol_task_device ptd ON pcr.task_device_id = ptd.id
@@ -124,7 +129,12 @@
         pcr.check_result,
         pcr.remark,
         css.system_name as subsystemName,
-        psi.proc_methods
+        psi.proc_methods,
+        pcr.write_value,
+        pcr.input_type,
+        pcr.special_characters,
+        pcr.dict_code,
+        pcr.option_value
         FROM
         patrol_check_result pcr
         LEFT JOIN patrol_task_device ptd ON pcr.task_device_id = ptd.id
@@ -164,7 +174,12 @@
         pcr.`check`,
         ps.`code` as oldCode,
         pcr.parent_id,
-        pcr.proc_methods
+        pcr.proc_methods,
+        pcr.write_value,
+        pcr.input_type,
+        pcr.special_characters,
+        pcr.dict_code,
+        pcr.option_value
         FROM
         patrol_check_result pcr
         LEFT JOIN patrol_standard_items ps on pcr.old_id = ps.id
@@ -211,5 +226,15 @@
             </foreach>
         </if>
         group by ptd.patrol_number
+    </select>
+    <select id="getSysDict" resultType="java.lang.String">
+        SELECT
+        item.item_text
+        FROM
+        sys_dict_item item
+        INNER JOIN sys_dict dict ON dict.id = item.dict_id
+        WHERE dict.dict_code = #{dictCode}
+        AND item.item_value = #{optionValue}
+
     </select>
 </mapper>

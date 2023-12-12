@@ -866,10 +866,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 checkListDTO.setSitePosition(station);
             }
             if (checkListDTO.getEquipmentCode() == null) {
-                // 当工单的设备为空时返回，该工单关联任务标准关联的设备
-                List<com.aiurt.boot.task.dto.RepairDeviceDTO> repairDeviceDTOList = repairDeviceService.queryDevices(checkListDTO.getTaskId(), checkListDTO.getStandardId(), null);
-                checkListDTO.setEquipmentCode(repairDeviceDTOList.stream().map(com.aiurt.boot.task.dto.RepairDeviceDTO::getDeviceCode).collect(Collectors.joining(StrUtil.COMMA)));
-                checkListDTO.setEquipmentName(repairDeviceDTOList.stream().map(com.aiurt.boot.task.dto.RepairDeviceDTO::getDeviceName).collect(Collectors.joining(StrUtil.COMMA)));
                 //设备专业
                 checkListDTO.setDeviceMajorName(manager.translateMajor(Arrays.asList(checkListDTO.getMajorCode()), InspectionConstant.MAJOR));
                 //设备专业编码
@@ -3525,41 +3521,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             //遍历每个工单
             for (RepairTaskDeviceRel d : repairTaskDeviceRels) {
-                //获取检修位置
-                String maintenancePosition;
-                //判断设备code是否为空
-                if (ObjectUtil.isNotEmpty(d.getDeviceCode())) {
-                    List<StationDTO> stationDTOList = repairTaskMapper.selectStationLists(d.getDeviceCode());
-                    String station = manager.translateStation(stationDTOList);
-                    //判断具体位置是否为空
-                    if (ObjectUtil.isNotEmpty(d.getSpecificLocation())) {
-                        if (ObjectUtil.isNotEmpty(station)) {
-                            maintenancePosition = d.getSpecificLocation() + station;
-                        } else {
-                            maintenancePosition = d.getSpecificLocation();
-                        }
-                    } else {
-                        maintenancePosition = station;
-                    }
-                } else {
-                    List<StationDTO> stationDTOList1 = new ArrayList<>();
-                    StationDTO stationDto = new StationDTO();
-                    stationDto.setStationCode(d.getStationCode());
-                    stationDto.setLineCode(d.getLineCode());
-                    stationDto.setPositionCode(d.getPositionCode());
-                    stationDTOList1.add(stationDto);
-                    String station = manager.translateStation(stationDTOList1);
-                    if (ObjectUtil.isNotEmpty(d.getSpecificLocation())) {
-                        if (ObjectUtil.isNotEmpty(station)) {
-                            maintenancePosition = d.getSpecificLocation() + station;
-                        } else {
-                            maintenancePosition = d.getSpecificLocation();
-                        }
-                    } else {
-                        maintenancePosition = station;
-                    }
-                }
-
                 //获取备件更换信息
                 String faultCode = d.getFaultCode();
                 if (StrUtil.isNotBlank(faultCode)) {
@@ -3578,12 +3539,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
                 //获取检查项
                 List<RepairTaskResult> repairTaskResultList = repairTaskMapper.selectSingle(d.getId(), null);
-                RepairTaskStandardRel standardRel = repairTaskStandardRelService.getOne(new LambdaQueryWrapper<RepairTaskStandardRel>()
-                        .eq(RepairTaskStandardRel::getId, d.getTaskStandardRelId()),false);
                 repairTaskResultList.forEach(r -> {
                     if ("0".equals(r.getPid())) {
-                        String systemName = manager.translateMajor(Collections.singletonList(standardRel.getSubsystemCode()), InspectionConstant.SUBSYSTEM);
-                        r.setName(maintenancePosition + "-" + systemName + ":" + (r.getName() != null ? r.getName() : ""));
+                        r.setName(r.getName() != null ? r.getName() : "");
                     }
                     r.setStatusName(dictMap.get(r.getStatus()));
                     if (ObjectUtil.isNotEmpty(r.getStatus())) {

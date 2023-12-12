@@ -79,4 +79,12 @@ public interface PatrolCheckResultMapper extends BaseMapper<PatrolCheckResult> {
      */
     List<PatrolTaskDeviceParam> getNum(@Param("patrolNumbers")  List<String> patrolNumbers);
 
+    /**
+     * 翻译
+     *
+     * @param dictCode
+     * @param optionValue
+     * @return
+     */
+    String getSysDict(@Param("dictCode") String dictCode, @Param("optionValue") String optionValue);
 }
