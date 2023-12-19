@@ -146,14 +146,17 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 				 int secondSlashIndex = specialCharacters.indexOf('/', firstSlashIndex + 1);
 
 				 SysParamModel paramModel = iSysParamAPI.selectByCode(SysParamCodeConstant.PATROL_AUTO_TEMP_HUMIDITY_JUDGE);
-				 if (CommonConstant.SYSTEM_CONFIG_BOOLEAN_YES.equals(paramModel.getValue())) {
+				 boolean isTemperature = SysParamCodeConstant.PATROL_TEMP_STATUS_TEST.equals(patrolCheckResult.getResultDictCode());
+				 boolean isHumidity = SysParamCodeConstant.PATROL_HUMIDITY_STATUS_TEST.equals(patrolCheckResult.getResultDictCode());
+
+				 if (CommonConstant.SYSTEM_CONFIG_BOOLEAN_YES.equals(paramModel.getValue()) && (isTemperature || isHumidity)) {
 
 					 if (firstSlashIndex != -1 && secondSlashIndex != -1) {
 						 String result = specialCharacters.substring(firstSlashIndex + 1, secondSlashIndex);
 						 double max = 0.0;
 						 double min = 0.0;
 						 //温度判断
-						 if (SysParamCodeConstant.PATROL_TEMP_STATUS_TEST.equals(patrolCheckResult.getResultDictCode())) {
+						 if (isTemperature) {
 							 SysParamModel maximumTemperature = iSysParamAPI.selectByCode(SysParamCodeConstant.MAXIMUM_TEMPERATURE);
 							 max = Double.parseDouble(maximumTemperature.getValue());
 							 SysParamModel minimumTemperature = iSysParamAPI.selectByCode(SysParamCodeConstant.MINIMUM_TEMPERATURE);
@@ -161,7 +164,7 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 
 						 }
 						 //湿度判断
-						 if (SysParamCodeConstant.PATROL_HUMIDITY_STATUS_TEST.equals(patrolCheckResult.getResultDictCode())) {
+						 if (isHumidity) {
 							 SysParamModel maximumHumidity = iSysParamAPI.selectByCode(SysParamCodeConstant.MAXIMUM_HUMIDITY);
 							 max = Double.parseDouble(maximumHumidity.getValue());
 							 SysParamModel minimumHumidity = iSysParamAPI.selectByCode(SysParamCodeConstant.MINIMUM_HUMIDITY);
