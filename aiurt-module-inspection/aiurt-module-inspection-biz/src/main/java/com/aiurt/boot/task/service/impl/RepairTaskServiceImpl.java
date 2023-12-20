@@ -4570,6 +4570,27 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 if (CollUtil.isEmpty(r.getChildren())){
                     r.setChildren(new ArrayList<>());
                 }
+
+                if (r.getStatusItem() != null) {
+                    //检修值
+                    if (r.getStatusItem().equals(InspectionConstant.NO_STATUS_ITEM)) {
+                        r.setInspeciontValueName(null);
+                    }
+                    if (r.getStatusItem().equals(InspectionConstant.STATUS_ITEM_CHOICE)) {
+                        r.setInspeciontValueName(sysBaseApi.translateDict(r.getDictCode(), String.valueOf(r.getInspeciontValue())));
+                    }
+                    if (r.getStatusItem().equals(InspectionConstant.STATUS_ITEM_INPUT)) {
+                        r.setInspeciontValueName(r.getNote());
+                    }
+                    if (r.getStatusItem().equals(InspectionConstant.STATUS_ITEM_SPECIALCHAR_INPUT)) {
+                        if (StrUtil.isNotBlank(r.getSpecialCharactersResult()) && !r.getSpecialCharacters().equals(r.getSpecialCharactersResult())) {
+                            r.setInspeciontValueName(r.getSpecialCharactersResult());
+                            //app详情页面使用specialCharacters展示，因此赋值结果回给这个字段
+                            r.setSpecialCharacters(r.getSpecialCharactersResult());
+                        }
+                    }
+                }
+
             });
             List<RepairTaskResult> repairTaskResults1 = RepairTaskServiceImpl.treeFirst(resultList);
             repairTaskResults.addAll(repairTaskResults1);
